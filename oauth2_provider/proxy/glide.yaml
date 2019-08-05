@@ -1,0 +1,3 @@
+package: github.com/rockl2e/auth-proxy
+import:
+- package: golang.org/x/oauth2

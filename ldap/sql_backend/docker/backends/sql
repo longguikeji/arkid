@@ -1,0 +1,12 @@
+database sql
+suffix "dc=example,dc=org"
+rootdn "cn=admin,dc=example,dc=org"
+rootpw admin
+dbname ldap_odbc_mysql
+dbuser root
+dbpasswd root
+has_ldapinfo_dn_ru no
+autocommit yes
+subtree_cond "ldap_entries.dn LIKE CONCAT('%',?)"
+insentry_stmt "insert into ldap_entries (id,dn,oc_map_id,parent,keyval) values ((select max(id)+1 from ldap_entries),?,?,?,?)"
+at_query "SELECT name,sel_expr,from_tbls,join_where,create_proc,delete_proc,param_order,expect_return FROM ldap_attr_mappings WHERE oc_map_id=?"

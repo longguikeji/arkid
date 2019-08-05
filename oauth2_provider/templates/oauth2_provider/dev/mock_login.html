@@ -1,0 +1,34 @@
+Login Success as admin
+<form class='form' method="POST">
+    username<input name="username">
+    password<input name="password">
+    <button type='button' id='submit'>submit</button>
+</form>
+<script src="https://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript">
+    const oneid_base_url = 'http://127.0.0.1:8080'
+    const urlParams = new URLSearchParams(window.location.search);
+    var redirect_url = urlParams.get('next');
+    next = oneid_base_url + redirect_url
+    next = next.replace('_authorize', 'authorize', 1)
+
+    $('#submit').click(function(){
+        username = $('input[name=username]').val();
+        password = $('input[name=password]').val();
+        $.ajax({
+            method: 'POST',
+            url: '{{token_url}}',
+            data: {'username': username, 'password': password},
+            success: function(data){
+                token = data['token']
+                localStorage.setItem('token', data['token']);
+                const urlParams = new URLSearchParams(next);
+                if (urlParams.get('oneid_token')){
+                    next = next.replace('oneid_token', '_oneid_token');
+                }
+                window.location.href = next;
+            }
+        })
+        return false;
+    })
+</script>

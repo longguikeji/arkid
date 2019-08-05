@@ -1,0 +1,21 @@
+dn: ou=people,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalUnit
+
+dn: ou=group,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalUnit
+
+dn: ou=dept,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: organizationalUnit
+
+# defalut admin user with password `admin`
+dn: uid=admin,ou=people,{{ LDAP_BASE_DN }}
+changetype: add
+objectClass: inetOrgPerson
+uid: admin
+cn: admin
+sn: admin
+displayName: admin
+userPassword: {MD5}ISMvKXpXpadDiUoOSoAfww==

@@ -1,0 +1,23 @@
+Read Token & Redirect
+
+<script type="text/javascript">
+    const ONEID_TOKEN = 'oneid';
+
+    var token = localStorage.getItem(ONEID_TOKEN);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    target = urlParams.get('target')
+    if (target){
+        query = new URLSearchParams(target)
+        oneid_token = query.get('oneid_token')
+        if (oneid_token == null) {
+            target = target + `&oneid_token=${token}`;
+        } else if (oneid_token != token) {
+            target.replace(
+                `oneid_token=${oneid_token}`,
+                `oneid_token=${token}`
+            )
+        }
+        window.location.href = target
+    }
+</script>

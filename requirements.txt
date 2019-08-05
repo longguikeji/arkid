@@ -1,0 +1,75 @@
+################################################################################
+# This requirements file has been automatically generated from `Pipfile` with
+# `pipenv-to-requirements`
+#
+#
+# This has been done to maintain backward compatibility with tools and services
+# that do not support `Pipfile` yet.
+#
+# Do NOT edit it directly, use `pipenv install [-d]` to modify `Pipfile` and
+# `Pipfile.lock` and then regenerate `requirements*.txt`.
+################################################################################
+
+aliyun-python-sdk-core-v3==2.8.6
+amqp==2.5.0
+asn1crypto==0.24.0
+astroid==2.2.5
+billiard==3.5.0.5
+cachetools==3.1.1
+celery==4.2.1
+certifi==2019.6.16
+cffi==1.12.3
+chardet==3.0.4
+coreapi==2.3.3
+coreschema==0.0.4
+cryptography==2.7
+django-celery-beat==1.1.1
+django-celery-results==1.0.1
+django-cors-headers==2.5.3
+django-cors-middleware==1.4.0
+django-jsonfield==1.2.0
+django-oauth-toolkit==1.2.0
+django-ranged-response==0.2.0
+django-redis==4.10.0
+django-simple-captcha==0.5.12
+django==2.0.7
+djangorestframework==3.9
+future==0.17.1
+google-auth==1.6.3
+idna==2.8
+isort==4.3.21
+itypes==1.1.0
+jinja2==2.10.1
+kombu==4.6.3
+kubernetes==10.0.0
+lazy-object-proxy==1.4.1
+ldap3==2.5.2
+markupsafe==1.1.1
+mccabe==0.6.1
+minio==4.0.18
+oauthlib==3.0.2
+passlib==1.7.1
+pillow==6.1.0
+pyasn1-modules==0.2.5
+pyasn1==0.4.5
+pycparser==2.19
+pycryptodome==3.8.2
+pylint==2.3.1
+pymysql==0.9.3
+pypinyin==0.35.4
+python-dateutil==2.8.0
+pytz==2019.1
+pyyaml==5.1.1
+redis==3.2.0
+requests-oauthlib==1.2.0
+requests==2.22.0
+rsa==4.0
+rules==2.0
+six==1.12.0
+sqlparse==0.3.0
+typed-ast==1.4.0
+uritemplate==3.0.0
+urllib3==1.25.3
+vine==1.3.0
+websocket-client==0.56.0
+wrapt==1.11.2
