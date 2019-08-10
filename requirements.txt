@@ -1,5 +1,15 @@
--i https://mirrors.aliyun.com/pypi/simple/
---extra-index-url https://mirrors.aliyun.com/pypi/simple
+################################################################################
+# This requirements file has been automatically generated from `Pipfile` with
+# `pipenv-to-requirements`
+#
+#
+# This has been done to maintain backward compatibility with tools and services
+# that do not support `Pipfile` yet.
+#
+# Do NOT edit it directly, use `pipenv install [-d]` to modify `Pipfile` and
+# `Pipfile.lock` and then regenerate `requirements*.txt`.
+################################################################################
+
 aliyun-python-sdk-core-v3==2.8.6
 amqp==2.5.0
 asn1crypto==0.24.0
@@ -22,8 +32,8 @@ django-oauth-toolkit==1.2.0
 django-ranged-response==0.2.0
 django-redis==4.10.0
 django-simple-captcha==0.5.12
-django==2.2.4
-djangorestframework==3.10.2
+django==2.0.7
+djangorestframework==3.9.0
 future==0.17.1
 google-auth==1.6.3
 idna==2.8
@@ -37,7 +47,7 @@ ldap3==2.5.2
 markupsafe==1.1.1
 mccabe==0.6.1
 minio==4.0.18
-oauthlib==3.0.2
+oauthlib==3.1.0
 passlib==1.7.1
 pillow==6.1.0
 pyasn1-modules==0.2.6
