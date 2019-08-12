@@ -8,8 +8,8 @@ url = "https://mirrors.aliyun.com/pypi/simple"
 verify_ssl = true
 
 [packages]
-django = "==2.0.7"
-djangorestframework = "==3.9.0"
+django = "==2.1.4"
+djangorestframework = "==3.10.2"
 django-cors-headers = "==2.5.3"
 celery = "==4.2.1"
 coreapi = "==2.3.3"
