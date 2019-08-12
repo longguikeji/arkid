@@ -32,8 +32,8 @@ django-oauth-toolkit==1.2.0
 django-ranged-response==0.2.0
 django-redis==4.10.0
 django-simple-captcha==0.5.12
-django==2.0.7
-djangorestframework==3.9.0
+django==2.1.4
+djangorestframework==3.10.2
 future==0.17.1
 google-auth==1.6.3
 idna==2.8
