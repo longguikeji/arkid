@@ -336,7 +336,7 @@ class UpdateMobileSMSClaimSerializer(SMSClaimSerializer):
         '''
         value = super().validate_mobile(value)
         user = self.context['request'].user
-        if User.objects.filter(mobile=value).exclude(id=user.id).exists():
+        if User.valid_objects.filter(mobile=value).exclude(id=user.id).exists():
             raise ValidationError('existed')
         return value
 
