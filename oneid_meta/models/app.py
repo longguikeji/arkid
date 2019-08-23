@@ -161,14 +161,17 @@ class LDAPAPP(BaseModel):
 
     @property
     def more_detail(self):
+        private_addr = settings.PRIVATE_IP
+        public_addr = settings.DOMAIN if settings.DOMAIN else settings.PUBLIC_IP
+
         return [{
             'name': '内网地址',
             'key': 'internal_addr',
-            'value': ', '.join([settings.LDAP_SERVER, settings.LDAPS_SERVER]),
+            'value': 'ldap://{addr}, ldaps://{addr}'.format(addr=private_addr),
         }, {
             'name': '外网地址',
             'key': 'intra_addr',
-            'value': ', '.join([settings.LDAP_SERVER, settings.LDAPS_SERVER]),
+            'value': 'ldap://{addr}, ldaps://{addr}'.format(addr=public_addr),
         }, {
             'name': '管理员账号(bind_dn)',
             'key': 'bind_dn',
