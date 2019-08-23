@@ -40,9 +40,23 @@ ArkID是全新一代企业单点登录解决方案, 彻底告别企业内多系�
 - [arkid-core](https://github.com/longguikeji/arkid-core): 后端核心以及其他
 - [arkid-broker](https://github.com/longguikeji/arkid-broker): 一账通部署在ArkOS中的服务Broker
 
+## DEMO
+
+https://demo.arkid.longguikeji.com
+
+```
+用户名: admin
+密码: longguikeji
+```
+
 ## 文档
 
 - [接口文档](https://oneid1.docs.apiary.io/#)
+
+## 部署
+
+我们推荐基于Kubernetes的环境部署，官方helm charts参考: [Charts](https://github.com/longguikeji/arkid-charts)
+
 
 ## Issues
 
