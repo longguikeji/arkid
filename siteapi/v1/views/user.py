@@ -56,7 +56,7 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         return queryset for list [GET]
         '''
         kwargs = {}
-        queryset = User.valid_objects.filter(**kwargs).order_by('id')
+        queryset = User.valid_objects.filter(**kwargs).exclude(is_boss=True).exclude(username='admin').order_by('id')
 
         return queryset
 
