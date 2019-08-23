@@ -99,6 +99,7 @@ class SetPasswordSerializer(serializers.Serializer):    # pylint: disable=abstra
         user = validated_data['user']
         password = validated_data.get('new_password')
         CLI(user=user).set_user_password(user, password)
+        user.invalidate_token()
         return user
 
 
