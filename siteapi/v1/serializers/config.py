@@ -59,10 +59,7 @@ class AccountConfigSerializer(DynamicFieldsModelSerializer):
 
 class SMSConfigSerializer(DynamicFieldsModelSerializer):
     is_valid = serializers.BooleanField(read_only=True)
-    access_secret = WritableSerializerMethodField(
-        deserializer_field=serializers.CharField(source='access_secret'),
-        required=False,
-    )
+    access_secret = serializers.CharField(write_only=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = SMSConfig
@@ -80,14 +77,6 @@ class SMSConfigSerializer(DynamicFieldsModelSerializer):
             'is_valid',
         )
 
-    def get_access_secret(self, instance):
-        return instance.access_secret_encrypt
-
-    def set_access_secret(self, value):
-        '''
-        pass
-        '''
-
 
 class EmailConfigSerializer(DynamicFieldsModelSerializer):
     '''
@@ -95,10 +84,7 @@ class EmailConfigSerializer(DynamicFieldsModelSerializer):
     '''
 
     is_valid = serializers.BooleanField(read_only=True)
-    access_secret = WritableSerializerMethodField(
-        deserializer_field=serializers.CharField(),
-        required=False,
-    )
+    access_secret = serializers.CharField(write_only=True)
 
     class Meta:    # pylint: disable=missing-docstring
 
@@ -112,12 +98,6 @@ class EmailConfigSerializer(DynamicFieldsModelSerializer):
             'nickname',
             'is_valid',
         )
-
-    def get_access_secret(self, obj):
-        return obj.access_secret_encrypt
-
-    def set_access_secret(self, value):
-        pass
 
 
 class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
@@ -140,6 +120,9 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for DingConfig
     '''
+    app_secret = serializers.CharField(write_only=True)
+    corp_secret = serializers.CharField(write_only=True)
+
     class Meta:    # pylint: disable=missing-docstring
 
         model = DingConfig
@@ -163,11 +146,14 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
         - update data
         - validated updated data
         '''
-        super().update(instance, validated_data)
-        instance.refresh_from_db()
+        instance.__dict__.update(validated_data)
         instance.app_valid = self.validate_app_config(instance)
         instance.corp_valid = self.validate_corp_config(instance)
-        instance.save()
+        update_fields = ['app_valid', 'corp_valid']
+        update_fields += ['app_key', 'app_secret'] if instance.app_valid else []
+        update_fields += ['corp_id', 'corp_secret'] if instance.corp_valid else []
+        instance.save(update_fields=update_fields)
+        instance.refresh_from_db()
         return instance
 
     @staticmethod
@@ -249,25 +235,31 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
         sms_config_data = validated_data.pop('sms_config', None)
         if sms_config_data:
             access_secret = sms_config_data.pop('access_secret', '')
-            serializer = SMSConfigSerializer(SMSConfig.get_current(), sms_config_data, partial=True)
+            config = SMSConfig.get_current()
+            serializer = SMSConfigSerializer(config, sms_config_data, partial=True)
             serializer.is_valid(raise_exception=True)    # pylint: disable=not-callable
+            config.__dict__.update(serializer.validated_data)
 
-            config = serializer.save()
-
-            if access_secret and access_secret != config.access_secret_encrypt:
+            if access_secret:
                 config.access_secret = access_secret
-            config.is_valid = config.check_valid()
+            if not config.check_valid():
+                raise ValidationError({'sms': ['invalid']})
+            config.is_valid = True
             config.save()
 
         email_config_data = validated_data.pop('email_config', None)
         if email_config_data:
             access_secret = email_config_data.pop('access_secret', '')
-            serializer = EmailConfigSerializer(EmailConfig.get_current(), email_config_data, partial=True)
+            config = EmailConfig.get_current()
+            serializer = EmailConfigSerializer(config, email_config_data, partial=True)
             serializer.is_valid(raise_exception=True)    # pylint: disable=not-callable
-            config = serializer.save()
-            if access_secret and access_secret != config.access_secret_encrypt:
+            config.__dict__.update(serializer.validated_data)
+
+            if access_secret:
                 config.access_secret = access_secret
-            config.is_valid = config.check_valid()
+            if not config.check_valid():
+                raise ValidationError({'email': ['invalid']})
+            config.is_valid = True
             config.save()
 
         instance.refresh_from_db()
