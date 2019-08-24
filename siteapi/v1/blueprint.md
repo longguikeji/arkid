@@ -378,7 +378,7 @@ FORMAT: 1A
 ## SMSConfig (object)
 + vendor (string)
 + access_key (string)
-+ access_secret (string) - 已加密
++ access_secret (string) - write_only
 + signature (string)
 + template_code (string) - 通用短信模板ID
 + template_register (string) - 注册用短信模板ID
@@ -391,15 +391,15 @@ FORMAT: 1A
 + host (string) - 邮件服务地址
 + port (number) - 邮件服务端口
 + access_key (string) - 邮箱账号
-+ access_secret (string) - 邮箱密钥，已加密
++ access_secret (string) - 邮箱密钥，- write_only
 + is_valid (boolean) - 是否有效
 
 ## DingConfig (object)
 + app_key (string)
-+ app_secret (string)
++ app_secret (string) - write_only
 + app_valid (boolean, readonly) - app配置是否有效
 + corp_id (string)
-+ corp_secret (string)
++ corp_secret (string) - write_only
 + corp_valid (boolean, readonly) - corp配置是否有效
 
 ## Config (object)

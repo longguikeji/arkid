@@ -247,6 +247,22 @@ class User(BaseModel, PermOwnerMixin):
         from drf_expiring_authtoken.models import ExpiringToken
         token, _ = ExpiringToken.objects.get_or_create(user=self)
         return token
+    
+    def refresh_token(self):
+        '''
+        使当前token失效，并返回新的token
+        '''
+        self.invalidate_token()
+        return self.token_obj
+    
+    def invalidate_token(self):
+        '''
+        使当前token失效，不生成新的token
+        '''
+        from drf_expiring_authtoken.models import ExpiringToken
+        token = ExpiringToken.objects.filter(user=self).first()
+        if token:
+            token.delete()
 
     @property
     def is_settled(self):

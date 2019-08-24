@@ -7,8 +7,6 @@ from django.urls import reverse
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import User, CustomField, SMSConfig, EmailConfig
 
-EMPTY_SECRET = SMSConfig.encrypt('')
-
 
 class ConfigTestCase(TestCase):
     def test_get_config(self):
@@ -26,10 +24,8 @@ class ConfigTestCase(TestCase):
             },
             'ding_config': {
                 'app_key': '',
-                'app_secret': '',
                 'app_valid': False,
                 'corp_id': '',
-                'corp_secret': '',
                 'corp_valid': False,
             },
             'account_config': {
@@ -39,7 +35,6 @@ class ConfigTestCase(TestCase):
             },
             'sms_config': {
                 'access_key': '',
-                'access_secret': EMPTY_SECRET,
                 'signature': '',
                 'template_code': '',
                 'template_register': '',
@@ -51,7 +46,6 @@ class ConfigTestCase(TestCase):
             },
             'email_config': {
                 'access_key': '',
-                'access_secret': EMPTY_SECRET,
                 'host': '',
                 'nickname': 'OneID',
                 'port': 587,
@@ -62,7 +56,11 @@ class ConfigTestCase(TestCase):
 
     @mock.patch('oneid_meta.models.config.SMSAliyunManager.send_auth_code')
     @mock.patch('oneid_meta.models.config.EmailManager.connect')
-    def test_update_config(self, mock_connect, mock_send_auth_code):
+    @mock.patch('siteapi.v1.serializers.config.DingConfigSerializer.validate_app_config')
+    @mock.patch('siteapi.v1.serializers.config.DingConfigSerializer.validate_corp_config')
+    def test_update_config(self, mock_validate_corp_config, mock_validate_app_config, mock_connect, mock_send_auth_code):
+        mock_validate_corp_config.return_value = True
+        mock_validate_app_config.return_value = False
         mock_connect.return_value = True
         mock_send_auth_code.return_value = True
 
@@ -74,6 +72,9 @@ class ConfigTestCase(TestCase):
                                          },
                                          'ding_config': {
                                              'app_key': 'app_key',
+                                             'app_secret': 'pwd',
+                                             'corp_id': 'corp_id',
+                                             'corp_secret': 'pwd',
                                          },
                                          'account_config': {
                                              'allow_register': True,
@@ -101,12 +102,10 @@ class ConfigTestCase(TestCase):
                 'color': 'color',
             },
             'ding_config': {
-                'app_key': 'app_key',
-                'app_secret': '',
+                'app_key': '',
                 'app_valid': False,
-                'corp_id': '',
-                'corp_secret': '',
-                'corp_valid': False,
+                'corp_id': 'corp_id',
+                'corp_valid': True,
             },
             'account_config': {
                 'allow_email': False,
@@ -115,7 +114,6 @@ class ConfigTestCase(TestCase):
             },
             'sms_config': {
                 'access_key': 'access_key',
-                'access_secret': SMSConfig.encrypt('pwd'),
                 'signature': '',
                 'template_code': '',
                 'template_register': '',
@@ -127,7 +125,6 @@ class ConfigTestCase(TestCase):
             },
             'email_config': {
                 'access_key': '',
-                'access_secret': EmailConfig.encrypt('pwd'),
                 'host': '12.12.12.12',
                 'nickname': 'OneID',
                 'port': 587,
@@ -138,19 +135,6 @@ class ConfigTestCase(TestCase):
         self.assertEqual(EmailConfig.get_current().access_secret, 'pwd')
         self.assertEqual(SMSConfig.get_current().access_secret, 'pwd')
 
-        res = self.client.json_patch(reverse('siteapi:config'),
-                                     data={
-                                         'sms_config': {
-                                             'access_secret': SMSConfig.encrypt('pwd')
-                                         },
-                                         'email_config': {
-                                             'access_secret': EmailConfig.encrypt('pwd')
-                                         }
-                                     })
-        self.assertEqual(res.json()['sms_config']['access_secret'], SMSConfig.encrypt('pwd'))
-        self.assertEqual(res.json()['email_config']['access_secret'], SMSConfig.encrypt('pwd'))
-        self.assertEqual(SMSConfig.get_current().access_secret, 'pwd')
-        self.assertEqual(EmailConfig.get_current().access_secret, 'pwd')
 
     def test_update_config_valid(self):
         with mock.patch('oneid_meta.models.config.EmailManager.connect') as mock_connect:
