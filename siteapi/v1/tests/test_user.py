@@ -161,6 +161,7 @@ class UserTestCase(TestCase):
         self.assertEqual(res.status_code, 400)
 
     def test_get_user_list(self):
+        User.objects.create(username='employee')
         res = self.client.get(reverse('siteapi:user_list'))
         expect = {
             'count':
@@ -171,35 +172,24 @@ class UserTestCase(TestCase):
             None,
             'results': [{
                 'user': {
-                    'username': 'admin',
+                    'user_id': 2,
+                    'username': 'employee',
                     'name': '',
-                    'avatar': '',
                     'email': '',
-                    'user_id': 1,
                     'mobile': '',
                     'employee_number': '',
                     'gender': 0,
+                    'avatar': '',
                     'private_email': '',
-                    'is_settled': True,
-                    'is_manager': False,
-                    'is_admin': True,
-                    'origin_verbose': '脚本添加',
                     'position': '',
-                    'ding_user': {
-                        'uid': 'admin',
-                        'account': '18812341234',
-                        'data': '{}'
-                    },
-                    'posix_user': {
-                        'uid': 500,
-                        'gid': 500,
-                        'home': '',
-                        'pub_key': ''
-                    }
+                    'is_settled': False,
+                    'is_manager': False,
+                    'is_admin': False,
+                    'origin_verbose': '脚本添加'
                 },
                 'groups': [],
                 'depts': [],
-                'nodes': [],
+                'nodes': []
             }]
         }
         self.assertEqual(res.json(), expect)

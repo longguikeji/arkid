@@ -255,8 +255,11 @@ DOWNLOAD_URL = STATIC_URL + 'download'
 
 REDIS_HOST = 'localhost'
 
-DOMAIN = 'localhost'
+DOMAIN = ''
+PRIVATE_IP = '127.0.0.1'
+PUBLIC_IP = ''
 BASE_URL = 'http://localhost'
+
 FE_TOKEN_URL = '/oauth/fe/token/'
 # TODO
 FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'    # 邮件注册页面
