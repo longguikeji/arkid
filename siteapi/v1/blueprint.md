@@ -619,6 +619,15 @@ FORMAT: 1A
         + username (string)
         + name (string)
 
+# Group Statistics
+统计数据
+## 用户统计数据 [/statistics/user_statistic]
+### 获取用户统计数据 [GET]
++ Response 200 (application/json)
+    + Attributes
+        + total_count (number)
+        + active_count (number)
+
 # Group User Center
 该部分为用户向接口，本文档其余部分皆只对管理员开放
 
@@ -1751,6 +1760,10 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes
         + new_admin_username (string)
+
+### 获取主管理员详情 [GET]
++ Response 200 (application/json)
+    + Attributes (User)
 
 ## 自定义字段 [/config/custom/field/{subject}/]
 
