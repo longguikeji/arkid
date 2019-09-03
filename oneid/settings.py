@@ -59,7 +59,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'drf_expiring_authtoken.authentication.ExpiringTokenAuthentication',
+        'oneid.authentication.CustomExpiringTokenAuthentication',
         'oneid.authentication.HeaderArkerBaseAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
@@ -299,6 +299,9 @@ SMS_ALIYUN_ACCESS_KEY_ID = ''
 SMS_ALIYUN_ACCESS_KEY_SECRET = ''
 SMS_ALIYUN_TEMPLATE_CODE = ''
 SMS_ALIYUN_SIGNATURE = ''
+
+ACTIVE_USER_DATA_LIFEDAY = 30
+ACTIVE_USER_REDIS_KEY_PREFIX = 'active-'
 
 if os.path.exists(os.path.join(BASE_DIR, 'falcon', 'settings_domain.py')):
     exec(open(os.path.join(BASE_DIR, 'falcon', 'settings_domain.py')).read())
