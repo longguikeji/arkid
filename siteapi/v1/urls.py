@@ -14,7 +14,7 @@ from siteapi.v1.views.task import (
 
 from siteapi.v1.views.config import (
     ConfigAPIView,
-    AlterAdminAPIView,
+    AdminAPIView,
     MetaConfigAPIView,
     CustomFieldListCreateAPIView,
     CustomFieldDetailAPIView,
@@ -35,6 +35,8 @@ from siteapi.v1.views import (
     perm as perm_views,
     ucenter as ucenter_views,
 )
+
+from siteapi.v1.views.statistics import UserStatisticView
 
 urlpatterns = [
     # user
@@ -112,7 +114,7 @@ urlpatterns = [
     url(r'^service/', include(('infrastructure.urls', 'infrastructure'), namespace='infra')),
     # config
     url(r'^config/$', ConfigAPIView.as_view(), name='config'),
-    url(r'^config/admin/$', AlterAdminAPIView.as_view(), name='alter_admin'),
+    url(r'^config/admin/$', AdminAPIView.as_view(), name='alter_admin'),
     url(r'^config/custom/field/(?P<field_subject>[a-z]+)/$',
         CustomFieldListCreateAPIView.as_view(),
         name='custom_field_list'),
@@ -141,4 +143,6 @@ urlpatterns = [
 
     # events
     url(r'^invitation/user/(?P<username>[\w]+)/', event_views.InviteUserCreateAPIView.as_view(), name='invite_user'),
+    # statistics
+    url(r'^statistics/user_statistic/$', UserStatisticView.as_view(), name='user_statistic'),
 ]

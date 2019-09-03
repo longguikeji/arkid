@@ -3,9 +3,11 @@ authentications
 - HeaderArkerBaseAuthentication
 '''
 from rest_framework.authentication import BaseAuthentication
+from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.conf import settings
 
 from oneid_meta.models import User
+from oneid.statistics import UserStatistics
 
 
 class HeaderArkerBaseAuthentication(BaseAuthentication):
@@ -29,3 +31,11 @@ class HeaderArkerBaseAuthentication(BaseAuthentication):
         后续支持sudo模式，可按需返回指定user
         '''
         return User.valid_objects.get(username='admin')
+
+
+class CustomExpiringTokenAuthentication(ExpiringTokenAuthentication):
+    def authenticate_credentials(self, key):
+
+        user, token = super().authenticate_credentials(key)
+        UserStatistics.set_active_count(user)
+        return user, token
