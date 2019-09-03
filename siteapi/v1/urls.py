@@ -14,7 +14,7 @@ from siteapi.v1.views.task import (
 
 from siteapi.v1.views.config import (
     ConfigAPIView,
-    AlterAdminAPIView,
+    AdminAPIView,
     MetaConfigAPIView,
     CustomFieldListCreateAPIView,
     CustomFieldDetailAPIView,
@@ -108,11 +108,14 @@ urlpatterns = [
     url(r'^ucenter/user/(?P<username>[\w]+)/$',
         user_views.UcenterUserDetailAPIView.as_view(),
         name='ucenter_user_detail'),
+    url(r'^ucenter/user_statistic/$',
+        ucenter_views.UcenterUserStatisticView.as_view(),
+        name='ucenter_user_detail'),
     # service
     url(r'^service/', include(('infrastructure.urls', 'infrastructure'), namespace='infra')),
     # config
     url(r'^config/$', ConfigAPIView.as_view(), name='config'),
-    url(r'^config/admin/$', AlterAdminAPIView.as_view(), name='alter_admin'),
+    url(r'^config/admin/$', AdminAPIView.as_view(), name='alter_admin'),
     url(r'^config/custom/field/(?P<field_subject>[a-z]+)/$',
         CustomFieldListCreateAPIView.as_view(),
         name='custom_field_list'),

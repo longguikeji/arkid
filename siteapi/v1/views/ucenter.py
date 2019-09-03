@@ -3,12 +3,15 @@ views for user center
 面向普通用户开放
 '''
 import requests
+import redis
+import datetime
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_200_OK
 from rest_framework.response import Response
 from django.contrib.auth.models import AnonymousUser
+from django.conf import settings
 
 from drf_expiring_authtoken.views import ObtainExpiringAuthToken
 from siteapi.v1.serializers.user import (
@@ -298,3 +301,23 @@ class UcenterMobileAPIView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class UcenterUserStatisticView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        get user active statistic
+        """
+
+        redis_conn = redis.Redis(settings.REDIS_HOST)
+        date = datetime.datetime.today().date().isoformat()
+        key = 'active-' + date
+        total_count = User.valid_objects.count()
+        active_count = 0
+        count = redis_conn.hlen(key)
+        if count:
+            active_count = count
+        res = {'total_count': total_count, 'active_count': active_count}
+        return Response(data=res)
