@@ -36,6 +36,8 @@ from siteapi.v1.views import (
     ucenter as ucenter_views,
 )
 
+from siteapi.v1.views.statistics import UserStatisticView
+
 urlpatterns = [
     # user
     url(r'^user/$', user_views.UserListCreateAPIView.as_view(), name='user_list'),
@@ -108,9 +110,6 @@ urlpatterns = [
     url(r'^ucenter/user/(?P<username>[\w]+)/$',
         user_views.UcenterUserDetailAPIView.as_view(),
         name='ucenter_user_detail'),
-    url(r'^ucenter/user_statistic/$',
-        ucenter_views.UcenterUserStatisticView.as_view(),
-        name='ucenter_user_detail'),
     # service
     url(r'^service/', include(('infrastructure.urls', 'infrastructure'), namespace='infra')),
     # config
@@ -144,4 +143,6 @@ urlpatterns = [
 
     # events
     url(r'^invitation/user/(?P<username>[\w]+)/', event_views.InviteUserCreateAPIView.as_view(), name='invite_user'),
+    # statistics
+    url(r'^statistics/user_statistic/$', UserStatisticView.as_view(), name='user_statistic'),
 ]
