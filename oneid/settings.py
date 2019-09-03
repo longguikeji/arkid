@@ -301,6 +301,7 @@ SMS_ALIYUN_TEMPLATE_CODE = ''
 SMS_ALIYUN_SIGNATURE = ''
 
 ACTIVE_USER_DATA_LIFEDAY = 30
+ACTIVE_USER_REDIS_KEY_PREFIX = 'active-'
 
 if os.path.exists(os.path.join(BASE_DIR, 'falcon', 'settings_domain.py')):
     exec(open(os.path.join(BASE_DIR, 'falcon', 'settings_domain.py')).read())
