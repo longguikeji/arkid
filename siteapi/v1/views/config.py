@@ -14,6 +14,7 @@ from siteapi.v1.serializers.config import (
     CustomFieldSerailizer,
     NativeFieldSerializer,
 )
+from siteapi.v1.serializers.user import UserSerializer
 
 from oneid.permissions import IsAdminUser, CustomPerm
 from oneid_meta.models import User, CustomField, NativeField
@@ -63,9 +64,9 @@ class MetaConfigAPIView(generics.RetrieveAPIView):
         return site
 
 
-class AlterAdminAPIView(generics.UpdateAPIView):
+class AdminAPIView(generics.RetrieveUpdateAPIView):
     '''
-    更新主管理员
+    主管理员获取，更新
     '''
     permission_classes = [IsAuthenticated & IsAdminUser]
     serializer_class = AlterAdminSerializer
@@ -85,6 +86,14 @@ class AlterAdminAPIView(generics.UpdateAPIView):
         else:
             admin = admins.first()
         return admin
+
+    def get_serializer_class(self):
+        '''
+        get admin detail info
+        '''
+        if self.request.method == 'GET':
+            return UserSerializer
+        return AlterAdminSerializer
 
 
 class CustomFieldListCreateAPIView(generics.ListCreateAPIView):
