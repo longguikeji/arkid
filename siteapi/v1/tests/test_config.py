@@ -135,6 +135,14 @@ class ConfigTestCase(TestCase):
         self.assertEqual(EmailConfig.get_current().access_secret, 'pwd')
         self.assertEqual(SMSConfig.get_current().access_secret, 'pwd')
 
+        res = self.client.json_patch(reverse('siteapi:config'), data={
+            'email_config': {
+                'host': '12.12.12.13',
+                'access_secret': '',
+            }
+        })
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()['email_config']['host'], "12.12.12.13")
 
     def test_update_config_valid(self):
         with mock.patch('oneid_meta.models.config.EmailManager.connect') as mock_connect:
