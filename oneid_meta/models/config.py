@@ -147,9 +147,12 @@ class SMSConfig(BaseModel, SingletonConfigMixin):
             smser.send_auth_code(
                 mobile='.',
                 vc_code='.',
+                sign_name=self.signature,
+                template_code=self.template_code,
             )
             return True
-        except ServerException:
+        except ServerException as exce:
+            print(exce)
             return False
         except RuntimeError:
             return True
