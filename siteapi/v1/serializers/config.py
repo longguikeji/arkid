@@ -59,7 +59,7 @@ class AccountConfigSerializer(DynamicFieldsModelSerializer):
 
 class SMSConfigSerializer(DynamicFieldsModelSerializer):
     is_valid = serializers.BooleanField(read_only=True)
-    access_secret = serializers.CharField(write_only=True)
+    access_secret = serializers.CharField(write_only=True, allow_blank=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = SMSConfig
@@ -84,7 +84,7 @@ class EmailConfigSerializer(DynamicFieldsModelSerializer):
     '''
 
     is_valid = serializers.BooleanField(read_only=True)
-    access_secret = serializers.CharField(write_only=True)
+    access_secret = serializers.CharField(write_only=True, allow_blank=True,)
 
     class Meta:    # pylint: disable=missing-docstring
 

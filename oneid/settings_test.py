@@ -10,6 +10,19 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if os.path.exists(os.path.join(BASE_DIR, 'oneid', 'settings.py')):
     exec(open(os.path.join(BASE_DIR, 'oneid', 'settings.py')).read())
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 'oneid.authentication.CustomExpiringTokenAuthentication',
+        'drf_expiring_authtoken.authentication.ExpiringTokenAuthentication',
+        'oneid.authentication.HeaderArkerBaseAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+        'oneid.permissions.IsAdminUser',
+    )
+}
+
+
 TESTING = True
 EXECUTERS = [    # 注意顺序
     'executer.RDB.RDBExecuter',
