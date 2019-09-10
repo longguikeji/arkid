@@ -139,6 +139,8 @@ class DeptDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         '''
         删除组
         '''
+        if self.request.query_params.get('ignore_user', '') in ('true', 'True'):
+            CLI().delete_users_from_dept(instance.users, instance)
         CLI().delete_dept(instance)
 
     @catch_json_load_error

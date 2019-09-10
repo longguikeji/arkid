@@ -138,6 +138,8 @@ class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         '''
         删除组 [DELETE]
         '''
+        if self.request.query_params.get('ignore_user', '') in ('true', 'True'):
+            CLI().delete_users_from_group(instance.users, instance)
         CLI().delete_group(instance)
 
     @catch_json_load_error

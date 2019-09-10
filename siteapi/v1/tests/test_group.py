@@ -234,6 +234,14 @@ class GroupTestCase(TestCase):
         self.assertEqual(res.status_code, 204)
         self.assertFalse(Group.valid_objects.filter(uid='role_2').exists())
 
+    def test_delete_group_ignore_users(self):
+        res = self.client.delete(reverse('siteapi:group_detail', args=('role_1', )))
+        self.assertEqual(res.json(), {'node': ['protected_by_child_user']})
+        self.assertEqual(res.status_code, 400)
+
+        res = self.client.delete(reverse('siteapi:group_detail', args=('role_1', )) + "?ignore_user=True")
+        self.assertEqual(res.status_code, 204)
+
     def test_update_group(self):
         res = self.client.json_patch(reverse('siteapi:group_detail', args=('root', )),
                                      data={
