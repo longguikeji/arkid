@@ -1,13 +1,14 @@
 
 from django.db import migrations, models
-
+from django.conf import settings
 
 def create_extern(apps, schema_editor):
     '''
     创建默认外部联系人
     '''
     Group = apps.get_model('oneid_meta', 'Group')
-    group, _ = Group.objects.get_or_create(uid='extern')
+    root, _ = Group.objects.get_or_create(uid='root')
+    group, _ = Group.objects.get_or_create(uid='extern', parent=root)
     group.name = '外部联系人'
     group.save()
 
@@ -25,12 +26,13 @@ def rename_root_dept(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-
     dependencies = [
         ('oneid_meta', '0051_rm_buildin_app'),
     ]
 
-    operations = [
+    operations = []
+    if not settings.TESTING:
+        operations += [
         migrations.RunPython(create_extern),
         migrations.RunPython(rename_root_dept),
     ]

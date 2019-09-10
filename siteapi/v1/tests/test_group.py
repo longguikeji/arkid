@@ -30,6 +30,7 @@ class GroupTestCase(TestCase):
         user = User.create_user('employee', 'employee')
         GroupMember.valid_objects.create(user=user, owner=role_1)
         user = User.create_user('employee_2', 'employee_2')
+        self.employee = None
 
     def test_get_group_list(self):
         res = self.client.get(reverse('siteapi:group_list'))
@@ -437,6 +438,7 @@ class GroupTestCase(TestCase):
             None,
             'results': [{
                 'user_id': 2,
+                'hiredate': None,
                 'avatar': '',
                 'username': 'employee',
                 'is_settled': True,

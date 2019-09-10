@@ -13,6 +13,10 @@ from oneid_meta.models import Dept, Group, User
 class UserConvertTestCase(TestCase):
     def setUp(self):
         super().setUp()
+        root, _ = Group.objects.get_or_create(uid='root')
+        group, _ = Group.objects.get_or_create(uid='extern', parent=root, name='外部联系人')
+        group.save()
+
         Dept.objects.create(name='dept', uid='dept')
         extern = Group.objects.get(uid='extern')
         Group.objects.create(parent=extern, uid='label1', name='label1')
