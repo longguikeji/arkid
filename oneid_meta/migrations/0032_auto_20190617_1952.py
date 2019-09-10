@@ -12,8 +12,8 @@ def init_user_native_field(apps, schema_editor):
         return None
     NativeField = apps.get_model('oneid_meta', 'NativeField')
 
-    NativeField.objects.create(name='职位', key='position', schema={'type': 'string'})
-    NativeField.objects.create(name='私人邮箱', key='private_email', schema={'type': 'string'})
+    NativeField.objects.create(subject=subject, name='职位', key='position', schema={'type': 'string'})
+    NativeField.objects.create(subject=subject, name='私人邮箱', key='private_email', schema={'type': 'string'})
 
 class Migration(migrations.Migration):
 

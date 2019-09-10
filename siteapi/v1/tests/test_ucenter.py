@@ -68,7 +68,7 @@ class UCenterTestCase(TestCase):
         self.assertTrue(verify_password('new_password', ciphertext))
 
     @mock.patch('siteapi.v1.serializers.ucenter.ResetPWDEmailClaimSerializer.check_email_token')
-    def test_reset_user_password_by_email(self, mock_check_email_code):
+    def test_reset_user_password_by_email(self, mock_check_email_code):    # pylint: disable=invalid-name
         self.user.private_email = 'email'
         self.user.save()
         mock_check_email_code.side_effect = [{'email': 'wrong_email'}, {'email': 'email'}]
@@ -239,6 +239,7 @@ class UCenterTestCase(TestCase):
             'avatar': '',
             'visible_fields': VISIABLE_FIELDS,
             'depts': [],
+            'remark': '',
         }
         self.assertEqual(res.json(), expect)
 
@@ -255,6 +256,7 @@ class UCenterTestCase(TestCase):
             'avatar': 'avatar_key',
             'visible_fields': VISIABLE_FIELDS,
             'depts': [],
+            'remark': '',
         }
         self.assertEqual(res.json(), expect)
 

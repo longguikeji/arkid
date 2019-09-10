@@ -27,6 +27,7 @@ EMPLOYEE = {
         'origin_verbose': '管理员添加',
         'position': '',
         'hiredate': None,
+        'remark': '',
         'ding_user': {
             'uid': 'ding_employee2',
             'account': '18812345678',
@@ -189,6 +190,7 @@ class UserTestCase(TestCase):
                     'is_admin': False,
                     'origin_verbose': '脚本添加',
                     'hiredate': None,
+                    'remark': '',
                 },
                 'groups': [],
                 'depts': [],
@@ -294,6 +296,7 @@ class UserTestCase(TestCase):
             'is_admin': False,
             'origin_verbose': '管理员添加',
             'gender': 2,
+            'remark': '',
             'ding_user': {
                 'uid': 'ding_employee2',
                 'account': '18812345678',

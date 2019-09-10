@@ -77,6 +77,7 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'visible_fields',    # 按需使用，不在该列表中不意味着不展示，反例如`avatar`
             'private_email',
             'position',
+            'remark',
         )
 
         read_only_fields = ('user_id', 'username', 'mobile', 'depts', 'visible_fields')
@@ -86,8 +87,12 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         '''
         哪些字段可见
         '''
-        for field in NativeField.valid_objects.filter(subject='user', is_visible=True):
-            yield field.key
+        if instance.is_intra:
+            for field in NativeField.valid_objects.filter(subject='user', is_visible=True):
+                yield field.key
+        else:
+            for field in NativeField.valid_objects.filter(subject='extern_user', is_visible=True):
+                yield field.key
 
     @staticmethod
     def get_depts(instance):
@@ -190,6 +195,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'is_admin',
             'origin_verbose',
             'hiredate',
+            'remark',
         )
 
     def create(self, validated_data):

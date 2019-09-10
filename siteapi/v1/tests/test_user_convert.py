@@ -55,6 +55,7 @@ class UserConvertTestCase(TestCase):
                 'private_email': '',
                 'position': '',
                 'hiredate': '2019-06-04T09:01:44+08:00',
+                'remark': '',
                 'ding_user': {
                     'uid': 'ding_employee2',
                     'account': '18812345678',
@@ -115,6 +116,7 @@ class UserConvertTestCase(TestCase):
                 'is_admin': False,
                 'origin_verbose': '管理员添加',
                 'hiredate': None,
+                'remark': '',
             },
             'groups': [{
                 'group_id': 2,
