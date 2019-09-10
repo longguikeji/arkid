@@ -35,7 +35,8 @@ class UserConvertTestCase(TestCase):
         res = self.client.json_patch(reverse('siteapi:user_convert_to_intra', args=(USER_DATA['username'], )),
                                      data={
                                          'node_uid': 'd_dept',
-                                         'name': 'new_name'
+                                         'name': 'new_name',
+                                         'hiredate': '2019-06-04T09:01:44+08:00',
                                      })
         expect = {
             'user': {
@@ -49,6 +50,7 @@ class UserConvertTestCase(TestCase):
                 'avatar': '',
                 'private_email': '',
                 'position': '',
+                'hiredate': '2019-06-04T09:01:44+08:00',
                 'ding_user': {
                     'uid': 'ding_employee2',
                     'account': '18812345678',
@@ -107,7 +109,8 @@ class UserConvertTestCase(TestCase):
                 'is_settled': False,
                 'is_manager': False,
                 'is_admin': False,
-                'origin_verbose': '管理员添加'
+                'origin_verbose': '管理员添加',
+                'hiredate': None,
             },
             'groups': [{
                 'group_id': 2,

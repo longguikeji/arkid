@@ -64,6 +64,8 @@ class User(BaseModel, PermOwnerMixin):
 
     origin = models.IntegerField(choices=ORIGIN_CHOICES, default=0, verbose_name='账号来源')
 
+    hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
+
     isolated_objects = IsolatedManager()
 
     def save(self, *args, **kwargs):    # pylint: disable=arguments-differ

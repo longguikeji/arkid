@@ -26,6 +26,7 @@ EMPLOYEE = {
         'is_admin': False,
         'origin_verbose': '管理员添加',
         'position': '',
+        'hiredate': None,
         'ding_user': {
             'uid': 'ding_employee2',
             'account': '18812345678',
@@ -93,6 +94,7 @@ class UserTestCase(TestCase):
         PosixUser.objects.create(user=self.user)
         Group.valid_objects.create(uid='test', name='test')
         Dept.valid_objects.create(uid='test', name='test')
+        self.employee = None
 
     def create_user(self):
         res = self.client.json_post(reverse('siteapi:user_list'),
@@ -185,7 +187,8 @@ class UserTestCase(TestCase):
                     'is_settled': False,
                     'is_manager': False,
                     'is_admin': False,
-                    'origin_verbose': '脚本添加'
+                    'origin_verbose': '脚本添加',
+                    'hiredate': None,
                 },
                 'groups': [],
                 'depts': [],
@@ -270,7 +273,8 @@ class UserTestCase(TestCase):
                 'data': {
                     cf.uuid.hex: '无',
                 }
-            }
+            },
+            'hiredate': '2019-06-04T09:01:44+08:00',
         }
 
         res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
@@ -310,7 +314,8 @@ class UserTestCase(TestCase):
                     'name': '忌口',
                     'value': '无'
                 }]
-            }
+            },
+            'hiredate': '2019-06-04T09:01:44+08:00',
         }
         self.assertEqual(expect, res.json()['user'])
 

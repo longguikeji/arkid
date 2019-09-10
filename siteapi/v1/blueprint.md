@@ -55,6 +55,7 @@ FORMAT: 1A
 + is_manager (boolean) - 是否是子管理员
 + is_admin (boolean) - 是否是超级管理员
 + origin_verbose (string) - 注册来源
++ hiredata (string) - 入职时间 2019-06-04T09:01:44+08:00
 + gender (enum[number])
     + 1 - 男
     + 2 - 女
