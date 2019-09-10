@@ -29,7 +29,6 @@ class User(BaseModel, PermOwnerMixin):
     '''
     OneID 用户
     '''
-
     GENDER_CHOICES = (
         (0, '未知'),
         (1, '男'),
@@ -247,14 +246,14 @@ class User(BaseModel, PermOwnerMixin):
         from drf_expiring_authtoken.models import ExpiringToken
         token, _ = ExpiringToken.objects.get_or_create(user=self)
         return token
-    
+
     def refresh_token(self):
         '''
         使当前token失效，并返回新的token
         '''
         self.invalidate_token()
         return self.token_obj
-    
+
     def invalidate_token(self):
         '''
         使当前token失效，不生成新的token
@@ -392,6 +391,14 @@ class User(BaseModel, PermOwnerMixin):
         '''
         return self.ORIGIN_CHOICES[self.origin][1]    # pylint: disable=invalid-sequence-index
 
+    @property
+    def is_intra(self):
+        '''
+        是否为内部员工
+        '''
+        # bad implement
+        return not GroupMember.valid_objects.filter(owner__uid='extern').exists()
+
 
 class DingUser(BaseModel):
     '''
@@ -433,20 +440,45 @@ class CustomUser(BaseModel):
         self.data.update(**kwargs)    # pylint: disable=no-member
         self.save()
 
-    @property
-    def pretty(self):
+    def pretty(self, visible_only=True):
         '''
-        return data with field info
+        前端友好的输出
         '''
+        # pylint: disable=no-member
         from oneid_meta.models import CustomField
         res = []
-        for field_uuid, value in self.data.items():    # pylint: disable=no-member
-            field = CustomField.valid_objects.filter(uuid=field_uuid, is_visible=True).first()
-            if not field:
-                continue
-            res.append({
-                'uuid': field_uuid,
-                'name': field.name,
-                'value': value,
-            })
+        data = self.data
+
+        kwargs = {}
+        if visible_only:
+            kwargs.update(is_visible=True)
+
+        if self.user.is_intra:
+            for field in CustomField.valid_objects.filter(subject='user', **kwargs):
+                res.append({
+                    'uuid': field.uuid.hex,
+                    'name': field.name,
+                    'value': data.get(field.uuid.hex, ''),
+                })
+            for field in CustomField.valid_objects.filter(subject='extern_user', **kwargs):
+                if field.uuid.hex in data:    # pylint: disable=unsupported-membership-test
+                    res.append({
+                        'uuid': field.uuid.hex,
+                        'name': field.name,
+                        'value': data.get(field.uuid.hex),
+                    })
+        else:
+            for field in CustomField.valid_objects.filter(subject='extern_user', **kwargs):
+                res.append({
+                    'uuid': field.uuid.hex,
+                    'name': field.name,
+                    'value': data.get(field.uuid.hex, ''),
+                })
+            for field in CustomField.valid_objects.filter(subject='user', **kwargs):
+                if field.uuid.hex in data:    # pylint: disable=unsupported-membership-test
+                    res.append({
+                        'uuid': field.uuid.hex,
+                        'name': field.name,
+                        'value': data.get(field.uuid.hex),
+                    })
         return res

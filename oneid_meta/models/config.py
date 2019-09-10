@@ -230,9 +230,14 @@ class CustomField(BaseModel):
     '''
 
     SUBJECT_CHOICES = (
-        ('user', '用户'),    # '^[a-z]{1,16}$'
+        ('user', '内部联系人'),    # '^[a-z]{1,16}$'
+        ('extern_user', '外部联系人'),
     )
 
+    USER_SUBJECTS = (
+        'user',
+        'extern_user',
+    )
     name = models.CharField(max_length=128, verbose_name='字段名称')
     subject = models.CharField(choices=SUBJECT_CHOICES, default='user', max_length=128, verbose_name='字段分类')
     schema = jsonfield.JSONField(default={'type': 'string'}, verbose_name='字段定义')
