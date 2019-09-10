@@ -189,6 +189,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'is_manager',
             'is_admin',
             'origin_verbose',
+            'hiredate',
         )
 
     def create(self, validated_data):
