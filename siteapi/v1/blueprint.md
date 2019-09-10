@@ -1240,10 +1240,11 @@ TODO: 校对
 
 Node 为 Dept 和 Group 的抽象
 
-## 节点信息 [/node/{node_uid}/]
+## 节点信息 [/node/{node_uid}/{?ignore_user}]
 
 + Parameters
     + `node_uid` (string) - 节点唯一标识。
+    + `ignore_user` (boolean) - 用于删除节点。当true时，若节点下有人员存在时，会先将人员从节点内删除，再删除此节点
 
 ### 获取节点信息 [GET]
 + Response 200 (application/json)
