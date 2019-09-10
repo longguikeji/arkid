@@ -959,6 +959,29 @@ TODO: 校对
     + Attributes
         + nodes (array[Node]) - 操作后所属节点
 
+## 外部用户准换为内部用户 [/convert/user/{username}/intra/]
++ Parameters
+    + username (string) - 用户唯一标识
+
+### 外部用户准换为内部用户 [PATCH]
++ Request JSON Message
+    + Attributes (User)
+        + node_uid - 节点唯一标识
++ Request 200 (application/json)
+    + Attributes
+        + nodes (Employee)
+
+### 内部用户转换为外部用户 [/convert/user/{username}/extern/]
++ Parameters
+    + username (string) - 用户唯一标识
+
+### 内部用户转换为外部用户 [PATCH]
++ Request JSON Message
+    + Attributes (User)
++ Request 200 (application/json)
+    + Attributes
+        + nodes (Employee)
+
 # Group Dept
 部门管理
 

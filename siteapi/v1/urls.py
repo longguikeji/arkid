@@ -49,6 +49,12 @@ urlpatterns = [
     url(r'^user/(?P<username>[\w]+)/perm/(?P<perm_uid>[\w|-]+)/$',
         perm_views.UserPermDetailView.as_view(),
         name='user_perm_detail'),
+    url(r'^convert/user/(?P<username>[\w]+)/intra/$',
+        user_views.UserExtern2IntraView.as_view(),
+        name='user_convert_to_intra'),
+    url(r'^convert/user/(?P<username>[\w]+)/extern/$',
+        user_views.UserIntra2ExternView.as_view(),
+        name='user_convert_to_extern'),
     # node
     url(r'^node/(?P<uid>[\w|-]+)/list/$', node_views.NodeListAPIView.as_view(), name='node_list'),
     url(r'^node/(?P<uid>[\w|-]+)/$', node_views.NodeDetailAPIView.as_view(), name='node_detail'),

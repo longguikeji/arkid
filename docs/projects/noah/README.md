@@ -1,3 +1,4 @@
+# deprecated
 # OneID & Noah
 
 ## 需求

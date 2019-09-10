@@ -26,12 +26,29 @@ class CustomUserSerailizer(DynamicFieldsModelSerializer):
     '''
     custom user info
     '''
+
+    pretty = serializers.SerializerMethodField()
+
     class Meta:    # pylint: disable=missing-docstring
         model = CustomUser
 
         fields = ('data', 'pretty')
 
         extra_kwargs = {'pretty': {'read_only': True}}
+
+    def get_pretty(self, instance):    # pylint: disable=no-self-use
+        '''
+        前端友好的输出
+        '''
+        return instance.pretty(visible_only=True)
+
+
+class AdvanceCustomUserSerializer(CustomUserSerailizer):
+    '''
+    custom user info include all fields
+    '''
+    def get_pretty(self, instance):
+        return instance.pretty(visible_only=False)
 
 
 class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
@@ -147,7 +164,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
 
     ding_user = DingUserSerializer(many=False, required=False)
     posix_user = PosixUserSerializer(many=False, required=False)
-    custom_user = CustomUserSerailizer(many=False, required=False)
+    custom_user = AdvanceCustomUserSerializer(many=False, required=False)
     user_id = serializers.IntegerField(source='id', read_only=True)
 
     class Meta:    # pylint: disable=missing-docstring
@@ -384,8 +401,14 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
         '''
         groups + nodes
         '''
-        for item in GroupSerializer(obj.groups, many=True).data:
+        for item in self.get_groups(obj):
             yield item
 
         for item in DeptSerializer(obj.depts, many=True).data:
             yield item
+
+    def get_groups(self, obj):    # pylint: disable=no-self-use
+        '''
+        出于业务需要，extern 不予展示
+        '''
+        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
