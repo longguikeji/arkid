@@ -379,6 +379,7 @@ class DeptTestCase(TestCase):
             None,
             'results': [{
                 'user_id': 2,
+                'hiredate': None,
                 'username': 'employee',
                 'name': '',
                 'email': '',

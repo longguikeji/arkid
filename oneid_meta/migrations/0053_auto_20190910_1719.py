@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('oneid_meta', '00052_add_extern'),
+        ('oneid_meta', '0052_add_extern'),
     ]
 
     operations = [
