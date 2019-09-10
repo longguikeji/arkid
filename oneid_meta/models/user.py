@@ -66,6 +66,8 @@ class User(BaseModel, PermOwnerMixin):
 
     hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
 
+    remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
+
     isolated_objects = IsolatedManager()
 
     def save(self, *args, **kwargs):    # pylint: disable=arguments-differ

@@ -380,6 +380,7 @@ class DeptTestCase(TestCase):
             'results': [{
                 'user_id': 2,
                 'hiredate': None,
+                'remark': '',
                 'username': 'employee',
                 'name': '',
                 'email': '',

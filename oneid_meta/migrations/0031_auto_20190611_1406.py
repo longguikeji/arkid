@@ -9,11 +9,12 @@ def init_user_native_field(apps, schema_editor):
     '''
     初始化user字段
     '''
+    subject = 'user'
     NativeField = apps.get_model('oneid_meta', 'NativeField')
 
-    NativeField.objects.create(name='姓名', key='name', is_visible_editable=False)
-    NativeField.objects.create(name='邮箱', key='email', is_visible_editable=False)
-    NativeField.objects.create(name='部门', key='depts',
+    NativeField.objects.create(subject=subject, name='姓名', key='name', is_visible_editable=False)
+    NativeField.objects.create(subject=subject, name='邮箱', key='email', is_visible_editable=False)
+    NativeField.objects.create(subject=subject, name='部门', key='depts',
         schema={'type': 'array', 'items': {
             'type': 'object',
             'properties': {
@@ -22,9 +23,9 @@ def init_user_native_field(apps, schema_editor):
             },
         }},
         is_visible_editable=False)
-    NativeField.objects.create(name='手机', key='mobile')
-    NativeField.objects.create(name='工号', key='employee_number')
-    NativeField.objects.create(name='性别', key='gender', schema={'type': 'interger'})
+    NativeField.objects.create(subject=subject, name='手机', key='mobile')
+    NativeField.objects.create(subject=subject, name='工号', key='employee_number')
+    NativeField.objects.create(subject=subject, name='性别', key='gender', schema={'type': 'interger'})
 
 
 class Migration(migrations.Migration):

@@ -30,6 +30,7 @@ FORMAT: 1A
 + number (string) - 工号
 + private_email (string) - 私人邮箱
 + position (string) - 职位
++ remark (string) - 备注
 + depts (array) - 所属部门列表
     + dept (object)
         + uid (string)
@@ -55,6 +56,7 @@ FORMAT: 1A
 + is_manager (boolean) - 是否是子管理员
 + is_admin (boolean) - 是否是超级管理员
 + origin_verbose (string) - 注册来源
++ remark (string) - 备注
 + hiredata (string) - 入职时间 2019-06-04T09:01:44+08:00
 + gender (enum[number])
     + 1 - 男
@@ -1794,7 +1796,8 @@ TODO: 可见权限的处理
 
 + Parameters
     + subject (enum[string]) - 字段分类
-        - user - 用户
+        - user - 内部用户
+        - extern_user - 外部用户
 
 ### 获取自定义字段列表 [GET]
 + Response 200 (application/json)
@@ -1826,6 +1829,7 @@ TODO: 可见权限的处理
 + Parameters
     + subject (enum[string]) - 字段分类
         - user - 用户
+        - extern_user - 外部用户
 
 ### 获取原生字段列表 [GET]
 + Response 200 (application/json)

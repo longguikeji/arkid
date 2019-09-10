@@ -447,6 +447,7 @@ class GroupTestCase(TestCase):
             'results': [{
                 'user_id': 2,
                 'hiredate': None,
+                'remark': '',
                 'avatar': '',
                 'username': 'employee',
                 'is_settled': True,
