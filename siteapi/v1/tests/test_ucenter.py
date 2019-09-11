@@ -10,7 +10,7 @@ from common.django.drf.client import APIClient
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
-    User,
+    User, Perm,
     UserPerm,
     DingUser,
     CustomField,
@@ -167,10 +167,13 @@ class UCenterTestCase(TestCase):
         # res = self.client.get(reverse('siteapi:token_perm_auth'), data={'perm_uid': 'system_none_all'})
         # self.assertEqual(res.status_code, 403)
 
-        user_perm = UserPerm.valid_objects.get(owner=self.user, perm__uid='system_oneid_all')
+        user = User.objects.create(username='new')
+        perm = Perm.objects.get(uid='system_oneid_all')
+        user_perm, _ = UserPerm.valid_objects.get_or_create(owner=user, perm=perm)
         user_perm.value = False
         user_perm.save()
-        res = self.client.get(reverse('siteapi:token_perm_auth'), data={'perm_uid': 'system_oneid_all'})
+        client = self.login_as(user)
+        res = client.get(reverse('siteapi:token_perm_auth'), data={'perm_uid': 'system_oneid_all'})
         self.assertEqual(res.status_code, 403)
 
     def test_login(self):

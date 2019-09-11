@@ -189,8 +189,10 @@ class UcenterAPPListAPIView(generics.ListAPIView):
             ).values('perm__scope')
         ]
 
+        if self.request.user.is_admin:
+            return APP.valid_objects.filter(**kwargs).order_by('-created')
         return APP.valid_objects.filter(Q(uid__in=uids, allow_any_user=False)
-                                        | Q(allow_any_user=True)).order_by('-created')
+                                        | Q(allow_any_user=True), **kwargs).order_by('-created')
 
 
 def create_secret_for_app(app):

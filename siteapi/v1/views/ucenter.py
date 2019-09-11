@@ -88,7 +88,7 @@ class TokenPermAuthView(generics.RetrieveAPIView):
         user = request.user
 
         perm_uid = self.request.query_params.get('perm_uid', None)
-        if perm_uid is None:
+        if perm_uid is None or user.is_admin:
             has_perm = True
         else:
             has_perm = user.has_perm(Perm.valid_objects.filter(uid=perm_uid).first())
