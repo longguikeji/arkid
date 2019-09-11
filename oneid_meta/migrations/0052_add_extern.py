@@ -10,6 +10,7 @@ def create_extern(apps, schema_editor):
     root, _ = Group.objects.get_or_create(uid='root')
     group, _ = Group.objects.get_or_create(uid='extern', parent=root)
     group.name = '外部联系人'
+    group.top = group.uid
     group.save()
 
     return group

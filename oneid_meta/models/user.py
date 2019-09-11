@@ -6,6 +6,7 @@ from django.core.cache import cache
 from django.db import models
 from django.contrib.auth.models import User as DjangoUser
 from django.conf import settings
+from django.utils import timezone
 # from django.db.utils import IntegrityError
 import jsonfield
 
@@ -15,6 +16,7 @@ from oneid_meta.models.group import GroupMember
 from oneid_meta.models.dept import DeptMember
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin
 from executer.utils.password import encrypt_password, verify_password
+
 
 
 class IsolatedManager(IgnoreDeletedManager):
@@ -67,6 +69,8 @@ class User(BaseModel, PermOwnerMixin):
     hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
 
     remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
+
+    last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')
 
     isolated_objects = IsolatedManager()
 
@@ -402,6 +406,16 @@ class User(BaseModel, PermOwnerMixin):
         '''
         # bad implement
         return not GroupMember.valid_objects.filter(owner__uid='extern').exists()
+
+    def update_last_active_time(self, gap_minutes=5):
+        '''
+        最近活跃时间
+        '''
+        now = timezone.now()
+        if not self.last_active_time or \
+            self.last_active_time + timezone.timedelta(minutes=gap_minutes) < now:
+                self.last_active_time = now
+                self.save(update_fields=['last_active_time'])
 
 
 class DingUser(BaseModel):

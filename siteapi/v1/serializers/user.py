@@ -171,6 +171,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     posix_user = PosixUserSerializer(many=False, required=False)
     custom_user = AdvanceCustomUserSerializer(many=False, required=False)
     user_id = serializers.IntegerField(source='id', read_only=True)
+    nodes = serializers.SerializerMethodField()
 
     class Meta:    # pylint: disable=missing-docstring
 
@@ -196,6 +197,9 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'origin_verbose',
             'hiredate',
             'remark',
+            'nodes',
+            'created',
+            'last_active_time',
         )
 
     def create(self, validated_data):
@@ -290,6 +294,21 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             raise ValidationError(['existed'])
         return value
 
+    def get_nodes(self, obj):    # pylint: disable=no-self-use
+        '''
+        groups + nodes
+        '''
+        for item in self.get_groups(obj):
+            yield item
+
+        for item in DeptSerializer(obj.depts, many=True).data:
+            yield item
+
+    def get_groups(self, obj):    # pylint: disable=no-self-use
+        '''
+        出于业务需要，extern 不予展示
+        '''
+        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
 
 class UserWithPermSerializer(UserSerializer):
     '''

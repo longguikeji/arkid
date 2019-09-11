@@ -58,6 +58,8 @@ FORMAT: 1A
 + origin_verbose (string) - 注册来源
 + remark (string) - 备注
 + hiredata (string) - 入职时间 2019-06-04T09:01:44+08:00
++ created (string) - 创建时间、注册时间 2019-06-04T09:01:44+08:00
++ last_active_time (string) - 最后活跃时间
 + gender (enum[number])
     + 1 - 男
     + 2 - 女
@@ -1095,7 +1097,10 @@ TODO: 校对
 
 + Response 200 (application/json)
     + Attributes
-        + users (array[User])
+        + count (number)
+        + previous
+        + next
+        + results (array[User])
 
 ### 调整成员用户 [PATCH]
 + Request JSON Message
@@ -1219,7 +1224,10 @@ TODO: 校对
 
 + Response 200 (application/json)
     + Attributes
-        + users (array[User])
+        + count (number)
+        + previous
+        + next
+        + results (array[User])
 
 ### 调整成员用户 [PATCH]
 + Request (application/json)
@@ -1395,7 +1403,10 @@ TODO: 可见权限的处理
 
 + Response 200 (application/json)
     + Attributes
-        + users (array[User])
+        + count (number)
+        + previous
+        + next
+        + results (array[User])
 
 ### 调整成员用户 [PATCH]
 + Request (application/json)

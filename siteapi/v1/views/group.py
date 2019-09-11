@@ -28,7 +28,7 @@ from oneid.permissions import (
     NodeManagerReadable,
     CustomPerm,
 )
-from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
+from siteapi.v1.serializers.user import UserListSerializer, UserSerializer, EmployeeSerializer
 from siteapi.v1.serializers.group import (
     GroupSerializer,
     GroupTreeSerializer,
@@ -366,7 +366,9 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
     普通用户在可见范围内可读
     管理员可见可编辑
     '''
-    serializer_class = UserListSerializer
+    # serializer_class = UserListSerializer
+    # serializer_class = EmployeeSerializer
+    serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
     read_permission_classes = [IsAuthenticated & (IsManagerUser | IsAdminUser)]
@@ -412,7 +414,7 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         queryset = User.valid_objects.filter(id__in=user_ids).order_by('id')
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = UserSerializer(page, many=True)
+            serializer = self.serializer_class(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
