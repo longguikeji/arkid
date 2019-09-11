@@ -118,6 +118,12 @@ class CustomFieldListCreateAPIView(generics.ListCreateAPIView):
         '''
         return CustomField.valid_objects.filter(subject=self.kwargs['field_subject'])
 
+    def perform_create(self, serializer):
+        '''
+        save with field_subject
+        '''
+        serializer.save(subject=self.kwargs['field_subject'])
+
 
 class CustomFieldDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     '''
