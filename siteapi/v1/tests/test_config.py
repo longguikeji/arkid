@@ -239,6 +239,14 @@ class ConfigCustomFieldTestCase(TestCase):
         res = self.client.delete(reverse("siteapi:custom_field_detail", args=('user', uuid)))
         self.assertEqual(res.status_code, 204)
         self.assertEqual(CustomField.valid_objects.count(), 0)
+    
+    def test_create_extern_user_custom_field(self):
+        res = self.client.json_post(reverse("siteapi:custom_field_list", args=('extern_user', )), data={'name': '忌口'}).json()
+        res.pop('uuid')
+        expect = {'name': '忌口', 'subject': 'extern_user', 'schema': {'type': 'string'}, 'is_visible': True}
+        self.assertEqual(res, expect)
+        res = self.client.get(reverse("siteapi:custom_field_list", args=('extern_user', )))
+        self.assertEqual(len(res.json()), 1)
 
     def test_custom_field_active(self):
         res = self.client.json_post(reverse("siteapi:custom_field_list", args=('user', )), data={'name': '忌口'}).json()
