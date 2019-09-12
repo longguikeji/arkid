@@ -405,7 +405,7 @@ class User(BaseModel, PermOwnerMixin):
         是否为内部员工
         '''
         # bad implement
-        return not GroupMember.valid_objects.filter(owner__uid='extern').exists()
+        return not GroupMember.valid_objects.filter(owner__uid='extern', user=self).exists()
 
     def update_last_active_time(self, gap_minutes=5):
         '''

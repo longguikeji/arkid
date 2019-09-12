@@ -499,20 +499,20 @@ class UserExtern2IntraView(views.APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        node_uid = request.data.get('node_uid', '')
-        if not node_uid:
-            raise ValidationError({'node_uid': 'required'})
-        node, node_type = Node.retrieve_node(node_uid)
-        if not node or node_type != 'dept':
-            raise ValidationError({'node_uid': 'invalid'})
-        self.extern_to_intra(user, node)
+        # node_uid = request.data.get('node_uid', '')
+        # if not node_uid:
+        #     raise ValidationError({'node_uid': 'required'})
+        # node, node_type = Node.retrieve_node(node_uid)
+        # if not node or node_type != 'dept':
+        #     raise ValidationError({'node_uid': 'invalid'})
+        self.extern_to_intra(user)
         return Response(self.read_serializer_class(user).data)
 
     @staticmethod
-    def extern_to_intra(user, dept):
+    def extern_to_intra(user, depts=[]):
         '''
         外部用户转化为内部用户
         '''
         cli = CLI()
         cli.delete_user_from_groups(user, user.groups)
-        cli.add_user_to_depts(user, [dept])
+        cli.add_user_to_depts(user, depts)

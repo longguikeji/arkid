@@ -971,7 +971,6 @@ TODO: 校对
 ### 外部用户准换为内部用户 [PATCH]
 + Request JSON Message
     + Attributes (User)
-        + node_uid - 节点唯一标识
 + Request 200 (application/json)
     + Attributes
         + nodes (Employee)
