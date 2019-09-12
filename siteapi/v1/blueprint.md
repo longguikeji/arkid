@@ -964,7 +964,7 @@ TODO: 校对
     + Attributes
         + nodes (array[Node]) - 操作后所属节点
 
-## 外部用户准换为内部用户 [/convert/user/{username}/intra/]
+## 外部用户准换为内部用户 [/user/{username}/convert/intra/]
 + Parameters
     + username (string) - 用户唯一标识
 
@@ -976,7 +976,7 @@ TODO: 校对
     + Attributes
         + nodes (Employee)
 
-### 内部用户转换为外部用户 [/convert/user/{username}/extern/]
+### 内部用户转换为外部用户 [/user/{username}/convert/extern/]
 + Parameters
     + username (string) - 用户唯一标识
 
