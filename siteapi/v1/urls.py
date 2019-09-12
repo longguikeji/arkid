@@ -42,6 +42,12 @@ urlpatterns = [
     # user
     url(r'^user/$', user_views.UserListCreateAPIView.as_view(), name='user_list'),
     url(r'^user/isolated/$', user_views.UserIsolatedAPIView.as_view(), name='isolated_user_list'),    # FIX
+    url(r'^user/(?P<username>[\w]+)/convert/intra/$',
+        user_views.UserExtern2IntraView.as_view(),
+        name='user_convert_to_intra'),
+    url(r'^user/(?P<username>[\w]+)/convert/extern/$',
+        user_views.UserIntra2ExternView.as_view(),
+        name='user_convert_to_extern'),
     url(r'^user/(?P<username>[\w]+)/$', user_views.UserDetailAPIView.as_view(), name='user_detail'),
     url(r'^user/(?P<username>[\w]+)/dept/$', user_views.UserDeptView.as_view(), name='user_dept'),
     url(r'^user/(?P<username>[\w]+)/group/$', user_views.UserGroupView.as_view(), name='user_group'),
@@ -49,12 +55,6 @@ urlpatterns = [
     url(r'^user/(?P<username>[\w]+)/perm/(?P<perm_uid>[\w|-]+)/$',
         perm_views.UserPermDetailView.as_view(),
         name='user_perm_detail'),
-    url(r'^convert/user/(?P<username>[\w]+)/intra/$',
-        user_views.UserExtern2IntraView.as_view(),
-        name='user_convert_to_intra'),
-    url(r'^convert/user/(?P<username>[\w]+)/extern/$',
-        user_views.UserIntra2ExternView.as_view(),
-        name='user_convert_to_extern'),
     # node
     url(r'^node/(?P<uid>[\w|-]+)/list/$', node_views.NodeListAPIView.as_view(), name='node_list'),
     url(r'^node/(?P<uid>[\w|-]+)/$', node_views.NodeDetailAPIView.as_view(), name='node_detail'),
