@@ -28,6 +28,8 @@ EMPLOYEE = {
         'position': '',
         'hiredate': None,
         'remark': '',
+        'last_active_time': None,
+        'created': TestCase.now_str,
         'ding_user': {
             'uid': 'ding_employee2',
             'account': '18812345678',
@@ -89,6 +91,9 @@ USER_DATA = {
 
 
 class UserTestCase(TestCase):
+
+    mock_now = True
+
     def setUp(self):
         super(UserTestCase, self).setUp()
         DingUser.objects.create(user=self.user, account='18812341234', uid='admin')
@@ -176,14 +181,17 @@ class UserTestCase(TestCase):
             'results': [{
                 'user': {
                     'user_id': 2,
+                    'created': self.now_str,
                     'username': 'employee',
                     'name': '',
                     'email': '',
                     'mobile': '',
                     'employee_number': '',
+                    'last_active_time': None,
                     'gender': 0,
                     'avatar': '',
                     'private_email': '',
+                    'nodes': [],
                     'position': '',
                     'is_settled': False,
                     'is_manager': False,
@@ -202,8 +210,10 @@ class UserTestCase(TestCase):
     def test_create_user(self):
         res = self.create_user()
         self.assertEqual(res.status_code, 201)
+        res = res.json()
+        res['user'].pop('nodes')
 
-        self.assertEqual(res.json(), EMPLOYEE)
+        self.assertEqual(res, EMPLOYEE)
 
         User.valid_objects.get(username=USER_DATA['username']).delete()
         res = self.client.json_post(reverse('siteapi:user_list'),
@@ -238,9 +248,9 @@ class UserTestCase(TestCase):
 
     def test_get_user(self):
         self.create_user()
-
-        res = self.client.get(reverse('siteapi:user_detail', args=('employee1', )))
-        self.assertEqual(res.json(), EMPLOYEE)
+        res = self.client.get(reverse('siteapi:user_detail', args=('employee1', ))).json()
+        res['user'].pop('nodes')
+        self.assertEqual(res, EMPLOYEE)
 
     def test_delete_user(self):
         self.create_user()
@@ -281,10 +291,13 @@ class UserTestCase(TestCase):
 
         res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
         self.assertEqual(res.status_code, 200)
+        res = res.json()
         expect = {
             'user_id': 2,
             'username': 'employee1',
             'avatar': '',
+            'created': self.now_str,
+            'last_active_time': None,
             'name': 'new_employee1',
             'email': 'new_email',
             'mobile': '18812345678',
@@ -320,7 +333,8 @@ class UserTestCase(TestCase):
             },
             'hiredate': '2019-06-04T09:01:44+08:00',
         }
-        self.assertEqual(expect, res.json()['user'])
+        res['user'].pop('nodes')
+        self.assertEqual(expect, res['user'])
 
     def test_get_user_group(self):
         self.create_user()
