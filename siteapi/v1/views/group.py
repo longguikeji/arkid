@@ -366,8 +366,6 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
     普通用户在可见范围内可读
     管理员可见可编辑
     '''
-    # serializer_class = UserListSerializer
-    # serializer_class = EmployeeSerializer
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
