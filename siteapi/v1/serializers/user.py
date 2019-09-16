@@ -88,11 +88,9 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         哪些字段可见
         '''
         if instance.is_intra:
-            for field in NativeField.valid_objects.filter(subject='user', is_visible=True):
-                yield field.key
+            return [field.key for field in NativeField.valid_objects.filter(subject='user', is_visible=True)]
         else:
-            for field in NativeField.valid_objects.filter(subject='extern_user', is_visible=True):
-                yield field.key
+            return [field.key for field in NativeField.valid_objects.filter(subject='extern_user', is_visible=True)]
 
     @staticmethod
     def get_depts(instance):
