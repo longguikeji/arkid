@@ -19,6 +19,8 @@ from oneid_meta.models import (
 
 
 class GroupTestCase(TestCase):
+    mock_now = True
+
     def setUp(self):
         super(GroupTestCase, self).setUp()
         root = Group.valid_objects.get(uid='root')
@@ -445,22 +447,51 @@ class GroupTestCase(TestCase):
             'previous':
             None,
             'results': [{
-                'user_id': 2,
-                'hiredate': None,
-                'remark': '',
-                'avatar': '',
-                'username': 'employee',
-                'is_settled': True,
-                'is_manager': False,
-                'is_admin': False,
-                'origin_verbose': '脚本添加',
-                'name': '',
-                'email': '',
-                'position': '',
-                'private_email': '',
-                'mobile': '',
-                'employee_number': '',
-                'gender': 0,
+                'user_id':
+                2,
+                'hiredate':
+                None,
+                'last_active_time':
+                None,
+                'created':
+                self.now_str,
+                'remark':
+                '',
+                'avatar':
+                '',
+                'username':
+                'employee',
+                'is_settled':
+                True,
+                'is_manager':
+                False,
+                'is_admin':
+                False,
+                'origin_verbose':
+                '脚本添加',
+                'name':
+                '',
+                'email':
+                '',
+                'position':
+                '',
+                'private_email':
+                '',
+                'mobile':
+                '',
+                'employee_number':
+                '',
+                'gender':
+                0,
+                'nodes': [{
+                    'accept_user': True,
+                    'group_id': 3,
+                    'name': 'role_1',
+                    'node_subject': 'root',
+                    'node_uid': 'g_role_1',
+                    'remark': '',
+                    'uid': 'role_1'
+                }],
             }]
         }
         self.assertEqual(res.json(), expect)
@@ -474,7 +505,8 @@ class GroupTestCase(TestCase):
             reverse('siteapi:group_child_user', args=('role_1', )),
             data={'uids': 'role_1|role_2'},
         )
-        self.assertEqual(res.json(), expect)
+        self.assertEqual(res.json()['count'], 1)
+        self.assertEqual(res.json()['results'][0]['username'], 'employee')
 
         GroupMember.valid_objects.create(user=user2, owner=role_2)
         res = self.client.get(reverse('siteapi:group_child_user', args=('role_1', )), data={'uids': 'role_1|role_2'})

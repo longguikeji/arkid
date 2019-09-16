@@ -10,6 +10,8 @@ from oneid_meta.models import Dept, User, DeptMember
 
 
 class DeptTestCase(TestCase):
+    mock_now = True
+
     def setUp(self):
         super(DeptTestCase, self).setUp()
         root = Dept.valid_objects.get(uid='root')
@@ -378,22 +380,50 @@ class DeptTestCase(TestCase):
             'previous':
             None,
             'results': [{
-                'user_id': 2,
-                'hiredate': None,
-                'remark': '',
-                'username': 'employee',
-                'name': '',
-                'email': '',
-                'is_settled': True,
-                'is_manager': False,
-                'is_admin': False,
-                'origin_verbose': '脚本添加',
-                'mobile': '',
-                'position': '',
-                'private_email': '',
-                'employee_number': '',
-                'gender': 0,
-                'avatar': '',
+                'user_id':
+                2,
+                'created':
+                self.now_str,
+                'last_active_time':
+                None,
+                'hiredate':
+                None,
+                'remark':
+                '',
+                'username':
+                'employee',
+                'name':
+                '',
+                'email':
+                '',
+                'is_settled':
+                True,
+                'is_manager':
+                False,
+                'is_admin':
+                False,
+                'origin_verbose':
+                '脚本添加',
+                'mobile':
+                '',
+                'position':
+                '',
+                'private_email':
+                '',
+                'employee_number':
+                '',
+                'gender':
+                0,
+                'avatar':
+                '',
+                'nodes': [{
+                    'dept_id': 1,
+                    'name': 'root',
+                    'node_subject': 'dept',
+                    'node_uid': 'd_root',
+                    'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
+                    'uid': 'root'
+                }],
             }]
         }
         self.assertEqual(res.json(), expect)
