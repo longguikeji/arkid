@@ -1,14 +1,13 @@
 '''
 schema of Groups
 '''
-from itertools import chain
 import jsonfield
 from django.db import models
 from django.conf import settings
 from django.db.utils import IntegrityError
 
 from common.django.model import BaseOrderedModel, BaseModel
-from oneid_meta.models.perm import GroupPerm, PermOwnerMixin, Perm
+from oneid_meta.models.perm import GroupPerm, PermOwnerMixin
 from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
 
 
@@ -157,6 +156,14 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         详情序列化实例
         '''
         return self.detail_serializer_cls(self)
+
+    @classmethod
+    def get_extern_root(cls):
+        '''
+        外部联系人根节点
+        '''
+        group, _ = cls.valid_objects.get_or_create(uid='extern')
+        return group
 
 
 class DingGroup(BaseModel):

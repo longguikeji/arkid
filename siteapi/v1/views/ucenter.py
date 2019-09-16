@@ -24,7 +24,7 @@ from siteapi.v1.serializers.ucenter import (
 )
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
-from oneid_meta.models import Perm, User, DingConfig, Invitation
+from oneid_meta.models import Perm, User, DingConfig, Invitation, Group
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 
 
@@ -207,6 +207,9 @@ class UserRegisterAPIView(generics.CreateAPIView):
         if 'mobile' in serializer.validated_data:
             user.origin = 3
         user.save()
+
+        cli = CLI(user)
+        cli.add_users_to_group([user], Group.get_extern_root())
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
         return Response(data, status=status.HTTP_201_CREATED)

@@ -38,4 +38,5 @@ class CustomExpiringTokenAuthentication(ExpiringTokenAuthentication):
 
         user, token = super().authenticate_credentials(key)
         UserStatistics.set_active_count(user)
+        user.update_last_active_time()
         return user, token

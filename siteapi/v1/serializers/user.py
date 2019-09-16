@@ -26,12 +26,29 @@ class CustomUserSerailizer(DynamicFieldsModelSerializer):
     '''
     custom user info
     '''
+
+    pretty = serializers.SerializerMethodField()
+
     class Meta:    # pylint: disable=missing-docstring
         model = CustomUser
 
         fields = ('data', 'pretty')
 
         extra_kwargs = {'pretty': {'read_only': True}}
+
+    def get_pretty(self, instance):    # pylint: disable=no-self-use
+        '''
+        前端友好的输出
+        '''
+        return instance.pretty(visible_only=True)
+
+
+class AdvanceCustomUserSerializer(CustomUserSerailizer):
+    '''
+    custom user info include all fields
+    '''
+    def get_pretty(self, instance):
+        return instance.pretty(visible_only=False)
 
 
 class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
@@ -60,6 +77,7 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'visible_fields',    # 按需使用，不在该列表中不意味着不展示，反例如`avatar`
             'private_email',
             'position',
+            'remark',
         )
 
         read_only_fields = ('user_id', 'username', 'mobile', 'depts', 'visible_fields')
@@ -69,8 +87,10 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         '''
         哪些字段可见
         '''
-        for field in NativeField.valid_objects.filter(subject='user', is_visible=True):
-            yield field.key
+        if instance.is_intra:
+            return [field.key for field in NativeField.valid_objects.filter(subject='user', is_visible=True)]
+        else:
+            return [field.key for field in NativeField.valid_objects.filter(subject='extern_user', is_visible=True)]
 
     @staticmethod
     def get_depts(instance):
@@ -147,8 +167,9 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
 
     ding_user = DingUserSerializer(many=False, required=False)
     posix_user = PosixUserSerializer(many=False, required=False)
-    custom_user = CustomUserSerailizer(many=False, required=False)
+    custom_user = AdvanceCustomUserSerializer(many=False, required=False)
     user_id = serializers.IntegerField(source='id', read_only=True)
+    nodes = serializers.SerializerMethodField()
 
     class Meta:    # pylint: disable=missing-docstring
 
@@ -172,6 +193,11 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'is_manager',
             'is_admin',
             'origin_verbose',
+            'hiredate',
+            'remark',
+            'nodes',
+            'created',
+            'last_active_time',
         )
 
     def create(self, validated_data):
@@ -266,6 +292,21 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             raise ValidationError(['existed'])
         return value
 
+    def get_nodes(self, obj):    # pylint: disable=no-self-use
+        '''
+        groups + nodes
+        '''
+        for item in self.get_groups(obj):
+            yield item
+
+        for item in DeptSerializer(obj.depts, many=True).data:
+            yield item
+
+    def get_groups(self, obj):    # pylint: disable=no-self-use
+        '''
+        出于业务需要，extern 不予展示
+        '''
+        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
 
 class UserWithPermSerializer(UserSerializer):
     '''
@@ -384,8 +425,14 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
         '''
         groups + nodes
         '''
-        for item in GroupSerializer(obj.groups, many=True).data:
+        for item in self.get_groups(obj):
             yield item
 
         for item in DeptSerializer(obj.depts, many=True).data:
             yield item
+
+    def get_groups(self, obj):    # pylint: disable=no-self-use
+        '''
+        出于业务需要，extern 不予展示
+        '''
+        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data

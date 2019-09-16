@@ -5,8 +5,9 @@ views about user
 - UserGroup
 - UserDept
 '''
+# pylint: disable=too-many-lines
 
-from rest_framework import generics, status
+from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework.exceptions import (
     ValidationError,
@@ -18,6 +19,7 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
 from oneid_meta.models import User, Group, Dept
+from oneid_meta.models.mixin import TreeNode as Node
 from oneid.permissions import (
     IsAdminUser,
     IsUserManager,
@@ -97,7 +99,8 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
                         status=status.HTTP_201_CREATED,
                         headers=self.get_success_headers(user_serializer.data))
 
-    def assign_user(self, user, dept_uids, group_uids):
+    @staticmethod
+    def assign_user(user, dept_uids, group_uids):
         '''
         - add_user_to_depts
         - add_user_to_groups
@@ -267,7 +270,7 @@ class UserGroupView(generics.RetrieveUpdateAPIView):
         data = request.data
         uids = data.get('group_uids', [])
         subject = data.get('subject', '')
-        update_user_nodes(request, user, nodes=[], uids=uids, node_type='group', action_subject=subject)
+        update_user_nodes(user, nodes=[], uids=uids, node_type='group', action_subject=subject)
         return Response(GroupListSerializer(self.get_object()).data)
 
 
@@ -310,7 +313,7 @@ class UserDeptView(generics.RetrieveUpdateAPIView):
         data = request.data
         uids = data.get('dept_uids', [])
         subject = data.get('subject', '')
-        update_user_nodes(request, user, nodes=[], uids=uids, node_type='dept', action_subject=subject)
+        update_user_nodes(user, nodes=[], uids=uids, node_type='dept', action_subject=subject)
         return Response(DeptListSerializer(self.get_object()).data)
 
 
@@ -365,12 +368,12 @@ class UserNodeView(generics.RetrieveUpdateAPIView):
                 group_uids.append(node_uid.replace(Group.NODE_PREFIX, '', 1))
             elif node_uid.startswith(Dept.NODE_PREFIX):
                 dept_uids.append(node_uid.replace(Dept.NODE_PREFIX, '', 1))
-        update_user_nodes(request, user, nodes=[], uids=group_uids, node_type='group', action_subject=subject)
-        update_user_nodes(request, user, nodes=[], uids=dept_uids, node_type='dept', action_subject=subject)
+        update_user_nodes(user, nodes=[], uids=group_uids, node_type='group', action_subject=subject)
+        update_user_nodes(user, nodes=[], uids=dept_uids, node_type='dept', action_subject=subject)
         return self.get(request)
 
 
-def update_user_nodes(request, user, nodes, uids, node_type, action_subject):
+def update_user_nodes(user, nodes, uids, node_type, action_subject):    # pylint: disable=too-many-locals
     '''
     :param oneid_meta.groups.User user:
     :param list nodes:
@@ -405,6 +408,11 @@ def update_user_nodes(request, user, nodes, uids, node_type, action_subject):
         func = getattr(cli, 'delete_user_from_{}s'.format(node_type))
         func(user, nodes)
     elif action_subject == 'override':
+        if (node_type == 'group') & (not user.is_intra):
+            # 由于 `extern` 对外隐藏而又必须存在，在覆盖时常不会提供
+            # 故对没有显示说要从 `extern` 移除的，视为不移除
+            extern_group, _ = Group.valid_objects.get_or_create(uid='extern')
+            nodes.append(extern_group)
         diff = operation.list_diff(nodes, getattr(user, '{}s'.format(node_type)))
         add_nodes = diff['>']
         delete_nodes = diff['<']
@@ -412,3 +420,99 @@ def update_user_nodes(request, user, nodes, uids, node_type, action_subject):
         add_func(user, add_nodes)
         delete_func = getattr(cli, 'delete_user_from_{}s'.format(node_type))
         delete_func(user, delete_nodes)
+
+
+class UserIntra2ExternView(views.APIView):
+    '''
+    内部用户转化为外部用户 [PATCH]
+    '''
+
+    permission_classes = [IsAuthenticated & IsAdminUser]
+
+    write_serializer_class = UserSerializer
+    read_serializer_class = EmployeeSerializer
+
+    def get_object(self):
+        '''
+        must be intra
+        '''
+        user = User.valid_objects.filter(username=self.kwargs['username']).first()
+        if not user:
+            raise NotFound
+
+        if not user.is_intra:
+            raise ValidationError({'user': 'must be intra'})
+
+        return user
+
+    def patch(self, request, username):    # pylint: disable=unused-argument
+        '''
+        [PATCH]
+        '''
+        user = self.get_object()
+        serializer = self.write_serializer_class(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        self.intra_to_extern(user)
+        return Response(self.read_serializer_class(user).data)
+
+    @staticmethod
+    def intra_to_extern(user):
+        '''
+        内部用户转化为外部用户
+        '''
+        cli = CLI()
+        cli.delete_user_from_depts(user, user.depts)
+        cli.delete_user_from_groups(user, user.groups)
+        cli.add_user_to_groups(user, Group.valid_objects.filter(uid='extern'))
+
+
+class UserExtern2IntraView(views.APIView):
+    '''
+    外部用户转化为内部用户 [PATCH]
+    '''
+
+    permission_classes = [IsAuthenticated & IsAdminUser]
+
+    write_serializer_class = UserSerializer
+    read_serializer_class = EmployeeSerializer
+
+    def get_object(self):
+        '''
+        must be extern
+        '''
+        user = User.valid_objects.filter(username=self.kwargs['username']).first()
+        if not user:
+            raise NotFound
+
+        if user.is_intra:
+            raise ValidationError({'user': 'must be extern'})
+
+        return user
+
+    def patch(self, request, username):    # pylint: disable=unused-argument
+        '''
+        [PATCH]
+        '''
+        user = self.get_object()
+        serializer = self.write_serializer_class(user, request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # node_uid = request.data.get('node_uid', '')
+        # if not node_uid:
+        #     raise ValidationError({'node_uid': 'required'})
+        # node, node_type = Node.retrieve_node(node_uid)
+        # if not node or node_type != 'dept':
+        #     raise ValidationError({'node_uid': 'invalid'})
+        self.extern_to_intra(user)
+        return Response(self.read_serializer_class(user).data)
+
+    @staticmethod
+    def extern_to_intra(user, depts=[]):
+        '''
+        外部用户转化为内部用户
+        '''
+        cli = CLI()
+        cli.delete_user_from_groups(user, user.groups)
+        cli.add_user_to_depts(user, depts)

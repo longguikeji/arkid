@@ -42,6 +42,12 @@ urlpatterns = [
     # user
     url(r'^user/$', user_views.UserListCreateAPIView.as_view(), name='user_list'),
     url(r'^user/isolated/$', user_views.UserIsolatedAPIView.as_view(), name='isolated_user_list'),    # FIX
+    url(r'^user/(?P<username>[\w]+)/convert/intra/$',
+        user_views.UserExtern2IntraView.as_view(),
+        name='user_convert_to_intra'),
+    url(r'^user/(?P<username>[\w]+)/convert/extern/$',
+        user_views.UserIntra2ExternView.as_view(),
+        name='user_convert_to_extern'),
     url(r'^user/(?P<username>[\w]+)/$', user_views.UserDetailAPIView.as_view(), name='user_detail'),
     url(r'^user/(?P<username>[\w]+)/dept/$', user_views.UserDeptView.as_view(), name='user_dept'),
     url(r'^user/(?P<username>[\w]+)/group/$', user_views.UserGroupView.as_view(), name='user_group'),
@@ -115,15 +121,15 @@ urlpatterns = [
     # config
     url(r'^config/$', ConfigAPIView.as_view(), name='config'),
     url(r'^config/admin/$', AdminAPIView.as_view(), name='alter_admin'),
-    url(r'^config/custom/field/(?P<field_subject>[a-z]+)/$',
+    url(r'^config/custom/field/(?P<field_subject>[a-z_]+)/$',
         CustomFieldListCreateAPIView.as_view(),
         name='custom_field_list'),
-    url(r'^config/custom/field/(?P<field_subject>[a-z]+)/(?P<uuid>[\w]+)/$',
+    url(r'^config/custom/field/(?P<field_subject>[a-z_]+)/(?P<uuid>[\w]+)/$',
         CustomFieldDetailAPIView.as_view(),
         name='custom_field_detail'),
-    url(r'^config/native/field/(?P<field_subject>[a-z]+)/$', NativeFieldListAPIView.as_view(),
+    url(r'^config/native/field/(?P<field_subject>[a-z_]+)/$', NativeFieldListAPIView.as_view(),
         name='native_field_list'),
-    url(r'^config/native/field/(?P<field_subject>[a-z]+)/(?P<uuid>[\w]+)/$',
+    url(r'^config/native/field/(?P<field_subject>[a-z_]+)/(?P<uuid>[\w]+)/$',
         NativeFieldDetailAPIView.as_view(),
         name='native_field_detail'),
     # log

@@ -128,3 +128,4 @@ settings_local.py
 tmp
 
 dump.rdb
+db.sqlite3
