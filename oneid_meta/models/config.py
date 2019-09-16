@@ -230,7 +230,8 @@ class CustomField(BaseModel):
     '''
 
     SUBJECT_CHOICES = (
-        ('user', '用户'),    # '^[a-z]{1,16}$'
+        ('user', '内部联系人'),    # '^[a-z]{1,16}$'
+        ('extern_user', '外部联系人'),
     )
 
     name = models.CharField(max_length=128, verbose_name='字段名称')
@@ -244,7 +245,8 @@ class NativeField(BaseModel):
     原生字段
     '''
     SUBJECT_CHOICES = (
-        ('user', '用户'),    # '^[a-z]{1,16}$'
+        ('user', '内部联系人'),    # '^[a-z]{1,16}$'
+        ('extern_user', '外部联系人'),
     )
     name = models.CharField(max_length=128, verbose_name='字段名称')
     key = models.CharField(max_length=256, verbose_name='内部字段名')

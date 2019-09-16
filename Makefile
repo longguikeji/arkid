@@ -28,3 +28,6 @@ native-ldap-docker-build:
 
 native-ldap-docker-push:
 	docker push harbor.longguikeji.com/ark-releases/ark-native-ldap:$(VERSION)
+
+test:
+	pipenv run python manage.py test siteapi.v1.tests --settings=oneid.settings_test

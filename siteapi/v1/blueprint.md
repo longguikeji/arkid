@@ -30,6 +30,7 @@ FORMAT: 1A
 + number (string) - 工号
 + private_email (string) - 私人邮箱
 + position (string) - 职位
++ remark (string) - 备注
 + depts (array) - 所属部门列表
     + dept (object)
         + uid (string)
@@ -55,6 +56,10 @@ FORMAT: 1A
 + is_manager (boolean) - 是否是子管理员
 + is_admin (boolean) - 是否是超级管理员
 + origin_verbose (string) - 注册来源
++ remark (string) - 备注
++ hiredate (string) - 入职时间 2019-06-04T09:01:44+08:00
++ created (string) - 创建时间、注册时间 2019-06-04T09:01:44+08:00
++ last_active_time (string) - 最后活跃时间
 + gender (enum[number])
     + 1 - 男
     + 2 - 女
@@ -959,6 +964,28 @@ TODO: 校对
     + Attributes
         + nodes (array[Node]) - 操作后所属节点
 
+## 外部用户准换为内部用户 [/user/{username}/convert/intra/]
++ Parameters
+    + username (string) - 用户唯一标识
+
+### 外部用户准换为内部用户 [PATCH]
++ Request JSON Message
+    + Attributes (User)
++ Request 200 (application/json)
+    + Attributes
+        + nodes (Employee)
+
+### 内部用户转换为外部用户 [/user/{username}/convert/extern/]
++ Parameters
+    + username (string) - 用户唯一标识
+
+### 内部用户转换为外部用户 [PATCH]
++ Request JSON Message
+    + Attributes (User)
++ Request 200 (application/json)
+    + Attributes
+        + nodes (Employee)
+
 # Group Dept
 部门管理
 
@@ -1069,7 +1096,10 @@ TODO: 校对
 
 + Response 200 (application/json)
     + Attributes
-        + users (array[User])
+        + count (number)
+        + previous
+        + next
+        + results (array[User])
 
 ### 调整成员用户 [PATCH]
 + Request JSON Message
@@ -1193,7 +1223,10 @@ TODO: 校对
 
 + Response 200 (application/json)
     + Attributes
-        + users (array[User])
+        + count (number)
+        + previous
+        + next
+        + results (array[User])
 
 ### 调整成员用户 [PATCH]
 + Request (application/json)
@@ -1216,10 +1249,11 @@ TODO: 校对
 
 Node 为 Dept 和 Group 的抽象
 
-## 节点信息 [/node/{node_uid}/]
+## 节点信息 [/node/{node_uid}/{?ignore_user}]
 
 + Parameters
     + `node_uid` (string) - 节点唯一标识。
+    + `ignore_user` (boolean) - 用于删除节点。当true时，若节点下有人员存在时，会先将人员从节点内删除，再删除此节点
 
 ### 获取节点信息 [GET]
 + Response 200 (application/json)
@@ -1368,7 +1402,10 @@ TODO: 可见权限的处理
 
 + Response 200 (application/json)
     + Attributes
-        + users (array[User])
+        + count (number)
+        + previous
+        + next
+        + results (array[User])
 
 ### 调整成员用户 [PATCH]
 + Request (application/json)
@@ -1769,7 +1806,8 @@ TODO: 可见权限的处理
 
 + Parameters
     + subject (enum[string]) - 字段分类
-        - user - 用户
+        - user - 内部用户
+        - extern_user - 外部用户
 
 ### 获取自定义字段列表 [GET]
 + Response 200 (application/json)
@@ -1801,6 +1839,7 @@ TODO: 可见权限的处理
 + Parameters
     + subject (enum[string]) - 字段分类
         - user - 用户
+        - extern_user - 外部用户
 
 ### 获取原生字段列表 [GET]
 + Response 200 (application/json)

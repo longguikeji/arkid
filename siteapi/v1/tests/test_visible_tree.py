@@ -32,6 +32,7 @@ TREE = {
 
 class VisibleTreeTestCase(TestCase):
     def setUp(self):
+        super().setUp()
         list(create_node_tree(Dept, TREE))
         list(create_node_tree(Group, TREE))
 
@@ -490,6 +491,7 @@ class VisibleTreeTestCase(TestCase):
 
 class NodeVisibleTestCase(TestCase):
     def setUp(self):
+        super().setUp()
         list(create_node_tree(Dept, TREE))
 
         self.user = User.objects.create(username='test')
