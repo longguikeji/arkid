@@ -28,7 +28,7 @@ from oneid.permissions import (
     NodeManagerReadable,
     CustomPerm,
 )
-from siteapi.v1.serializers.user import UserListSerializer, UserSerializer, EmployeeSerializer
+from siteapi.v1.serializers.user import UserListSerializer, UserSerializer    # EmployeeSerializer
 from siteapi.v1.serializers.group import (
     GroupSerializer,
     GroupTreeSerializer,
@@ -405,11 +405,48 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         支持在查询条件中加上其他group的uid，做为附加限制取交集
         这些附加group uid同样不会考虑间接附属关系
         '''
-        user_ids = GroupMember.valid_objects.\
-            filter(owner__in=self.get_groups()).\
-            values('user__id').\
+        user_ids = GroupMember.valid_objects. \
+            filter(owner__in=self.get_groups()). \
+            values('user__id'). \
             distinct()
         queryset = User.valid_objects.filter(id__in=user_ids).order_by('id')
+        search_dict = {
+            'queryset': '',
+            'before_created': '',
+            'after_created': '',
+            'before_last_active_time': '',
+            'after_last_active_time': '',
+            'name': '',
+            'mobile': '',
+            'email': '',
+            'username': '',
+        }
+        key_list = search_dict.keys()
+        for key in key_list:
+            search_dict.key = request.GET.get(key, None)
+        if search_dict['name']:
+            queryset = queryset.filter(name=search_dict['name'])
+        if search_dict['username']:
+            queryset = queryset.filter(username=search_dict['username'])
+        if search_dict['mobile']:
+            queryset = queryset.filter(mobile=search_dict['mobile'])
+        if search_dict['email']:
+            queryset = queryset.filter(email=search_dict['email'])
+        if search_dict['after_last_active_time'] and not search_dict['before_last_active_time']:
+            queryset = queryset.filter(last_active_time__gte=search_dict['after_last_active_time'])
+        if search_dict['before_last_active_time'] and not search_dict['after_last_active_time']:
+            queryset = queryset.filter(last_active_time__lte=search_dict['before_last_active_time'])
+        if search_dict['before_last_active_time'] and search_dict['after_last_active_time']:
+            queryset = queryset.filter(last_active_time__range=(search_dict['after_last_active_time'],
+                                                                search_dict['before_last_active_time']))
+        if search_dict['before_created'] and not search_dict['after_created']:
+            queryset = queryset.filter(created__lte=search_dict['before_created'])
+        if search_dict['after_created'] and not search_dict['before_created']:
+            queryset = queryset.filter(created__gte=search_dict['after_created'])
+        if search_dict['after_created'] and search_dict['before_created']:
+            queryset = queryset.filter(\
+                created__range=(search_dict['after_created'], search_dict['before_created'])).\
+                values('created', 'name', 'mobile', 'email', 'username', 'last_active_time')
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
