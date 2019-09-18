@@ -174,6 +174,8 @@ class User(BaseModel, PermOwnerMixin):
         '''
         if perm is None:
             return True
+        if self.is_admin:
+            return True
         return UserPerm.valid_objects.filter(owner=self, perm=perm, value=True).exists()
 
     def get_perm(self, perm):
