@@ -273,6 +273,7 @@ CREDIBLE_ARKERS = [
     'arkbe_broker',
     'wfe',
     'msghub',
+    'oauth',
 ]
 
 # Minio

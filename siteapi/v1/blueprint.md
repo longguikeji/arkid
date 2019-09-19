@@ -1676,13 +1676,6 @@ TODO: 可见权限的处理
     + owner_access (boolean) - 限定访问权限结果
 
 ### 获取所有应用 [GET]
-+ request JSON Message
-    + Attributes
-        + page_size (number)
-            - default: 30
-        + page (number)
-            - default: 1
-
 + Response 200 (application/json)
     + Attributes (object)
         + previous (string)
@@ -1729,6 +1722,23 @@ TODO: 可见权限的处理
 ### 删除应用 [DELETE]
 
 + Response 204 (application/json)
+
+## 应用 OAuth2.0 Client [/app/{uid}/oauth/]
++ Parameters
+    + uid (string) - 应用唯一标识。
+
+### 注册应用 [POST]
++ request JSON Message
+    + Attributes
+        + redirect_uris - callback url
+
++ Response 200 (application/json)
+此应用存在，修改成功(启用OAuth并配置redirect_uris)
+    + Attributes (OAuthAPP)
+
++ Response 201 (application/json)
+此应用不存在，新建成功
+    + Attributes (OAuthAPP)
 
 # Group Shortcut
 
