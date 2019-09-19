@@ -411,6 +411,7 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
             distinct()
         queryset = User.valid_objects.filter(id__in=user_ids).order_by('id')
         search_dict = {
+            'id': '',
             'queryset': '',
             'before_created': '',
             'after_created': '',
@@ -422,8 +423,8 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
             'username': '',
         }
         key_list = search_dict.keys()
-        for key in key_list:
-            search_dict.key = request.GET.get(key, None)
+        for skey in key_list:
+            search_dict[skey] = request.GET.get(skey, None)
         if search_dict['name']:
             queryset = queryset.filter(name=search_dict['name'])
         if search_dict['username']:
@@ -437,8 +438,8 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         if search_dict['before_last_active_time'] and not search_dict['after_last_active_time']:
             queryset = queryset.filter(last_active_time__lte=search_dict['before_last_active_time'])
         if search_dict['before_last_active_time'] and search_dict['after_last_active_time']:
-            queryset = queryset.filter(last_active_time__range=(search_dict['after_last_active_time'],
-                                                                search_dict['before_last_active_time']))
+            queryset = queryset.filter(last_active_time__range=(search_dict['after_last_active_time'],\
+                search_dict['before_last_active_time']))
         if search_dict['before_created'] and not search_dict['after_created']:
             queryset = queryset.filter(created__lte=search_dict['before_created'])
         if search_dict['after_created'] and not search_dict['before_created']:
@@ -446,7 +447,7 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         if search_dict['after_created'] and search_dict['before_created']:
             queryset = queryset.filter(\
                 created__range=(search_dict['after_created'], search_dict['before_created'])).\
-                values('created', 'name', 'mobile', 'email', 'username', 'last_active_time')
+                values('id', 'created', 'name', 'mobile', 'email', 'username', 'last_active_time')
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
