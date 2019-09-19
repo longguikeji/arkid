@@ -706,3 +706,63 @@ class GroupTestCase(TestCase):
 
         res = self.client.get(reverse('siteapi:node_list', args=('g_root', )))
         self.assertEqual(expect, res.json())
+
+    def test_group_user_search(self):
+        res = self.client.get(reverse('siteapi:node_child_user', args=('g_role_1',)), \
+            data={'before_created':'2018-12-31 00:00'})
+        expect1 = []
+        self.assertEqual(res.json()['results'], expect1)
+        res2 = self.client.get(reverse('siteapi:node_child_user', args=('g_role_1',)), \
+            data={'before_created':'2019-12-31 00:00'})
+        expect2 = [{
+            'avatar':
+            '',
+            'created':
+            '2019-01-01T08:00:00+08:00',
+            'email':
+            '',
+            'employee_number':
+            '',
+            'gender':
+            0,
+            'hiredate':
+            None,
+            'is_admin':
+            False,
+            'is_manager':
+            False,
+            'is_settled':
+            True,
+            'last_active_time':
+            None,
+            'mobile':
+            '',
+            'name':
+            '',
+            'nodes': [{
+                'accept_user': True,
+                'group_id': 3,
+                'name': 'role_1',
+                'node_subject': 'root',
+                'node_uid': 'g_role_1',
+                'remark': '',
+                'uid': 'role_1'
+            }],
+            'origin_verbose':
+            '脚本添加',
+            'position':
+            '',
+            'private_email':
+            '',
+            'remark':
+            '',
+            'user_id':
+            2,
+            'username':
+            'employee'
+        }]
+        self.assertEqual(res2.json()['results'], expect2)
+        res3 = self.client.get(reverse('siteapi:node_child_user', args=('g_role_1', )), data={'username': 'employee'})
+        self.assertEqual(res3.json()['results'], expect2)
+        res4 = self.client.get(reverse('siteapi:node_child_user', args=('g_role_1', )), data={'username': 'employee1'})
+        self.assertEqual(res4.json()['results'], expect1)
