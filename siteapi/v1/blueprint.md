@@ -1387,10 +1387,10 @@ TODO: 可见权限的处理
 }
 
 
-## 节点下直属人员 [/node/{node_uid}/user/?name,username,mobile,email,before_created,after_created,before_last_active_time,after_last_active_time]
+## 节点下直属人员 [/node/{node_uid}/user/{?name,username,mobile,email,before_created,after_created,before_last_active_time,after_last_active_time}]
 
 
-数据仅限于子一级
+数据仅限于子一级，参数限于{node_uid}为‘g_'开头的请求有效
 + Parameters
     + `node_uid` (string) - 节点唯一标识。
     + `name` (string) - 姓名。
@@ -1413,23 +1413,7 @@ TODO: 可见权限的处理
         + previous
         + next
         + results (array[User])
-            + user_id (int) id
-            + name (string)
-            + created (datetime) - `%Y-%m-%d %H:%M`
-            + mobile (int) - 手机号
-            + email (string) - 邮箱
-            + username (string) - 用户名
-            + last_active_time - 最近活跃时间
-            + created (time) - 'YYYY-mm-ddT00:00:00+8:00'
-            + last_active_time - 'YYYY-mm-ddT00:00:00+8:00'
-            + nodes (array[Node])
-                + group_id (int)
-                + node_uid (string)
-                + node_subject (string)
-                + uid (string)
-                + name (string)
-                + remark (string)
-                + accept_user (bool)
+
 ### 调整成员用户 [PATCH]
 + Request (application/json)
     + Attributes

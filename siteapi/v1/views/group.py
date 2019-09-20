@@ -430,9 +430,9 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         search_dict.update(created__gte=request.GET.get('after_created', None))
 
         result_dict = {}
-        for i in search_dict:
-            if search_dict[i] is not None:
-                result_dict[i] = search_dict[i]
+        for _key in search_dict:
+            if search_dict[_key] is not None:
+                result_dict[_key] = search_dict[_key]
 
         queryset = queryset.filter(**result_dict).order_by('id')
         page = self.paginate_queryset(queryset)
