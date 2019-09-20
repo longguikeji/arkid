@@ -706,3 +706,49 @@ class GroupTestCase(TestCase):
 
         res = self.client.get(reverse('siteapi:node_list', args=('g_root', )))
         self.assertEqual(expect, res.json())
+
+    def test_group_user_search(self):
+        role_group = Group.valid_objects.create(uid='group_3', name='group_3', parent=self.root, accept_user=False)
+        role_3 = Group.valid_objects.create(uid='role_3', name='role_3', parent=role_group, order_no=3)
+        user = User.create_user('zhangsan', 'zhangsan')
+        user.name = '张三'
+        user.email = '13412341233@qq.com'
+        user.mobile = '13412341233'
+        user.created = '2019-01-01T00:00:00+08:00'
+        user.last_active_time = '2019-02-01T00:00:00+08:00'
+        user.save()
+        GroupMember.valid_objects.create(user=user, owner=role_3)
+        user2 = User.create_user('zhangsi', 'zhangsi')
+        user2.name = '张四'
+        user2.email = '13412341234@qq.com'
+        user2.mobile = '13412341234'
+        user2.created = '2019-03-01T00:00:00+08:00'
+        user2.last_active_time = '2019-04-01T00:00:00+08:00'
+        user2.save()
+        GroupMember.valid_objects.create(user=user2, owner=role_3)
+        user3 = User.create_user('lisan', 'lisan')
+        user3.name = '李三'
+        user3.email = '13412341235@qq.com'
+        user3.mobile = '13412341235'
+        user3.created = '2019-05-01T00:00:00+08:00'
+        user3.last_active_time = '2019-06-01T00:00:00+08:00'
+        user3.save()
+        GroupMember.valid_objects.create(user=user3, owner=role_3)
+        user4 = User.create_user('lisi', 'lisi')
+        user4.name = '李四'
+        user4.email = '13412341236@qq.com'
+        user4.mobile = '13412341236'
+        user4.created = '2019-07-01T00:00:00+08:00'
+        user4.last_active_time = '2019-08-01T00:00:00+08:00'
+        user4.save()
+        GroupMember.valid_objects.create(user=user4, owner=role_3)
+        test_list = [{'email':'12341234'}, {'name':'张'}, {'username':'li'}, {'mobile':'12341234'}, \
+            {'before_created':'2019-06-01T00:00:00+08:00'}, {'after_created':'2019-06-01T00:00:00+08:00'}, \
+                {'before_last_active_time':'2019-03-01T00:00:00+08:00'}, \
+                    {'after_last_active_time':'2019-03-01T00:00:00+08:00'}]
+        result_list = []
+        for test in test_list:
+            res = self.client.get(reverse('siteapi:node_child_user', args=('g_role_3', )), data=test)
+            result_list.append(res.json()['count'])
+        expect = [1, 2, 2, 1, 3, 1, 1, 3]
+        self.assertEqual(result_list, expect)

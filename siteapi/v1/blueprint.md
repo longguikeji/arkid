@@ -1387,13 +1387,20 @@ TODO: 可见权限的处理
 }
 
 
-## 节点下直属人员 [/node/{node_uid}/user/]
+## 节点下直属人员 [/node/{node_uid}/user/{?name,username,mobile,email,before_created,after_created,before_last_active_time,after_last_active_time}]
 
 
-数据仅限于子一级
+数据仅限于子一级，参数限于{node_uid}为‘g_'开头的请求有效
 + Parameters
     + `node_uid` (string) - 节点唯一标识。
-
+    + `name` (string) - 姓名。
+    + `username` (string) - 用户名
+    + `mobile` (string) - 手机号
+    + `email` (string) - 邮箱
+    + `before_created` (string) - 在这个时间之前创建的用户
+    + `after_created` (string) - 在这个时间之后创建的用户
+    + `before_last_active_time` (string) - 在这之前活跃的用户
+    + `after_last_active_time` (string) - 在这之后活跃的用户
 
 ### 获取直属人员 [GET]
 + Request
