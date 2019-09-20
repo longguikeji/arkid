@@ -411,19 +411,23 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
             distinct()
         queryset = User.valid_objects.filter(id__in=user_ids).order_by('id')
 
-        search_dict = {}
+        filter_params_mapper = {
+            'name': 'name__icontains',
+            'username': 'username__icontains',
+            'email': 'email__icontains',
+            'mobile': 'mobile__icontains',
+            'before_last_active_time': 'last_active_time__lte',
+            'after_last_active_time': 'last_active_time__gte',
+            'before_created': 'created__lte',
+            'after_created': 'created__gte',
+        }
 
-        param_list = [('name__icontains', 'name'), ('username__icontains', 'username'), ('email__icontains', 'email'),
-                      ('mobile__icontains', 'mobile'), ('last_active_time__lte', 'before_last_active_time'),
-                      ('last_active_time__gte', 'after_last_active_time'), ('created__lte', 'before_created'),
-                      ('created__gte', 'after_created')]
+        filters = {}
+        for key, value in request.query_params.dict().items():
+            if key in filter_params_mapper and value not in ['', None]:
+                filters[filter_params_mapper[key]] = value
 
-        for expression, keyword in param_list:
-            res = request.GET.get(keyword, None)
-            if res is not None:
-                search_dict[expression] = res
-
-        queryset = queryset.filter(**search_dict).order_by('id')
+        queryset = queryset.filter(**filters).order_by('id')
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
