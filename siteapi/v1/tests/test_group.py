@@ -742,12 +742,12 @@ class GroupTestCase(TestCase):
         user4.last_active_time = '2019-08-01 00:00'
         user4.save()
         GroupMember.valid_objects.create(user=user4, owner=role_3)
-        data_list = [{'email':'12341234'}, {'name':'张'}, {'username':'li'}, {'mobile':'12341234'}, \
+        test_list = [{'email':'12341234'}, {'name':'张'}, {'username':'li'}, {'mobile':'12341234'}, \
             {'before_created':'2019-06-01 00:00'}, {'after_created':'2019-06-01 00:00'}, \
                 {'before_last_active_time':'2019-03-01 00:00'}, {'after_last_active_time':'2019-03-01 00:00'}]
         result_list = []
-        for i in data_list:
-            res = self.client.get(reverse('siteapi:node_child_user', args=('g_role_3', )), data=i)
+        for test in test_list:
+            res = self.client.get(reverse('siteapi:node_child_user', args=('g_role_3', )), data=test)
             result_list.append(res.json()['count'])
         expect = [1, 2, 2, 1, 3, 1, 1, 3]
         self.assertEqual(result_list, expect)
