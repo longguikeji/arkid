@@ -413,28 +413,18 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
 
         search_dict = {}
 
-        search_dict.update(name__icontains=request.GET.get('name', None))
+        param_list = [('name__icontains', 'name'), ('username__icontains', 'username'), \
+            ('email__icontains', 'email'), ('mobile__icontains', 'mobile'), \
+                ('last_active_time__lte', 'before_last_active_time'), \
+                ('last_active_time__gte', 'after_last_active_time'),\
+                ('created__lte', 'before_created'), ('created__gte', 'after_created')]
 
-        search_dict.update(username__icontains=request.GET.get('username', None))
+        for expression, keyword in param_list:
+            res = request.GET.get(keyword, None)
+            if res is not None:
+                search_dict[expression] = res
 
-        search_dict.update(mobile__icontains=request.GET.get('mobile', None))
-
-        search_dict.update(email__icontains=request.GET.get('email', None))
-
-        search_dict.update(last_active_time__lte=request.GET.get('before_last_active_time', None))
-
-        search_dict.update(last_active_time__gte=request.GET.get('after_last_active_time', None))
-
-        search_dict.update(created__lte=request.GET.get('before_created', None))
-
-        search_dict.update(created__gte=request.GET.get('after_created', None))
-
-        result_dict = {}
-        for _key in search_dict:
-            if search_dict[_key] is not None:
-                result_dict[_key] = search_dict[_key]
-
-        queryset = queryset.filter(**result_dict).order_by('id')
+        queryset = queryset.filter(**search_dict).order_by('id')
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
