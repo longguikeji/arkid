@@ -3,6 +3,7 @@ from django import forms
 
 class AllowForm(forms.Form):
     allow = forms.BooleanField(required=False)
+    next_path = forms.CharField(required=False, widget=forms.HiddenInput())
     redirect_uri = forms.CharField(widget=forms.HiddenInput())
     scope = forms.CharField(widget=forms.HiddenInput())
     client_id = forms.CharField(widget=forms.HiddenInput())
