@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_200_OK
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.contrib.auth.models import AnonymousUser
 
 from drf_expiring_authtoken.views import ObtainExpiringAuthToken
@@ -301,3 +302,20 @@ class UcenterMobileAPIView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class RevokeTokenView(APIView):
+    '''
+    user logout
+    delete token
+    '''
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):    # pylint: disable=no-self-use
+        '''
+        ...
+        '''
+        user = request.user
+        user.invalidate_token()
+        return Response()

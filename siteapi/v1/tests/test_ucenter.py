@@ -10,7 +10,8 @@ from common.django.drf.client import APIClient
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
-    User, Perm,
+    User,
+    Perm,
     UserPerm,
     DingUser,
     CustomField,
@@ -303,6 +304,40 @@ class UCenterTestCase(TestCase):
                                   })
         expect = {'new_mobile': 'mobile_3'}
         self.assertEqual(res.json(), expect)
+
+    def test_revoke_token(self):
+        user = User.create_user(username='test', password='test')
+        user.mobile = '18812341234'
+        user.private_email = '18812341234@qq.com'
+        user.save()
+        client = APIClient()
+        res = client.post(reverse('siteapi:user_login'), data={'username': 'test', 'password': 'test'})
+        self.assertEqual(res.status_code, 200)
+        token = 'Token ' + res.json()['token']
+        client.credentials(HTTP_AUTHORIZATION=token)
+
+        res = client.post(reverse('siteapi:revoke_token'))
+        self.assertEqual(res.status_code, 200)
+
+        test_api_list = [
+            'siteapi:revoke_token',
+            'siteapi:ucenter_mobile',
+            'siteapi:ucenter_profile',
+            'siteapi:ding_login',
+            'siteapi:user_register',
+            'siteapi:user_login',
+            'siteapi:ucenter_profile',
+            'siteapi:invitation_key_auth',
+            'siteapi:token_perm_auth',
+            'siteapi:update_user_contact',
+            'siteapi:set_user_password',
+        ]
+        status_list = []
+        expect = [401, 401, 401, 400, 400, 400, 401, 400, 401, 401, 405]
+        for api in test_api_list:
+            res = client.post(reverse(api))
+            status_list.append(res.status_code)
+        self.assertEqual(status_list, expect)
 
 
 class UcenterCustomProfileTestCase(TestCase):
