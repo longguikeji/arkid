@@ -411,7 +411,7 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
             distinct()
         queryset = User.valid_objects.filter(id__in=user_ids).order_by('id')
 
-        search_dict = {
+        filter_params_mapper = {
             'name': 'name__icontains',
             'username': 'username__icontains',
             'email': 'email__icontains',
@@ -422,13 +422,12 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
             'after_created': 'created__gte',
         }
 
-        res_dict = request.query_params.dict()
-        check_dict = {}
-        for _key in res_dict:
-            if _key in search_dict:
-                check_dict[search_dict[_key]] = res_dict[_key]
+        filters = {}
+        for key, value in request.query_params.dict().items():
+            if key in filter_params_mapper:
+                filters[filter_params_mapper[key]] = value
 
-        queryset = queryset.filter(**check_dict).order_by('id')
+        queryset = queryset.filter(**filters).order_by('id')
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
