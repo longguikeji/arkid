@@ -413,11 +413,10 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
 
         search_dict = {}
 
-        param_list = [('name__icontains', 'name'), ('username__icontains', 'username'), \
-            ('email__icontains', 'email'), ('mobile__icontains', 'mobile'), \
-                ('last_active_time__lte', 'before_last_active_time'), \
-                ('last_active_time__gte', 'after_last_active_time'),\
-                ('created__lte', 'before_created'), ('created__gte', 'after_created')]
+        param_list = [('name__icontains', 'name'), ('username__icontains', 'username'), ('email__icontains', 'email'),
+                      ('mobile__icontains', 'mobile'), ('last_active_time__lte', 'before_last_active_time'),
+                      ('last_active_time__gte', 'after_last_active_time'), ('created__lte', 'before_created'),
+                      ('created__gte', 'after_created')]
 
         for expression, keyword in param_list:
             res = request.GET.get(keyword, None)
