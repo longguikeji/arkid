@@ -402,3 +402,17 @@ class APPTestCase(TestCase):
             }]
         }
         self.assertEqual(expect, res.json())
+
+    def test_app_register_oauth(self):
+        uid = 'mock-1'
+        res = self.client.json_post(reverse('siteapi:app_register_oauth', args=(uid, )),
+                                    data={'redirect_uris': 'http://test.com/oauth/callback'})
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.json()['redirect_uris'], 'http://test.com/oauth/callback')
+        self.assertEqual(APP.objects.get(uid=uid).index, 'http://test.com')
+
+        res = self.client.json_post(reverse('siteapi:app_register_oauth', args=(uid, )),
+                                    data={'redirect_uris': 'http://new.test.com/oauth/callback'})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()['redirect_uris'], 'http://new.test.com/oauth/callback')
+        self.assertEqual(APP.objects.get(uid=uid).index, 'http://new.test.com')

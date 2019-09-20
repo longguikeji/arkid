@@ -127,7 +127,8 @@ urlpatterns = [
     url(r'^config/custom/field/(?P<field_subject>[a-z_]+)/(?P<uuid>[\w]+)/$',
         CustomFieldDetailAPIView.as_view(),
         name='custom_field_detail'),
-    url(r'^config/native/field/(?P<field_subject>[a-z_]+)/$', NativeFieldListAPIView.as_view(),
+    url(r'^config/native/field/(?P<field_subject>[a-z_]+)/$',
+        NativeFieldListAPIView.as_view(),
         name='native_field_list'),
     url(r'^config/native/field/(?P<field_subject>[a-z_]+)/(?P<uuid>[\w]+)/$',
         NativeFieldDetailAPIView.as_view(),
@@ -143,6 +144,7 @@ urlpatterns = [
     # app
     url(r'^app/$', app_views.APPListCreateAPIView.as_view(), name='app_list'),
     url(r'^app/(?P<uid>[\w|-]+)/$', app_views.APPDetailAPIView.as_view(), name='app_detail'),
+    url(r'^app/(?P<uid>[\w|-]+)/oauth/$', app_views.APPOAuthRegisterAPIView.as_view(), name='app_register_oauth'),
     # migrate
     url(r'^migration/user/csv/export/$', migrate_views.UserCSVExportView.as_view(), name='export_user'),
     url(r'^migration/user/csv/import/$', migrate_views.UserCSVImportView.as_view(), name='import_user'),

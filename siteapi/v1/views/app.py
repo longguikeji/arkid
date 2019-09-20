@@ -1,7 +1,9 @@
 '''
 views about app
 '''
+from urllib.parse import urlparse
 import uuid as uuid_utils
+
 from rest_framework import generics, status
 from rest_framework.exceptions import (
     MethodNotAllowed,
@@ -13,10 +15,15 @@ from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
 from django.db.models import Q
 
-from siteapi.v1.serializers.app import APPSerializer, APPWithAccessOwnerSerializer, APPPublicSerializer
+from siteapi.v1.serializers.app import (
+    APPSerializer,
+    APPWithAccessOwnerSerializer,
+    APPPublicSerializer,
+    OAuthAPPSerializer,
+)
 from siteapi.v1.views.utils import gen_uid
 from common.django.drf.paginator import DefaultListPaginator
-from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group
+from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
 from oneid.permissions import (
     IsAPPManager,
     IsAdminUser,
@@ -50,7 +57,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
             return APPWithAccessOwnerSerializer
         return APPSerializer
 
-    def get_queryset(self):
+    def get_queryset(self):    # pylint: disable=too-many-locals
         '''
         get app list
         '''
@@ -119,7 +126,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         app = serializer.instance
-        self._auto_create_access_perm(request, app)
+        self._auto_create_access_perm(app)
         self._auto_create_manager_group(request, app)
         if data.get("secret_required", False):
             create_secret_for_app(app)
@@ -154,7 +161,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         cli.add_users_to_group([request.user], manager_group)
 
     @staticmethod
-    def _auto_create_access_perm(request, app):
+    def _auto_create_access_perm(app):
         '''
         当创建应用时，自动创建访问权限
         '''
@@ -198,6 +205,7 @@ class UcenterAPPListAPIView(generics.ListAPIView):
 def create_secret_for_app(app):
     '''
     将client secret以k8s secret形式存储
+    deprecated
     TODO:
         - 目前job缺少对完成状况的判断
     '''
@@ -206,7 +214,6 @@ def create_secret_for_app(app):
         client as k8s_client,
         config as k8s_config,
     )
-    from oneid_meta.models import OAuthAPP
 
     k8s_config.load_kube_config()
     client = k8s_client.CoreV1Api()
@@ -264,3 +271,44 @@ class APPDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         super().perform_update(serializer)    # pylint: disable=no-member
         cli = LOG_CLI()
         cli.update_app(serializer.instance, serializer.validated_data)
+
+
+class APPOAuthRegisterAPIView(generics.CreateAPIView):
+    '''
+    若此 app 不存在则创建，存在则更新
+    目前此处限制 client 类型，只允许配置 redirect_uris
+    '''
+    serializer_class = OAuthAPPSerializer
+    permission_classes = [IsAuthenticated & (IsAdminUser)]
+
+    def get_object(self):
+        '''
+        find app
+        allow None
+        '''
+        return APP.valid_objects.filter(uid=self.kwargs['uid']).first()
+
+    def create(self, request, uid):    # pylint: disable=arguments-differ
+        '''
+        [POST] 实际扮演 [POST] 或 [PATCH]
+        '''
+        app = self.get_object()
+        redirect_uris = request.data.get('redirect_uris', '')
+        parsed_uri = urlparse(redirect_uris)
+        index = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
+        if not redirect_uris:
+            raise ValidationError({'redirect_uris': ['required']})
+        if app:
+            app.index = index
+            app.save()
+            oauth_app = OAuthAPP.objects.filter(app=app).first()
+            if oauth_app:
+                oauth_app.redirect_uris = redirect_uris
+                oauth_app.save()
+            else:
+                oauth_app = OAuthAPP.objects.create(redirect_uris=redirect_uris, app=app)
+            return Response(self.get_serializer(oauth_app).data)
+
+        app = APP.valid_objects.create(uid=uid, name=uid, index=index)
+        oauth_app = OAuthAPP.objects.create(redirect_uris=redirect_uris, app=app)
+        return Response(self.get_serializer(oauth_app).data, status=status.HTTP_201_CREATED)
