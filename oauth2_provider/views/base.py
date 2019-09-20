@@ -1,6 +1,8 @@
 import json
 import logging
 import urllib
+import urllib.parse as urlparse
+from urllib.parse import urlencode
 
 from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework.response import Response
@@ -106,6 +108,7 @@ class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
     """
     def dispatch(self, request, *args, **kwargs):
         self.oauth2_data = {}
+        self.extra_data = {}
         return super().dispatch(request, *args, **kwargs)
 
     def error_response(self, error, application, **kwargs):
@@ -188,6 +191,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "client_id": self.oauth2_data.get("client_id", None),
             "state": self.oauth2_data.get("state", None),
             "response_type": self.oauth2_data.get("response_type", None),
+            "next_path": self.extra_data.get("next_path", None),
         }
         return initial_data
 
@@ -200,6 +204,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "response_type": form.cleaned_data.get("response_type", None),
             "state": form.cleaned_data.get("state", None),
         }
+        next_path = form.cleaned_data.get("next_path")
         scopes = form.cleaned_data.get("scope")
         allow = form.cleaned_data.get("allow")
 
@@ -210,9 +215,24 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         except OAuthToolkitError as error:
             return self.error_response(error, application)
 
+        if next_path:
+            uri = self.add_param_to_url(uri, {'next_path': next_path})
         self.success_url = uri
+
         log.debug("Success url for the request: {0}".format(self.success_url))
         return self.redirect(self.success_url, application)
+
+    @staticmethod
+    def add_param_to_url(url, params):
+        '''
+        :param str url:
+        :param dict params:
+        '''
+        url_parts = list(urlparse.urlparse(url))
+        query = dict(urlparse.parse_qsl(url_parts[4]))
+        query.update(params)
+        url_parts[4] = urlencode(query)
+        return urlparse.urlunparse(url_parts)
 
     def get(self, request, *args, **kwargs):
         try:
@@ -236,6 +256,17 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         kwargs["state"] = credentials["state"]
 
         self.oauth2_data = kwargs
+
+        next_path = ''
+        for key in oauth2_settings.LOGIN_NEXT_PARAM_NAMES:
+            value = request.GET.get(key)
+            if value:
+                next_path = value
+        self.extra_data = {
+            'next_path': next_path,
+        }
+
+
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
         form = self.get_form(self.get_form_class())
         kwargs["form"] = form

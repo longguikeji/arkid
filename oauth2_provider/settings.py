@@ -62,6 +62,13 @@ DEFAULTS = {
     "RESOURCE_SERVER_AUTH_TOKEN": None,
     "RESOURCE_SERVER_INTROSPECTION_CREDENTIALS": None,
     "RESOURCE_SERVER_TOKEN_CACHING_SECONDS": 36000,
+
+    # 登录后重定向地址所用键的名称
+    "LOGIN_NEXT_PARAM_NAMES": (
+        "next",
+        "backPath",
+        "next_path",
+    )
 }
 
 # List of settings that cannot be empty
@@ -84,7 +91,6 @@ IMPORT_STRINGS = (
     "OAUTH2_BACKEND_CLASS",
     "SCOPES_BACKEND_CLASS",
 )
-
 
 def perform_import(val, setting_name):
     """
