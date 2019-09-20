@@ -424,7 +424,7 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
 
         filters = {}
         for key, value in request.query_params.dict().items():
-            if key in filter_params_mapper:
+            if key in filter_params_mapper and value not in ['', None]:
                 filters[filter_params_mapper[key]] = value
 
         queryset = queryset.filter(**filters).order_by('id')
