@@ -28,7 +28,7 @@ from oneid.permissions import (
     NodeManagerReadable,
     CustomPerm,
 )
-from siteapi.v1.serializers.user import UserListSerializer, UserSerializer, EmployeeSerializer
+from siteapi.v1.serializers.user import UserListSerializer, UserSerializer    # EmployeeSerializer
 from siteapi.v1.serializers.group import (
     GroupSerializer,
     GroupTreeSerializer,
@@ -405,11 +405,25 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         支持在查询条件中加上其他group的uid，做为附加限制取交集
         这些附加group uid同样不会考虑间接附属关系
         '''
-        user_ids = GroupMember.valid_objects.\
-            filter(owner__in=self.get_groups()).\
-            values('user__id').\
+        user_ids = GroupMember.valid_objects. \
+            filter(owner__in=self.get_groups()). \
+            values('user__id'). \
             distinct()
         queryset = User.valid_objects.filter(id__in=user_ids).order_by('id')
+
+        search_dict = {}
+
+        param_list = [('name__icontains', 'name'), ('username__icontains', 'username'), ('email__icontains', 'email'),
+                      ('mobile__icontains', 'mobile'), ('last_active_time__lte', 'before_last_active_time'),
+                      ('last_active_time__gte', 'after_last_active_time'), ('created__lte', 'before_created'),
+                      ('created__gte', 'after_created')]
+
+        for expression, keyword in param_list:
+            res = request.GET.get(keyword, None)
+            if res is not None:
+                search_dict[expression] = res
+
+        queryset = queryset.filter(**search_dict).order_by('id')
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
