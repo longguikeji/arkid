@@ -306,14 +306,11 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.json(), expect)
 
     def test_revoke_token(self):
-        client = APIClient()
-        res = client.post(reverse('siteapi:user_login'), data={'username': 'admin', 'password': 'admin'})
-        client.credentials(HTTP_AUTHORIZATION='Token ' + res.json()['token'])
-
+        client = self.client
         res = client.post(reverse('siteapi:revoke_token'))
         self.assertEqual(res.status_code, 200)
 
-        res2 = client.post(reverse('siteapi:ucenter_profile'))
+        res2 = client.get(reverse('siteapi:ucenter_profile'))
         self.assertEqual(res2.status_code, 401)
 
 
