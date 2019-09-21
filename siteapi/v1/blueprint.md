@@ -798,14 +798,14 @@ TODO: 校对
     + Attributes
         + result (boolean) - 认证结果 (password) and (group or dept or perm)
 
-## 登出 [revoke/token]
+## 登出 [/revoke/token/]
 
 ### 登出 [POST]
 + Request JSON Message
-    + Attributess
+    + Attributes
 
 + Response 200 (application/json)
-    + Attributess
+    + Attributes
 
 ## 邀请码登录 [/auth/invitation_key/]
 
