@@ -306,15 +306,14 @@ class UcenterMobileAPIView(generics.UpdateAPIView):
 
 class RevokeTokenView(APIView):
     '''
-    user logout
-    delete token
+    revoke token
     '''
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):    # pylint: disable=no-self-use
         '''
-        ...
+        user logout
+        delete token
         '''
         user = request.user
         user.invalidate_token()
