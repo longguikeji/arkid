@@ -91,6 +91,7 @@ urlpatterns = [
     # auth
     url(r'^auth/token/$', ucenter_views.TokenPermAuthView.as_view(), name='token_perm_auth'),
     url(r'^auth/invitation_key/$', ucenter_views.InvitationKeyAuthView.as_view(), name='invitation_key_auth'),
+    url(r'^revoke/token/$', ucenter_views.RevokeTokenView.as_view(), name='revoke_token'),
     # shortcut
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
     url(r'^slice/delete/$', shortcut_views.ObjSliceDeleteAPIView.as_view(), name='shortcut_slice_delete'),
