@@ -185,8 +185,8 @@ EXECUTERS = [    # 注意顺序
     'executer.RDB.RDBExecuter',
     'executer.log.rdb.RDBLogExecuter',
     'executer.cache.default.CacheExecuter',
-    'executer.LDAP.LDAPExecuter',
-    'executer.Ding.DingExecuter',
+    # 'executer.LDAP.LDAPExecuter',
+    # 'executer.Ding.DingExecuter',
 ]
 
 EXECUTER_WIP = False
