@@ -10,7 +10,8 @@ from common.django.drf.client import APIClient
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
-    User, Perm,
+    User,
+    Perm,
     UserPerm,
     DingUser,
     CustomField,
@@ -303,6 +304,14 @@ class UCenterTestCase(TestCase):
                                   })
         expect = {'new_mobile': 'mobile_3'}
         self.assertEqual(res.json(), expect)
+
+    def test_revoke_token(self):
+        client = self.client
+        res = client.post(reverse('siteapi:revoke_token'))
+        self.assertEqual(res.status_code, 200)
+
+        res2 = client.get(reverse('siteapi:ucenter_profile'))
+        self.assertEqual(res2.status_code, 401)
 
 
 class UcenterCustomProfileTestCase(TestCase):
