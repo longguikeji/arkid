@@ -1,6 +1,9 @@
 '''
 确保db中的dn正确，供LDAP查询
 '''
+
+from celery import shared_task
+
 from oneid_meta.models import User, Group, Dept, GroupMember, DeptMember
 from ldap.sql_backend.models import LDAPEntry as Entry
 from ldap.sql_backend.models import LDAPOCMappings as OCMap
@@ -44,7 +47,8 @@ def flush_group():
     oc_map = OCMap.objects.get(name='groupOfNames')
     group_base = Entry.objects.get(dn='ou=group,dc=example,dc=org')
     for group in Group.valid_objects.exclude(uid='root'):
-        dn = ','.join([f"cn={uid.replace('g_', '')}" for uid in list(group.upstream_uids)][:-1]) + ',ou=group,dc=example,dc=org'
+        dn = ','.join([f"cn={uid.replace('g_', '')}"
+                       for uid in list(group.upstream_uids)][:-1]) + ',ou=group,dc=example,dc=org'
         entry = Entry.objects.filter(dn=dn).first()
         if entry:
             if entry.oc_map != oc_map:
@@ -74,7 +78,8 @@ def flush_dept_entries():
     oc_map = OCMap.objects.get(name='groupOfNames')
     dept_base = Entry.objects.get(dn='ou=dept,dc=example,dc=org')
     for dept in Dept.valid_objects.exclude(uid='root'):
-        dn = ','.join([f"cn={uid.replace('d_', '')}" for uid in list(dept.upstream_uids)][:-1]) + ',ou=dept,dc=example,dc=org'
+        dn = ','.join([f"cn={uid.replace('d_', '')}"
+                       for uid in list(dept.upstream_uids)][:-1]) + ',ou=dept,dc=example,dc=org'
         entry = Entry.objects.filter(dn=dn).first()
         if entry:
             if entry.oc_map != oc_map:
@@ -112,6 +117,7 @@ def insert_test_data():
     DeptMember.objects.create(user=user, owner=root)
 
 
+@shared_task
 def flush_entries():
     '''
     维护LDAP Entries

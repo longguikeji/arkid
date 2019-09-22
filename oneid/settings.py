@@ -236,6 +236,7 @@ CELERY_TASK_QUEUES = [
     Queue('perm', Exchange('perm'), routing_key='perm'),
     Queue('dept', Exchange('dept'), routing_key='dept'),
     Queue('group', Exchange('group'), routing_key='group'),
+    Queue('sql_ldap', Exchange('sql_ldap'), routing_key='sql_ldap'),
 ]
 CELERY_TASK_DEFAULT_QUEUE = 'default'
 
