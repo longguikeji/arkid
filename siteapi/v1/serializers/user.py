@@ -341,6 +341,7 @@ class UserWithPermSerializer(UserSerializer):
             'is_settled',
             'is_manager',
             'is_admin',
+            'is_extern_user',
             'origin_verbose',
         )
 

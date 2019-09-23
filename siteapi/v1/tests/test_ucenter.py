@@ -150,6 +150,7 @@ class UCenterTestCase(TestCase):
             'is_admin': True,
             'is_manager': False,
             'is_settled': True,
+            'is_extern_user': False,
             'origin_verbose': '脚本添加',
         }
         self.assertEqual(res, expect)
