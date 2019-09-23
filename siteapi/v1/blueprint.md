@@ -55,6 +55,7 @@ FORMAT: 1A
 + is_settled (boolean) - 是否已入驻
 + is_manager (boolean) - 是否是子管理员
 + is_admin (boolean) - 是否是超级管理员
++ is_extern_user (boolean) - 是否是外部用户
 + origin_verbose (string) - 注册来源
 + remark (string) - 备注
 + hiredate (string) - 入职时间 2019-06-04T09:01:44+08:00
