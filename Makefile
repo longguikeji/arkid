@@ -17,17 +17,17 @@ sql-ldap-docker: sql-ldap-docker-build sql-ldap-docker-push
 
 sql-ldap-docker-build:
 	cd ldap/sql_backend/docker && \
-	docker build -t harbor.longguikeji.com/ark-releases/ark-sql-ldap:$(VERSION) .
-sql-ldap-docker-push:
-	docker push harbor.longguikeji.com/ark-releases/ark-sql-ldap:$(VERSION)
+	docker build -t longguikeji/ark-sql-ldap:$(VERSION) .
 
+sql-ldap-docker-push:
+	docker push longguikeji/ark-sql-ldap:$(VERSION)
 
 native-ldap-docker-build:
 	cd ldap/native_backend && \
-	docker build -t harbor.longguikeji.com/ark-releases/ark-native-ldap:$(VERSION) .
+	docker build -t longguikeji/ark-native-ldap:$(VERSION) .
 
 native-ldap-docker-push:
-	docker push harbor.longguikeji.com/ark-releases/ark-native-ldap:$(VERSION)
+	docker push longguikeji/ark-native-ldap:$(VERSION)
 
 test:
 	pipenv run python manage.py test siteapi.v1.tests --settings=oneid.settings_test
