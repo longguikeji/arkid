@@ -467,6 +467,8 @@ class GroupTestCase(TestCase):
                 False,
                 'is_admin':
                 False,
+                'is_extern_user':
+                False,
                 'origin_verbose':
                 '脚本添加',
                 'name':

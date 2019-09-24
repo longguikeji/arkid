@@ -198,6 +198,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'nodes',
             'created',
             'last_active_time',
+            'is_extern_user',
         )
 
     def create(self, validated_data):
@@ -340,6 +341,7 @@ class UserWithPermSerializer(UserSerializer):
             'is_settled',
             'is_manager',
             'is_admin',
+            'is_extern_user',
             'origin_verbose',
         )
 

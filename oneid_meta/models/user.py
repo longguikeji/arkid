@@ -103,6 +103,10 @@ class User(BaseModel, PermOwnerMixin):
         '''
         return self.from_register
 
+    @property
+    def is_extern_user(self):
+        return GroupMember.valid_objects.filter(user=self, owner__uid='extern').exists()
+
     @is_isolated.setter
     def is_isolated(self, value):
         '''
