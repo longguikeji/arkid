@@ -9,9 +9,9 @@ RUN yum -y install \
         openldap-devel \
         openssl
 
-ADD http://repo.mysql.com/yum/mysql-connectors-community/el/7/x86_64//mysql-connector-odbc-5.3.12-1.el7.x86_64.rpm /tmp
+ADD http://repo.mysql.com/yum/mysql-connectors-community/el/7/x86_64//mysql-connector-odbc-5.3.9-1.el7.x86_64.rpm /tmp
 RUN yum -y install unixODBC \
-    && rpm -ivh  /tmp/mysql-connector-odbc-5.3.12-1.el7.x86_64.rpm
+    && rpm -ivh  /tmp/mysql-connector-odbc-5.3.9-1.el7.x86_64.rpm
 
 RUN touch /tmp/odbc.log
 ADD start.sh /usr/local/bin/start
