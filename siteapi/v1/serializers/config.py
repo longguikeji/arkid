@@ -11,6 +11,7 @@ from oneid_meta.models import (
     CompanyConfig,
     DingConfig,
     User,
+    Dept,
     CustomField,
     NativeField,
     AccountConfig,
@@ -22,6 +23,8 @@ from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessToken
 from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 from thirdparty_data_sdk.dingding.dingsdk import constants
 from infrastructure.serializers.sms import SMSClaimSerializer
+from siteapi.v1.views.utils import gen_uid
+from executer.core import CLI
 
 
 class CompanyConfigSerializer(DynamicFieldsModelSerializer):
@@ -216,6 +219,21 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
     def update(self, instance, validated_data):
         company_config_data = validated_data.pop('company_config', None)
         if company_config_data:
+            if not Dept.valid_objects.filter(parent__uid='root').exists():
+                uid = gen_uid(name=company_config_data.get('name_cn', ''), cls=Dept)
+                parent_dept = Dept.valid_objects.filter(uid='root').first()
+                cli = CLI()
+                dept_data = {
+                    'parent_uid': 'root',
+                    'name': company_config_data.get('name_cn', ''),
+                    'uid': uid,
+                }
+                child_dept = cli.create_dept(dept_data)
+                cli.add_dept_to_dept(child_dept, parent_dept)
+            else:
+                company_dept = Dept.valid_objects.filter(parent__uid='root').first()
+                company_dept.name = company_config_data.get('name_cn', '')
+                company_dept.save()
             serializer = CompanyConfigSerializer(CompanyConfig.get_current(), company_config_data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
