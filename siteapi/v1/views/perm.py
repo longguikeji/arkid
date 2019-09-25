@@ -204,6 +204,12 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
         黑白名单局部操作
         '''
         perm = self.get_object()
+        clean = self.request.data.get('clean', False)
+        if clean:
+            UserPerm.valid_objects.filter(perm=perm).update(status='0')
+            DeptPerm.valid_objects.filter(perm=perm).update(status='0')
+            GroupPerm.valid_objects.filter(perm=perm).update(status='0')
+
         user_perm_status = self.request.data.get('user_perm_status', [])
         for ups in user_perm_status:
             user = User.valid_objects.filter(username=ups['uid']).first()
