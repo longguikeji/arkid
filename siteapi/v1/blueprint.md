@@ -1530,6 +1530,7 @@ TODO: 可见权限的处理
 
 + Response 200 (application/json)
     + Attributes (object)
+        + clean (boolean, optional) - 是否重置所有owner的status为0
         + user_perm_status (array, optional)
             + owner_perm (object)
                 + uid (string) - username
