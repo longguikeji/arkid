@@ -42,7 +42,7 @@ ArkID是全新一代企业单点登录解决方案, 彻底告别企业内多系�
 
 ## DEMO
 
-https://demo.arkid.longguikeji.com
+https://arkid.demo.longguikeji.com
 
 ```
 用户名: admin
