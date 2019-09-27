@@ -89,8 +89,8 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         '''
         if instance.is_intra:
             return [field.key for field in NativeField.valid_objects.filter(subject='user', is_visible=True)]
-        else:
-            return [field.key for field in NativeField.valid_objects.filter(subject='extern_user', is_visible=True)]
+
+        return [field.key for field in NativeField.valid_objects.filter(subject='extern_user', is_visible=True)]
 
     @staticmethod
     def get_depts(instance):
@@ -309,6 +309,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         '''
         return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
 
+
 class UserWithPermSerializer(UserSerializer):
     '''
     user info with perms
@@ -353,10 +354,17 @@ class UserWithPermSerializer(UserSerializer):
             'owner__username': obj.username,
             'value': True,
         }
-        return [
-            item['perm__uid'] for item in \
-                UserPerm.valid_objects.filter(**filters).order_by('perm').values('perm__uid')
-        ]
+        app = self.context.get('app', None)
+        if app:
+            # 当明确 app 时，只返回拥有的此app内的权限，且去除 app 前缀
+            prefix = 'app_{}_'.format(app.uid)
+            filters.update(perm__uid__startswith=prefix)
+
+        queryset = UserPerm.valid_objects.filter(**filters).order_by('perm').values('perm__uid')
+        if app:
+            return [item['perm__uid'].replace(prefix, '') for item in queryset]
+
+        return [item['perm__uid'] for item in queryset]
 
     def get_roles(self, obj):    # pylint: disable=no-self-use
         '''
