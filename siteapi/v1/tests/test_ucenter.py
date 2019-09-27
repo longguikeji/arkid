@@ -179,22 +179,27 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.status_code, 403)
 
     def test_token_perm_auth_with_app(self):
-        from oneid_meta.models import APP
-        APP.objects.create(uid='test1')
+        url = reverse('siteapi:token_perm_auth')
+        from oneid_meta.models import APP, OAuthAPP
+        app_1 = APP.objects.create(uid='test1')
+        oauth_app = OAuthAPP.objects.create(app=app_1)
         APP.objects.create(uid='test2')
         perm_1 = Perm.objects.create(uid='app_test1_manage', subject='app', scope='test1', action='manage')
         Perm.objects.create(uid='app_test2_manage', subject='app', scope='test2', action='manage')
-        res = self.client.get(reverse('siteapi:token_perm_auth'), data={'app_uid': 'test1'})
+        res = self.client.get(url, data={'app_uid': 'test1'})
         self.assertEqual(res.json()['perms'], [])
 
         user_perm = UserPerm.objects.create(owner=self.user, perm=perm_1)
         user_perm.permit()
-        res = self.client.get(reverse('siteapi:token_perm_auth'), data={'app_uid': 'test1'})
+        res = self.client.get(url, data={'app_uid': 'test1'})
         self.assertEqual(res.json()['perms'], ['manage'])
-        res = self.client.get(reverse('siteapi:token_perm_auth'), data={'app_uid': 'test2'})
+        res = self.client.get(url, data={'app_uid': 'test2'})
         self.assertEqual(res.json()['perms'], [])
-        res = self.client.get(reverse('siteapi:token_perm_auth'))
+        res = self.client.get(url)
         self.assertIn('app_test1_manage', res.json()['perms'])
+
+        res = self.client.get(url, data={'oauth_client_id': oauth_app.client_id})
+        self.assertEqual(res.json()['perms'], ['manage'])
 
     def test_login(self):
         user = User.create_user(username='test', password='test')

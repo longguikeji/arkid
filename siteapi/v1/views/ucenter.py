@@ -25,7 +25,7 @@ from siteapi.v1.serializers.ucenter import (
 )
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
-from oneid_meta.models import Perm, User, DingConfig, Invitation, Group, APP
+from oneid_meta.models import Perm, User, DingConfig, Invitation, Group, APP, OAuthAPP
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 
 
@@ -85,11 +85,18 @@ class TokenPermAuthView(generics.RetrieveAPIView):
         '''
         context = super().get_serializer_context()
         app_uid = self.request.query_params.get('app_uid', None)
+        oauth_client_id = self.request.query_params.get('oauth_client_id', None)
         if app_uid:
             app = APP.valid_objects.filter(uid=app_uid).first()
             if not app:
                 raise ValidationError({'app_uid': 'not exists'})
             context.update(app=app)
+        if oauth_client_id:
+            oauth_app = OAuthAPP.objects.filter(client_id=oauth_client_id).first()
+            if not oauth_app:
+                raise ValidationError({'oauth_clien_id': 'not exists'})
+            if oauth_app.app:
+                context.update(app=oauth_app.app)
         return context
 
     def get(self, request, *args, **kwargs):
