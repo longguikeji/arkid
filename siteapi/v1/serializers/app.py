@@ -169,7 +169,7 @@ class APPSerializer(DynamicFieldsModelSerializer):
         if oauth_app_data is not None:
             oauth_app_serializer = OAuthAPPSerializer(data=oauth_app_data)
             oauth_app_serializer.is_valid(raise_exception=True)
-            oauth_app_serializer.save(app=app)
+            oauth_app_serializer.save(app=app, name=app.name)
 
         if ldap_app_data is not None:
             serializer = LDAPAPPSerializer(data=ldap_app_data)
@@ -189,6 +189,7 @@ class APPSerializer(DynamicFieldsModelSerializer):
 
         return app
 
+    # TODO: support update name of app
     def update(self, instance, validated_data):
         '''
         update app
