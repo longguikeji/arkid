@@ -67,6 +67,7 @@ class ConfigTestCase(TestCase):
         res = self.client.json_patch(reverse('siteapi:config'),
                                      data={
                                          'company_config': {
+                                             'name_cn': 'demo',
                                              'fullname_cn': 'demo',
                                              'color': 'color',
                                          },
@@ -92,7 +93,7 @@ class ConfigTestCase(TestCase):
 
         expect = {
             'company_config': {
-                'name_cn': '',
+                'name_cn': 'demo',
                 'fullname_cn': 'demo',
                 'name_en': '',
                 'fullname_en': '',
@@ -131,6 +132,7 @@ class ConfigTestCase(TestCase):
                 'is_valid': True,
             },
         }
+
         self.assertEqual(res.json(), expect)
         self.assertEqual(EmailConfig.get_current().access_secret, 'pwd')
         self.assertEqual(SMSConfig.get_current().access_secret, 'pwd')
