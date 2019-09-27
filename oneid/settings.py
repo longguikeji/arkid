@@ -85,6 +85,11 @@ MIDDLEWARE = [
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+]
+
+TEMPLATE_CONTEXT_PROCESSORS = [
+    'django.core.context_processors.i18n',
 ]
 
 SITE_ID = 1
@@ -158,7 +163,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh_hans'
 
 TIME_ZONE = 'Asia/Shanghai'
 
@@ -167,6 +172,16 @@ USE_I18N = True
 USE_L10N = True    # pylint: disable=invalid-name
 
 USE_TZ = True
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+
+LANGUAGES = (
+    ('en', ('English')),
+    ('zh-hans', ('中文简体')),
+    ('zh-hant', ('中文繁體')),
+)
 
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
