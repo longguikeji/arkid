@@ -6,6 +6,7 @@ from oauthlib.common import quote, urlencode, urlencoded
 
 from .exceptions import FatalClientError, OAuthToolkitError
 from .settings import oauth2_settings
+from .models import Application
 
 
 class OAuthLibCore(object):
@@ -125,6 +126,26 @@ class OAuthLibCore(object):
         except oauth2.OAuth2Error as error:
             raise OAuthToolkitError(error=error, redirect_uri=credentials["redirect_uri"])
 
+
+    def presume_grant_type(self, request):
+        # - authorization_grant_type=password && client_type=public
+        #   get client from form
+        client_id = request.POST.get('client_id', None)
+        if client_id:
+            client = Application.objects.filter(
+                client_id=client_id, 
+                authorization_grant_type=Application.GRANT_PASSWORD,
+                client_type=Application.CLIENT_PUBLIC,
+            ).first()
+            if client:
+                return Application.GRANT_PASSWORD
+
+        # TODO:
+
+        # - authorization_grant_type=password && client_type=confidential
+        #   get client from basic auth
+
+
     def create_token_response(self, request):
         """
         A wrapper method that calls create_token_response on `server_class` instance.
@@ -135,7 +156,9 @@ class OAuthLibCore(object):
         extra_credentials = self._get_extra_credentials(request)
 
         headers, body, status = self.server.create_token_response(uri, http_method, body,
-                                                                  headers, extra_credentials)
+                                                                  headers, extra_credentials,
+                                                                  grant_type_for_scope=self.presume_grant_type(request),
+                                                                  )
         uri = headers.get("Location", None)
 
         return uri, headers, body, status
