@@ -767,10 +767,12 @@ deprecated
 
 ## 权限 [/auth/token/]
 
-## 校验权限 [GET]
+### 校验权限 [GET]
 + Request JSON Message
     + Attributes
-        + perm_uid
+        + perm_uid (string, optional)
+        + app_uid (string, optional) - 限定返回的权限。此时返回的 perm_uid 不带前缀，形如 `manage`
+        + oauth_client_id (string, optioanl) - 作用同 app_uid
 
 + Response 200 (application/json)  
     拥有该权限
