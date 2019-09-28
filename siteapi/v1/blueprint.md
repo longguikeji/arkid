@@ -2032,3 +2032,68 @@ Content-Disposition: form-data; name='node_uid'
 ### 获取特定日志 [GET]
 + Response 200 (application/json)
     + Attributes (Log)
+
+
+# 钉钉扫码登录
+
+## 扫码回调函数 [/ding/qr/callback/{?code,state}]
++ Parameters
+    + code (string) - 钉钉扫码返回一次性查询码tmp_code
+    + state (string) - 钉钉回调URL描述参数，一般固定为'STATE'
+### 获取权限 [POST]
++ Requests JSON Message
+    + Attributes
+
++ Response 302 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 302 (application/json)
+    + Attributes
+        + token （string) - 未匹配用户，返回空字段token
+        + dingId (string) - 返回钉钉id，用于下一步提交绑定
+
+## 发送绑定验证短信 [/ding/bind/sms/{?mobile}]
+
+### 发送短信 [POST]
++ Requests JSON Message
+    + Attributes
+        + mobile (string) - 用户接收短信的手机号
+
++ Response 201 (application/json)
+    + Attributes
+        + 'sms has send' (string) - 短信已发送
+
++ Response 401 (application/json)
+    + Attributes
+        + ValidationError({'mobile':['unsupported']}) (raise error) - 报错，不支持的手机号
+
+## 查询未绑定用户是否注册 [/ding/query/user/{?sms_token}]
+
+### 查询用户 [POST]
++ Requests JSON Message
+    + Attributes
+        + sms_token (string) - 通过返回的sms_token查询手机号，到用户表中查询对应的用户
+
++ Response 200 (application/json)
+    + Attributes
+        + exist (int) - 已注册返回1，未注册返回0
+
+## 钉钉用户绑定 [/ding/bind/{?dingId,sms_token}]
+
+### 绑定用户 [POST]
++ Request JSON Message
+    + Attributes
+        + dingId (string) - 钉钉用户扫码时查询返回的dingId
+        + sms_token (string) - 用户手机发短信后返回的sms_token
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
+### 钉钉绑定用户注册 [POST]
++ Request JSON Message
+    + Attributes
+        + username (string)
+        + password (string) 
+        + sms_token (string) - 绑定页面验证用户手机的sms_token
++ Response (application/json)
+    + Attributes (UserWithPermWithToken)
