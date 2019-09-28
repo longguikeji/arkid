@@ -1,11 +1,10 @@
 '''
 serializers for ucenter
 '''
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from common.django.drf.serializer import DynamicFieldsModelSerializer
-from oneid_meta.models import User, Invitation
+from oneid_meta.models import User, Invitation, DingUser
 from executer.core import CLI
 from infrastructure.serializers.sms import (
     SMSClaimSerializer,
@@ -200,7 +199,7 @@ class UserAlterMobileSerializer(serializers.Serializer):    # pylint: disable=ab
         return instance
 
 
-class UserInvitedProfileSerializer(serializers.Serializer):
+class UserInvitedProfileSerializer(serializers.Serializer):    # pylint: disable=abstract-method
     '''
     serialzier for user to set profile after accept invitation
     '''
@@ -249,7 +248,7 @@ class UserInvitedProfileSerializer(serializers.Serializer):
         return validated_data
 
 
-class UserContactSerializer(serializers.Serializer):
+class UserContactSerializer(serializers.Serializer):    # pylint: disable=abstract-method
     '''
     用户联系方式
     '''
@@ -293,3 +292,99 @@ class UserContactSerializer(serializers.Serializer):
         cli = CLI()
         cli.update_user(instance, validated_data)
         return instance
+
+
+class UserDingBindSerializer(serializers.Serializer):    # pylint: disable=abstract-method
+    '''
+    dingding bind
+    - by sms_token
+    - by dingId
+    '''
+
+    sms_token = serializers.CharField(required=False)
+    dingId = serializers.CharField(required=False)
+
+    class Meta:
+        '''
+        关联DingUser表
+        '''
+        model = DingUser
+        fields = (
+            'sms_token',
+            'dingId',
+        )
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        sms_token = validated_data.pop('sms_token', None)
+        ding_id = validated_data.get('dingId', None)
+        if not sms_token or ding_id:
+            raise ValidationError({'auth_token': ['auth_token is required, like "sms_token" or "dingId"']})
+        request = self.context.get("request")
+        user = request.user
+        mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
+        SMSClaimSerializer.clear_sms_token(sms_token)
+
+        if mobile != user.mobile:
+            raise ValidationError({'mobile': ['invalid']})
+        validated_data['user'] = user
+        return validated_data
+
+    def update(self, instance, validated_data):
+        cli = CLI()
+        cli.update_user(instance, validated_data)
+        return instance
+
+
+class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
+    '''
+    Serializer user register
+    '''
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+    sms_token = serializers.CharField(required=False)
+    dingId = serializers.CharField(required=False)
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = User
+
+        fields = (
+            'username',
+            'password',
+            'sms_token',
+            'dingId',
+        )
+
+    def validate(self, attrs):
+        '''
+        校验token，验重
+        '''
+        validated_data = super().validate(attrs)
+        if not validated_data.get('sms_token', ''):
+            raise ValidationError({'auth_token': ['auth_token is required, like "sms_token"']})
+
+        username = validated_data['username']
+        if User.valid_objects.filter(username=username).exists():
+            raise ValidationError({'username': ['existed']})
+
+        sms_token = validated_data.get('sms_token', None)
+        if sms_token:
+            mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
+            SMSClaimSerializer.clear_sms_token(sms_token)
+            if User.valid_objects.filter(mobile=mobile).exists():
+                raise ValidationError({'mobile': ['existed']})
+            validated_data['mobile'] = mobile
+
+        return validated_data
+
+    def create(self, validated_data):
+        '''
+        创建用户
+        '''
+        cli = CLI()
+        password = validated_data.pop('password')
+        user = cli.create_user(validated_data)
+        user.from_register = True
+        user.save()
+        cli.set_user_password(user, password)
+        return user
