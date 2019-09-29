@@ -2040,19 +2040,28 @@ Content-Disposition: form-data; name='node_uid'
 + Parameters
     + code (string) - 钉钉扫码返回一次性查询码tmp_code
     + state (string) - 钉钉回调URL描述参数，一般固定为'STATE'
+
 ### 获取权限 [POST]
 + Requests JSON Message
     + Attributes
 
-+ Response 302 (application/json)
++ Response 200 (application/json)
     + Attributes (UserWithPermWithToken)
 
-+ Response 302 (application/json)
++ Response 200 (application/json)
     + Attributes
         + token （string) - 未匹配用户，返回空字段token
-        + dingId (string) - 返回钉钉id，用于下一步提交绑定
+        + ding_id (string) - 返回钉钉id，用于下一步提交绑定
 
-## 发送绑定验证短信 [/ding/bind/sms/{?mobile}]
++ Response 400 (application/json)
+    + Attributes
+        + err_msg (string) - 'get dingding user time out'
+
++ Response 408 (application/json)
+    + Attributes
+        + err_msg (string) - 'get tmp code error'
+
+## 发送绑定验证短信 [/ding/bind/sms/]
 
 ### 发送短信 [POST]
 + Requests JSON Message
@@ -2061,13 +2070,13 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 201 (application/json)
     + Attributes
-        + 'sms has send' (string) - 短信已发送
 
 + Response 401 (application/json)
     + Attributes
-        + ValidationError({'mobile':['unsupported']}) (raise error) - 报错，不支持的手机号
+        + mobile (enum[string]) 
+            - "unsupported" - 报错，不支持的手机号
 
-## 查询未绑定用户是否注册 [/ding/query/user/{?sms_token}]
+## 查询未绑定用户是否注册 [/ding/query/user/]
 
 ### 查询用户 [POST]
 + Requests JSON Message
@@ -2076,24 +2085,28 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 200 (application/json)
     + Attributes
-        + exist (int) - 已注册返回1，未注册返回0
+        + exist (boolean) - 已注册返回True，未注册返回False
 
-## 钉钉用户绑定 [/ding/bind/{?dingId,sms_token}]
+## 钉钉用户绑定 [/ding/bind/]
 
 ### 绑定用户 [POST]
 + Request JSON Message
     + Attributes
-        + dingId (string) - 钉钉用户扫码时查询返回的dingId
+        + ding_id (string) - 钉钉用户扫码时查询返回的ding_id
         + sms_token (string) - 用户手机发短信后返回的sms_token
 
 + Response 201 (application/json)
     + Attributes (UserWithPermWithToken)
 
-### 钉钉绑定用户注册 [POST]
+## 钉钉用户注册加绑定 [/ding/register/bind/]
+
+### 注册加绑定 [POST]
 + Request JSON Message
     + Attributes
         + username (string)
         + password (string) 
         + sms_token (string) - 绑定页面验证用户手机的sms_token
-+ Response (application/json)
+        + ding_id (string) - 从钉钉查询的扫码用户的ding_id
+
++ Response 201 (application/json)
     + Attributes (UserWithPermWithToken)

@@ -94,10 +94,9 @@ urlpatterns = [
     url(r'^auth/invitation_key/$', ucenter_views.InvitationKeyAuthView.as_view(), name='invitation_key_auth'),
     url(r'^revoke/token/$', ucenter_views.RevokeTokenView.as_view(), name='revoke_token'),
     #dingding
-    url(r'^dingding/qr/callback/$', sns_views.DingQrCallbackView.as_view(), name='ding_qr_callback'),
+    url(r'^ding/qr/callback/$', sns_views.DingQrCallbackView.as_view(), name='ding_qr_callback'),
     url(r'^ding/bind/$', sns_views.DingBindAPIView.as_view(), name='ding_bind'),
     url(r'^ding/register/bind/$', sns_views.DingRegisterAndBindView.as_view(), name='ding_register_bind'),
-    url(r'^ding/bind/sms/$', sns_views.DingBindSMSClaimAPIView.as_view(), name='ding_bind_sms'),
     url(r'^ding/query/user/$', sns_views.DingQueryUserAPIView.as_view(), name='ding_query_user'),
     # shortcut
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),

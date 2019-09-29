@@ -294,15 +294,15 @@ class UserContactSerializer(serializers.Serializer):    # pylint: disable=abstra
         return instance
 
 
-class UserDingBindSerializer(serializers.Serializer):    # pylint: disable=abstract-method
+class DingBindSerializer(serializers.Serializer):    # pylint: disable=abstract-method
     '''
     dingding bind
     - by sms_token
-    - by dingId
+    - by ding_id
     '''
 
-    sms_token = serializers.CharField(required=False)
-    dingId = serializers.CharField(required=False)
+    sms_token = serializers.CharField(required=True)
+    ding_id = serializers.CharField(required=True)
 
     class Meta:
         '''
@@ -311,22 +311,14 @@ class UserDingBindSerializer(serializers.Serializer):    # pylint: disable=abstr
         model = DingUser
         fields = (
             'sms_token',
-            'dingId',
+            'ding_id',
         )
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
-        sms_token = validated_data.pop('sms_token', None)
-        ding_id = validated_data.get('dingId', None)
-        if not sms_token or ding_id:
-            raise ValidationError({'auth_token': ['auth_token is required, like "sms_token" or "dingId"']})
-        request = self.context.get("request")
-        user = request.user
-        mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
-        SMSClaimSerializer.clear_sms_token(sms_token)
-
-        if mobile != user.mobile:
-            raise ValidationError({'mobile': ['invalid']})
+        mobile = SMSClaimSerializer.check_sms_token(validated_data['sms_token'])['mobile']
+        SMSClaimSerializer.clear_sms_token(validated_data['sms_token'])
+        user = User.valid_objects.filter(mobile=mobile).first()
         validated_data['user'] = user
         return validated_data
 
@@ -342,8 +334,8 @@ class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
     '''
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
-    sms_token = serializers.CharField(required=False)
-    dingId = serializers.CharField(required=False)
+    sms_token = serializers.CharField(required=True)
+    ding_id = serializers.CharField(required=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = User
@@ -352,7 +344,7 @@ class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
             'username',
             'password',
             'sms_token',
-            'dingId',
+            'ding_id',
         )
 
     def validate(self, attrs):
@@ -371,8 +363,6 @@ class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
         if sms_token:
             mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
             SMSClaimSerializer.clear_sms_token(sms_token)
-            if User.valid_objects.filter(mobile=mobile).exists():
-                raise ValidationError({'mobile': ['existed']})
             validated_data['mobile'] = mobile
 
         return validated_data
