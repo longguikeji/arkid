@@ -230,3 +230,25 @@ class SMSTestCase(TestCase):
                                       'mobile': '18810101010',
                                   })
         self.assertEqual(res.status_code, 201)
+
+    @mock.patch('infrastructure.serializers.sms.gen_code')
+    @mock.patch('infrastructure.serializers.sms.send_sms')
+    @mock.patch('infrastructure.serializers.sms.redis')
+    def test_send_sms_to_ding_bind(self, mock_redis, mock_send_sms, mock_gen_code):
+        mock_Redis = mock.Mock()    # pylint: disable=invalid-name
+        mock_redis.Redis.return_value = mock_Redis
+        mock_Redis.get.return_value = SMS_CODE.encode()
+        mock_Redis.set.return_value = True
+
+        mock_send_sms.return_value = True
+
+        mock_gen_code.return_value = SMS_CODE
+
+        url = reverse('infra:sms', args=('ding_bind', ))
+
+        res = self.anonymous.json_post(reverse('infra:sms', args=('update_mobile', )), data={'mobile': MOBILE})
+        self.assertEqual(res.status_code, 401)
+
+        res = self.client.get(url, data={'mobile': MOBILE, 'code': SMS_CODE})
+        self.assertIn('sms_token', res.json())
+        self.assertEqual(res.status_code, 200)
