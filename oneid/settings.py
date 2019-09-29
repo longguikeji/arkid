@@ -288,6 +288,7 @@ LOGIN_URL = '/#/oneid/login'
 CREDIBLE_ARKERS = [
     'oneid_broker',
     'arkbe_broker',
+    'noah',
     'wfe',
     'msghub',
     'oauth',
