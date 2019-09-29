@@ -26,7 +26,8 @@ class OneIDBasicAuthBackend:
         ciphertext = user.password
         plaintext = password
         if verify_password(plaintext, ciphertext):
-            request.user = user    # 注意这里替换的是OneID.User，可能会与其他backend记录的user不一样
+            if request:
+                request.user = user    # 注意这里替换的是OneID.User，可能会与其他backend记录的user不一样
             return user
         return None
 
