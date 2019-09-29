@@ -31,3 +31,5 @@ EXECUTERS = [    # 注意顺序
     # 'executer.LDAP.LDAPExecuter',
     # 'executer.Ding.DingExecuter',
 ]
+
+LANGUAGE_CODE = 'en'
