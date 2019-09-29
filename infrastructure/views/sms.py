@@ -61,6 +61,11 @@ class SMSClaimAPIView(GenericAPIView):
                 raise ValidationError({'mobile': ['unsupported']})
             return UpdateMobileSMSClaimSerializer
 
+        if subject == 'ding_bind':
+            if not account_config.support_mobile:
+                raise ValidationError({'mobile': ['unsupported']})
+            return SMSClaimSerializer
+
         raise NotFound
 
     def post(self, request, *args, **kwargs):    # pylint: disable=unused-argument
