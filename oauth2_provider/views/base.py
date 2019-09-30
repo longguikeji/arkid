@@ -59,7 +59,7 @@ class TokenRequiredMixin(AccessMixin):
             res = ExpiringTokenAuthentication().authenticate(request)
             if res is not None:
                 user, _ = res
-                if not user.has_perm(required_perm):
+                if not user.has_perm_realtime(required_perm):
                     return False
                 request.user = user
                 return True
