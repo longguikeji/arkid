@@ -14,7 +14,7 @@ from rest_framework.exceptions import ValidationError
 from common.django.model import BaseModel, IgnoreDeletedManager
 from oneid_meta.models.group import GroupMember
 from oneid_meta.models.dept import DeptMember
-from oneid_meta.models.perm import UserPerm, PermOwnerMixin
+from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from executer.utils.password import encrypt_password, verify_password
 
 
@@ -181,6 +181,26 @@ class User(BaseModel, PermOwnerMixin):
         if self.is_admin:
             return True
         return UserPerm.valid_objects.filter(owner=self, perm=perm, value=True).exists()
+
+    def has_perm_realtime(self, perm):
+        '''
+        实时判断是否有某权限
+        适用于对权限结果准确度要求较高的场景
+        '''
+        if perm is None:
+            return True
+        if self.is_admin:
+            return True
+        if UserPerm.valid_objects.filter(owner=self, perm=perm, status=1).exists():
+            return True
+        for dept in self.depts:
+            if DeptPerm.valid_objects.filter(owner=dept, perm=perm, status=1).exists():
+                return True
+        for group in self.groups:
+            if GroupPerm.valid_objects.filter(owner=group, perm=perm, status=1).exists():
+                return True
+        return False
+
 
     def get_perm(self, perm):
         '''
