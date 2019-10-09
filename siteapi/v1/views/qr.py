@@ -32,7 +32,6 @@ def require_ding_qr_supported(func):
 
     return inner
 
-
 class DingQrCallbackView(APIView):
     '''
     dingding/qr/callback/
