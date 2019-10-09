@@ -9,7 +9,6 @@ from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_408_REQUEST_TIMEOUT)
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 
 from siteapi.v1.serializers.user import UserWithPermSerializer
 from siteapi.v1.serializers.ucenter import DingRegisterAndBindSerializer, DingBindSerializer
@@ -19,10 +18,9 @@ from infrastructure.serializers.sms import SMSClaimSerializer
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser, AccountConfig
+from oneid_meta.models import User, Group, DingUser
 
 from settings_local import SMS_CONFIG
-
 
 class DingQrCallbackView(APIView):
     '''

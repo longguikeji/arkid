@@ -27,11 +27,14 @@ class ConfigTestCase(TestCase):
                 'app_valid': False,
                 'corp_id': '',
                 'corp_valid': False,
+                'qr_app_id': '',
+                'qr_app_valid': False,
             },
             'account_config': {
                 'allow_email': False,
                 'allow_mobile': False,
                 'allow_register': False,
+                'allow_ding_qr':False,
             },
             'sms_config': {
                 'access_key': '',
@@ -56,14 +59,17 @@ class ConfigTestCase(TestCase):
 
     @mock.patch('oneid_meta.models.config.SMSAliyunManager.send_auth_code')
     @mock.patch('oneid_meta.models.config.EmailManager.connect')
+    @mock.patch('siteapi.v1.serializers.config.DingConfigSerializer.validate_qr_app_config')
     @mock.patch('siteapi.v1.serializers.config.DingConfigSerializer.validate_app_config')
     @mock.patch('siteapi.v1.serializers.config.DingConfigSerializer.validate_corp_config')
-    def test_update_config(self, mock_validate_corp_config, mock_validate_app_config, mock_connect, mock_send_auth_code):
+    def test_update_config(self, mock_validate_corp_config, mock_validate_app_config,\
+        mock_validate_qr_app_config, mock_connect,\
+        mock_send_auth_code):
         mock_validate_corp_config.return_value = True
         mock_validate_app_config.return_value = False
+        mock_validate_qr_app_config.return_value = True
         mock_connect.return_value = True
         mock_send_auth_code.return_value = True
-
         res = self.client.json_patch(reverse('siteapi:config'),
                                      data={
                                          'company_config': {
@@ -76,10 +82,13 @@ class ConfigTestCase(TestCase):
                                              'app_secret': 'pwd',
                                              'corp_id': 'corp_id',
                                              'corp_secret': 'pwd',
+                                             'qr_app_id': 'qr_app_id',
+                                             'qr_app_secret': 'qr_app_secret',
                                          },
                                          'account_config': {
                                              'allow_register': True,
                                              'allow_mobile': True,
+                                             'allow_ding_qr': True,
                                          },
                                          'sms_config': {
                                              'access_key': 'access_key',
@@ -107,11 +116,14 @@ class ConfigTestCase(TestCase):
                 'app_valid': False,
                 'corp_id': 'corp_id',
                 'corp_valid': True,
+                'qr_app_id': 'qr_app_id',
+                'qr_app_valid': True,
             },
             'account_config': {
                 'allow_email': False,
                 'allow_mobile': True,
                 'allow_register': True,
+                'allow_ding_qr': True,
             },
             'sms_config': {
                 'access_key': 'access_key',
@@ -241,9 +253,10 @@ class ConfigCustomFieldTestCase(TestCase):
         res = self.client.delete(reverse("siteapi:custom_field_detail", args=('user', uuid)))
         self.assertEqual(res.status_code, 204)
         self.assertEqual(CustomField.valid_objects.count(), 0)
-    
-    def test_create_extern_user_custom_field(self):
-        res = self.client.json_post(reverse("siteapi:custom_field_list", args=('extern_user', )), data={'name': '忌口'}).json()
+
+    def test_create_extern_user_custom_field(self):    # pylint: disable=invalid-name
+        res = self.client.json_post(reverse("siteapi:custom_field_list", args=('extern_user', )),\
+            data={'name': '忌口'}).json()
         res.pop('uuid')
         expect = {'name': '忌口', 'subject': 'extern_user', 'schema': {'type': 'string'}, 'is_visible': True}
         self.assertEqual(res, expect)
