@@ -20,7 +20,6 @@ from executer.log.rdb import LOG_CLI
 
 from oneid_meta.models import User, Group, DingUser, DingConfig
 
-
 class DingQrCallbackView(APIView):
     '''
     dingding/qr/callback/
