@@ -1,6 +1,7 @@
 '''
 serializer for config
 '''
+import requests
 
 from django.contrib.sites.models import Site
 from django.db import transaction
@@ -18,7 +19,7 @@ from oneid_meta.models import (
     SMSConfig,
     EmailConfig,
 )
-from common.django.drf.serializer import DynamicFieldsModelSerializer, WritableSerializerMethodField
+from common.django.drf.serializer import DynamicFieldsModelSerializer
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 from thirdparty_data_sdk.dingding.dingsdk import constants
@@ -57,10 +58,11 @@ class AccountConfigSerializer(DynamicFieldsModelSerializer):
             'allow_register',
             'allow_mobile',
             'allow_email',
+            'allow_ding_qr',
         )
 
 
-class SMSConfigSerializer(DynamicFieldsModelSerializer):
+class SMSConfigSerializer(DynamicFieldsModelSerializer):    # pylint: disable=missing-docstring
     is_valid = serializers.BooleanField(read_only=True)
     access_secret = serializers.CharField(write_only=True, allow_blank=True)
 
@@ -125,6 +127,7 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
     '''
     app_secret = serializers.CharField(write_only=True)
     corp_secret = serializers.CharField(write_only=True)
+    qr_app_secret = serializers.CharField(write_only=True)
 
     class Meta:    # pylint: disable=missing-docstring
 
@@ -137,6 +140,9 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
             'corp_secret',
             'app_valid',
             'corp_valid',
+            'qr_app_id',
+            'qr_app_secret',
+            'qr_app_valid'
         )
 
         read_only_fields = (
@@ -152,9 +158,11 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
         instance.__dict__.update(validated_data)
         instance.app_valid = self.validate_app_config(instance)
         instance.corp_valid = self.validate_corp_config(instance)
-        update_fields = ['app_valid', 'corp_valid']
+        instance.qr_app_valid = self.validate_qr_app_config(instance)
+        update_fields = ['app_valid', 'corp_valid', 'qr_app_valid']
         update_fields += ['app_key', 'app_secret'] if instance.app_valid else []
         update_fields += ['corp_id', 'corp_secret'] if instance.corp_valid else []
+        update_fields += ['qr_app_id', 'qr_app_secret'] if instance.qr_app_valid else []
         instance.save(update_fields=update_fields)
         instance.refresh_from_db()
         return instance
@@ -188,6 +196,22 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
                 token_version=constants.TOKEN_FROM_CORPID_CORPSECRET,
             ).get_access_token()
             return True
+        except APICallError:
+            return False
+
+    @staticmethod
+    def validate_qr_app_config(instance):
+        '''
+        validate qr_app_id, qr_app_secret
+        :rtype:bool
+        '''
+        get_token_url = 'https://oapi.dingtalk.com/sns/gettoken'
+        try:
+            err_code = requests.get(url=get_token_url, params={'appid':instance.qr_app_id,\
+            'appsecret':instance.qr_app_secret}).json()['errcode']
+            if err_code == 0:
+                return True
+            return False
         except APICallError:
             return False
 
