@@ -211,8 +211,8 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
             'appsecret':instance.qr_app_secret}).json()['errcode']
             if err_code == 0:
                 return True
-            return False
-        except APICallError:
+            raise ValidationError({'qr_ding': ['invalid']})
+        except RuntimeError:
             return False
 
 
