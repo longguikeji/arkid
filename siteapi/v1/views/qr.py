@@ -31,7 +31,6 @@ def require_ding_qr_supported(func):
             if not AccountConfig.get_current().support_ding_qr else func(self, request)
     return inner
 
-
 class DingQrCallbackView(APIView):
     '''
     dingding/qr/callback/
