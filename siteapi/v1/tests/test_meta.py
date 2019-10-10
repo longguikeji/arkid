@@ -22,9 +22,11 @@ class MetaTestCase(TestCase):
         ding_config = DingConfig.get_current()
         ding_config.corp_id = "corp_id"
         ding_config.qr_app_id = 'qr_app_id'
+        ding_config.qr_app_valid = True
         ding_config.save()
 
         res = self.anonymous.get(reverse('siteapi:meta'))
+        print(res.json())
         expect = {
             'company_config': {
                 'name_cn': '',
