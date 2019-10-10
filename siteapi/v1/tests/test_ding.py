@@ -67,6 +67,7 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res_keys, expect)
 
     @mock.patch("siteapi.v1.views.sns.DingQrCallbackView.get_ding_id")
+
     def test_ding_sns_login_newuser(self, mock_get_ding_id):
         client = self.client
         ding_config = DingConfig.get_current()
@@ -98,7 +99,7 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.json(), expect)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_query_user_2(self, mock_check_sms_token):
+    def test_ding_query_user_loguped(self, mock_check_sms_token):
         client = self.client
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
