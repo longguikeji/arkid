@@ -380,6 +380,7 @@ FORMAT: 1A
 + allow_register (boolean)
 + allow_mobile (boolean)
 + allow_email (boolean)
++ allow_ding_qr (boolean)
 
 ## SMSConfig (object)
 + vendor (string)
@@ -407,6 +408,9 @@ FORMAT: 1A
 + corp_id (string)
 + corp_secret (string) - write_only
 + corp_valid (boolean, readonly) - corp配置是否有效
++ qr_app_id (string) - 扫码登录应用查询钉钉用户所需的id
++ qr_app_secret (string) - 原来也叫app_secret，为了与上面的区分所以加qr，是查询用户钉钉信息所需的secret
++ qr_app_valid (boolean, readonly) - qr配置是否有效
 
 ## Config (object)
 + company_config (CompanyConfig)
@@ -437,12 +441,14 @@ FORMAT: 1A
 ## DingMetaInfo (object)
 + app_key (string)
 + corp_id (string)
++ qr_app_id (string)
 
 ## AccountMetaInfo (object)
 + support_email (boolean) - 是否支持邮箱登录、找回密码、激活
 + support_mobile (boolean) - 是否支持手机登录、找回密码、激活
 + support_email_register (boolean) - 是否支持邮箱注册
 + support_mobile_register (boolean) - 是否支持手机注册
++ support_ding_qr (boolean) - 是否支持钉钉扫码登录
 
 ## MetaInfo (object)
 + company_config (CompanyMetaInfo)

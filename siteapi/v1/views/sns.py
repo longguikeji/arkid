@@ -7,9 +7,9 @@ from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
-from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_408_REQUEST_TIMEOUT)
+from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,\
+    HTTP_400_BAD_REQUEST, HTTP_408_REQUEST_TIMEOUT, HTTP_403_FORBIDDEN)
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 
 from siteapi.v1.serializers.user import UserWithPermSerializer
 from siteapi.v1.serializers.ucenter import DingRegisterAndBindSerializer, DingBindSerializer
@@ -19,10 +19,7 @@ from infrastructure.serializers.sms import SMSClaimSerializer
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser, AccountConfig
-
-from settings_local import SMS_CONFIG
-
+from oneid_meta.models import User, Group, DingUser, DingConfig, AccountConfig
 
 class DingQrCallbackView(APIView):
     '''
@@ -31,9 +28,8 @@ class DingQrCallbackView(APIView):
     '''
     permission_classes = []
     authentication_classes = []
-
-    appid = SMS_CONFIG['appid']
-    appsecret = SMS_CONFIG['appsecret']
+    appid = DingConfig.get_current().qr_app_id
+    appsecret = DingConfig.get_current().qr_app_secret
     baseurl = 'https://oapi.dingtalk.com/sns/'
     get_access_url = baseurl + 'gettoken'
     get_sns_url = baseurl + 'get_sns_token'
@@ -44,8 +40,12 @@ class DingQrCallbackView(APIView):
         '''
         处理钉钉用户扫码之后重定向到‘首页’或‘绑定页面’
         '''
+        if not AccountConfig.get_current().support_ding_qr:
+            return Response({'err_msg':'ding qr not allowed'}, HTTP_403_FORBIDDEN)
+
         state = request.data.get('state')
         code = request.data.get('code')
+
         if state == 'STATE' and code != '':
             try:
                 user_ids = self.get_ding_id(code)
@@ -53,6 +53,7 @@ class DingQrCallbackView(APIView):
                 return Response({'err_msg':'get dingding user time out'}, HTTP_408_REQUEST_TIMEOUT)
         else:
             return Response({'err_msg':'get tmp code error'}, HTTP_400_BAD_REQUEST)
+
         ding_id = user_ids['ding_id']
         ding_user = DingUser.valid_objects.filter(ding_id=ding_id).first()
         if ding_user:
