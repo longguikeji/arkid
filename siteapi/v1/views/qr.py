@@ -22,7 +22,7 @@ from executer.log.rdb import LOG_CLI
 from oneid_meta.models import User, Group, DingUser, DingConfig, AccountConfig
 
 
-def not_allow_qr_forbidden(func):
+def allow_qr_forbidden(func):
     '''
     检查是否允许扫码登录装饰器
     '''
@@ -47,7 +47,7 @@ class DingQrCallbackView(APIView):
     get_persistent_code_url = baseurl + 'get_persistent_code'
     get_ding_info_url = baseurl + 'getuserinfo'
 
-    @not_allow_qr_forbidden
+    @allow_qr_forbidden
     def post(self, request):
         '''
         处理钉钉用户扫码之后重定向到‘首页’或‘绑定页面’
@@ -98,7 +98,7 @@ class DingQueryUserAPIView(GenericAPIView):
     '''
     permission_classes = []
     authentication_classes = []
-    @not_allow_qr_forbidden
+    @allow_qr_forbidden
     def post(self, request):
         '''
         查询用户是否注册
@@ -120,7 +120,7 @@ class DingBindAPIView(GenericAPIView):
 
     serializer_class = DingBindSerializer
 
-    @not_allow_qr_forbidden
+    @allow_qr_forbidden
     def post(self, request):
         '''
         绑定用户
@@ -147,11 +147,14 @@ class DingRegisterAndBindView(generics.CreateAPIView):
     serializer_class = DingRegisterAndBindSerializer
     read_serializer_class = UserWithPermSerializer
 
-    @not_allow_qr_forbidden
+
     def create(self, request, *args, **kwargs):
         '''
         钉钉扫码加绑定
         '''
+        if not AccountConfig.get_current().support_ding_qr_register:
+            return Response({'err_msg':'ding qr register not allowed'}, HTTP_403_FORBIDDEN)
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()

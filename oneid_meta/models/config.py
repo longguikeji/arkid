@@ -125,6 +125,13 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
         '''
         return self.allow_ding_qr and DingConfig.get_current().qr_app_valid
 
+    @property
+    def support_ding_qr_register(self):
+        '''
+        是否支持钉钉扫码注册
+        '''
+        return self.allow_register and self.allow_ding_qr
+
 
 class SMSConfig(BaseModel, SingletonConfigMixin):
     '''

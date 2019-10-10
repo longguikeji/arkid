@@ -34,7 +34,7 @@ from siteapi.v1.views import (
     shortcut as shortcut_views,
     perm as perm_views,
     ucenter as ucenter_views,
-    sns as sns_views,
+    qr as qr_views,
 )
 
 from siteapi.v1.views.statistics import UserStatisticView
@@ -94,10 +94,10 @@ urlpatterns = [
     url(r'^auth/invitation_key/$', ucenter_views.InvitationKeyAuthView.as_view(), name='invitation_key_auth'),
     url(r'^revoke/token/$', ucenter_views.RevokeTokenView.as_view(), name='revoke_token'),
     #dingding
-    url(r'^ding/qr/callback/$', sns_views.DingQrCallbackView.as_view(), name='ding_qr_callback'),
-    url(r'^ding/bind/$', sns_views.DingBindAPIView.as_view(), name='ding_bind'),
-    url(r'^ding/register/bind/$', sns_views.DingRegisterAndBindView.as_view(), name='ding_register_bind'),
-    url(r'^ding/query/user/$', sns_views.DingQueryUserAPIView.as_view(), name='ding_query_user'),
+    url(r'^ding/qr/callback/$', qr_views.DingQrCallbackView.as_view(), name='ding_qr_callback'),
+    url(r'^ding/bind/$', qr_views.DingBindAPIView.as_view(), name='ding_bind'),
+    url(r'^ding/register/bind/$', qr_views.DingRegisterAndBindView.as_view(), name='ding_register_bind'),
+    url(r'^ding/query/user/$', qr_views.DingQueryUserAPIView.as_view(), name='ding_query_user'),
     # shortcut
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
     url(r'^slice/delete/$', shortcut_views.ObjSliceDeleteAPIView.as_view(), name='shortcut_slice_delete'),
