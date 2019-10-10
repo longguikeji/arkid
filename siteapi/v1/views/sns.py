@@ -18,9 +18,8 @@ from infrastructure.serializers.sms import SMSClaimSerializer
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser
+from oneid_meta.models import User, Group, DingUser, DingConfig
 
-from settings_local import SMS_CONFIG
 
 class DingQrCallbackView(APIView):
     '''
@@ -30,8 +29,8 @@ class DingQrCallbackView(APIView):
     permission_classes = []
     authentication_classes = []
 
-    appid = SMS_CONFIG['appid']
-    appsecret = SMS_CONFIG['appsecret']
+    appid = DingConfig.objects.first().qr_app_id
+    appsecret = DingConfig.objects.first().qr_app_secret
     baseurl = 'https://oapi.dingtalk.com/sns/'
     get_access_url = baseurl + 'gettoken'
     get_sns_url = baseurl + 'get_sns_token'

@@ -118,6 +118,7 @@ class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
             'support_mobile',
             'support_email_register',
             'support_mobile_register',
+            'support_ding_qr',
         )
 
 
@@ -322,6 +323,8 @@ class PublicDingConfigSerializer(DynamicFieldsModelSerializer):
         # 'app_secret',
             'corp_id',
         # 'corp_secret',
+            'qr_app_id',
+        # 'qr_app_secret',
         )
 
 
