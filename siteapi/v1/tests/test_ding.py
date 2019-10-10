@@ -46,8 +46,8 @@ class UCenterTestCase(TestCase):
         mobile_config.save()
 
 
-    @mock.patch("siteapi.v1.views.sns.DingQrCallbackView.get_ding_id")
-    def test_ding_sns_login(self, mock_get_ding_id):
+    @mock.patch("siteapi.v1.views.qr.DingQrCallbackView.get_ding_id")
+    def test_ding_qr_login(self, mock_get_ding_id):
         ding_config = DingConfig.get_current()
         ding_config.__dict__.update(qr_app_id='qr_app_id', qr_app_secret='qr_app_secret', qr_app_valid=True)
         ding_config.save()
@@ -68,8 +68,8 @@ class UCenterTestCase(TestCase):
         res_keys = list(res_dict.keys())
         self.assertEqual(res_keys, expect)
 
-    @mock.patch("siteapi.v1.views.sns.DingQrCallbackView.get_ding_id")
-    def test_ding_sns_login_newuser(self, mock_get_ding_id):
+    @mock.patch("siteapi.v1.views.qr.DingQrCallbackView.get_ding_id")
+    def test_ding_qr_login_newuser(self, mock_get_ding_id):
         client = self.client
         mock_get_ding_id.side_effect = [{'ding_id': 'unregistered_dingid',\
             'openid': 'unknow_openid', 'unionid': 'unknowunionid'}]
@@ -77,7 +77,7 @@ class UCenterTestCase(TestCase):
         expect = {'token': '', 'ding_id': 'unregistered_dingid'}
         self.assertEqual(res.json(), expect)
 
-    def test_ding_sns_login_forbidden(self):
+    def test_ding_qr_login_forbidden(self):
         client = self.client
         ding_config = DingConfig.get_current()
         ding_config.__dict__.update(qr_app_id='qr_app_id', qr_app_secret='qr_app_secret', qr_app_valid=False)
@@ -140,3 +140,19 @@ class UCenterTestCase(TestCase):
         res_keys = list(res_dict.keys())
         self.assertEqual(res.status_code, 201)
         self.assertEqual(res_keys, expect)
+
+    def test_ding_qr_register_forbidden(self):
+        client = self.client
+        account_config = AccountConfig.get_current()
+        account_config.allow_register = False
+        account_config.save()
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                           data={
+                               'username': 'username',
+                               'password': 'password',
+                               'sms_token': 'test_sms_token',
+                               'ding_id':'test_ding_id'
+                           })
+        expect = {'err_msg':'ding qr register not allowed'}
+        self.assertEqual(res.json(), expect)
+        self.assertEqual(res.status_code, 403)
