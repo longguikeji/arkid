@@ -41,7 +41,7 @@ class DingQrCallbackView(APIView):
         处理钉钉用户扫码之后重定向到‘首页’或‘绑定页面’
         '''
         if not AccountConfig.get_current().support_ding_qr:
-            return Response({'token':''}, HTTP_403_FORBIDDEN)
+            return Response({'err_msg':'ding qr not allowed'}, HTTP_403_FORBIDDEN)
 
         state = request.data.get('state')
         code = request.data.get('code')
