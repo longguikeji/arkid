@@ -67,7 +67,7 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res_keys, expect)
 
     @mock.patch("siteapi.v1.views.sns.DingQrCallbackView.get_ding_id")
-    def test_ding_sns_login_unregistered(self, mock_get_ding_id):
+    def test_ding_sns_login_newuser(self, mock_get_ding_id):
         client = self.client
         ding_config = DingConfig.get_current()
         ding_config.__dict__.update(qr_app_id='qr_app_id', qr_app_secret='qr_app_secret', qr_app_valid=True)
