@@ -130,7 +130,7 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
         '''
         是否支持钉钉扫码注册
         '''
-        return self.allow_register and self.allow_ding_qr
+        return self.allow_register and self.support_ding_qr
 
 
 class SMSConfig(BaseModel, SingletonConfigMixin):

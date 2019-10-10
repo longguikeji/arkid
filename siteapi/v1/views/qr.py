@@ -22,7 +22,7 @@ from executer.log.rdb import LOG_CLI
 from oneid_meta.models import User, Group, DingUser, DingConfig, AccountConfig
 
 
-def allow_qr_forbidden(func):
+def require_ding_qr_supported(func):
     '''
     检查是否允许扫码登录装饰器
     '''
@@ -47,7 +47,7 @@ class DingQrCallbackView(APIView):
     get_persistent_code_url = baseurl + 'get_persistent_code'
     get_ding_info_url = baseurl + 'getuserinfo'
 
-    @allow_qr_forbidden
+    @require_ding_qr_supported
     def post(self, request):
         '''
         处理钉钉用户扫码之后重定向到‘首页’或‘绑定页面’
@@ -98,7 +98,7 @@ class DingQueryUserAPIView(GenericAPIView):
     '''
     permission_classes = []
     authentication_classes = []
-    @allow_qr_forbidden
+    @require_ding_qr_supported
     def post(self, request):
         '''
         查询用户是否注册
@@ -120,7 +120,7 @@ class DingBindAPIView(GenericAPIView):
 
     serializer_class = DingBindSerializer
 
-    @allow_qr_forbidden
+    @require_ding_qr_supported
     def post(self, request):
         '''
         绑定用户
