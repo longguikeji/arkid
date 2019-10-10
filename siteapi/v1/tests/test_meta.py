@@ -26,7 +26,6 @@ class MetaTestCase(TestCase):
         ding_config.save()
 
         res = self.anonymous.get(reverse('siteapi:meta'))
-        print(res.json())
         expect = {
             'company_config': {
                 'name_cn': '',
