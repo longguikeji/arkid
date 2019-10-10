@@ -14,7 +14,7 @@ class MetaTestCase(TestCase):
 
     def test_meta(self):
         account_config = AccountConfig.get_current()
-        account_config.support_ding_qr = True
+        account_config.allow_ding_qr = True
         account_config.save()
         company_config = CompanyConfig.get_current()
         company_config.fullname_cn = "demo"
