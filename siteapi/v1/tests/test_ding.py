@@ -81,6 +81,14 @@ class UCenterTestCase(TestCase):
         expect = {'token': '', 'ding_id': 'unregistered_dingid'}
         self.assertEqual(res.json(), expect)
 
+    def test_ding_sns_login_3(self):
+        client = self.client
+        res = client.post(reverse('siteapi:ding_qr_callback'), data={'code':'CODE...........', 'state':'STATE'})
+        expect = {'token': ''}
+        expect2 = 403
+        self.assertEqual(res.json(), expect)
+        self.assertEqual(res.status_code, expect2)
+
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
     def test_ding_query_user(self, mock_check_sms_token):
         client = self.client
