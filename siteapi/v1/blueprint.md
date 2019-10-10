@@ -441,12 +441,14 @@ FORMAT: 1A
 ## DingMetaInfo (object)
 + app_key (string)
 + corp_id (string)
++ qr_app_id (string)
 
 ## AccountMetaInfo (object)
 + support_email (boolean) - 是否支持邮箱登录、找回密码、激活
 + support_mobile (boolean) - 是否支持手机登录、找回密码、激活
 + support_email_register (boolean) - 是否支持邮箱注册
 + support_mobile_register (boolean) - 是否支持手机注册
++ support_ding_qr (boolean) - 是否支持钉钉扫码登录
 
 ## MetaInfo (object)
 + company_config (CompanyMetaInfo)
