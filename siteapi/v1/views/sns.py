@@ -21,6 +21,17 @@ from executer.log.rdb import LOG_CLI
 
 from oneid_meta.models import User, Group, DingUser, DingConfig, AccountConfig
 
+
+def not_allow_qr_forbidden(func):
+    '''
+    检查是否允许扫码登录装饰器
+    '''
+    def inner(self, request):
+        return Response({'err_msg':'ding qr not allowed'}, HTTP_403_FORBIDDEN)\
+            if not AccountConfig.get_current().support_ding_qr else func(self, request)
+    return inner
+
+
 class DingQrCallbackView(APIView):
     '''
     dingding/qr/callback/
@@ -36,12 +47,11 @@ class DingQrCallbackView(APIView):
     get_persistent_code_url = baseurl + 'get_persistent_code'
     get_ding_info_url = baseurl + 'getuserinfo'
 
+    @not_allow_qr_forbidden
     def post(self, request):
         '''
         处理钉钉用户扫码之后重定向到‘首页’或‘绑定页面’
         '''
-        if not AccountConfig.get_current().support_ding_qr:
-            return Response({'err_msg':'ding qr not allowed'}, HTTP_403_FORBIDDEN)
 
         state = request.data.get('state')
         code = request.data.get('code')
@@ -88,7 +98,7 @@ class DingQueryUserAPIView(GenericAPIView):
     '''
     permission_classes = []
     authentication_classes = []
-
+    @not_allow_qr_forbidden
     def post(self, request):
         '''
         查询用户是否注册
@@ -98,8 +108,7 @@ class DingQueryUserAPIView(GenericAPIView):
             mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
             exist = User.valid_objects.filter(mobile=mobile).exists()
             return Response({'exist': exist})
-        else:
-            raise ValidationError({'sms_token': ["sms_token invalid"]})
+        raise ValidationError({'sms_token': ["sms_token invalid"]})
 
 
 class DingBindAPIView(GenericAPIView):
@@ -111,7 +120,7 @@ class DingBindAPIView(GenericAPIView):
 
     serializer_class = DingBindSerializer
 
-
+    @not_allow_qr_forbidden
     def post(self, request):
         '''
         绑定用户
@@ -138,6 +147,7 @@ class DingRegisterAndBindView(generics.CreateAPIView):
     serializer_class = DingRegisterAndBindSerializer
     read_serializer_class = UserWithPermSerializer
 
+    @not_allow_qr_forbidden
     def create(self, request, *args, **kwargs):
         '''
         钉钉扫码加绑定

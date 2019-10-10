@@ -2063,24 +2063,14 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'get dingding user time out'
 
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'ding qr not allowed'
+
 + Response 408 (application/json)
     + Attributes
         + err_msg (string) - 'get tmp code error'
 
-## 发送绑定验证短信 [/ding/bind/sms/]
-
-### 发送短信 [POST]
-+ Requests JSON Message
-    + Attributes
-        + mobile (string) - 用户接收短信的手机号
-
-+ Response 201 (application/json)
-    + Attributes
-
-+ Response 401 (application/json)
-    + Attributes
-        + mobile (enum[string]) 
-            - "unsupported" - 报错，不支持的手机号
 
 ## 查询未绑定用户是否注册 [/ding/query/user/]
 
@@ -2093,6 +2083,10 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + exist (boolean) - 已注册返回True，未注册返回False
 
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'ding qr not allowed'
+
 ## 钉钉用户绑定 [/ding/bind/]
 
 ### 绑定用户 [POST]
@@ -2103,6 +2097,10 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 201 (application/json)
     + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'ding qr not allowed'
 
 ## 钉钉用户注册加绑定 [/ding/register/bind/]
 
@@ -2116,3 +2114,7 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 201 (application/json)
     + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'ding qr not allowed'
