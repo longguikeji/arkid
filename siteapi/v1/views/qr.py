@@ -88,7 +88,7 @@ class DingQrCallbackView(APIView):
         sns_token = requests.post(self.get_sns_url, params={'access_token':access_token},\
         json={'openid':openid, 'persistent_code':persistent_code}).json()['sns_token']
         user_info = requests.get(self.get_ding_info_url, params={'sns_token': sns_token}).json()['user_info']
-        user_ids = {'ding_id': user_info['ding_id'], 'openid': user_info['openid'], 'unionid': user_info['unionid']}
+        user_ids = {'ding_id': user_info['dingId'], 'openid': user_info['openid'], 'unionid': user_info['unionid']}
         return user_ids
 
 
