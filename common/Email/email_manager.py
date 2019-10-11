@@ -6,6 +6,11 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import parseaddr, formataddr
 
+EMAIL_PORT_MAPPER = {
+    25: 'smtp',
+    465: 'smtps',
+    587: 'msa',
+}
 
 class EmailManager(object):
     """send email"""
@@ -14,17 +19,34 @@ class EmailManager(object):
         """
         :param str user: 账号
         :param str pwd: 密码
-        :param str host: 邮件服务器
+        :param str host: 邮件服务器地址
+        :param int port: 邮件服务器端口
         :param str nickname: 发件人昵称
         :param int retry: 重试次数
         """
-        self.server = smtplib.SMTP()
+        self.client = None
         self.host = host
         self.port = port
         self.user = user
         self.pwd = pwd
         self.nickname = nickname
         self.retry = retry
+        self.protocol = self.presume_protocol(port)
+
+    def gen_client(self):
+        '''
+        gen client by protocl
+        '''
+        if self.protocol == 'smtps':
+            return smtplib.SMTP_SSL()
+        return smtplib.SMTP()
+
+    @staticmethod
+    def presume_protocol(port):
+        '''
+        根据端口判断邮件服务所用协议
+        '''
+        return EMAIL_PORT_MAPPER.get(port, 'smtps')
 
     def connect(self, retry=1):
         """
@@ -33,21 +55,32 @@ class EmailManager(object):
         :param int retry: 重试次数
         """
         try:
-            self.server.connect(self.host, self.port)
-            self.server.starttls()
-            self.server.login(self.user, self.pwd)
-        except Exception as e:
+            client = self.gen_client()
+            client.connect(self.host, self.port)
+            if self.protocol == 'msa':
+                client.starttls()
+
+            try:
+                client.login(self.user, self.pwd)
+            except smtplib.SMTPResponseException as exce:
+                if exce.smtp_code == 530:    # msa(port=587) Must issue a STARTTLS command first. 
+                    self.protocol = 'msa'
+                raise
+            self.client = client
+
+        except smtplib.SMTPException as exce:
             self.quit()
             if retry:
                 self.connect(retry - 1)
             else:
-                raise e
+                raise exce
 
     def quit(self):
         """
         断开连接
         """
-        self.server.quit()
+        if self.client:
+            self.client.quit()
 
     def _format_addr(self, s):
         """
@@ -66,19 +99,21 @@ class EmailManager(object):
         :param bool one_by_one: 当存在多个收件地址时逐个发送还是群发,默认逐个发送
         """
         try:
+            if not self.client:
+                self.connect()
             if type(addrs) == str:
                 msg['To'] = addrs
-                self.server.sendmail(self.user, [addrs], msg.as_string())
+                self.client.sendmail(self.user, [addrs], msg.as_string())
             if type(addrs) == list:
                 if one_by_one:
                     for addr in addrs:
                         if 'To' in msg:
                             del msg['To']
                         msg['To'] = addr
-                        self.server.sendmail(self.user, [addr], msg.as_string())
+                        self.client.sendmail(self.user, [addr], msg.as_string())
                 else:
                     msg['To'] = ';'.join(addrs)
-                    self.server.sendmail(self.user, addrs, msg.as_string())
+                    self.client.sendmail(self.user, addrs, msg.as_string())
         except Exception:
             if 'To' in msg:
                 del msg['To']
