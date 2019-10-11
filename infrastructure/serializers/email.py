@@ -100,7 +100,7 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
         '''
         生成注册验证邮件
         '''
-        subject = '[OneID] 欢迎注册使用OneID'
+        subject = '[ArkID] 欢迎注册使用ArkID'
 
         email_token = self.gen_email_token()
         link = settings.BASE_URL + settings.FE_EMAIL_REGISTER_URL + f'?email_token={email_token}'
@@ -157,7 +157,7 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
         '''
         生成重置密码邮件
         '''
-        subject = '[OneID] 您正在重置OneID登录密码'
+        subject = '[ArkID] 您正在重置ArkID登录密码'
         email_token = self.gen_email_token()
         link = settings.BASE_URL + settings.FE_EMAIL_RESET_PWD_URL + f'?email_token={email_token}'
         key = self.gen_email_token_key(email_token)
@@ -226,7 +226,7 @@ class UserActivateEmailClaimSerializer(EmailClaimSerializer):
         }
 
     def gen_email(self, *args, **kwargs):
-        subject = '[OneID] 您正在激活OneID账号'
+        subject = '[ArkID] 您正在激活ArkID账号'
         email_token = self.gen_email_token()
         link = settings.BASE_URL + settings.FE_EMAIL_ACTIVATE_USER_URL + f'?email_token={email_token}'
         key = self.gen_email_token_key(email_token)
@@ -283,7 +283,7 @@ class UpdateEmailEmailClaimSerializer(EmailClaimSerializer):
         '''
         生成修改私人邮箱邮件
         '''
-        subject = '[OneID]您正在重置OneID私人邮箱'
+        subject = '[ArkID]您正在重置ArkID私人邮箱'
         email_token = self.gen_email_token()
         link = settings.BASE_URL + settings.FE_EMAIL_UPDATE_EMAIL_URL + f'?email_token={email_token}'
         key = self.gen_email_token_key(email_token)
