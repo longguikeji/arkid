@@ -19,8 +19,10 @@ from infrastructure.serializers.sms import SMSClaimSerializer
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser, DingConfig, AccountConfig
+from oneid_meta.models import User, Group, DingUser, DingConfig, AlipayConfig
 
+from common.ding import ding_sdk
+from common.alipay_api import get_alipay_id
 
 def require_ding_qr_supported(func):
     '''
@@ -175,3 +177,71 @@ class DingRegisterAndBindView(generics.CreateAPIView):
     def perform_create(self, serializer):
         super().perform_create(serializer.instance)
         LOG_CLI(serializer.instance).user_register()
+
+
+class AlipayQrCallbackView(APIView):
+    '''
+    alipay/qr/callback/
+    支付宝扫码回调视图
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    def post(self, request):
+        '''
+        处理支付宝用户扫码之后重定向到‘首页’或‘绑定页面’
+        '''
+        auth_code = request.data.get('auth_code', None)
+        app_id = request.data.get('app_id', None)
+        if auth_code and app_id:
+            current_app = AlipayConfig.valid_objects.filter(app_id=app_id).first()
+        if current_app:
+            app_secret_key = current_app.app_secret_key
+            alipay_public_key = current_app.alipay_public_key
+        else:
+            return Response({'err_msg':'invalid appid'}, HTTP_400_BAD_REQUEST)
+        
+            try:
+                app_private_key = AlipayConfig.get_current().app_private_key
+                alipay_public_key = AlipayConfig.get_current().alipay_public_key
+                res = get_alipay_id(auth_code, app_private_key, alipay_public_key)
+                print(res)
+            except Exception:    # pylint: disable=broad-except
+                return Response({'err_msg':'get user_id from ding error'}, HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'err_msg':'get tmp code error'}, HTTP_400_BAD_REQUEST)
+#         ding_id = user_ids['ding_id']
+#         ding_user = DingUser.valid_objects.filter(ding_id=ding_id).first()
+#         if ding_user:
+#             user = ding_user.user
+#             token = user.token
+#             context = {'token': token, **UserWithPermSerializer(user).data}
+#         else:
+#             context = {'token': '', 'ding_id': ding_id}
+#         return Response(context, HTTP_200_OK)
+
+# class AlipayQueryUserAPIView(GenericAPIView):
+#     '''
+#     ding/query/user/
+#     支付宝扫码查询用户是否存在视图
+#     '''
+
+
+
+class AlipayBindAPIView(GenericAPIView):
+    '''
+    支付宝扫码绑定视图
+    '''
+
+
+
+class AlipayRegisterAndBindView(generics.CreateAPIView):
+    '''
+    支付宝扫码注册加绑定视图
+    '''
+
+
+class AlipayQueryUserAPIView(GenericAPIView):
+    '''
+    ...
+    '''
