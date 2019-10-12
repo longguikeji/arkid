@@ -3,7 +3,7 @@
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import CompanyConfig, DingConfig, User
+from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig
 
 
 class MetaTestCase(TestCase):
@@ -13,11 +13,16 @@ class MetaTestCase(TestCase):
         self.employee = self.login_as(employee)
 
     def test_meta(self):
+        account_config = AccountConfig.get_current()
+        account_config.allow_ding_qr = True
+        account_config.save()
         company_config = CompanyConfig.get_current()
         company_config.fullname_cn = "demo"
         company_config.save()
         ding_config = DingConfig.get_current()
         ding_config.corp_id = "corp_id"
+        ding_config.qr_app_id = 'qr_app_id'
+        ding_config.qr_app_valid = True
         ding_config.save()
 
         res = self.anonymous.get(reverse('siteapi:meta'))
@@ -36,12 +41,14 @@ class MetaTestCase(TestCase):
             'ding_config': {
                 'corp_id': 'corp_id',
                 'app_key': '',
+                'qr_app_id':'qr_app_id',
             },
             'account_config': {
                 'support_email': False,
                 'support_mobile': False,
                 'support_email_register': False,
                 'support_mobile_register': False,
+                'support_ding_qr': True,
             },
         }
         self.assertEqual(res.json(), expect)
