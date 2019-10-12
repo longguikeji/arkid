@@ -412,6 +412,7 @@ FORMAT: 1A
 + qr_app_secret (string) - 原来也叫app_secret，为了与上面的区分所以加qr，是查询用户钉钉信息所需的secret
 + qr_app_valid (boolean, readonly) - qr配置是否有效
 
+
 ## Config (object)
 + company_config (CompanyConfig)
 + ding_config (DingConfig)
@@ -442,6 +443,7 @@ FORMAT: 1A
 + app_key (string)
 + corp_id (string)
 + qr_app_id (string)
++ qr_callback_url (string) - 钉钉扫码回调地址
 
 ## AccountMetaInfo (object)
 + support_email (boolean) - 是否支持邮箱登录、找回密码、激活
