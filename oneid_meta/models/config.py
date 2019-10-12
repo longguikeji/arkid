@@ -70,7 +70,9 @@ class DingConfig(BaseModel, SingletonConfigMixin):
 
     qr_app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP ID")
     qr_app_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP SECRET")
-    qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP 配置是否正确')
+    qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP配置是否正确')
+    qr_callback_url = models.CharField(max_length=255, blank=True, default=\
+        "https://oneid.intra.longguikeji.com/dingding/qr/callback/", verbose_name="钉钉扫码回调地址")
 
     def __str__(self):
         return f'DingConfig[{self.id}]'    # pylint: disable=no-member
