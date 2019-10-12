@@ -42,6 +42,7 @@ class MetaTestCase(TestCase):
                 'corp_id': 'corp_id',
                 'app_key': '',
                 'qr_app_id':'qr_app_id',
+                'qr_callback_url':'http://localhost/siteapi/v1/ding/qr/callback/'
             },
             'account_config': {
                 'support_email': False,

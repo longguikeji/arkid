@@ -39,8 +39,6 @@ class DingQrCallbackView(APIView):
     '''
     permission_classes = []
     authentication_classes = []
-    appid = DingConfig.get_current().qr_app_id
-    appsecret = DingConfig.get_current().qr_app_secret
     baseurl = 'https://oapi.dingtalk.com/sns/'
     get_access_url = baseurl + 'gettoken'
     get_sns_url = baseurl + 'get_sns_token'
@@ -59,7 +57,7 @@ class DingQrCallbackView(APIView):
         if state == 'STATE' and code != '':
             try:
                 user_ids = self.get_ding_id(code)
-            except RuntimeError:
+            except Exception:    # pylint: disable=broad-except
                 return Response({'err_msg':'get dingding user time out'}, HTTP_408_REQUEST_TIMEOUT)
         else:
             return Response({'err_msg':'get tmp code error'}, HTTP_400_BAD_REQUEST)
@@ -79,8 +77,10 @@ class DingQrCallbackView(APIView):
         '''
         从钉钉获取ding_id
         '''
-        access_token = requests.get(self.get_access_url, params={'appid':self.appid,\
-            'appsecret':self.appsecret}).json()['access_token']
+        appid = DingConfig.get_current().qr_app_id
+        appsecret = DingConfig.get_current().qr_app_secret
+        access_token = requests.get(self.get_access_url, params={'appid':appid,\
+            'appsecret':appsecret}).json()['access_token']
         get_psstt_code = requests.post(self.get_persistent_code_url, params={'access_token':access_token},\
         json={'tmp_auth_code':code})
         openid = get_psstt_code.json()['openid']

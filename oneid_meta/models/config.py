@@ -1,6 +1,7 @@
 '''
 schema for GlobalConfig
 '''
+import hashlib
 
 from django.db import models
 from django.contrib.sites.models import Site
@@ -11,7 +12,6 @@ from aliyunsdkcore.acs_exception.exceptions import ServerException
 from common.django.model import BaseModel
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from common.Email.email_manager import EmailManager
-
 
 class SingletonConfigMixin:
     '''
@@ -70,11 +70,17 @@ class DingConfig(BaseModel, SingletonConfigMixin):
 
     qr_app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP ID")
     qr_app_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP SECRET")
-    qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP 配置是否正确')
+    qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP配置是否正确')
+
+    @property
+    def qr_callback_url(self):
+        '''
+        向meta接口返回钉钉扫码回调地址
+        '''
+        return settings.BASE_URL + '/siteapi/v1/ding/qr/callback/'
 
     def __str__(self):
         return f'DingConfig[{self.id}]'    # pylint: disable=no-member
-
 
 class AccountConfig(BaseModel, SingletonConfigMixin):
     '''
@@ -188,7 +194,6 @@ class SMSConfig(BaseModel, SingletonConfigMixin):
         '''
         对敏感数据加密
         '''
-        import hashlib
         hl = hashlib.md5()    # pylint: disable=invalid-name
         hl.update((settings.SECRET_KEY[:6] + value).encode('utf-8'))
         return hl.hexdigest()
@@ -237,7 +242,6 @@ class EmailConfig(BaseModel, SingletonConfigMixin):
         '''
         对敏感数据加密
         '''
-        import hashlib
         hl = hashlib.md5()    # pylint: disable=invalid-name
         hl.update((settings.SECRET_KEY[:6] + value).encode('utf-8'))
         return hl.hexdigest()
