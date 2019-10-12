@@ -411,6 +411,7 @@ FORMAT: 1A
 + qr_app_id (string) - 扫码登录应用查询钉钉用户所需的id
 + qr_app_secret (string) - 原来也叫app_secret，为了与上面的区分所以加qr，是查询用户钉钉信息所需的secret
 + qr_app_valid (boolean, readonly) - qr配置是否有效
++ qr_callback_url (string) - 钉钉扫码回调地址
 
 ## Config (object)
 + company_config (CompanyConfig)
