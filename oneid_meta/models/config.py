@@ -68,6 +68,10 @@ class DingConfig(BaseModel, SingletonConfigMixin):
     corp_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="CORP SECRET")
     corp_valid = models.BooleanField(default=False, verbose_name='Corp 配置是否正确')
 
+    qr_app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP ID")
+    qr_app_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP SECRET")
+    qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP 配置是否正确')
+
     def __str__(self):
         return f'DingConfig[{self.id}]'    # pylint: disable=no-member
 
@@ -81,6 +85,7 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
     allow_email = models.BooleanField(default=False, blank=True, verbose_name='是否允许邮箱(注册、)登录、找回密码')
     allow_mobile = models.BooleanField(default=False, blank=True, verbose_name='是否允许手机(注册、)登录、找回密码')
     allow_register = models.BooleanField(default=False, blank=True, verbose_name='是否开放注册')
+    allow_ding_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放钉钉扫码登录')
 
     def __str__(self):
         return f'AccountConfig[{self.id}]'    # pylint: disable=no-member
@@ -112,6 +117,20 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
         是否支持手机注册
         '''
         return self.allow_register and self.support_mobile
+
+    @property
+    def support_ding_qr(self):
+        '''
+        是否支持钉钉扫码登录
+        '''
+        return self.allow_ding_qr and DingConfig.get_current().qr_app_valid
+
+    @property
+    def support_ding_qr_register(self):
+        '''
+        是否支持钉钉扫码注册
+        '''
+        return self.allow_register and self.support_ding_qr
 
 
 class SMSConfig(BaseModel, SingletonConfigMixin):

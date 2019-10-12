@@ -99,7 +99,6 @@ class SMSClaimSerializer(serializers.Serializer):
         code = gen_code()
         mobile = validated_data['mobile']
         send_sms(mobile, code, self.get_template_id())
-
         key = self.gen_sms_code_key(mobile)
         value = code
 

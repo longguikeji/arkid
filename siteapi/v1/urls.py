@@ -34,6 +34,7 @@ from siteapi.v1.views import (
     shortcut as shortcut_views,
     perm as perm_views,
     ucenter as ucenter_views,
+    qr as qr_views,
 )
 
 from siteapi.v1.views.statistics import UserStatisticView
@@ -92,6 +93,11 @@ urlpatterns = [
     url(r'^auth/token/$', ucenter_views.TokenPermAuthView.as_view(), name='token_perm_auth'),
     url(r'^auth/invitation_key/$', ucenter_views.InvitationKeyAuthView.as_view(), name='invitation_key_auth'),
     url(r'^revoke/token/$', ucenter_views.RevokeTokenView.as_view(), name='revoke_token'),
+    #dingding
+    url(r'^ding/qr/callback/$', qr_views.DingQrCallbackView.as_view(), name='ding_qr_callback'),
+    url(r'^ding/bind/$', qr_views.DingBindAPIView.as_view(), name='ding_bind'),
+    url(r'^ding/register/bind/$', qr_views.DingRegisterAndBindView.as_view(), name='ding_register_bind'),
+    url(r'^ding/query/user/$', qr_views.DingQueryUserAPIView.as_view(), name='ding_query_user'),
     # shortcut
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
     url(r'^slice/delete/$', shortcut_views.ObjSliceDeleteAPIView.as_view(), name='shortcut_slice_delete'),

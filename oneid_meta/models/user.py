@@ -17,8 +17,6 @@ from oneid_meta.models.dept import DeptMember
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from executer.utils.password import encrypt_password, verify_password
 
-
-
 class IsolatedManager(IgnoreDeletedManager):
     '''
     只返回独立账户
@@ -104,7 +102,7 @@ class User(BaseModel, PermOwnerMixin):
         return self.from_register
 
     @property
-    def is_extern_user(self):
+    def is_extern_user(self):    # pylint: disable=missing-docstring
         return GroupMember.valid_objects.filter(user=self, owner__uid='extern').exists()
 
     @is_isolated.setter
@@ -440,26 +438,27 @@ class User(BaseModel, PermOwnerMixin):
         now = timezone.now()
         if not self.last_active_time or \
             self.last_active_time + timezone.timedelta(minutes=gap_minutes) < now:
-                self.last_active_time = now
-                self.save(update_fields=['last_active_time'])
+            self.last_active_time = now
+            self.save(update_fields=['last_active_time'])
 
 
 class DingUser(BaseModel):
     '''
     钉钉用户
     '''
-
     user = models.OneToOneField(User, verbose_name='用户', related_name='ding_user', on_delete=models.PROTECT)
     account = models.CharField(max_length=64, blank=False, verbose_name='钉钉账号(手机)')
     uid = models.CharField(max_length=255, blank=False, verbose_name='员工在企业内的唯一标识')
     data = models.TextField(blank=True, default='{}', verbose_name='钉钉员工详细数据(JSON)')
-
+    ding_id = models.TextField(max_length=255, blank=True, verbose_name='钉钉ID')
+    open_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用内的唯一标识')
+    union_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用所属的钉钉开放平台账号内的唯一标识')
+    
 
 class PosixUser(BaseModel):
     '''
     服务器用户
     '''
-
     user = models.OneToOneField(User, verbose_name='用户', related_name='posix_user', on_delete=models.PROTECT)
     uid = models.IntegerField(blank=True, default=500)
     gid = models.IntegerField(blank=True, default=500)
@@ -471,7 +470,6 @@ class CustomUser(BaseModel):
     '''
     定制化用户信息
     '''
-
     DEFAULT_VALUE = ""
 
     user = models.OneToOneField(User, verbose_name='用户', related_name='custom_user', on_delete=models.CASCADE)

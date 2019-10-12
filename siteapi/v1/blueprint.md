@@ -380,6 +380,7 @@ FORMAT: 1A
 + allow_register (boolean)
 + allow_mobile (boolean)
 + allow_email (boolean)
++ allow_ding_qr (boolean)
 
 ## SMSConfig (object)
 + vendor (string)
@@ -407,6 +408,9 @@ FORMAT: 1A
 + corp_id (string)
 + corp_secret (string) - write_only
 + corp_valid (boolean, readonly) - corp配置是否有效
++ qr_app_id (string) - 扫码登录应用查询钉钉用户所需的id
++ qr_app_secret (string) - 原来也叫app_secret，为了与上面的区分所以加qr，是查询用户钉钉信息所需的secret
++ qr_app_valid (boolean, readonly) - qr配置是否有效
 
 ## Config (object)
 + company_config (CompanyConfig)
@@ -437,12 +441,14 @@ FORMAT: 1A
 ## DingMetaInfo (object)
 + app_key (string)
 + corp_id (string)
++ qr_app_id (string)
 
 ## AccountMetaInfo (object)
 + support_email (boolean) - 是否支持邮箱登录、找回密码、激活
 + support_mobile (boolean) - 是否支持手机登录、找回密码、激活
 + support_email_register (boolean) - 是否支持邮箱注册
 + support_mobile_register (boolean) - 是否支持手机注册
++ support_ding_qr (boolean) - 是否支持钉钉扫码登录
 
 ## MetaInfo (object)
 + company_config (CompanyMetaInfo)
@@ -2032,3 +2038,83 @@ Content-Disposition: form-data; name='node_uid'
 ### 获取特定日志 [GET]
 + Response 200 (application/json)
     + Attributes (Log)
+
+
+# 钉钉扫码登录
+
+## 扫码回调函数 [/ding/qr/callback/{?code,state}]
++ Parameters
+    + code (string) - 钉钉扫码返回一次性查询码tmp_code
+    + state (string) - 钉钉回调URL描述参数，一般固定为'STATE'
+
+### 获取权限 [POST]
++ Requests JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 200 (application/json)
+    + Attributes
+        + token （string) - 未匹配用户，返回空字段token
+        + ding_id (string) - 返回钉钉id，用于下一步提交绑定
+
++ Response 400 (application/json)
+    + Attributes
+        + err_msg (string) - 'get dingding user time out'
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'ding qr not allowed'
+
++ Response 408 (application/json)
+    + Attributes
+        + err_msg (string) - 'get tmp code error'
+
+
+## 查询未绑定用户是否注册 [/ding/query/user/]
+
+### 查询用户 [POST]
++ Requests JSON Message
+    + Attributes
+        + sms_token (string) - 通过返回的sms_token查询手机号，到用户表中查询对应的用户
+
++ Response 200 (application/json)
+    + Attributes
+        + exist (boolean) - 已注册返回True，未注册返回False
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'ding qr not allowed'
+
+## 钉钉用户绑定 [/ding/bind/]
+
+### 绑定用户 [POST]
++ Request JSON Message
+    + Attributes
+        + ding_id (string) - 钉钉用户扫码时查询返回的ding_id
+        + sms_token (string) - 用户手机发短信后返回的sms_token
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'ding qr not allowed'
+
+## 钉钉用户注册加绑定 [/ding/register/bind/]
+
+### 注册加绑定 [POST]
++ Request JSON Message
+    + Attributes
+        + username (string)
+        + password (string) 
+        + sms_token (string) - 绑定页面验证用户手机的sms_token
+        + ding_id (string) - 从钉钉查询的扫码用户的ding_id
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'ding qr not allowed'
