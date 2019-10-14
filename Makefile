@@ -8,8 +8,12 @@
 VERSION ?= 1.0.`date +%Y%m%d`
 BASE_COMMIT_ID ?= ""
 
+ci:
+	docker build --build-arg base_commit_id="origin/master" \
+	-t harbor.longguikeji.com/ark-releases/arkid:$(VERSION) .
+
 test:
-	python manage.py test siteapi.v1.tests --settings=oneid.settings_test
+	python manage.py migrate && python manage.py test siteapi.v1.tests --settings=oneid.settings_test
 
 lint: 
 	@if [ ${BASE_COMMIT_ID} != "" ]; \
