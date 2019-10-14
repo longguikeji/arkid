@@ -31,6 +31,7 @@ EMPLOYEE = {
         'remark': '',
         'last_active_time': None,
         'created': TestCase.now_str,
+        'require_reset_password': False,
         'ding_user': {
             'uid': 'ding_employee2',
             'account': '18812345678',
@@ -201,6 +202,7 @@ class UserTestCase(TestCase):
                     'origin_verbose': '脚本添加',
                     'hiredate': None,
                     'remark': '',
+                    'require_reset_password': False,
                 },
                 'groups': [],
                 'depts': [],
@@ -335,6 +337,7 @@ class UserTestCase(TestCase):
                 }]
             },
             'hiredate': '2019-06-04T09:01:44+08:00',
+            'require_reset_password': False,
         }
         res['user'].pop('nodes')
         self.assertEqual(expect, res['user'])
@@ -428,6 +431,45 @@ class UserTestCase(TestCase):
         )
         expect = ['root', 'test']
         self.assertEqual(expect, [item['uid'] for item in res.json()['depts']])
+
+    def test_reset_user_password(self):
+        employee = User.objects.create(username='test_reset_pwd')
+
+        res = self.client.json_patch(reverse('siteapi:user_password', args=(employee.username, )),
+                                     data={
+                                         'password': 'complicated_password_',
+                                         'require_reset_password': False
+                                     })
+        expect = {'require_reset_password': False}
+        self.assertEqual(expect, res.json())
+        res = self.anonymous.json_post(reverse('siteapi:user_login'),
+                                       data={
+                                           'username': employee.username,
+                                           'password': 'complicated_password_'
+                                       })
+        self.assertFalse(res.json()['require_reset_password'])
+
+        res = self.client.json_patch(reverse('siteapi:user_password', args=(employee.username, )),
+                                     data={
+                                         'password': 'reset_password',
+                                         'require_reset_password': True
+                                     })
+        expect = {'require_reset_password': True}
+        self.assertEqual(expect, res.json())
+        res = self.anonymous.json_post(reverse('siteapi:user_login'),
+                                       data={
+                                           'username': employee.username,
+                                           'password': 'reset_password'
+                                       })
+        self.assertTrue(res.json()['require_reset_password'])
+        client = self.login(employee.username, 'reset_password')
+        res = client.json_patch(reverse('siteapi:ucenter_password'),
+                                data={
+                                    'username': employee.username,
+                                    'old_password': 'reset_password',
+                                    'new_password': 'new_password'
+                                })
+        self.assertFalse(User.objects.get(username='test_reset_pwd').require_reset_password)
 
 
 class UcenterUserTestCase(TestCase):

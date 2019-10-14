@@ -50,6 +50,7 @@ urlpatterns = [
         user_views.UserIntra2ExternView.as_view(),
         name='user_convert_to_extern'),
     url(r'^user/(?P<username>[\w]+)/$', user_views.UserDetailAPIView.as_view(), name='user_detail'),
+    url(r'^user/(?P<username>[\w]+)/password/$', user_views.UserPasswordAPIView.as_view(), name='user_password'),
     url(r'^user/(?P<username>[\w]+)/dept/$', user_views.UserDeptView.as_view(), name='user_dept'),
     url(r'^user/(?P<username>[\w]+)/group/$', user_views.UserGroupView.as_view(), name='user_group'),
     url(r'^user/(?P<username>[\w]+)/node/$', user_views.UserNodeView.as_view(), name='user_node'),
@@ -102,7 +103,7 @@ urlpatterns = [
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
     url(r'^slice/delete/$', shortcut_views.ObjSliceDeleteAPIView.as_view(), name='shortcut_slice_delete'),
     # ucenter
-    url(r'^ucenter/password/$', ucenter_views.SetPasswordAPIView.as_view(), name='set_user_password'),
+    url(r'^ucenter/password/$', ucenter_views.SetPasswordAPIView.as_view(), name='ucenter_password'),
     url(r'^ucenter/contact/$', ucenter_views.UserContactAPIView.as_view(), name='update_user_contact'),
     url(r'^ucenter/perm/$', perm_views.UserSelfPermView.as_view(), name='user_self_perm'),
     url(r'^ucenter/login/$', ucenter_views.UserLoginAPIView.as_view(), name='user_login'),

@@ -84,6 +84,7 @@ FORMAT: 1A
     + home
     + pub_key
 + custom_user (CustomUser) - May Null-> 无该键
++ require_reset_password(boolean) - 是否需要重置密码
 
 ## UserWithPerm(User)
 + perms (array[string]) - 拥有授权的权限的uid
@@ -993,6 +994,16 @@ TODO: 校对
 + Request 200 (application/json)
     + Attributes
         + nodes (Employee)
+
+## 用户密码 [/user/{username}/password/]
+仅对主管理员开放
++ Parameters
+    + username (string) - 用户唯一标识
+### 修改用户密码 [PATCH]
++ Request JSON Message
+    + Attributes
+        + password (string) - 新密码
+        + require_reset_password (boolean) - 登录后是否需要修改密码
 
 ### 内部用户转换为外部用户 [/user/{username}/convert/extern/]
 + Parameters

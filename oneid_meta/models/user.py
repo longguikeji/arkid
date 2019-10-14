@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 '''
 schema of Users
 '''
@@ -16,6 +17,7 @@ from oneid_meta.models.group import GroupMember
 from oneid_meta.models.dept import DeptMember
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from executer.utils.password import encrypt_password, verify_password
+
 
 class IsolatedManager(IgnoreDeletedManager):
     '''
@@ -69,6 +71,8 @@ class User(BaseModel, PermOwnerMixin):
     remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
 
     last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')
+
+    require_reset_password = models.BooleanField(default=False, verbose_name='是否需要重置密码')
 
     isolated_objects = IsolatedManager()
 
@@ -199,7 +203,6 @@ class User(BaseModel, PermOwnerMixin):
                 return True
         return False
 
-
     def get_perm(self, perm):
         '''
         返回权限结果
@@ -283,10 +286,10 @@ class User(BaseModel, PermOwnerMixin):
         '''
         使当前token失效，并返回新的token
         '''
-        self.invalidate_token()
+        self.revoke_token()
         return self.token_obj
 
-    def invalidate_token(self):
+    def revoke_token(self):
         '''
         使当前token失效，不生成新的token
         '''
@@ -453,7 +456,7 @@ class DingUser(BaseModel):
     ding_id = models.TextField(max_length=255, blank=True, verbose_name='钉钉ID')
     open_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用内的唯一标识')
     union_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用所属的钉钉开放平台账号内的唯一标识')
-    
+
 
 class PosixUser(BaseModel):
     '''

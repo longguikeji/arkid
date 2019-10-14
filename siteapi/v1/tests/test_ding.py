@@ -52,12 +52,9 @@ class UCenterTestCase(TestCase):
             'openid': 'openidopenid', 'unionid': 'unionidunionid'}]
 
         res = client.post(reverse('siteapi:ding_qr_callback'), data={'code': 'CODE...........', 'state': 'STATE'})
-        expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',\
-            'employee_number', 'gender', 'ding_user', 'perms', 'avatar', 'roles',\
-                'private_email', 'position', 'is_settled', 'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose']
-        res_dict = res.json()
-        res_keys = list(res_dict.keys())
-        self.assertEqual(res_keys, expect)
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('token', res.json())
+        self.assertNotEqual(res.json()['token'], '')
 
     @mock.patch("siteapi.v1.views.qr.DingQrCallbackView.get_ding_id")
     def test_ding_qr_login_newuser(self, mock_get_ding_id):
@@ -111,13 +108,7 @@ class UCenterTestCase(TestCase):
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:ding_bind'), data={'sms_token':\
             'test_sms_token', 'ding_id':'ding_idding_id'})
-        expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',\
-            'employee_number', 'gender', 'ding_user', 'perms', 'avatar', 'roles',\
-                'private_email', 'position', 'is_settled', 'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose']
-        res_dict = res.json()
-        res_keys = list(res_dict.keys())
         self.assertEqual(res.status_code, 201)
-        self.assertEqual(res_keys, expect)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
@@ -132,13 +123,7 @@ class UCenterTestCase(TestCase):
                               'sms_token': 'test_sms_token',
                               'ding_id': 'test_ding_id'
                           })
-        expect = ['uuid', 'user_id', 'username', 'name', 'email', 'mobile', 'employee_number',\
-            'gender', 'perms', 'avatar', 'roles', 'private_email', 'position', 'is_settled',\
-                'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose', 'token']
-        res_dict = res.json()
-        res_keys = list(res_dict.keys())
         self.assertEqual(res.status_code, 201)
-        self.assertEqual(res_keys, expect)
 
     def test_ding_qr_register_forbidden(self):
         client = self.client
