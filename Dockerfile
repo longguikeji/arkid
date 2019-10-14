@@ -26,7 +26,7 @@ RUN apt-get update \
 ADD . .
 COPY uwsgi.ini /etc/uwsgi/uwsgi.ini
 RUN \
-    sed -i "s|LANGUAGE_CODE = 'zh_hans'|LANGUAGE_CODE = 'zh-hans'|g" oneid/settings.py && \
     python manage.py compilemessages && \
     sed -i "s|LANGUAGE_CODE = 'zh-hans'|LANGUAGE_CODE = 'zh_hans'|g" oneid/settings.py
+
 CMD python manage.py migrate && supervisord
