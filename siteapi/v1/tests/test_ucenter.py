@@ -63,12 +63,12 @@ class UCenterTestCase(TestCase):
         mock_check_sms_code.side_effect = [{'mobile': 'wrong_mobile'}, {'mobile': 'mobile'}]
 
         data = {'new_password': 'new_password', 'mobile': 'mobile', 'sms_token': 'any'}
-        res = self.client.put(reverse('siteapi:set_user_password'), data=data)
+        res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json(), {'mobile': ['invalid']})
 
         data = {'new_password': 'new_password', 'mobile': 'mobile', 'sms_token': 'any'}
-        res = self.client.put(reverse('siteapi:set_user_password'), data=data)
+        res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 200)
 
         ciphertext = User.valid_objects.get(username=self.user.username).password
@@ -76,7 +76,7 @@ class UCenterTestCase(TestCase):
 
     def test_reset_user_password_by_op(self):
         data = {'new_password': 'new_password', 'username': 'admin', 'old_password': 'admin'}
-        res = self.client.put(reverse('siteapi:set_user_password'), data=data)
+        res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 200)
         ciphertext = User.valid_objects.get(username=self.user.username).password
         self.assertTrue(verify_password('new_password', ciphertext))
@@ -88,7 +88,7 @@ class UCenterTestCase(TestCase):
         mock_check_email_code.side_effect = [{'email': 'wrong_email'}, {'email': 'email'}]
 
         data = {'new_password': 'new_password', 'email': 'email', 'email_token': 'mock'}
-        res = self.client.put(reverse('siteapi:set_user_password'), data=data)
+        res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json(), {'email': ['invalid']})
 
@@ -165,6 +165,7 @@ class UCenterTestCase(TestCase):
             'is_settled': True,
             'is_extern_user': False,
             'origin_verbose': '脚本添加',
+            'require_reset_password': False,
         }
         self.assertEqual(res, expect)
 

@@ -33,6 +33,7 @@ class SetPasswordAPIView(generics.UpdateAPIView):
     '''
     用户重置密码
     - 短信
+    - 邮件
     - 旧密码
     '''
 
@@ -336,5 +337,5 @@ class RevokeTokenView(APIView):
         delete token
         '''
         user = request.user
-        user.invalidate_token()
+        user.revoke_token()
         return Response()

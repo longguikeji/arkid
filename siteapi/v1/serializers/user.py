@@ -199,6 +199,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'created',
             'last_active_time',
             'is_extern_user',
+            'require_reset_password',
         )
 
     def create(self, validated_data):
@@ -344,6 +345,7 @@ class UserWithPermSerializer(UserSerializer):
             'is_admin',
             'is_extern_user',
             'origin_verbose',
+            'require_reset_password',
         )
 
     def get_perms(self, obj):    # pylint: disable=no-self-use
@@ -446,3 +448,30 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
         出于业务需要，extern 不予展示
         '''
         return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
+
+
+class ResetUserPasswordSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for admin to reset user password
+    '''
+    password = serializers.CharField(required=True, write_only=True)
+    require_reset_password = serializers.BooleanField(required=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = User
+
+        fields = (
+            'password',
+            'require_reset_password',
+        )
+
+    def update(self, instance, validated_data):
+        from executer.core import CLI
+        password = validated_data.get('password')
+        cli = CLI()
+        cli.set_user_password(instance, password)
+        instance.revoke_token()
+        require_reset_password = validated_data.get('require_reset_password')
+        instance.require_reset_password = require_reset_password
+        instance.save(update_fields=['require_reset_password'])
+        return instance

@@ -418,6 +418,8 @@ class DeptTestCase(TestCase):
                 0,
                 'avatar':
                 '',
+                'require_reset_password':
+                False,
                 'nodes': [{
                     'dept_id': 1,
                     'name': 'root',

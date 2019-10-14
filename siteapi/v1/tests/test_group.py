@@ -485,6 +485,8 @@ class GroupTestCase(TestCase):
                 '',
                 'gender':
                 0,
+                'require_reset_password':
+                False,
                 'nodes': [{
                     'accept_user': True,
                     'group_id': 3,

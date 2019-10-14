@@ -13,6 +13,7 @@ from common.django.model import BaseModel
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from common.Email.email_manager import EmailManager
 
+
 class SingletonConfigMixin:
     '''
     单例配置
@@ -81,6 +82,7 @@ class DingConfig(BaseModel, SingletonConfigMixin):
 
     def __str__(self):
         return f'DingConfig[{self.id}]'    # pylint: disable=no-member
+
 
 class AccountConfig(BaseModel, SingletonConfigMixin):
     '''
@@ -209,7 +211,7 @@ class EmailConfig(BaseModel, SingletonConfigMixin):
     port = models.IntegerField(default=587, blank=True, verbose_name='邮件服务端口')
     access_key = models.CharField(default='', blank=True, max_length=512, verbose_name='邮箱账号')
     access_secret = models.CharField(default='', blank=True, max_length=512, verbose_name='邮箱密钥')
-    nickname = models.CharField(default='OneID', blank=True, max_length=128, verbose_name='邮件发送人落款')
+    nickname = models.CharField(default='ArkID', blank=True, max_length=128, verbose_name='邮件发送人落款')
 
     is_valid = models.BooleanField(default=False, blank=True, verbose_name='配置是否有效')
 
