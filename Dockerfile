@@ -1,25 +1,27 @@
-FROM python:3.6 as build_deps
+FROM python:3.6 as base
 EXPOSE 80
 WORKDIR /var/oneid
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        vim supervisor gettext \
-    && pip install uwsgi
-ADD requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
 
-FROM build_deps as run_lint
+FROM base as run_lint
 ADD requirements-dev.txt ./
 RUN pip install --no-cache-dir -r requirements-dev.txt
 ADD . .
 ARG base_commit_id=""
 RUN make BASE_COMMIT_ID=${base_commit_id} lint
 
+FROM base as build_deps
+ADD requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
 FROM build_deps as run_test
 ADD . .
 RUN make test
 
 FROM build_deps as build
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        vim supervisor gettext \
+    && pip install uwsgi
 ADD . .
 COPY uwsgi.ini /etc/uwsgi/uwsgi.ini
 RUN \
