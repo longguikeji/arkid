@@ -1,1 +1,4 @@
-a= 1
+'''
+test lint pass
+'''
+NAME = 1
