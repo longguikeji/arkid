@@ -16,7 +16,7 @@ test:
 	python manage.py migrate && python manage.py test siteapi.v1.tests --settings=oneid.settings_test
 
 lint: 
-	@if [ ${BASE_COMMIT_ID} != "" ]; \
+	@if [ ${BASE_COMMIT_ID}x != ""x ]; \
 	then \
 		git reset ${BASE_COMMIT_ID}; \
 		git add .; \
