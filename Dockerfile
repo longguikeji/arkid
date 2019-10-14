@@ -7,7 +7,8 @@ ADD requirements-dev.txt ./
 RUN pip install --no-cache-dir -r requirements-dev.txt
 ADD . .
 ARG base_commit_id=""
-RUN make BASE_COMMIT_ID=${base_commit_id} lint
+RUN pre-commit install \
+    && make BASE_COMMIT_ID=${base_commit_id} lint
 
 FROM base as build_deps
 ADD requirements.txt ./
