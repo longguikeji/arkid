@@ -43,6 +43,19 @@ class UCenterTestCase(TestCase):
         mobile_config.is_valid = True
         mobile_config.save()
 
+        self.clear_sms_token_patcher = mock.patch('infrastructure.serializers.sms.SMSClaimSerializer.clear_sms_token')
+        self.mock_clear_sms_token = self.clear_sms_token_patcher.start()
+        self.mock_clear_sms_token.return_value = True
+
+        self.clear_email_token_patcher = mock.patch(
+            'infrastructure.serializers.email.EmailClaimSerializer.clear_email_token')
+        self.mock_clear_email_token = self.clear_email_token_patcher.start()
+        self.mock_clear_email_token.return_value = True
+
+    def tearDown(self):
+        self.clear_sms_token_patcher.stop()
+        self.clear_email_token_patcher.stop()
+
     @mock.patch('siteapi.v1.serializers.ucenter.ResetPWDSMSClaimSerializer.check_sms_token')
     def test_reset_user_password_by_sms(self, mock_check_sms_code):
         self.user.mobile = 'mobile'
