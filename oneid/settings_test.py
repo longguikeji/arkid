@@ -12,7 +12,7 @@ if os.path.exists(os.path.join(BASE_DIR, 'oneid', 'settings.py')):
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # 'oneid.authentication.CustomExpiringTokenAuthentication',
+    # 'oneid.authentication.CustomExpiringTokenAuthentication',
         'drf_expiring_authtoken.authentication.ExpiringTokenAuthentication',
         'oneid.authentication.HeaderArkerBaseAuthentication',
     ),
@@ -21,7 +21,6 @@ REST_FRAMEWORK = {
         'oneid.permissions.IsAdminUser',
     )
 }
-
 
 TESTING = True
 EXECUTERS = [    # 注意顺序
@@ -33,3 +32,12 @@ EXECUTERS = [    # 注意顺序
 ]
 
 LANGUAGE_CODE = 'en'
+BASE_URL = 'http://localhost'
+
+#cache
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
