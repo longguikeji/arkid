@@ -54,6 +54,7 @@ class ConfigTestCase(TestCase):
                 'port': 587,
                 'is_valid': False,
             },
+            'alipay_config':None,
         }
         self.assertEqual(res.json(), expect)
 
@@ -143,6 +144,7 @@ class ConfigTestCase(TestCase):
                 'port': 587,
                 'is_valid': True,
             },
+            'alipay_config':None,
         }
 
         self.assertEqual(res.json(), expect)
@@ -176,7 +178,8 @@ class ConfigTestCase(TestCase):
             'support_email': True,
             'support_mobile': False,
             'support_email_register': True,
-            'support_mobile_register': False
+            'support_mobile_register': False,
+            'support_ding_qr': False,
         }
         self.assertEqual(expect, res.json()['account_config'])
 
@@ -194,6 +197,7 @@ class ConfigTestCase(TestCase):
                                    })
         res = self.anonymous.get(reverse('siteapi:meta'))
         expect = {
+            'support_ding_qr': False,
             'support_email': True,
             'support_mobile': True,
             'support_email_register': False,

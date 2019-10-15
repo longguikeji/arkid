@@ -1,5 +1,5 @@
 '''
-tests for api about ucenter
+tests for api about alipay qr
 '''
 # pylint: disable=missing-docstring
 
@@ -10,13 +10,11 @@ from django.urls import reverse
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
     User,
-    DingUser,
     AccountConfig,
-    EmailConfig,
-    SMSConfig,
+    AlipayConfig,
+    AlipayUser
 )
 
-from oneid_meta.models.config import AlipayConfig
 
 MAX_APP_ID = 2
 
@@ -30,73 +28,90 @@ class UCenterTestCase(TestCase):
         account_config.allow_email = True
         account_config.allow_mobile = True
         account_config.allow_register = True
+        account_config.allow_alipay_qr = True
         account_config.save()
 
-        email_config = EmailConfig.get_current()
-        email_config.is_valid = True
-        email_config.save()
+        alipay_config = AlipayConfig.get_current()
+        alipay_config.qr_app_valid = True
+        alipay_config.save()
 
-        mobile_config = SMSConfig.get_current()
-        mobile_config.is_valid = True
-        mobile_config.save()
-
-
-    @mock.patch("common.ding.ding_sdk.get_ding_id")
-    def test_ding_sns_login(self, mock_get_ding_id):
+    @mock.patch("common.alipay_api.alipay_sdk.get_alipay_id")
+    def test_alipay_qr_login(self, mock_get_alipay_id):
+        alipay_config = AlipayConfig.get_current()
+        alipay_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\
+            alipay_public_key='test_alipay_public_key', qr_app_valid=True)
+        alipay_config.save()
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
-        ding_id = 'ding_idding_id'
-        ding_user = DingUser.valid_objects.create(ding_id=ding_id, user=user)
-        ding_user.save()
+        alipay_id = 'test_alipay_id'
+        alipay_user = AlipayUser.valid_objects.create(alipay_id=alipay_id, user=user)
+        alipay_user.save()
         client = self.client
-        mock_get_ding_id.side_effect = [{'ding_id': 'ding_idding_id',\
-            'openid': 'openidopenid', 'unionid': 'unionidunionid'}]
+        mock_get_alipay_id.side_effect = ['test_alipay_id']
 
-        res = client.post(reverse('siteapi:ding_qr_callback'), data={'code':'CODE...........', 'state':'STATE'})
-        expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',\
-            'employee_number', 'gender', 'ding_user', 'perms', 'avatar', 'roles',\
+        res = client.post(reverse('siteapi:alipay_qr_callback'),\
+            data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
+        expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',
+            'employee_number', 'gender', 'perms', 'avatar', 'roles',
                 'private_email', 'position', 'is_settled', 'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose']
         res_dict = res.json()
         res_keys = list(res_dict.keys())
         self.assertEqual(res_keys, expect)
 
-    @mock.patch("common.ding.ding_sdk.get_ding_id")
-    def test_ding_sns_login_2(self, mock_get_ding_id):
+    @mock.patch("common.alipay_api.alipay_sdk.get_alipay_id")
+    def test_alipay_qr_login_newUser(self, mock_get_alipay_id):    # pylint: disable=invalid-name
+        alipay_config = AlipayConfig.get_current()
+        alipay_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\
+            alipay_public_key='test_alipay_public_key', qr_app_valid=True)
+        alipay_config.save()
+        mock_get_alipay_id.side_effect = ['unregistered_alipay_id']
         client = self.client
-        mock_get_ding_id.side_effect = [{'ding_id': 'unregistered_dingid',\
-            'openid': 'unknow_openid', 'unionid': 'unknowunionid'}]
-        res = client.post(reverse('siteapi:ding_qr_callback'), data={'code':'CODE...........', 'state':'STATE'})
-        expect = {'token': '', 'ding_id': 'unregistered_dingid'}
+        res = client.post(reverse('siteapi:alipay_qr_callback'),\
+            data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
+        expect = {'token':'', 'alipay_id': 'unregistered_alipay_id'}
         self.assertEqual(res.json(), expect)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_query_user(self, mock_check_sms_token):
+    def test_alipay_query_user(self, mock_check_sms_token):
         client = self.client
         mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
-        res = client.post(reverse('siteapi:ding_query_user'), data={'sms_token':'123132132131'})
-        expect = {'exist':False}
+        res = client.post(reverse('siteapi:alipay_query_user'), data={'sms_token':'123132132131'})
+        expect = {'exist': False}
         self.assertEqual(res.json(), expect)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_query_user_2(self, mock_check_sms_token):
+    def test_alipay_query_user_registered(self, mock_check_sms_token):    # pylint: disable=invalid-name
         client = self.client
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
         mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
-        res = client.post(reverse('siteapi:ding_query_user'), data={'sms_token': 'test_sms_token'})
+        res = client.post(reverse('siteapi:alipay_query_user'), data={'sms_token': 'test_sms_token'})
         expect = {'exist':True}
         self.assertEqual(res.json(), expect)
 
+    def test_alipay_qr_login_forbidden(self):
+        client = self.client
+        alipay_config = AlipayConfig.get_current()
+        alipay_config.__dict__.update(app_id='app_id', app_private_key='app_private_key',\
+            alipay_public_key='alipay_public_key', qr_app_valid=False)
+        alipay_config.save()
+        res = client.post(reverse('siteapi:alipay_qr_callback'),\
+            data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
+        expect_json = {'err_msg':'alipay qr not allowed'}
+        expect_code = 403
+        self.assertEqual(res.json(), expect_json)
+        self.assertEqual(res.status_code, expect_code)
+
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_bind(self, mock_check_sms_token):
+    def test_alipay_bind(self, mock_check_sms_token):
         client = self.client
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
         mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
-        res = client.post(reverse('siteapi:ding_bind'), data={'sms_token':\
-            'test_sms_token', 'ding_id':'ding_idding_id'})
+        res = client.post(reverse('siteapi:alipay_bind'), data={'sms_token':\
+            'test_sms_token', 'alipay_id':'test_alipay_id'})
         expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',\
-            'employee_number', 'gender', 'ding_user', 'perms', 'avatar', 'roles',\
+            'employee_number', 'gender', 'perms', 'avatar', 'roles',\
                 'private_email', 'position', 'is_settled', 'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose']
         res_dict = res.json()
         res_keys = list(res_dict.keys())
@@ -104,15 +119,15 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res_keys, expect)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_register_bind(self, mock_check_sms_token):
+    def test_alipay_register_bind(self, mock_check_sms_token):
         client = self.client
         mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
-        res = client.post(reverse('siteapi:ding_register_bind'),
+        res = client.post(reverse('siteapi:alipay_register_bind'),
                            data={
                                'username': 'username',
                                'password': 'password',
                                'sms_token': 'test_sms_token',
-                               'ding_id':'test_ding_id'
+                               'alipay_id':'test_alipay_id'
                            })
         expect = ['uuid', 'user_id', 'username', 'name', 'email', 'mobile', 'employee_number',\
             'gender', 'perms', 'avatar', 'roles', 'private_email', 'position', 'is_settled',\
@@ -121,11 +136,4 @@ class UCenterTestCase(TestCase):
         res_keys = list(res_dict.keys())
         self.assertEqual(res.status_code, 201)
         self.assertEqual(res_keys, expect)
-
-    def test_alipay_qr_callback(self):
-        client = self.client
-        res = client.post(reverse('siteapi:alipay_qr_callback'),
-                            data={'auth_code':'fake_auth_code'})
-        expect = {'err_msg':'invalid appid'}
-        self.assertEqual(res.json(), expect)
         
