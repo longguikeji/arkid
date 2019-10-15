@@ -8,12 +8,7 @@ from unittest import mock
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
-    User,
-    DingUser,
-    AccountConfig,
-    DingConfig
-)
+from oneid_meta.models import (User, DingUser, AccountConfig, EmailConfig, SMSConfig, DingConfig)
 
 MAX_APP_ID = 2
 
@@ -68,36 +63,42 @@ class UCenterTestCase(TestCase):
         ding_config = DingConfig.get_current()
         ding_config.__dict__.update(qr_app_id='qr_app_id', qr_app_secret='qr_app_secret', qr_app_valid=False)
         ding_config.save()
-        res = client.post(reverse('siteapi:ding_qr_callback'), data={'code':'CODE...........', 'state':'STATE'})
-        expect_json = {'err_msg':'ding qr not allowed'}
+        res = client.post(reverse('siteapi:ding_qr_callback'), data={'code': 'CODE...........', 'state': 'STATE'})
+        expect_json = {'err_msg': 'ding qr not allowed'}
         expect_code = 403
         self.assertEqual(res.json(), expect_json)
         self.assertEqual(res.status_code, expect_code)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_query_user(self, mock_check_sms_token):
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
+    def test_ding_query_user(self, mock_clear_sms_token, mock_check_sms_token):
         client = self.client
-        mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
-        res = client.post(reverse('siteapi:ding_query_user'), data={'sms_token':'123132132131'})
-        expect = {'exist':False}
+        mock_clear_sms_token.return_value = True
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+        res = client.post(reverse('siteapi:ding_query_user'), data={'sms_token': '123132132131'})
+        expect = {'exist': False}
         self.assertEqual(res.json(), expect)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_query_user_loguped(self, mock_check_sms_token):
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
+    def test_ding_query_user_loguped(self, mock_clear_sms_token, mock_check_sms_token):
         client = self.client
+        mock_clear_sms_token.return_value = True
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
-        mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:ding_query_user'), data={'sms_token': 'test_sms_token'})
-        expect = {'exist':True}
+        expect = {'exist': True}
         self.assertEqual(res.json(), expect)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_bind(self, mock_check_sms_token):
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
+    def test_ding_bind(self, mock_clear_sms_token, mock_check_sms_token):
         client = self.client
+        mock_clear_sms_token.return_value = True
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
-        mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:ding_bind'), data={'sms_token':\
             'test_sms_token', 'ding_id':'ding_idding_id'})
         expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',\
@@ -109,16 +110,18 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res_keys, expect)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_register_bind(self, mock_check_sms_token):
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
+    def test_ding_register_bind(self, mock_clear_sms_token, mock_check_sms_token):
         client = self.client
-        mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
+        mock_clear_sms_token.return_value = True
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:ding_register_bind'),
-                           data={
-                               'username': 'username',
-                               'password': 'password',
-                               'sms_token': 'test_sms_token',
-                               'ding_id':'test_ding_id'
-                           })
+                          data={
+                              'username': 'username',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'ding_id': 'test_ding_id'
+                          })
         expect = ['uuid', 'user_id', 'username', 'name', 'email', 'mobile', 'employee_number',\
             'gender', 'perms', 'avatar', 'roles', 'private_email', 'position', 'is_settled',\
                 'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose', 'token']
@@ -133,12 +136,12 @@ class UCenterTestCase(TestCase):
         account_config.allow_register = False
         account_config.save()
         res = client.post(reverse('siteapi:ding_register_bind'),
-                           data={
-                               'username': 'username',
-                               'password': 'password',
-                               'sms_token': 'test_sms_token',
-                               'ding_id':'test_ding_id'
-                           })
-        expect = {'err_msg':'ding qr register not allowed'}
+                          data={
+                              'username': 'username',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'ding_id': 'test_ding_id'
+                          })
+        expect = {'err_msg': 'ding qr register not allowed'}
         self.assertEqual(res.json(), expect)
         self.assertEqual(res.status_code, 403)

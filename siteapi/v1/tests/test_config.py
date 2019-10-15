@@ -34,7 +34,7 @@ class ConfigTestCase(TestCase):
                 'allow_email': False,
                 'allow_mobile': False,
                 'allow_register': False,
-                'allow_ding_qr':False,
+                'allow_ding_qr': False,
             },
             'sms_config': {
                 'access_key': '',
@@ -153,12 +153,11 @@ class ConfigTestCase(TestCase):
         self.assertEqual(EmailConfig.get_current().access_secret, 'pwd')
         self.assertEqual(SMSConfig.get_current().access_secret, 'pwd')
 
-        res = self.client.json_patch(reverse('siteapi:config'), data={
-            'email_config': {
-                'host': '12.12.12.13',
-                'access_secret': '',
-            }
-        })
+        res = self.client.json_patch(reverse('siteapi:config'),
+                                     data={'email_config': {
+                                         'host': '12.12.12.13',
+                                         'access_secret': '',
+                                     }})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['email_config']['host'], "12.12.12.13")
 
@@ -203,7 +202,8 @@ class ConfigTestCase(TestCase):
             'support_email': True,
             'support_mobile': True,
             'support_email_register': False,
-            'support_mobile_register': False
+            'support_mobile_register': False,
+            'support_ding_qr': False,
         }
         self.assertEqual(expect, res.json()['account_config'])
 
