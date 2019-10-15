@@ -261,6 +261,7 @@ class APPDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         '''
         reject if not editable
         '''
+        a= 1
         if not instance.editable:
             raise MethodNotAllowed('DELETE protected APP')
         cli = LOG_CLI()
