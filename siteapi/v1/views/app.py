@@ -251,6 +251,7 @@ class APPDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         find app
         :rtype: oneid_meta.models.APP
         '''
+        a= 1
         app = APP.valid_objects.filter(uid=self.kwargs['uid']).first()
         if not app:
             raise NotFound
