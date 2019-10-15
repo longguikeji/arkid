@@ -7,7 +7,6 @@ import requests
 from thirdparty_data_sdk.dingding.dingsdk import constants
 from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 
-
 class AccessTokenManager():
     """
     class to init and hold access token
@@ -52,6 +51,13 @@ class AccessTokenManager():
                 constants.ACCESS_TOKEN_URL,
                 params={
                     'appkey': self.app_key,
+                    'appsecret': self.app_secret
+                }).json()
+        elif self.token_version == constants.TOKEN_FROM_APPID_QR_APP_SECRET:
+            resp = requests.get(
+                constants.QR_GET_ACCESS_TOKEN_URL,
+                params={
+                    'appid': self.app_key,
                     'appsecret': self.app_secret
                 }).json()
         else:
