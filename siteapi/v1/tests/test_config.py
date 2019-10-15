@@ -60,15 +60,17 @@ class ConfigTestCase(TestCase):
 
     @mock.patch('oneid_meta.models.config.SMSAliyunManager.send_auth_code')
     @mock.patch('oneid_meta.models.config.EmailManager.connect')
+    @mock.patch('oneid_meta.models.config.DingConfig.check_valid')
     @mock.patch('siteapi.v1.serializers.config.DingConfigSerializer.validate_qr_app_config')
     @mock.patch('siteapi.v1.serializers.config.DingConfigSerializer.validate_app_config')
     @mock.patch('siteapi.v1.serializers.config.DingConfigSerializer.validate_corp_config')
     def test_update_config(self, mock_validate_corp_config, mock_validate_app_config,\
-        mock_validate_qr_app_config, mock_connect,\
+        mock_validate_qr_app_config, mock_check_valid, mock_connect,\
         mock_send_auth_code):
         mock_validate_corp_config.return_value = True
         mock_validate_app_config.return_value = False
         mock_validate_qr_app_config.return_value = True
+        mock_check_valid.return_value = True
         mock_connect.return_value = True
         mock_send_auth_code.return_value = True
         res = self.client.json_patch(reverse('siteapi:config'),

@@ -1,7 +1,6 @@
 '''
 serializer for config
 '''
-
 from django.contrib.sites.models import Site
 from django.db import transaction
 from rest_framework import serializers
@@ -20,7 +19,7 @@ from oneid_meta.models import (
     EmailConfig,
 )
 from common.django.drf.serializer import DynamicFieldsModelSerializer
-from common.ding import ding_sdk
+
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 from thirdparty_data_sdk.dingding.dingsdk import constants
@@ -48,7 +47,6 @@ class CompanyConfigSerializer(DynamicFieldsModelSerializer):
             'color',
         )
 
-
 class AccountConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for AccountConfig
@@ -62,7 +60,6 @@ class AccountConfigSerializer(DynamicFieldsModelSerializer):
             'allow_email',
             'allow_ding_qr',
         )
-
 
 class SMSConfigSerializer(DynamicFieldsModelSerializer):    # pylint: disable=missing-docstring
     is_valid = serializers.BooleanField(read_only=True)
@@ -84,7 +81,6 @@ class SMSConfigSerializer(DynamicFieldsModelSerializer):    # pylint: disable=mi
             'is_valid',
         )
 
-
 class EmailConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for Email
@@ -105,7 +101,6 @@ class EmailConfigSerializer(DynamicFieldsModelSerializer):
             'nickname',
             'is_valid',
         )
-
 
 class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
     '''
@@ -209,13 +204,13 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
         :rtype:bool
         '''
         try:
-            appid = instance.qr_app_id
-            appsecret = instance.qr_app_secret
-            err_code = ding_sdk.get_access_token(appid, appsecret)['errcode']
-            if err_code == 0:
-                return True
-            raise ValidationError({'qr_ding': ['invalid']})
-        except Exception:    # pylint: disable=broad-except
+            AccessTokenManager(
+                app_key=instance.qr_app_id,
+                app_secret=instance.qr_app_secret,
+                token_version=constants.TOKEN_FROM_APPID_QR_APP_SECRET
+            ).get_access_token()
+            return True
+        except APICallError:
             return False
 
 
@@ -267,12 +262,6 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-        ding_config_data = validated_data.pop('ding_config', None)
-        if ding_config_data:
-            serializer = DingConfigSerializer(DingConfig.get_current(), ding_config_data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
         account_config_data = validated_data.pop('account_config', None)
         if account_config_data:
             serializer = AccountConfigSerializer(AccountConfig.get_current(), account_config_data, partial=True)
@@ -308,6 +297,12 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
                 raise ValidationError({'email': ['invalid']})
             config.is_valid = True
             config.save()
+
+        ding_config_data = validated_data.pop('ding_config', None)
+        if ding_config_data:
+            serializer = DingConfigSerializer(DingConfig.get_current(), ding_config_data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
         alipay_config_data = validated_data.pop('alipay_config', None)
         if alipay_config_data:

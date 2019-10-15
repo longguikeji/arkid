@@ -12,6 +12,13 @@ from aliyunsdkcore.acs_exception.exceptions import ServerException
 from common.django.model import BaseModel
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from common.Email.email_manager import EmailManager
+<<<<<<< HEAD
+=======
+
+from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+
+from oneid import settings as oneid_settings
+>>>>>>> refactor(重构钉钉请求access_token接口，放入thirdparty中): component
 
 class SingletonConfigMixin:
     '''
@@ -71,6 +78,24 @@ class DingConfig(BaseModel, SingletonConfigMixin):
     qr_app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP ID")
     qr_app_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP SECRET")
     qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP配置是否正确')
+
+    def check_valid(self):
+        '''
+        检查配置是否有效
+        '''
+        accesser = AccessTokenManager(
+            app_key=self.qr_app_id,
+            app_secret=self.qr_app_secret,
+            token_version=3
+        )
+        try:
+            accesser.get_access_token()
+            return True
+        except ServerException as exce:
+            print(exce)
+            return False
+        except RuntimeError:
+            return True
 
     @property
     def qr_callback_url(self):

@@ -7,6 +7,7 @@ TOKEN_DURATION = 7200
 TOKEN_TOLERANCE_PERIOD = 5    #提前一定秒数更新token,防止临界点的访问
 TOKEN_FROM_CORPID_CORPSECRET = 1
 TOKEN_FROM_APPKEY_APPSECRET = 2
+TOKEN_FROM_APPID_QR_APP_SECRET = 3
 
 API_URL = 'https://oapi.dingtalk.com'
 
@@ -48,3 +49,13 @@ ROLE_DEL_USERS_ROLES = API_URL + '/role/removerolesforemps'
 MSG_SEND_URL = API_URL + '/topapi/message/corpconversation/asyncsend_v2'
 MSG_GET_SEND_PROGRESS_URL = API_URL + '/topapi/message/corpconversation/getsendprogress'
 MSG_GET_SEND_RESULT_URL = API_URL + '/topapi/message/corpconversation/getsendresult'
+
+# id related
+USER_ID_FROM_CODE = 1
+
+# qr related url
+QR_BASEURL = 'https://oapi.dingtalk.com/sns/'
+QR_GET_ACCESS_TOKEN_URL = QR_BASEURL + 'gettoken'
+QR_GET_PSSTT_CODE_URL = QR_BASEURL + 'get_persistent_code'
+QR_GET_SNS_TOKEN_URL = QR_BASEURL + 'get_sns_token'
+QR_GET_USER_INFO_URL = QR_BASEURL + 'getuserinfo'

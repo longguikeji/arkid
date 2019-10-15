@@ -25,7 +25,7 @@ from executer.log.rdb import LOG_CLI
 from oneid_meta.models import User, Group, DingUser
 from oneid_meta.models.extern_user import AlipayUser
 from oneid_meta.models.config import AlipayConfig, AccountConfig
-from common.ding import ding_sdk
+from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
 from common.alipay_api import alipay_sdk
 
 def require_ding_qr_supported(func):
@@ -92,21 +92,20 @@ class DingQrCallbackView(APIView):
 
         if state == 'STATE' and code != '':
             try:
-                user_ids = ding_sdk.get_ding_id(code)
+                ding_id = DingIdManager.get_ding_id(code)
             except Exception:    # pylint: disable=broad-except
                 return Response({'err_msg': 'get dingding user time out'}, HTTP_408_REQUEST_TIMEOUT)
         else:
             return Response({'err_msg': 'get tmp code error'}, HTTP_400_BAD_REQUEST)
 
-        context = self.get_token(user_ids)
+        context = self.get_token(ding_id)
 
         return Response(context, HTTP_200_OK)
 
-    def get_token(self, user_ids):
+    def get_token(self, ding_id):
         '''
         从DingUser表查询用户，返回token
         '''
-        ding_id = user_ids['ding_id']
         ding_user = DingUser.valid_objects.filter(ding_id=ding_id).first()
         if ding_user:
             user = ding_user.user
