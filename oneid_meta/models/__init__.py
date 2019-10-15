@@ -4,9 +4,13 @@ schema of Users,Departmments,Groups,Perms
 
 from oneid_meta.models.user import (
     User,
-    DingUser,
     PosixUser,
     CustomUser,
+)
+
+from oneid_meta.models.extern_user import (
+    DingUser,
+    AlipayUser
 )
 
 from oneid_meta.models.dept import (
@@ -46,6 +50,7 @@ from oneid_meta.models.config import (
     CustomField,
     NativeField,
     EmailConfig,
+    AlipayConfig
 )
 
 from oneid_meta.models.event import (

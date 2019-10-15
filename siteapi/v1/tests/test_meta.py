@@ -3,7 +3,7 @@
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig
+from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig, AlipayConfig
 
 
 class MetaTestCase(TestCase):
@@ -24,6 +24,10 @@ class MetaTestCase(TestCase):
         ding_config.qr_app_id = 'qr_app_id'
         ding_config.qr_app_valid = True
         ding_config.save()
+        alipay_config = AlipayConfig.get_current()
+        alipay_config.app_id = 'test_app_id'
+        alipay_config.qr_app_valid = True
+        alipay_config.save()
 
         res = self.anonymous.get(reverse('siteapi:meta'))
         expect = {
@@ -51,6 +55,10 @@ class MetaTestCase(TestCase):
                 'support_mobile_register': False,
                 'support_ding_qr': True,
             },
+            'alipay_config': {
+                'app_id':'test_app_id',
+                'qr_callback_url':'http://localhost/alipay/qr/callback/'
+            }
         }
         self.assertEqual(res.json(), expect)
 

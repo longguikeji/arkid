@@ -24,7 +24,6 @@ class IsolatedManager(IgnoreDeletedManager):
     def get_queryset(self):
         return super().get_queryset().filter(from_register=True)
 
-
 class User(BaseModel, PermOwnerMixin):
     '''
     OneID 用户
@@ -57,19 +56,12 @@ class User(BaseModel, PermOwnerMixin):
         verbose_name='性别',
     )
     avatar = models.CharField(max_length=1024, blank=True, default='', verbose_name='头像')
-
     is_boss = models.BooleanField(default=False, verbose_name='是否为主管理员')
-
     from_register = models.BooleanField(default=False, verbose_name='是否来自自己注册')
-
     origin = models.IntegerField(choices=ORIGIN_CHOICES, default=0, verbose_name='账号来源')
-
     hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
-
     remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
-
     last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')
-
     isolated_objects = IsolatedManager()
 
     def save(self, *args, **kwargs):    # pylint: disable=arguments-differ
@@ -199,7 +191,6 @@ class User(BaseModel, PermOwnerMixin):
                 return True
         return False
 
-
     def get_perm(self, perm):
         '''
         返回权限结果
@@ -328,7 +319,6 @@ class User(BaseModel, PermOwnerMixin):
             res = set([node.node_uid for node in self.depts] + [node.node_uid for node in self.groups])
             cache.set(key, res)
             return res
-
         return cache_data
 
     @property
@@ -345,7 +335,6 @@ class User(BaseModel, PermOwnerMixin):
                 res.update(parent_node.upstream_uids)
             cache.set(key, res)
             return res
-
         return cache_data
 
     def update_cache(self):
@@ -441,20 +430,6 @@ class User(BaseModel, PermOwnerMixin):
             self.last_active_time = now
             self.save(update_fields=['last_active_time'])
 
-
-class DingUser(BaseModel):
-    '''
-    钉钉用户
-    '''
-    user = models.OneToOneField(User, verbose_name='用户', related_name='ding_user', on_delete=models.PROTECT)
-    account = models.CharField(max_length=64, blank=False, verbose_name='钉钉账号(手机)')
-    uid = models.CharField(max_length=255, blank=False, verbose_name='员工在企业内的唯一标识')
-    data = models.TextField(blank=True, default='{}', verbose_name='钉钉员工详细数据(JSON)')
-    ding_id = models.TextField(max_length=255, blank=True, verbose_name='钉钉ID')
-    open_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用内的唯一标识')
-    union_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用所属的钉钉开放平台账号内的唯一标识')
-    
-
 class PosixUser(BaseModel):
     '''
     服务器用户
@@ -464,7 +439,6 @@ class PosixUser(BaseModel):
     gid = models.IntegerField(blank=True, default=500)
     home = models.CharField(max_length=255, blank=True, default='', verbose_name='家目录')
     pub_key = models.CharField(max_length=255, blank=True, default='', verbose_name='公钥')
-
 
 class CustomUser(BaseModel):
     '''

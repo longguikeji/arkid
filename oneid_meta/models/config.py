@@ -92,6 +92,7 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
     allow_mobile = models.BooleanField(default=False, blank=True, verbose_name='是否允许手机(注册、)登录、找回密码')
     allow_register = models.BooleanField(default=False, blank=True, verbose_name='是否开放注册')
     allow_ding_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放钉钉扫码登录')
+    allow_alipay_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放支付宝扫码登录')
 
     def __str__(self):
         return f'AccountConfig[{self.id}]'    # pylint: disable=no-member
@@ -137,6 +138,20 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
         是否支持钉钉扫码注册
         '''
         return self.allow_register and self.support_ding_qr
+
+    @property
+    def support_alipay_qr(self):
+        '''
+        是否支持支付宝扫码登录
+        '''
+        return self.allow_alipay_qr and AlipayConfig.get_current().qr_app_valid
+
+    @property
+    def support_alipay_qr_register(self):
+        '''
+        是否支持支付宝扫码注册
+        '''
+        return self.allow_register and self.support_alipay_qr
 
 
 class SMSConfig(BaseModel, SingletonConfigMixin):
@@ -277,3 +292,21 @@ class NativeField(BaseModel):
     schema = jsonfield.JSONField(default={'type': 'string'}, verbose_name='字段定义')
     is_visible = models.BooleanField(default=True, verbose_name='是否展示')
     is_visible_editable = models.BooleanField(default=True, verbose_name='对于`是否展示`，是否可以修改')
+
+class AlipayConfig(BaseModel, SingletonConfigMixin):
+    '''
+    支付宝配置信息
+    '''
+    site = models.OneToOneField(Site, related_name='alipay_config', on_delete=models.CASCADE)
+
+    app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP ID")
+    app_private_key = models.CharField(max_length=2000, blank=True, default="", verbose_name="QR APP SECRET")
+    alipay_public_key = models.CharField(max_length=2000, blank=True, default="", verbose_name="QR APP SECRET")
+    qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP配置是否正确')
+
+    @property
+    def qr_callback_url(self):    # pylint: disable=missing-docstring
+        return oneid_settings.BASE_URL + '/alipay/qr/callback/'
+
+    def __str__(self):
+        return f'AlipayConfig[{self.id}]'    # pylint: disable=no-member

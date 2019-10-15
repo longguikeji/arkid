@@ -4,7 +4,8 @@ serializers for ucenter
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from common.django.drf.serializer import DynamicFieldsModelSerializer
-from oneid_meta.models import User, Invitation, DingUser
+from oneid_meta.models import User, Invitation
+from oneid_meta.models.extern_user import AlipayUser, DingUser
 from executer.core import CLI
 from infrastructure.serializers.sms import (
     SMSClaimSerializer,
@@ -378,3 +379,89 @@ class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
         user.save()
         cli.set_user_password(user, password)
         return user
+
+
+class AlipayRegisterAndBindSerializer(DynamicFieldsModelSerializer):    # pylint: disable=abstract-method
+    '''
+    Serializer user register
+    '''
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+    sms_token = serializers.CharField(required=True)
+    alipay_id = serializers.CharField(required=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = User
+
+        fields = (
+            'username',
+            'password',
+            'sms_token',
+            'alipay_id',
+        )
+
+    def validate(self, attrs):
+        '''
+        校验token，验重
+        '''
+        validated_data = super().validate(attrs)
+        if not validated_data.get('sms_token', ''):
+            raise ValidationError({'auth_token': ['auth_token is required, like "sms_token"']})
+
+        username = validated_data['username']
+        if User.valid_objects.filter(username=username).exists():
+            raise ValidationError({'username': ['existed']})
+
+        sms_token = validated_data.get('sms_token', None)
+        if sms_token:
+            mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
+            SMSClaimSerializer.clear_sms_token(sms_token)
+            validated_data['mobile'] = mobile
+
+        return validated_data
+
+    def create(self, validated_data):
+        '''
+        创建用户
+        '''
+        cli = CLI()
+        password = validated_data.pop('password')
+        user = cli.create_user(validated_data)
+        user.from_register = True
+        user.save()
+        cli.set_user_password(user, password)
+        return user
+
+
+class AlipayBindSerializer(serializers.Serializer):    # pylint: disable=abstract-method
+    '''
+    alipay bind
+    - by sms_token
+    - by alipay_id
+    '''
+
+    sms_token = serializers.CharField(required=True)
+    alipay_id = serializers.CharField(required=True)
+
+    class Meta:
+        '''
+        关联AlipayUser表
+        '''
+        model = AlipayUser
+        fields = (
+            'sms_token',
+            'alipay_id',
+        )
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        mobile = SMSClaimSerializer.check_sms_token(validated_data['sms_token'])['mobile']
+        SMSClaimSerializer.clear_sms_token(validated_data['sms_token'])
+        user = User.valid_objects.filter(mobile=mobile).first()
+        validated_data['user'] = user
+        return validated_data
+
+    def update(self, instance, validated_data):
+        cli = CLI()
+        cli.update_user(instance, validated_data)
+        return instance

@@ -32,6 +32,8 @@ django-jsonfield = "==1.2.0"
 minio = "==4.0.18"
 cryptography = "==2.7"
 django-redis = "==4.10.0"
+yapf = "*"
+alipay-sdk-python = "*"
 
 [dev-packages]
 ipython = "*"
@@ -40,6 +42,7 @@ pylint = "*"
 yapf = "*"
 v = {version = "*",editable = true}
 pipenv-to-requirements = "*"
+rope = "*"
 
 [requires]
 python_version = "3.6"
