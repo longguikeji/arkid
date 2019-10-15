@@ -1,4 +1,5 @@
 .PHONY: \
+	ci \
 	lint test build \
 	all requirements docker docker-build docker-push \
 	sql-ldap-docker sql-ldap-docker-build sql-ldap-docker-push \
