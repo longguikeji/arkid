@@ -5,6 +5,7 @@ exclude: >
         common/.*|              # previous code
         .*/migrations/.*|          # auto-generated code from third party project
         oauth2_provider/.*|     # oauth2 django app from third party
+        oneid/settings.py|
     )$
 repos:
   - repo: local
