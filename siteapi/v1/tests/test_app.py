@@ -107,7 +107,7 @@ class APPTestCase(TestCase):
         res = self.client.json_post(reverse('siteapi:app_list'), data=APP_2)
 
         res = res.json()
-        self.assertIn('__client_id', res['oauth_app'])
+        self.assertIn('client_id', res['oauth_app'])
         self.assertIn('client_secret', res['oauth_app'])
         del res['oauth_app']['client_id']
         del res['oauth_app']['client_secret']
