@@ -56,10 +56,15 @@ class InvitationTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
 
     @mock.patch('siteapi.v1.serializers.ucenter.UserActivateSMSClaimSerializer.check_sms_token')
+    @mock.patch('siteapi.v1.serializers.ucenter.UserActivateSMSClaimSerializer.clear_sms_token')
     @mock.patch('siteapi.v1.serializers.ucenter.UserActivateEmailClaimSerializer.check_email_token')
-    def test_profile_email(self, mock_check_email_token, mock_check_sms_token):
+    @mock.patch('siteapi.v1.serializers.ucenter.UserActivateEmailClaimSerializer.clear_email_token')
+    def test_profile_email(self, mock_clear_email_token, mock_check_email_token, mock_clear_sms_token,
+                           mock_check_sms_token):
         mock_check_email_token.return_value = {'email': 'a@b.cn'}
+        mock_clear_email_token.return_value = True
         mock_check_sms_token.return_value = {'mobile': '18812341234'}
+        mock_clear_sms_token.return_value = True
 
         invitation = Invitation.objects.create(inviter=self.inviter, invitee=self.invitee)
         res = self.anonymous.get(reverse('siteapi:ucenter_profile_invited'), data={'key': invitation.key})
@@ -88,10 +93,15 @@ class InvitationTestCase(TestCase):
         self.assertEqual(res.status_code, 401)
 
     @mock.patch('siteapi.v1.serializers.ucenter.UserActivateSMSClaimSerializer.check_sms_token')
+    @mock.patch('siteapi.v1.serializers.ucenter.UserActivateSMSClaimSerializer.clear_sms_token')
     @mock.patch('siteapi.v1.serializers.ucenter.UserActivateEmailClaimSerializer.check_email_token')
-    def test_profile_sms(self, mock_check_email_token, mock_check_sms_token):
+    @mock.patch('siteapi.v1.serializers.ucenter.UserActivateEmailClaimSerializer.clear_email_token')
+    def test_profile_sms(self, mock_clear_email_token, mock_check_email_token, mock_clear_sms_token,
+                         mock_check_sms_token):
         mock_check_email_token.return_value = {'email': 'a@b.cn'}
+        mock_clear_email_token.return_value = True
         mock_check_sms_token.return_value = {'mobile': '18812341234'}
+        mock_clear_sms_token.return_value = True
 
         invitation = Invitation.objects.create(inviter=self.inviter, invitee=self.invitee)
         res = self.anonymous.get(reverse('siteapi:ucenter_profile_invited'), data={'key': invitation.key})
