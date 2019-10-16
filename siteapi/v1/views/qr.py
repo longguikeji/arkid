@@ -29,6 +29,7 @@ def require_ding_qr_supported(func):
     def inner(self, request):
         return Response({'err_msg':'ding qr not allowed'}, HTTP_403_FORBIDDEN)\
             if not AccountConfig.get_current().support_ding_qr else func(self, request)
+
     return inner
 
 
@@ -58,9 +59,9 @@ class DingQrCallbackView(APIView):
             try:
                 user_ids = self.get_ding_id(code)
             except Exception:    # pylint: disable=broad-except
-                return Response({'err_msg':'get dingding user time out'}, HTTP_408_REQUEST_TIMEOUT)
+                return Response({'err_msg': 'get dingding user time out'}, HTTP_408_REQUEST_TIMEOUT)
         else:
-            return Response({'err_msg':'get tmp code error'}, HTTP_400_BAD_REQUEST)
+            return Response({'err_msg': 'get tmp code error'}, HTTP_400_BAD_REQUEST)
 
         ding_id = user_ids['ding_id']
         ding_user = DingUser.valid_objects.filter(ding_id=ding_id).first()
@@ -71,7 +72,6 @@ class DingQrCallbackView(APIView):
         else:
             context = {'token': '', 'ding_id': ding_id}
         return Response(context, HTTP_200_OK)
-
 
     def get_ding_id(self, code):
         '''
@@ -98,8 +98,9 @@ class DingQueryUserAPIView(GenericAPIView):
     '''
     permission_classes = []
     authentication_classes = []
+
     @require_ding_qr_supported
-    def post(self, request):
+    def post(self, request):    # pylint: disable=no-self-use
         '''
         查询用户是否注册
         '''
@@ -129,10 +130,14 @@ class DingBindAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         ding_id = serializer.validated_data['ding_id']
-        ding_user = DingUser.objects.create(ding_id=ding_id, user=user)
+        ding_user = DingUser.objects.filter(user=user).first()
+        if ding_user:
+            ding_user.ding_id = ding_id
+        else:
+            ding_user = DingUser.objects.create(ding_id=ding_id, user=user)
         ding_user.save()
         token = user.token
-        data = {'token':token, **UserWithPermSerializer(user).data}
+        data = {'token': token, **UserWithPermSerializer(user).data}
         LOG_CLI(user).user_login()
         return Response(data, HTTP_201_CREATED)
 
@@ -147,13 +152,12 @@ class DingRegisterAndBindView(generics.CreateAPIView):
     serializer_class = DingRegisterAndBindSerializer
     read_serializer_class = UserWithPermSerializer
 
-
     def create(self, request, *args, **kwargs):
         '''
         钉钉扫码加绑定
         '''
         if not AccountConfig.get_current().support_ding_qr_register:
-            return Response({'err_msg':'ding qr register not allowed'}, HTTP_403_FORBIDDEN)
+            return Response({'err_msg': 'ding qr register not allowed'}, HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
