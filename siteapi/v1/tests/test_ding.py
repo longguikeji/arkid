@@ -156,9 +156,11 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.json(), expect)
         self.assertEqual(res.status_code, 403)
 
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_ding_bind_user_exist(self, mock_check_sms_token):
+    def test_ding_bind_user_exist(self, mock_check_sms_token, mock_clear_sms_token):
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+        mock_clear_sms_token.return_value = None
         client = self.client
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
