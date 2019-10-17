@@ -22,12 +22,13 @@ pipeline {
                 sendDingTalk("pending", "开始构建")
             }
         }
-        stage('deploy for development') {
+        stage('build') {
             steps {
                 withDockerRegistry([credentialsId: "${DOCKER_DEV_REGISTRY_CREDENTIAL}", url: "${DOCKER_DEV_REGISTRY}"]){
-                    makeDevDocker()
+                    sh """#!/bin/bash
+                    make VERSION=${env.DOCKER_IMAGE_DEV_VERSION} docker-dev
+                    """
                 }
-                deploymentDev()
             }
         }
     }
@@ -39,16 +40,6 @@ pipeline {
             sendDingTalk("failure", "构建失败")
         }
     }
-}
-
-def makeDevDocker(){
-    sh """#!/bin/bash
-    make VERSION=${env.DOCKER_IMAGE_DEV_VERSION} docker-dev
-    """
-}
-
-def deploymentDev(){
-    echo "deploy to dev"
 }
 
 def sendDingTalk(status, message) {
