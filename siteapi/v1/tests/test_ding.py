@@ -154,10 +154,4 @@ class UCenterTestCase(TestCase):
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:ding_bind'), data={'sms_token':\
             'test_sms_token', 'ding_id':'test_ding_id'})
-        expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',\
-            'employee_number', 'gender', 'ding_user', 'perms', 'avatar', 'roles',\
-                'private_email', 'position', 'is_settled', 'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose']
-        res_dict = res.json()
-        res_keys = list(res_dict.keys())
         self.assertEqual(res.status_code, 201)
-        self.assertEqual(res_keys, expect)
