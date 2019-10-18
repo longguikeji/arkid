@@ -1,0 +1,90 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_SHORT_COMMIT = """${sh(
+            returnStdout: true,
+            script: 'git rev-parse --short HEAD',
+        ).trim()}"""
+        DOCKER_IMAGE_BUILD_VERSION = "build-${env.BUILD_NUMBER}-${env.GIT_SHORT_COMMIT}"
+        DOCKER_IMAGE_DEV_VERSION = "dev-${env.BUILD_NUMBER}-${env.GIT_SHORT_COMMIT}"
+    }
+    stages {
+        stage('ci'){
+            steps{
+                ci()
+            }
+        }
+    }
+    post {
+        always {
+            updateGithubCommitStatus()
+        }
+    }
+}
+
+def ci() {
+    script {
+        env.TEMP_LOG = """${sh(
+            returnStdout: true,
+            script: 'mktemp',
+        )}
+        """
+    }
+    sh """#!/bin/bash
+        make VERSION=${env.DOCKER_IMAGE_BUILD_VERSION} ci | tee ${env.TEMP_LOG}
+        ExitCode=\${PIPESTATUS[0]}
+        if [ \${ExitCode} -eq 0 ]; then
+            StatusContent="success"
+        else
+            if [ `grep -c "FROM build_deps as build" ${env.TEMP_LOG}` -gt 0 ];then
+                StatusContent="build failed"
+            elif [ `grep -c "FROM build_deps as run_test" ${env.TEMP_LOG}` -gt 0 ];then
+                StatusContent="test failed"
+            elif [ `grep -c "FROM build_deps as run_lint" ${env.TEMP_LOG}` -gt 0 ];then
+                StatusContent="lint failed"
+            else
+                StatusContent="failed"
+            fi
+        fi
+        rm -rf ${env.TEMP_LOG}
+        echo \${StatusContent} > .git/status-content
+        exit \${ExitCode}
+    """
+}
+
+
+def getRepoURL() {
+    sh "git config --get remote.origin.url > .git/remote-url"
+    return readFile(".git/remote-url").trim()
+}
+ 
+def getCommitSha() {
+    sh "git rev-parse HEAD > .git/current-commit"
+    return readFile(".git/current-commit").trim()
+}
+
+def getCommitStatus() {
+    return readFile(".git/status-content").trim()
+}
+ 
+def updateGithubCommitStatus() {
+    repoUrl = getRepoURL()
+    commitSha = getCommitSha()
+    message = getCommitStatus()
+
+    step([
+        $class: 'GitHubCommitStatusSetter',
+        reposSource: [$class: "ManuallyEnteredRepositorySource", url: repoUrl],
+        commitShaSource: [$class: "ManuallyEnteredShaSource", sha: commitSha],
+        errorHandlers: [[$class: 'ShallowAnyErrorHandler']],
+        statusResultSource: [
+            $class: 'ConditionalStatusResultSource',
+            results: [
+                [$class: 'BetterThanOrEqualBuildResult', result: 'SUCCESS', state: 'SUCCESS', message: message],
+                [$class: 'BetterThanOrEqualBuildResult', result: 'FAILURE', state: 'FAILURE', message: message],
+                [$class: 'AnyBuildResult', state: 'FAILURE', message: 'Loophole']
+            ]
+        ]
+    ])
+}
