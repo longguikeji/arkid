@@ -3,7 +3,6 @@ serializers for email
 '''
 import uuid as uuid_utils
 
-import redis
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
@@ -11,6 +10,7 @@ from django.template.loader import render_to_string
 
 from tasksapp.tasks import send_email
 from oneid_meta.models import User, Invitation, CompanyConfig
+from oneid.utils import redis_conn
 
 
 class EmailClaimSerializer(serializers.Serializer):    # pylint: disable=abstract-method
@@ -65,7 +65,6 @@ class EmailClaimSerializer(serializers.Serializer):    # pylint: disable=abstrac
         '''
         清除email_token
         '''
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         redis_conn.delete(cls.gen_email_token_key(email_token))
 
     def update(self, instance, validated_data):
@@ -105,7 +104,6 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
         email_token = self.gen_email_token()
         link = settings.BASE_URL + settings.FE_EMAIL_REGISTER_URL + f'?email_token={email_token}'
         key = self.gen_email_token_key(email_token)
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         redis_conn.set(key, self.validated_data['email'], ex=60 * 60 * 24 * 3)
 
         content = f'点击以下链接完成验证，3天之内有效：</br><a href="{link}">{link}</a>'
@@ -124,11 +122,10 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
         '''
         校验email_token
         '''
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         key = cls.gen_email_token_key(email_token)
         res = redis_conn.get(key)
         if res:
-            return {'email': res.decode()}
+            return {'email': res}
         raise ValidationError({'email_token': ['invalid']})
 
 
@@ -161,7 +158,6 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
         email_token = self.gen_email_token()
         link = settings.BASE_URL + settings.FE_EMAIL_RESET_PWD_URL + f'?email_token={email_token}'
         key = self.gen_email_token_key(email_token)
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         redis_conn.set(key, self.validated_data['email'], ex=60 * 60 * 24 * 3)
 
         content = f'点击以下链接完成验证，3天之内有效：</br><a href="{link}">{link}</a>'
@@ -180,11 +176,10 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
         '''
         校验email_token
         '''
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         key = cls.gen_email_token_key(email_token)
         res = redis_conn.get(key)
         if res:
-            email = res.decode()
+            email = res
             user = User.valid_objects.filter(private_email=email).first()
             if user:
                 return {'email': email, 'name': user.name, 'username': user.username}
@@ -230,7 +225,6 @@ class UserActivateEmailClaimSerializer(EmailClaimSerializer):
         email_token = self.gen_email_token()
         link = settings.BASE_URL + settings.FE_EMAIL_ACTIVATE_USER_URL + f'?email_token={email_token}'
         key = self.gen_email_token_key(email_token)
-        redis_conn = redis.Redis(settings.REDIS_HOST)
 
         redis_conn.hset(key, 'email', self.validated_data['email'])
         redis_conn.hset(key, 'key', self.validated_data['key'])
@@ -252,7 +246,6 @@ class UserActivateEmailClaimSerializer(EmailClaimSerializer):
         '''
         校验email_token
         '''
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         key = cls.gen_email_token_key(email_token)
         res = redis_conn.hgetall(key)
         if res:
@@ -287,7 +280,6 @@ class UpdateEmailEmailClaimSerializer(EmailClaimSerializer):
         email_token = self.gen_email_token()
         link = settings.BASE_URL + settings.FE_EMAIL_UPDATE_EMAIL_URL + f'?email_token={email_token}'
         key = self.gen_email_token_key(email_token)
-        redis_conn = redis.Redis(settings.REDIS_HOST)
 
         redis_conn.hset(key, 'email', self.validated_data['email'])
         redis_conn.hset(key, 'username', self.context['request'].user.username)
@@ -328,7 +320,6 @@ class UpdateEmailEmailClaimSerializer(EmailClaimSerializer):
         '''
         校验email_token
         '''
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         key = cls.gen_email_token_key(email_token)
         res = redis_conn.hgetall(key)
         if res:
