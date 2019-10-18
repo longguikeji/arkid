@@ -23,7 +23,7 @@ def creata_ldap_attr_mappings(app, schema_editor):
     groupOfNames = LDAPOCMappings.objects.get(name='groupOfNames')
     for (name, sel_expr, from_tables, join_where, create_proc, delete_proc, param_order, expect_return) in [
         ('cn', 'ldap_group.uid', 'ldap_group', None, None, None, 3, 0),
-        (
+        (#  deprecated
             'member',
             'distinct ldap_entries.dn',
             'oneid_meta_groupmember ogm, ldap_group, oneid_meta_deptmember odm, ldap_entries',
