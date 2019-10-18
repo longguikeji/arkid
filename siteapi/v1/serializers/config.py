@@ -29,6 +29,7 @@ from executer.core import CLI
 
 from .qr_app_config import PublicAlipayConfigSerializer, AlipayConfigSerializer
 
+
 class CompanyConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for CompanyConfig
@@ -47,6 +48,7 @@ class CompanyConfigSerializer(DynamicFieldsModelSerializer):
             'color',
         )
 
+
 class AccountConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for AccountConfig
@@ -59,7 +61,9 @@ class AccountConfigSerializer(DynamicFieldsModelSerializer):
             'allow_mobile',
             'allow_email',
             'allow_ding_qr',
+            'allow_alipay_qr',
         )
+
 
 class SMSConfigSerializer(DynamicFieldsModelSerializer):    # pylint: disable=missing-docstring
     is_valid = serializers.BooleanField(read_only=True)
@@ -81,13 +85,17 @@ class SMSConfigSerializer(DynamicFieldsModelSerializer):    # pylint: disable=mi
             'is_valid',
         )
 
+
 class EmailConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for Email
     '''
 
     is_valid = serializers.BooleanField(read_only=True)
-    access_secret = serializers.CharField(write_only=True, allow_blank=True,)
+    access_secret = serializers.CharField(
+        write_only=True,
+        allow_blank=True,
+    )
 
     class Meta:    # pylint: disable=missing-docstring
 
@@ -101,6 +109,7 @@ class EmailConfigSerializer(DynamicFieldsModelSerializer):
             'nickname',
             'is_valid',
         )
+
 
 class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
     '''
@@ -116,6 +125,7 @@ class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
             'support_email_register',
             'support_mobile_register',
             'support_ding_qr',
+            'support_alipay_qr',
         )
 
 
@@ -140,7 +150,7 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
             'corp_valid',
             'qr_app_id',
             'qr_app_secret',
-            'qr_app_valid'
+            'qr_app_valid',
         )
 
         read_only_fields = (
@@ -204,11 +214,9 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
         :rtype:bool
         '''
         try:
-            AccessTokenManager(
-                app_key=instance.qr_app_id,
-                app_secret=instance.qr_app_secret,
-                token_version=constants.TOKEN_FROM_APPID_QR_APP_SECRET
-            ).get_access_token()
+            AccessTokenManager(app_key=instance.qr_app_id,
+                               app_secret=instance.qr_app_secret,
+                               token_version=constants.TOKEN_FROM_APPID_QR_APP_SECRET).get_access_token()
             return True
         except APICallError:
             return False
@@ -230,17 +238,10 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
 
         model = Site
 
-        fields = (
-            'company_config',
-            'ding_config',
-            'account_config',
-            'sms_config',
-            'email_config',
-            'alipay_config'
-        )
+        fields = ('company_config', 'ding_config', 'account_config', 'sms_config', 'email_config', 'alipay_config')
 
     @transaction.atomic()
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data):    # pylint: disable=too-many-locals, too-many-statements
         company_config_data = validated_data.pop('company_config', None)
         if company_config_data:
             if not Dept.valid_objects.filter(parent__uid='root').exists():
@@ -372,7 +373,7 @@ class MetaConfigSerializer(DynamicFieldsModelSerializer):
             'company_config',
             'ding_config',
             'account_config',
-            'alipay_config'
+            'alipay_config',
         )
 
 

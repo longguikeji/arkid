@@ -8,13 +8,7 @@ from unittest import mock
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
-    User,
-    AccountConfig,
-    AlipayConfig,
-    AlipayUser
-)
-
+from oneid_meta.models import (User, AccountConfig, AlipayConfig, AlipayUser)
 
 MAX_APP_ID = 2
 
@@ -35,7 +29,7 @@ class UCenterTestCase(TestCase):
         alipay_config.qr_app_valid = True
         alipay_config.save()
 
-    @mock.patch("common.alipay_api.alipay_sdk.get_alipay_id")
+    @mock.patch("thirdparty_data_sdk.alipay_api.alipay_sdk.get_alipay_id")
     def test_alipay_qr_login(self, mock_get_alipay_id):
         alipay_config = AlipayConfig.get_current()
         alipay_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\
@@ -51,15 +45,17 @@ class UCenterTestCase(TestCase):
 
         res = client.post(reverse('siteapi:alipay_qr_callback'),\
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
-        expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',
-            'employee_number', 'gender', 'perms', 'avatar', 'roles',
-                'private_email', 'position', 'is_settled', 'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose']
+        expect = [
+            'token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile', 'employee_number', 'gender', 'perms',
+            'avatar', 'roles', 'private_email', 'position', 'is_settled', 'is_manager', 'is_admin', 'is_extern_user',
+            'origin_verbose'
+        ]
         res_dict = res.json()
         res_keys = list(res_dict.keys())
         self.assertEqual(res_keys, expect)
 
-    @mock.patch("common.alipay_api.alipay_sdk.get_alipay_id")
-    def test_alipay_qr_login_newUser(self, mock_get_alipay_id):    # pylint: disable=invalid-name
+    @mock.patch("thirdparty_data_sdk.alipay_api.alipay_sdk.get_alipay_id")
+    def test_alipay_qr_login_newuser(self, mock_get_alipay_id):    # pylint: disable=invalid-name
         alipay_config = AlipayConfig.get_current()
         alipay_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\
             alipay_public_key='test_alipay_public_key', qr_app_valid=True)
@@ -68,14 +64,14 @@ class UCenterTestCase(TestCase):
         client = self.client
         res = client.post(reverse('siteapi:alipay_qr_callback'),\
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
-        expect = {'token':'', 'alipay_id': 'unregistered_alipay_id'}
+        expect = {'token': '', 'alipay_id': 'unregistered_alipay_id'}
         self.assertEqual(res.json(), expect)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_alipay_query_user(self, mock_check_sms_token):
+    def test_alipay_query_user_newuser(self, mock_check_sms_token):
         client = self.client
-        mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
-        res = client.post(reverse('siteapi:alipay_query_user'), data={'sms_token':'123132132131'})
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+        res = client.post(reverse('siteapi:alipay_query_user'), data={'sms_token': '123132132131'})
         expect = {'exist': False}
         self.assertEqual(res.json(), expect)
 
@@ -84,9 +80,9 @@ class UCenterTestCase(TestCase):
         client = self.client
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
-        mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:alipay_query_user'), data={'sms_token': 'test_sms_token'})
-        expect = {'exist':True}
+        expect = {'exist': True}
         self.assertEqual(res.json(), expect)
 
     def test_alipay_qr_login_forbidden(self):
@@ -97,7 +93,7 @@ class UCenterTestCase(TestCase):
         alipay_config.save()
         res = client.post(reverse('siteapi:alipay_qr_callback'),\
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
-        expect_json = {'err_msg':'alipay qr not allowed'}
+        expect_json = {'err_msg': 'alipay qr not allowed'}
         expect_code = 403
         self.assertEqual(res.json(), expect_json)
         self.assertEqual(res.status_code, expect_code)
@@ -107,7 +103,7 @@ class UCenterTestCase(TestCase):
         client = self.client
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
-        mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:alipay_bind'), data={'sms_token':\
             'test_sms_token', 'alipay_id':'test_alipay_id'})
         expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',\
@@ -121,14 +117,14 @@ class UCenterTestCase(TestCase):
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
     def test_alipay_register_bind(self, mock_check_sms_token):
         client = self.client
-        mock_check_sms_token.side_effect = [{'mobile':'18812341234'}]
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:alipay_register_bind'),
-                           data={
-                               'username': 'username',
-                               'password': 'password',
-                               'sms_token': 'test_sms_token',
-                               'alipay_id':'test_alipay_id'
-                           })
+                          data={
+                              'username': 'username',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'alipay_id': 'test_alipay_id'
+                          })
         expect = ['uuid', 'user_id', 'username', 'name', 'email', 'mobile', 'employee_number',\
             'gender', 'perms', 'avatar', 'roles', 'private_email', 'position', 'is_settled',\
                 'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose', 'token']
@@ -136,4 +132,3 @@ class UCenterTestCase(TestCase):
         res_keys = list(res_dict.keys())
         self.assertEqual(res.status_code, 201)
         self.assertEqual(res_keys, expect)
-        

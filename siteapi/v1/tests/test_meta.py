@@ -15,6 +15,7 @@ class MetaTestCase(TestCase):
     def test_meta(self):
         account_config = AccountConfig.get_current()
         account_config.allow_ding_qr = True
+        account_config.allow_alipay_qr = True
         account_config.save()
         company_config = CompanyConfig.get_current()
         company_config.fullname_cn = "demo"
@@ -45,8 +46,8 @@ class MetaTestCase(TestCase):
             'ding_config': {
                 'corp_id': 'corp_id',
                 'app_key': '',
-                'qr_app_id':'qr_app_id',
-                'qr_callback_url':'http://localhost/siteapi/v1/ding/qr/callback/'
+                'qr_app_id': 'qr_app_id',
+                'qr_callback_url': 'http://localhost/siteapi/v1/ding/qr/callback/'
             },
             'account_config': {
                 'support_email': False,
@@ -54,10 +55,11 @@ class MetaTestCase(TestCase):
                 'support_email_register': False,
                 'support_mobile_register': False,
                 'support_ding_qr': True,
+                'support_alipay_qr': True,
             },
             'alipay_config': {
-                'app_id':'test_app_id',
-                'qr_callback_url':'http://localhost/alipay/qr/callback/'
+                'app_id': 'test_app_id',
+                'qr_callback_url': 'http://localhost/alipay/qr/callback/'
             }
         }
         self.assertEqual(res.json(), expect)

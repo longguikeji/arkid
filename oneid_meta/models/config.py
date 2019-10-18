@@ -16,9 +16,14 @@ from common.Email.email_manager import EmailManager
 =======
 
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+<<<<<<< HEAD
 
+=======
+from thirdparty_data_sdk.alipay_api.alipay_sdk import get_alipay_id
+>>>>>>> feat(component): 增加支付宝扫码登录功能
 from oneid import settings as oneid_settings
 >>>>>>> refactor(重构钉钉请求access_token接口，放入thirdparty中): component
+
 
 class SingletonConfigMixin:
     '''
@@ -83,11 +88,7 @@ class DingConfig(BaseModel, SingletonConfigMixin):
         '''
         检查配置是否有效
         '''
-        accesser = AccessTokenManager(
-            app_key=self.qr_app_id,
-            app_secret=self.qr_app_secret,
-            token_version=3
-        )
+        accesser = AccessTokenManager(app_key=self.qr_app_id, app_secret=self.qr_app_secret, token_version=3)
         try:
             accesser.get_access_token()
             return True
@@ -102,10 +103,11 @@ class DingConfig(BaseModel, SingletonConfigMixin):
         '''
         向meta接口返回钉钉扫码回调地址
         '''
-        return settings.BASE_URL + '/siteapi/v1/ding/qr/callback/'
+        return settings.BASE_URL + '/ding/qr/callback/'
 
     def __str__(self):
         return f'DingConfig[{self.id}]'    # pylint: disable=no-member
+
 
 class AccountConfig(BaseModel, SingletonConfigMixin):
     '''
@@ -318,6 +320,7 @@ class NativeField(BaseModel):
     is_visible = models.BooleanField(default=True, verbose_name='是否展示')
     is_visible_editable = models.BooleanField(default=True, verbose_name='对于`是否展示`，是否可以修改')
 
+
 class AlipayConfig(BaseModel, SingletonConfigMixin):
     '''
     支付宝配置信息
@@ -325,9 +328,21 @@ class AlipayConfig(BaseModel, SingletonConfigMixin):
     site = models.OneToOneField(Site, related_name='alipay_config', on_delete=models.CASCADE)
 
     app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP ID")
-    app_private_key = models.CharField(max_length=2000, blank=True, default="", verbose_name="QR APP SECRET")
-    alipay_public_key = models.CharField(max_length=2000, blank=True, default="", verbose_name="QR APP SECRET")
+    app_private_key = models.CharField(max_length=2000, blank=True, default="", verbose_name="APP PVIVATE KEY")
+    alipay_public_key = models.CharField(max_length=2000, blank=True, default="", verbose_name="ALIPAY PUBLIC KEY")
     qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP配置是否正确')
+
+    def check_valid(self):
+        '''
+        检查配置是否有效
+        '''
+        try:
+            res = get_alipay_id('', self.app_id, self.app_private_key, self.alipay_public_key)
+            if res.code == '40002':
+                return True
+            return False
+        except Exception:    # pylint: disable=broad-except
+            return False
 
     @property
     def qr_callback_url(self):    # pylint: disable=missing-docstring

@@ -10,12 +10,8 @@ from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,\
 from rest_framework.response import Response
 
 from siteapi.v1.serializers.user import UserWithPermSerializer
-from siteapi.v1.serializers.ucenter import (
-    DingRegisterAndBindSerializer,
-    DingBindSerializer,
-    AlipayBindSerializer,
-    AlipayRegisterAndBindSerializer
-)
+from siteapi.v1.serializers.ucenter import (DingRegisterAndBindSerializer, DingBindSerializer, AlipayBindSerializer,
+                                            AlipayRegisterAndBindSerializer)
 
 from infrastructure.serializers.sms import SMSClaimSerializer
 
@@ -26,7 +22,8 @@ from oneid_meta.models import User, Group, DingUser
 from oneid_meta.models.extern_user import AlipayUser
 from oneid_meta.models.config import AlipayConfig, AccountConfig
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
-from common.alipay_api import alipay_sdk
+from thirdparty_data_sdk.alipay_api import alipay_sdk
+
 
 def require_ding_qr_supported(func):
     '''
@@ -38,6 +35,7 @@ def require_ding_qr_supported(func):
 
     return inner
 
+
 def require_alipay_qr_supported(func):
     '''
     检查是否允许扫码登录装饰器
@@ -45,32 +43,20 @@ def require_alipay_qr_supported(func):
     def inner(self, request):
         return Response({'err_msg':'alipay qr not allowed'}, HTTP_403_FORBIDDEN)\
             if not AccountConfig.get_current().support_alipay_qr else func(self, request)
+
     return inner
 
 
-class QrQueryUserAPIView(GenericAPIView):
+def query_user(request):
     '''
-    /ding/query/user/
+    查询用户是否注册
     '''
-    permission_classes = []
-    authentication_classes = []
-
-    def post(self, request):
-        '''
-        此层用于加入是否开放扫码功能校验装饰器
-        '''
-        return self.query_user(request)
-
-    def query_user(self, request):
-        '''
-        查询用户是否注册
-        '''
-        sms_token = request.data.get('sms_token', '')
-        if sms_token:
-            mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
-            exist = User.valid_objects.filter(mobile=mobile).exists()
-            return Response({'exist': exist})
-        raise ValidationError({'sms_token': ["sms_token invalid"]})
+    sms_token = request.data.get('sms_token', '')
+    if sms_token:
+        mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
+        exist = User.valid_objects.filter(mobile=mobile).exists()
+        return Response({'exist': exist})
+    raise ValidationError({'sms_token': ["sms_token invalid"]})
 
 
 class DingQrCallbackView(APIView):
@@ -102,7 +88,7 @@ class DingQrCallbackView(APIView):
 
         return Response(context, HTTP_200_OK)
 
-    def get_token(self, ding_id):
+    def get_token(self, ding_id):    # pylint: disable=no-self-use
         '''
         从DingUser表查询用户，返回token
         '''
@@ -116,13 +102,13 @@ class DingQrCallbackView(APIView):
         return context
 
 
-class DingQueryUserAPIView(QrQueryUserAPIView):
+class DingQueryUserAPIView(GenericAPIView):
     '''
     /ding/query/user/
     '''
     @require_ding_qr_supported
-    def post(self, request):
-        return self.query_user(request)
+    def post(self, request):    # pylint: disable=missing-function-docstring, no-self-use
+        return query_user(request)
 
 
 class DingBindAPIView(GenericAPIView):
@@ -211,13 +197,13 @@ class AlipayQrCallbackView(APIView):
         if auth_code and app_id:
             alipay_id = self.get_alipay_id(auth_code, app_id)
         else:
-            raise ValidationError({'auth_code and app_id':['auth_code and app_id are required']})
+            raise ValidationError({'auth_code and app_id': ['auth_code and app_id are required']})
 
         context = self.get_token(alipay_id)
 
         return Response(context, HTTP_200_OK)
 
-    def get_token(self, alipay_id):
+    def get_token(self, alipay_id):    # pylint: disable=no-self-use
         '''
         从AlipayUser表查询用户，返回token
         '''
@@ -230,7 +216,7 @@ class AlipayQrCallbackView(APIView):
             context = {'token': '', 'alipay_id': alipay_id}
         return context
 
-    def get_alipay_id(self, auth_code, app_id):
+    def get_alipay_id(self, auth_code, app_id):    # pylint: disable=no-self-use
         '''
         获取支付宝用户id
         '''
@@ -243,18 +229,18 @@ class AlipayQrCallbackView(APIView):
                 try:
                     alipay_id = alipay_sdk.get_alipay_id(auth_code, app_id, app_private_key, alipay_public_key)
                 except Exception:
-                    raise ValidationError({'err_msg':'get alipay id error'}, HTTP_400_BAD_REQUEST)
+                    raise ValidationError({'err_msg': 'get alipay id error'}, HTTP_400_BAD_REQUEST)
         return alipay_id
 
 
-class AlipayQueryUserAPIView(QrQueryUserAPIView):
+class AlipayQueryUserAPIView(GenericAPIView):
     '''
     alipay/query/user/
     支付宝扫码查询用户是否存在视图
     '''
     @require_alipay_qr_supported
-    def post(self, request):
-        return self.query_user(request)
+    def post(self, request):    # pylint: disable=missing-function-docstring, no-self-use
+        return query_user(request)
 
 
 class AlipayBindAPIView(GenericAPIView):
@@ -275,10 +261,14 @@ class AlipayBindAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         alipay_id = serializer.validated_data['alipay_id']
-        alipay_user = AlipayUser.objects.create(alipay_id=alipay_id, user=user)
+        alipay_user = AlipayUser.objects.filter(user=user).first()
+        if alipay_user:
+            alipay_user.alipay_id = alipay_id
+        else:
+            alipay_user = AlipayUser.objects.create(alipay_id=alipay_id, user=user)
         alipay_user.save()
         token = user.token
-        data = {'token':token, **UserWithPermSerializer(user).data}
+        data = {'token': token, **UserWithPermSerializer(user).data}
         LOG_CLI(user).user_login()
         return Response(data, HTTP_201_CREATED)
 
@@ -293,13 +283,12 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
     serializer_class = AlipayRegisterAndBindSerializer
     read_serializer_class = UserWithPermSerializer
 
-
     def create(self, request, *args, **kwargs):
         '''
         钉钉扫码加绑定
         '''
         if not AccountConfig.get_current().support_alipay_qr_register:
-            return Response({'err_msg':'alipay qr register not allowed'}, HTTP_403_FORBIDDEN)
+            return Response({'err_msg': 'alipay qr register not allowed'}, HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

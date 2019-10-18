@@ -8,6 +8,9 @@ from common.django.drf.serializer import DynamicFieldsModelSerializer
 
 from oneid_meta.models import AlipayConfig
 
+from thirdparty_data_sdk.alipay_api.alipay_sdk import get_alipay_id
+
+
 class PublicAlipayConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for AlipayConfig
@@ -22,6 +25,7 @@ class PublicAlipayConfigSerializer(DynamicFieldsModelSerializer):
             'qr_callback_url',
         )
 
+
 class AlipayConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for AlipayConfig
@@ -33,12 +37,9 @@ class AlipayConfigSerializer(DynamicFieldsModelSerializer):
 
         model = AlipayConfig
 
-        fields = (
-            'app_id',
-            'app_private_key',
-            'alipay_public_key',
-            'qr_app_valid'
-        )
+        fields = ('app_id', 'app_private_key', 'alipay_public_key', 'qr_app_valid')
+
+        read_only_fields = ('qr_app_valid', )
 
     def update(self, instance, validated_data):
         '''
@@ -46,7 +47,22 @@ class AlipayConfigSerializer(DynamicFieldsModelSerializer):
         - validated updated data
         '''
         instance.__dict__.update(validated_data)
-        update_fields = ['app_valid', 'app_private_key', 'alipay_public_key']
+        instance.qr_app_valid = self.validate_qr_app_config(instance)
+        update_fields = ['qr_app_valid']
+        update_fields += ['app_private_key', 'alipay_public_key'] if instance.qr_app_valid else []
         instance.save(update_fields=update_fields)
         instance.refresh_from_db()
         return instance
+
+    @staticmethod
+    def validate_qr_app_config(instance):
+        '''
+        validate app_private_key ,alipay_publice_key
+        '''
+        try:
+            res = get_alipay_id('', instance.app_id, instance.app_private_key, instance.alipay_public_key)
+            if res.code == '40002':
+                return True
+            return False
+        except Exception:    # pylint: disable=broad-except
+            return False
