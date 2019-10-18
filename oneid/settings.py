@@ -269,8 +269,6 @@ STATICFILES_DIRS = [
 UPLOAD_DIR = os.path.join(BASE_DIR, 'static', 'upload')
 DOWNLOAD_URL = STATIC_URL + 'download'
 
-REDIS_HOST = 'localhost'
-
 DOMAIN = ''
 PRIVATE_IP = '127.0.0.1'
 PUBLIC_IP = ''
