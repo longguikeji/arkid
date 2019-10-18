@@ -28,7 +28,7 @@ pipeline {
                 }
                 withDockerRegistry([credentialsId: "${DOCKER_PROD_REGISTRY_CREDENTIAL}", url: "${DOCKER_PROD_REGISTRY}"]){
                     sh """
-                    docker tag ${env.DEV_DOCKER_IMAG} ${env.PROD_DOCKER_IMAGE}
+                    docker tag ${env.DEV_DOCKER_IMAGE} ${env.PROD_DOCKER_IMAGE}
                     docker push ${env.PROD_DOCKER_IMAGE}
                     """
                 }
