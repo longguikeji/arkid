@@ -3,7 +3,7 @@
 settings.py 自定义配置示例
 
 此示例涉及外的配置，除非明确知晓后果，否则不建议修改
-建议在项目根路径下创建 settings_local.py，并只声明修改的部分。ArkID 将会加在此配置并追加覆盖到 settings.py
+建议在项目根路径下创建 settings_local.py，并只声明修改的部分。ArkID 将会加载此配置并追加覆盖到 settings.py
 '''
 
 # SECURITY
@@ -58,7 +58,6 @@ BASE_URL = 'https://arkid.longguikeji.com'
 BAES_URL = "http://47.111.105.142"
 
 # storage
-
 # - 目前一律文件存储于 minio 中，minio 的搭建不在此讨论范畴
 MINIO_ENDPOINT = 'minio.longguikeji.com'
 MINIO_ACCESS_KEY = '****'
@@ -85,6 +84,7 @@ CACHES["default"]["LOCATION"] = REDIS_URL
 CELERY_BROKER_URL = REDIS_URL
 
 # LDAP
+
 # - 启用 sql_backend ldap
 ## 需安装 ArkID  > docker pull longguikeji/ark-sql-ldap:1.0.0
 ## 且 database 为 MySQL
