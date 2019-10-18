@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: "DEV_VERSION", description: "the tag of the image to release, like `dev-6-02dbc80`")
+        string(name: "PROD_VERSION", description: "the tag of the image,src to release, like `1.2.3`")
+    }
+
+    environment {
+        DOCKER_DEV_REGISTRY="https://harbor.longguikeji.com"
+        DOCKER_DEV_REGISTRY_CREDENTIAL="devops-longguikeji-harbor"
+        DOCKER_PROD_REGISTRY="https://index.docker.io/v1/"
+        DOCKER_PROD_REGISTRY_CREDENTIAL="devops-longguikeji-dockerhub"
+
+        DEV_DOCKER_IMAGE="harbor.longguikeji.com/ark-releases/arkid:${params.DEV_VERSION}"
+        PROD_DOCKER_IMAGE="longguikeji/arkid:${params.PROD_VERSION}"
+    }
+    stages {
+        stage('pre') {
+            steps{
+                sendDingTalk("pending", "开始构建")
+            }
+        }
+        stage("release docker image") {
+            steps {
+                withDockerRegistry([credentialsId: "${DOCKER_DEV_REGISTRY_CREDENTIAL}", url: "${DOCKER_DEV_REGISTRY}"]){
+                    sh "docker pull ${env.DEV_DOCKER_IMAGE}"
+                }
+                withDockerRegistry([credentialsId: "${DOCKER_PROD_REGISTRY_CREDENTIAL}", url: "${DOCKER_PROD_REGISTRY}"]){
+                    sh """
+                    docker tag ${env.DEV_DOCKER_IMAGE} ${env.PROD_DOCKER_IMAGE}
+                    docker push ${env.PROD_DOCKER_IMAGE}
+                    """
+                }
+                echo "release docker image"
+            }
+        }
+        stage("release src") {
+            steps {
+                echo "TODO: release src"
+            }
+        }
+    }
+    post {
+        success {
+            sendDingTalk("success", "构建成功")
+        }
+        failure {
+            sendDingTalk("failure", "构建失败")
+        }
+    }
+}
+
+def sendDingTalk(status, message) {
+    if (status == "success") {
+        img="https://s2.ax1x.com/2019/10/17/KEFSWd.png"
+    } else if (status == "failure") {
+        img="https://s2.ax1x.com/2019/10/17/KEFCQI.png"
+    } else if (status == "pending") {
+        img="https://s2.ax1x.com/2019/10/17/KEFkef.gif"
+    } else {
+        img=""
+    }
+    dingTalk([
+        accessToken: "${env.DING_TALK_ENTRYPOINT}",
+        jenkinsUrl: "${env.JENKINS_URL}",
+        imageUrl: img,
+        message: message,
+    ])
+}
