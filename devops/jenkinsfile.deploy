@@ -59,7 +59,7 @@ pipeline {
 def deployDemo(){
     sh """
     ssh -o "StrictHostKeyChecking=no" ${SSH_USER}@${env.DEMO_HOST_IP} -p${env.DEMO_HOST_PORT} -i ${SSH_KEY} \
-        'make BE_VERSION=${params.BE_VERSION} FE_VERSION=${params.FE_VERSION} update-arkid'
+        'make BE_VERSION=${params.BE_VERSION} FE_VERSION=${params.FE_VERSION} update-arkid-demo'
     """
 }
 
