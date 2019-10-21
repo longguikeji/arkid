@@ -35,7 +35,12 @@ class AlipayConfigSerializer(DynamicFieldsModelSerializer):
 
         model = AlipayConfig
 
-        fields = ('app_id', 'app_private_key', 'alipay_public_key', 'qr_app_valid')
+        fields = (
+            'app_id',
+            'app_private_key',
+            'alipay_public_key',
+            'qr_app_valid',
+        )
 
         read_only_fields = ('qr_app_valid', )
 
@@ -47,7 +52,7 @@ class AlipayConfigSerializer(DynamicFieldsModelSerializer):
         instance.__dict__.update(validated_data)
         instance.qr_app_valid = self.validate_qr_app_config(instance)
         update_fields = ['qr_app_valid']
-        update_fields += ['app_private_key', 'alipay_public_key'] if instance.qr_app_valid else []
+        update_fields += ['app_id', 'app_private_key', 'alipay_public_key'] if instance.qr_app_valid else []
         instance.save(update_fields=update_fields)
         instance.refresh_from_db()
         return instance
