@@ -269,6 +269,12 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
+        ding_config_data = validated_data.pop('ding_config', None)
+        if ding_config_data:
+            serializer = DingConfigSerializer(DingConfig.get_current(), ding_config_data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
         sms_config_data = validated_data.pop('sms_config', None)
         if sms_config_data:
             access_secret = sms_config_data.pop('access_secret', '')
@@ -298,12 +304,6 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
                 raise ValidationError({'email': ['invalid']})
             config.is_valid = True
             config.save()
-
-        ding_config_data = validated_data.pop('ding_config', None)
-        if ding_config_data:
-            serializer = DingConfigSerializer(DingConfig.get_current(), ding_config_data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
 
         alipay_config_data = validated_data.pop('alipay_config', None)
         if alipay_config_data:

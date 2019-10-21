@@ -103,11 +103,6 @@ class ConfigTestCase(TestCase):
                                              'host': '12.12.12.12',
                                              'access_secret': 'pwd',
                                          },
-                                         'alipay_config': {
-                                             'app_id': 'test_app_id',
-                                             'app_private_key': 'test_app_private_key',
-                                             'alipay_public_key': 'test_alipay_public_key'
-                                         }
                                      })
 
         expect = {
@@ -154,10 +149,7 @@ class ConfigTestCase(TestCase):
                 'port': 587,
                 'is_valid': True,
             },
-            'alipay_config': {
-                'app_id': '',
-                'qr_app_valid': False
-            }
+            'alipay_config': None
         }
 
         self.assertEqual(res.json(), expect)

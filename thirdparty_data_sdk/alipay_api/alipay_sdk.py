@@ -70,6 +70,40 @@ class AlipaySystemOauthTokenModel:
         return obj
 
 
+def get_alipay_id_res(app_id, app_private_key, alipay_public_key):
+    '''
+    获取支付宝用户信息
+    '''
+    # 实例化客户端
+    alipay_client_config = AlipayClientConfig()
+    alipay_client_config.server_url = 'https://openapi.alipay.com/gateway.do'
+    alipay_client_config.app_id = app_id
+    alipay_client_config.app_private_key = app_private_key
+    alipay_client_config.alipay_public_key = alipay_public_key
+    alipay_client_config.format = 'json'
+    alipay_client_config.charset = 'utf-8'
+    alipay_client_config.sign_type = 'RSA2'
+    client = DefaultAlipayClient(alipay_client_config=alipay_client_config)
+
+    model = AlipaySystemOauthTokenModel()
+    model.grant_type = 'authorization_code'
+
+    request = AlipaySystemOauthTokenRequest(biz_model=model)
+    request.code = ''
+    request.grant_type = 'authorization_code'
+    response_content = None
+    try:
+        response_content = client.execute(request)
+    except Exception:    # pylint: disable=broad-except
+        print(traceback.format_exc())
+
+    if not response_content:
+        return {'err_msg': 'no response error'}
+    res = AlipaySystemOauthTokenResponse()
+    res.parse_response_content(response_content)
+    return res
+
+
 def get_alipay_id(auth_code, app_id, app_private_key, alipay_public_key):
     '''
     获取支付宝用户信息
@@ -104,4 +138,4 @@ def get_alipay_id(auth_code, app_id, app_private_key, alipay_public_key):
     res.parse_response_content(response_content)
     if res.is_success():
         return res.user_id
-    return {'err_msg': res.code + "," + res.msg + "," + res.sub_code + "," + res.sub_msg}
+    return {'err_msg': res.code + ',' + res.msg}

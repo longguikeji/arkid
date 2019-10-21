@@ -80,7 +80,7 @@ class UCenterTestCase(TestCase):
         client = self.client
         mock_clear_sms_token.return_value = True
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
-        res = client.post(reverse('siteapi:ding_query_user'), data={'sms_token': '123132132131'})
+        res = client.post(reverse('siteapi:qr_query_user'), data={'sms_token': '123132132131'})
         expect = {'exist': False}
         self.assertEqual(res.json(), expect)
 
@@ -92,7 +92,7 @@ class UCenterTestCase(TestCase):
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
-        res = client.post(reverse('siteapi:ding_query_user'), data={'sms_token': 'test_sms_token'})
+        res = client.post(reverse('siteapi:qr_query_user'), data={'sms_token': 'test_sms_token'})
         expect = {'exist': True}
         self.assertEqual(res.json(), expect)
 

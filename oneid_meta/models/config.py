@@ -12,17 +12,10 @@ from aliyunsdkcore.acs_exception.exceptions import ServerException
 from common.django.model import BaseModel
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from common.Email.email_manager import EmailManager
-<<<<<<< HEAD
-=======
 
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
-<<<<<<< HEAD
 
-=======
-from thirdparty_data_sdk.alipay_api.alipay_sdk import get_alipay_id
->>>>>>> feat(component): 增加支付宝扫码登录功能
-from oneid import settings as oneid_settings
->>>>>>> refactor(重构钉钉请求access_token接口，放入thirdparty中): component
+from thirdparty_data_sdk.alipay_api.alipay_res_manager import AlipayResManager
 
 
 class SingletonConfigMixin:
@@ -328,25 +321,24 @@ class AlipayConfig(BaseModel, SingletonConfigMixin):
     site = models.OneToOneField(Site, related_name='alipay_config', on_delete=models.CASCADE)
 
     app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP ID")
-    app_private_key = models.CharField(max_length=2000, blank=True, default="", verbose_name="APP PVIVATE KEY")
-    alipay_public_key = models.CharField(max_length=2000, blank=True, default="", verbose_name="ALIPAY PUBLIC KEY")
+    app_private_key = models.CharField(max_length=2048, blank=True, default="", verbose_name="APP PVIVATE KEY")
+    alipay_public_key = models.CharField(max_length=512, blank=True, default="", verbose_name="ALIPAY PUBLIC KEY")
     qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP配置是否正确')
 
     def check_valid(self):
         '''
         检查配置是否有效
         '''
+        accesser = AlipayResManager(self.app_id, self.app_private_key, self.alipay_public_key, token_version=1)
         try:
-            res = get_alipay_id('', self.app_id, self.app_private_key, self.alipay_public_key)
-            if res.code == '40002':
-                return True
-            return False
+            accesser.get_alipay_id_res()
+            return True
         except Exception:    # pylint: disable=broad-except
             return False
 
     @property
     def qr_callback_url(self):    # pylint: disable=missing-docstring
-        return oneid_settings.BASE_URL + '/alipay/qr/callback/'
+        return settings.BASE_URL + '/alipay/qr/callback/'
 
     def __str__(self):
         return f'AlipayConfig[{self.id}]'    # pylint: disable=no-member

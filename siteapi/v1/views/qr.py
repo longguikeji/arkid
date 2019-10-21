@@ -102,11 +102,13 @@ class DingQrCallbackView(APIView):
         return context
 
 
-class DingQueryUserAPIView(GenericAPIView):
+class QrQueryUserAPIView(GenericAPIView):
     '''
-    /ding/query/user/
+    /qr/query/user/
     '''
-    @require_ding_qr_supported
+    permission_classes = []
+    authentication_classes = []
+
     def post(self, request):    # pylint: disable=missing-function-docstring, no-self-use
         return query_user(request)
 
@@ -227,7 +229,8 @@ class AlipayQrCallbackView(APIView):
             alipay_public_key = current_app.alipay_public_key
             if app_private_key not in ['', None] and alipay_public_key not in ['', None]:
                 try:
-                    alipay_id = alipay_sdk.get_alipay_id(auth_code, app_id, app_private_key, alipay_public_key)
+                    alipay_id = alipay_sdk.get_alipay_id(auth_code, app_id,\
+                        app_private_key, alipay_public_key)
                 except Exception:
                     raise ValidationError({'err_msg': 'get alipay id error'}, HTTP_400_BAD_REQUEST)
         return alipay_id

@@ -7,8 +7,7 @@ from rest_framework import serializers
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 
 from oneid_meta.models import AlipayConfig
-
-from thirdparty_data_sdk.alipay_api.alipay_sdk import get_alipay_id
+from thirdparty_data_sdk.alipay_api.alipay_res_manager import AlipayResManager
 
 
 class PublicAlipayConfigSerializer(DynamicFieldsModelSerializer):
@@ -21,7 +20,6 @@ class PublicAlipayConfigSerializer(DynamicFieldsModelSerializer):
 
         fields = (
             'app_id',
-        # 'qr_app_secret',
             'qr_callback_url',
         )
 
@@ -60,9 +58,8 @@ class AlipayConfigSerializer(DynamicFieldsModelSerializer):
         validate app_private_key ,alipay_publice_key
         '''
         try:
-            res = get_alipay_id('', instance.app_id, instance.app_private_key, instance.alipay_public_key)
-            if res.code == '40002':
-                return True
-            return False
+            AlipayResManager(instance.app_id, instance.app_private_key,\
+                instance.alipay_public_key).get_alipay_id_res()
+            return True
         except Exception:    # pylint: disable=broad-except
             return False

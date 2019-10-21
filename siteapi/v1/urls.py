@@ -97,7 +97,7 @@ urlpatterns = [
     url(r'^ding/qr/callback/$', qr_views.DingQrCallbackView.as_view(), name='ding_qr_callback'),
     url(r'^ding/bind/$', qr_views.DingBindAPIView.as_view(), name='ding_bind'),
     url(r'^ding/register/bind/$', qr_views.DingRegisterAndBindView.as_view(), name='ding_register_bind'),
-    url(r'^ding/query/user/$', qr_views.DingQueryUserAPIView.as_view(), name='ding_query_user'),
+    url(r'^qr/query/user/$', qr_views.QrQueryUserAPIView.as_view(), name='qr_query_user'),
     # alipay
     url(r'^alipay/qr/callback/$', qr_views.AlipayQrCallbackView.as_view(), name='alipay_qr_callback'),
     url(r'^alipay/bind/$', qr_views.AlipayBindAPIView.as_view(), name='alipay_bind'),

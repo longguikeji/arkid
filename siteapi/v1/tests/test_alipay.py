@@ -41,7 +41,7 @@ class UCenterTestCase(TestCase):
         alipay_user = AlipayUser.valid_objects.create(alipay_id=alipay_id, user=user)
         alipay_user.save()
         client = self.client
-        mock_get_alipay_id.side_effect = ['test_alipay_id']
+        mock_get_alipay_id.return_value = 'test_alipay_id'
 
         res = client.post(reverse('siteapi:alipay_qr_callback'),\
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
@@ -60,7 +60,7 @@ class UCenterTestCase(TestCase):
         alipay_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\
             alipay_public_key='test_alipay_public_key', qr_app_valid=True)
         alipay_config.save()
-        mock_get_alipay_id.side_effect = ['unregistered_alipay_id']
+        mock_get_alipay_id.return_value = 'unregistered_alipay_id'
         client = self.client
         res = client.post(reverse('siteapi:alipay_qr_callback'),\
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
