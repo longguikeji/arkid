@@ -136,7 +136,6 @@ class SMSClaimSerializer(serializers.Serializer):
             raise ValidationError({'code': ['This field is required.']})
 
         res = redis_conn.get(cls.gen_sms_code_key(mobile))
-        print('-------------------------------------------------------')
         if res:
             send_code = res
             if send_code and code == send_code:
