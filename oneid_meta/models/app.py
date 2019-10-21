@@ -1,6 +1,7 @@
 '''
 schema of APPs
 '''
+from urllib.parse import urlparse
 
 from django.db import models
 from django.db.utils import IntegrityError
@@ -156,51 +157,64 @@ class LDAPAPP(BaseModel):
                                blank=True,
                                on_delete=models.CASCADE)
 
-    def delete(self):
+    def delete(self, *args, **kwargs):
         super().kill()
 
     @property
     def more_detail(self):
-        private_addr = settings.PRIVATE_IP
-        public_addr = settings.DOMAIN if settings.DOMAIN else settings.PUBLIC_IP
+        '''
+        LDAP 相关信息，用于展示
+        '''
+        domain = urlparse(settings.BASE_URL).netloc
+        public_addr = domain if domain else settings.PUBLIC_IP
 
-        return [{
-            'name': '内网地址',
-            'key': 'internal_addr',
-            'value': 'ldap://{addr}, ldaps://{addr}'.format(addr=private_addr),
-        }, {
-            'name': '外网地址',
-            'key': 'intra_addr',
-            'value': 'ldap://{addr}, ldaps://{addr}'.format(addr=public_addr),
-        }, {
-            'name': '管理员账号(bind_dn)',
-            'key': 'bind_dn',
-            'value': settings.LDAP_USER,
-        }, {
-            'name': '管理员密码(password)',
-            'key': 'password',
-            'value': settings.LDAP_PASSWORD,
-        }, {
-            'name': '基本目录(base_dn)',
-            'key': 'base_dn',
-            'value': settings.LDAP_BASE,
-        }, {
-            'name': '人员目录(user_base_dn)',
-            'key': 'user_base_dn',
-            'value': settings.LDAP_USER_BASE,
-        }, {
-            'name': '部门目录(dept_base_dn)',
-            'key': 'dept_base_dn',
-            'value': settings.LDAP_DEPT_BASE,
-        }, {
-            'name': '组目录(group_base_dn)',
-            'key': 'group_base_dn',
-            'value': settings.LDAP_GROUP_BASE,
-        }, {
-            'name': '人员唯一标识',
-            'key': 'uid_name',
-            'value': 'uid',
-        }]
+        return [
+            {
+                'name': '内网地址',
+                'key': 'internal_addr',
+                'value': f'{settings.LDAP_SERVER}, {settings.LDAPS_SERVER}',
+            },
+            {
+                'name': '外网地址',    # TODO
+                'key': 'intra_addr',
+                'value': 'ldap://{addr}, ldaps://{addr}'.format(addr=public_addr),
+            },
+            {
+                'name': '管理员账号(bind_dn)',
+                'key': 'bind_dn',
+                'value': settings.LDAP_USER,
+            },
+            {
+                'name': '管理员密码(password)',
+                'key': 'password',
+                'value': settings.LDAP_PASSWORD,
+            },
+            {
+                'name': '基本目录(base_dn)',
+                'key': 'base_dn',
+                'value': settings.LDAP_BASE,
+            },
+            {
+                'name': '人员目录(user_base_dn)',
+                'key': 'user_base_dn',
+                'value': settings.LDAP_USER_BASE,
+            },
+            {
+                'name': '部门目录(dept_base_dn)',
+                'key': 'dept_base_dn',
+                'value': settings.LDAP_DEPT_BASE,
+            },
+            {
+                'name': '组目录(group_base_dn)',
+                'key': 'group_base_dn',
+                'value': settings.LDAP_GROUP_BASE,
+            },
+            {
+                'name': '人员唯一标识',
+                'key': 'uid_name',
+                'value': 'uid',
+            }
+        ]
 
 
 class HTTPAPP(BaseModel):
@@ -213,11 +227,14 @@ class HTTPAPP(BaseModel):
                                blank=True,
                                on_delete=models.CASCADE)
 
-    def delete(self):
+    def delete(self, *args, **kwargs):
         super().kill()
 
     @property
     def more_detail(self):
+        '''
+        http 接口相关信息，用于展示
+        '''
         return [{
             'name': '认证地址',
             'key': 'auth_url',

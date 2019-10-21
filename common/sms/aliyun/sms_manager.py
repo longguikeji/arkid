@@ -9,37 +9,21 @@ from aliyunsdkcore.acs_exception.exceptions import ServerException
 from .request.v20170525.SendSmsRequest import SendSmsRequest
 
 
-from .settings import (
+from .constants import (
     SMS_ALIYUN_REGION,
     SMS_ALIYUN_PRODUCT_NAME,
     SMS_ALIYUN_DOMAIN,
-    SMS_ALIYUN_ACCESS_KEY_ID,
-    SMS_ALIYUN_ACCESS_KEY_SECRET,
-    SMS_ALIYUN_TEMPLATE_CODE,
-    SMS_ALIYUN_SIGNATURE,
 )
 
 
 class SMSAliyunManager(object):
-    def __init__(self, access_key=None, access_key_secret=None):
-        if access_key:
-            self.access_key = access_key
-        else:
-            self.access_key = SMS_ALIYUN_ACCESS_KEY_ID
 
-        if access_key_secret:
-            self.access_key_secret = access_key_secret
-        else:
-            self.access_key_secret = SMS_ALIYUN_ACCESS_KEY_SECRET
+    def __init__(self, access_key, access_key_secret):
+        self.access_key = access_key
+        self.access_key_secret = access_key_secret
 
-    def send_auth_code(self, mobile, vc_code, sign_name=None, template_code=None):
+    def send_auth_code(self, mobile, vc_code, sign_name, template_code):
         template_param = {"code": str(vc_code)}
-
-        if not sign_name:
-            sign_name = SMS_ALIYUN_SIGNATURE
-
-        if not template_code:
-            template_code = SMS_ALIYUN_TEMPLATE_CODE
 
         self.send_sms(mobile, sign_name, template_code, template_param)
 
