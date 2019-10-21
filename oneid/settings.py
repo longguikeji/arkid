@@ -229,10 +229,14 @@ REDIS_CONFIG = {
     'PASSWORD': None,
 }
 
+REDIS_URL = 'redis://{}:{}/{}'.format(REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'], REDIS_CONFIG['DB']) if REDIS_CONFIG['PASSWORD'] is None \
+        else 'redis://:{}@{}:{}/{}'.format(REDIS_CONFIG['PASSWORD'], REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'], REDIS_CONFIG['DB'])
+
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": REDIS_URL,
         "TIMEOUT": 60 * 60 * 24 * 3,
         "OPTIONS": {
             "MAX_ENTRIES": None,
@@ -242,7 +246,7 @@ CACHES = {
 }
 
 # CELERY
-CELERY_BROKER_URL = 'redis://{}:{}/{}'.format(REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'], REDIS_CONFIG['DB'])
+CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 from celery_app import app    # pylint: disable=wrong-import-position,unused-import
@@ -269,9 +273,6 @@ STATICFILES_DIRS = [
 UPLOAD_DIR = os.path.join(BASE_DIR, 'static', 'upload')
 DOWNLOAD_URL = STATIC_URL + 'download'
 
-REDIS_HOST = 'localhost'
-
-DOMAIN = ''
 PRIVATE_IP = '127.0.0.1'
 PUBLIC_IP = ''
 BASE_URL = 'http://localhost'
@@ -282,7 +283,6 @@ FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'    # 邮件注册页面
 FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'    # 邮件重置密码页面
 FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'    # 邮件激活账号页面
 FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'    # 邮件重置邮箱页面
-LOGIN_URL = '/_/#/oneid/login'
 LOGIN_URL = '/#/oneid/login'
 
 CREDIBLE_ARKERS = [
@@ -303,30 +303,13 @@ MINIO_LOCATION = 'us-east-1'
 
 MINIO_BUCKET = 'oneid'
 
-# 钉钉
-DINGDING_APP_KEY = ''
-DINGDING_APP_SECRET = ''
-DINGDING_APP_VERSION = 1
-AGENT_ID = 0
-
 # SMS
 SMS_LIFESPAN = datetime.timedelta(seconds=120)
-SMS_ALIYUN_REGION = 'cn-hangzhou'
-SMS_ALIYUN_PRODUCT_NAME = 'Dysmsapi'
-SMS_ALIYUN_DOMAIN = 'dysmsapi.aliyuncs.com'
-SMS_ALIYUN_ACCESS_KEY_ID = ''
-SMS_ALIYUN_ACCESS_KEY_SECRET = ''
-SMS_ALIYUN_TEMPLATE_CODE = ''
-SMS_ALIYUN_SIGNATURE = ''
+
 
 ACTIVE_USER_DATA_LIFEDAY = 30
 ACTIVE_USER_REDIS_KEY_PREFIX = 'active-'
 
-if os.path.exists(os.path.join(BASE_DIR, 'falcon', 'settings_domain.py')):
-    exec(open(os.path.join(BASE_DIR, 'falcon', 'settings_domain.py')).read())
-
-if os.path.exists(os.path.join(BASE_DIR, 'falcon', 'settings_celery.py')):
-    exec(open(os.path.join(BASE_DIR, 'falcon', 'settings_celery.py')).read())
 
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
