@@ -13,7 +13,7 @@ pipeline {
         DOCKER_PROD_REGISTRY_CREDENTIAL="devops-longguikeji-dockerhub"
 
         DEV_DOCKER_IMAGE="harbor.longguikeji.com/ark-releases/arkid:${params.DEV_VERSION}"
-        STAGE_DOCKER_IMAGE="harbor.longguikeji.com/ark-release/arkid:${params.PROD_VERSION}"
+        STAGE_DOCKER_IMAGE="harbor.longguikeji.com/ark-releases/arkid:${params.PROD_VERSION}"
         PROD_DOCKER_IMAGE="longguikeji/arkid:${params.PROD_VERSION}"
     }
     stages {
@@ -25,12 +25,14 @@ pipeline {
         stage("release docker image") {
             steps {
                 withDockerRegistry([credentialsId: "${DOCKER_DEV_REGISTRY_CREDENTIAL}", url: "${DOCKER_DEV_REGISTRY}"]){
-                    sh "docker pull ${env.DEV_DOCKER_IMAGE}"
+                    sh """
+                    docker pull ${env.DEV_DOCKER_IMAGE}
+                    docker tag ${env.DEV_DOCKER_IMAGE} ${env.STAGE_DOCKER_IMAGE}
+                    docker push ${env.STAGE_DOCKER_IMAGE}
+                    """
                 }
                 withDockerRegistry([credentialsId: "${DOCKER_PROD_REGISTRY_CREDENTIAL}", url: "${DOCKER_PROD_REGISTRY}"]){
                     sh """
-                    docker tag ${env.DEV_DOCKER_IMAGE} ${env.STAGE_DOCKER_IMAGE}
-                    docker push ${env.STAGE_DOCKER_IMAGE}
                     docker tag ${env.DEV_DOCKER_IMAGE} ${env.PROD_DOCKER_IMAGE}
                     docker push ${env.PROD_DOCKER_IMAGE}
                     """
