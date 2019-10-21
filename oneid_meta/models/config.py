@@ -91,13 +91,6 @@ class DingConfig(BaseModel, SingletonConfigMixin):
         except RuntimeError:
             return True
 
-    @property
-    def qr_callback_url(self):
-        '''
-        向meta接口返回钉钉扫码回调地址
-        '''
-        return settings.BASE_URL + '/ding/qr/callback/'
-
     def __str__(self):
         return f'DingConfig[{self.id}]'    # pylint: disable=no-member
 
@@ -335,10 +328,6 @@ class AlipayConfig(BaseModel, SingletonConfigMixin):
             return True
         except Exception:    # pylint: disable=broad-except
             return False
-
-    @property
-    def qr_callback_url(self):    # pylint: disable=missing-docstring
-        return settings.BASE_URL + '/alipay/qr/callback/'
 
     def __str__(self):
         return f'AlipayConfig[{self.id}]'    # pylint: disable=no-member

@@ -47,7 +47,6 @@ class MetaTestCase(TestCase):
                 'corp_id': 'corp_id',
                 'app_key': '',
                 'qr_app_id': 'qr_app_id',
-                'qr_callback_url': 'http://localhost/ding/qr/callback/'
             },
             'account_config': {
                 'support_email': False,
@@ -59,7 +58,6 @@ class MetaTestCase(TestCase):
             },
             'alipay_config': {
                 'app_id': 'test_app_id',
-                'qr_callback_url': 'http://localhost/alipay/qr/callback/'
             }
         }
         self.assertEqual(res.json(), expect)

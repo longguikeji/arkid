@@ -15,7 +15,7 @@ class AlipayResManager():
                  app_private_key,
                  alipay_public_key,
                  auth_code='',
-                 token_version=constants.RES_FROM_ALIPAY):
+                 token_version=constants.GET_RES_FROM_ALIPAY):
         """
         :param token_version: =1 TOKEN_FROM_CORPID_CORPSECRET:gettoken through corpid and corpsecret;
                 =2 TOKEN_FROM_APPKEY_APPSECRET:gettoken through app_key and app_secret
@@ -37,7 +37,7 @@ class AlipayResManager():
         """
         :return: alipay_id_res which includes id.
         """
-        if self.token_version == constants.RES_FROM_ALIPAY:
+        if self.token_version == constants.GET_RES_FROM_ALIPAY:
             resp = alipay_sdk.get_alipay_id_res(app_id=self.app_id,
                                                 app_private_key=self.app_private_key,
                                                 alipay_public_key=self.alipay_public_key)

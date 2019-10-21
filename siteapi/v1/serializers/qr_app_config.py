@@ -18,10 +18,7 @@ class PublicAlipayConfigSerializer(DynamicFieldsModelSerializer):
 
         model = AlipayConfig
 
-        fields = (
-            'app_id',
-            'qr_callback_url',
-        )
+        fields = ('app_id', )
 
 
 class AlipayConfigSerializer(DynamicFieldsModelSerializer):

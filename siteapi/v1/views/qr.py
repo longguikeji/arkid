@@ -78,7 +78,7 @@ class DingQrCallbackView(APIView):
 
         if state == 'STATE' and code != '':
             try:
-                ding_id = DingIdManager.get_ding_id(code)
+                ding_id = DingIdManager(code).get_ding_id()
             except Exception:    # pylint: disable=broad-except
                 return Response({'err_msg': 'get dingding user time out'}, HTTP_408_REQUEST_TIMEOUT)
         else:
