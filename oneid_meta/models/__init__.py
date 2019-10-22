@@ -4,8 +4,6 @@ schema of Users,Departmments,Groups,Perms
 
 from oneid_meta.models.user import (User, PosixUser, CustomUser, DingUser, AlipayUser)
 
-from oneid_meta.models.extern_user import (DingUser, AlipayUser)
-
 from oneid_meta.models.dept import (
     Dept,
     DingDept,

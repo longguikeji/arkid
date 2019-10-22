@@ -13,10 +13,13 @@ from django.utils import timezone
 import jsonfield
 from rest_framework.exceptions import ValidationError
 from common.django.model import BaseModel, IgnoreDeletedManager
+from oneid_meta.models.config import CustomField
 from oneid_meta.models.group import GroupMember
 from oneid_meta.models.dept import DeptMember
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
+from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
+from drf_expiring_authtoken.models import ExpiringToken
 
 
 class IsolatedManager(IgnoreDeletedManager):
@@ -25,6 +28,7 @@ class IsolatedManager(IgnoreDeletedManager):
     '''
     def get_queryset(self):
         return super().get_queryset().filter(from_register=True)
+
 
 class User(BaseModel, PermOwnerMixin):
     '''
@@ -264,7 +268,6 @@ class User(BaseModel, PermOwnerMixin):
         '''
         return valid token obj
         '''
-        from drf_expiring_authtoken.models import ExpiringToken
         token, _ = ExpiringToken.objects.get_or_create(user=self)
         return token
 
@@ -279,7 +282,6 @@ class User(BaseModel, PermOwnerMixin):
         '''
         使当前token失效，不生成新的token
         '''
-        from drf_expiring_authtoken.models import ExpiringToken
         token = ExpiringToken.objects.filter(user=self).first()
         if token:
             token.delete()
@@ -324,7 +326,6 @@ class User(BaseModel, PermOwnerMixin):
         '''
         所有直属节点以及隶属节点的uid
         '''
-        from oneid_meta.models.mixin import TreeNode as Node
         key = f'oneid:user:{self.username}:upstream_node'
         cache_data = cache.get(key)
         if cache_data is None:
@@ -439,6 +440,7 @@ class PosixUser(BaseModel):
     home = models.CharField(max_length=255, blank=True, default='', verbose_name='家目录')
     pub_key = models.CharField(max_length=255, blank=True, default='', verbose_name='公钥')
 
+
 class CustomUser(BaseModel):
     '''
     定制化用户信息
@@ -460,7 +462,6 @@ class CustomUser(BaseModel):
         前端友好的输出
         '''
         # pylint: disable=no-member
-        from oneid_meta.models import CustomField
         res = []
         data = self.data
 
