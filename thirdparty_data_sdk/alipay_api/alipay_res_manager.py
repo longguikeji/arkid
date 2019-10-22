@@ -4,6 +4,7 @@ Dingding token manager get through appkey and appsecret or through corpid and co
 
 from thirdparty_data_sdk.alipay_api import constants
 from thirdparty_data_sdk.alipay_api import alipay_sdk
+from thirdparty_data_sdk.alipay_api.error_utils import APICallError
 
 
 class AlipayResManager():
@@ -42,7 +43,7 @@ class AlipayResManager():
                                                 app_private_key=self.app_private_key,
                                                 alipay_public_key=self.alipay_public_key)
         else:
-            raise Exception('wrong param value token_version, value should be 1')
+            raise APICallError('wrong param value token_version, value should be 1')
 
         errcode = resp.code
 
