@@ -26,7 +26,6 @@ class IsolatedManager(IgnoreDeletedManager):
     def get_queryset(self):
         return super().get_queryset().filter(from_register=True)
 
-
 class User(BaseModel, PermOwnerMixin):
     '''
     OneID 用户
@@ -439,7 +438,6 @@ class PosixUser(BaseModel):
     gid = models.IntegerField(blank=True, default=500)
     home = models.CharField(max_length=255, blank=True, default='', verbose_name='家目录')
     pub_key = models.CharField(max_length=255, blank=True, default='', verbose_name='公钥')
-
 
 class CustomUser(BaseModel):
     '''

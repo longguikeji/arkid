@@ -7,7 +7,6 @@ import requests
 from thirdparty_data_sdk.dingding.dingsdk import constants
 from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 
-
 class AccessTokenManager():
     """
     class to init and hold access token

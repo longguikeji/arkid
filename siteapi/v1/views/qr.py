@@ -19,7 +19,9 @@ from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
 from oneid_meta.models import User, Group, DingUser
+
 from oneid_meta.models import AlipayUser
+
 from oneid_meta.models.config import AlipayConfig, AccountConfig
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
 from thirdparty_data_sdk.alipay_api import alipay_sdk
