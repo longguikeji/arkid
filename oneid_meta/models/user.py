@@ -19,7 +19,6 @@ from oneid_meta.models.dept import DeptMember
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
-from drf_expiring_authtoken.models import ExpiringToken
 
 
 class IsolatedManager(IgnoreDeletedManager):
@@ -268,6 +267,7 @@ class User(BaseModel, PermOwnerMixin):
         '''
         return valid token obj
         '''
+        from drf_expiring_authtoken.models import ExpiringToken    # pylint: disable=import-outside-toplevel
         token, _ = ExpiringToken.objects.get_or_create(user=self)
         return token
 
@@ -282,6 +282,7 @@ class User(BaseModel, PermOwnerMixin):
         '''
         使当前token失效，不生成新的token
         '''
+        from drf_expiring_authtoken.models import ExpiringToken    # pylint: disable=import-outside-toplevel
         token = ExpiringToken.objects.filter(user=self).first()
         if token:
             token.delete()

@@ -38,9 +38,9 @@ alipay-sdk-python = "==3.3.202"
 ipython = "*"
 pre-commit = "*"
 pylint = "*"
+yapf = '*'
 v = {version = "*",editable = true}
 pipenv-to-requirements = "*"
-rope = "*"
 
 [requires]
 python_version = "3.6"
