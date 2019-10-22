@@ -19,7 +19,9 @@ from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
 from oneid_meta.models import User, Group, DingUser
-from oneid_meta.models.extern_user import AlipayUser
+
+from oneid_meta.models import AlipayUser
+
 from oneid_meta.models.config import AlipayConfig, AccountConfig
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
 from thirdparty_data_sdk.alipay_api import alipay_sdk
@@ -109,7 +111,7 @@ class QrQueryUserAPIView(GenericAPIView):
     permission_classes = []
     authentication_classes = []
 
-    def post(self, request):    # pylint: disable=missing-function-docstring, no-self-use
+    def post(self, request):    # pylint: disable=no-self-use, missing-docstring
         return query_user(request)
 
 
@@ -242,7 +244,7 @@ class AlipayQueryUserAPIView(GenericAPIView):
     支付宝扫码查询用户是否存在视图
     '''
     @require_alipay_qr_supported
-    def post(self, request):    # pylint: disable=missing-function-docstring, no-self-use
+    def post(self, request):    # pylint: disable=missing-docstring, no-self-use
         return query_user(request)
 
 

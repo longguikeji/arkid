@@ -11,11 +11,7 @@ class AccessTokenManager():
     """
     class to init and hold access token
     """
-
-    def __init__(self,
-                 app_key,
-                 app_secret,
-                 token_version=constants.TOKEN_FROM_APPKEY_APPSECRET):
+    def __init__(self, app_key, app_secret, token_version=constants.TOKEN_FROM_APPKEY_APPSECRET):
         """
         :param token_version: =1 TOKEN_FROM_CORPID_CORPSECRET:gettoken through corpid and corpsecret;
                 =2 TOKEN_FROM_APPKEY_APPSECRET:gettoken through app_key and app_secret
@@ -40,40 +36,33 @@ class AccessTokenManager():
         :return: token after necessary refresh and update expire time
         """
         if self.token_version == constants.TOKEN_FROM_CORPID_CORPSECRET:
-            resp = requests.get(
-                constants.ACCESS_TOKEN_URL,
-                params={
-                    'corpid': self.app_key,
-                    'corpsecret': self.app_secret
-                }).json()
+            resp = requests.get(constants.ACCESS_TOKEN_URL,
+                                params={
+                                    'corpid': self.app_key,
+                                    'corpsecret': self.app_secret
+                                }).json()
         elif self.token_version == constants.TOKEN_FROM_APPKEY_APPSECRET:
-            resp = requests.get(
-                constants.ACCESS_TOKEN_URL,
-                params={
-                    'appkey': self.app_key,
-                    'appsecret': self.app_secret
-                }).json()
+            resp = requests.get(constants.ACCESS_TOKEN_URL,
+                                params={
+                                    'appkey': self.app_key,
+                                    'appsecret': self.app_secret
+                                }).json()
         elif self.token_version == constants.TOKEN_FROM_APPID_QR_APP_SECRET:
-            resp = requests.get(
-                constants.QR_GET_ACCESS_TOKEN_URL,
-                params={
-                    'appid': self.app_key,
-                    'appsecret': self.app_secret
-                }).json()
+            resp = requests.get(constants.QR_GET_ACCESS_TOKEN_URL,
+                                params={
+                                    'appid': self.app_key,
+                                    'appsecret': self.app_secret
+                                }).json()
         else:
-            raise APICallError(
-                'wrong param value token_version, value should be 1 or 2')
+            raise APICallError('wrong param value token_version, value should be 1 or 2')
 
         errcode = resp.get('errcode', '')
         errmsg = resp.get('errmsg', '')
 
         if errcode != 0:
-            raise APICallError(
-                'Failed to get the access token, code:%s, msg:%s' % (errcode,
-                                                                     errmsg))
+            raise APICallError('Failed to get the access token, code:%s, msg:%s' % (errcode, errmsg))
 
         self.access_token = resp.get('access_token', '')
-        self.expired_time = int(time.time(
-        )) + constants.TOKEN_DURATION - constants.TOKEN_TOLERANCE_PERIOD
+        self.expired_time = int(time.time()) + constants.TOKEN_DURATION - constants.TOKEN_TOLERANCE_PERIOD
 
         return self.access_token
