@@ -1,0 +1,61 @@
+pipeline {
+    agent any
+
+    // global properties
+    // - DING_TALK_ENTRYPOINT
+
+    environment {
+        GIT_SHORT_COMMIT = """${sh(
+            returnStdout: true,
+            script: 'git rev-parse --short HEAD',
+        ).trim()}"""
+        DOCKER_IMAGE_BUILD_VERSION = "build-${env.BUILD_NUMBER}-${env.GIT_SHORT_COMMIT}"
+        DOCKER_IMAGE_DEV_VERSION = "dev-${env.BUILD_NUMBER}-${env.GIT_SHORT_COMMIT}"
+
+        DOCKER_DEV_REGISTRY="https://harbor.longguikeji.com"
+        DOCKER_DEV_REGISTRY_CREDENTIAL="devops-longguikeji-harbor"
+
+    }
+    stages {
+        stage('pre') {
+            steps {
+                sendDingTalk("pending", "开始构建")
+            }
+        }
+        stage('build') {
+            steps {
+                withDockerRegistry([credentialsId: "${DOCKER_DEV_REGISTRY_CREDENTIAL}", url: "${DOCKER_DEV_REGISTRY}"]){
+                    sh """#!/bin/bash
+                    make VERSION=${env.DOCKER_IMAGE_DEV_VERSION} docker-dev
+                    """
+                }
+            }
+        }
+    }
+    post {
+        success {
+            sendDingTalk("success", "构建成功")
+        }
+        failure {
+            sendDingTalk("failure", "构建失败")
+        }
+    }
+}
+
+def sendDingTalk(status, message) {
+    if (status == "success") {
+        img="https://s2.ax1x.com/2019/10/17/KEFSWd.png"
+    } else if (status == "failure") {
+        img="https://s2.ax1x.com/2019/10/17/KEFCQI.png"
+    } else if (status == "pending") {
+        img="https://s2.ax1x.com/2019/10/17/KEFkef.gif"
+    } else {
+        img=""
+    }
+    dingTalk([
+        accessToken: "${env.DING_TALK_ENTRYPOINT}",
+        jenkinsUrl: "${env.JENKINS_URL}",
+        imageUrl: img,
+        message: message,
+    ])
+}

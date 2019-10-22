@@ -1,6 +1,8 @@
 '''
 schema of Users
 '''
+
+# pylint: disable=too-many-lines
 from itertools import chain
 from django.core.cache import cache
 from django.db import models
@@ -9,14 +11,12 @@ from django.conf import settings
 from django.utils import timezone
 # from django.db.utils import IntegrityError
 import jsonfield
-
 from rest_framework.exceptions import ValidationError
 from common.django.model import BaseModel, IgnoreDeletedManager
 from oneid_meta.models.group import GroupMember
 from oneid_meta.models.dept import DeptMember
-from oneid_meta.models.perm import UserPerm, PermOwnerMixin
+from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from executer.utils.password import encrypt_password, verify_password
-
 
 
 class IsolatedManager(IgnoreDeletedManager):
@@ -53,25 +53,14 @@ class User(BaseModel, PermOwnerMixin):
     mobile = models.CharField(max_length=64, blank=True, default='', verbose_name='手机')
     employee_number = models.CharField(max_length=255, blank=True, default='', verbose_name='工号')
     position = models.CharField(max_length=255, blank=True, default='', verbose_name='职位')
-    gender = models.IntegerField(
-        choices=GENDER_CHOICES,
-        default=0,
-        verbose_name='性别',
-    )
+    gender = models.IntegerField(choices=GENDER_CHOICES, default=0, verbose_name='性别')
     avatar = models.CharField(max_length=1024, blank=True, default='', verbose_name='头像')
-
     is_boss = models.BooleanField(default=False, verbose_name='是否为主管理员')
-
     from_register = models.BooleanField(default=False, verbose_name='是否来自自己注册')
-
     origin = models.IntegerField(choices=ORIGIN_CHOICES, default=0, verbose_name='账号来源')
-
     hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
-
     remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
-
     last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')
-
     isolated_objects = IsolatedManager()
 
     def save(self, *args, **kwargs):    # pylint: disable=arguments-differ
@@ -104,7 +93,7 @@ class User(BaseModel, PermOwnerMixin):
         return self.from_register
 
     @property
-    def is_extern_user(self):
+    def is_extern_user(self):    # pylint: disable=missing-docstring
         return GroupMember.valid_objects.filter(user=self, owner__uid='extern').exists()
 
     @is_isolated.setter
@@ -181,6 +170,25 @@ class User(BaseModel, PermOwnerMixin):
         if self.is_admin:
             return True
         return UserPerm.valid_objects.filter(owner=self, perm=perm, value=True).exists()
+
+    def has_perm_realtime(self, perm):
+        '''
+        实时判断是否有某权限
+        适用于对权限结果准确度要求较高的场景
+        '''
+        if perm is None:
+            return True
+        if self.is_admin:
+            return True
+        if UserPerm.valid_objects.filter(owner=self, perm=perm, status=1).exists():
+            return True
+        for dept in self.depts:
+            if DeptPerm.valid_objects.filter(owner=dept, perm=perm, status=1).exists():
+                return True
+        for group in self.groups:
+            if GroupPerm.valid_objects.filter(owner=group, perm=perm, status=1).exists():
+                return True
+        return False
 
     def get_perm(self, perm):
         '''
@@ -310,7 +318,6 @@ class User(BaseModel, PermOwnerMixin):
             res = set([node.node_uid for node in self.depts] + [node.node_uid for node in self.groups])
             cache.set(key, res)
             return res
-
         return cache_data
 
     @property
@@ -327,7 +334,6 @@ class User(BaseModel, PermOwnerMixin):
                 res.update(parent_node.upstream_uids)
             cache.set(key, res)
             return res
-
         return cache_data
 
     def update_cache(self):
@@ -420,26 +426,14 @@ class User(BaseModel, PermOwnerMixin):
         now = timezone.now()
         if not self.last_active_time or \
             self.last_active_time + timezone.timedelta(minutes=gap_minutes) < now:
-                self.last_active_time = now
-                self.save(update_fields=['last_active_time'])
-
-
-class DingUser(BaseModel):
-    '''
-    钉钉用户
-    '''
-
-    user = models.OneToOneField(User, verbose_name='用户', related_name='ding_user', on_delete=models.PROTECT)
-    account = models.CharField(max_length=64, blank=False, verbose_name='钉钉账号(手机)')
-    uid = models.CharField(max_length=255, blank=False, verbose_name='员工在企业内的唯一标识')
-    data = models.TextField(blank=True, default='{}', verbose_name='钉钉员工详细数据(JSON)')
+            self.last_active_time = now
+            self.save(update_fields=['last_active_time'])
 
 
 class PosixUser(BaseModel):
     '''
     服务器用户
     '''
-
     user = models.OneToOneField(User, verbose_name='用户', related_name='posix_user', on_delete=models.PROTECT)
     uid = models.IntegerField(blank=True, default=500)
     gid = models.IntegerField(blank=True, default=500)
@@ -451,7 +445,6 @@ class CustomUser(BaseModel):
     '''
     定制化用户信息
     '''
-
     DEFAULT_VALUE = ""
 
     user = models.OneToOneField(User, verbose_name='用户', related_name='custom_user', on_delete=models.CASCADE)
@@ -506,3 +499,24 @@ class CustomUser(BaseModel):
                         'value': data.get(field.uuid.hex),
                     })
         return res
+
+
+class DingUser(BaseModel):
+    '''
+    钉钉用户
+    '''
+    user = models.OneToOneField(User, verbose_name='用户', related_name='ding_user', on_delete=models.PROTECT)
+    account = models.CharField(max_length=64, blank=False, verbose_name='钉钉账号(手机)')
+    uid = models.CharField(max_length=255, blank=False, verbose_name='员工在企业内的唯一标识')
+    data = models.TextField(blank=True, default='{}', verbose_name='钉钉员工详细数据(JSON)')
+    ding_id = models.TextField(max_length=255, blank=True, verbose_name='钉钉ID')
+    open_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用内的唯一标识')
+    union_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用所属的钉钉开放平台账号内的唯一标识')
+
+
+class AlipayUser(BaseModel):
+    '''
+    支付宝用户
+    '''
+    user = models.OneToOneField(User, verbose_name='用户', related_name='alipay_user', on_delete=models.PROTECT)
+    alipay_id = models.TextField(max_length=255, blank=True, verbose_name='支付宝ID')

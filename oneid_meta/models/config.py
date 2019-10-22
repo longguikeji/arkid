@@ -1,6 +1,7 @@
 '''
 schema for GlobalConfig
 '''
+import hashlib
 
 from django.db import models
 from django.contrib.sites.models import Site
@@ -11,6 +12,10 @@ from aliyunsdkcore.acs_exception.exceptions import ServerException
 from common.django.model import BaseModel
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from common.Email.email_manager import EmailManager
+
+from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+
+from thirdparty_data_sdk.alipay_api.alipay_res_manager import AlipayResManager
 
 
 class SingletonConfigMixin:
@@ -68,6 +73,24 @@ class DingConfig(BaseModel, SingletonConfigMixin):
     corp_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="CORP SECRET")
     corp_valid = models.BooleanField(default=False, verbose_name='Corp 配置是否正确')
 
+    qr_app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP ID")
+    qr_app_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP SECRET")
+    qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP配置是否正确')
+
+    def check_valid(self):
+        '''
+        检查配置是否有效
+        '''
+        accesser = AccessTokenManager(app_key=self.qr_app_id, app_secret=self.qr_app_secret, token_version=3)
+        try:
+            accesser.get_access_token()
+            return True
+        except ServerException as exce:
+            print(exce)
+            return False
+        except RuntimeError:
+            return True
+
     def __str__(self):
         return f'DingConfig[{self.id}]'    # pylint: disable=no-member
 
@@ -81,6 +104,8 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
     allow_email = models.BooleanField(default=False, blank=True, verbose_name='是否允许邮箱(注册、)登录、找回密码')
     allow_mobile = models.BooleanField(default=False, blank=True, verbose_name='是否允许手机(注册、)登录、找回密码')
     allow_register = models.BooleanField(default=False, blank=True, verbose_name='是否开放注册')
+    allow_ding_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放钉钉扫码登录')
+    allow_alipay_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放支付宝扫码登录')
 
     def __str__(self):
         return f'AccountConfig[{self.id}]'    # pylint: disable=no-member
@@ -112,6 +137,34 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
         是否支持手机注册
         '''
         return self.allow_register and self.support_mobile
+
+    @property
+    def support_ding_qr(self):
+        '''
+        是否支持钉钉扫码登录
+        '''
+        return self.allow_ding_qr and DingConfig.get_current().qr_app_valid
+
+    @property
+    def support_ding_qr_register(self):
+        '''
+        是否支持钉钉扫码注册
+        '''
+        return self.allow_register and self.support_ding_qr
+
+    @property
+    def support_alipay_qr(self):
+        '''
+        是否支持支付宝扫码登录
+        '''
+        return self.allow_alipay_qr and AlipayConfig.get_current().qr_app_valid
+
+    @property
+    def support_alipay_qr_register(self):
+        '''
+        是否支持支付宝扫码注册
+        '''
+        return self.allow_register and self.support_alipay_qr
 
 
 class SMSConfig(BaseModel, SingletonConfigMixin):
@@ -169,7 +222,6 @@ class SMSConfig(BaseModel, SingletonConfigMixin):
         '''
         对敏感数据加密
         '''
-        import hashlib
         hl = hashlib.md5()    # pylint: disable=invalid-name
         hl.update((settings.SECRET_KEY[:6] + value).encode('utf-8'))
         return hl.hexdigest()
@@ -218,7 +270,6 @@ class EmailConfig(BaseModel, SingletonConfigMixin):
         '''
         对敏感数据加密
         '''
-        import hashlib
         hl = hashlib.md5()    # pylint: disable=invalid-name
         hl.update((settings.SECRET_KEY[:6] + value).encode('utf-8'))
         return hl.hexdigest()
@@ -254,3 +305,29 @@ class NativeField(BaseModel):
     schema = jsonfield.JSONField(default={'type': 'string'}, verbose_name='字段定义')
     is_visible = models.BooleanField(default=True, verbose_name='是否展示')
     is_visible_editable = models.BooleanField(default=True, verbose_name='对于`是否展示`，是否可以修改')
+
+
+class AlipayConfig(BaseModel, SingletonConfigMixin):
+    '''
+    支付宝配置信息
+    '''
+    site = models.OneToOneField(Site, related_name='alipay_config', on_delete=models.CASCADE)
+
+    app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="QR APP ID")
+    app_private_key = models.CharField(max_length=2048, blank=True, default="", verbose_name="APP PVIVATE KEY")
+    alipay_public_key = models.CharField(max_length=512, blank=True, default="", verbose_name="ALIPAY PUBLIC KEY")
+    qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP配置是否正确')
+
+    def check_valid(self):
+        '''
+        检查配置是否有效
+        '''
+        accesser = AlipayResManager(self.app_id, self.app_private_key, self.alipay_public_key, token_version=1)
+        try:
+            accesser.get_alipay_id_res()
+            return True
+        except Exception:    # pylint: disable=broad-except
+            return False
+
+    def __str__(self):
+        return f'AlipayConfig[{self.id}]'    # pylint: disable=no-member
