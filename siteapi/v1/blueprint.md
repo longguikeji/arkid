@@ -412,6 +412,11 @@ FORMAT: 1A
 + qr_app_secret (string) - 原来也叫app_secret，为了与上面的区分所以加qr，是查询用户钉钉信息所需的secret
 + qr_app_valid (boolean, readonly) - qr配置是否有效
 
+## AlipayConfig (object)
++ app_id (string)
++ app_private_key (string) - 网页应用私钥
++ alipay_public_key (string) - 支付宝生成的公钥
++ qr_app_valid (boolean, readonly) - qr配置是否有效
 
 ## Config (object)
 + company_config (CompanyConfig)
@@ -419,6 +424,7 @@ FORMAT: 1A
 + account_config (AccountConfig)
 + sms_config (SMSConfig)
 + email_config (EmailConfig)
++ alipay_config (AlipayConfig)
 
 ## CustomField (object)
 + uuid (string)
@@ -443,7 +449,9 @@ FORMAT: 1A
 + app_key (string)
 + corp_id (string)
 + qr_app_id (string)
-+ qr_callback_url (string) - 钉钉扫码回调地址
+
+## AlipayMetaInfo (object)
++ app_id (string)
 
 ## AccountMetaInfo (object)
 + support_email (boolean) - 是否支持邮箱登录、找回密码、激活
@@ -456,6 +464,7 @@ FORMAT: 1A
 + company_config (CompanyMetaInfo)
 + ding_config (DingMetaInfo)
 + account_config (AccountMetaInfo)
++ alipay_config (AlipaymetaInfo)
 
 ## MetaNodeInfo (object)
 + name (string)
@@ -2120,3 +2129,62 @@ Content-Disposition: form-data; name='node_uid'
 + Response 403 (application/json)
     + Attributes
         + err_msg (string) - 'ding qr not allowed'
+
+
+# 支付宝扫码登录
+
+## 扫码回调函数 [/alipay/qr/callback/{?auth_code}]
++ Parameters
+    + auth_code (string) - 支付宝扫码返回一次性查询码auth_code
+
+### 获取权限 [POST]
++ Requests JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 200 (application/json)
+    + Attributes
+        + token （string) - 未匹配用户，返回空字段token
+        + alipay_id (string) - 返回支付宝user_id，用于下一步提交绑定
+
++ Response 400 (application/json)
+    + Attributes
+        + err_msg (string) - 'get alipay id error'
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'alipay qr not allowed'
+
+## 支付宝用户绑定 [/alipay/bind/]
+
+### 绑定用户 [POST]
++ Request JSON Message
+    + Attributes
+        + alipay_id (string) - 支付宝用户扫码时查询返回的alipay_id
+        + sms_token (string) - 用户手机发短信后返回的sms_token
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'alipay qr not allowed'
+
+## 支付宝用户注册加绑定 [/alipay/register/bind/]
+
+### 注册加绑定 [POST]
++ Request JSON Message
+    + Attributes
+        + username (string)
+        + password (string) 
+        + sms_token (string) - 绑定页面验证用户手机的sms_token
+        + alipay_id (string) - 从支付宝查询的扫码用户的alipay_id
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'alipay qr not allowed'
