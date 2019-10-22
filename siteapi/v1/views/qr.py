@@ -109,7 +109,7 @@ class QrQueryUserAPIView(GenericAPIView):
     permission_classes = []
     authentication_classes = []
 
-    def post(self, request):    # pylint: disable=missing-function-docstring, no-self-use
+    def post(self, request):    # pylint: disable=no-self-use, missing-docstring
         return query_user(request)
 
 
@@ -242,7 +242,7 @@ class AlipayQueryUserAPIView(GenericAPIView):
     支付宝扫码查询用户是否存在视图
     '''
     @require_alipay_qr_supported
-    def post(self, request):    # pylint: disable=missing-function-docstring, no-self-use
+    def post(self, request):    # pylint: disable=missing-docstring, no-self-use
         return query_user(request)
 
 
