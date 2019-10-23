@@ -80,12 +80,14 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.json(), expect_json)
         self.assertEqual(res.status_code, expect_code)
 
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_alipay_bind(self, mock_check_sms_token):
+    def test_alipay_bind(self, mock_check_sms_token, mock_clear_sms_token):
         client = self.client
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+        mock_clear_sms_token.return_value = None
         res = client.post(reverse('siteapi:alipay_bind'), data={'sms_token':\
             'test_sms_token', 'alipay_id':'test_alipay_id'})
         expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',\
@@ -96,10 +98,12 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.status_code, 201)
         self.assertEqual(res_keys, expect)
 
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_alipay_register_bind(self, mock_check_sms_token):
+    def test_alipay_register_bind(self, mock_check_sms_token, mock_clear_sms_token):
         client = self.client
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+        mock_clear_sms_token.return_value = None
         res = client.post(reverse('siteapi:alipay_register_bind'),
                           data={
                               'username': 'username',
