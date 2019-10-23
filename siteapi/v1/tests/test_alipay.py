@@ -45,14 +45,9 @@ class UCenterTestCase(TestCase):
 
         res = client.post(reverse('siteapi:alipay_qr_callback'),\
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
-        expect = [
-            'token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile', 'employee_number', 'gender', 'perms',
-            'avatar', 'roles', 'private_email', 'position', 'is_settled', 'is_manager', 'is_admin', 'is_extern_user',
-            'origin_verbose'
-        ]
-        res_dict = res.json()
-        res_keys = list(res_dict.keys())
-        self.assertEqual(res_keys, expect)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('token', res.json())
 
     @mock.patch("thirdparty_data_sdk.alipay_api.alipay_sdk.get_alipay_id")
     def test_alipay_qr_login_newuser(self, mock_get_alipay_id):    # pylint: disable=invalid-name

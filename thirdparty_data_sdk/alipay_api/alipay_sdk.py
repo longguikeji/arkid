@@ -6,11 +6,13 @@ from alipay.aop.api.AlipayClientConfig import AlipayClientConfig
 from alipay.aop.api.DefaultAlipayClient import DefaultAlipayClient
 from alipay.aop.api.request.AlipaySystemOauthTokenRequest import AlipaySystemOauthTokenRequest
 from alipay.aop.api.response.AlipaySystemOauthTokenResponse import AlipaySystemOauthTokenResponse
+from alipay.aop.api.exception.Exception import AopException
+from thirdparty_data_sdk.alipay_api import constants
 
 
 class AlipaySystemOauthTokenModel:
     '''
-    模仿alipay-sdk-python包中的模型，用于在请求中放入参数，原包中竟然找不到对应接口的model，只能自己写一个
+    模仿alipay-sdk-python包中的模型，用于在请求中放入参数
     '''
     def __init__(self):
         self._grant_type = None
@@ -76,7 +78,7 @@ def get_alipay_id_res(app_id, app_private_key, alipay_public_key):
     '''
     # 实例化客户端
     alipay_client_config = AlipayClientConfig()
-    alipay_client_config.server_url = 'https://openapi.alipay.com/gateway.do'
+    alipay_client_config.server_url = constants.SERVER_URL
     alipay_client_config.app_id = app_id
     alipay_client_config.app_private_key = app_private_key
     alipay_client_config.alipay_public_key = alipay_public_key
@@ -94,7 +96,7 @@ def get_alipay_id_res(app_id, app_private_key, alipay_public_key):
     response_content = None
     try:
         response_content = client.execute(request)
-    except Exception:    # pylint: disable=broad-except
+    except AopException:
         print(traceback.format_exc())
 
     if not response_content:
@@ -110,7 +112,7 @@ def get_alipay_id(auth_code, app_id, app_private_key, alipay_public_key):
     '''
     # 实例化客户端
     alipay_client_config = AlipayClientConfig()
-    alipay_client_config.server_url = 'https://openapi.alipay.com/gateway.do'
+    alipay_client_config.server_url = constants.SERVER_URL
     alipay_client_config.app_id = app_id
     alipay_client_config.app_private_key = app_private_key
     alipay_client_config.alipay_public_key = alipay_public_key
@@ -129,7 +131,7 @@ def get_alipay_id(auth_code, app_id, app_private_key, alipay_public_key):
     response_content = None
     try:
         response_content = client.execute(request)
-    except Exception:    # pylint: disable=broad-except
+    except AopException:
         print(traceback.format_exc())
 
     if not response_content:

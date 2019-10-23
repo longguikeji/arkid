@@ -225,7 +225,7 @@ class AlipayQrCallbackView(APIView):
         获取支付宝用户id
         '''
         alipay_id = ''
-        current_app = AlipayConfig.valid_objects.filter(app_id=app_id).first()
+        current_app = AlipayConfig.get_current().first()
         if current_app:
             app_private_key = current_app.app_private_key
             alipay_public_key = current_app.alipay_public_key

@@ -17,10 +17,6 @@ class AlipayResManager():
                  alipay_public_key,
                  auth_code='',
                  token_version=constants.GET_RES_FROM_ALIPAY):
-        """
-        :param token_version: =1 TOKEN_FROM_CORPID_CORPSECRET:gettoken through corpid and corpsecret;
-                =2 TOKEN_FROM_APPKEY_APPSECRET:gettoken through app_key and app_secret
-        """
         self.auth_code = auth_code
         self.app_id = app_id
         self.app_private_key = app_private_key
