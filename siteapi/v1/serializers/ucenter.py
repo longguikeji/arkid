@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from oneid_meta.models import User, Invitation
-from oneid_meta.models.extern_user import AlipayUser, DingUser
+from oneid_meta.models import AlipayUser, DingUser
 from executer.core import CLI
 from infrastructure.serializers.sms import (
     SMSClaimSerializer,

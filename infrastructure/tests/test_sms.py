@@ -26,9 +26,9 @@ class SMSTestCase(TestCase):
         self.user = User.objects.create(username='u1', mobile=MOBILE)
 
         account_config = AccountConfig.get_current()
+        account_config.allow_register = True
         account_config.allow_email = True
         account_config.allow_mobile = True
-        account_config.allow_register = True
         account_config.save()
 
         email_config = EmailConfig.get_current()

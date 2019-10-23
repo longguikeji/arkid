@@ -8,12 +8,7 @@ from unittest import mock
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
-    User,
-    DingUser,
-    AccountConfig,
-    DingConfig
-)
+from oneid_meta.models import (User, DingUser, AccountConfig, DingConfig)
 
 MAX_APP_ID = 2
 
@@ -47,10 +42,12 @@ class UCenterTestCase(TestCase):
         client = self.client
         mock_get_ding_id.side_effect = ['test_ding_id']
 
-        res = client.post(reverse('siteapi:ding_qr_callback'), data={'code':'CODE...........', 'state':'STATE'})
-        expect = ['token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile',
-            'employee_number', 'gender', 'ding_user', 'perms', 'avatar', 'roles',
-                'private_email', 'position', 'is_settled', 'is_manager', 'is_admin', 'is_extern_user', 'origin_verbose']
+        res = client.post(reverse('siteapi:ding_qr_callback'), data={'code': 'CODE...........', 'state': 'STATE'})
+        expect = [
+            'token', 'uuid', 'user_id', 'username', 'name', 'email', 'mobile', 'employee_number', 'gender', 'ding_user',
+            'perms', 'avatar', 'roles', 'private_email', 'position', 'is_settled', 'is_manager', 'is_admin',
+            'is_extern_user', 'origin_verbose'
+        ]
         res_dict = res.json()
         res_keys = list(res_dict.keys())
         self.assertEqual(res_keys, expect)
@@ -59,7 +56,7 @@ class UCenterTestCase(TestCase):
     def test_ding_qr_login_newuser(self, mock_get_ding_id):
         client = self.client
         mock_get_ding_id.side_effect = ['unregistered_dingid']
-        res = client.post(reverse('siteapi:ding_qr_callback'), data={'code':'CODE...........', 'state':'STATE'})
+        res = client.post(reverse('siteapi:ding_qr_callback'), data={'code': 'CODE...........', 'state': 'STATE'})
         expect = {'token': '', 'ding_id': 'unregistered_dingid'}
         self.assertEqual(res.json(), expect)
 

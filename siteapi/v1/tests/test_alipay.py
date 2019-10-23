@@ -67,24 +67,6 @@ class UCenterTestCase(TestCase):
         expect = {'token': '', 'alipay_id': 'unregistered_alipay_id'}
         self.assertEqual(res.json(), expect)
 
-    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_alipay_query_user_newuser(self, mock_check_sms_token):
-        client = self.client
-        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
-        res = client.post(reverse('siteapi:alipay_query_user'), data={'sms_token': '123132132131'})
-        expect = {'exist': False}
-        self.assertEqual(res.json(), expect)
-
-    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
-    def test_alipay_query_user_registered(self, mock_check_sms_token):    # pylint: disable=invalid-name
-        client = self.client
-        user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
-        user.save()
-        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
-        res = client.post(reverse('siteapi:alipay_query_user'), data={'sms_token': 'test_sms_token'})
-        expect = {'exist': True}
-        self.assertEqual(res.json(), expect)
-
     def test_alipay_qr_login_forbidden(self):
         client = self.client
         alipay_config = AlipayConfig.get_current()

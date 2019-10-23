@@ -331,7 +331,6 @@ class PublicDingConfigSerializer(DynamicFieldsModelSerializer):
         # 'corp_secret',
             'qr_app_id',
         # 'qr_app_secret',
-            'qr_callback_url',
         )
 
 

@@ -14,7 +14,7 @@ from common.sms.aliyun.sms_manager import SMSAliyunManager
 from common.Email.email_manager import EmailManager
 
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
-
+from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPID_QR_APP_SECRET
 from thirdparty_data_sdk.alipay_api.alipay_res_manager import AlipayResManager
 
 
@@ -81,7 +81,8 @@ class DingConfig(BaseModel, SingletonConfigMixin):
         '''
         检查配置是否有效
         '''
-        accesser = AccessTokenManager(app_key=self.qr_app_id, app_secret=self.qr_app_secret, token_version=3)
+        accesser = AccessTokenManager(app_key=self.qr_app_id,\
+            app_secret=self.qr_app_secret, token_version=TOKEN_FROM_APPID_QR_APP_SECRET)
         try:
             accesser.get_access_token()
             return True
@@ -90,13 +91,6 @@ class DingConfig(BaseModel, SingletonConfigMixin):
             return False
         except RuntimeError:
             return True
-
-    @property
-    def qr_callback_url(self):
-        '''
-        向meta接口返回钉钉扫码回调地址
-        '''
-        return settings.BASE_URL + '/ding/qr/callback/'
 
     def __str__(self):
         return f'DingConfig[{self.id}]'    # pylint: disable=no-member
@@ -333,12 +327,11 @@ class AlipayConfig(BaseModel, SingletonConfigMixin):
         try:
             accesser.get_alipay_id_res()
             return True
-        except Exception:    # pylint: disable=broad-except
+        except ServerException as exce:
+            print(exce)
             return False
-
-    @property
-    def qr_callback_url(self):    # pylint: disable=missing-docstring
-        return settings.BASE_URL + '/alipay/qr/callback/'
+        except RuntimeError:
+            return True
 
     def __str__(self):
         return f'AlipayConfig[{self.id}]'    # pylint: disable=no-member
