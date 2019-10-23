@@ -11,7 +11,7 @@ class DingIdManager():
     '''
     从第三方获取user_id
     '''
-    def __init__(self, code, require_type=constants.USER_ID_FROM_CODE):
+    def __init__(self, code, require_type=constants.DING_ID_FROM_CODE):
         self.code = code
         self.require_type = require_type
         self.ding_id = None
@@ -21,7 +21,7 @@ class DingIdManager():
         '''
         从钉钉获取dingId
         '''
-        if self.require_type == constants.USER_ID_FROM_CODE:
+        if self.require_type == constants.DING_ID_FROM_CODE:
             appid = DingConfig.get_current().qr_app_id
             appsecret = DingConfig.get_current().qr_app_secret
             access_token = requests.get(constants.QR_GET_ACCESS_TOKEN_URL, params={'appid':appid,\

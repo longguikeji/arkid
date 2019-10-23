@@ -51,7 +51,7 @@ MSG_GET_SEND_PROGRESS_URL = API_URL + '/topapi/message/corpconversation/getsendp
 MSG_GET_SEND_RESULT_URL = API_URL + '/topapi/message/corpconversation/getsendresult'
 
 # id related
-USER_ID_FROM_CODE = 1
+DING_ID_FROM_CODE = 1
 
 # qr related url
 QR_BASEURL = 'https://oapi.dingtalk.com/sns/'

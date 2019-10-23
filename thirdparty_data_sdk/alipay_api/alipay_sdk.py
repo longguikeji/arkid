@@ -72,7 +72,7 @@ class AlipaySystemOauthTokenModel:
         return obj
 
 
-def get_alipay_id_res(app_id, app_private_key, alipay_public_key):
+def alipay_api_response(app_id, app_private_key, alipay_public_key):
     '''
     获取支付宝用户信息
     '''

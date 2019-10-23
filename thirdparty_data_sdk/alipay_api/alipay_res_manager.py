@@ -16,28 +16,28 @@ class AlipayResManager():
                  app_private_key,
                  alipay_public_key,
                  auth_code='',
-                 token_version=constants.GET_RES_FROM_ALIPAY):
+                 requie_type=constants.CHECK_ID_SECRET_VALID):
         self.auth_code = auth_code
         self.app_id = app_id
         self.app_private_key = app_private_key
         self.alipay_public_key = alipay_public_key
-        self.token_version = token_version
+        self.requie_type = requie_type
 
     def get_alipay_id(self):
         '''
         返回True 或 False
         '''
         if self.auth_code == '':
-            return self.get_alipay_id_res
+            return self.alipay_api_response
 
-    def get_alipay_id_res(self):
+    def alipay_api_response(self):
         """
         :return: alipay_id_res which includes id.
         """
-        if self.token_version == constants.GET_RES_FROM_ALIPAY:
-            resp = alipay_sdk.get_alipay_id_res(app_id=self.app_id,
-                                                app_private_key=self.app_private_key,
-                                                alipay_public_key=self.alipay_public_key)
+        if self.requie_type == constants.CHECK_ID_SECRET_VALID:
+            resp = alipay_sdk.alipay_api_response(app_id=self.app_id,
+                                                  app_private_key=self.app_private_key,
+                                                  alipay_public_key=self.alipay_public_key)
         else:
             raise APICallError('wrong param value token_version, value should be 1')
 
