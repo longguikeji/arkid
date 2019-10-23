@@ -1,6 +1,7 @@
 FROM python:3.6 as build_deps
 EXPOSE 80
 WORKDIR /var/oneid
+ADD devops/pip.conf /etc/pip.conf
 ADD requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 

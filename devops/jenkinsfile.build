@@ -3,6 +3,7 @@ pipeline {
 
     // global properties
     // - DING_TALK_ENTRYPOINT
+    // - PYPI_REGISTRY
 
     environment {
         GIT_SHORT_COMMIT = """${sh(
@@ -20,6 +21,7 @@ pipeline {
         stage('pre') {
             steps {
                 sendDingTalk("pending", "开始构建")
+                replacePyPIRegistry()
             }
         }
         stage('build') {
@@ -40,6 +42,20 @@ pipeline {
             sendDingTalk("failure", "构建失败")
         }
     }
+}
+
+def replacePyPIRegistry(){
+    hostname = sh (
+        returnStdout: true,
+        script: "python -c \"from urlparse import urlparse;print urlparse('${env.PYPI_REGISTRY}').hostname\" ",
+    ).trim()
+    sh """
+    cat > devops/pip.conf << EOF
+[global]
+index-url = ${env.PYPI_REGISTRY}
+trusted-host = ${hostname}
+EOF
+    """
 }
 
 def sendDingTalk(status, message) {

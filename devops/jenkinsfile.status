@@ -1,6 +1,9 @@
 pipeline {
     agent any
 
+    // global properties
+    // - PYPI_REGISTRY
+
     environment {
         GIT_SHORT_COMMIT = """${sh(
             returnStdout: true,
@@ -10,6 +13,11 @@ pipeline {
         DOCKER_IMAGE_DEV_VERSION = "dev-${env.BUILD_NUMBER}-${env.GIT_SHORT_COMMIT}"
     }
     stages {
+        stage('pre'){
+            steps{
+                replacePyPIRegistry()
+            }
+        }
         stage('ci'){
             steps{
                 ci()
@@ -21,6 +29,20 @@ pipeline {
             updateGithubCommitStatus()
         }
     }
+}
+
+def replacePyPIRegistry(){
+    hostname = sh (
+        returnStdout: true,
+        script: "python -c \"from urlparse import urlparse;print urlparse('${env.PYPI_REGISTRY}').hostname\" ",
+    ).trim()
+    sh """
+    cat > devops/pip.conf << EOF
+[global]
+index-url = ${env.PYPI_REGISTRY}
+trusted-host = ${hostname}
+EOF
+    """
 }
 
 def ci() {
