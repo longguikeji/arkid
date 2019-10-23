@@ -11,13 +11,9 @@ class DingIdManager():
     '''
     从第三方获取user_id
     '''
-
-    def __init__(self,
-                code,
-                token_version=constants.USER_ID_FROM_CODE
-                ):
+    def __init__(self, code, require_type=constants.USER_ID_FROM_CODE):
         self.code = code
-        self.token_version = token_version
+        self.require_type = require_type
         self.ding_id = None
         self.expired_time = None
 
@@ -25,29 +21,26 @@ class DingIdManager():
         '''
         从钉钉获取dingId
         '''
-        if self.token_version == constants.USER_ID_FROM_CODE:
+        if self.require_type == constants.USER_ID_FROM_CODE:
             appid = DingConfig.get_current().qr_app_id
             appsecret = DingConfig.get_current().qr_app_secret
             access_token = requests.get(constants.QR_GET_ACCESS_TOKEN_URL, params={'appid':appid,\
                 'appsecret':appsecret}).json()['access_token']
             get_psstt_code = requests.post(constants.QR_GET_PSSTT_CODE_URL, params={'access_token':access_token},\
-            json={'tmp_auth_code':self.code})
+            data={'tmp_auth_code':self.code})
             openid = get_psstt_code.json()['openid']
             persistent_code = get_psstt_code.json()['persistent_code']
             sns_token = requests.post(constants.QR_GET_SNS_TOKEN_URL, params={'access_token':access_token},\
-            json={'openid':openid, 'persistent_code':persistent_code}).json()['sns_token']
+            data={'openid':openid, 'persistent_code':persistent_code}).json()['sns_token']
             resp = requests.get(constants.QR_GET_USER_INFO_URL,\
                 params={'sns_token': sns_token}).json()
         else:
-            raise APICallError(
-                'wrong param value token_version, value should be 1')
+            raise APICallError('wrong param value token_version, value should be 1')
 
         errcode = resp.get('errcode', '')
         errmsg = resp.get('errmsg', '')
 
         if errcode != 0:
-            raise APICallError(
-                'Failed to get user id,code:%s, msg:%s' % (errcode,
-                                                           errmsg))
+            raise APICallError('Failed to get user id,code:%s, msg:%s' % (errcode, errmsg))
         self.ding_id = resp.get('user_info', '')['dingId']
         return self.ding_id
