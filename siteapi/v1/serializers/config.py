@@ -47,7 +47,6 @@ class AccountConfigSerializer(DynamicFieldsModelSerializer):
             'allow_email',
             'allow_ding_qr',
             'allow_alipay_qr',
-            'allow_work_wechat_qr',
         )
 
 
@@ -112,7 +111,6 @@ class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
             'support_mobile_register',
             'support_ding_qr',
             'support_alipay_qr',
-            'support_work_wechat_qr',
         )
 
 
@@ -250,7 +248,6 @@ class MetaConfigSerializer(DynamicFieldsModelSerializer):
             'ding_config',
             'account_config',
             'alipay_config',
-            'work_wechat_config',
         )
 
 
