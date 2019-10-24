@@ -1,15 +1,13 @@
 '''
 外部网站信息返回校验
 '''
-from alipay.aop.api.exception.Exception import AopException
-
 from rest_framework import serializers
 
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 
 from oneid_meta.models import AlipayConfig, DingConfig
 
-from thirdparty_data_sdk.alipay_api.alipay_res_manager import AlipayResManager
+from thirdparty_data_sdk.alipay_api.alipay_sdk_manager import AlipayResManager
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 from thirdparty_data_sdk.dingding.dingsdk import constants
@@ -175,9 +173,6 @@ class AlipayConfigSerializer(DynamicFieldsModelSerializer):
         '''
         validate app_private_key ,alipay_publice_key
         '''
-        try:
-            AlipayResManager(instance.app_id, instance.app_private_key,\
-                instance.alipay_public_key).alipay_api_response()
-            return True
-        except AopException:
-            return False
+        is_valid = AlipayResManager(instance.app_id, instance.app_private_key,\
+                instance.alipay_public_key).check_config_valid()
+        return is_valid

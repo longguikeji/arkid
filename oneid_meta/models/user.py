@@ -519,4 +519,4 @@ class AlipayUser(BaseModel):
     支付宝用户
     '''
     user = models.OneToOneField(User, verbose_name='用户', related_name='alipay_user', on_delete=models.PROTECT)
-    alipay_id = models.TextField(max_length=255, blank=True, verbose_name='支付宝ID')
+    alipay_user_id = models.TextField(max_length=255, blank=True, verbose_name='支付宝ID')

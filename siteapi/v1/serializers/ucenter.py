@@ -388,7 +388,7 @@ class AlipayRegisterAndBindSerializer(DynamicFieldsModelSerializer):    # pylint
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
     sms_token = serializers.CharField(required=True)
-    alipay_id = serializers.CharField(required=True)
+    alipay_user_id = serializers.CharField(required=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = User
@@ -397,7 +397,7 @@ class AlipayRegisterAndBindSerializer(DynamicFieldsModelSerializer):    # pylint
             'username',
             'password',
             'sms_token',
-            'alipay_id',
+            'alipay_user_id',
         )
 
     def validate(self, attrs):
@@ -437,11 +437,11 @@ class AlipayBindSerializer(serializers.Serializer):    # pylint: disable=abstrac
     '''
     alipay bind
     - by sms_token
-    - by alipay_id
+    - by alipay_user_id
     '''
 
     sms_token = serializers.CharField(required=True)
-    alipay_id = serializers.CharField(required=True)
+    alipay_user_id = serializers.CharField(required=True)
 
     class Meta:
         '''
@@ -450,7 +450,7 @@ class AlipayBindSerializer(serializers.Serializer):    # pylint: disable=abstrac
         model = AlipayUser
         fields = (
             'sms_token',
-            'alipay_id',
+            'alipay_user_id',
         )
 
     def validate(self, attrs):

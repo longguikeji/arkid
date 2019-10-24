@@ -47,15 +47,15 @@ def require_alipay_qr_supported(func):
     return inner
 
 
-def user_exists(request):
+def check_user_exists(request):
     '''
     查询用户是否注册
     '''
-    sms_token = request.data.get('sms_token', '')
+    sms_token = request.data.get('sms_token', None)
     if sms_token:
         mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
         exist = User.valid_objects.filter(mobile=mobile).exists()
-        return Response({'exist': exist})
+        return exist
     raise ValidationError({'sms_token': ["sms_token invalid"]})
 
 
@@ -73,10 +73,9 @@ class DingQrCallbackView(APIView):
         处理钉钉用户扫码之后重定向到‘首页’或‘绑定页面’
         '''
 
-        state = request.data.get('state')
         code = request.data.get('code')
 
-        if state == 'STATE' and code != '':
+        if code != '':
             try:
                 ding_id = DingIdManager(code).get_ding_id()
             except Exception:    # pylint: disable=broad-except
@@ -110,7 +109,7 @@ class QrQueryUserAPIView(GenericAPIView):
     authentication_classes = []
 
     def post(self, request):    # pylint: disable=no-self-use, missing-docstring
-        return user_exists(request)
+        return Response({'exist': check_user_exists(request)})
 
 
 class DingBindAPIView(GenericAPIView):
@@ -194,46 +193,45 @@ class AlipayQrCallbackView(APIView):
         处理支付宝用户扫码之后重定向到‘首页’或‘绑定页面’
         '''
         auth_code = request.data.get('auth_code', None)
-        app_id = request.data.get('app_id', None)
-
+        app_id = AlipayConfig.get_current().app_id
         if auth_code and app_id:
-            alipay_id = self.get_alipay_id(auth_code, app_id)
+            alipay_user_id = self.get_alipay_user_id(auth_code, app_id)
         else:
             raise ValidationError({'auth_code and app_id': ['auth_code and app_id are required']})
 
-        context = self.get_token(alipay_id)
+        context = self.get_token(alipay_user_id)
 
         return Response(context, HTTP_200_OK)
 
-    def get_token(self, alipay_id):    # pylint: disable=no-self-use
+    def get_token(self, alipay_user_id):    # pylint: disable=no-self-use
         '''
         从AlipayUser表查询用户，返回token
         '''
-        alipay_user = AlipayUser.valid_objects.filter(alipay_id=alipay_id).first()
+        alipay_user = AlipayUser.valid_objects.filter(alipay_user_id=alipay_user_id).first()
         if alipay_user:
             user = alipay_user.user
             token = user.token
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
-            context = {'token': '', 'alipay_id': alipay_id}
+            context = {'token': '', 'alipay_user_id': alipay_user_id}
         return context
 
-    def get_alipay_id(self, auth_code, app_id):    # pylint: disable=no-self-use
+    def get_alipay_user_id(self, auth_code, app_id):    # pylint: disable=no-self-use
         '''
         获取支付宝用户id
         '''
-        alipay_id = ''
+        alipay_user_id = ''
         current_app = AlipayConfig.get_current()
         if current_app:
             app_private_key = current_app.app_private_key
             alipay_public_key = current_app.alipay_public_key
             if app_private_key not in ['', None] and alipay_public_key not in ['', None]:
                 try:
-                    alipay_id = alipay_sdk.get_alipay_id(auth_code, app_id,\
-                        app_private_key, alipay_public_key)
-                except Exception:
-                    raise ValidationError({'err_msg': 'get alipay id error'}, HTTP_400_BAD_REQUEST)
-        return alipay_id
+                    alipay_user_id = alipay_sdk.get_alipay_user_id(app_id,\
+                        app_private_key, alipay_public_key, auth_code)
+                except Exception as err:
+                    raise ValidationError({err})
+        return alipay_user_id
 
 
 class AlipayBindAPIView(GenericAPIView):
@@ -253,12 +251,12 @@ class AlipayBindAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        alipay_id = serializer.validated_data['alipay_id']
+        alipay_user_id = serializer.validated_data['alipay_user_id']
         alipay_user = AlipayUser.objects.filter(user=user).first()
         if alipay_user:
-            alipay_user.alipay_id = alipay_id
+            alipay_user.alipay_user_id = alipay_user_id
         else:
-            alipay_user = AlipayUser.objects.create(alipay_id=alipay_id, user=user)
+            alipay_user = AlipayUser.objects.create(alipay_user_id=alipay_user_id, user=user)
         alipay_user.save()
         token = user.token
         data = {'token': token, **UserWithPermSerializer(user).data}
@@ -292,8 +290,8 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
         cli.add_users_to_group([user], Group.get_extern_root())
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
-        alipay_id = serializer.validated_data['alipay_id']
-        alipay_user = AlipayUser.objects.create(alipay_id=alipay_id, user=user)
+        alipay_user_id = serializer.validated_data['alipay_user_id']
+        alipay_user = AlipayUser.objects.create(alipay_user_id=alipay_user_id, user=user)
         alipay_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 

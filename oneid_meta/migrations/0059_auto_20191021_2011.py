@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True, verbose_name='是否可用')),
                 ('updated', models.DateTimeField(auto_now=True, null=True, verbose_name='更新时间')),
                 ('created', models.DateTimeField(auto_now_add=True, null=True, verbose_name='创建时间')),
-                ('alipay_id', models.TextField(blank=True, max_length=255, verbose_name='支付宝ID')),
+                ('alipay_user_id', models.TextField(blank=True, max_length=255, verbose_name='支付宝用户ID')),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, related_name='alipay_user', to='oneid_meta.User', verbose_name='用户')),
             ],
             options={

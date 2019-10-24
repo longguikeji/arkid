@@ -2147,7 +2147,7 @@ Content-Disposition: form-data; name='node_uid'
 + Response 200 (application/json)
     + Attributes
         + token （string) - 未匹配用户，返回空字段token
-        + alipay_id (string) - 返回支付宝user_id，用于下一步提交绑定
+        + alipay_user_id (string) - 返回支付宝user_id，用于下一步提交绑定
 
 + Response 400 (application/json)
     + Attributes
@@ -2162,7 +2162,7 @@ Content-Disposition: form-data; name='node_uid'
 ### 绑定用户 [POST]
 + Request JSON Message
     + Attributes
-        + alipay_id (string) - 支付宝用户扫码时查询返回的alipay_id
+        + alipay_user_id (string) - 支付宝用户扫码时查询返回的alipay_user_id
         + sms_token (string) - 用户手机发短信后返回的sms_token
 
 + Response 201 (application/json)
@@ -2180,7 +2180,7 @@ Content-Disposition: form-data; name='node_uid'
         + username (string)
         + password (string) 
         + sms_token (string) - 绑定页面验证用户手机的sms_token
-        + alipay_id (string) - 从支付宝查询的扫码用户的alipay_id
+        + alipay_user_id (string) - 从支付宝查询的扫码用户的alipay_user_id
 
 + Response 201 (application/json)
     + Attributes (UserWithPermWithToken)
