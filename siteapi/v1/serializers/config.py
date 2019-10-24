@@ -6,12 +6,12 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
-                               AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig)
+                               AccountConfig, SMSConfig, EmailConfig)
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from infrastructure.serializers.sms import SMSClaimSerializer
 from siteapi.v1.views.utils import gen_uid
 from siteapi.v1.serializers.qr_app_config import PublicAlipayConfigSerializer, PublicDingConfigSerializer,\
-    PublicWorkWechatConfigSerializer, AlipayConfigSerializer, DingConfigSerializer, WorkWechatConfigSerializer
+    AlipayConfigSerializer, DingConfigSerializer
 from executer.core import CLI
 
 
@@ -127,14 +127,13 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
     sms_config = SMSConfigSerializer(many=False, required=False)
     email_config = EmailConfigSerializer(many=False, required=False)
     alipay_config = AlipayConfigSerializer(many=False, required=False)
-    work_wechat_config = WorkWechatConfigSerializer(many=False, required=False)
 
     class Meta:    # pylint: disable=missing-docstring
 
         model = Site
 
         fields = ('company_config', 'ding_config', 'account_config', 'sms_config',\
-            'email_config', 'alipay_config', 'work_wechat_config')
+            'email_config', 'alipay_config')
 
     @transaction.atomic()
     def update(self, instance, validated_data):    # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -207,13 +206,6 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-        work_wechat_config_data = validated_data.pop('work_wechat_config', None)
-        if work_wechat_config_data:
-            serializer = WorkWechatConfigSerializer(WorkWechatConfig.get_current(),\
-                work_wechat_config_data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
         instance.refresh_from_db()
 
         return instance
@@ -248,7 +240,6 @@ class MetaConfigSerializer(DynamicFieldsModelSerializer):
     ding_config = PublicDingConfigSerializer(many=False, required=False, read_only=True)
     account_config = PublicAccountConfigSerializer(many=False, required=False, read_only=True)
     alipay_config = PublicAlipayConfigSerializer(many=False, required=False, read_only=True)
-    work_wechat_config = PublicWorkWechatConfigSerializer(many=False, required=False, read_only=True)
 
     class Meta:    # pylint: disable=missing-docstring
 

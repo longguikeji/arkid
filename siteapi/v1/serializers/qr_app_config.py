@@ -1,14 +1,13 @@
 '''
 外部网站信息返回校验
 '''
-import requests
 from alipay.aop.api.exception.Exception import AopException
 
 from rest_framework import serializers
 
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 
-from oneid_meta.models import AlipayConfig, DingConfig, WorkWechatConfig
+from oneid_meta.models import AlipayConfig, DingConfig
 
 from thirdparty_data_sdk.alipay_api.alipay_res_manager import AlipayResManager
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
@@ -43,17 +42,6 @@ class PublicAlipayConfigSerializer(DynamicFieldsModelSerializer):
         model = AlipayConfig
 
         fields = ('app_id', )
-
-
-class PublicWorkWechatConfigSerializer(DynamicFieldsModelSerializer):
-    '''
-    serializer for WorkWechatConfig
-    '''
-    class Meta:    # pylint: disable=missing-docstring
-
-        model = WorkWechatConfig
-
-        fields = ('corp_id', 'agent_id')
 
 
 class DingConfigSerializer(DynamicFieldsModelSerializer):
@@ -193,47 +181,3 @@ class AlipayConfigSerializer(DynamicFieldsModelSerializer):
             return True
         except AopException:
             return False
-
-
-class WorkWechatConfigSerializer(DynamicFieldsModelSerializer):
-    '''
-    serializer for AlipayConfig
-    '''
-    secret = serializers.CharField(write_only=True)
-
-    class Meta:    # pylint: disable=missing-docstring
-
-        model = WorkWechatConfig
-
-        fields = (
-            'corp_id',
-            'secret',
-            'agent_id',
-            'qr_app_valid',
-        )
-
-        read_only_fields = ('qr_app_valid', )
-
-    def update(self, instance, validated_data):
-        '''
-        - update data
-        - validated updated data
-        '''
-        instance.__dict__.update(validated_data)
-        instance.qr_app_valid = self.validate_qr_app_config(instance)
-        update_fields = ['qr_app_valid']
-        update_fields += ['corp_id', 'agent_id', 'secret'] if instance.qr_app_valid else []
-        instance.save(update_fields=update_fields)
-        instance.refresh_from_db()
-        return instance
-
-    @staticmethod
-    def validate_qr_app_config(instance):
-        '''
-        validate app_private_key ,alipay_publice_key
-        '''
-        get_token_errcode = requests.get('https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s'\
-            %(instance.corp_id, instance.secret)).json()['errcode']
-        if get_token_errcode == '0':
-            return True
-        return False

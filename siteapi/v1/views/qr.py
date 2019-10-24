@@ -1,7 +1,6 @@
 '''
 扫码登录视图
 '''
-import requests
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from rest_framework import generics, status
@@ -19,7 +18,7 @@ from infrastructure.serializers.sms import SMSClaimSerializer
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser, AlipayUser, WorkWechatUser
+from oneid_meta.models import User, Group, DingUser, AlipayUser
 
 from oneid_meta.models.config import AlipayConfig, AccountConfig
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
@@ -301,49 +300,3 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
     def perform_create(self, serializer):
         super().perform_create(serializer.instance)
         LOG_CLI(serializer.instance).user_register()
-
-
-class WorkWechatQrCallbackView(APIView):
-    '''
-    work/wechat/qr/callback/
-    企业微信用户扫码登录
-    '''
-    permission_classes = []
-    authentication_classes = []
-
-    def post(self, request):
-        '''
-        处理企业微信用户扫码之后重定向页面
-        '''
-        state = request.data.get('state')
-        code = request.data.get('code')
-
-        if code not in ['', None] and state == 'STATE':
-            try:
-                corp_id = 'ww35674e4bb4266274'
-                secret = '728Z3ClSj3PvZBcEQ0-E5V_I1rPGTIOIz4OLon2GJIk'
-                access_token = requests.get('https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s'\
-                    %(corp_id, secret))['access_token']
-                work_wechat_user_id = requests.get('https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?\
-                    access_token=%s&code=%s' % (access_token, code))["UserId"]
-            except Exception:    # pylint: disable=broad-except
-                return Response(({'err_msg': 'get work wechat id time out'}, HTTP_408_REQUEST_TIMEOUT))
-        else:
-            return Response({'err_msg': 'get tmp code error'}, HTTP_400_BAD_REQUEST)
-
-        context = self.get_token(work_wechat_user_id)
-
-        return Response(context, HTTP_200_OK)
-
-    def get_token(self, work_wechat_user_id):    # pylint: disable=no-self-use
-        '''
-        从DingUser表查询用户，返回token
-        '''
-        work_wechat_user = WorkWechatUser.valid_objects.filter(work_wechat_user_id=work_wechat_user_id).first()
-        if work_wechat_user:
-            user = work_wechat_user.user
-            token = user.token
-            context = {'token': token, **UserWithPermSerializer(user).data}
-        else:
-            context = {'token': '', 'work_wechat_user_id': work_wechat_user_id}
-        return context
