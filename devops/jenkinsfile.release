@@ -15,15 +15,24 @@ pipeline {
         DEV_DOCKER_IMAGE="harbor.longguikeji.com/ark-releases/arkid:${params.DEV_VERSION}"
         STAGE_DOCKER_IMAGE="harbor.longguikeji.com/ark-releases/arkid:${params.PROD_VERSION}"
         PROD_DOCKER_IMAGE="longguikeji/arkid:${params.PROD_VERSION}"
+
+        SSH_CREDENTIAL = 'devops-longguikeji-github-sshkey'
+        GITHUB_TOKEN = credentials('devops-longguikeji-github-token')
+
+        REPO_NAME = """${sh(
+            returnStdout: true,
+            script: "git remote show origin -n |  grep h.URL | sed 's/.*://;s/.git//' ",
+        ).trim()}"""
     }
     stages {
         stage('pre') {
-            steps{
+            steps {
                 sendDingTalk("pending", "开始构建")
             }
         }
         stage("release docker image") {
             steps {
+                echo "release docker image"
                 withDockerRegistry([credentialsId: "${DOCKER_DEV_REGISTRY_CREDENTIAL}", url: "${DOCKER_DEV_REGISTRY}"]){
                     sh """
                     docker pull ${env.DEV_DOCKER_IMAGE}
@@ -37,12 +46,28 @@ pipeline {
                     docker push ${env.PROD_DOCKER_IMAGE}
                     """
                 }
-                echo "release docker image"
             }
         }
         stage("release src") {
+            agent {
+                docker {
+                    image "longguikeji/ark-conventional-changelog:0.1.0"
+                    reuseNode true
+                }
+            }
             steps {
-                echo "TODO: release src"
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: "${env.SSH_CREDENTIAL}",
+                    keyFileVariable: "SSH_KEY",
+                    usernameVariable: "SSH_USER",
+                )]) {
+                    sh """
+                    mkdir ~/.ssh
+                    cp ${env.SSH_KEY} ~/.ssh/id_rsa
+                    ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+                    """
+                }
+                releaseSRC()
             }
         }
     }
@@ -55,6 +80,45 @@ pipeline {
         }
     }
 }
+
+def releaseSRC(){
+    changelog = getChangelog()
+    createTag()
+    createGitHubRelease(changelog)
+}
+
+def getChangelog(){
+    changelog = sh(
+        returnStdout: true,
+        script: 'conventional-changelog -p angular',
+    ).trim()
+    return changelog
+}
+
+def createTag(){
+    sh """
+    git tag -f v${params.PROD_VERSION}
+    git push origin v${params.PROD_VERSION}
+    """
+}
+
+def createGitHubRelease(changelog){
+    sh """
+    python -c \"
+import json; print(json.dumps({
+    'tag_name': 'v${params.PROD_VERSION}',
+    'name': 'v${params.PROD_VERSION}',
+    'body': '''${changelog}''',
+    'draft': True,
+})) \" |
+    curl -X POST \
+    https://api.github.com/repos/${env.REPO_NAME}/releases \
+    -H "authorization: token ${env.GITHUB_TOKEN}" \
+    -H "content-type: application/json" \
+    -d @-
+    """
+}
+
 
 def sendDingTalk(status, message) {
     if (status == "success") {
