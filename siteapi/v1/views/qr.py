@@ -22,7 +22,7 @@ from oneid_meta.models import User, Group, DingUser, AlipayUser
 
 from oneid_meta.models.config import AlipayConfig, AccountConfig
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
-from thirdparty_data_sdk.alipay_api import alipay_sdk
+from thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
 
 
 def require_ding_qr_supported(func):
@@ -227,7 +227,7 @@ class AlipayQrCallbackView(APIView):
             alipay_public_key = current_app.alipay_public_key
             if app_private_key not in ['', None] and alipay_public_key not in ['', None]:
                 try:
-                    alipay_user_id = alipay_sdk.get_alipay_user_id(app_id,\
+                    alipay_user_id = alipay_user_id_sdk.get_alipay_user_id(app_id,\
                         app_private_key, alipay_public_key, auth_code)
                 except Exception as err:
                     raise ValidationError({err})

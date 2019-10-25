@@ -29,7 +29,7 @@ class UCenterTestCase(TestCase):
         alipay_config.qr_app_valid = True
         alipay_config.save()
 
-    @mock.patch("thirdparty_data_sdk.alipay_api.alipay_sdk.get_alipay_user_id")
+    @mock.patch("thirdparty_data_sdk.alipay_api.alipay_user_id_sdk.get_alipay_user_id")
     def test_alipay_qr_login(self, mock_get_alipay_user_id):
         alipay_config = AlipayConfig.get_current()
         alipay_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\
@@ -49,7 +49,7 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertIn('token', res.json())
 
-    @mock.patch("thirdparty_data_sdk.alipay_api.alipay_sdk.get_alipay_user_id")
+    @mock.patch("thirdparty_data_sdk.alipay_api.alipay_user_id_sdk.get_alipay_user_id")
     def test_alipay_qr_login_newuser(self, mock_get_alipay_user_id):    # pylint: disable=invalid-name
         alipay_config = AlipayConfig.get_current()
         alipay_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\

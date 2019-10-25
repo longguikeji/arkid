@@ -14,7 +14,7 @@ from common.Email.email_manager import EmailManager
 
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPID_QR_APP_SECRET
-from thirdparty_data_sdk.alipay_api.alipay_sdk_manager import AlipayResManager
+from thirdparty_data_sdk.alipay_api.alipay_oauth_manager import AlipayOauthManager
 
 
 class SingletonConfigMixin:
@@ -322,7 +322,7 @@ class AlipayConfig(BaseModel, SingletonConfigMixin):
         '''
         检查配置是否有效
         '''
-        is_valid = AlipayResManager(app_id=self.app_id, app_private_key=self.app_private_key,\
+        is_valid = AlipayOauthManager(app_id=self.app_id, app_private_key=self.app_private_key,\
             alipay_public_key=self.alipay_public_key).check_config_valid()
         return is_valid
 
