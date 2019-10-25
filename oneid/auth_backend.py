@@ -14,7 +14,6 @@ class OneIDBasicAuthBackend:
     - 是否删除
     - 是否可用
     '''
-
     def authenticate(self, request, username=None, password=None):    # pylint: disable=no-self-use,unused-argument
         '''
         return user if success else None

@@ -32,6 +32,7 @@ django-jsonfield = "==1.2.0"
 minio = "==4.0.18"
 cryptography = "==2.7"
 django-redis = "==4.10.0"
+alipay-sdk-python = "==3.3.202"
 
 [dev-packages]
 ipython = "*"
