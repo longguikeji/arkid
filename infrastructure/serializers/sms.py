@@ -5,6 +5,8 @@ import random
 import string    # pylint:disable=deprecated-module
 import time
 
+import re
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
@@ -66,7 +68,6 @@ class SMSClaimSerializer(serializers.Serializer):
         '''
         校验手机
         '''
-        import re
         if re.match(r'^1[\d]{10}$', value):
             return value
         raise ValidationError('invalid')
