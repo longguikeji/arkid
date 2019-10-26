@@ -23,6 +23,12 @@ pipeline {
             returnStdout: true,
             script: "git remote show origin -n |  grep h.URL | sed 's/.*://;s/.git//' ",
         ).trim()}"""
+
+        GIT_SHORT_COMMIT = """${sh(
+            returnStdout: true,
+            script: "echo '${params.DEV_VERSION}' | tr '-' '\\n' | sed -n '\$p'"
+        )}
+        """
     }
     stages {
         stage('pre') {
@@ -97,7 +103,7 @@ def getChangelog(){
 
 def createTag(){
     sh """
-    git tag -f v${params.PROD_VERSION}
+    git tag -f v${params.PROD_VERSION} ${env.GIT_SHORT_COMMIT}
     git push origin v${params.PROD_VERSION}
     """
 }
