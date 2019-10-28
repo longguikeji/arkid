@@ -59,7 +59,7 @@ class UCenterTestCase(TestCase):
         client = self.client
         res = client.post(reverse('siteapi:alipay_qr_callback'),\
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
-        expect = {'token': '', 'alipay_user_id': 'unregistered_alipay_user_id'}
+        expect = {'token': '', 'user_id': 'unregistered_alipay_user_id'}
         self.assertEqual(res.json(), expect)
 
     def test_alipay_qr_login_forbidden(self):
@@ -84,7 +84,7 @@ class UCenterTestCase(TestCase):
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         mock_clear_sms_token.return_value = None
         res = client.post(reverse('siteapi:alipay_bind'), data={'sms_token':\
-            'test_sms_token', 'alipay_user_id':'test_alipay_user_id'})
+            'test_sms_token', 'user_id':'test_alipay_user_id'})
         self.assertEqual(res.status_code, 201)
         self.assertIn('token', res.json())
 
@@ -99,7 +99,7 @@ class UCenterTestCase(TestCase):
                               'username': 'username',
                               'password': 'password',
                               'sms_token': 'test_sms_token',
-                              'alipay_user_id': 'test_alipay_user_id'
+                              'user_id': 'test_alipay_user_id'
                           })
         self.assertEqual(res.status_code, 201)
         self.assertIn('token', res.json())

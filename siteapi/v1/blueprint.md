@@ -453,18 +453,23 @@ FORMAT: 1A
 ## AlipayMetaInfo (object)
 + app_id (string)
 
+## WorkWechatMetaInfo (object)
++ corp_id (string)
+
 ## AccountMetaInfo (object)
 + support_email (boolean) - 是否支持邮箱登录、找回密码、激活
 + support_mobile (boolean) - 是否支持手机登录、找回密码、激活
 + support_email_register (boolean) - 是否支持邮箱注册
 + support_mobile_register (boolean) - 是否支持手机注册
 + support_ding_qr (boolean) - 是否支持钉钉扫码登录
++ support_work_wechat_qr (boolean) - 是否支持企业微信扫码登录
 
 ## MetaInfo (object)
 + company_config (CompanyMetaInfo)
 + ding_config (DingMetaInfo)
 + account_config (AccountMetaInfo)
-+ alipay_config (AlipaymetaInfo)
++ alipay_config (AlipayMetaInfo)
++ work_wechat_config (WorkWechatMetaInfo)
 
 ## MetaNodeInfo (object)
 + name (string)
@@ -2188,3 +2193,62 @@ Content-Disposition: form-data; name='node_uid'
 + Response 403 (application/json)
     + Attributes
         + err_msg (string) - 'alipay qr not allowed'
+
+
+# 企业微信扫码登录
+
+## 扫码回调函数 [/work_wechat/qr/callback/{?code}]
++ Parameters
+    + code (string) - 企业微信扫码返回一次性查询码code
+
+### 获取权限 [POST]
++ Requests JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 200 (application/json)
+    + Attributes
+        + token （string) - 未匹配用户，返回空字段token
+        + work_wechat_user_id (string) - 返回企业微信user_id，用于下一步提交绑定
+
++ Response 400 (application/json)
+    + Attributes
+        + err_msg (string) - 'get work_wechat id error'
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'work_wechat qr not allowed'
+
+## 企业微信用户绑定 [/work_wechat/bind/]
+
+### 绑定用户 [POST]
++ Request JSON Message
+    + Attributes
+        + work_wechat_user_id (string) - 企业微信用户扫码时查询返回的work_wechat_user_id
+        + sms_token (string) - 用户手机发短信后返回的sms_token
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'work_wechat qr not allowed'
+
+## 企业微信用户注册加绑定 [/work_wechat/register/bind/]
+
+### 注册加绑定 [POST]
++ Request JSON Message
+    + Attributes
+        + username (string)
+        + password (string) 
+        + sms_token (string) - 绑定页面验证用户手机的sms_token
+        + work_wechat_user_id (string) - 从企业微信查询的扫码用户的work_wechat_user_id
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'work_wechat qr not allowed'
