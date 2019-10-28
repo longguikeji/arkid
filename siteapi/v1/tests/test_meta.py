@@ -3,7 +3,7 @@
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig, AlipayConfig
+from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig, AlipayConfig, WorkWechatConfig
 
 
 class MetaTestCase(TestCase):
@@ -16,6 +16,7 @@ class MetaTestCase(TestCase):
         account_config = AccountConfig.get_current()
         account_config.allow_ding_qr = True
         account_config.allow_alipay_qr = True
+        account_config.allow_work_wechat_qr = True
         account_config.save()
         company_config = CompanyConfig.get_current()
         company_config.fullname_cn = "demo"
@@ -29,6 +30,12 @@ class MetaTestCase(TestCase):
         alipay_config.app_id = 'test_app_id'
         alipay_config.qr_app_valid = True
         alipay_config.save()
+
+        work_wechat_config = WorkWechatConfig.get_current()
+        work_wechat_config.corp_id = 'test_corp_id'
+        work_wechat_config.agent_id = 'test_agent_id'
+        work_wechat_config.qr_app_valid = True
+        work_wechat_config.save()
 
         res = self.anonymous.get(reverse('siteapi:meta'))
         expect = {
@@ -55,9 +62,14 @@ class MetaTestCase(TestCase):
                 'support_mobile_register': False,
                 'support_ding_qr': True,
                 'support_alipay_qr': True,
+                'support_work_wechat_qr': True,
             },
             'alipay_config': {
                 'app_id': 'test_app_id',
+            },
+            'work_wechat_config': {
+                'corp_id': 'test_corp_id',
+                'agent_id': 'test_agent_id'
             }
         }
         self.assertEqual(res.json(), expect)

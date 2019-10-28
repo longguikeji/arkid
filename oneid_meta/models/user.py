@@ -520,3 +520,11 @@ class AlipayUser(BaseModel):
     '''
     user = models.OneToOneField(User, verbose_name='用户', related_name='alipay_user', on_delete=models.PROTECT)
     alipay_user_id = models.TextField(max_length=255, blank=True, verbose_name='支付宝ID')
+
+
+class WorkWechatUser(BaseModel):
+    '''
+    企业微信用户
+    '''
+    user = models.OneToOneField(User, verbose_name='用户', related_name='work_wechat_user', on_delete=models.PROTECT)
+    work_wechat_user_id = models.TextField(max_length=255, blank=True, verbose_name='企业微信ID')
