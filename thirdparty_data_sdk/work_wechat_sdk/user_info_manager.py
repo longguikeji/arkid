@@ -25,9 +25,9 @@ def get_work_wechat_user_id(code, corp_id, secret):
 
 def check_valid(corp_id, secret):    # pylint: disable=missing-function-docstring
     try:
-        get_token_errcode = requests.get(constants.GET_TOKEN_URL,\
+        token_errcode = requests.get(constants.GET_TOKEN_URL,\
                 params={'corpid':corp_id, 'corpsecret':secret}).json()['errcode']
-        if get_token_errcode == 0:
+        if token_errcode == 0:
             return True
         return False
     except Exception:    # pylint: disable=broad-except

@@ -316,7 +316,7 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
 
 class WorkWechatQrCallbackView(APIView):
     '''
-    work/wechat/qr/callback/
+    work_wechat/qr/callback/
     企业微信用户扫码登录
     '''
     permission_classes = []

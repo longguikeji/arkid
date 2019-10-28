@@ -2197,7 +2197,7 @@ Content-Disposition: form-data; name='node_uid'
 
 # 企业微信扫码登录
 
-## 扫码回调函数 [/work/wechat/qr/callback/{?code}]
+## 扫码回调函数 [/work_wechat/qr/callback/{?code}]
 + Parameters
     + code (string) - 企业微信扫码返回一次性查询码code
 
