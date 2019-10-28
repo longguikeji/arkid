@@ -1,6 +1,7 @@
 '''
 扫码登录视图
 '''
+
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from rest_framework import generics, status
@@ -12,17 +13,19 @@ from rest_framework.response import Response
 from siteapi.v1.serializers.user import UserWithPermSerializer
 from siteapi.v1.serializers.ucenter import (DingRegisterAndBindSerializer, DingBindSerializer, AlipayBindSerializer,
                                             AlipayRegisterAndBindSerializer)
+from siteapi.v1.serializers.ucenter_work_wechat import WorkWechatRegisterAndBindSerializer, WorkWechatBindSerializer
 
 from infrastructure.serializers.sms import SMSClaimSerializer
 
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser, AlipayUser
+from oneid_meta.models import User, Group, DingUser, AlipayUser, WorkWechatUser
 
-from oneid_meta.models.config import AlipayConfig, AccountConfig
+from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
 from thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
+from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import get_work_wechat_user_id
 
 
 def require_ding_qr_supported(func):
@@ -47,16 +50,26 @@ def require_alipay_qr_supported(func):
     return inner
 
 
+def require_work_wechat_qr_supported(func):    # pylint: disable=invalid-name
+    '''
+    检查是否允许扫码登录
+    '''
+    def inner(self, request):
+        return Response({'err_msg':'work wechat qr not allowed'}, HTTP_403_FORBIDDEN)\
+            if not AccountConfig.get_current().support_work_wechat_qr else func(self, request)
+
+    return inner
+
+
 def check_user_exists(request):
     '''
     查询用户是否注册
     '''
-    sms_token = request.data.get('sms_token', None)
+    sms_token = request.data.get('sms_token', '')
     if sms_token:
         mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
         exist = User.valid_objects.filter(mobile=mobile).exists()
-        return exist
-    raise ValidationError({'sms_token': ["sms_token invalid"]})
+    return exist
 
 
 class DingQrCallbackView(APIView):
@@ -97,7 +110,7 @@ class DingQrCallbackView(APIView):
             token = user.token
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
-            context = {'token': '', 'ding_id': ding_id}
+            context = {'token': '', 'user_id': ding_id}
         return context
 
 
@@ -213,7 +226,7 @@ class AlipayQrCallbackView(APIView):
             token = user.token
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
-            context = {'token': '', 'alipay_user_id': alipay_user_id}
+            context = {'token': '', 'user_id': alipay_user_id}
         return context
 
     def get_alipay_user_id(self, auth_code, app_id):    # pylint: disable=no-self-use
@@ -293,6 +306,107 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
         alipay_user_id = serializer.validated_data['alipay_user_id']
         alipay_user = AlipayUser.objects.create(alipay_user_id=alipay_user_id, user=user)
         alipay_user.save()
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer.instance)
+        LOG_CLI(serializer.instance).user_register()
+
+
+class WorkWechatQrCallbackView(APIView):
+    '''
+    work/wechat/qr/callback/
+    企业微信用户扫码登录
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    @require_work_wechat_qr_supported
+    def post(self, request):
+        '''
+        处理企业微信用户扫码之后重定向页面
+        '''
+        code = request.data.get('code')
+        corp_id = WorkWechatConfig.get_current().corp_id
+        secret = WorkWechatConfig.get_current().secret
+        if code:
+            work_wechat_user_id = get_work_wechat_user_id(code, corp_id, secret)
+            context = self.get_token(work_wechat_user_id)
+        return Response(context, HTTP_200_OK)
+
+    def get_token(self, work_wechat_user_id):    # pylint: disable=no-self-use
+        '''
+        从DingUser表查询用户，返回token
+        '''
+        work_wechat_user = WorkWechatUser.valid_objects.filter(work_wechat_user_id=work_wechat_user_id).first()
+        if work_wechat_user:
+            user = work_wechat_user.user
+            token = user.token
+            context = {'token': token, **UserWithPermSerializer(user).data}
+        else:
+            context = {'token': '', 'user_id': work_wechat_user_id}
+        return context
+
+
+class WorkWechatBindAPIView(GenericAPIView):
+    '''
+    企业微信扫码绑定
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = WorkWechatBindSerializer
+
+    @require_work_wechat_qr_supported
+    def post(self, request):
+        '''
+        绑定用户
+        '''
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        work_wechat_user_id = serializer.validated_data['work_wechat_user_id']
+        work_wechat_user = WorkWechatUser.objects.filter(user=user).first()
+        if work_wechat_user:
+            work_wechat_user.work_wechat_user_id = work_wechat_user_id
+        else:
+            work_wechat_user = WorkWechatUser.objects.create(work_wechat_user_id=work_wechat_user_id, user=user)
+        work_wechat_user.save()
+        token = user.token
+        data = {'token': token, **UserWithPermSerializer(user).data}
+        LOG_CLI(user).user_login()
+        return Response(data, HTTP_201_CREATED)
+
+
+class WorkWechatRegisterAndBindView(generics.CreateAPIView):
+    '''
+    企业微信扫码注册加绑定
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = WorkWechatRegisterAndBindSerializer
+    read_serializer_class = UserWithPermSerializer
+
+    def create(self, request, *args, **kwargs):
+        '''
+        企业微信扫码绑定
+        '''
+        if not AccountConfig.get_current().support_work_wechat_qr_register:
+            return Response({'err_msg': 'work wechat qr register not allowed'}, HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        user.save()
+
+        cli = CLI(user)
+        cli.add_users_to_group([user], Group.get_extern_root())
+        data = self.read_serializer_class(user).data
+        data.update(token=user.token)
+        work_wechat_user_id = serializer.validated_data['work_wechat_user_id']
+        work_wechat_user = WorkWechatUser.objects.create(work_wechat_user_id=work_wechat_user_id, user=user)
+        work_wechat_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):

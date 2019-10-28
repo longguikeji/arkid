@@ -14,7 +14,6 @@ class DingIdManager():
     def __init__(self, code):
         self.code = code
         self.ding_id = None
-        self.expired_time = None
 
     def get_ding_id(self):
         '''
@@ -32,7 +31,6 @@ class DingIdManager():
             json={'openid':openid, 'persistent_code':persistent_code}).json()['sns_token']
         resp = requests.get(constants.QR_GET_USER_INFO_URL,\
             params={'sns_token': sns_token}).json()
-
         errcode = resp.get('errcode', '')
         errmsg = resp.get('errmsg', '')
 

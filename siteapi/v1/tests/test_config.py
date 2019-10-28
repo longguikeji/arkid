@@ -36,6 +36,7 @@ class ConfigTestCase(TestCase):
                 'allow_register': False,
                 'allow_ding_qr': False,
                 'allow_alipay_qr': False,
+                'allow_work_wechat_qr': False,
             },
             'sms_config': {
                 'access_key': '',
@@ -55,7 +56,8 @@ class ConfigTestCase(TestCase):
                 'port': 587,
                 'is_valid': False,
             },
-            'alipay_config': None
+            'alipay_config': None,
+            'work_wechat_config': None,
         }
         self.assertEqual(res.json(), expect)
 
@@ -94,6 +96,7 @@ class ConfigTestCase(TestCase):
                                              'allow_mobile': True,
                                              'allow_ding_qr': True,
                                              'allow_alipay_qr': False,
+                                             'allow_work_wechat_qr': True
                                          },
                                          'sms_config': {
                                              'access_key': 'access_key',
@@ -130,6 +133,7 @@ class ConfigTestCase(TestCase):
                 'allow_register': True,
                 'allow_ding_qr': True,
                 'allow_alipay_qr': False,
+                'allow_work_wechat_qr': True,
             },
             'sms_config': {
                 'access_key': 'access_key',
@@ -149,7 +153,8 @@ class ConfigTestCase(TestCase):
                 'port': 587,
                 'is_valid': True,
             },
-            'alipay_config': None
+            'alipay_config': None,
+            'work_wechat_config': None,
         }
 
         self.assertEqual(res.json(), expect)
@@ -185,6 +190,7 @@ class ConfigTestCase(TestCase):
             'support_mobile_register': False,
             'support_ding_qr': False,
             'support_alipay_qr': False,
+            'support_work_wechat_qr': False,
         }
         self.assertEqual(expect, res.json()['account_config'])
 
@@ -208,6 +214,7 @@ class ConfigTestCase(TestCase):
             'support_email_register': False,
             'support_mobile_register': False,
             'support_alipay_qr': False,
+            'support_work_wechat_qr': False,
         }
         self.assertEqual(expect, res.json()['account_config'])
 

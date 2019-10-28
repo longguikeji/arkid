@@ -299,11 +299,11 @@ class DingBindSerializer(serializers.Serializer):    # pylint: disable=abstract-
     '''
     dingding bind
     - by sms_token
-    - by ding_id
+    - by user_id
     '''
 
     sms_token = serializers.CharField(required=True)
-    ding_id = serializers.CharField(required=True)
+    user_id = serializers.CharField(required=True)
 
     class Meta:
         '''
@@ -312,7 +312,7 @@ class DingBindSerializer(serializers.Serializer):    # pylint: disable=abstract-
         model = DingUser
         fields = (
             'sms_token',
-            'ding_id',
+            'user_id',
         )
 
     def validate(self, attrs):
@@ -321,6 +321,7 @@ class DingBindSerializer(serializers.Serializer):    # pylint: disable=abstract-
         SMSClaimSerializer.clear_sms_token(validated_data['sms_token'])
         user = User.valid_objects.filter(mobile=mobile).first()
         validated_data['user'] = user
+        validated_data['ding_id'] = validated_data['user_id']
         return validated_data
 
     def update(self, instance, validated_data):
@@ -336,7 +337,7 @@ class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
     sms_token = serializers.CharField(required=True)
-    ding_id = serializers.CharField(required=True)
+    user_id = serializers.CharField(required=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = User
@@ -345,7 +346,7 @@ class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
             'username',
             'password',
             'sms_token',
-            'ding_id',
+            'user_id',
         )
 
     def validate(self, attrs):
@@ -365,7 +366,7 @@ class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
             mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
             SMSClaimSerializer.clear_sms_token(sms_token)
             validated_data['mobile'] = mobile
-
+        validated_data['ding_id'] = validated_data['user_id']
         return validated_data
 
     def create(self, validated_data):
@@ -388,7 +389,7 @@ class AlipayRegisterAndBindSerializer(DynamicFieldsModelSerializer):    # pylint
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
     sms_token = serializers.CharField(required=True)
-    alipay_user_id = serializers.CharField(required=True)
+    user_id = serializers.CharField(required=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = User
@@ -397,7 +398,7 @@ class AlipayRegisterAndBindSerializer(DynamicFieldsModelSerializer):    # pylint
             'username',
             'password',
             'sms_token',
-            'alipay_user_id',
+            'user_id',
         )
 
     def validate(self, attrs):
@@ -417,6 +418,7 @@ class AlipayRegisterAndBindSerializer(DynamicFieldsModelSerializer):    # pylint
             mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
             SMSClaimSerializer.clear_sms_token(sms_token)
             validated_data['mobile'] = mobile
+        validated_data['alipay_user_id'] = validated_data['user_id']
 
         return validated_data
 
@@ -441,7 +443,7 @@ class AlipayBindSerializer(serializers.Serializer):    # pylint: disable=abstrac
     '''
 
     sms_token = serializers.CharField(required=True)
-    alipay_user_id = serializers.CharField(required=True)
+    user_id = serializers.CharField(required=True)
 
     class Meta:
         '''
@@ -450,7 +452,7 @@ class AlipayBindSerializer(serializers.Serializer):    # pylint: disable=abstrac
         model = AlipayUser
         fields = (
             'sms_token',
-            'alipay_user_id',
+            'user_id',
         )
 
     def validate(self, attrs):
@@ -459,6 +461,7 @@ class AlipayBindSerializer(serializers.Serializer):    # pylint: disable=abstrac
         SMSClaimSerializer.clear_sms_token(validated_data['sms_token'])
         user = User.valid_objects.filter(mobile=mobile).first()
         validated_data['user'] = user
+        validated_data['alipay_user_id'] = validated_data['user_id']
         return validated_data
 
     def update(self, instance, validated_data):
