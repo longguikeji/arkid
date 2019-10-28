@@ -69,7 +69,8 @@ def check_user_exists(request):
     if sms_token:
         mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
         exist = User.valid_objects.filter(mobile=mobile).exists()
-    return exist
+        return exist
+    raise ValidationError({'sms_token': ["sms_token invalid"]})
 
 
 class DingQrCallbackView(APIView):
