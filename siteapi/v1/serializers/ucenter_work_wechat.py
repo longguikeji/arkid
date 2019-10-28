@@ -16,7 +16,6 @@ class WorkWechatRegisterAndBindSerializer(DynamicFieldsModelSerializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
     sms_token = serializers.CharField(required=True)
-    # work_wechat_user_id = serializers.CharField(required=False)
     user_id = serializers.CharField(required=True)
 
     class Meta:
@@ -25,10 +24,7 @@ class WorkWechatRegisterAndBindSerializer(DynamicFieldsModelSerializer):
         '''
         model = WorkWechatUser
 
-        fields = (
-            'username', 'password', 'sms_token', 'user_id'
-        # 'work_wechat_user_id',
-        )
+        fields = ('username', 'password', 'sms_token', 'user_id')
 
     def validate(self, attrs):
         '''
@@ -72,7 +68,6 @@ class WorkWechatBindSerializer(serializers.Serializer):    # pylint: disable=abs
     '''
 
     sms_token = serializers.CharField(required=True)
-    # work_wechat_user_id = serializers.CharField(required=False)
     user_id = serializers.CharField(required=True)
 
     class Meta:
@@ -80,10 +75,7 @@ class WorkWechatBindSerializer(serializers.Serializer):    # pylint: disable=abs
         关联WorkWechatUser表
         '''
         model = WorkWechatUser
-        fields = (
-            'sms_token', 'user_id'
-        # 'work_wechat_user_id',
-        )
+        fields = ('sms_token', 'user_id')
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)

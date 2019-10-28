@@ -14,11 +14,9 @@ def get_work_wechat_user_id(code, corp_id, secret):
     try:
         get_token_response = requests.get(constants.GET_TOKEN_URL,\
             params={'corpid':corp_id, 'corpsecret':secret}).json()
-        print(get_token_response)
         access_token = get_token_response['access_token']
         get_user_id_response = requests.get(constants.GET_USERINFO_URL,\
             params={'access_token':access_token, 'code':code}).json()
-        print(get_user_id_response)
         work_wechat_user_id = get_user_id_response['UserId']
     except Exception:    # pylint: disable=broad-except
         pass

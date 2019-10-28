@@ -103,9 +103,9 @@ urlpatterns = [
     url(r'^alipay/bind/$', qr_views.AlipayBindAPIView.as_view(), name='alipay_bind'),
     url(r'^alipay/register/bind/$', qr_views.AlipayRegisterAndBindView.as_view(), name='alipay_register_bind'),
     # work_wechat
-    url(r'^work/wechat/qr/callback/$', qr_views.WorkWechatQrCallbackView.as_view(), name='work_wechat_qr_callback'),
-    url(r'^work/wechat/bind/$', qr_views.WorkWechatBindAPIView.as_view(), name='work_wechat_bind'),
-    url(r'^work/wechat/register/bind/$', qr_views.WorkWechatRegisterAndBindView.as_view(),\
+    url(r'^work_wechat/qr/callback/$', qr_views.WorkWechatQrCallbackView.as_view(), name='work_wechat_qr_callback'),
+    url(r'^work_wechat/bind/$', qr_views.WorkWechatBindAPIView.as_view(), name='work_wechat_bind'),
+    url(r'^work_wechat/register/bind/$', qr_views.WorkWechatRegisterAndBindView.as_view(),\
         name='work_wechat_register_bind'),
     # shortcut
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
