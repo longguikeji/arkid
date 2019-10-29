@@ -61,7 +61,7 @@ class UCenterTestCase(TestCase):
         client = self.client
         res = client.post(reverse('siteapi:work_wechat_qr_callback'),\
             data={'code':'test_auth_code', 'app_id':'test_app_id'})
-        expect = {'token': '', 'user_id': ''}
+        expect = {'token': '', 'third_party_id': ''}
         self.assertEqual(res.json(), expect)
 
     def test_work_wechat_qr_login_forbidden(self):    # pylint: disable=invalid-name

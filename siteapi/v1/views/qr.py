@@ -111,7 +111,7 @@ class DingQrCallbackView(APIView):
             token = user.token
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
-            context = {'token': '', 'user_id': ding_id}
+            context = {'token': '', 'third_party_id': ding_id}
         return context
 
 
@@ -227,7 +227,7 @@ class AlipayQrCallbackView(APIView):
             token = user.token
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
-            context = {'token': '', 'user_id': alipay_user_id}
+            context = {'token': '', 'third_party_id': alipay_user_id}
         return context
 
     def get_alipay_user_id(self, auth_code, app_id):    # pylint: disable=no-self-use
@@ -345,7 +345,7 @@ class WorkWechatQrCallbackView(APIView):
             token = user.token
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
-            context = {'token': '', 'user_id': work_wechat_user_id}
+            context = {'token': '', 'third_party_id': work_wechat_user_id}
         return context
 
 

@@ -59,7 +59,7 @@ class UCenterTestCase(TestCase):
         client = self.client
         res = client.post(reverse('siteapi:alipay_qr_callback'),\
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
-        expect = {'token': '', 'user_id': 'unregistered_alipay_user_id'}
+        expect = {'token': '', 'third_party_id': 'unregistered_alipay_user_id'}
         self.assertEqual(res.json(), expect)
 
     def test_alipay_qr_login_forbidden(self):
