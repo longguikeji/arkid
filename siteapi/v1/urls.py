@@ -107,6 +107,11 @@ urlpatterns = [
     url(r'^work_wechat/bind/$', qr_views.WorkWechatBindAPIView.as_view(), name='work_wechat_bind'),
     url(r'^work_wechat/register/bind/$', qr_views.WorkWechatRegisterAndBindView.as_view(),\
         name='work_wechat_register_bind'),
+    # wechat
+    url(r'^wechat/qr/callback/$', qr_views.WechatQrCallbackView.as_view(), name='wechat_qr_callback'),
+    url(r'^wechat/bind/$', qr_views.WechatBindAPIView.as_view(), name='wechat_bind'),
+    url(r'^wechat/register/bind/$', qr_views.WechatRegisterAndBindView.as_view(),\
+        name='wechat_register_bind'),
     # shortcut
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
     url(r'^slice/delete/$', shortcut_views.ObjSliceDeleteAPIView.as_view(), name='shortcut_slice_delete'),

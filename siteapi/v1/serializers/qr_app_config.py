@@ -5,8 +5,7 @@ from rest_framework import serializers
 
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 
-from oneid_meta.models import AlipayConfig, DingConfig, WorkWechatConfig
-
+from oneid_meta.models import AlipayConfig, DingConfig, WorkWechatConfig, WechatConfig
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 from thirdparty_data_sdk.dingding.dingsdk import constants
@@ -50,6 +49,17 @@ class PublicWorkWechatConfigSerializer(DynamicFieldsModelSerializer):
         model = WorkWechatConfig
 
         fields = ('corp_id', 'agent_id')
+
+
+class PublicWechatConfigSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for WechatConfig
+    '''
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = WechatConfig
+
+        fields = ('appid', )
 
 
 class DingConfigSerializer(DynamicFieldsModelSerializer):
@@ -215,6 +225,46 @@ class WorkWechatConfigSerializer(DynamicFieldsModelSerializer):
         instance.qr_app_valid = self.validate_qr_app_config(instance)
         update_fields = ['qr_app_valid']
         update_fields += ['corp_id', 'agent_id', 'secret'] if instance.qr_app_valid else []
+        instance.save(update_fields=update_fields)
+        instance.refresh_from_db()
+        return instance
+
+    @staticmethod
+    def validate_qr_app_config(instance):
+        '''
+        validate app_private_key ,alipay_publice_key
+        '''
+        is_valid = instance.check_valid()
+        return is_valid
+
+
+class WechatConfigSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for WechatConfig
+    '''
+    secret = serializers.CharField(write_only=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = WechatConfig
+
+        fields = (
+            'appid',
+            'secret',
+            'qr_app_valid',
+        )
+
+        read_only_fields = ('qr_app_valid', )
+
+    def update(self, instance, validated_data):
+        '''
+        - update data
+        - validated updated data
+        '''
+        instance.__dict__.update(validated_data)
+        instance.qr_app_valid = self.validate_qr_app_config(instance)
+        update_fields = ['qr_app_valid']
+        update_fields += ['appid', 'secret'] if instance.qr_app_valid else []
         instance.save(update_fields=update_fields)
         instance.refresh_from_db()
         return instance

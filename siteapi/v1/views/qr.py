@@ -1,7 +1,7 @@
 '''
 扫码登录视图
 '''
-
+# pylint: disable=too-many-lines
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from rest_framework import generics, status
@@ -14,18 +14,19 @@ from siteapi.v1.serializers.user import UserWithPermSerializer
 from siteapi.v1.serializers.ucenter import (DingRegisterAndBindSerializer, DingBindSerializer, AlipayBindSerializer,
                                             AlipayRegisterAndBindSerializer)
 from siteapi.v1.serializers.ucenter_work_wechat import WorkWechatRegisterAndBindSerializer, WorkWechatBindSerializer
-
+from siteapi.v1.serializers.ucenter_wechat import WechatRegisterAndBindSerializer, WechatBindSerializer
 from infrastructure.serializers.sms import SMSClaimSerializer
 
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser, AlipayUser, WorkWechatUser
+from oneid_meta.models import User, Group, DingUser, AlipayUser, WorkWechatUser, WechatUser
 
-from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig
+from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig, WechatConfig
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
 from thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
 from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import get_work_wechat_user_id
+from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import get_union_id as wechat_get_union_id
 
 
 def require_ding_qr_supported(func):
@@ -52,11 +53,22 @@ def require_alipay_qr_supported(func):
 
 def require_work_wechat_qr_supported(func):    # pylint: disable=invalid-name
     '''
-    检查是否允许扫码登录
+    检查是否允许企业微信扫码登录
     '''
     def inner(self, request):
         return Response({'err_msg':'work wechat qr not allowed'}, HTTP_403_FORBIDDEN)\
             if not AccountConfig.get_current().support_work_wechat_qr else func(self, request)
+
+    return inner
+
+
+def require_wechat_qr_supported(func):
+    '''
+    检查是否允许微信扫码登录
+    '''
+    def inner(self, request):
+        return Response({'err_msg':'wechat qr not allowed'}, HTTP_403_FORBIDDEN)\
+            if not AccountConfig.get_current().support_wechat_qr else func(self, request)
 
     return inner
 
@@ -69,8 +81,7 @@ def check_user_exists(request):
     if sms_token:
         mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
         exist = User.valid_objects.filter(mobile=mobile).exists()
-        return exist
-    raise ValidationError({'sms_token': ["sms_token invalid"]})
+    return exist
 
 
 class DingQrCallbackView(APIView):
@@ -408,6 +419,107 @@ class WorkWechatRegisterAndBindView(generics.CreateAPIView):
         work_wechat_user_id = serializer.validated_data['work_wechat_user_id']
         work_wechat_user = WorkWechatUser.objects.create(work_wechat_user_id=work_wechat_user_id, user=user)
         work_wechat_user.save()
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer.instance)
+        LOG_CLI(serializer.instance).user_register()
+
+
+class WechatQrCallbackView(APIView):
+    '''
+    wechat/qr/callback/
+    微信用户扫码登录回调页面
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    @require_wechat_qr_supported
+    def post(self, request):
+        '''
+        处理微信用户扫码之后重定向页面
+        '''
+        code = request.data.get('code')
+        appid = WechatConfig.get_current().appid
+        secret = WechatConfig.get_current().secret
+        if code:
+            unionid = wechat_get_union_id(code, appid, secret)
+            context = self.get_token(unionid)
+        return Response(context, HTTP_200_OK)
+
+    def get_token(self, unionid):    # pylint: disable=no-self-use
+        '''
+        从DingUser表查询用户，返回token
+        '''
+        wechat_user = WechatUser.valid_objects.filter(unionid=unionid).first()
+        if wechat_user:
+            user = wechat_user.user
+            token = user.token
+            context = {'token': token, **UserWithPermSerializer(user).data}
+        else:
+            context = {'token': '', 'third_party_id': unionid}
+        return context
+
+
+class WechatBindAPIView(GenericAPIView):
+    '''
+    微信扫码绑定
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = WechatBindSerializer
+
+    @require_wechat_qr_supported
+    def post(self, request):
+        '''
+        绑定用户
+        '''
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        unionid = serializer.validated_data['unionid']
+        wechat_user = WechatUser.objects.filter(user=user).first()
+        if wechat_user:
+            wechat_user.unionid = unionid
+        else:
+            wechat_user = WechatUser.objects.create(unionid=unionid, user=user)
+        wechat_user.save()
+        token = user.token
+        data = {'token': token, **UserWithPermSerializer(user).data}
+        LOG_CLI(user).user_login()
+        return Response(data, HTTP_201_CREATED)
+
+
+class WechatRegisterAndBindView(generics.CreateAPIView):
+    '''
+    微信扫码注册加绑定
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = WechatRegisterAndBindSerializer
+    read_serializer_class = UserWithPermSerializer
+
+    def create(self, request, *args, **kwargs):
+        '''
+        微信扫码注册并绑定
+        '''
+        if not AccountConfig.get_current().support_wechat_qr_register:
+            return Response({'err_msg': 'wechat qr register not allowed'}, HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        user.save()
+
+        cli = CLI(user)
+        cli.add_users_to_group([user], Group.get_extern_root())
+        data = self.read_serializer_class(user).data
+        data.update(token=user.token)
+        unionid = serializer.validated_data['unionid']
+        wechat_user = WechatUser.objects.create(unionid=unionid, user=user)
+        wechat_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
