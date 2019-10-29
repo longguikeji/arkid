@@ -50,7 +50,7 @@ class UCenterTestCase(TestCase):
         client = self.client
         mock_get_ding_id.side_effect = ['unregistered_dingid']
         res = client.post(reverse('siteapi:ding_qr_callback'), data={'code': 'CODE...........', 'state': 'STATE'})
-        expect = {'token': '', 'user_id': 'unregistered_dingid'}
+        expect = {'token': '', 'third_party_id': 'unregistered_dingid'}
         self.assertEqual(res.json(), expect)
 
     def test_ding_qr_login_forbidden(self):
