@@ -25,8 +25,8 @@ from oneid_meta.models import User, Group, DingUser, AlipayUser, WorkWechatUser,
 from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig, WechatConfig
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
 from thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
-from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import get_work_wechat_user_id
-from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import get_union_id as wechat_get_union_id
+from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
+from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
 
 
 def require_ding_qr_supported(func):
@@ -342,15 +342,19 @@ class WorkWechatQrCallbackView(APIView):
         corp_id = WorkWechatConfig.get_current().corp_id
         secret = WorkWechatConfig.get_current().secret
         if code:
-            work_wechat_user_id = get_work_wechat_user_id(code, corp_id, secret)
-            context = self.get_token(work_wechat_user_id)
+            work_wechat_user_id = WorkWechatManager(code, corp_id, secret).get_work_wechat_user_id()
+        else:
+            raise ValidationError({'code': ['code required']})
+        context = self.get_token(work_wechat_user_id)
         return Response(context, HTTP_200_OK)
 
     def get_token(self, work_wechat_user_id):    # pylint: disable=no-self-use
         '''
-        从DingUser表查询用户，返回token
+        从WorkWechatUser表查询用户，返回token
         '''
+        print(work_wechat_user_id, ',,,,,,,,,,,,,,,,')
         work_wechat_user = WorkWechatUser.valid_objects.filter(work_wechat_user_id=work_wechat_user_id).first()
+        print(work_wechat_user, '-=-=-=-=-=-=-=')
         if work_wechat_user:
             user = work_wechat_user.user
             token = user.token
@@ -443,8 +447,10 @@ class WechatQrCallbackView(APIView):
         appid = WechatConfig.get_current().appid
         secret = WechatConfig.get_current().secret
         if code:
-            unionid = wechat_get_union_id(code, appid, secret)
-            context = self.get_token(unionid)
+            unionid = WechatUserInfoManager(code=code, appid=appid, secret=secret).get_union_id()
+        else:
+            raise ValidationError({'code': ['code required']})
+        context = self.get_token(unionid)
         return Response(context, HTTP_200_OK)
 
     def get_token(self, unionid):    # pylint: disable=no-self-use
