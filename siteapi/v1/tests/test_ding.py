@@ -43,7 +43,7 @@ class UCenterTestCase(TestCase):
         mock_get_ding_id.side_effect = ['test_ding_id']
 
         res = client.post(reverse('siteapi:ding_qr_callback'), data={'code': 'CODE...........', 'state': 'STATE'})
-        self.assertIn('uuid', res.json())
+        self.assertIsNot('', res.json()['token'])
 
     @mock.patch("thirdparty_data_sdk.dingding.dingsdk.ding_id_manager.DingIdManager.get_ding_id")
     def test_ding_qr_login_newuser(self, mock_get_ding_id):

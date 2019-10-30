@@ -49,7 +49,7 @@ class UCenterTestCase(TestCase):
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
 
         self.assertEqual(res.status_code, 200)
-        self.assertIn('uuid', res.json())
+        self.assertIsNot(res.json()['token'], '')
 
     @mock.patch("thirdparty_data_sdk.alipay_api.alipay_user_id_sdk.get_alipay_user_id")
     def test_alipay_qr_login_newuser(self, mock_get_alipay_user_id):    # pylint: disable=invalid-name

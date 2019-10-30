@@ -15,7 +15,7 @@ from common.Email.email_manager import EmailManager
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPID_QR_APP_SECRET
 from thirdparty_data_sdk.alipay_api.alipay_oauth_manager import AlipayOauthManager
-from thirdparty_data_sdk.wechat_sdk import wechat_user_info_manager
+from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
 from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
 
 
@@ -377,7 +377,7 @@ class WorkWechatConfig(BaseModel, SingletonConfigMixin):
         '''
         检查配置是否有效
         '''
-        is_valid = WorkWechatManager(code=None, corp_id=self.corp_id, secret=self.secret).check_valid()
+        is_valid = WorkWechatManager(corp_id=self.corp_id, secret=self.secret).check_valid()
         return is_valid
 
     def __str__(self):
@@ -398,7 +398,7 @@ class WechatConfig(BaseModel, SingletonConfigMixin):
         '''
         检查配置是否有效
         '''
-        is_valid = wechat_user_info_manager.WechatUserInfoManager(code=None, appid=self.appid,\
+        is_valid = WechatUserInfoManager(appid=self.appid,\
             secret=self.secret).check_valid()
         return is_valid
 

@@ -4,19 +4,18 @@
 import requests
 
 from thirdparty_data_sdk.work_wechat_sdk import constants
-from thirdparty_data_sdk.work_wechat_sdk.error_utils import APICallError
+from thirdparty_data_sdk.error_utils import APICallError
 
 
 class WorkWechatManager:
     '''
     企业微信查询接口
     '''
-    def __init__(self, code, corp_id, secret):
-        self.code = code
+    def __init__(self, corp_id, secret):
         self.corp_id = corp_id
         self.secret = secret
 
-    def get_work_wechat_user_id(self):
+    def get_work_wechat_user_id(self, code):
         '''
         查询用户id
         '''
@@ -25,7 +24,7 @@ class WorkWechatManager:
                 params={'corpid':self.corp_id, 'corpsecret':self.secret}).json()
             access_token = token_info['access_token']
             user_info = requests.get(constants.GET_USERINFO_URL,\
-                params={'access_token':access_token, 'code':self.code}).json()
+                params={'access_token':access_token, 'code':code}).json()
             work_wechat_user_id = user_info['UserId']
             return work_wechat_user_id
         except Exception:

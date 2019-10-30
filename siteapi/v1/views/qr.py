@@ -155,11 +155,11 @@ class DingBindAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         ding_id = serializer.validated_data['ding_id']
-        ding_user = DingUser.objects.filter(user=user).first()
+        ding_user = DingUser.valid_objects.filter(user=user).first()
         if ding_user:
             ding_user.ding_id = ding_id
         else:
-            ding_user = DingUser.objects.create(ding_id=ding_id, user=user)
+            ding_user = DingUser.valid_objects.create(ding_id=ding_id, user=user)
         ding_user.save()
         token = user.token
         data = {'token': token, **UserWithPermSerializer(user).data}
@@ -194,7 +194,7 @@ class DingRegisterAndBindView(generics.CreateAPIView):
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
         ding_id = serializer.validated_data['ding_id']
-        ding_user = DingUser.objects.create(ding_id=ding_id, user=user)
+        ding_user = DingUser.valid_objects.create(ding_id=ding_id, user=user)
         ding_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -277,11 +277,11 @@ class AlipayBindAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         alipay_user_id = serializer.validated_data['alipay_user_id']
-        alipay_user = AlipayUser.objects.filter(user=user).first()
+        alipay_user = AlipayUser.valid_objects.filter(user=user).first()
         if alipay_user:
             alipay_user.alipay_user_id = alipay_user_id
         else:
-            alipay_user = AlipayUser.objects.create(alipay_user_id=alipay_user_id, user=user)
+            alipay_user = AlipayUser.valid_objects.create(alipay_user_id=alipay_user_id, user=user)
         alipay_user.save()
         token = user.token
         data = {'token': token, **UserWithPermSerializer(user).data}
@@ -316,7 +316,7 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
         alipay_user_id = serializer.validated_data['alipay_user_id']
-        alipay_user = AlipayUser.objects.create(alipay_user_id=alipay_user_id, user=user)
+        alipay_user = AlipayUser.valid_objects.create(alipay_user_id=alipay_user_id, user=user)
         alipay_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -342,7 +342,7 @@ class WorkWechatQrCallbackView(APIView):
         corp_id = WorkWechatConfig.get_current().corp_id
         secret = WorkWechatConfig.get_current().secret
         if code:
-            work_wechat_user_id = WorkWechatManager(code, corp_id, secret).get_work_wechat_user_id()
+            work_wechat_user_id = WorkWechatManager(corp_id, secret).get_work_wechat_user_id(code)
         else:
             raise ValidationError({'code': ['code required']})
         context = self.get_token(work_wechat_user_id)
@@ -352,9 +352,7 @@ class WorkWechatQrCallbackView(APIView):
         '''
         从WorkWechatUser表查询用户，返回token
         '''
-        print(work_wechat_user_id, ',,,,,,,,,,,,,,,,')
         work_wechat_user = WorkWechatUser.valid_objects.filter(work_wechat_user_id=work_wechat_user_id).first()
-        print(work_wechat_user, '-=-=-=-=-=-=-=')
         if work_wechat_user:
             user = work_wechat_user.user
             token = user.token
@@ -382,11 +380,11 @@ class WorkWechatBindAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         work_wechat_user_id = serializer.validated_data['work_wechat_user_id']
-        work_wechat_user = WorkWechatUser.objects.filter(user=user).first()
+        work_wechat_user = WorkWechatUser.valid_objects.filter(user=user).first()
         if work_wechat_user:
             work_wechat_user.work_wechat_user_id = work_wechat_user_id
         else:
-            work_wechat_user = WorkWechatUser.objects.create(work_wechat_user_id=work_wechat_user_id, user=user)
+            work_wechat_user = WorkWechatUser.valid_objects.create(work_wechat_user_id=work_wechat_user_id, user=user)
         work_wechat_user.save()
         token = user.token
         data = {'token': token, **UserWithPermSerializer(user).data}
@@ -421,7 +419,7 @@ class WorkWechatRegisterAndBindView(generics.CreateAPIView):
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
         work_wechat_user_id = serializer.validated_data['work_wechat_user_id']
-        work_wechat_user = WorkWechatUser.objects.create(work_wechat_user_id=work_wechat_user_id, user=user)
+        work_wechat_user = WorkWechatUser.valid_objects.create(work_wechat_user_id=work_wechat_user_id, user=user)
         work_wechat_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -447,15 +445,18 @@ class WechatQrCallbackView(APIView):
         appid = WechatConfig.get_current().appid
         secret = WechatConfig.get_current().secret
         if code:
-            unionid = WechatUserInfoManager(code=code, appid=appid, secret=secret).get_union_id()
+            try:
+                unionid = WechatUserInfoManager(appid=appid, secret=secret).get_union_id(code)
+            except Exception as err:    # pylint: disable=broad-except
+                return Response({'errmsg': err}, HTTP_400_BAD_REQUEST)
         else:
-            raise ValidationError({'code': ['code required']})
+            raise ValidationError({'code': ['required']})
         context = self.get_token(unionid)
         return Response(context, HTTP_200_OK)
 
     def get_token(self, unionid):    # pylint: disable=no-self-use
         '''
-        从DingUser表查询用户，返回token
+        从Wechat表查询用户，返回token
         '''
         wechat_user = WechatUser.valid_objects.filter(unionid=unionid).first()
         if wechat_user:
@@ -485,11 +486,11 @@ class WechatBindAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         unionid = serializer.validated_data['unionid']
-        wechat_user = WechatUser.objects.filter(user=user).first()
+        wechat_user = WechatUser.valid_objects.filter(user=user).first()
         if wechat_user:
             wechat_user.unionid = unionid
         else:
-            wechat_user = WechatUser.objects.create(unionid=unionid, user=user)
+            wechat_user = WechatUser.valid_objects.create(unionid=unionid, user=user)
         wechat_user.save()
         token = user.token
         data = {'token': token, **UserWithPermSerializer(user).data}
@@ -524,7 +525,7 @@ class WechatRegisterAndBindView(generics.CreateAPIView):
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
         unionid = serializer.validated_data['unionid']
-        wechat_user = WechatUser.objects.create(unionid=unionid, user=user)
+        wechat_user = WechatUser.valid_objects.create(unionid=unionid, user=user)
         wechat_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 

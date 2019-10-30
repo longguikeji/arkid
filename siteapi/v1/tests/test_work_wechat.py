@@ -47,7 +47,7 @@ class UCenterTestCase(TestCase):
         res = client.post(reverse('siteapi:work_wechat_qr_callback'),\
             data={'code':'test_auth_code'})
         self.assertEqual(res.status_code, 200)
-        self.assertIn('uuid', res.json())
+        self.assertIsNot('', res.json()['token'])
 
     @mock.patch('thirdparty_data_sdk.work_wechat_sdk.user_info_manager.WorkWechatManager.get_work_wechat_user_id')
     def test_work_wechat_qr_login_newuser(self, mock_get_work_wechat_user_id):    # pylint: disable=invalid-name
@@ -102,4 +102,4 @@ class UCenterTestCase(TestCase):
                               'user_id': 'test_work_wechat_user_id'
                           })
         self.assertEqual(res.status_code, 201)
-        self.assertIn('uuid', res.json())
+        self.assertIsNot('', res.json()['token'])
