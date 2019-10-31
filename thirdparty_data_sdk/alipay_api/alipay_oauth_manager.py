@@ -4,7 +4,7 @@ Dingding token manager get through appkey and appsecret or through corpid and co
 from alipay.aop.api.exception.Exception import AopException
 
 from thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
-from thirdparty_data_sdk.alipay_api.error_utils import APICallError
+from thirdparty_data_sdk.error_utils import APICallError
 
 
 class AlipayOauthManager():

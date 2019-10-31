@@ -35,19 +35,21 @@ class UCenterTestCase(TestCase):
         alipay_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\
             alipay_public_key='test_alipay_public_key', qr_app_valid=True)
         alipay_config.save()
+
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
+
         alipay_user_id = 'test_alipay_user_id'
         alipay_user = AlipayUser.valid_objects.create(alipay_user_id=alipay_user_id, user=user)
         alipay_user.save()
-        client = self.client
-        mock_get_alipay_user_id.return_value = 'test_alipay_user_id'
 
+        client = self.client
+        mock_get_alipay_user_id.side_effect = ['test_alipay_user_id']
         res = client.post(reverse('siteapi:alipay_qr_callback'),\
             data={'auth_code':'test_auth_code', 'app_id':'test_app_id'})
 
         self.assertEqual(res.status_code, 200)
-        self.assertIn('token', res.json())
+        self.assertIsNot(res.json()['token'], '')
 
     @mock.patch("thirdparty_data_sdk.alipay_api.alipay_user_id_sdk.get_alipay_user_id")
     def test_alipay_qr_login_newuser(self, mock_get_alipay_user_id):    # pylint: disable=invalid-name

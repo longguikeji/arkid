@@ -15,7 +15,8 @@ from common.Email.email_manager import EmailManager
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPID_QR_APP_SECRET
 from thirdparty_data_sdk.alipay_api.alipay_oauth_manager import AlipayOauthManager
-from thirdparty_data_sdk.work_wechat_sdk import user_info_manager as work_wechat_user_info_manager
+from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
+from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
 
 
 class SingletonConfigMixin:
@@ -108,6 +109,7 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
     allow_ding_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放钉钉扫码登录')
     allow_alipay_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放支付宝扫码登录')
     allow_work_wechat_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放企业微信扫码登录')
+    allow_wechat_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放微信扫码登录')
 
     def __str__(self):
         return f'AccountConfig[{self.id}]'    # pylint: disable=no-member
@@ -181,6 +183,20 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
         是否支持支付宝扫码注册
         '''
         return self.allow_register and self.support_work_wechat_qr
+
+    @property
+    def support_wechat_qr(self):
+        '''
+        是否支持微信扫码登录
+        '''
+        return self.allow_wechat_qr and WechatConfig.get_current().qr_app_valid
+
+    @property
+    def support_wechat_qr_register(self):
+        '''
+        是否支持微信扫码注册
+        '''
+        return self.allow_register and self.support_wechat_qr
 
 
 class SMSConfig(BaseModel, SingletonConfigMixin):
@@ -361,7 +377,29 @@ class WorkWechatConfig(BaseModel, SingletonConfigMixin):
         '''
         检查配置是否有效
         '''
-        is_valid = work_wechat_user_info_manager.check_valid(self.corp_id, self.secret)
+        is_valid = WorkWechatManager(corp_id=self.corp_id, secret=self.secret).check_valid()
+        return is_valid
+
+    def __str__(self):
+        return f'WorkWechatConfig[{self.id}]'    # pylint: disable=no-member
+
+
+class WechatConfig(BaseModel, SingletonConfigMixin):
+    '''
+    企业微信配置信息
+    '''
+    site = models.OneToOneField(Site, related_name='wechat_config', on_delete=models.CASCADE)
+
+    appid = models.CharField(max_length=255, blank=True, default="", verbose_name="APP ID")
+    secret = models.CharField(max_length=255, blank=True, default="", verbose_name="APP SECRET")
+    qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录APP配置是否正确')
+
+    def check_valid(self):
+        '''
+        检查配置是否有效
+        '''
+        is_valid = WechatUserInfoManager(appid=self.appid,\
+            secret=self.secret).check_valid()
         return is_valid
 
     def __str__(self):
