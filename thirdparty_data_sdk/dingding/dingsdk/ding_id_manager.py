@@ -3,7 +3,7 @@
 '''
 import requests
 from thirdparty_data_sdk.dingding.dingsdk import constants
-from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
+from thirdparty_data_sdk.error_utils import APICallError
 from oneid_meta.models import DingConfig
 
 
