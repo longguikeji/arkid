@@ -21,8 +21,9 @@ from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
 from oneid_meta.models import User, Group, DingUser, AlipayUser, WorkWechatUser, WechatUser
-
 from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig, WechatConfig
+
+from thirdparty_data_sdk.error_utils import APICallError
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
 from thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
 from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
@@ -447,8 +448,8 @@ class WechatQrCallbackView(APIView):
         if code:
             try:
                 unionid = WechatUserInfoManager(appid=appid, secret=secret).get_union_id(code)
-            except Exception:    # pylint: disable=broad-except
-                return Response({'code': 'invalid'})
+            except APICallError:    # pylint: disable=broad-except
+                return ValidationError({'code': ['invalid']})
         else:
             raise ValidationError({'code': ['required']})
         context = self.get_token(unionid)
