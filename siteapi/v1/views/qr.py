@@ -447,8 +447,8 @@ class WechatQrCallbackView(APIView):
         if code:
             try:
                 unionid = WechatUserInfoManager(appid=appid, secret=secret).get_union_id(code)
-            except Exception as err:    # pylint: disable=broad-except
-                return Response({'errmsg': err}, HTTP_400_BAD_REQUEST)
+            except Exception:    # pylint: disable=broad-except
+                return Response({'code': 'invalid'})
         else:
             raise ValidationError({'code': ['required']})
         context = self.get_token(unionid)
