@@ -33,7 +33,7 @@ class WechatUserInfoManager:
             errcode = requests.get(constants.GET_TOKEN_URL,\
                     params={'appid':self.appid, 'secret':self.secret,\
                         'grant_type':'authorization_code'}).json()['errcode']
-            if errcode == constants.MISSING_CODE:    # appid,secret正确情况下第三方返回的errcode
+            if errcode == constants.APPID_SECRET_VALID:    # appid,secret正确情况下的errcode
                 return True
             return False
         except Exception:    # pylint: disable=broad-except
