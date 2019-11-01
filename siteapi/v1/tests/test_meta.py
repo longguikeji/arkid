@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig,\
-    AlipayConfig, WorkWechatConfig, WechatConfig
+    AlipayConfig, WorkWechatConfig, WechatConfig, QqConfig
 
 
 class MetaTestCase(TestCase):
@@ -17,6 +17,7 @@ class MetaTestCase(TestCase):
         account_config = AccountConfig.get_current()
         account_config.allow_ding_qr = True
         account_config.allow_alipay_qr = True
+        account_config.allow_qq_qr = True
         account_config.allow_work_wechat_qr = True
         account_config.allow_wechat_qr = True
         account_config.save()
@@ -32,6 +33,11 @@ class MetaTestCase(TestCase):
         alipay_config.app_id = 'test_app_id'
         alipay_config.qr_app_valid = True
         alipay_config.save()
+        qq_config = QqConfig.get_current()
+        qq_config.app_id = 'test_app_id'
+        qq_config.redirect_uri = 'test_redirect_uri'
+        qq_config.qr_app_valid = True
+        qq_config.save()
 
         work_wechat_config = WorkWechatConfig.get_current()
         work_wechat_config.corp_id = 'test_corp_id'
@@ -70,11 +76,16 @@ class MetaTestCase(TestCase):
                 'support_mobile_register': False,
                 'support_ding_qr': True,
                 'support_alipay_qr': True,
+                'support_qq_qr': True,
                 'support_work_wechat_qr': True,
                 'support_wechat_qr': True,
             },
             'alipay_config': {
                 'app_id': 'test_app_id',
+            },
+            'qq_config': {
+                'app_id': 'test_app_id',
+                'redirect_uri': 'test_redirect_uri',
             },
             'work_wechat_config': {
                 'corp_id': 'test_corp_id',

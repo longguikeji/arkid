@@ -55,24 +55,26 @@ class UCenterTestCase(TestCase):
         work_wechat_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\
             work_wechat_public_key='test_work_wechat_public_key', qr_app_valid=True)
         work_wechat_config.save()
-        mock_get_work_wechat_user_id.return_value = ''
+        mock_get_work_wechat_user_id.return_value = 'test_work_wechat_user_id'
         client = self.client
         res = client.post(reverse('siteapi:work_wechat_qr_callback'),\
-            data={'code':'test_auth_code', 'app_id':'test_app_id'})
-        expect = {'token': '', 'third_party_id': ''}
+            data={'code':'test_auth_code'})
+        expect = {'token': '', 'third_party_id': 'test_work_wechat_user_id'}
         self.assertEqual(res.json(), expect)
 
     def test_work_wechat_qr_login_forbidden(self):    # pylint: disable=invalid-name
-        client = self.client
+        account_config = AccountConfig.get_current()
+        account_config.allow_work_wechat_qr = False
+        account_config.save()
         work_wechat_config = WorkWechatConfig.get_current()
-        work_wechat_config.__dict__.update(app_id='app_id', app_private_key='app_private_key',\
-            work_wechat_public_key='work_wechat_public_key', qr_app_valid=False)
+        work_wechat_config.__dict__.update(corp_id='test_corp_id', agent_id='test_agent_id',\
+            secret='test_secret', qr_app_valid=False)
         work_wechat_config.save()
-        res = client.post(reverse('siteapi:work_wechat_qr_callback'),\
-            data={'code':'test_auth_code'})
-        expect_json = {'err_msg': 'work wechat qr not allowed'}
+        client = self.client
+        res = client.post(reverse('siteapi:work_wechat_qr_callback'), data={'code': 'test_auth_code'})
+        expect = {'err_msg': 'work wechat qr not allowed'}
         expect_code = 403
-        self.assertEqual(res.json(), expect_json)
+        self.assertEqual(res.json(), expect)
         self.assertEqual(res.status_code, expect_code)
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')

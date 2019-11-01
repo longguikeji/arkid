@@ -102,6 +102,10 @@ urlpatterns = [
     url(r'^alipay/qr/callback/$', qr_views.AlipayQrCallbackView.as_view(), name='alipay_qr_callback'),
     url(r'^alipay/bind/$', qr_views.AlipayBindAPIView.as_view(), name='alipay_bind'),
     url(r'^alipay/register/bind/$', qr_views.AlipayRegisterAndBindView.as_view(), name='alipay_register_bind'),
+    # qq
+    url(r'^qq/qr/callback/$', qr_views.QqQrCallbackView.as_view(), name='qq_qr_callback'),
+    url(r'^qq/bind/$', qr_views.QqBindAPIView.as_view(), name='qq_bind'),
+    url(r'^qq/register/bind/$', qr_views.QqRegisterAndBindView.as_view(), name='qq_register_bind'),
     # work_wechat
     url(r'^work_wechat/qr/callback/$', qr_views.WorkWechatQrCallbackView.as_view(), name='work_wechat_qr_callback'),
     url(r'^work_wechat/bind/$', qr_views.WorkWechatBindAPIView.as_view(), name='work_wechat_bind'),

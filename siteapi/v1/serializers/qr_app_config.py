@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 
-from oneid_meta.models import AlipayConfig, DingConfig, WorkWechatConfig, WechatConfig
+from oneid_meta.models import AlipayConfig, DingConfig, WorkWechatConfig, WechatConfig, QqConfig
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 from thirdparty_data_sdk.dingding.dingsdk import constants
@@ -38,6 +38,17 @@ class PublicAlipayConfigSerializer(DynamicFieldsModelSerializer):
         model = AlipayConfig
 
         fields = ('app_id', )
+
+
+class PublicQqConfigSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for QqConfig
+    '''
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = QqConfig
+
+        fields = ('app_id', 'redirect_uri')
 
 
 class PublicWorkWechatConfigSerializer(DynamicFieldsModelSerializer):
@@ -265,6 +276,48 @@ class WechatConfigSerializer(DynamicFieldsModelSerializer):
         instance.qr_app_valid = self.validate_qr_app_config(instance)
         update_fields = ['qr_app_valid']
         update_fields += ['appid', 'secret'] if instance.qr_app_valid else []
+        instance.save(update_fields=update_fields)
+        instance.refresh_from_db()
+        return instance
+
+    @staticmethod
+    def validate_qr_app_config(instance):
+        '''
+        validate app_private_key ,alipay_publice_key
+        '''
+        is_valid = instance.check_valid()
+        return is_valid
+
+
+class QqConfigSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for AlipayConfig
+    '''
+    app_id = serializers.CharField(write_only=True)
+    app_key = serializers.CharField(write_only=True)
+    redirect_uri = serializers.CharField(write_only=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = QqConfig
+
+        fields = (
+            'app_id',
+            'app_key',
+            'redirect_uri',
+        )
+
+        read_only_fields = ('qr_app_valid', )
+
+    def update(self, instance, validated_data):
+        '''
+        - update data
+        - validated updated data
+        '''
+        instance.__dict__.update(validated_data)
+        instance.qr_app_valid = self.validate_qr_app_config(instance)
+        update_fields = ['qr_app_valid']
+        update_fields += ['app_id', 'app_key', 'redirect_uri'] if instance.qr_app_valid else []
         instance.save(update_fields=update_fields)
         instance.refresh_from_db()
         return instance
