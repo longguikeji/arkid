@@ -4,6 +4,7 @@ tests for models
 # pylint: disable=missing-docstring
 
 from django import db
+from django.urls import reverse
 from rest_framework.exceptions import ValidationError
 from oneid_meta.models import (
     User,
@@ -67,3 +68,20 @@ class ModelTestCase(TestCase):
         perm = Perm.valid_objects.create(uid='perm')
         perm.kill()
         Perm.valid_objects.create(uid='perm')
+
+
+class AuthTestCase(TestCase):
+    def test_public_api_with_invalid_token(self):    # pylint: disable=invalid-name
+        client = self.gen_client(token='invalid-token')
+        res = client.get(reverse('siteapi:meta'))
+        self.assertEqual(res.status_code, 200)
+
+        res = client.json_post(reverse('infra:common_sms'), data={})
+        self.assertNotEqual(res.status_code, 401)
+        res = client.json_post(reverse('infra:sms', args=('update_mobile', )), data={})
+        self.assertEqual(res.status_code, 401)
+
+        res = client.json_post(reverse('infra:email', args=('any', )), data={})
+        self.assertNotEqual(res.status_code, 401)
+        res = client.json_post(reverse('infra:email', args=('update_email', )), data={})
+        self.assertEqual(res.status_code, 401)
