@@ -34,6 +34,14 @@ class SMSClaimAPIView(GenericAPIView):
             return [IsAuthenticated()]
         return []
 
+    def get_authenticators(self):
+        '''
+        仅修改手机时需要登录
+        '''
+        if self.kwargs.get('subject', '') in ('update_mobile', ):
+            return super().get_authenticators()
+        return []
+
     def get_serializer_class(self):
         if 'subject' not in self.kwargs:
             return SMSClaimSerializer
