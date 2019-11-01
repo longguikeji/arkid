@@ -35,6 +35,14 @@ class EmailClaimAPIView(GenericAPIView):
             return [IsAuthenticated()]
         return []
 
+    def get_authenticators(self):
+        '''
+        仅当重置私人邮箱时需要登录
+        '''
+        if self.kwargs.get('subject', '') in ('update_email', ):
+            return super().get_authenticators()
+        return []
+
     def get_serializer_class(self):
         account_config = AccountConfig.get_current()
         subject = self.kwargs['subject']
@@ -59,7 +67,7 @@ class EmailClaimAPIView(GenericAPIView):
                 raise ValidationError({'email': ['unsupported']})
             return UpdateEmailEmailClaimSerializer
 
-        return NotFound
+        raise NotFound
 
     def post(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''
