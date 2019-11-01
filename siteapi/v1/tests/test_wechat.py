@@ -30,8 +30,8 @@ class UCenterTestCase(TestCase):
         wechat_config.save()
 
     @mock.patch('thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager.WechatUserInfoManager.get_union_id')
-    def test_wechat_qr_login(self, mock_get_wechat_user_id):
-        mock_get_wechat_user_id.return_value = 'test_wechat_user_id'
+    def test_wechat_qr_login(self, mock_get_union_id):
+        mock_get_union_id.return_value = 'test_wechat_user_id'
 
         wechat_config = WechatConfig.get_current()
         wechat_config.__dict__.update(appid='test_appid', secret='test_secret', qr_app_valid=True)
@@ -52,12 +52,12 @@ class UCenterTestCase(TestCase):
         self.assertIn('token', res.json())
 
     @mock.patch('thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager.WechatUserInfoManager.get_union_id')
-    def test_wechat_qr_login_newuser(self, mock_get_wechat_user_id):    # pylint: disable=invalid-name
+    def test_wechat_qr_login_newuser(self, mock_get_union_id):    # pylint: disable=invalid-name
         wechat_config = WechatConfig.get_current()
         wechat_config.__dict__.update(app_id='test_app_id', app_private_key='test_app_private_key',\
             wechat_public_key='test_wechat_public_key', qr_app_valid=True)
         wechat_config.save()
-        mock_get_wechat_user_id.return_value = ''
+        mock_get_union_id.return_value = ''
         client = self.client
         res = client.post(reverse('siteapi:wechat_qr_callback'),\
             data={'code':'test_auth_code', 'app_id':'test_app_id'})

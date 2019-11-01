@@ -536,3 +536,11 @@ class WechatUser(BaseModel):
     '''
     user = models.OneToOneField(User, verbose_name='用户', related_name='wechat_user', on_delete=models.PROTECT)
     unionid = models.TextField(max_length=255, blank=True, verbose_name='用户OPENID')
+
+
+class QqUser(BaseModel):
+    '''
+    qq用户绑定表
+    '''
+    user = models.OneToOneField(User, verbose_name='用户', related_name='qq_user', on_delete=models.PROTECT)
+    open_id = models.TextField(max_length=255, blank=True, verbose_name='qq平台openid')

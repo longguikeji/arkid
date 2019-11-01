@@ -6,13 +6,13 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
-                               AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig)
+                               AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QqConfig)
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from infrastructure.serializers.sms import SMSClaimSerializer
 from siteapi.v1.views.utils import gen_uid
 from siteapi.v1.serializers.qr_app_config import PublicAlipayConfigSerializer, PublicDingConfigSerializer,\
-    PublicWorkWechatConfigSerializer, PublicWechatConfigSerializer, AlipayConfigSerializer,\
-        DingConfigSerializer, WorkWechatConfigSerializer, WechatConfigSerializer
+    PublicWorkWechatConfigSerializer, PublicWechatConfigSerializer, PublicQqConfigSerializer, AlipayConfigSerializer,\
+        DingConfigSerializer, WorkWechatConfigSerializer, WechatConfigSerializer, QqConfigSerializer
 from executer.core import CLI
 
 
@@ -48,6 +48,7 @@ class AccountConfigSerializer(DynamicFieldsModelSerializer):
             'allow_email',
             'allow_ding_qr',
             'allow_alipay_qr',
+            'allow_qq_qr',
             'allow_work_wechat_qr',
             'allow_wechat_qr',
         )
@@ -114,6 +115,7 @@ class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
             'support_mobile_register',
             'support_ding_qr',
             'support_alipay_qr',
+            'support_qq_qr',
             'support_work_wechat_qr',
             'support_wechat_qr',
         )
@@ -130,6 +132,7 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
     sms_config = SMSConfigSerializer(many=False, required=False)
     email_config = EmailConfigSerializer(many=False, required=False)
     alipay_config = AlipayConfigSerializer(many=False, required=False)
+    qq_config = QqConfigSerializer(many=False, required=False)
     work_wechat_config = WorkWechatConfigSerializer(many=False, required=False)
     wechat_config = WechatConfigSerializer(many=False, required=False)
 
@@ -138,7 +141,7 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
         model = Site
 
         fields = ('company_config', 'ding_config', 'account_config', 'sms_config',\
-            'email_config', 'alipay_config', 'work_wechat_config', 'wechat_config')
+            'email_config', 'alipay_config', 'work_wechat_config', 'wechat_config', 'qq_config')
 
     @transaction.atomic()
     def update(self, instance, validated_data):    # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -211,6 +214,12 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
+        qq_config_data = validated_data.pop('qq_config', None)
+        if qq_config_data:
+            serializer = QqConfigSerializer(QqConfig.get_current(), qq_config_data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
         work_wechat_config_data = validated_data.pop('work_wechat_config', None)
         if work_wechat_config_data:
             serializer = WorkWechatConfigSerializer(WorkWechatConfig.get_current(),\
@@ -259,6 +268,7 @@ class MetaConfigSerializer(DynamicFieldsModelSerializer):
     ding_config = PublicDingConfigSerializer(many=False, required=False, read_only=True)
     account_config = PublicAccountConfigSerializer(many=False, required=False, read_only=True)
     alipay_config = PublicAlipayConfigSerializer(many=False, required=False, read_only=True)
+    qq_config = PublicQqConfigSerializer(many=False, required=False, read_only=True)
     work_wechat_config = PublicWorkWechatConfigSerializer(many=False, required=False, read_only=True)
     wechat_config = PublicWechatConfigSerializer(many=False, required=False, read_only=True)
 
@@ -267,7 +277,7 @@ class MetaConfigSerializer(DynamicFieldsModelSerializer):
         model = Site
 
         fields = ('company_config', 'ding_config', 'account_config', 'alipay_config', 'work_wechat_config',
-                  'wechat_config')
+                  'wechat_config', 'qq_config')
 
 
 class AlterAdminSerializer(serializers.Serializer):
