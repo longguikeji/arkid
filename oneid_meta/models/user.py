@@ -538,7 +538,7 @@ class WechatUser(BaseModel):
     unionid = models.TextField(max_length=255, blank=True, verbose_name='用户OPENID')
 
 
-class QqUser(BaseModel):
+class QQUser(BaseModel):
     '''
     qq用户绑定表
     '''

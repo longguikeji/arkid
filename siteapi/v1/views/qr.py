@@ -17,14 +17,14 @@ from infrastructure.serializers.sms import SMSClaimSerializer
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser, AlipayUser, WechatUser, WorkWechatUser, QqUser
-from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig, WechatConfig, QqConfig
+from oneid_meta.models import User, Group, DingUser, AlipayUser, WechatUser, WorkWechatUser, QQUser
+from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig, WechatConfig, QQConfig
 
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
 from thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
 from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
 from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
-from thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QqInfoManager
+from thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QQInfoManager
 from thirdparty_data_sdk.error_utils import APICallError
 
 
@@ -131,6 +131,7 @@ class DingQrCallbackView(APIView):
         if ding_user:
             user = ding_user.user
             token = user.token
+            LOG_CLI(user).user_login()
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
             context = {'token': '', 'third_party_id': ding_id}
@@ -197,6 +198,7 @@ class DingRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
         user = serializer.save()
         user.save()
 
@@ -210,7 +212,7 @@ class DingRegisterAndBindView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        super().perform_create(serializer)
         LOG_CLI(serializer.instance).user_register()
 
 
@@ -247,6 +249,7 @@ class AlipayQrCallbackView(APIView):
         if alipay_user:
             user = alipay_user.user
             token = user.token
+            LOG_CLI(user).user_login()
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
             context = {'token': '', 'third_party_id': alipay_user_id}
@@ -319,6 +322,7 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
         user = serializer.save()
         user.save()
 
@@ -332,7 +336,7 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        super().perform_create(serializer)
         LOG_CLI(serializer.instance).user_register()
 
 
@@ -370,6 +374,7 @@ class WorkWechatQrCallbackView(APIView):
         if work_wechat_user:
             user = work_wechat_user.user
             token = user.token
+            LOG_CLI(user).user_login()
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
             context = {'token': '', 'third_party_id': work_wechat_user_id}
@@ -425,6 +430,7 @@ class WorkWechatRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
         user = serializer.save()
         user.save()
 
@@ -438,7 +444,7 @@ class WorkWechatRegisterAndBindView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        super().perform_create(serializer)
         LOG_CLI(serializer.instance).user_register()
 
 
@@ -476,6 +482,7 @@ class WechatQrCallbackView(APIView):
         if wechat_user:
             user = wechat_user.user
             token = user.token
+            LOG_CLI(user).user_login()
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
             context = {'token': '', 'third_party_id': unionid}
@@ -531,6 +538,7 @@ class WechatRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
         user = serializer.save()
         user.save()
 
@@ -544,11 +552,11 @@ class WechatRegisterAndBindView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        super().perform_create(serializer)
         LOG_CLI(serializer.instance).user_register()
 
 
-class QqQrCallbackView(APIView):
+class QQQrCallbackView(APIView):
     '''
     qq/qr/callback/
     '''
@@ -563,9 +571,9 @@ class QqQrCallbackView(APIView):
         code = request.data.get('code')
 
         try:
-            app_id = QqConfig.get_current().app_id
-            app_key = QqConfig.get_current().app_key
-            open_id = QqInfoManager(app_id, app_key).get_open_id(code, QqConfig.get_current().redirect_uri)
+            app_id = QQConfig.get_current().app_id
+            app_key = QQConfig.get_current().app_key
+            open_id = QQInfoManager(app_id, app_key).get_open_id(code)
         except APICallError:    # pylint: disable=broad-except
             return Response({'code': 'invalid'}, HTTP_400_BAD_REQUEST)
 
@@ -575,19 +583,20 @@ class QqQrCallbackView(APIView):
 
     def get_token(self, open_id):    # pylint: disable=no-self-use
         '''
-        从QqUser表查询用户，返回token
+        从QQUser表查询用户，返回token
         '''
-        qq_user = QqUser.valid_objects.filter(open_id=open_id).first()
+        qq_user = QQUser.valid_objects.filter(open_id=open_id).first()
         if qq_user:
             user = qq_user.user
             token = user.token
+            LOG_CLI(user).user_login()
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
             context = {'token': '', 'third_party_id': open_id}
         return context
 
 
-class QqBindAPIView(GenericAPIView):
+class QQBindAPIView(GenericAPIView):
     '''
     /ding/bind/
     '''
@@ -605,11 +614,11 @@ class QqBindAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         open_id = serializer.validated_data['user_id']
-        qq_user = QqUser.valid_objects.filter(user=user).first()
+        qq_user = QQUser.valid_objects.filter(user=user).first()
         if qq_user:
             qq_user.open_id = open_id
         else:
-            qq_user = QqUser.valid_objects.create(open_id=open_id, user=user)
+            qq_user = QQUser.valid_objects.create(open_id=open_id, user=user)
         qq_user.save()
         token = user.token
         data = {'token': token, **UserWithPermSerializer(user).data}
@@ -617,7 +626,7 @@ class QqBindAPIView(GenericAPIView):
         return Response(data, HTTP_201_CREATED)
 
 
-class QqRegisterAndBindView(generics.CreateAPIView):
+class QQRegisterAndBindView(generics.CreateAPIView):
     '''
     qq扫码用户注册页面
     '''
@@ -636,6 +645,7 @@ class QqRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
         user = serializer.save()
         user.save()
 
@@ -644,10 +654,10 @@ class QqRegisterAndBindView(generics.CreateAPIView):
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
         open_id = serializer.validated_data['user_id']
-        qq_user = QqUser.valid_objects.create(open_id=open_id, user=user)
+        qq_user = QQUser.valid_objects.create(open_id=open_id, user=user)
         qq_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        super().perform_create(serializer)
         LOG_CLI(serializer.instance).user_register()
