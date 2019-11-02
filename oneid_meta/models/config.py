@@ -15,7 +15,7 @@ from common.Email.email_manager import EmailManager
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPID_QR_APP_SECRET
 from thirdparty_data_sdk.alipay_api.alipay_oauth_manager import AlipayOauthManager
-from thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QqInfoManager
+from thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QQInfoManager
 from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
 from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
 
@@ -177,7 +177,7 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
         '''
         是否支持qq扫码登录
         '''
-        return self.allow_qq_qr and QqConfig.get_current().qr_app_valid
+        return self.allow_qq_qr and QQConfig.get_current().qr_app_valid
 
     @property
     def support_qq_qr_register(self):
@@ -422,7 +422,7 @@ class WechatConfig(BaseModel, SingletonConfigMixin):
         return f'WorkWechatConfig[{self.id}]'    # pylint: disable=no-member
 
 
-class QqConfig(BaseModel, SingletonConfigMixin):
+class QQConfig(BaseModel, SingletonConfigMixin):
     '''
     qq配置信息
     '''
@@ -430,18 +430,17 @@ class QqConfig(BaseModel, SingletonConfigMixin):
 
     app_id = models.CharField(max_length=255, blank=True, default="", verbose_name="APP ID")
     app_key = models.CharField(max_length=255, blank=True, default="", verbose_name="APP SECRET")
-    redirect_uri = models.CharField(max_length=255, blank=True, default="", verbose_name="REDIRECT URI")
     qr_app_valid = models.BooleanField(default=False, verbose_name='扫码登录是否配置正确')
 
     def check_valid(self):
         '''
         检查配置是否有效
         '''
-        is_valid = QqInfoManager(
+        is_valid = QQInfoManager(
             app_id=self.app_id,
             app_key=self.app_key,
-        ).check_config_valid(self.redirect_uri)
+        ).check_config_valid()
         return is_valid
 
     def __str__(self):
-        return f'QqConfig[{self.id}]'    # pylint: disable=no-member
+        return f'QQConfig[{self.id}]'    # pylint: disable=no-member

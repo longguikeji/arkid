@@ -8,7 +8,7 @@ from unittest import mock
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import (User, AccountConfig, QqConfig, QqUser)
+from oneid_meta.models import (User, AccountConfig, QQConfig, QQUser)
 
 MAX_APP_ID = 2
 
@@ -25,20 +25,20 @@ class UCenterTestCase(TestCase):
         account_config.allow_qq_qr = True
         account_config.save()
 
-        qq_config = QqConfig.get_current()
+        qq_config = QQConfig.get_current()
         qq_config.qr_app_valid = True
         qq_config.save()
 
-    @mock.patch("thirdparty_data_sdk.qq_sdk.qq_openid_sdk.QqInfoManager.get_open_id")
+    @mock.patch("thirdparty_data_sdk.qq_sdk.qq_openid_sdk.QQInfoManager.get_open_id")
     def test_qq_qr_login(self, mock_get_open_id):
-        qq_config = QqConfig.get_current()
+        qq_config = QQConfig.get_current()
         qq_config.__dict__.update(app_id='test_app_id', app_key='test_app_key', redirect_uri='test_redirect_uri',\
             qr_app_valid=True)
         qq_config.save()
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
         open_id = 'test_open_id'
-        qq_user = QqUser.valid_objects.create(open_id=open_id, user=user)
+        qq_user = QQUser.valid_objects.create(open_id=open_id, user=user)
         qq_user.save()
         client = self.client
         mock_get_open_id.return_value = 'test_open_id'
@@ -49,9 +49,9 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertIn('token', res.json())
 
-    @mock.patch("thirdparty_data_sdk.qq_sdk.qq_openid_sdk.QqInfoManager.get_open_id")
+    @mock.patch("thirdparty_data_sdk.qq_sdk.qq_openid_sdk.QQInfoManager.get_open_id")
     def test_qq_qr_login_newuser(self, mock_get_open_id):    # pylint: disable=invalid-name
-        qq_config = QqConfig.get_current()
+        qq_config = QQConfig.get_current()
         qq_config.__dict__.update(app_id='test_app_id', app_key='test_app_key', redirect_uri='test_redirect_uri',\
             qr_app_valid=True)
         qq_config.save()
@@ -64,7 +64,7 @@ class UCenterTestCase(TestCase):
 
     def test_qq_qr_login_forbidden(self):
         client = self.client
-        qq_config = QqConfig.get_current()
+        qq_config = QQConfig.get_current()
         qq_config.__dict__.update(app_id='app_id', app_private_key='app_private_key',\
             qq_public_key='qq_public_key', qr_app_valid=False)
         qq_config.save()

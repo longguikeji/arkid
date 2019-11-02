@@ -3,7 +3,7 @@ schema of Users,Departmments,Groups,Perms
 '''
 
 from oneid_meta.models.user import (User, PosixUser, CustomUser, DingUser, AlipayUser,\
-    WorkWechatUser, WechatUser, QqUser)
+    WorkWechatUser, WechatUser, QQUser)
 
 from oneid_meta.models.dept import (
     Dept,
@@ -35,7 +35,7 @@ from oneid_meta.models.app import (
 )
 
 from oneid_meta.models.config import (CompanyConfig, AccountConfig, SMSConfig, DingConfig, CustomField, NativeField,
-                                      EmailConfig, AlipayConfig, WorkWechatConfig, WechatConfig, QqConfig)
+                                      EmailConfig, AlipayConfig, WorkWechatConfig, WechatConfig, QQConfig)
 
 from oneid_meta.models.event import (
     Invitation, )

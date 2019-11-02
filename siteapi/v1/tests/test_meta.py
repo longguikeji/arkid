@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig,\
-    AlipayConfig, WorkWechatConfig, WechatConfig, QqConfig
+    AlipayConfig, WorkWechatConfig, WechatConfig, QQConfig
 
 
 class MetaTestCase(TestCase):
@@ -33,7 +33,7 @@ class MetaTestCase(TestCase):
         alipay_config.app_id = 'test_app_id'
         alipay_config.qr_app_valid = True
         alipay_config.save()
-        qq_config = QqConfig.get_current()
+        qq_config = QQConfig.get_current()
         qq_config.app_id = 'test_app_id'
         qq_config.redirect_uri = 'test_redirect_uri'
         qq_config.qr_app_valid = True
@@ -85,7 +85,6 @@ class MetaTestCase(TestCase):
             },
             'qq_config': {
                 'app_id': 'test_app_id',
-                'redirect_uri': 'test_redirect_uri',
             },
             'work_wechat_config': {
                 'corp_id': 'test_corp_id',
