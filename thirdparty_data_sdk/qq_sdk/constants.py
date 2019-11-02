@@ -1,7 +1,9 @@
 '''
 QQ API URL
 '''
-REDIRECT_URI = 'https://oneid.intra.longguikeji.com/#/oneid/bindthirdparty/qq'
+from oneid import settings
+
+REDIRECT_URI = settings.BASE_URL + '/#/oneid/bindthirdparty/qq'
 GET_TOKEN_URL = 'https://graph.qq.com/oauth2.0/token'
 GET_OPENID_URL = 'https://graph.qq.com/oauth2.0/me'
 
