@@ -323,7 +323,7 @@ class QQConfigSerializer(DynamicFieldsModelSerializer):
     @staticmethod
     def validate_qr_app_config(instance):
         '''
-        validate app_private_key ,alipay_publice_key
+        validate app_key ,app_id
         '''
         is_valid = instance.check_valid()
         return is_valid

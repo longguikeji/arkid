@@ -198,9 +198,7 @@ class DingRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        user = serializer.save()
-        user.save()
+        user = self.perform_create(serializer)
 
         cli = CLI(user)
         cli.add_users_to_group([user], Group.get_extern_root())
@@ -212,8 +210,9 @@ class DingRegisterAndBindView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        user = serializer.save()
         LOG_CLI(serializer.instance).user_register()
+        return user
 
 
 class AlipayQrCallbackView(APIView):
@@ -322,9 +321,7 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        user = serializer.save()
-        user.save()
+        user = self.perform_create(serializer)
 
         cli = CLI(user)
         cli.add_users_to_group([user], Group.get_extern_root())
@@ -336,8 +333,9 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        user = serializer.save()
         LOG_CLI(serializer.instance).user_register()
+        return user
 
 
 class WorkWechatQrCallbackView(APIView):
@@ -430,9 +428,7 @@ class WorkWechatRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        user = serializer.save()
-        user.save()
+        user = self.perform_create(serializer)
 
         cli = CLI(user)
         cli.add_users_to_group([user], Group.get_extern_root())
@@ -444,8 +440,9 @@ class WorkWechatRegisterAndBindView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        user = serializer.save()
         LOG_CLI(serializer.instance).user_register()
+        return user
 
 
 class WechatQrCallbackView(APIView):
@@ -538,9 +535,7 @@ class WechatRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        user = serializer.save()
-        user.save()
+        user = self.perform_create(serializer)
 
         cli = CLI(user)
         cli.add_users_to_group([user], Group.get_extern_root())
@@ -552,8 +547,9 @@ class WechatRegisterAndBindView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        user = serializer.save()
         LOG_CLI(serializer.instance).user_register()
+        return user
 
 
 class QQQrCallbackView(APIView):
@@ -645,9 +641,7 @@ class QQRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        user = serializer.save()
-        user.save()
+        user = self.perform_create(serializer)
 
         cli = CLI(user)
         cli.add_users_to_group([user], Group.get_extern_root())
@@ -659,5 +653,6 @@ class QQRegisterAndBindView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        user = serializer.save()
         LOG_CLI(serializer.instance).user_register()
+        return user
