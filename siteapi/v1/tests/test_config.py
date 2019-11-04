@@ -36,6 +36,7 @@ class ConfigTestCase(TestCase):
                 'allow_register': False,
                 'allow_ding_qr': False,
                 'allow_alipay_qr': False,
+                'allow_qq_qr': False,
                 'allow_work_wechat_qr': False,
                 'allow_wechat_qr': False,
             },
@@ -58,10 +59,76 @@ class ConfigTestCase(TestCase):
                 'is_valid': False,
             },
             'alipay_config': None,
+            'qq_config': None,
             'work_wechat_config': None,
             'wechat_config': None,
         }
         self.assertEqual(res.json(), expect)
+
+    @mock.patch('thirdparty_data_sdk.qq_sdk.qq_openid_sdk.QQInfoManager.check_config_valid')
+    def test_update_qq_wechat_config(self, mock_check_config_valid):
+        mock_check_config_valid.return_value = True
+        res = self.client.json_patch(reverse('siteapi:config'),
+                                     data={
+                                         'qq_config': {
+                                             'app_id': 'test_app_id',
+                                             'app_key': 'test_app_key',
+                                             'redirect_uri': 'redirect_uri',
+                                         },
+                                     })
+        expect = {
+            'app_id': 'test_app_id',
+            'qr_app_valid': True,
+        }
+        self.assertEqual(res.json()['qq_config'], expect)
+
+    @mock.patch('thirdparty_data_sdk.work_wechat_sdk.user_info_manager.WorkWechatManager.check_valid')
+    def test_update_work_wechat_config(self, mock_check_valid):
+        mock_check_valid.return_value = True
+        res = self.client.json_patch(reverse('siteapi:config'),
+                                     data={
+                                         'work_wechat_config': {
+                                             'corp_id': 'test_corp_id',
+                                             'agent_id': 'test_agent_id',
+                                             'secret': 'test_secret',
+                                         },
+                                     })
+        expect = {
+            'corp_id': 'test_corp_id',
+            'agent_id': 'test_agent_id',
+            'qr_app_valid': True,
+        }
+        self.assertEqual(res.json()['work_wechat_config'], expect)
+
+    @mock.patch('thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager.WechatUserInfoManager.check_valid')
+    def test_update_wechat_config(self, mock_check_valid):
+        mock_check_valid.return_value = True
+        res = self.client.json_patch(reverse('siteapi:config'),
+                                     data={
+                                         'wechat_config': {
+                                             'appid': 'test_appid',
+                                             'secret': 'test_secret',
+                                         },
+                                     })
+        expect = {
+            'appid': 'test_appid',
+            'qr_app_valid': True,
+        }
+        self.assertEqual(res.json()['wechat_config'], expect)
+
+    @mock.patch('thirdparty_data_sdk.alipay_api.alipay_user_id_sdk.check_valid')
+    def test_update_alipay_config(self, mock_check_valid):
+        mock_check_valid.return_value = True
+        res = self.client.json_patch(reverse('siteapi:config'),
+                                     data={
+                                         'alipay_config': {
+                                             'app_id': 'test_app_id',
+                                             'app_private_key': 'test_app_private_key',
+                                             'alipay_public_key': 'test_alipay_public_key',
+                                         },
+                                     })
+        expect = {'app_id': 'test_app_id', 'qr_app_valid': True}
+        self.assertEqual(res.json()['alipay_config'], expect)
 
     @mock.patch('oneid_meta.models.config.SMSAliyunManager.send_auth_code')
     @mock.patch('oneid_meta.models.config.EmailManager.connect')
@@ -98,6 +165,7 @@ class ConfigTestCase(TestCase):
                                              'allow_mobile': True,
                                              'allow_ding_qr': True,
                                              'allow_alipay_qr': False,
+                                             'allow_qq_qr': True,
                                              'allow_work_wechat_qr': True
                                          },
                                          'sms_config': {
@@ -135,6 +203,7 @@ class ConfigTestCase(TestCase):
                 'allow_register': True,
                 'allow_ding_qr': True,
                 'allow_alipay_qr': False,
+                'allow_qq_qr': True,
                 'allow_work_wechat_qr': True,
                 'allow_wechat_qr': False,
             },
@@ -159,6 +228,7 @@ class ConfigTestCase(TestCase):
             'alipay_config': None,
             'work_wechat_config': None,
             'wechat_config': None,
+            'qq_config': None,
         }
 
         self.assertEqual(res.json(), expect)
@@ -194,6 +264,7 @@ class ConfigTestCase(TestCase):
             'support_mobile_register': False,
             'support_ding_qr': False,
             'support_alipay_qr': False,
+            'support_qq_qr': False,
             'support_work_wechat_qr': False,
             'support_wechat_qr': False,
         }
@@ -219,6 +290,7 @@ class ConfigTestCase(TestCase):
             'support_email_register': False,
             'support_mobile_register': False,
             'support_alipay_qr': False,
+            'support_qq_qr': False,
             'support_work_wechat_qr': False,
             'support_wechat_qr': False,
         }

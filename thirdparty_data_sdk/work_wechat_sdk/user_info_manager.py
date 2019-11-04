@@ -2,7 +2,6 @@
 企业微信查询用户信息
 '''
 import requests
-
 from thirdparty_data_sdk.work_wechat_sdk import constants
 from thirdparty_data_sdk.error_utils import APICallError
 

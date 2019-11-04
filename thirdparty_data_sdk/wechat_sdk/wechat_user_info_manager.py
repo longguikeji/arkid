@@ -2,7 +2,6 @@
 企业微信查询用户信息
 '''
 import requests
-# from rest_framework.exceptions import ValidationError
 from thirdparty_data_sdk.wechat_sdk import constants
 from thirdparty_data_sdk.error_utils import APICallError
 
@@ -31,7 +30,7 @@ class WechatUserInfoManager:
     def check_valid(self):    # pylint: disable=missing-function-docstring
         try:
             errcode = requests.get(constants.GET_TOKEN_URL,\
-                    params={'appid':self.appid, 'secret':self.secret,\
+                    params={'code':'123', 'appid':self.appid, 'secret':self.secret,\
                         'grant_type':'authorization_code'}).json()['errcode']
             if errcode == constants.APPID_SECRET_VALID:    # appid,secret正确情况下的errcode
                 return True
