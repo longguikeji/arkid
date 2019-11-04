@@ -2126,7 +2126,7 @@ Content-Disposition: form-data; name='node_uid'
         + username (string)
         + password (string) 
         + sms_token (string) - 绑定页面验证用户手机的sms_token
-        + ding_id (string) - 从钉钉查询的扫码用户的ding_id
+        + user_id (string) - 从钉钉查询的扫码用户的ding_id
 
 + Response 201 (application/json)
     + Attributes (UserWithPermWithToken)
@@ -2185,7 +2185,7 @@ Content-Disposition: form-data; name='node_uid'
         + username (string)
         + password (string) 
         + sms_token (string) - 绑定页面验证用户手机的sms_token
-        + alipay_user_id (string) - 从支付宝查询的扫码用户的alipay_user_id
+        + user_id (string) - 从支付宝查询的扫码用户的alipay_user_id
 
 + Response 201 (application/json)
     + Attributes (UserWithPermWithToken)
@@ -2244,7 +2244,7 @@ Content-Disposition: form-data; name='node_uid'
         + username (string)
         + password (string) 
         + sms_token (string) - 绑定页面验证用户手机的sms_token
-        + work_wechat_user_id (string) - 从企业微信查询的扫码用户的work_wechat_user_id
+        + user_id (string) - 从企业微信查询的扫码用户的work_wechat_user_id
 
 + Response 201 (application/json)
     + Attributes (UserWithPermWithToken)
@@ -2303,7 +2303,7 @@ Content-Disposition: form-data; name='node_uid'
         + username (string)
         + password (string) 
         + sms_token (string) - 绑定页面验证用户手机的sms_token
-        + unionid (string) - 从微信查询的扫码用户的unionid
+        + user_id (string) - 从微信查询的扫码用户的unionid
 
 + Response 201 (application/json)
     + Attributes (UserWithPermWithToken)
@@ -2311,3 +2311,62 @@ Content-Disposition: form-data; name='node_uid'
 + Response 403 (application/json)
     + Attributes
         + err_msg (string) - 'work_wechat qr not allowed'
+
+
+# qq扫码登录
+
+## 扫码回调函数 [/qq/qr/callback/{?code}]
++ Parameters
+    + code (string) - qq扫码返回一次性查询码code
+
+### 获取权限 [POST]
++ Requests JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 200 (application/json)
+    + Attributes
+        + token （string) - 未匹配用户，返回空字段token
+        + third_party_id (string) - 返回openid，用于下一步提交绑定
+
++ Response 400 (application/json)
+    + Attributes
+        + err_msg (string) - 'get qq id error'
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'qq qr not allowed' 
+
+## qq用户绑定 [/qq/bind/]
+
+### 绑定用户 [POST]
++ Request JSON Message
+    + Attributes
+        + user_id (string) - qq用户扫码时查询返回的openid
+        + sms_token (string) - 用户手机发短信后返回的sms_token
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'qq qr not allowed'
+
+## qq用户注册加绑定 [/qq/register/bind/]
+
+### 注册加绑定 [POST]
++ Request JSON Message
+    + Attributes
+        + username (string)
+        + password (string) 
+        + sms_token (string) - 绑定页面验证用户手机的sms_token
+        + user_id (string) - 从qq查询的扫码用户的openid
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'work_qq qr not allowed'

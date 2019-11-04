@@ -11,23 +11,21 @@ from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,\
 from rest_framework.response import Response
 
 from siteapi.v1.serializers.user import UserWithPermSerializer
-from siteapi.v1.serializers.ucenter import (DingRegisterAndBindSerializer, DingBindSerializer, AlipayBindSerializer,
-                                            AlipayRegisterAndBindSerializer)
-from siteapi.v1.serializers.ucenter_work_wechat import WorkWechatRegisterAndBindSerializer, WorkWechatBindSerializer
-from siteapi.v1.serializers.ucenter_wechat import WechatRegisterAndBindSerializer, WechatBindSerializer
+from siteapi.v1.serializers.ucenter import (RegisterAndBindSerializer, BindSerializer)
 from infrastructure.serializers.sms import SMSClaimSerializer
 
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser, AlipayUser, WorkWechatUser, WechatUser
-from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig, WechatConfig
+from oneid_meta.models import User, Group, DingUser, AlipayUser, WechatUser, WorkWechatUser, QQUser
+from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig, WechatConfig, QQConfig
 
-from thirdparty_data_sdk.error_utils import APICallError
 from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
 from thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
 from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
 from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
+from thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QQInfoManager
+from thirdparty_data_sdk.error_utils import APICallError
 
 
 def require_ding_qr_supported(func):
@@ -52,17 +50,6 @@ def require_alipay_qr_supported(func):
     return inner
 
 
-def require_work_wechat_qr_supported(func):    # pylint: disable=invalid-name
-    '''
-    检查是否允许企业微信扫码登录
-    '''
-    def inner(self, request):
-        return Response({'err_msg':'work wechat qr not allowed'}, HTTP_403_FORBIDDEN)\
-            if not AccountConfig.get_current().support_work_wechat_qr else func(self, request)
-
-    return inner
-
-
 def require_wechat_qr_supported(func):
     '''
     检查是否允许微信扫码登录
@@ -74,15 +61,38 @@ def require_wechat_qr_supported(func):
     return inner
 
 
+def require_work_wechat_qr_supported(func):    # pylint: disable=invalid-name
+    '''
+    检查是否允许企业微信扫码登录
+    '''
+    def inner(self, request):
+        return Response({'err_msg':'work wechat qr not allowed'}, HTTP_403_FORBIDDEN)\
+            if not AccountConfig.get_current().support_work_wechat_qr else func(self, request)
+
+    return inner
+
+
+def require_qq_qr_supported(func):
+    '''
+    检查是否允许qq扫码登录
+    '''
+    def inner(self, request):
+        return Response({'err_msg':'qq qr not allowed'}, HTTP_403_FORBIDDEN)\
+            if not AccountConfig.get_current().support_qq_qr else func(self, request)
+
+    return inner
+
+
 def check_user_exists(request):
     '''
     查询用户是否注册
     '''
-    sms_token = request.data.get('sms_token', '')
+    sms_token = request.data.get('sms_token', None)
     if sms_token:
         mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
         exist = User.valid_objects.filter(mobile=mobile).exists()
-    return exist
+        return exist
+    raise ValidationError({'sms_token': ["sms_token invalid"]})
 
 
 class DingQrCallbackView(APIView):
@@ -121,6 +131,7 @@ class DingQrCallbackView(APIView):
         if ding_user:
             user = ding_user.user
             token = user.token
+            LOG_CLI(user).user_login()
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
             context = {'token': '', 'third_party_id': ding_id}
@@ -145,7 +156,7 @@ class DingBindAPIView(GenericAPIView):
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = DingBindSerializer
+    serializer_class = BindSerializer
 
     @require_ding_qr_supported
     def post(self, request):
@@ -155,7 +166,7 @@ class DingBindAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        ding_id = serializer.validated_data['ding_id']
+        ding_id = serializer.validated_data['user_id']
         ding_user = DingUser.valid_objects.filter(user=user).first()
         if ding_user:
             ding_user.ding_id = ding_id
@@ -175,7 +186,7 @@ class DingRegisterAndBindView(generics.CreateAPIView):
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = DingRegisterAndBindSerializer
+    serializer_class = RegisterAndBindSerializer
     read_serializer_class = UserWithPermSerializer
 
     def create(self, request, *args, **kwargs):
@@ -187,21 +198,21 @@ class DingRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        user.save()
+        user = self.perform_create(serializer)
 
         cli = CLI(user)
         cli.add_users_to_group([user], Group.get_extern_root())
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
-        ding_id = serializer.validated_data['ding_id']
+        ding_id = serializer.validated_data['user_id']
         ding_user = DingUser.valid_objects.create(ding_id=ding_id, user=user)
         ding_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        user = serializer.save()
         LOG_CLI(serializer.instance).user_register()
+        return user
 
 
 class AlipayQrCallbackView(APIView):
@@ -237,6 +248,7 @@ class AlipayQrCallbackView(APIView):
         if alipay_user:
             user = alipay_user.user
             token = user.token
+            LOG_CLI(user).user_login()
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
             context = {'token': '', 'third_party_id': alipay_user_id}
@@ -267,7 +279,7 @@ class AlipayBindAPIView(GenericAPIView):
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = AlipayBindSerializer
+    serializer_class = BindSerializer
 
     @require_alipay_qr_supported
     def post(self, request):
@@ -277,12 +289,12 @@ class AlipayBindAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        alipay_user_id = serializer.validated_data['alipay_user_id']
-        alipay_user = AlipayUser.valid_objects.filter(user=user).first()
+        alipay_user_id = serializer.validated_data['user_id']
+        alipay_user = AlipayUser.objects.filter(user=user).first()
         if alipay_user:
             alipay_user.alipay_user_id = alipay_user_id
         else:
-            alipay_user = AlipayUser.valid_objects.create(alipay_user_id=alipay_user_id, user=user)
+            alipay_user = AlipayUser.objects.create(alipay_user_id=alipay_user_id, user=user)
         alipay_user.save()
         token = user.token
         data = {'token': token, **UserWithPermSerializer(user).data}
@@ -297,7 +309,7 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = AlipayRegisterAndBindSerializer
+    serializer_class = RegisterAndBindSerializer
     read_serializer_class = UserWithPermSerializer
 
     def create(self, request, *args, **kwargs):
@@ -309,21 +321,21 @@ class AlipayRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        user.save()
+        user = self.perform_create(serializer)
 
         cli = CLI(user)
         cli.add_users_to_group([user], Group.get_extern_root())
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
-        alipay_user_id = serializer.validated_data['alipay_user_id']
-        alipay_user = AlipayUser.valid_objects.create(alipay_user_id=alipay_user_id, user=user)
+        alipay_user_id = serializer.validated_data['user_id']
+        alipay_user = AlipayUser.objects.create(alipay_user_id=alipay_user_id, user=user)
         alipay_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        user = serializer.save()
         LOG_CLI(serializer.instance).user_register()
+        return user
 
 
 class WorkWechatQrCallbackView(APIView):
@@ -343,9 +355,12 @@ class WorkWechatQrCallbackView(APIView):
         corp_id = WorkWechatConfig.get_current().corp_id
         secret = WorkWechatConfig.get_current().secret
         if code:
-            work_wechat_user_id = WorkWechatManager(corp_id, secret).get_work_wechat_user_id(code)
+            try:
+                work_wechat_user_id = WorkWechatManager(corp_id=corp_id, secret=secret).get_work_wechat_user_id(code)
+            except APICallError:
+                raise ValidationError({'code': ['invalid']})
         else:
-            raise ValidationError({'code': ['code required']})
+            raise ValidationError({'code': ['required']})
         context = self.get_token(work_wechat_user_id)
         return Response(context, HTTP_200_OK)
 
@@ -357,6 +372,7 @@ class WorkWechatQrCallbackView(APIView):
         if work_wechat_user:
             user = work_wechat_user.user
             token = user.token
+            LOG_CLI(user).user_login()
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
             context = {'token': '', 'third_party_id': work_wechat_user_id}
@@ -370,7 +386,7 @@ class WorkWechatBindAPIView(GenericAPIView):
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = WorkWechatBindSerializer
+    serializer_class = BindSerializer
 
     @require_work_wechat_qr_supported
     def post(self, request):
@@ -380,7 +396,7 @@ class WorkWechatBindAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        work_wechat_user_id = serializer.validated_data['work_wechat_user_id']
+        work_wechat_user_id = serializer.validated_data['user_id']
         work_wechat_user = WorkWechatUser.valid_objects.filter(user=user).first()
         if work_wechat_user:
             work_wechat_user.work_wechat_user_id = work_wechat_user_id
@@ -400,7 +416,7 @@ class WorkWechatRegisterAndBindView(generics.CreateAPIView):
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = WorkWechatRegisterAndBindSerializer
+    serializer_class = RegisterAndBindSerializer
     read_serializer_class = UserWithPermSerializer
 
     def create(self, request, *args, **kwargs):
@@ -412,21 +428,21 @@ class WorkWechatRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        user.save()
+        user = self.perform_create(serializer)
 
         cli = CLI(user)
         cli.add_users_to_group([user], Group.get_extern_root())
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
-        work_wechat_user_id = serializer.validated_data['work_wechat_user_id']
+        work_wechat_user_id = serializer.validated_data['user_id']
         work_wechat_user = WorkWechatUser.valid_objects.create(work_wechat_user_id=work_wechat_user_id, user=user)
         work_wechat_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        user = serializer.save()
         LOG_CLI(serializer.instance).user_register()
+        return user
 
 
 class WechatQrCallbackView(APIView):
@@ -448,8 +464,8 @@ class WechatQrCallbackView(APIView):
         if code:
             try:
                 unionid = WechatUserInfoManager(appid=appid, secret=secret).get_union_id(code)
-            except APICallError:    # pylint: disable=broad-except
-                return ValidationError({'code': ['invalid']})
+            except APICallError:
+                raise ValidationError({'code': ['invalid']})
         else:
             raise ValidationError({'code': ['required']})
         context = self.get_token(unionid)
@@ -463,6 +479,7 @@ class WechatQrCallbackView(APIView):
         if wechat_user:
             user = wechat_user.user
             token = user.token
+            LOG_CLI(user).user_login()
             context = {'token': token, **UserWithPermSerializer(user).data}
         else:
             context = {'token': '', 'third_party_id': unionid}
@@ -476,7 +493,7 @@ class WechatBindAPIView(GenericAPIView):
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = WechatBindSerializer
+    serializer_class = BindSerializer
 
     @require_wechat_qr_supported
     def post(self, request):
@@ -486,7 +503,7 @@ class WechatBindAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        unionid = serializer.validated_data['unionid']
+        unionid = serializer.validated_data['user_id']
         wechat_user = WechatUser.valid_objects.filter(user=user).first()
         if wechat_user:
             wechat_user.unionid = unionid
@@ -506,7 +523,7 @@ class WechatRegisterAndBindView(generics.CreateAPIView):
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = WechatRegisterAndBindSerializer
+    serializer_class = RegisterAndBindSerializer
     read_serializer_class = UserWithPermSerializer
 
     def create(self, request, *args, **kwargs):
@@ -518,18 +535,124 @@ class WechatRegisterAndBindView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        user.save()
+        user = self.perform_create(serializer)
 
         cli = CLI(user)
         cli.add_users_to_group([user], Group.get_extern_root())
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
-        unionid = serializer.validated_data['unionid']
+        unionid = serializer.validated_data['user_id']
         wechat_user = WechatUser.valid_objects.create(unionid=unionid, user=user)
         wechat_user.save()
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        user = serializer.save()
         LOG_CLI(serializer.instance).user_register()
+        return user
+
+
+class QQQrCallbackView(APIView):
+    '''
+    qq/qr/callback/
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    @require_qq_qr_supported
+    def post(self, request):
+        '''
+        处理qq用户扫码之后重定向到‘首页’或‘绑定页面’
+        '''
+        code = request.data.get('code')
+
+        try:
+            app_id = QQConfig.get_current().app_id
+            app_key = QQConfig.get_current().app_key
+            open_id = QQInfoManager(app_id, app_key).get_open_id(code)
+        except APICallError:    # pylint: disable=broad-except
+            return Response({'code': 'invalid'}, HTTP_400_BAD_REQUEST)
+
+        context = self.get_token(open_id)
+
+        return Response(context, HTTP_200_OK)
+
+    def get_token(self, open_id):    # pylint: disable=no-self-use
+        '''
+        从QQUser表查询用户，返回token
+        '''
+        qq_user = QQUser.valid_objects.filter(open_id=open_id).first()
+        if qq_user:
+            user = qq_user.user
+            token = user.token
+            LOG_CLI(user).user_login()
+            context = {'token': token, **UserWithPermSerializer(user).data}
+        else:
+            context = {'token': '', 'third_party_id': open_id}
+        return context
+
+
+class QQBindAPIView(GenericAPIView):
+    '''
+    /ding/bind/
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = BindSerializer
+
+    @require_qq_qr_supported
+    def post(self, request):
+        '''
+        绑定用户
+        '''
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        open_id = serializer.validated_data['user_id']
+        qq_user = QQUser.valid_objects.filter(user=user).first()
+        if qq_user:
+            qq_user.open_id = open_id
+        else:
+            qq_user = QQUser.valid_objects.create(open_id=open_id, user=user)
+        qq_user.save()
+        token = user.token
+        data = {'token': token, **UserWithPermSerializer(user).data}
+        LOG_CLI(user).user_login()
+        return Response(data, HTTP_201_CREATED)
+
+
+class QQRegisterAndBindView(generics.CreateAPIView):
+    '''
+    qq扫码用户注册页面
+    '''
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = RegisterAndBindSerializer
+    read_serializer_class = UserWithPermSerializer
+
+    def create(self, request, *args, **kwargs):
+        '''
+        qq扫码加绑定
+        '''
+        if not AccountConfig.get_current().support_qq_qr_register:
+            return Response({'err_msg': 'qq qr register not allowed'}, HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = self.perform_create(serializer)
+
+        cli = CLI(user)
+        cli.add_users_to_group([user], Group.get_extern_root())
+        data = self.read_serializer_class(user).data
+        data.update(token=user.token)
+        open_id = serializer.validated_data['user_id']
+        qq_user = QQUser.valid_objects.create(open_id=open_id, user=user)
+        qq_user.save()
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        LOG_CLI(serializer.instance).user_register()
+        return user
