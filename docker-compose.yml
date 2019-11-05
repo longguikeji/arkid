@@ -1,0 +1,81 @@
+version: '3.5'
+
+services:
+  portal:
+    image: nginx:alpine
+    container_name: ${INSTANCE_ID}-portal
+    restart: always
+    networks:
+      - arkid
+    ports:
+      - 80:80
+    depends_on:
+      - be
+      - fe
+    links:
+      - be
+      - fe
+    volumes:
+      - ${WORKSPACE}/portal.conf:/etc/nginx/conf.d/default.conf
+
+  be:
+    image: longguikeji/arkid:1.1.0
+    container_name: ${INSTANCE_ID}-be
+    restart: always
+    networks:
+      - arkid
+    depends_on:
+      - db
+    volumes:
+      - ${WORKSPACE}/be_settings.py:/var/oneid/settings_local.py
+
+  fe:
+    image: longguikeji/arkid:1.1.0
+    container_name: ${INSTANCE_ID}-fe
+    restart: always
+    networks:
+      - arkid
+
+  db:
+    image: mysql:5.7
+    container_name: ${INSTANCE_ID}-db
+    restart: always
+    networks:
+      - arkid
+    environment:
+      - MYSQL_DATABASE=arkid
+      - MYSQL_ROOT_PASSWORD=${SQL_PWD}
+    volumes:
+      - ${WORKSPACE}/db/data:/var/lib/mysql
+      - ${WORKSPACE}/db/config:/etc/mysql/conf.d
+
+  ldap:
+    image: longguikeji/ark-sql-ldap:1.0.0
+    container_name: ${INSTANCE_ID}-ldap
+    restart: always
+    networks:
+      - arkid
+    depends_on:
+      - be
+    ports:
+      - 389:389
+    environment:
+      - SQL_HOST=127.0.0.1
+      - SQL_PORT=3306
+      - SQL_USER=root
+      - SQL_PWD=${SQL_PWD}
+      - LDAP_PASSWORD=${LDAP_PASSWORD}
+      - SQL_DB=arkid
+      - BACKEND=sql
+
+  redis:
+    image: redis:5.0.3
+    container_name: ${INSTANCE_ID}-redis
+    restart: always
+    networks:
+      - arkid
+
+network:
+  arkid:
+    name: ${INSTANCE_ID}
+    driver: bridge

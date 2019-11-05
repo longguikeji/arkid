@@ -64,3 +64,7 @@ native-ldap-docker-build:
 
 native-ldap-docker-push:
 	docker push longguikeji/ark-native-ldap:$(VERSION)
+
+
+docker-compose:
+	INSTANCE_ID=arkid WORKSPACE=/Users/yanghan/volume/arkid SQL_PWD=root LDAP_PASSWORD=root docker-compose up -d
