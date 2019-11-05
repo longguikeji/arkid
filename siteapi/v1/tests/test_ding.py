@@ -115,6 +115,33 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.status_code, 201)
         self.assertIn('token', res.json())
 
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
+    def test_patch_name(self, mock_clear_sms_token, mock_check_sms_token):
+        client = self.client
+        mock_clear_sms_token.return_value = True
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': 'username',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        patch_data = {
+            'username': 'username',
+            'name': 'new_name',
+            'ding_usre': {
+                'account': "",
+                'uid': "",
+                'data': "{}"
+            },
+        }
+        res = client.json_patch(reverse('siteapi:user_detail', args=('username', )), patch_data)
+        self.assertEqual(res.status_code, 200)
+        res = res.json()['user']
+        self.assertIn('new_name', res['name'])
+
     def test_ding_qr_register_forbidden(self):
         client = self.client
         account_config = AccountConfig.get_current()
