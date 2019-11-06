@@ -8,7 +8,7 @@ import json
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import DingUser, PosixUser, Group, Dept, User, CustomField, DeptMember
+from oneid_meta.models import DingUser, PosixUser, Group, Dept, User, CustomField, DeptMember, Perm, UserPerm
 
 EMPLOYEE = {
     'user': {
@@ -129,7 +129,7 @@ class UserTestCase(TestCase):
                                         'group_uids': ['root'],
                                         'dept_uids': ['root'],
                                         'user': {
-                                            'username': ' ds'
+                                            'username': 'fdsfds'
                                         },
                                     })
         self.assertEqual(res.status_code, 201)
@@ -145,7 +145,6 @@ class UserTestCase(TestCase):
                                       })
         self.assertEqual(res.status_code, 403)
 
-        from oneid_meta.models import Perm, UserPerm
         perm, _ = Perm.objects.get_or_create(subject='system', scope='user', action='create')
         user_perm = UserPerm.get(employee, perm)
         user_perm.permit()
@@ -428,6 +427,25 @@ class UserTestCase(TestCase):
         )
         expect = ['root', 'test']
         self.assertEqual(expect, [item['uid'] for item in res.json()['depts']])
+
+    def test_create_invalid_username(self):
+        res = self.create_user()
+        self.assertEqual(res.status_code, 201)
+        res = res.json()
+        res['user'].pop('nodes')
+
+        User.valid_objects.get(username=USER_DATA['username']).delete()
+        res = self.client.json_post(reverse('siteapi:user_list'),
+                                    data={
+                                        'group_uids': ['root'],
+                                        'dept_uids': ['none'],
+                                        'user': {
+                                            'username': '123',
+                                            'mobile': '13838383838'
+                                        },
+                                    })
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})
 
 
 class UcenterUserTestCase(TestCase):
