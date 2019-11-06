@@ -84,7 +84,7 @@ class EmailClaimAPIView(GenericAPIView):
         '''
         email_token = request.query_params.get('email_token', '')
         if not email_token:
-            raise ValidationError({'email_token': ['thid field is required']})
+            raise ValidationError({'email_token': ['this field is required']})
 
         res = self.get_serializer().check_email_token(email_token)
         return Response(res)

@@ -249,8 +249,8 @@ class UserActivateEmailClaimSerializer(EmailClaimSerializer):
         key = cls.gen_email_token_key(email_token)
         res = redis_conn.hgetall(key)
         if res:
-            email = res[b'email'].decode()
-            invite_key = res[b'key'].decode()
+            email = res['email']
+            invite_key = res['key']
             user = User.valid_objects.filter(private_email=email).first()
             if user:
                 return {'email': email, 'name': user.name, 'username': user.username, 'key': invite_key}
@@ -323,8 +323,8 @@ class UpdateEmailEmailClaimSerializer(EmailClaimSerializer):
         key = cls.gen_email_token_key(email_token)
         res = redis_conn.hgetall(key)
         if res:
-            email = res[b'email'].decode()
-            username = res[b'username'].decode()
+            email = res['email']
+            username = res['username']
             user = User.valid_objects.filter(username=username).first()
             if user:
                 return {'email': email, 'username': username, 'name': user.name}
