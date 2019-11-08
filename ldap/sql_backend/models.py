@@ -1,10 +1,14 @@
+'''
+ldap init model
+'''
 from django.db import models
-
-# Create your models here.
 
 
 class LDAPOCMappings(models.Model):
-    class Meta:
+    '''
+    LDAP objectClass 与 数据库表 之间的映射
+    '''
+    class Meta:    # pylint: disable=missing-class-docstring
         db_table = 'ldap_oc_mappings'
 
     name = models.CharField(max_length=128)
@@ -14,12 +18,17 @@ class LDAPOCMappings(models.Model):
     delete_proc = models.CharField(max_length=512, default='', blank=True, null=True)
     expect_return = models.IntegerField()
 
+    objects = models.Manager()
+
     def __str__(self):
         return '{}: {}'.format(self.name, self.keytbl)
 
 
 class LDAPAttrMapping(models.Model):
-    class Meta:
+    '''
+    LDAP objectAttr 与 数据库字段之间的映射
+    '''
+    class Meta:    # pylint: disable=missing-class-docstring
         db_table = 'ldap_attr_mappings'
 
     oc_map = models.ForeignKey(LDAPOCMappings, on_delete=models.PROTECT)
@@ -32,12 +41,17 @@ class LDAPAttrMapping(models.Model):
     param_order = models.IntegerField()
     expect_return = models.IntegerField()
 
+    objects = models.Manager()
+
     def __str__(self):
         return '{}: {}'.format(self.oc_map.name, self.name)
 
 
 class LDAPEntry(models.Model):
-    class Meta:
+    '''
+    LDAP 记录
+    '''
+    class Meta:    # pylint: disable=missing-class-docstring
         db_table = 'raw_ldap_entries'
 
     SUBJECT_CHOICES = (
@@ -52,41 +66,61 @@ class LDAPEntry(models.Model):
     parent = models.ForeignKey('self', null=True, on_delete=models.PROTECT)
     keyval = models.IntegerField(default=1)
     subject = models.IntegerField(choices=SUBJECT_CHOICES, default=0)
+    tag = models.IntegerField(default=0, blank=True, null=True)    # 刷新批次
+
+    objects = models.Manager()
 
     def __str__(self):
         return self.dn
 
 
 class LDAPEntryObjectclasses(models.Model):
-    class Meta:
+    '''
+    LDAP entry 与 数据库记录之间的映射
+    '''
+    class Meta:    # pylint: disable=missing-class-docstring
         db_table = 'ldap_entry_objclasses'
 
     entry = models.ForeignKey(LDAPEntry, on_delete=models.CASCADE)
     oc_name = models.CharField(max_length=128)
 
+    objects = models.Manager()
+
 
 class Organization(models.Model):
     '''
-    Organization
+    对应LDAP Organization
     '''
-    class Meta:
+    class Meta:    # pylint: disable=missing-class-docstring
         db_table = 'organization'
 
     name = models.CharField(max_length=128)
     o = models.CharField(max_length=128)
 
+    objects = models.Manager()
+
 
 class OrganizationUnit(models.Model):
-    class Meta:
+    '''
+    对应LDAP ou
+    '''
+    class Meta:    # pylint: disable=missing-class-docstring
         db_table = 'organization_unit'
 
     name = models.CharField(max_length=128)
     ou = models.CharField(max_length=128)
 
+    objects = models.Manager()
+
 
 class DomainComponent(models.Model):
-    class Meta:
+    '''
+    对应LDAP domainComponent
+    '''
+    class Meta:    # pylint: disable=missing-class-docstring
         db_table = 'domain_component'
 
     name = models.CharField(max_length=128)
     dc = models.CharField(max_length=128)
+
+    objects = models.Manager()
