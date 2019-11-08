@@ -4,7 +4,7 @@ views for user center
 '''
 import requests
 from rest_framework import generics, status
-from rest_framework.exceptions import ValidationError, AuthenticationFailed
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_200_OK
 from rest_framework.response import Response
@@ -158,6 +158,7 @@ class UcenterProfileInvitedAPIView(generics.RetrieveUpdateAPIView):
     被邀请人的身份信息 [GET], [PATCH]
     '''
 
+    authentication_classes = []
     permission_classes = []
 
     serializer_class = UserInvitedProfileSerializer
@@ -186,8 +187,8 @@ class UcenterProfileInvitedAPIView(generics.RetrieveUpdateAPIView):
         validated_data = serializer.validated_data
 
         user = validated_data.pop('user')
-        if user.is_settled:
-            raise AuthenticationFailed({'only for unsettled user'})
+        if user.is_settled:    # raise AuthenticationFailed return 403 ?
+            return Response('only for unsettled user', status=status.HTTP_401_UNAUTHORIZED)
         cli = CLI(user=user)
         user.__dict__.update(validated_data)
         user.save()
@@ -247,8 +248,8 @@ class DingLoginAPIView(generics.GenericAPIView):
         https://open-doc.dingtalk.com/microapp/serverapi2/clotub
     '''
 
-    permission_classes = []
     authentication_classes = []
+    permission_classes = []
 
     def post(self, request):    # pylint: disable=no-self-use
         '''
