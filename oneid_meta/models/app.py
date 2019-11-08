@@ -241,13 +241,21 @@ class HTTPAPP(BaseModel):
         http 接口相关信息，用于展示
         '''
         return [{
-            'name': '认证地址',
-            'key': 'auth_url',
+            'name': '登录地址',
+            'key': 'login_url',
+            'value': settings.BASE_URL + '/siteapi/v1/ucenter/login/',
+        }, {
+            'name': '登录参数(POST)',
+            'key': 'login_params',
+            'value': '-d "username=${username}&password=${password}"'
+        }, {
+            'name': 'token认证地址',
+            'key': 'token_auth_url',
             'value': settings.BASE_URL + '/siteapi/v1/auth/token/',
         }, {
-            'name': '认证参数',
-            'key': 'auth_params',
-            'value': '{"username": "${username}", "password": "${password}"}'
+            'name': '认证参数(GET)',
+            'key': 'token_auth_params',
+            'value': '-H "authorization: token ${token}"'
         }, {
             'name': '详细内容以及更多接口支持',
             'key': 'api_docs',
