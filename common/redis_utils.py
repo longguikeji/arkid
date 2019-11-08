@@ -25,5 +25,3 @@ class RedisStorage(object):
     def __init__(self, host='localhost', port=6379, db=0, password=None):
         self.pool = redis.ConnectionPool(host=host, port=port, decode_responses=True, password=password)
         self.redisStorage = redis.StrictRedis(connection_pool=self.pool, db=db)
-
-redisStorage = RedisStorage().redisStorage
