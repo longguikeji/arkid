@@ -1,5 +1,5 @@
 '''
-tests for api about ucenter
+tests for api about ding qr
 '''
 # pylint: disable=missing-docstring
 
@@ -8,7 +8,7 @@ from unittest import mock
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import (User, DingUser, AccountConfig, EmailConfig, SMSConfig, DingConfig)
+from oneid_meta.models import (User, DingUser, AccountConfig, DingConfig)
 
 MAX_APP_ID = 2
 
@@ -29,40 +29,28 @@ class UCenterTestCase(TestCase):
         ding_config.qr_app_valid = True
         ding_config.save()
 
-        email_config = EmailConfig.get_current()
-        email_config.is_valid = True
-        email_config.save()
-
-        mobile_config = SMSConfig.get_current()
-        mobile_config.is_valid = True
-        mobile_config.save()
-
-    @mock.patch("siteapi.v1.views.qr.DingQrCallbackView.get_ding_id")
+    @mock.patch("thirdparty_data_sdk.dingding.dingsdk.ding_id_manager.DingIdManager.get_ding_id")
     def test_ding_qr_login(self, mock_get_ding_id):
         ding_config = DingConfig.get_current()
         ding_config.__dict__.update(qr_app_id='qr_app_id', qr_app_secret='qr_app_secret', qr_app_valid=True)
         ding_config.save()
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
-        ding_id = 'ding_idding_id'
+        ding_id = 'test_ding_id'
         ding_user = DingUser.valid_objects.create(ding_id=ding_id, user=user)
         ding_user.save()
         client = self.client
-        mock_get_ding_id.side_effect = [{'ding_id': 'ding_idding_id',\
-            'openid': 'openidopenid', 'unionid': 'unionidunionid'}]
+        mock_get_ding_id.side_effect = ['test_ding_id']
 
         res = client.post(reverse('siteapi:ding_qr_callback'), data={'code': 'CODE...........', 'state': 'STATE'})
-        self.assertEqual(res.status_code, 200)
-        self.assertIn('token', res.json())
-        self.assertNotEqual(res.json()['token'], '')
+        self.assertIsNot('', res.json()['token'])
 
-    @mock.patch("siteapi.v1.views.qr.DingQrCallbackView.get_ding_id")
+    @mock.patch("thirdparty_data_sdk.dingding.dingsdk.ding_id_manager.DingIdManager.get_ding_id")
     def test_ding_qr_login_newuser(self, mock_get_ding_id):
         client = self.client
-        mock_get_ding_id.side_effect = [{'ding_id': 'unregistered_dingid',\
-            'openid': 'unknow_openid', 'unionid': 'unknowunionid'}]
+        mock_get_ding_id.side_effect = ['unregistered_dingid']
         res = client.post(reverse('siteapi:ding_qr_callback'), data={'code': 'CODE...........', 'state': 'STATE'})
-        expect = {'token': '', 'ding_id': 'unregistered_dingid'}
+        expect = {'token': '', 'third_party_id': 'unregistered_dingid'}
         self.assertEqual(res.json(), expect)
 
     def test_ding_qr_login_forbidden(self):
@@ -82,7 +70,7 @@ class UCenterTestCase(TestCase):
         client = self.client
         mock_clear_sms_token.return_value = True
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
-        res = client.post(reverse('siteapi:ding_query_user'), data={'sms_token': '123132132131'})
+        res = client.post(reverse('siteapi:qr_query_user'), data={'sms_token': '123132132131'})
         expect = {'exist': False}
         self.assertEqual(res.json(), expect)
 
@@ -94,7 +82,7 @@ class UCenterTestCase(TestCase):
         user = User.objects.create(username='zhangsan', password='zhangsan', name='张三', mobile='18812341234')
         user.save()
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
-        res = client.post(reverse('siteapi:ding_query_user'), data={'sms_token': 'test_sms_token'})
+        res = client.post(reverse('siteapi:qr_query_user'), data={'sms_token': 'test_sms_token'})
         expect = {'exist': True}
         self.assertEqual(res.json(), expect)
 
@@ -121,9 +109,37 @@ class UCenterTestCase(TestCase):
                               'username': 'username',
                               'password': 'password',
                               'sms_token': 'test_sms_token',
-                              'ding_id': 'test_ding_id'
+                              'user_id': 'test_ding_id'
                           })
         self.assertEqual(res.status_code, 201)
+        self.assertIn('token', res.json())
+
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
+    def test_patch_name(self, mock_clear_sms_token, mock_check_sms_token):
+        client = self.client
+        mock_clear_sms_token.return_value = True
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': 'username',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        patch_data = {
+            'username': 'username',
+            'name': 'new_name',
+            'ding_usre': {
+                'account': "",
+                'uid': "",
+                'data': "{}"
+            },
+        }
+        res = client.json_patch(reverse('siteapi:user_detail', args=('username', )), patch_data)
+        self.assertEqual(res.status_code, 200)
+        res = res.json()['user']
+        self.assertIn('new_name', res['name'])
 
     def test_ding_qr_register_forbidden(self):
         client = self.client
@@ -135,7 +151,7 @@ class UCenterTestCase(TestCase):
                               'username': 'username',
                               'password': 'password',
                               'sms_token': 'test_sms_token',
-                              'ding_id': 'test_ding_id'
+                              'user_id': 'test_ding_id'
                           })
         expect = {'err_msg': 'ding qr register not allowed'}
         self.assertEqual(res.json(), expect)
@@ -153,5 +169,60 @@ class UCenterTestCase(TestCase):
         ding_user.save()
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:ding_bind'), data={'sms_token':\
-            'test_sms_token', 'ding_id':'test_ding_id'})
+            'test_sms_token', 'user_id':'test_ding_id'})
         self.assertEqual(res.status_code, 201)
+        self.assertIn('token', res.json())
+
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
+    def test_qr_register_invalid_username(self, mock_clear_sms_token, mock_check_sms_token):    # pylint: disable=invalid-name
+        client = self.client
+        mock_clear_sms_token.return_value = True
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': '123',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': '12345678901234567',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': '@#%@%@53@22432',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})
+
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': '中文注册',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})
+
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': 'REWTWE',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})

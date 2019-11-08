@@ -5,10 +5,10 @@ import json
 import copy
 from executer.core import Executer
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPKEY_APPSECRET
 from thirdparty_data_sdk.dingding.dingsdk.user_manager import UserManager
 from thirdparty_data_sdk.dingding.dingsdk.department_manager import DepartmentManager
 from thirdparty_data_sdk.dingding.dingsdk.role_manager import RoleManager
-from oneid.settings import AGENT_ID, DINGDING_APP_VERSION
 from oneid_meta.models import User, DeptMember, Dept, Group, DingConfig
 
 DEFAULT_DEPT = '1'
@@ -18,7 +18,6 @@ class DingExecuter(Executer):
     """
     钉钉数据源操作类
     """
-
     def __init__(self, app_key=None, app_secret=None, app_version=None, agent_id=None):
         """
         初始化钉钉相关参数
@@ -27,12 +26,12 @@ class DingExecuter(Executer):
             self.token_manager = AccessTokenManager(app_key, app_secret, app_version)
         else:
             ding_config = DingConfig.get_current()
-            self.token_manager = AccessTokenManager(ding_config.app_key, ding_config.app_secret, DINGDING_APP_VERSION)
+            self.token_manager = AccessTokenManager(ding_config.app_key, ding_config.app_secret,
+                                                    TOKEN_FROM_APPKEY_APPSECRET)
 
         self.user_manager = UserManager(self.token_manager)
         self.dept_manager = DepartmentManager(self.token_manager)
         self.role_manager = RoleManager(self.token_manager)
-        self.agent_id = AGENT_ID
 
     def create_user(self, user_info):
         """
@@ -288,22 +287,18 @@ class DingExecuter(Executer):
         """
         创建组时已经做了加入
         """
-
     def move_group_to_group(self, group, parent_group):
         """
         钉钉需要角色下没有员工才可以删除
         """
-
     def sort_groups_in_group(self, groups, parent_group):
         """
         钉钉的角色没有顺序
         """
-
     def sort_users_in_group(self, users, group):
         """
         钉钉的角色没有顺序
         """
-
     def set_user_password(self, user, plaintext):
         """
         钉钉没有用户名密码

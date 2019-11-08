@@ -4,7 +4,7 @@ serializers for ucenter
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from common.django.drf.serializer import DynamicFieldsModelSerializer
-from oneid_meta.models import User, Invitation, DingUser
+from oneid_meta.models import User, Invitation
 from executer.core import CLI
 from infrastructure.serializers.sms import (
     SMSClaimSerializer,
@@ -21,6 +21,7 @@ from infrastructure.serializers.email import (
 )
 
 from oneid.auth_backend import OneIDBasicAuthBackend
+from siteapi.v1.serializers.utils import username_valid
 
 
 class SetPasswordSerializer(serializers.Serializer):    # pylint: disable=abstract-method
@@ -109,7 +110,7 @@ class UserRegisterSerializer(DynamicFieldsModelSerializer):
     Serializer user register
     '''
 
-    username = serializers.CharField()
+    username = serializers.CharField(max_length=16, min_length=4, required=True)
     password = serializers.CharField()
     sms_token = serializers.CharField(required=False)
     email_token = serializers.CharField(required=False)
@@ -135,6 +136,9 @@ class UserRegisterSerializer(DynamicFieldsModelSerializer):
         username = validated_data['username']
         if User.valid_objects.filter(username=username).exists():
             raise ValidationError({'username': ['existed']})
+
+        if not username_valid(username):
+            raise ValidationError({'username': ['invalid']})
 
         sms_token = validated_data.get('sms_token', '')
         if sms_token:
@@ -296,24 +300,23 @@ class UserContactSerializer(serializers.Serializer):    # pylint: disable=abstra
         return instance
 
 
-class DingBindSerializer(serializers.Serializer):    # pylint: disable=abstract-method
+class BindSerializer(serializers.Serializer):    # pylint: disable=abstract-method
     '''
-    dingding bind
     - by sms_token
-    - by ding_id
+    - by user_id
     '''
 
     sms_token = serializers.CharField(required=True)
-    ding_id = serializers.CharField(required=True)
+    user_id = serializers.CharField(required=True)
 
     class Meta:
         '''
-        关联DingUser表
+        关联User表
         '''
-        model = DingUser
+        model = User
         fields = (
             'sms_token',
-            'ding_id',
+            'user_id',
         )
 
     def validate(self, attrs):
@@ -330,14 +333,14 @@ class DingBindSerializer(serializers.Serializer):    # pylint: disable=abstract-
         return instance
 
 
-class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
+class RegisterAndBindSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer user register
     '''
-    username = serializers.CharField(required=True)
+    username = serializers.CharField(required=True, min_length=4, max_length=16)
     password = serializers.CharField(required=True)
     sms_token = serializers.CharField(required=True)
-    ding_id = serializers.CharField(required=True)
+    user_id = serializers.CharField(required=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = User
@@ -346,7 +349,7 @@ class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
             'username',
             'password',
             'sms_token',
-            'ding_id',
+            'user_id',
         )
 
     def validate(self, attrs):
@@ -361,12 +364,14 @@ class DingRegisterAndBindSerializer(DynamicFieldsModelSerializer):
         if User.valid_objects.filter(username=username).exists():
             raise ValidationError({'username': ['existed']})
 
+        if not username_valid(username):
+            raise ValidationError({'username': ['invalid']})
+
         sms_token = validated_data.get('sms_token', None)
         if sms_token:
             mobile = SMSClaimSerializer.check_sms_token(sms_token)['mobile']
             SMSClaimSerializer.clear_sms_token(sms_token)
             validated_data['mobile'] = mobile
-
         return validated_data
 
     def create(self, validated_data):

@@ -1,8 +1,6 @@
 '''
 serializers for user
 '''
-import re
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -20,6 +18,7 @@ from common.django.drf.serializer import DynamicFieldsModelSerializer
 from common.django.drf.serializer import IgnoreNoneMix
 from siteapi.v1.serializers.dept import DeptSerializer
 from siteapi.v1.serializers.group import GroupSerializer
+from siteapi.v1.serializers.utils import username_valid
 
 
 class CustomUserSerailizer(DynamicFieldsModelSerializer):
@@ -287,7 +286,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         校验username唯一
         '''
         value = value.strip(' ')
-        if not re.match(r'^[a-z0-9]+$', value):
+        if not username_valid(value):
             raise ValidationError('invalid')
         exclude = {'pk': self.instance.pk} if self.instance else {}
         if self.Meta.model.valid_objects.filter(username=value).exclude(**exclude).exists():
@@ -466,7 +465,7 @@ class ResetUserPasswordSerializer(DynamicFieldsModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        from executer.core import CLI
+        from executer.core import CLI    # pylint: disable=import-outside-toplevel
         password = validated_data.get('password')
         cli = CLI()
         cli.set_user_password(instance, password)

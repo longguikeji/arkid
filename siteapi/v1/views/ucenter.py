@@ -237,7 +237,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer.instance)
+        super().perform_create(serializer)
         LOG_CLI(serializer.instance).user_register()
 
 

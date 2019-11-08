@@ -1,6 +1,10 @@
 FROM python:3.6 as build_deps
 EXPOSE 80
 WORKDIR /var/oneid
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        vim supervisor gettext
+ADD devops/pip.conf /etc/pip.conf
 ADD requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -17,10 +21,7 @@ ADD . .
 RUN make test
 
 FROM build_deps as build
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        vim supervisor gettext \
-    && pip install uwsgi
+RUN pip install uwsgi
 ADD . .
 COPY uwsgi.ini /etc/uwsgi/uwsgi.ini
 RUN \

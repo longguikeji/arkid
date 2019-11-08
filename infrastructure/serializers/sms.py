@@ -5,12 +5,14 @@ import random
 import string    # pylint:disable=deprecated-module
 import time
 
-import redis
+import re
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 
 from oneid_meta.models import User, Invitation, SMSConfig
+from oneid.utils import redis_conn
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from infrastructure.views.captcha_img import check_captcha    # pylint: disable=unused-import
 
@@ -55,7 +57,7 @@ class SMSClaimSerializer(serializers.Serializer):
 
     username = serializers.CharField(required=False)
 
-    def get_template_id(self):
+    def get_template_id(self):    # pylint: disable=no-self-use
         '''
         读取模板id
         '''
@@ -66,7 +68,6 @@ class SMSClaimSerializer(serializers.Serializer):
         '''
         校验手机
         '''
-        import re
         if re.match(r'^1[\d]{10}$', value):
             return value
         raise ValidationError('invalid')
@@ -102,7 +103,6 @@ class SMSClaimSerializer(serializers.Serializer):
         key = self.gen_sms_code_key(mobile)
         value = code
 
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         redis_conn.set(key, value, ex=settings.SMS_LIFESPAN.seconds)
         return '_'
 
@@ -136,10 +136,9 @@ class SMSClaimSerializer(serializers.Serializer):
         if not code:
             raise ValidationError({'code': ['This field is required.']})
 
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         res = redis_conn.get(cls.gen_sms_code_key(mobile))
         if res:
-            send_code = res.decode()
+            send_code = res
             if send_code and code == send_code:
                 sms_token = "".join(random.choice(string.ascii_letters + string.digits) for _ in range(24))
                 redis_conn.set(cls.gen_sms_token_key(sms_token), mobile, ex=settings.SMS_LIFESPAN.seconds * 10)
@@ -153,11 +152,10 @@ class SMSClaimSerializer(serializers.Serializer):
         通过短信验证后，拿到的身份凭证。用于临时性的二次验证。
         有效期长于之前的验证码，一般短于账号密码登录后的token。
         '''
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         key = cls.gen_sms_token_key(sms_token)
         res = redis_conn.get(key)
         if res:
-            return {'mobile': res.decode()}    # mobile
+            return {'mobile': res}    # mobile
         raise ValidationError({'sms_token': ['invalid']})
 
     @classmethod
@@ -165,7 +163,6 @@ class SMSClaimSerializer(serializers.Serializer):
         '''
         清除sms_token
         '''
-        redis_conn = redis.Redis(settings.REDIS_HOST)
         redis_conn.delete(cls.gen_sms_token_key(sms_token))
 
 

@@ -28,7 +28,7 @@ class ObjSliceAPIView(APIView):
         data = request.data
         return Response(self.retrieve(request, data))
 
-    def get(self, request):
+    def get(self, request):    # pylint: disable=missing-function-docstring
         data = dict(request.query_params)
         return Response(self.retrieve(request, data))
 
