@@ -95,8 +95,9 @@ class UCenterTestCase(TestCase):
         user.save()
         mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
         res = client.post(reverse('siteapi:ding_bind'), data={'sms_token':\
-            'test_sms_token', 'ding_id':'ding_idding_id'})
+            'test_sms_token', 'user_id':'ding_idding_id'})
         self.assertEqual(res.status_code, 201)
+        self.assertIn('token', res.json())
 
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
     @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
