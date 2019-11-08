@@ -397,7 +397,7 @@ class DeptTestCase(TestCase):
                 'email':
                 '',
                 'is_settled':
-                True,
+                False,
                 'is_manager':
                 False,
                 'is_admin':
@@ -418,6 +418,8 @@ class DeptTestCase(TestCase):
                 0,
                 'avatar':
                 '',
+                'has_password':
+                True,
                 'require_reset_password':
                 False,
                 'nodes': [{

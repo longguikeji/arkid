@@ -293,8 +293,17 @@ class User(BaseModel, PermOwnerMixin):
     @property
     def is_settled(self):
         '''
+        是否已激活
         是否是入驻的用户
-        对于导入、或者手动添加的用户，在真实用户未设置密码前，均视为非有效用户
+        对于导入、或者手动添加的用户，在真实用户未登录前，均视为未激活用户
+        '''
+        return bool(self.last_active_time)
+
+    @property
+    def has_password(self):
+        '''
+        是否有密码
+        没有密码的情况，仅包括 管理员后台添加用户时未设置密码，此用户在激活设置密码前
         '''
         return self.password != ""
 
