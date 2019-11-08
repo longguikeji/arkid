@@ -94,11 +94,29 @@ urlpatterns = [
     url(r'^auth/token/$', ucenter_views.TokenPermAuthView.as_view(), name='token_perm_auth'),
     url(r'^auth/invitation_key/$', ucenter_views.InvitationKeyAuthView.as_view(), name='invitation_key_auth'),
     url(r'^revoke/token/$', ucenter_views.RevokeTokenView.as_view(), name='revoke_token'),
-    #dingding
+    # dingding
     url(r'^ding/qr/callback/$', qr_views.DingQrCallbackView.as_view(), name='ding_qr_callback'),
     url(r'^ding/bind/$', qr_views.DingBindAPIView.as_view(), name='ding_bind'),
     url(r'^ding/register/bind/$', qr_views.DingRegisterAndBindView.as_view(), name='ding_register_bind'),
-    url(r'^ding/query/user/$', qr_views.DingQueryUserAPIView.as_view(), name='ding_query_user'),
+    url(r'^qr/query/user/$', qr_views.QrQueryUserAPIView.as_view(), name='qr_query_user'),
+    # alipay
+    url(r'^alipay/qr/callback/$', qr_views.AlipayQrCallbackView.as_view(), name='alipay_qr_callback'),
+    url(r'^alipay/bind/$', qr_views.AlipayBindAPIView.as_view(), name='alipay_bind'),
+    url(r'^alipay/register/bind/$', qr_views.AlipayRegisterAndBindView.as_view(), name='alipay_register_bind'),
+    # qq
+    url(r'^qq/qr/callback/$', qr_views.QQQrCallbackView.as_view(), name='qq_qr_callback'),
+    url(r'^qq/bind/$', qr_views.QQBindAPIView.as_view(), name='qq_bind'),
+    url(r'^qq/register/bind/$', qr_views.QQRegisterAndBindView.as_view(), name='qq_register_bind'),
+    # work_wechat
+    url(r'^work_wechat/qr/callback/$', qr_views.WorkWechatQrCallbackView.as_view(), name='work_wechat_qr_callback'),
+    url(r'^work_wechat/bind/$', qr_views.WorkWechatBindAPIView.as_view(), name='work_wechat_bind'),
+    url(r'^work_wechat/register/bind/$', qr_views.WorkWechatRegisterAndBindView.as_view(),\
+        name='work_wechat_register_bind'),
+    # wechat
+    url(r'^wechat/qr/callback/$', qr_views.WechatQrCallbackView.as_view(), name='wechat_qr_callback'),
+    url(r'^wechat/bind/$', qr_views.WechatBindAPIView.as_view(), name='wechat_bind'),
+    url(r'^wechat/register/bind/$', qr_views.WechatRegisterAndBindView.as_view(),\
+        name='wechat_register_bind'),
     # shortcut
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
     url(r'^slice/delete/$', shortcut_views.ObjSliceDeleteAPIView.as_view(), name='shortcut_slice_delete'),

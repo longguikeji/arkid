@@ -2,6 +2,8 @@
 '''
 schema of Users
 '''
+
+# pylint: disable=too-many-lines
 from itertools import chain
 from django.core.cache import cache
 from django.db import models
@@ -10,12 +12,13 @@ from django.conf import settings
 from django.utils import timezone
 # from django.db.utils import IntegrityError
 import jsonfield
-
 from rest_framework.exceptions import ValidationError
 from common.django.model import BaseModel, IgnoreDeletedManager
+from oneid_meta.models.config import CustomField
 from oneid_meta.models.group import GroupMember
 from oneid_meta.models.dept import DeptMember
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
+from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
 
 
@@ -53,25 +56,14 @@ class User(BaseModel, PermOwnerMixin):
     mobile = models.CharField(max_length=64, blank=True, default='', verbose_name='手机')
     employee_number = models.CharField(max_length=255, blank=True, default='', verbose_name='工号')
     position = models.CharField(max_length=255, blank=True, default='', verbose_name='职位')
-    gender = models.IntegerField(
-        choices=GENDER_CHOICES,
-        default=0,
-        verbose_name='性别',
-    )
+    gender = models.IntegerField(choices=GENDER_CHOICES, default=0, verbose_name='性别')
     avatar = models.CharField(max_length=1024, blank=True, default='', verbose_name='头像')
-
     is_boss = models.BooleanField(default=False, verbose_name='是否为主管理员')
-
     from_register = models.BooleanField(default=False, verbose_name='是否来自自己注册')
-
     origin = models.IntegerField(choices=ORIGIN_CHOICES, default=0, verbose_name='账号来源')
-
     hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
-
     remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
-
     last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')
-
     require_reset_password = models.BooleanField(default=False, verbose_name='是否需要重置密码')
 
     isolated_objects = IsolatedManager()
@@ -278,7 +270,7 @@ class User(BaseModel, PermOwnerMixin):
         '''
         return valid token obj
         '''
-        from drf_expiring_authtoken.models import ExpiringToken
+        from drf_expiring_authtoken.models import ExpiringToken    # pylint: disable=import-outside-toplevel
         token, _ = ExpiringToken.objects.get_or_create(user=self)
         return token
 
@@ -293,7 +285,7 @@ class User(BaseModel, PermOwnerMixin):
         '''
         使当前token失效，不生成新的token
         '''
-        from drf_expiring_authtoken.models import ExpiringToken
+        from drf_expiring_authtoken.models import ExpiringToken    # pylint: disable=import-outside-toplevel
         token = ExpiringToken.objects.filter(user=self).first()
         if token:
             token.delete()
@@ -331,7 +323,6 @@ class User(BaseModel, PermOwnerMixin):
             res = set([node.node_uid for node in self.depts] + [node.node_uid for node in self.groups])
             cache.set(key, res)
             return res
-
         return cache_data
 
     @property
@@ -339,7 +330,6 @@ class User(BaseModel, PermOwnerMixin):
         '''
         所有直属节点以及隶属节点的uid
         '''
-        from oneid_meta.models.mixin import TreeNode as Node
         key = f'oneid:user:{self.username}:upstream_node'
         cache_data = cache.get(key)
         if cache_data is None:
@@ -348,7 +338,6 @@ class User(BaseModel, PermOwnerMixin):
                 res.update(parent_node.upstream_uids)
             cache.set(key, res)
             return res
-
         return cache_data
 
     def update_cache(self):
@@ -445,19 +434,6 @@ class User(BaseModel, PermOwnerMixin):
             self.save(update_fields=['last_active_time'])
 
 
-class DingUser(BaseModel):
-    '''
-    钉钉用户
-    '''
-    user = models.OneToOneField(User, verbose_name='用户', related_name='ding_user', on_delete=models.PROTECT)
-    account = models.CharField(max_length=64, blank=False, verbose_name='钉钉账号(手机)')
-    uid = models.CharField(max_length=255, blank=False, verbose_name='员工在企业内的唯一标识')
-    data = models.TextField(blank=True, default='{}', verbose_name='钉钉员工详细数据(JSON)')
-    ding_id = models.TextField(max_length=255, blank=True, verbose_name='钉钉ID')
-    open_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用内的唯一标识')
-    union_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用所属的钉钉开放平台账号内的唯一标识')
-
-
 class PosixUser(BaseModel):
     '''
     服务器用户
@@ -490,7 +466,6 @@ class CustomUser(BaseModel):
         前端友好的输出
         '''
         # pylint: disable=no-member
-        from oneid_meta.models import CustomField
         res = []
         data = self.data
 
@@ -527,3 +502,48 @@ class CustomUser(BaseModel):
                         'value': data.get(field.uuid.hex),
                     })
         return res
+
+
+class DingUser(BaseModel):
+    '''
+    钉钉用户
+    '''
+    user = models.OneToOneField(User, verbose_name='用户', related_name='ding_user', on_delete=models.PROTECT)
+    account = models.CharField(max_length=64, blank=True, verbose_name='钉钉账号(手机)')
+    uid = models.CharField(max_length=255, blank=True, verbose_name='员工在企业内的唯一标识')
+    data = models.TextField(blank=True, default='{}', verbose_name='钉钉员工详细数据(JSON)')
+    ding_id = models.TextField(max_length=255, blank=True, verbose_name='钉钉ID')
+    open_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用内的唯一标识')
+    union_id = models.TextField(max_length=255, blank=True, verbose_name='用户在当前开放应用所属的钉钉开放平台账号内的唯一标识')
+
+
+class AlipayUser(BaseModel):
+    '''
+    支付宝用户
+    '''
+    user = models.OneToOneField(User, verbose_name='用户', related_name='alipay_user', on_delete=models.PROTECT)
+    alipay_user_id = models.TextField(max_length=255, blank=True, verbose_name='支付宝ID')
+
+
+class WorkWechatUser(BaseModel):
+    '''
+    企业微信用户
+    '''
+    user = models.OneToOneField(User, verbose_name='用户', related_name='work_wechat_user', on_delete=models.PROTECT)
+    work_wechat_user_id = models.TextField(max_length=255, blank=True, verbose_name='企业微信ID')
+
+
+class WechatUser(BaseModel):
+    '''
+    微信用户
+    '''
+    user = models.OneToOneField(User, verbose_name='用户', related_name='wechat_user', on_delete=models.PROTECT)
+    unionid = models.TextField(max_length=255, blank=True, verbose_name='用户OPENID')
+
+
+class QQUser(BaseModel):
+    '''
+    qq用户绑定表
+    '''
+    user = models.OneToOneField(User, verbose_name='用户', related_name='qq_user', on_delete=models.PROTECT)
+    open_id = models.TextField(max_length=255, blank=True, verbose_name='qq平台openid')

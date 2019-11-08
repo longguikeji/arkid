@@ -3,7 +3,8 @@
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig
+from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig,\
+    AlipayConfig, WorkWechatConfig, WechatConfig, QQConfig
 
 
 class MetaTestCase(TestCase):
@@ -15,6 +16,10 @@ class MetaTestCase(TestCase):
     def test_meta(self):
         account_config = AccountConfig.get_current()
         account_config.allow_ding_qr = True
+        account_config.allow_alipay_qr = True
+        account_config.allow_qq_qr = True
+        account_config.allow_work_wechat_qr = True
+        account_config.allow_wechat_qr = True
         account_config.save()
         company_config = CompanyConfig.get_current()
         company_config.fullname_cn = "demo"
@@ -24,6 +29,27 @@ class MetaTestCase(TestCase):
         ding_config.qr_app_id = 'qr_app_id'
         ding_config.qr_app_valid = True
         ding_config.save()
+        alipay_config = AlipayConfig.get_current()
+        alipay_config.app_id = 'test_app_id'
+        alipay_config.qr_app_valid = True
+        alipay_config.save()
+        qq_config = QQConfig.get_current()
+        qq_config.app_id = 'test_app_id'
+        qq_config.redirect_uri = 'test_redirect_uri'
+        qq_config.qr_app_valid = True
+        qq_config.save()
+
+        work_wechat_config = WorkWechatConfig.get_current()
+        work_wechat_config.corp_id = 'test_corp_id'
+        work_wechat_config.agent_id = 'test_agent_id'
+        work_wechat_config.qr_app_valid = True
+        work_wechat_config.save()
+
+        wechat_config = WechatConfig.get_current()
+        wechat_config.appid = 'test_appid'
+        wechat_config.secret = 'test_secret'
+        wechat_config.qr_app_valid = True
+        wechat_config.save()
 
         res = self.anonymous.get(reverse('siteapi:meta'))
         expect = {
@@ -41,8 +67,7 @@ class MetaTestCase(TestCase):
             'ding_config': {
                 'corp_id': 'corp_id',
                 'app_key': '',
-                'qr_app_id':'qr_app_id',
-                'qr_callback_url':'http://localhost/siteapi/v1/ding/qr/callback/'
+                'qr_app_id': 'qr_app_id',
             },
             'account_config': {
                 'support_email': False,
@@ -50,6 +75,23 @@ class MetaTestCase(TestCase):
                 'support_email_register': False,
                 'support_mobile_register': False,
                 'support_ding_qr': True,
+                'support_alipay_qr': True,
+                'support_qq_qr': True,
+                'support_work_wechat_qr': True,
+                'support_wechat_qr': True,
+            },
+            'alipay_config': {
+                'app_id': 'test_app_id',
+            },
+            'qq_config': {
+                'app_id': 'test_app_id',
+            },
+            'work_wechat_config': {
+                'corp_id': 'test_corp_id',
+                'agent_id': 'test_agent_id'
+            },
+            'wechat_config': {
+                'appid': 'test_appid'
             },
         }
         self.assertEqual(res.json(), expect)
