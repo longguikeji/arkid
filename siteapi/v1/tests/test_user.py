@@ -32,6 +32,7 @@ EMPLOYEE = {
         'last_active_time': None,
         'created': TestCase.now_str,
         'require_reset_password': False,
+        'has_password': False,
         'ding_user': {
             'uid': 'ding_employee2',
             'account': '18812345678',
@@ -202,6 +203,7 @@ class UserTestCase(TestCase):
                     'hiredate': None,
                     'remark': '',
                     'require_reset_password': False,
+                    'has_password': False,
                 },
                 'groups': [],
                 'depts': [],
@@ -337,6 +339,7 @@ class UserTestCase(TestCase):
             },
             'hiredate': '2019-06-04T09:01:44+08:00',
             'require_reset_password': False,
+            'has_password': False,
         }
         res['user'].pop('nodes')
         self.assertEqual(expect, res['user'])

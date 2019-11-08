@@ -167,7 +167,8 @@ class UCenterTestCase(TestCase):
             'avatar': '',
             'is_admin': True,
             'is_manager': False,
-            'is_settled': True,
+            'is_settled': False,
+            'has_password': True,
             'is_extern_user': False,
             'origin_verbose': '脚本添加',
             'require_reset_password': False,
@@ -234,6 +235,10 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
         res = client.post(reverse('siteapi:user_login'), data={'mobile': '18812341234', 'password': 'test'})
         self.assertEqual(res.status_code, 200)
+
+        user = User.objects.get(username='test')
+        self.assertIsNotNone(user.last_active_time)
+        self.assertTrue(user.is_settled)
 
         client.credentials(HTTP_AUTHORIZATION='Token ' + res.json()['token'])
         res = client.get(reverse('siteapi:user_self_perm'))

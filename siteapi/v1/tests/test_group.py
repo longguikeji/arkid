@@ -462,6 +462,8 @@ class GroupTestCase(TestCase):
                 'username':
                 'employee',
                 'is_settled':
+                False,
+                'has_password':
                 True,
                 'is_manager':
                 False,

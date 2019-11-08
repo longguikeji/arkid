@@ -199,6 +199,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'last_active_time',
             'is_extern_user',
             'require_reset_password',
+            'has_password',
         )
 
     def create(self, validated_data):
@@ -345,6 +346,7 @@ class UserWithPermSerializer(UserSerializer):
             'is_extern_user',
             'origin_verbose',
             'require_reset_password',
+            'has_password',
         )
 
     def get_perms(self, obj):    # pylint: disable=no-self-use
