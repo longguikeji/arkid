@@ -85,6 +85,7 @@ FORMAT: 1A
     + pub_key
 + custom_user (CustomUser) - May Null-> 无该键
 + require_reset_password(boolean) - 是否需要重置密码
++ has_password (boolean) - 是否有密码，目前仅用于邀请链接的页面
 
 ## UserWithPerm(User)
 + perms (array[string]) - 拥有授权的权限的uid
