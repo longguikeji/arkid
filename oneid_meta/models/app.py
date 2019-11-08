@@ -168,11 +168,11 @@ class LDAPAPP(BaseModel):
         domain = urlparse(settings.BASE_URL).netloc
         public_addr = domain if domain else settings.PUBLIC_IP
 
-        return [
+        detail = [
             {
                 'name': '内网地址',
                 'key': 'internal_addr',
-                'value': f'{settings.LDAP_SERVER}, {settings.LDAPS_SERVER}',
+                'value': settings.LDAP_SERVER,
             },
             {
                 'name': '外网地址',    # TODO
@@ -215,6 +215,11 @@ class LDAPAPP(BaseModel):
                 'value': 'uid',
             }
         ]
+
+        if settings.LDAP_CLUSTER_ADDR:
+            detail.insert(0, {'name': '集群内地址', 'key': 'cluster_addr', 'value': f'{settings.LDAP_CLUSTER_ADDR}'})
+
+        return detail
 
 
 class HTTPAPP(BaseModel):
