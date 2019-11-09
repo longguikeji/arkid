@@ -92,9 +92,11 @@ CELERY_BROKER_URL = REDIS_URL
 ## TODO：支持LDAP_BASE、LDAP_PASSWORD 可修改。
 INSTALLED_APPS += ['ldap.sql_backend']
 
-## LDAP server 的访问地址，用于展示
+## LDAP server 的内网访问地址，用于展示
 LDAP_SERVER = 'ldap://localhost'
-LDAPS_SERVER = 'ldaps://localhost'
+
+# LDAP k8s 集群内地址，用于展示
+LDAP_CLUSTER_ADDR = 'ldap://arkid-ldap.default.svc.cluster.local'
 
 # - 启用 native ldap (不建议使用)
 ## 需已有 LDAP server 且 LDAP 内没有数据
@@ -102,7 +104,6 @@ LDAPS_SERVER = 'ldaps://localhost'
 EXECUTERS += ['executer.LDAP.LDAPExecuter']
 
 LDAP_SERVER = 'ldap://192.168.3.9'
-LDAPS_SERVER = 'ldaps://192.168.3.9'
 LDAP_BASE = 'dc=longguikeji,dc=com'
 LDAP_USER = 'cn=admin,dc=longguikeji,dc=com'
 LDAP_PASSWORD = 'admin'
