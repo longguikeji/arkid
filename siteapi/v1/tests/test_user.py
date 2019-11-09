@@ -242,7 +242,12 @@ class UserTestCase(TestCase):
                                             'avatar': '',
                                         },
                                     })
-        self.assertEqual(User.valid_objects.get(username='employee2').password, '')
+        res = self.anonymous.json_post(reverse('siteapi:user_login'),
+                                       data={
+                                           'username': 'employee2',
+                                           'password': 'password'
+                                       })
+        self.assertEqual(res.status_code, 200)
 
     def test_username_unique(self):
         res = self.create_user()

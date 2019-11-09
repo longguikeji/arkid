@@ -86,8 +86,11 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             group_uids = data.get('group_uids', [])
             dept_uids = data.get('dept_uids', [])
 
-        user_info.pop('password', None)
-        user = CLI().create_user(user_info)
+        cli = CLI()
+        password = user_info.pop('password', None)
+        user = cli.create_user(user_info)
+        if password:
+            cli.set_user_password(user, password)
         user.origin = 1    # 管理员添加
         user.save()
 
