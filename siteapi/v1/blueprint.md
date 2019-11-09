@@ -87,6 +87,9 @@ FORMAT: 1A
 + require_reset_password(boolean) - 是否需要重置密码
 + has_password (boolean) - 是否有密码，目前仅用于邀请链接的页面
 
+## CreateUser(User)
++ password (string) - 密码，明文
+
 ## UserWithPerm(User)
 + perms (array[string]) - 拥有授权的权限的uid
 + roles (array[string]) - 特殊角色，admin, manager等
@@ -855,7 +858,7 @@ TODO: 校对
         + group_uids (array[string], optional)
         + dept_uids (array[string], optional)
         + node_uids (array[string], optional) - 此字段提供时会忽略`group_uids`,`dept_uids`
-        + user (User)
+        + user (CreateUser)
 + Response 201 (application/json)
     + Attributes (Employee)
 
