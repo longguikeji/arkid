@@ -3,9 +3,9 @@ authentications
 - HeaderArkerBaseAuthentication
 '''
 from rest_framework.authentication import BaseAuthentication
-from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.conf import settings
 
+from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from oneid_meta.models import User
 from oneid.statistics import UserStatistics
 
@@ -14,7 +14,6 @@ class HeaderArkerBaseAuthentication(BaseAuthentication):
     '''
     auth by header['HTTP_ARKER']
     '''
-
     def authenticate(self, request):
         '''
         auth by header['HTTP_ARKER']
@@ -34,8 +33,13 @@ class HeaderArkerBaseAuthentication(BaseAuthentication):
 
 
 class CustomExpiringTokenAuthentication(ExpiringTokenAuthentication):
+    '''
+    自定义token校验
+    '''
     def authenticate_credentials(self, key):
-
+        '''
+        在校验 token 基础上记录活跃程度
+        '''
         user, token = super().authenticate_credentials(key)
         UserStatistics.set_active_count(user)
         user.update_last_active_time()

@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 '''
 schema of Users
 '''
@@ -63,6 +64,8 @@ class User(BaseModel, PermOwnerMixin):
     hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
     remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
     last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')
+    require_reset_password = models.BooleanField(default=False, verbose_name='是否需要重置密码')
+
     isolated_objects = IsolatedManager()
 
     def save(self, *args, **kwargs):    # pylint: disable=arguments-differ
@@ -275,10 +278,10 @@ class User(BaseModel, PermOwnerMixin):
         '''
         使当前token失效，并返回新的token
         '''
-        self.invalidate_token()
+        self.revoke_token()
         return self.token_obj
 
-    def invalidate_token(self):
+    def revoke_token(self):
         '''
         使当前token失效，不生成新的token
         '''
@@ -290,8 +293,17 @@ class User(BaseModel, PermOwnerMixin):
     @property
     def is_settled(self):
         '''
+        是否已激活
         是否是入驻的用户
-        对于导入、或者手动添加的用户，在真实用户未设置密码前，均视为非有效用户
+        对于导入、或者手动添加的用户，在真实用户未登录前，均视为未激活用户
+        '''
+        return bool(self.last_active_time)
+
+    @property
+    def has_password(self):
+        '''
+        是否有密码
+        没有密码的情况，仅包括 管理员后台添加用户时未设置密码，此用户在激活设置密码前
         '''
         return self.password != ""
 
