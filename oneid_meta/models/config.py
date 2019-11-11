@@ -11,7 +11,6 @@ from aliyunsdkcore.acs_exception.exceptions import ServerException
 from common.django.model import BaseModel
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from common.Email.email_manager import EmailManager
-
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPID_QR_APP_SECRET
 from thirdparty_data_sdk.alipay_api.alipay_oauth_manager import AlipayOauthManager
@@ -285,7 +284,7 @@ class EmailConfig(BaseModel, SingletonConfigMixin):
     port = models.IntegerField(default=587, blank=True, verbose_name='邮件服务端口')
     access_key = models.CharField(default='', blank=True, max_length=512, verbose_name='邮箱账号')
     access_secret = models.CharField(default='', blank=True, max_length=512, verbose_name='邮箱密钥')
-    nickname = models.CharField(default='OneID', blank=True, max_length=128, verbose_name='邮件发送人落款')
+    nickname = models.CharField(default='ArkID', blank=True, max_length=128, verbose_name='邮件发送人落款')
 
     is_valid = models.BooleanField(default=False, blank=True, verbose_name='配置是否有效')
 
