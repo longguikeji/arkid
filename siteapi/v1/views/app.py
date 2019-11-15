@@ -3,6 +3,7 @@ views about app
 '''
 from urllib.parse import urlparse
 import uuid as uuid_utils
+import base64
 
 from rest_framework import generics, status
 from rest_framework.exceptions import (
@@ -14,6 +15,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
 from django.db.models import Q
+from kubernetes import (
+    client as k8s_client,
+    config as k8s_config,
+)
 
 from siteapi.v1.serializers.app import (
     APPSerializer,
@@ -192,7 +197,7 @@ class UcenterAPPListAPIView(generics.ListAPIView):
                 owner=self.request.user,
                 value=True,
                 perm__subject='app',
-                perm__action='access',
+                perm__action__startswith='access',
             ).values('perm__scope')
         ]
 
@@ -209,12 +214,6 @@ def create_secret_for_app(app):
     TODO:
         - 目前job缺少对完成状况的判断
     '''
-    import base64
-    from kubernetes import (
-        client as k8s_client,
-        config as k8s_config,
-    )
-
     k8s_config.load_kube_config()
     client = k8s_client.CoreV1Api()
 

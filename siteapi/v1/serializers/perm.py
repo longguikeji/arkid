@@ -3,10 +3,10 @@ serializers for perm
 """
 import uuid
 from rest_framework import serializers
-from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.exceptions import MethodNotAllowed, ValidationError
 from common.django.drf.serializer import DynamicFieldsModelSerializer, IgnoreNoneMix
 from common.django.drf.paginator import DefaultListPaginator
-from oneid_meta.models import Perm, DeptPerm, UserPerm, GroupPerm
+from oneid_meta.models import Perm, DeptPerm, UserPerm, GroupPerm, APP
 from siteapi.v1.views.utils import gen_uid
 from siteapi.v1.serializers.user import SubAccountSerializer
 
@@ -42,13 +42,15 @@ class PermSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             if instance.sub_account:
                 serializer = SubAccountSerializer(instance.sub_account, data=sub_account_data, partial=True)
                 serializer.is_valid(raise_exception=True)
-                serializer.save()
+                sub_account = serializer.save()
             else:
                 serializer = SubAccountSerializer(data=sub_account_data)
                 serializer.is_valid(raise_exception=True)
                 sub_account = serializer.save()
                 instance.sub_account = sub_account
                 instance.save()
+            app_name = instance.app.name if instance.app else ""
+            validated_data['name'] = f'以 "{sub_account.username}" 身份访问 {app_name}'
         return super().update(instance, validated_data)
 
     def create(self, validated_data):
@@ -57,11 +59,14 @@ class PermSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         kwargs['scope'] = scope
         sub_account_data = validated_data.pop('sub_account', None)
         if sub_account_data:
+            app = APP.valid_objects.filter(uid=scope).first()
+            if not app:
+                raise ValidationError({'scope': 'not found'})
             serializer = SubAccountSerializer(data=sub_account_data)
             serializer.is_valid(raise_exception=True)
             sub_account = serializer.save()
             username = sub_account_data['username']
-            kwargs['name'] = f'以"{username}"身份访问'
+            kwargs['name'] = f'以 "{username}" 身份访问 {app.name}'
             kwargs['action'] = 'access' + uuid.uuid4().hex[:10]
             kwargs['sub_account'] = sub_account
         else:
@@ -81,6 +86,7 @@ class PermWithOwnerSerializer(PermSerializer):
 
     permit_owners = serializers.SerializerMethodField()
     reject_owners = serializers.SerializerMethodField()
+    sub_account = SubAccountSerializer(required=False)
 
     class Meta:    # pylint: disable=missing-docstring
         model = Perm
@@ -95,6 +101,7 @@ class PermWithOwnerSerializer(PermSerializer):
             'subject',
             'permit_owners',
             'reject_owners',
+            'sub_account',
         )
 
     def update(self, instance, validated_data):
