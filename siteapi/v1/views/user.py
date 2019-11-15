@@ -19,7 +19,6 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
 from oneid_meta.models import User, Group, Dept
-from oneid_meta.models.mixin import TreeNode as Node
 from oneid.permissions import (
     IsAdminUser,
     IsUserManager,
@@ -27,7 +26,7 @@ from oneid.permissions import (
     UserManagerReadable,
     CustomPerm,
 )
-from siteapi.v1.serializers.user import UserSerializer, EmployeeSerializer
+from siteapi.v1.serializers.user import UserSerializer, EmployeeSerializer, ResetUserPasswordSerializer
 from siteapi.v1.serializers.group import GroupListSerializer, GroupSerializer
 from siteapi.v1.serializers.dept import DeptListSerializer, DeptSerializer
 from common.django.drf.paginator import DefaultListPaginator
@@ -87,8 +86,11 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             group_uids = data.get('group_uids', [])
             dept_uids = data.get('dept_uids', [])
 
-        user_info.pop('password', None)
-        user = CLI().create_user(user_info)
+        cli = CLI()
+        password = user_info.pop('password', None)
+        user = cli.create_user(user_info)
+        if password:
+            cli.set_user_password(user, password)
         user.origin = 1    # 管理员添加
         user.save()
 
@@ -188,7 +190,6 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         '''
         user = self.get_object()
         data = request.data
-        data.pop('password', None)
         user = CLI().update_user(user, data)
         user_serializer = EmployeeSerializer(user)
         return Response(user_serializer.data)
@@ -200,6 +201,26 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         user = self.get_object()
         CLI().delete_users([user])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserPasswordAPIView(generics.UpdateAPIView):
+    '''
+    修改用户密码
+    修改他人密码要求主管理员权限，即使对此人有管理权限的子管理员也不能修改
+    '''
+
+    serializer_class = ResetUserPasswordSerializer
+    permission_classes = [IsAuthenticated & IsAdminUser]
+
+    def get_object(self):
+        '''
+        find user
+        :rtype: oneid_meta.models.User
+        '''
+        user = User.valid_objects.filter(username=self.kwargs['username']).first()
+        if not user:
+            raise NotFound
+        return user
 
 
 class UcenterUserDetailAPIView(generics.RetrieveAPIView):
@@ -509,10 +530,12 @@ class UserExtern2IntraView(views.APIView):
         return Response(self.read_serializer_class(user).data)
 
     @staticmethod
-    def extern_to_intra(user, depts=[]):
+    def extern_to_intra(user, depts=None):
         '''
         外部用户转化为内部用户
         '''
+
         cli = CLI()
         cli.delete_user_from_groups(user, user.groups)
-        cli.add_user_to_depts(user, depts)
+        if depts:
+            cli.add_user_to_depts(user, depts)

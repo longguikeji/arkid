@@ -18,6 +18,11 @@ from oneid_meta.models import (
     AccountConfig,
     EmailConfig,
     SMSConfig,
+    ManagerGroup,
+    Group,
+    GroupMember,
+    APP,
+    OAuthAPP,
 )
 from executer.utils.password import verify_password
 
@@ -63,12 +68,12 @@ class UCenterTestCase(TestCase):
         mock_check_sms_code.side_effect = [{'mobile': 'wrong_mobile'}, {'mobile': 'mobile'}]
 
         data = {'new_password': 'new_password', 'mobile': 'mobile', 'sms_token': 'any'}
-        res = self.client.put(reverse('siteapi:set_user_password'), data=data)
+        res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json(), {'mobile': ['invalid']})
 
         data = {'new_password': 'new_password', 'mobile': 'mobile', 'sms_token': 'any'}
-        res = self.client.put(reverse('siteapi:set_user_password'), data=data)
+        res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 200)
 
         ciphertext = User.valid_objects.get(username=self.user.username).password
@@ -76,7 +81,7 @@ class UCenterTestCase(TestCase):
 
     def test_reset_user_password_by_op(self):
         data = {'new_password': 'new_password', 'username': 'admin', 'old_password': 'admin'}
-        res = self.client.put(reverse('siteapi:set_user_password'), data=data)
+        res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 200)
         ciphertext = User.valid_objects.get(username=self.user.username).password
         self.assertTrue(verify_password('new_password', ciphertext))
@@ -88,7 +93,7 @@ class UCenterTestCase(TestCase):
         mock_check_email_code.side_effect = [{'email': 'wrong_email'}, {'email': 'email'}]
 
         data = {'new_password': 'new_password', 'email': 'email', 'email_token': 'mock'}
-        res = self.client.put(reverse('siteapi:set_user_password'), data=data)
+        res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json(), {'email': ['invalid']})
 
@@ -162,16 +167,17 @@ class UCenterTestCase(TestCase):
             'avatar': '',
             'is_admin': True,
             'is_manager': False,
-            'is_settled': True,
+            'is_settled': False,
+            'has_password': True,
             'is_extern_user': False,
             'origin_verbose': '脚本添加',
+            'require_reset_password': False,
         }
         self.assertEqual(res, expect)
 
         res = self.client.get(reverse('siteapi:token_perm_auth'))
         self.assertEqual(res.status_code, 200)
 
-        from oneid_meta.models import ManagerGroup, Group, GroupMember
         group = Group.objects.create(name='group')
         ManagerGroup.objects.create(group=group)
         GroupMember.objects.create(user=self.user, owner=group)
@@ -193,7 +199,6 @@ class UCenterTestCase(TestCase):
 
     def test_token_perm_auth_with_app(self):
         url = reverse('siteapi:token_perm_auth')
-        from oneid_meta.models import APP, OAuthAPP
         app_1 = APP.objects.create(uid='test1')
         oauth_app = OAuthAPP.objects.create(app=app_1)
         APP.objects.create(uid='test2')
@@ -230,6 +235,10 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
         res = client.post(reverse('siteapi:user_login'), data={'mobile': '18812341234', 'password': 'test'})
         self.assertEqual(res.status_code, 200)
+
+        user = User.objects.get(username='test')
+        self.assertIsNotNone(user.last_active_time)
+        self.assertTrue(user.is_settled)
 
         client.credentials(HTTP_AUTHORIZATION='Token ' + res.json()['token'])
         res = client.get(reverse('siteapi:user_self_perm'))
@@ -389,3 +398,47 @@ class UcenterCustomProfileTestCase(TestCase):
         expect = {'data': {cf.uuid.hex: '无'}, 'pretty': []}
         res = self.client.get(reverse('siteapi:ucenter_profile'))
         self.assertEqual(expect, res.json()['custom_user'])
+
+    @mock.patch('siteapi.v1.serializers.ucenter.RegisterEmailClaimSerializer.check_email_token')
+    def test_register_invalid_username(self, mock_check_email_token):
+        mock_check_email_token.side_effect = [{'email': 'a@b.com'}]
+        data = {
+            'username': 'testregisterKDAF',
+            'password': 'pwd',
+            'email_token': 'mockd',
+        }
+        res = self.client.json_post(reverse('siteapi:user_register'), data=data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})
+        data = {
+            'username': 'testregister@#$@$',
+            'password': 'pwd',
+            'email_token': 'mockd',
+        }
+        res = self.client.json_post(reverse('siteapi:user_register'), data=data)
+        self.assertEqual(res.status_code, 400)
+
+        data = {
+            'username': '123',
+            'password': 'pwd',
+            'email_token': 'mockd',
+        }
+        res = self.client.json_post(reverse('siteapi:user_register'), data=data)
+        self.assertEqual(res.status_code, 400)
+
+        data = {
+            'username': '12345678901234567',
+            'password': 'pwd',
+            'email_token': 'mockd',
+        }
+        res = self.client.json_post(reverse('siteapi:user_register'), data=data)
+        self.assertEqual(res.status_code, 400)
+
+        data = {
+            'username': '中文字符注册',
+            'password': 'pwd',
+            'email_token': 'mockd',
+        }
+        res = self.client.json_post(reverse('siteapi:user_register'), data=data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})

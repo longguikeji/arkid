@@ -80,9 +80,8 @@ class InvitationTestCase(TestCase):
                                             'username': 'new'
                                         })
         self.assertEqual(res.status_code, 200)
-        invitee = User.objects.get(username='new')
-        self.assertTrue(invitee.check_password('pwd'))
 
+        self.login('new', 'pwd')    # 登陆一次后 ，is_settled: False -> TRue
         res = self.anonymous.json_patch(reverse('siteapi:ucenter_profile_invited'),
                                         data={
                                             'key': invitation.key,

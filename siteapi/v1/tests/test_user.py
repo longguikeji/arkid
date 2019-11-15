@@ -1,14 +1,14 @@
 '''
 tests for api about user
 '''
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring, too-many-lines
 
 import json
 
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import DingUser, PosixUser, Group, Dept, User, CustomField, DeptMember
+from oneid_meta.models import DingUser, PosixUser, Group, Dept, User, CustomField, DeptMember, Perm, UserPerm
 
 EMPLOYEE = {
     'user': {
@@ -31,6 +31,8 @@ EMPLOYEE = {
         'remark': '',
         'last_active_time': None,
         'created': TestCase.now_str,
+        'require_reset_password': False,
+        'has_password': False,
         'ding_user': {
             'uid': 'ding_employee2',
             'account': '18812345678',
@@ -129,7 +131,7 @@ class UserTestCase(TestCase):
                                         'group_uids': ['root'],
                                         'dept_uids': ['root'],
                                         'user': {
-                                            'username': ' ds'
+                                            'username': 'fdsfds'
                                         },
                                     })
         self.assertEqual(res.status_code, 201)
@@ -145,7 +147,6 @@ class UserTestCase(TestCase):
                                       })
         self.assertEqual(res.status_code, 403)
 
-        from oneid_meta.models import Perm, UserPerm
         perm, _ = Perm.objects.get_or_create(subject='system', scope='user', action='create')
         user_perm = UserPerm.get(employee, perm)
         user_perm.permit()
@@ -201,6 +202,8 @@ class UserTestCase(TestCase):
                     'origin_verbose': '脚本添加',
                     'hiredate': None,
                     'remark': '',
+                    'require_reset_password': False,
+                    'has_password': False,
                 },
                 'groups': [],
                 'depts': [],
@@ -239,7 +242,12 @@ class UserTestCase(TestCase):
                                             'avatar': '',
                                         },
                                     })
-        self.assertEqual(User.valid_objects.get(username='employee2').password, '')
+        res = self.anonymous.json_post(reverse('siteapi:user_login'),
+                                       data={
+                                           'username': 'employee2',
+                                           'password': 'password'
+                                       })
+        self.assertEqual(res.status_code, 200)
 
     def test_username_unique(self):
         res = self.create_user()
@@ -335,6 +343,8 @@ class UserTestCase(TestCase):
                 }]
             },
             'hiredate': '2019-06-04T09:01:44+08:00',
+            'require_reset_password': False,
+            'has_password': False,
         }
         res['user'].pop('nodes')
         self.assertEqual(expect, res['user'])
@@ -428,6 +438,64 @@ class UserTestCase(TestCase):
         )
         expect = ['root', 'test']
         self.assertEqual(expect, [item['uid'] for item in res.json()['depts']])
+
+    def test_reset_user_password(self):
+        employee = User.objects.create(username='test_reset_pwd')
+
+        res = self.client.json_patch(reverse('siteapi:user_password', args=(employee.username, )),
+                                     data={
+                                         'password': 'complicated_password_',
+                                         'require_reset_password': False
+                                     })
+        expect = {'require_reset_password': False}
+        self.assertEqual(expect, res.json())
+        res = self.anonymous.json_post(reverse('siteapi:user_login'),
+                                       data={
+                                           'username': employee.username,
+                                           'password': 'complicated_password_'
+                                       })
+        self.assertFalse(res.json()['require_reset_password'])
+
+        res = self.client.json_patch(reverse('siteapi:user_password', args=(employee.username, )),
+                                     data={
+                                         'password': 'reset_password',
+                                         'require_reset_password': True
+                                     })
+        expect = {'require_reset_password': True}
+        self.assertEqual(expect, res.json())
+        res = self.anonymous.json_post(reverse('siteapi:user_login'),
+                                       data={
+                                           'username': employee.username,
+                                           'password': 'reset_password'
+                                       })
+        self.assertTrue(res.json()['require_reset_password'])
+        client = self.login(employee.username, 'reset_password')
+        res = client.json_patch(reverse('siteapi:ucenter_password'),
+                                data={
+                                    'username': employee.username,
+                                    'old_password': 'reset_password',
+                                    'new_password': 'new_password'
+                                })
+        self.assertFalse(User.objects.get(username='test_reset_pwd').require_reset_password)
+
+    def test_create_invalid_username(self):
+        res = self.create_user()
+        self.assertEqual(res.status_code, 201)
+        res = res.json()
+        res['user'].pop('nodes')
+
+        User.valid_objects.get(username=USER_DATA['username']).delete()
+        res = self.client.json_post(reverse('siteapi:user_list'),
+                                    data={
+                                        'group_uids': ['root'],
+                                        'dept_uids': ['none'],
+                                        'user': {
+                                            'username': '123',
+                                            'mobile': '13838383838'
+                                        },
+                                    })
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})
 
 
 class UcenterUserTestCase(TestCase):
