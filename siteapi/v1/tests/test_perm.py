@@ -98,7 +98,6 @@ class PermTestCase(TestCase):
         expect = ['app_app1_denglu']
         self.assertEqual(expect, [item['uid'] for item in res.json()['results']])
 
-
         res = self.client.get(reverse('siteapi:perm_list'), data={'scope': 'app1', 'name': '登录1'})
         expect = []
         self.assertEqual(expect, [item['uid'] for item in res.json()['results']])
@@ -139,7 +138,7 @@ class PermTestCase(TestCase):
         self.assertEqual(res.status_code, 204)
 
     def test_node_perm(self):
-        self.client.json_post(reverse('siteapi:perm_list'), data={'scope': 'app1', 'name': '登录'})
+        res = self.client.json_post(reverse('siteapi:perm_list'), data={'scope': 'app1', 'name': '登录'})
         expect = {
             'count': 1,
             'next': None,
@@ -381,38 +380,38 @@ class PermOwnerTestCase(TestCase):
 
     def test_patch_perm_owner(self):
         self.client.json_patch(reverse('siteapi:perm_owner', args=(PERM_UID, )),
-                                     data={
-                                         'node_perm_status': [{
-                                             'uid': 'd_root',
-                                             'status': -1
-                                         }],
-                                     })
+                               data={
+                                   'node_perm_status': [{
+                                       'uid': 'd_root',
+                                       'status': -1
+                                   }],
+                               })
         dept, _ = Dept.retrieve_node('d_root')
         owner_perm = dept.owner_perm_cls.get(dept, self.perm)
         self.assertFalse(owner_perm.value)
 
         self.client.json_patch(reverse('siteapi:perm_owner', args=(PERM_UID, )),
-                                     data={
-                                         'user_perm_status': [{
-                                             'uid': 'admin',
-                                             'status': -1
-                                         }],
-                                     })
+                               data={
+                                   'user_perm_status': [{
+                                       'uid': 'admin',
+                                       'status': -1
+                                   }],
+                               })
         user = User.objects.get(username='admin')
         owner_perm = user.owner_perm_cls.get(user, self.perm)
         self.assertFalse(owner_perm.value)
 
-        res = self.client.json_patch(reverse('siteapi:perm_owner', args=(PERM_UID, )),
-                                     data={
-                                         'node_perm_status': [{
-                                             'uid': 'd_root',
-                                             'status': 1
-                                         }],
-                                         'user_perm_status': [{
-                                             'uid': 'admin',
-                                             'status': 1
-                                         }],
-                                     })
+        self.client.json_patch(reverse('siteapi:perm_owner', args=(PERM_UID, )),
+                               data={
+                                   'node_perm_status': [{
+                                       'uid': 'd_root',
+                                       'status': 1
+                                   }],
+                                   'user_perm_status': [{
+                                       'uid': 'admin',
+                                       'status': 1
+                                   }],
+                               })
         dept, _ = Dept.retrieve_node('d_root')
         owner_perm = dept.owner_perm_cls.get(dept, self.perm)
         self.assertTrue(owner_perm.value)

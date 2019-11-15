@@ -72,6 +72,15 @@ class Perm(BaseModel):
         subject, scope, action = uid.split('_')
         return Perm.objects.create(subject=subject, scope=scope, action=action)
 
+    @property
+    def app(self):
+        '''
+        权限所属的应用
+        '''
+        from oneid_meta.models import APP    # pylint: disable=import-outside-toplevel
+        if self.subject == 'app':
+            return APP.valid_objects.filter(uid=self.scope).first()
+
 
 class PermOwnerMixin():
     '''

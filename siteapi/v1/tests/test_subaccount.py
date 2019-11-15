@@ -56,15 +56,17 @@ class AdminSubAccountPermTestCase(TestCase):
         res = self.client.json_patch(reverse("siteapi:perm_detail", args=(perm_uid, )),
                                      data={'sub_account': {
                                          "password": "new_password",
+                                         "username": "new_account"
                                      }})
         sub_account_expect = {
             "domain": "www.longguikeji.com",
-            "username": "admin",
+            "username": "new_account",
             "password": "new_password",
         }
         sub_account_test = res.json()['sub_account']
         sub_account_test.pop('uuid')
         self.assertEqual(res.json()['sub_account'], sub_account_expect)
+        self.assertEqual(res.json()['name'], '以 "new_account" 身份访问 lg')
 
     def test_get_perm_list(self):
         self.create_create_sub_account_perm()
@@ -72,7 +74,8 @@ class AdminSubAccountPermTestCase(TestCase):
 
         access_perm_res = self.client.get(reverse('siteapi:perm_list'), data={'scope': 'lg', 'action': 'access'})
         self.assertEqual(access_perm_res.json()['count'], 1)
-        self.assertEqual([item['name'] for item in access_perm_res.json()['results']], ['以"admin"身份访问'])
+        self.assertEqual([item['name'] for item in access_perm_res.json()['results']], ['以 "admin" 身份访问 lg'])
+        self.assertIn('sub_account', access_perm_res.json()['results'][0])
 
         access_perm_res = self.client.get(reverse('siteapi:perm_list'), data={'scope': 'lg', 'action_except': 'access'})
         self.assertEqual(access_perm_res.json()['count'], 1)
@@ -85,6 +88,8 @@ class AdminSubAccountPermTestCase(TestCase):
         client = self.login_as(employee)
         res = client.get(reverse('siteapi:ucenter_sub_account_list'))
         self.assertEqual(res.json()['count'], 0)
+        res = client.get(reverse('siteapi:ucenter_app_list'))
+        self.assertEqual(res.json()['count'], 0)
 
         UserPerm.objects.create(owner=employee, perm=perm).permit()
         res = client.get(reverse('siteapi:ucenter_sub_account_list'))
@@ -93,6 +98,12 @@ class AdminSubAccountPermTestCase(TestCase):
         sub_account_test.pop('uuid')
         sub_account_except = {'domain': 'www.longguikeji.com', 'username': 'admin', 'password': 'admin'}
         self.assertEqual(sub_account_except, sub_account_test)
+
+        res = client.get(reverse('siteapi:ucenter_app_list'))
+        self.assertEqual(res.json()['count'], 1)
+        app_test = [item['uid'] for item in res.json()['results']]
+        app_expect = ['lg']
+        self.assertEqual(app_expect, app_test)
 
         res = client.get(reverse('siteapi:ucenter_sub_account_list'), data={'domain': 'www.longguikeji.com'})
         self.assertEqual(res.json()['count'], 1)
