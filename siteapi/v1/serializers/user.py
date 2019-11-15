@@ -15,6 +15,7 @@ from oneid_meta.models import (
     UserPerm,
     CustomUser,
     NativeField,
+    SubAccount,
 )
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from common.django.drf.serializer import IgnoreNoneMix
@@ -446,3 +447,21 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
         出于业务需要，extern 不予展示
         '''
         return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
+
+
+class SubAccountSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for sub account
+    '''
+    # password = serializers.CharField(write_only=True)
+    uuid = serializers.UUIDField(format='hex', read_only=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = SubAccount
+
+        fields = (
+            'uuid',
+            'domain',
+            'username',
+            'password',
+        )

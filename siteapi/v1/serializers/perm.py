@@ -1,20 +1,23 @@
 """
 serializers for perm
 """
+import uuid
 from rest_framework import serializers
 from rest_framework.exceptions import MethodNotAllowed
-from common.django.drf.serializer import DynamicFieldsModelSerializer
+from common.django.drf.serializer import DynamicFieldsModelSerializer, IgnoreNoneMix
 from common.django.drf.paginator import DefaultListPaginator
 from oneid_meta.models import Perm, DeptPerm, UserPerm, GroupPerm
 from siteapi.v1.views.utils import gen_uid
+from siteapi.v1.serializers.user import SubAccountSerializer
 
 
-class PermSerializer(DynamicFieldsModelSerializer):
+class PermSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     """
     Serializer for Perm with basic info
     """
     perm_id = serializers.IntegerField(source='id', read_only=True)
     uid = serializers.CharField(read_only=True)
+    sub_account = SubAccountSerializer(required=False)
 
     class Meta:    # pylint: disable=missing-docstring
         model = Perm
@@ -27,20 +30,48 @@ class PermSerializer(DynamicFieldsModelSerializer):
             'scope',
             'action',
             'subject',
+            'sub_account',
         )
 
     def update(self, instance, validated_data):
         if not instance.editable:
             raise MethodNotAllowed('MODIFY protected perm')
+
+        sub_account_data = validated_data.pop('sub_account', None)
+        if sub_account_data:
+            if instance.sub_account:
+                serializer = SubAccountSerializer(instance.sub_account, data=sub_account_data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            else:
+                serializer = SubAccountSerializer(data=sub_account_data)
+                serializer.is_valid(raise_exception=True)
+                sub_account = serializer.save()
+                instance.sub_account = sub_account
+                instance.save()
         return super().update(instance, validated_data)
 
     def create(self, validated_data):
+        kwargs = {}
         scope = validated_data.get('scope')
-        name = validated_data.get('name')
-        prefix = f'app_{scope}_'
-        uid = gen_uid(name, cls=Perm, prefix=prefix)
-        action = uid.replace(prefix, '', 1)
-        return Perm.objects.create(name=name, scope=scope, action=action)
+        kwargs['scope'] = scope
+        sub_account_data = validated_data.pop('sub_account', None)
+        if sub_account_data:
+            serializer = SubAccountSerializer(data=sub_account_data)
+            serializer.is_valid(raise_exception=True)
+            sub_account = serializer.save()
+            username = sub_account_data['username']
+            kwargs['name'] = f'以"{username}"身份访问'
+            kwargs['action'] = 'access' + uuid.uuid4().hex[:10]
+            kwargs['sub_account'] = sub_account
+        else:
+            name = validated_data.get('name')
+            prefix = f'app_{scope}_'
+            uid = gen_uid(name, cls=Perm, prefix=prefix)
+
+            kwargs['name'] = name
+            kwargs['action'] = uid.replace(prefix, '', 1)
+        return Perm.objects.create(**kwargs)
 
 
 class PermWithOwnerSerializer(PermSerializer):
@@ -151,7 +182,6 @@ class UserPermResultSerializer(PermResultSerializer):
     '''
     Serializer for user Perm with basic info and result
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = UserPerm
 
@@ -201,7 +231,7 @@ class UserPermDetailSerializer(UserPermResultSerializer):
         '''
         用户授权来源节点
         '''
-        from oneid_meta.models import DeptMember, GroupMember
+        from oneid_meta.models import DeptMember, GroupMember    # pylint: disable=import-outside-toplevel
         if instance.dept_perm_value:
             nodes = set()
             for dept_member in DeptMember.valid_objects.filter(user=instance.owner):
@@ -280,10 +310,19 @@ class OwnerSerializer(DynamicFieldsModelSerializer):
         )
 
     def get_uid(self, instance):    # pylint: disable=no-self-use
+        '''
+        return owner.uid
+        '''
         return instance.owner_uid
 
     def get_name(self, instance):    # pylint: disable=no-self-use
+        '''
+        return owner.name
+        '''
         return instance.owner.name
 
     def get_subject(self, instance):    # pylint: disable=no-self-use
+        '''
+        return owner.subject
+        '''
         return instance.owner_subject

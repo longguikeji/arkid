@@ -98,6 +98,11 @@ FORMAT: 1A
 + depts (array[Dept])
 + nodes (array[Node])
 
+## SubAccount(object)
++ domain (string)
++ username (string)
++ password (string)
+
 ## Group
 + group_id (number)
 + uid (string)
@@ -258,6 +263,7 @@ FORMAT: 1A
 + scope
 + action
 + subject
++ sub_account (SubAccount, optional)
 
 ## PermWithOwner(Perm)
 + permit_owners (object) - 白名单部分内容
@@ -803,6 +809,17 @@ deprecated
 + Response 403 (application/json)
     Permission denied
 
+## 第三方账号 [/ucenter/sub_account/{?domain}]
+### 获取第三方账号 [GET]
++ Parameters
+    + domain (string) - 登录页域名
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + previous (string)
+        + next (string)
+        + count (number)
+        + results (array[SubAccount]))
 
 # Group Auth
 以下部分均只对管理员开放
