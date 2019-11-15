@@ -173,3 +173,57 @@ class UCenterTestCase(TestCase):
             'test_sms_token', 'user_id':'test_ding_id'})
         self.assertEqual(res.status_code, 201)
         self.assertIn('token', res.json())
+
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.check_sms_token')
+    @mock.patch('siteapi.v1.serializers.ucenter.SMSClaimSerializer.clear_sms_token')
+    def test_qr_register_invalid_username(self, mock_clear_sms_token, mock_check_sms_token):    # pylint: disable=invalid-name
+        client = self.client
+        mock_clear_sms_token.return_value = True
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': '123',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': '12345678901234567',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': '@#%@%@53@22432',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})
+
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': '中文注册',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})
+
+        res = client.post(reverse('siteapi:ding_register_bind'),
+                          data={
+                              'username': 'REWTWE',
+                              'password': 'password',
+                              'sms_token': 'test_sms_token',
+                              'user_id': 'test_ding_id'
+                          })
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json(), {'username': ['invalid']})

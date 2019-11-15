@@ -1,7 +1,6 @@
 '''
 serializers for ucenter
 '''
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from common.django.drf.serializer import DynamicFieldsModelSerializer
@@ -22,6 +21,7 @@ from infrastructure.serializers.email import (
 )
 
 from oneid.auth_backend import OneIDBasicAuthBackend
+from siteapi.v1.serializers.utils import username_valid
 
 
 class SetPasswordSerializer(serializers.Serializer):    # pylint: disable=abstract-method
@@ -99,7 +99,9 @@ class SetPasswordSerializer(serializers.Serializer):    # pylint: disable=abstra
         user = validated_data['user']
         password = validated_data.get('new_password')
         CLI(user=user).set_user_password(user, password)
-        user.invalidate_token()
+        user.revoke_token()
+        user.require_reset_password = False
+        user.save(update_fields=['require_reset_password'])
         return user
 
 
@@ -108,7 +110,7 @@ class UserRegisterSerializer(DynamicFieldsModelSerializer):
     Serializer user register
     '''
 
-    username = serializers.CharField()
+    username = serializers.CharField(max_length=16, min_length=4, required=True)
     password = serializers.CharField()
     sms_token = serializers.CharField(required=False)
     email_token = serializers.CharField(required=False)
@@ -134,6 +136,9 @@ class UserRegisterSerializer(DynamicFieldsModelSerializer):
         username = validated_data['username']
         if User.valid_objects.filter(username=username).exists():
             raise ValidationError({'username': ['existed']})
+
+        if not username_valid(username):
+            raise ValidationError({'username': ['invalid']})
 
         sms_token = validated_data.get('sms_token', '')
         if sms_token:
@@ -332,7 +337,7 @@ class RegisterAndBindSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer user register
     '''
-    username = serializers.CharField(required=True)
+    username = serializers.CharField(required=True, min_length=4, max_length=16)
     password = serializers.CharField(required=True)
     sms_token = serializers.CharField(required=True)
     user_id = serializers.CharField(required=True)
@@ -358,6 +363,9 @@ class RegisterAndBindSerializer(DynamicFieldsModelSerializer):
         username = validated_data['username']
         if User.valid_objects.filter(username=username).exists():
             raise ValidationError({'username': ['existed']})
+
+        if not username_valid(username):
+            raise ValidationError({'username': ['invalid']})
 
         sms_token = validated_data.get('sms_token', None)
         if sms_token:

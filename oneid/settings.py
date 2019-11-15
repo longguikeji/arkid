@@ -209,7 +209,7 @@ EXECUTER_WIP = False
 # LDAP
 
 LDAP_SERVER = 'ldap://localhost'
-LDAPS_SERVER = 'ldaps://localhost'
+LDAP_CLUSTER_ADDR = ''
 LDAP_BASE = 'dc=example,dc=org'
 LDAP_USER = 'cn=admin,{}'.format(LDAP_BASE)
 LDAP_USER_BASE = 'ou=people,{}'.format(LDAP_BASE)
