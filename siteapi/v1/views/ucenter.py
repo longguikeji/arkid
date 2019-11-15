@@ -23,10 +23,13 @@ from siteapi.v1.serializers.ucenter import (
     UserInvitedProfileSerializer,
     UserContactSerializer,
 )
+from siteapi.v1.serializers.user import (
+    SubAccountSerializer, )
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
-from oneid_meta.models import Perm, User, DingConfig, Invitation, Group, APP, OAuthAPP
+from oneid_meta.models import Perm, User, DingConfig, Invitation, Group, APP, OAuthAPP, UserPerm
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+from common.django.drf.paginator import DefaultListPaginator
 
 
 class SetPasswordAPIView(generics.UpdateAPIView):
@@ -338,3 +341,24 @@ class RevokeTokenView(APIView):
         user = request.user
         user.invalidate_token()
         return Response()
+
+
+class UcenterSubAccountListView(generics.ListCreateAPIView):
+    '''
+    个人子账号列表
+    '''
+
+    pagination_class = DefaultListPaginator
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = SubAccountSerializer
+
+    def get_queryset(self):
+        kwargs = {
+            'perm__sub_account__isnull': False,
+        }
+        domain = self.request.query_params.get('domain', '')
+        if domain:
+            kwargs.update({'perm__sub_account__domain': domain})
+        user_perms = UserPerm.objects.filter(owner=self.request.user, **kwargs)
+        return [user_perm.perm.sub_account for user_perm in user_perms]

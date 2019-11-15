@@ -26,6 +26,12 @@ class Perm(BaseModel):
     action = models.CharField(max_length=128, blank=True, default='', verbose_name='操作行为')
     subject = models.CharField(max_length=255, blank=True, default='app', verbose_name='权限分类')
 
+    sub_account = models.ForeignKey("oneid_meta.SubAccount",
+                                    blank=True,
+                                    null=True,
+                                    verbose_name='子账号',
+                                    on_delete=models.CASCADE)
+
     editable = models.BooleanField(default=True, verbose_name='是否可编辑、删除')    # access 和 部分系统层面的perm无法修改
     default_value = models.BooleanField(default=False, verbose_name='默认授权还是拒绝')
 
@@ -71,7 +77,6 @@ class PermOwnerMixin():
     '''
     权限所有者
     '''
-
     @property
     def owner_perm_cls(self):
         '''
@@ -84,7 +89,6 @@ class OwnerPerm(BaseModel):
     '''
     某类对象和具体权限的关系
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         abstract = True
         unique_together = ("owner", "perm")
@@ -128,6 +132,7 @@ class OwnerPerm(BaseModel):
         '''
         随上级决定
         '''
+        # pylint: disable=no-member
         self.status = 0
         if self.owner.is_root:
             self.value = False
@@ -240,18 +245,18 @@ class GroupPerm(OwnerPerm):
 
     @property
     def owner_subject(self):
-        return self.owner.node_subject
+        return self.owner.node_subject    # pylint: disable=no-member
 
     @property
     def owner_uid(self):
-        return self.owner.node_uid
+        return self.owner.node_uid    # pylint: disable=no-member
 
     @property
     def owner_cls(self):
         '''
         所有者类型 class
         '''
-        from oneid_meta.models import Group
+        from oneid_meta.models import Group    # pylint: disable=import-outside-toplevel
         return Group
 
 
@@ -269,18 +274,18 @@ class DeptPerm(OwnerPerm):
         '''
         所有者类型
         '''
-        return self.owner.node_subject
+        return self.owner.node_subject    # pylint: disable=no-member
 
     @property
     def owner_uid(self):
-        return self.owner.node_uid
+        return self.owner.node_uid    # pylint: disable=no-member
 
     @property
     def owner_cls(self):
         '''
         所有者类型 class
         '''
-        from oneid_meta.models import Dept
+        from oneid_meta.models import Dept    # pylint: disable=import-outside-toplevel
         return Dept
 
 
@@ -313,7 +318,7 @@ class UserPerm(OwnerPerm):
 
     @property
     def owner_uid(self):
-        return self.owner.username
+        return self.owner.username    # pylint: disable=no-member
 
     @property
     def node_perm_value(self):
@@ -327,5 +332,5 @@ class UserPerm(OwnerPerm):
         '''
         所有者类型 class
         '''
-        from oneid_meta.models import User
+        from oneid_meta.models import User    # pylint: disable=import-outside-toplevel
         return User
