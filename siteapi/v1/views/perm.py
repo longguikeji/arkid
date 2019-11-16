@@ -58,7 +58,7 @@ class PermListCreateAPIView(generics.ListCreateAPIView):
 
         action = self.request.query_params.get('action', '')
         if action:
-            kwargs.update(action=action)
+            kwargs.update(action__startswith=action)
             kwargs.pop('action_except', '')
 
         scope = self.request.query_params.get('scope', '')
@@ -67,7 +67,7 @@ class PermListCreateAPIView(generics.ListCreateAPIView):
 
         if 'action_except' in kwargs:
             action_except = kwargs.pop('action_except')
-            queryset = Perm.valid_objects.filter(**kwargs).exclude(action=action_except).order_by('id')
+            queryset = Perm.valid_objects.filter(**kwargs).exclude(action__startswith=action_except).order_by('id')
         else:
             queryset = Perm.valid_objects.filter(**kwargs).order_by('id')
 
@@ -199,7 +199,7 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
 
         return owners
 
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument, too-many-locals
         '''
         黑白名单局部操作
         '''
@@ -444,7 +444,7 @@ class MetaPermAPIView(APIView):
 
     permission_classes = [IsAuthenticated & IsAdminUser]
 
-    def get(self, request):
+    def get(self, request):    # pylint: disable=unused-argument, no-self-use
         '''
         获取内置权限
         '''
