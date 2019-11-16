@@ -3,7 +3,7 @@ schema of Users,Departmments,Groups,Perms
 '''
 
 from oneid_meta.models.user import (User, PosixUser, CustomUser, DingUser, AlipayUser,\
-    WorkWechatUser, WechatUser, QQUser)
+    WorkWechatUser, WechatUser, QQUser, SubAccount)
 
 from oneid_meta.models.dept import (
     Dept,

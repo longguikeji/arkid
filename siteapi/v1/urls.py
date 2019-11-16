@@ -121,6 +121,8 @@ urlpatterns = [
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
     url(r'^slice/delete/$', shortcut_views.ObjSliceDeleteAPIView.as_view(), name='shortcut_slice_delete'),
     # ucenter
+    url(r'^ucenter/sub_account/$', ucenter_views.UcenterSubAccountListView.as_view(),
+        name='ucenter_sub_account_list'),
     url(r'^ucenter/password/$', ucenter_views.SetPasswordAPIView.as_view(), name='ucenter_password'),
     url(r'^ucenter/contact/$', ucenter_views.UserContactAPIView.as_view(), name='update_user_contact'),
     url(r'^ucenter/perm/$', perm_views.UserSelfPermView.as_view(), name='user_self_perm'),
