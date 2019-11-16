@@ -18,7 +18,7 @@ class AdminSubAccountPermTestCase(TestCase):
 
         self.app = APP.objects.create(name='lg', uid='lg')
 
-    def create_create_sub_account_perm(self):
+    def create_sub_account_perm(self):
         res = self.client.json_post(reverse("siteapi:perm_list"),
                                     data={
                                         "scope": "lg",
@@ -38,7 +38,7 @@ class AdminSubAccountPermTestCase(TestCase):
         return res
 
     def test_create_sub_account_perm(self):
-        res = self.create_create_sub_account_perm()
+        res = self.create_sub_account_perm()
         self.assertEqual(res.status_code, 201)
         sub_account_expect = {
             "domain": "www.longguikeji.com",
@@ -50,7 +50,7 @@ class AdminSubAccountPermTestCase(TestCase):
         self.assertEqual(res.json()['sub_account'], sub_account_expect)
 
     def test_patch_sub_account_perm(self):
-        res = self.create_create_sub_account_perm()
+        res = self.create_sub_account_perm()
         perm_uid = res.json()['uid']
 
         res = self.client.json_patch(reverse("siteapi:perm_detail", args=(perm_uid, )),
@@ -69,7 +69,7 @@ class AdminSubAccountPermTestCase(TestCase):
         self.assertEqual(res.json()['name'], '以 "new_account" 身份访问 lg')
 
     def test_get_perm_list(self):
-        self.create_create_sub_account_perm()
+        self.create_sub_account_perm()
         self.create_inner_perm()
 
         access_perm_res = self.client.get(reverse('siteapi:perm_list'), data={'scope': 'lg', 'action': 'access'})
@@ -82,7 +82,7 @@ class AdminSubAccountPermTestCase(TestCase):
         self.assertEqual([item['name'] for item in access_perm_res.json()['results']], ['访问后台'])
 
     def test_ucenter_sub_account(self):
-        res = self.create_create_sub_account_perm()
+        res = self.create_sub_account_perm()
         perm = Perm.objects.get(uid=res.json()['uid'])
         employee = User.create_user(username='employee', password='employee')
         client = self.login_as(employee)
