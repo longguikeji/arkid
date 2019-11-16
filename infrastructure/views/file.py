@@ -8,9 +8,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.conf import settings
-from django.http.response import HttpResponseRedirect
+from django.http.response import HttpResponseRedirect, HttpResponse, Http404
 from django.views.generic import View
-
 from common.minio_utils import (
     put_object,
     presign_get,
@@ -32,12 +31,16 @@ class FileCreateAPIView(generics.CreateAPIView):
         uuid = uuid_utils.uuid4().hex
         suffix = os.path.splitext(file.name)[1]
         file_name = uuid + suffix
-        put_object(
-            bucket_name=settings.MINIO_BUCKET,
-            object_name=file_name,
-            file_data=file,
-            length=file.size,
-        )
+        try:
+            put_object(
+                bucket_name=settings.MINIO_BUCKET,
+                object_name=file_name,
+                file_data=file,
+                length=file.size,
+            )
+        except Exception:    # pylint: disable=broad-except
+            with open(settings.UPLOADFILES_PATH + file_name, 'wb') as f:
+                f.write(file.read())
         return Response({'file_name': file_name})
 
 
@@ -49,14 +52,24 @@ class FileAPIView(View):
     permission_classes = []
     authentication_classes = []
 
-    def get(self, request, uuid):    # pylint: disable=unused-argument, no-self-use
+    def get(self, request, filename):    # pylint: disable=unused-argument, no-self-use
         '''
         download file
         '''
-        url = presign_get(
-            bucket_name=settings.MINIO_BUCKET,
-            object_name=uuid,
-            response_headers={
-                'response-content-disposition': 'attachment;filename=%s' % uuid,
-            })
-        return HttpResponseRedirect(url)
+
+        try:
+            url = presign_get(bucket_name=settings.MINIO_BUCKET,
+                              object_name=filename,
+                              response_headers={
+                                  'response-content-disposition': 'attachment;filename=%s' % filename,
+                              })
+            return HttpResponseRedirect(url)
+        except Exception:    # pylint: disable=broad-except
+            filepath = settings.UPLOADFILES_PATH + filename
+            if os.path.exists(filepath):
+                data = open(filepath, 'rb').read()
+                res = HttpResponse(data)
+                res['Content-Type'] = 'application/octet-stream'
+                res['Content-Disposition'] = 'attachment;filename="{0}"'.format(filename)
+                return res
+            return Http404()

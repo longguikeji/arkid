@@ -17,5 +17,5 @@ urlpatterns = [    # pylint: disable=invalid-name
     url(r'^sms/(?P<subject>[\w]+)/$', sms_view.SMSClaimAPIView.as_view(), name='sms'),
     url(r'^email/(?P<subject>[\w]+)/$', email_view.EmailClaimAPIView.as_view(), name='email'),
     url(r'^file/$', file_view.FileCreateAPIView.as_view(), name='upload_file'),
-    url(r'^file/(?P<uuid>[\w|\.]+)$', file_view.FileAPIView.as_view(), name='download_file'),
+    url(r'^file/(?P<filename>[\w|\.]+)$', file_view.FileAPIView.as_view(), name='download_file'),
 ]

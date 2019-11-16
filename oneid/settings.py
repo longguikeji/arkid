@@ -313,3 +313,5 @@ ACTIVE_USER_REDIS_KEY_PREFIX = 'active-'
 
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
+
+UPLOADFILES_PATH = BASE_DIR + '/upload/'
