@@ -7,9 +7,8 @@ import uuid as uuid_utils
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND
 from django.conf import settings
-from django.http.response import HttpResponseRedirect, HttpResponse
+from django.http.response import HttpResponseRedirect, HttpResponse, Http404
 from django.views.generic import View
 from common.minio_utils import (
     put_object,
@@ -53,20 +52,24 @@ class FileAPIView(View):
     permission_classes = []
     authentication_classes = []
 
-    def get(self, request, uuid):    # pylint: disable=unused-argument, no-self-use
+    def get(self, request, filename):    # pylint: disable=unused-argument, no-self-use
         '''
         download file
         '''
+
         try:
             url = presign_get(bucket_name=settings.MINIO_BUCKET,
-                              object_name=uuid,
+                              object_name=filename,
                               response_headers={
-                                  'response-content-disposition': 'attachment;filename=%s' % uuid,
+                                  'response-content-disposition': 'attachment;filename=%s' % filename,
                               })
             return HttpResponseRedirect(url)
         except Exception:    # pylint: disable=broad-except
-            data = ''
-            if os.path.exists(settings.UPLOADFILES_PATH + uuid):
-                data = open(settings.UPLOADFILES_PATH + uuid, 'rb').read()
-                return HttpResponse(data)
-            return Response(data, HTTP_404_NOT_FOUND)
+            filepath = settings.UPLOADFILES_PATH + filename
+            if os.path.exists(filepath):
+                data = open(filepath, 'rb').read()
+                res = HttpResponse(data)
+                res['Content-Type'] = 'application/octet-stream'
+                res['Content-Disposition'] = 'attachment;filename="{0}"'.format(filename)
+                return res
+            return Http404()
