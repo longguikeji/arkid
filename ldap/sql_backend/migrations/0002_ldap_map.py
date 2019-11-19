@@ -1,17 +1,12 @@
 
 from django.db import migrations, models
-from ldap.sql_backend.models import (
-    LDAPOCMappings,
-    LDAPAttrMapping,
-    LDAPEntry,
-    LDAPEntryObjectclasses,
-    Organization,
-    OrganizationUnit,
-    DomainComponent,
-)
 
 
 def create_objects(apps, schema_editor):
+
+    DomainComponent = apps.get_model('sql_backend', 'DomainComponent')
+    Organization = apps.get_model('sql_backend', 'Organization')
+    OrganizationUnit = apps.get_model('sql_backend', 'OrganizationUnit')
 
     DomainComponent.objects.create(
         name='example',
@@ -40,6 +35,7 @@ def create_objects(apps, schema_editor):
 
 
 def create_ldap_oc_mappings(apps, schema_editor):
+    LDAPOCMappings = apps.get_model('sql_backend', 'LDAPOCMappings')
 
     LDAPOCMappings.objects.create(
         name='dcObject',
@@ -76,6 +72,8 @@ def create_ldap_oc_mappings(apps, schema_editor):
 
 
 def creata_ldap_attr_mappings(apps, schema_editor):
+    LDAPOCMappings = apps.get_model('sql_backend', 'LDAPOCMappings')
+    LDAPAttrMapping = apps.get_model('sql_backend', 'LDAPAttrMapping')
 
     dcObject = LDAPOCMappings.objects.get(name='dcObject')
     table_name = 'domain_component'
@@ -148,7 +146,13 @@ def creata_ldap_attr_mappings(apps, schema_editor):
         )
 
 
-def create_entry(app, schema_editor):
+def create_entry(apps, schema_editor):
+    LDAPOCMappings = apps.get_model('sql_backend', 'LDAPOCMappings')
+    LDAPEntryObjectclasses = apps.get_model('sql_backend', 'LDAPEntryObjectclasses')
+    OrganizationUnit = apps.get_model('sql_backend', 'OrganizationUnit')
+    LDAPEntry = apps.get_model('sql_backend', 'LDAPEntry')
+    DomainComponent = apps.get_model('sql_backend', 'DomainComponent')
+
     dc_class = LDAPOCMappings.objects.get(name='dcObject')
     domain_component = DomainComponent.objects.get(dc='example')
     base_entry = LDAPEntry.objects.create(
