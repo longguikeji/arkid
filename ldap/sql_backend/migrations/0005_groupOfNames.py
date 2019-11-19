@@ -1,12 +1,8 @@
 
 from django.db import migrations, models
-from ldap.sql_backend.models import (
-    LDAPOCMappings,
-    LDAPAttrMapping,
-)
 
-
-def create_ldap_oc_mappings(app, schema_editor):
+def create_ldap_oc_mappings(apps, schema_editor):
+    LDAPOCMappings = apps.get_model('sql_backend', 'LDAPOCMappings')
 
     LDAPOCMappings.objects.create(
         name='groupOfNames',
@@ -18,7 +14,9 @@ def create_ldap_oc_mappings(app, schema_editor):
     )
 
 
-def creata_ldap_attr_mappings(app, schema_editor):
+def creata_ldap_attr_mappings(apps, schema_editor):
+    LDAPOCMappings = apps.get_model('sql_backend', 'LDAPOCMappings')
+    LDAPAttrMapping = apps.get_model('sql_backend', 'LDAPAttrMapping')
 
     groupOfNames = LDAPOCMappings.objects.get(name='groupOfNames')
     for (name, sel_expr, from_tables, join_where, create_proc, delete_proc, param_order, expect_return) in [
