@@ -128,7 +128,7 @@ settings_local.py
 tmp
 
 dump.rdb
-db.sqlite3
+*.sqlite3
 
 upload/*
 key
