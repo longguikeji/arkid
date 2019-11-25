@@ -20,6 +20,7 @@ from siteapi.v1.views.config import (
     CustomFieldDetailAPIView,
     NativeFieldListAPIView,
     NativeFieldDetailAPIView,
+    StorageConfigAPIView,
 )
 
 from siteapi.v1.views import (
@@ -149,6 +150,7 @@ urlpatterns = [
     # config
     url(r'^config/$', ConfigAPIView.as_view(), name='config'),
     url(r'^config/admin/$', AdminAPIView.as_view(), name='alter_admin'),
+    url(r'^config/storage/$', StorageConfigAPIView.as_view(), name='storage_config'),
     url(r'^config/custom/field/(?P<field_subject>[a-z_]+)/$',
         CustomFieldListCreateAPIView.as_view(),
         name='custom_field_list'),
