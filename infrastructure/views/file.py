@@ -14,6 +14,7 @@ from common.minio_utils import (
     put_object,
     presign_get,
 )
+from oneid_meta.models.config import StorageConfig
 
 
 class FileCreateAPIView(generics.CreateAPIView):
@@ -31,14 +32,18 @@ class FileCreateAPIView(generics.CreateAPIView):
         uuid = uuid_utils.uuid4().hex
         suffix = os.path.splitext(file.name)[1]
         file_name = uuid + suffix
-        try:
-            put_object(
-                bucket_name=settings.MINIO_BUCKET,
-                object_name=file_name,
-                file_data=file,
-                length=file.size,
-            )
-        except Exception:    # pylint: disable=broad-except
+        method = list(StorageConfig.objects.all().values('method'))[0]['method']
+        if method and method == 'minio':
+            try:
+                put_object(
+                    bucket_name=settings.MINIO_BUCKET,
+                    object_name=file_name,
+                    file_data=file,
+                    length=file.size,
+                )
+            except Exception:    # pylint: disable=broad-except
+                return
+        else:
             with open(settings.UPLOADFILES_PATH + file_name, 'wb') as f:
                 f.write(file.read())
         return Response({'file_name': file_name})
@@ -56,15 +61,18 @@ class FileAPIView(View):
         '''
         download file
         '''
-
-        try:
-            url = presign_get(bucket_name=settings.MINIO_BUCKET,
-                              object_name=filename,
-                              response_headers={
-                                  'response-content-disposition': 'attachment;filename=%s' % filename,
-                              })
-            return HttpResponseRedirect(url)
-        except Exception:    # pylint: disable=broad-except
+        method = list(StorageConfig.objects.all().values('method'))[0]['method']
+        if method and method == 'minio':
+            try:
+                url = presign_get(bucket_name=settings.MINIO_BUCKET,
+                                  object_name=filename,
+                                  response_headers={
+                                      'response-content-disposition': 'attachment;filename=%s' % filename,
+                                  })
+                return HttpResponseRedirect(url)
+            except Exception:    # pylint: disable=broad-except
+                return
+        else:
             filepath = settings.UPLOADFILES_PATH + filename
             if os.path.exists(filepath):
                 data = open(filepath, 'rb').read()
