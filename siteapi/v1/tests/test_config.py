@@ -399,3 +399,55 @@ class ConfigNativeFieldTestCase(TestCase):
         res = self.client.json_patch(reverse('siteapi:native_field_detail', args=('user', email_uuid)),
                                      data={'is_visible': False})
         self.assertEqual(res.status_code, 400)
+
+
+class ConfigStorageTestCase(TestCase):
+    def test_storage_field(self):
+        res = self.client.get(reverse('siteapi:storage_config'))
+        expect = {
+            'method': None,
+            'minio_config': None,
+        }
+        self.assertEqual(res.json(), expect)
+
+        method = 'minio'
+        minio_config = {
+            'end_point': 'localhost:9000',
+            'access_key': '',
+            'secret_key': '',
+            'secure': True,
+            'location': 'us-east-1',
+            'bucket': 'oneid',
+        }
+
+        res = self.client.json_patch(reverse('siteapi:storage_config'),
+                                     data={
+                                         'method': method,
+                                         'minio_config': minio_config,
+                                     })
+        expect = {
+            'method': 'minio',
+            'minio_config': {
+                'end_point': 'localhost:9000',
+                'access_key': '',
+                'secret_key': '',
+                'secure': True,
+                'location': 'us-east-1',
+                'bucket': 'oneid'
+            }
+        }
+        self.assertEqual(res.json(), expect)
+
+        res = self.client.get(reverse('siteapi:storage_config'))
+        expect = {
+            'method': 'minio',
+            'minio_config': {
+                'end_point': 'localhost:9000',
+                'access_key': '',
+                'secret_key': '',
+                'secure': True,
+                'location': 'us-east-1',
+                'bucket': 'oneid'
+            }
+        }
+        self.assertEqual(res.json(), expect)

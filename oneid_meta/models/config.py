@@ -443,3 +443,38 @@ class QQConfig(BaseModel, SingletonConfigMixin):
 
     def __str__(self):
         return f'QQConfig[{self.id}]'    # pylint: disable=no-member
+
+
+class StorageConfig(BaseModel, SingletonConfigMixin):
+    '''
+    文件存储方式
+    '''
+    site = models.OneToOneField(Site, related_name='storage_config', on_delete=models.CASCADE)
+
+    method = models.CharField(max_length=225, blank=True, default='local', verbose_name='method')
+
+    def __str__(self):
+        return f'Method[{self.id}]: {self.display_name}'    # pylint: disable=no-member
+
+
+class MinioConfig(BaseModel, SingletonConfigMixin):
+    '''
+    Minio配置信息
+    '''
+    site = models.OneToOneField(Site, related_name='minio_config', on_delete=models.CASCADE)
+
+    end_point = models.CharField(max_length=225, blank=True, default='', verbose_name='END POINT')
+    access_key = models.CharField(max_length=225, blank=True, default='', verbose_name='ACCESS KEY')
+    secret_key = models.CharField(max_length=225, blank=True, default='', verbose_name='SECRET KEY')
+    secure = models.BooleanField(max_length=225, blank=True, default=True, verbose_name='SECURE')
+    location = models.CharField(max_length=225, blank=True, default='', verbose_name='LOCATION')
+    bucket = models.CharField(max_length=225, blank=True, default='', verbose_name='BUCKET')
+
+    def check_valid(self):
+        '''
+        检查配置是否有效
+        '''
+        return self
+
+    def __str__(self):
+        return f'Minio[{self.id}]: {self.display_name}'    # pylint: disable=no-member
