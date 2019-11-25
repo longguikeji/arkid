@@ -1940,6 +1940,18 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (NativeField)
 
+## 文件存储 [/config/storage/]
+
+### 获取文件存储方式和minio配置信息 [GET]
++ Response 200 (application/json)
+    + Attributes (StorageConfig)
+
+### 修改文件存储方式和minio配置信息 [PATCH]
++ request JSON Message
+    + Attributes (StorageCongfg)
++ Response 200 (application/json)
+    + Attributes (StorageConfig)
+
 # Group Meta
 
 ## 基本信息 [/meta/]
