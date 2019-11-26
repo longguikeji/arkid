@@ -453,6 +453,16 @@ FORMAT: 1A
 + is_visible (boolean)
 + is_visible_editable (boolean)
 
+## StorageConfig (object)
++ method (string)
++ minio_config (object)
+    + end_point (string)
+    + access_key (string)
+    + secret_key (string)
+    + secure (boolean)
+    + location (string)
+    + bucket (string)
+
 ## CompanyMetaInfo (CompanyConfig)
 + display_name (string)
 
@@ -1948,7 +1958,7 @@ TODO: 可见权限的处理
 
 ### 修改文件存储方式和minio配置信息 [PATCH]
 + request JSON Message
-    + Attributes (StorageCongfg)
+    + Attributes (StorageConfig)
 + Response 200 (application/json)
     + Attributes (StorageConfig)
 

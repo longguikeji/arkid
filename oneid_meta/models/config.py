@@ -470,11 +470,11 @@ class MinioConfig(BaseModel, SingletonConfigMixin):
     location = models.CharField(max_length=225, blank=True, default='', verbose_name='LOCATION')
     bucket = models.CharField(max_length=225, blank=True, default='', verbose_name='BUCKET')
 
-    def check_valid(self):
+    def check_valid(self):    #pylint: disable=no-self-use
         '''
         检查配置是否有效
         '''
-        return self
+        return True
 
     def __str__(self):
         return f'Minio[{self.id}]: {self.display_name}'    # pylint: disable=no-member

@@ -405,19 +405,26 @@ class ConfigStorageTestCase(TestCase):
     def test_storage_field(self):
         res = self.client.get(reverse('siteapi:storage_config'))
         expect = {
-            'method': None,
-            'minio_config': None,
+            'method': 'local',
+            'minio_config': {
+                'end_point': '',
+                'access_key': '',
+                'secret_key': '',
+                'secure': True,
+                'location': '',
+                'bucket': '',
+            },
         }
         self.assertEqual(res.json(), expect)
 
         method = 'minio'
         minio_config = {
-            'end_point': 'localhost:9000',
-            'access_key': '',
-            'secret_key': '',
-            'secure': True,
-            'location': 'us-east-1',
-            'bucket': 'oneid',
+            'end_point': 'localhost:12345',
+            'access_key': '123',
+            'secret_key': '123',
+            'secure': False,
+            'location': 'us-east-4',
+            'bucket': 'arkid',
         }
 
         res = self.client.json_patch(reverse('siteapi:storage_config'),
@@ -428,12 +435,12 @@ class ConfigStorageTestCase(TestCase):
         expect = {
             'method': 'minio',
             'minio_config': {
-                'end_point': 'localhost:9000',
-                'access_key': '',
-                'secret_key': '',
-                'secure': True,
-                'location': 'us-east-1',
-                'bucket': 'oneid'
+                'end_point': 'localhost:12345',
+                'access_key': '123',
+                'secret_key': '123',
+                'secure': False,
+                'location': 'us-east-4',
+                'bucket': 'arkid',
             }
         }
         self.assertEqual(res.json(), expect)
@@ -442,12 +449,12 @@ class ConfigStorageTestCase(TestCase):
         expect = {
             'method': 'minio',
             'minio_config': {
-                'end_point': 'localhost:9000',
-                'access_key': '',
-                'secret_key': '',
-                'secure': True,
-                'location': 'us-east-1',
-                'bucket': 'oneid'
+                'end_point': 'localhost:12345',
+                'access_key': '123',
+                'secret_key': '123',
+                'secure': False,
+                'location': 'us-east-4',
+                'bucket': 'arkid',
             }
         }
         self.assertEqual(res.json(), expect)
