@@ -399,3 +399,62 @@ class ConfigNativeFieldTestCase(TestCase):
         res = self.client.json_patch(reverse('siteapi:native_field_detail', args=('user', email_uuid)),
                                      data={'is_visible': False})
         self.assertEqual(res.status_code, 400)
+
+
+class ConfigStorageTestCase(TestCase):
+    def test_storage_field(self):
+        res = self.client.get(reverse('siteapi:storage_config'))
+        expect = {
+            'method': 'local',
+            'minio_config': {
+                'end_point': '',
+                'access_key': '',
+                'secret_key': '',
+                'secure': True,
+                'location': '',
+                'bucket': '',
+            },
+        }
+        self.assertEqual(res.json(), expect)
+
+        method = 'minio'
+        minio_config = {
+            'end_point': 'localhost:12345',
+            'access_key': '123',
+            'secret_key': '123',
+            'secure': False,
+            'location': 'us-east-4',
+            'bucket': 'arkid',
+        }
+
+        res = self.client.json_patch(reverse('siteapi:storage_config'),
+                                     data={
+                                         'method': method,
+                                         'minio_config': minio_config,
+                                     })
+        expect = {
+            'method': 'minio',
+            'minio_config': {
+                'end_point': 'localhost:12345',
+                'access_key': '123',
+                'secret_key': '123',
+                'secure': False,
+                'location': 'us-east-4',
+                'bucket': 'arkid',
+            }
+        }
+        self.assertEqual(res.json(), expect)
+
+        res = self.client.get(reverse('siteapi:storage_config'))
+        expect = {
+            'method': 'minio',
+            'minio_config': {
+                'end_point': 'localhost:12345',
+                'access_key': '123',
+                'secret_key': '123',
+                'secure': False,
+                'location': 'us-east-4',
+                'bucket': 'arkid',
+            }
+        }
+        self.assertEqual(res.json(), expect)

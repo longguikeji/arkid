@@ -14,6 +14,7 @@ from common.minio_utils import (
     put_object,
     presign_get,
 )
+from oneid_meta.models.config import StorageConfig
 
 
 class FileCreateAPIView(generics.CreateAPIView):
@@ -31,14 +32,15 @@ class FileCreateAPIView(generics.CreateAPIView):
         uuid = uuid_utils.uuid4().hex
         suffix = os.path.splitext(file.name)[1]
         file_name = uuid + suffix
-        try:
+        storage_config = StorageConfig.get_current()
+        if storage_config.method == 'minio':
             put_object(
                 bucket_name=settings.MINIO_BUCKET,
                 object_name=file_name,
                 file_data=file,
                 length=file.size,
             )
-        except Exception:    # pylint: disable=broad-except
+        else:
             with open(settings.UPLOADFILES_PATH + file_name, 'wb') as f:
                 f.write(file.read())
         return Response({'file_name': file_name})
@@ -56,20 +58,20 @@ class FileAPIView(View):
         '''
         download file
         '''
-
-        try:
+        storage_config = StorageConfig.get_current()
+        if storage_config.method == 'minio':
             url = presign_get(bucket_name=settings.MINIO_BUCKET,
                               object_name=filename,
                               response_headers={
                                   'response-content-disposition': 'attachment;filename=%s' % filename,
                               })
             return HttpResponseRedirect(url)
-        except Exception:    # pylint: disable=broad-except
-            filepath = settings.UPLOADFILES_PATH + filename
-            if os.path.exists(filepath):
-                data = open(filepath, 'rb').read()
-                res = HttpResponse(data)
-                res['Content-Type'] = 'application/octet-stream'
-                res['Content-Disposition'] = 'attachment;filename="{0}"'.format(filename)
-                return res
-            return Http404()
+
+        filepath = settings.UPLOADFILES_PATH + filename
+        if os.path.exists(filepath):
+            data = open(filepath, 'rb').read()
+            res = HttpResponse(data)
+            res['Content-Type'] = 'application/octet-stream'
+            res['Content-Disposition'] = 'attachment;filename="{0}"'.format(filename)
+            return res
+        return Http404()
