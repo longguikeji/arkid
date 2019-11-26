@@ -26,7 +26,7 @@ def init_storage_config(apps, schema_editor):
         minio_config.bucket = getattr(settings, 'MINIO_BUCKET', '')
         minio_config.save()
 
-        if not (minio_config.access_key == '' or minio_config.secret_key == ''):
+        if minio_config.access_key != '' and minio_config.secret_key != '':
             storage_config.method = 'minio'
             storage_config.save()
 
