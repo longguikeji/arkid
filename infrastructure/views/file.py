@@ -32,8 +32,8 @@ class FileCreateAPIView(generics.CreateAPIView):
         uuid = uuid_utils.uuid4().hex
         suffix = os.path.splitext(file.name)[1]
         file_name = uuid + suffix
-        method = list(StorageConfig.objects.all().values('method'))[0]['method']
-        if method and method == 'minio':
+        storage_config = StorageConfig.get_current()
+        if storage_config.method == 'minio':
             try:
                 put_object(
                     bucket_name=settings.MINIO_BUCKET,
@@ -61,8 +61,8 @@ class FileAPIView(View):
         '''
         download file
         '''
-        method = list(StorageConfig.objects.all().values('method'))[0]['method']
-        if method and method == 'minio':
+        storage_config = StorageConfig.get_current()
+        if storage_config.method == 'minio':
             try:
                 url = presign_get(bucket_name=settings.MINIO_BUCKET,
                                   object_name=filename,

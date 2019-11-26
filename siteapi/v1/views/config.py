@@ -207,12 +207,11 @@ class StorageConfigAPIView(generics.RetrieveUpdateAPIView):
     文件存储方式
     '''
     serializer_class = StorageConfigSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_config_write'))]
 
     def get_object(self):
         """
         get storage site
         """
         site = Site.objects.get_current()
-        site.refresh_from_db()
         return site
