@@ -6,7 +6,8 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
-                               AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QQConfig)
+                               AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QQConfig,
+                               StorageConfig, MinioConfig)
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from infrastructure.serializers.sms import SMSClaimSerializer
 from siteapi.v1.views.utils import gen_uid
@@ -97,6 +98,68 @@ class EmailConfigSerializer(DynamicFieldsModelSerializer):
             'nickname',
             'is_valid',
         )
+
+
+class MinioConfigSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for MinioConfig
+    '''
+    class Meta:    # pylint: disable=missing-docstring
+        model = MinioConfig
+
+        fields = (
+            'end_point',
+            'access_key',
+            'secret_key',
+            'secure',
+            'location',
+            'bucket',
+        )
+
+
+class StorageMethodSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for StorageMethod
+    '''
+    class Meta:    # pylint: disable=missing-docstring
+        model = StorageConfig
+
+        fields = ('method', )
+
+
+class StorageConfigSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for StorageConfig
+    '''
+    minio_config = MinioConfigSerializer(many=False, required=False)
+    method = serializers.CharField(source='storage_config.method')
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = Site
+
+        fields = (
+            'minio_config',
+            'method',
+        )
+
+    @transaction.atomic()
+    def update(self, instance, validated_data):    # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+
+        storage_config_data = validated_data.pop('storage_config', None)
+        if storage_config_data:
+            serializer = StorageMethodSerializer(StorageConfig.get_current(), storage_config_data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+        minio_config_data = validated_data.pop('minio_config', None)
+        if minio_config_data:
+            serializer = MinioConfigSerializer(MinioConfig.get_current(), minio_config_data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+        instance.refresh_from_db()
+
+        return instance
 
 
 class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):

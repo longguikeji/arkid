@@ -13,6 +13,7 @@ from siteapi.v1.serializers.config import (
     AlterAdminSerializer,
     CustomFieldSerailizer,
     NativeFieldSerializer,
+    StorageConfigSerializer,
 )
 from siteapi.v1.serializers.user import UserSerializer
 
@@ -199,3 +200,18 @@ class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
         if not field:
             raise NotFound
         return field
+
+
+class StorageConfigAPIView(generics.RetrieveUpdateAPIView):
+    '''
+    文件存储方式
+    '''
+    serializer_class = StorageConfigSerializer
+    permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_config_write'))]
+
+    def get_object(self):
+        """
+        get storage site
+        """
+        site = Site.objects.get_current()
+        return site
