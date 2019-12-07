@@ -130,5 +130,6 @@ tmp
 dump.rdb
 db.sqlite3
 
+db/data
 upload/*
 key
