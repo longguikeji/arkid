@@ -3,42 +3,40 @@ version: '3.5'
 services:
   portal:
     image: nginx:alpine
-    container_name: ${INSTANCE_ID}-portal
+    container_name: ${INSTANCE}-portal
     restart: always
     networks:
       - arkid
     ports:
-      - 80:80
+      - ${HTTP_PORT}:80
     depends_on:
-      - be
-      - fe
-    links:
       - be
       - fe
     volumes:
       - ${WORKSPACE}/portal.conf:/etc/nginx/conf.d/default.conf
 
   be:
-    image: longguikeji/arkid:1.1.0
-    container_name: ${INSTANCE_ID}-be
+    image: longguikeji/arkid:1.1.1
+    container_name: ${INSTANCE}-be
     restart: always
     networks:
       - arkid
     depends_on:
       - db
     volumes:
-      - ${WORKSPACE}/be_settings.py:/var/oneid/settings_local.py
+      - ${WORKSPACE}/be/settings.py:/var/oneid/settings_local.py
+      - ${WORKSPACE}/be/upload:/var/oneid/upload
 
   fe:
-    image: longguikeji/arkid:1.1.0
-    container_name: ${INSTANCE_ID}-fe
+    image: longguikeji/arkid-fe:1.1.1
+    container_name: ${INSTANCE}-fe
     restart: always
     networks:
       - arkid
 
   db:
     image: mysql:5.7
-    container_name: ${INSTANCE_ID}-db
+    container_name: ${INSTANCE}-db
     restart: always
     networks:
       - arkid
@@ -48,19 +46,22 @@ services:
     volumes:
       - ${WORKSPACE}/db/data:/var/lib/mysql
       - ${WORKSPACE}/db/config:/etc/mysql/conf.d
+    command:
+      - "--character-set-server=utf8"
+      - "--collation-server=utf8_unicode_ci"
 
   ldap:
     image: longguikeji/ark-sql-ldap:1.0.0
-    container_name: ${INSTANCE_ID}-ldap
+    container_name: ${INSTANCE}-ldap
     restart: always
     networks:
       - arkid
     depends_on:
       - be
     ports:
-      - 389:389
+      - ${LDAP_PORT}:389
     environment:
-      - SQL_HOST=127.0.0.1
+      - SQL_HOST=${INSTANCE}-db
       - SQL_PORT=3306
       - SQL_USER=root
       - SQL_PWD=${SQL_PWD}
@@ -70,12 +71,12 @@ services:
 
   redis:
     image: redis:5.0.3
-    container_name: ${INSTANCE_ID}-redis
+    container_name: ${INSTANCE}-redis
     restart: always
     networks:
       - arkid
 
-network:
+networks:
   arkid:
-    name: ${INSTANCE_ID}
+    name: ${INSTANCE}
     driver: bridge
