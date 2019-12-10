@@ -30,6 +30,7 @@ from siteapi.v1.views import (
     log as log_views,
     group as group_views,
     dept as dept_views,
+    org as org_views,
     user as user_views,
     app as app_views,
     shortcut as shortcut_views,
@@ -39,7 +40,6 @@ from siteapi.v1.views import (
 )
 
 from siteapi.v1.views.statistics import UserStatisticView
-
 urlpatterns = [
     # user
     url(r'^user/$', user_views.UserListCreateAPIView.as_view(), name='user_list'),
@@ -78,6 +78,11 @@ urlpatterns = [
     url(r'^dept/(?P<uid>[\w|-]+)/tree/$', dept_views.ManagerDeptTreeAPIView.as_view(), name='dept_tree'),
     url(r'^dept/(?P<uid>[\w|-]+)/dept/$', dept_views.DeptChildDeptAPIView.as_view(), name='dept_child_dept'),
     url(r'^dept/(?P<uid>[\w|-]+)/user/$', dept_views.DeptChildUserAPIView.as_view(), name='dept_child_user'),
+    # org
+    # TODO: url(r'ucenter/org/', name='ucenter_org_list'),
+    url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_create'),
+    url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailDestroyAPIView.as_view(), name='org_detail'),
+    url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListAPIView.as_view(), name='org_user'),
     # perm
     url(r'^perm/$', perm_views.PermListCreateAPIView.as_view(), name='perm_list'),
     url(r'^perm/(?P<uid>[\w|-]+)/$', perm_views.PermDetailAPIView.as_view(), name='perm_detail'),
@@ -184,3 +189,4 @@ urlpatterns = [
     # statistics
     url(r'^statistics/user_statistic/$', UserStatisticView.as_view(), name='user_statistic'),
 ]
+
