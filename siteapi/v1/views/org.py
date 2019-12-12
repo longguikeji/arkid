@@ -4,6 +4,9 @@ views for organization
 
 from uuid import uuid4
 
+from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ParseError, NotFound
+
 from rest_framework.response import Response
 from rest_framework.generics import *
 from oneid.permissions import (
@@ -14,10 +17,11 @@ from oneid_meta.models.dept import Dept
 from oneid_meta.models.group import Group
 from oneid_meta.models.org import Org
 
+
 class OrgListCreateAPIView(GenericAPIView):
     '''
     管理员 检视组织 [GET]
-    登录用户 创建/删除组织 [POST] [DELETE]
+    登录用户 创建组织 [POST]
     '''
 
     read_permission_classes = [IsAuthenticated & IsAdminUser]
@@ -33,43 +37,32 @@ class OrgListCreateAPIView(GenericAPIView):
         group_root = Group.objects.filter(uid='root').first()
 
         dept = Dept.objects.create(uid=uuid4(), name=name, parent=dept_root)
-        dept.save()
-
         group = Group.objects.create(uid=uuid4(), name=name, parent=group_root)
-        group.save()
-
-        direct = Group.objects.create(uid=uuid4(), name='无分组成员', parent=group)
-        direct.save()
-
-        manager = Group.objects.create(uid=uuid4(), name='管理员', parent=group)
-        manager.save()
-
-        role = Group.objects.create(uid=uuid4(), name='角色', parent=group)
-        role.save()
-
-        label = Group.objects.create(uid=uuid4(), name='标签', parent=group)
-        label.save()
+        direct = Group.objects.create(uid=uuid4(), name=f'{name}-无分组成员', parent=group)
+        manager = Group.objects.create(uid=uuid4(), name=f'{name}-管理员', parent=group)
+        role = Group.objects.create(uid=uuid4(), name=f'{name}-角色', parent=group)
+        label = Group.objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
 
         org = Org.objects.create(
             name=name,
-            dept_uid=dept,
-            group_uid=group,
-            direct_uid=direct,
-            manager_uid=manager,
-            role_uid=role,
-            label_uid=label
+            dept=dept,
+            group=group,
+            direct=direct,
+            manager=manager,
+            role=role,
+            label=label
         )
-        org.save()
 
         return Response(org_ser(org))
 
     def get_permissions(self):
         method = self.request.method
-        if (method == 'POST'):
+        if method == 'POST':
             return [perm() for perm in self.write_permission_classes]
-        elif (method == 'GET'):
+        elif method == 'GET':
             return [perm() for perm in self.read_permission_classes]
         return []
+
 
 class OrgUserListAPIView(GenericAPIView):
     '''
@@ -78,15 +71,22 @@ class OrgUserListAPIView(GenericAPIView):
     permission_classes = [IsAuthenticated & IsAdminUser]
     # permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgMember)]
 
+    @staticmethod
+    def validity_check(oid):
+        try:
+            o = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
+            if o.exists():
+                return o
+            else:
+                raise NotFound
+        except ValidationError as e:
+            raise ParseError(e.messages)
+
     def get(self, request, *args, **kwargs):
         u = []
 
-        from oneid_meta.models import User, DeptMember
-
-        oid = kwargs['oid']
-        org = Org.valid_objects.filter(uuid=Org.to_uuid(oid)).first()
-        dept = org.dept_uid
-        group = org.group_uid
+        o = self.validity_check(kwargs['oid'])
+        org = o.first()
 
         def traverse_dept(dept):
             nonlocal u
@@ -100,9 +100,10 @@ class OrgUserListAPIView(GenericAPIView):
             for g in group.groups:
                 traverse_group(g)
 
-        traverse_dept(dept)
-        traverse_group(group)
+        traverse_dept(org.dept)
+        traverse_group(org.group)
         return Response(u)
+
 
 class OrgDetailDestroyAPIView(GenericAPIView):
     '''
@@ -112,45 +113,52 @@ class OrgDetailDestroyAPIView(GenericAPIView):
     read_permission_classes = [IsAuthenticated] # TODO
     write_permission_classes = [IsAuthenticated] # TODO
 
+    @staticmethod
+    def validity_check(oid):
+        try:
+            o = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
+            if o.exists():
+                return o
+            else:
+                raise NotFound
+        except ValidationError as e:
+            raise ParseError(e.messages)
+
     def get(self, request, *args, **kwargs):
-        oid = kwargs['oid']
-        return Response(org_ser(Org.valid_objects.filter(uuid=Org.to_uuid(oid)).first()))
+        o = self.validity_check(kwargs['oid'])
+        return Response(org_ser(o.first()))
 
     def delete(self, request, *args, **kwargs):
-        oid = kwargs['oid']
-        org = Org.valid_objects.filter(uuid=Org.to_uuid(oid)).first()
+        o = self.validity_check(kwargs['oid'])
+        org = o.first()
 
-        org.dept_uid.delete()
-        org.group_uid.delete()
-        org.direct_uid.delete()
-        org.manager_uid.delete()
-        org.role_uid.delete()
-        org.label_uid.delete()
+        org.dept.delete()
+        org.group.delete()
+        org.direct.delete()
+        org.manager.delete()
+        org.role.delete()
+        org.label.delete()
         org.delete()
-        org.save()
 
         return Response()
 
     def get_permissions(self):
         method = self.request.method
-        if (method == 'POST'):
+        if method == 'POST':
             return [perm() for perm in self.write_permission_classes]
-        elif (method == 'GET'):
+        elif method == 'GET':
             return [perm() for perm in self.read_permission_classes]
         return []
 
 
 def org_ser(org):
-    ret = {}
-
-    ret['oid'] = org.uuid
-    ret['name'] = org.name
-    ret['dept_uid'] = org.dept_uid.uid
-    ret['group_uid'] = org.group_uid.uid
-    ret['direct_uid'] = org.group_uid.uid
-    ret['manager_uid'] = org.manager_uid.uid
-    ret['role_uid'] = org.role_uid.uid
-    ret['label_uid'] = org.label_uid.uid
-
-    return ret
-
+    return {
+        'oid': str(org.uuid),
+        'name': org.name,
+        'dept_uid': org.dept.uid,
+        'group_uid': org.group.uid,
+        'direct_uid': org.direct.uid,
+        'manager_uid': org.manager.uid,
+        'role_uid': org.role.uid,
+        'label_uid': org.label.uid
+    }

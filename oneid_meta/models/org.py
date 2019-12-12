@@ -7,7 +7,7 @@ from common.django.model import BaseModel
 
 class Org(BaseModel):
     '''
-    OID->节点UID查询表
+    组织信息
     '''
 
     def __str__(self):
@@ -15,13 +15,13 @@ class Org(BaseModel):
 
     name = models.CharField(max_length=255, blank=False, verbose_name='组织名')
 
-    dept_uid = models.ForeignKey('oneid_meta.Dept', on_delete=models.CASCADE, verbose_name='部门节点')
-    group_uid = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='组节点')
+    dept = models.ForeignKey('oneid_meta.Dept', on_delete=models.CASCADE, verbose_name='部门节点')
+    group = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='组节点')
 
-    direct_uid = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='直属成员节点', related_name='direct_uid')
-    manager_uid = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='管理员节点', related_name='manager_uid')
-    role_uid = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='角色节点', related_name='role_uid')
-    label_uid = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='标签节点', related_name='label_uid')
+    direct = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='直属成员节点', related_name='direct')
+    manager = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='管理员节点', related_name='manager')
+    role = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='角色节点', related_name='role')
+    label = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='标签节点', related_name='label')
 
 
     @property
