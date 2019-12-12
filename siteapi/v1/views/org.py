@@ -2,20 +2,16 @@
 views for organization
 '''
 
+# pylint: disable=no-self-use, invalid-name, unused-argument
+
 from uuid import uuid4
 
-from django.core.exceptions import ValidationError
 from rest_framework.exceptions import ParseError, NotFound
-
 from rest_framework.response import Response
-from rest_framework.generics import *
-from oneid.permissions import (
-    IsAdminUser,
-    IsAuthenticated
-)
-from oneid_meta.models.dept import Dept
-from oneid_meta.models.group import Group
-from oneid_meta.models.org import Org
+from rest_framework.generics import GenericAPIView, ValidationError
+from oneid.permissions import (IsAdminUser, IsAuthenticated)
+from oneid_meta.models import Dept, Group, Org
+from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
 
 
 class OrgListCreateAPIView(GenericAPIView):
@@ -28,38 +24,39 @@ class OrgListCreateAPIView(GenericAPIView):
     write_permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response([org_ser(o) for o in Org.valid_objects.all()])
+        return Response([OrgSerializer(o).data for o in Org.valid_objects.all()])
 
     def post(self, request):
-        name=request.data['name']
+        parse = OrgDeserializer(data=request.data)
+        parse.is_valid(raise_exception=True)
 
-        dept_root = Dept.objects.filter(uid='root').first()
-        group_root = Group.objects.filter(uid='root').first()
+        name = parse.validated_data['name']
 
-        dept = Dept.objects.create(uid=uuid4(), name=name, parent=dept_root)
-        group = Group.objects.create(uid=uuid4(), name=name, parent=group_root)
-        direct = Group.objects.create(uid=uuid4(), name=f'{name}-无分组成员', parent=group)
-        manager = Group.objects.create(uid=uuid4(), name=f'{name}-管理员', parent=group)
-        role = Group.objects.create(uid=uuid4(), name=f'{name}-角色', parent=group)
-        label = Group.objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
+        dept_root = Dept.valid_objects.filter(uid='root').first()
+        group_root = Group.valid_objects.filter(uid='root').first()
 
-        org = Org.objects.create(
-            name=name,
-            dept=dept,
-            group=group,
-            direct=direct,
-            manager=manager,
-            role=role,
-            label=label
-        )
+        dept = Dept.valid_objects.create(uid=uuid4(), name=name, parent=dept_root)
+        group = Group.valid_objects.create(uid=uuid4(), name=name, parent=group_root)
+        direct = Group.valid_objects.create(uid=uuid4(), name=f'{name}-无分组成员', parent=group)
+        manager = Group.valid_objects.create(uid=uuid4(), name=f'{name}-管理员', parent=group)
+        role = Group.valid_objects.create(uid=uuid4(), name=f'{name}-角色', parent=group)
+        label = Group.valid_objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
 
-        return Response(org_ser(org))
+        org = Org.valid_objects.create(name=name,
+                                       dept=dept,
+                                       group=group,
+                                       direct=direct,
+                                       manager=manager,
+                                       role=role,
+                                       label=label)
+
+        return Response(OrgSerializer(org).data)
 
     def get_permissions(self):
         method = self.request.method
         if method == 'POST':
             return [perm() for perm in self.write_permission_classes]
-        elif method == 'GET':
+        if method == 'GET':
             return [perm() for perm in self.read_permission_classes]
         return []
 
@@ -74,35 +71,34 @@ class OrgUserListAPIView(GenericAPIView):
     @staticmethod
     def validity_check(oid):
         try:
-            o = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
-            if o.exists():
-                return o
-            else:
-                raise NotFound
-        except ValidationError as e:
-            raise ParseError(e.messages)
+            org = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
+            if org.exists():
+                return org
+            raise NotFound
+        except ValidationError as exc:
+            raise ParseError(exc.messages)
 
-    def get(self, request, *args, **kwargs):
-        u = []
+    def get(self, request, **kwargs):
+        org = self.validity_check(kwargs['oid'])
+        org = org.first()
 
-        o = self.validity_check(kwargs['oid'])
-        org = o.first()
+        users = set()
 
         def traverse_dept(dept):
-            nonlocal u
-            u += [u.uid for u in dept.users]
+            nonlocal users
+            users = users.union({users.uid for users in dept.users})
             for d in dept.depts:
                 traverse_dept(d)
 
         def traverse_group(group):
-            nonlocal u
-            u += [u.uid for u in group.users]
+            nonlocal users
+            users = users.union({users.uid for users in group.users})
             for g in group.groups:
                 traverse_group(g)
 
         traverse_dept(org.dept)
         traverse_group(org.group)
-        return Response(u)
+        return Response(users)
 
 
 class OrgDetailDestroyAPIView(GenericAPIView):
@@ -110,27 +106,25 @@ class OrgDetailDestroyAPIView(GenericAPIView):
     组织详情查询 [GET]
     组织删除 [DELETE]
     '''
-    read_permission_classes = [IsAuthenticated] # TODO
-    write_permission_classes = [IsAuthenticated] # TODO
+    read_permission_classes = [IsAuthenticated]    # TODO
+    write_permission_classes = [IsAuthenticated]    # TODO
 
     @staticmethod
     def validity_check(oid):
         try:
-            o = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
-            if o.exists():
-                return o
-            else:
-                raise NotFound
-        except ValidationError as e:
-            raise ParseError(e.messages)
+            org = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
+            if org.exists():
+                return org
+            raise NotFound
+        except ValidationError as exc:
+            raise ParseError(exc.messages)
 
-    def get(self, request, *args, **kwargs):
-        o = self.validity_check(kwargs['oid'])
-        return Response(org_ser(o.first()))
+    def get(self, request, **kwargs):
+        org = self.validity_check(kwargs['oid'])
+        return Response(OrgSerializer(org.first()).data)
 
-    def delete(self, request, *args, **kwargs):
-        o = self.validity_check(kwargs['oid'])
-        org = o.first()
+    def delete(self, request, **kwargs):
+        org = self.validity_check(kwargs['oid']).first()
 
         org.dept.delete()
         org.group.delete()
@@ -140,25 +134,12 @@ class OrgDetailDestroyAPIView(GenericAPIView):
         org.label.delete()
         org.delete()
 
-        return Response()
+        return Response(status=204)
 
     def get_permissions(self):
         method = self.request.method
         if method == 'POST':
             return [perm() for perm in self.write_permission_classes]
-        elif method == 'GET':
+        if method == 'GET':
             return [perm() for perm in self.read_permission_classes]
         return []
-
-
-def org_ser(org):
-    return {
-        'oid': str(org.uuid),
-        'name': org.name,
-        'dept_uid': org.dept.uid,
-        'group_uid': org.group.uid,
-        'direct_uid': org.direct.uid,
-        'manager_uid': org.manager.uid,
-        'role_uid': org.role.uid,
-        'label_uid': org.label.uid
-    }

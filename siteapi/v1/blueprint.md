@@ -260,6 +260,17 @@ FORMAT: 1A
 + info (Node)
 + nodes (array[NodeOnlyTree]) - self
 
+## Organization (object)
++ oid (string)
++ name (string)
++ dept_uid (string(Dept))
++ group_uid (string(Group))
++ direct_uid (string(Group))
++ manager_uid (string(Group))
++ role_uid (string(Group))
++ label_uid (string(Group))
+
+
 ## Perm (object)
 + perm_id (number)
 + uid (string)
@@ -1508,6 +1519,71 @@ TODO: 可见权限的处理
 {
     "user": "unrelated"
 }
+
+# Group Org
+
+## 创建/列举组织 [/org/]
+
+### 查看所有组织 [GET]
+
++ Request
+    + Attributes
+    + Parameters
++ Response 200 (application/json)
+   + Attributes
+     + orgs (array[Organization]) - 组织信息列表
+
+### 创建组织 [POST]
+
++ Request (application/json)
+  + Attributes
+    + name (string) - 组织名
++ Response 200 (application/json)
+  + Attributes
+    + oid (string) - 组织唯一标识
+    + name (string) - 组织名
+    + dept_uid (string) - 组织下属部门唯一标识
+    + group_uid (string) - 组织下属组唯一标识
+    + direct_uid (string) - 组织下属直接成员组唯一标识
+    + manager_uid (string) - 组织下属管理员组唯一标识
+    + role_uid (string) - 组织下属角色组唯一标识
+    + label_uid (string) - 组织下属标签组唯一标识
+
+## 查看/删除特定组织 [/org/{oid}/]
+
+### 查看特定组织信息 [GET]
+
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
++ Response 200 (application/json)
+  + Attributes
+    + oid (string) - 组织唯一标识
+    + name (string) - 组织名
+    + dept_uid (string) - 组织下属部门唯一标识
+    + group_uid (string) - 组织下属组唯一标识
+    + direct_uid (string) - 组织下属直接成员组唯一标识
+    + manager_uid (string) - 组织下属管理员组唯一标识
+    + role_uid (string) - 组织下属角色组唯一标识
+    + label_uid (string) - 组织下属标签组唯一标识
+
+### 删除特定组织 [DELETE]
+
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
++ Response 204
+
+## 特定组织成员操作 [/org/{oid}/user/]
+
+### 查看特定组织成员列表 [GET]
+
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
++ Response 200 (application/json)
+  + Attributes
+    + users (array[string]) - 组织中所有用户名列表
 
 # Group Perm
 
