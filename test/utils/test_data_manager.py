@@ -20,18 +20,26 @@ class SqliteToSqlManager:
     DATASET_SQL_PATH = base_path / 'test' / 'data' / 'test.sql'
 
     def __init__(self):
-        self.conn = sqlite3.connect(BASE_DIR + '/test/data/unittest.sqlite3')
+        self.conn = sqlite3.connect(BASE_DIR + '/db/db.sqlite3')
         self.cur = self.conn.cursor()
 
     def write_sql_to_test_db(self):    # pylint: disable=no-self-use
         '''
         sql写入测试数据库
         '''
+
+        base_path = pathlib.Path(BASE_DIR)
+        new_db_name = 'db_%s.sqlite3' % (time.strftime('%Y-%m-%d_%H:%M:%S'))
+        new_db_path = base_path / 'db' / new_db_name
+        # os.rename(self.ORIGIN_DB_PATH, new_db_path)
+        shutil.copy2(self.ORIGIN_DB_PATH, new_db_path)
+
         try:
             self.cur.execute('DELETE FROM sqlite_sequence')
             self.conn.commit()
+
         except Exception as err:    # pylint: disable=broad-except
-            return err
+            print(err)
 
         with open(self.DATASET_SQL_PATH, 'r') as f:
             count = len(f.readlines())
@@ -44,24 +52,13 @@ class SqliteToSqlManager:
             self.conn.commit()
             self.conn.close()
 
-    def load_test_db(self):    # pylint: disable=no-self-use
-        '''
-        将测试数据放入项目操作数据库文件夹进行修改
-        '''
-        base_path = pathlib.Path(BASE_DIR)
-        new_db_name = 'db_%s.sqlite3' % (time.strftime('%Y-%m-%d_%H:%M:%S'))
-        new_db_path = base_path / 'db' / new_db_name
-        os.rename(self.ORIGIN_DB_PATH, new_db_path)
-
-        shutil.copy2(self.DATASET_DB_PATH, self.ORIGIN_DB_PATH)
-
-    def update_test_sql(self):
+    def update_test_sql(self):    # pylint: disable=no-self-use
         '''
         转换数据库为sql文件
         '''
         try:
-            con = sqlite3.connect(self.DATASET_DB_PATH)
-            with open(self.DATASET_SQL_PATH, 'w') as f:
+            con = sqlite3.connect(BASE_DIR + '/db/db.sqlite3')
+            with open(BASE_DIR + '/test/data/test.sql', 'w') as f:
                 for line in con.iterdump():
                     f.write('%s\n' % line)
             con.close()
