@@ -81,7 +81,7 @@ https://arkid.demo.longguikeji.com
 ## Contact
 
 - [Website](https://www.longguikeji.com)
-
+- 技术交流 QQ 群 （167885406）
 
 ## License
 
