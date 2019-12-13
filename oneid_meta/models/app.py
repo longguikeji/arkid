@@ -1,6 +1,7 @@
 '''
 schema of APPs
 '''
+import os
 from urllib.parse import urlparse
 
 from django.db import models
@@ -10,6 +11,8 @@ from django.conf import settings
 from oauth2_provider.models import Application as OAuthApplication
 from common.django.model import BaseModel
 from oneid_meta.models import Perm
+
+BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class APP(BaseModel):
@@ -272,10 +275,43 @@ class OIDCAPP():
         abstract = True
 
 
-class SAMLAPP():
+class SAMLAPP(BaseModel):
     '''
     SMAL client
-    TODO
     '''
-    class Meta:    # pylint: disable=missing-docstring
-        abstract = True
+    app = models.OneToOneField('oneid_meta.APP',
+                               related_name="saml_app",
+                               null=True,
+                               blank=True,
+                               on_delete=models.CASCADE)
+    entity_id = models.CharField(max_length=255, blank=True, verbose_name='SP方entity_id')
+    acs = models.CharField(max_length=255, blank=True, verbose_name='SP方acs地址')
+    sls = models.CharField(max_length=255, blank=True, verbose_name='SP方sls地址')
+    cert = models.CharField(max_length=2200, blank=True, verbose_name='证书公钥')
+    xmldata = models.CharField(max_length=5000, blank=True, verbose_name='本地SP元数据地址')
+
+    def delete(self, *args, **kwargs):
+        super().kill()
+
+    @property
+    def more_detail(self):
+        '''
+        saml 接口相关信息，用于展示
+        '''
+        return [{
+            'name': 'SP方实体',
+            'key': 'entity_id',
+        }, {
+            'name': 'SP单点登录接口',
+            'key': 'acs',
+        }, {
+            'name': 'SP单点登出接口',
+            'key': 'sls',
+        }, {
+            'name': 'SP公钥,确保是一行无空格换行',
+            'key': 'cert',
+        }, {
+            'name': 'SP获取IdP方元数据',
+            'key': 'idp_metadata',
+            'value': [settings.BASE_URL + '/saml/metadata', settings.BASE_URL + '/saml/download/metadata']
+        }]

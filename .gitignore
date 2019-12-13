@@ -126,10 +126,20 @@ settings_local.py
 !.vscode/extensions.json
 
 tmp
-
+# db
 dump.rdb
-db.sqlite3
+*.sqlite3
 
 db/data
 upload/*
 key
+
+# certs
+*.key
+*.csr
+*.crt
+*.pem
+
+# demo
+pysaml2/
+djangosaml2config/saml2_config/*.xml

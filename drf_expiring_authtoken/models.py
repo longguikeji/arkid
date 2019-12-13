@@ -13,7 +13,6 @@ from django.utils.translation import ugettext_lazy as _
 from drf_expiring_authtoken.settings import token_settings
 from oneid_meta.models import User
 
-
 class ExpiringToken(models.Model):
     """
     The default authorization token model.
