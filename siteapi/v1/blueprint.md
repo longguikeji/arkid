@@ -2448,7 +2448,15 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 302
     + Attributes
-        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
+        + SAMLResponse (base64/string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
+            + Issuer - (string) IdP方处理元数据请求uri
+            + Audience - (string) SP方监听SMALResponse的uri
+            + entity - (string) IdP方获取元数据地址
+            + status_code - (string) 登录状态
+            + username - (string) IdP用户名
+            + email - (string) IdP用户邮箱
+            + private_email - (string) IdP用户私人邮箱
+            + token - （string）IdP用户token
 
 ## SP获取元数据接口 [/saml/metadata/]
 
