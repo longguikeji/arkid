@@ -372,9 +372,7 @@ class UserInfoOauthView(APIView):
     authentication_classes = [OAuth2Backend]
 
     def get(self, request):
-        auth_items = request.META["HTTP_AUTHORIZATION"].split(' ')
-        token = auth_items[-1]
-        user = AccessToken.objects.get(token=token).user
+        user = request.user
         response = Response({
             "data": {
                 "user": {
