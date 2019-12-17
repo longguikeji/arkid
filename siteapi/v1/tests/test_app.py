@@ -33,6 +33,7 @@ APP_1_EXCEPT = {
     'remark': '',
     'oauth_app': None,
     'http_app': None,
+    'saml_app': None,
     'ldap_app': None,
     'allow_any_user': False,
     'auth_protocols': [],
@@ -70,6 +71,7 @@ APP_2_EXCEPT = {
     'http_app': {
         'more_detail': []
     },
+    'saml_app': None,
     'auth_protocols': ['OAuth 2.0', 'LDAP', 'HTTP'],
 }
 
@@ -206,6 +208,7 @@ class APPTestCase(TestCase):
                 'more_detail': [],
             },
             'http_app': None,
+            'saml_app': None,
             'auth_protocols': ['OAuth 2.0', 'LDAP'],
         }
         self.assertEqual(res, expect)
@@ -369,6 +372,7 @@ class APPTestCase(TestCase):
                 'oauth_app': None,
                 'ldap_app': None,
                 'http_app': None,
+                'saml_app': None,
                 'allow_any_user': False,
                 'access_perm': {
                     'perm_id': 3,
