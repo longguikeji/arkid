@@ -14,6 +14,7 @@ class Org(BaseModel):
         return f'Organization: {self.oid}({self.name})'
 
     name = models.CharField(max_length=255, blank=False, verbose_name='组织名')
+    owner = models.ForeignKey('oneid_meta.User', on_delete=models.CASCADE, verbose_name='所有者')
 
     dept = models.ForeignKey('oneid_meta.Dept', on_delete=models.CASCADE, verbose_name='部门节点')
     group = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='组节点')
@@ -31,12 +32,22 @@ class Org(BaseModel):
 
     @property
     def oid(self):
+        '''
+        get oid
+        '''
         return self.uuid
 
     @property
     def oid_str(self):
+        '''
+        get string oid
+        :return:
+        '''
         return str(self.oid)
 
     @staticmethod
     def to_uuid(oid):
+        '''
+        convert oid to uuid
+        '''
         return oid

@@ -5,7 +5,7 @@ tests for api abort org
 # pylint: disable=missing-docstring, invalid-name, too-many-locals
 
 from django.urls import reverse
-from oneid_meta.models import Dept, Group, Org
+from oneid_meta.models import User, Dept, Group, GroupMember, Org
 
 from siteapi.v1.tests import TestCase
 from siteapi.v1.serializers.org import OrgSerializer
@@ -25,6 +25,8 @@ ILL_FORMED_DATA = {'name2': '组织3'}
 class OrgTestCase(TestCase):
     def setUp(self):
         super(OrgTestCase, self).setUp()
+        self._client = self.client
+
         for org in ORG_DATA:
             for o in Org.valid_objects.filter(name=org['name']):
                 o.kill()
@@ -34,6 +36,12 @@ class OrgTestCase(TestCase):
         for org in ORG_DATA:
             for o in Org.valid_objects.filter(name=org['name']):
                 o.kill()
+
+    def set_client(self, client):
+        self.client = client
+
+    def unset_client(self):
+        self.client = self._client
 
     def list_org(self):
         return self.client.get(reverse('siteapi:org_create'))
@@ -52,6 +60,12 @@ class OrgTestCase(TestCase):
 
     def create_group(self, uid, name):
         return self.client.json_post(reverse('siteapi:group_child_group', args=(uid, )), data={'name': name})
+
+    def get_org(self):
+        return self.client.get(reverse('siteapi:ucenter_org_list'))
+
+    def get_owned_org(self):
+        return self.client.get(reverse('siteapi:ucenter_own_org_list'))
 
     def create_user(self, grp_uids, dept_uids, name):
         return self.client.json_post(reverse('siteapi:user_list'),
@@ -138,7 +152,11 @@ class OrgTestCase(TestCase):
         self.assertEqual(jorgs, [OrgSerializer(o).data for o in Org.objects.all()])
 
     def test_org_member(self):
+        owner = User.create_user('owner', 'owner')
+
+        self.set_client(self.login_as(owner))
         org = self.create_org({'name': '组织1'}).json()
+        self.unset_client()
 
         dept = org['dept_uid']
         dept_a = self.create_dept(dept, 'Dept A').json()['uid']
@@ -167,5 +185,19 @@ class OrgTestCase(TestCase):
         self.create_user([direct, role_a, role_ab, label_a, manager], ['root'], 'user4')
         self.create_user(['root', label_a, role_b, role_ab, role, grptype_a, grp], [dept, dept_a], 'user5')
 
-        USER_DATA = {'user0', 'user1', 'user2', 'user3', 'user4', 'user5'}
-        self.assertEqual(set(self.get_user(org['oid']).json()), USER_DATA)
+        # with owner
+        user_data = {'owner', 'user0', 'user1', 'user2', 'user3', 'user4', 'user5'}
+        self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
+
+    # 节点-添加成员-API
+
+    def test_user_org(self):
+        user = User.create_user('user', 'user')
+        extern_org = self.create_org({'name': '外部组织'}).json()
+        GroupMember.valid_objects.create(user=user,
+                                         owner=Group.valid_objects.filter(uid=extern_org['direct_uid']).first())
+
+        self.set_client(self.login_as(user))
+        oid = set(map(lambda x: self.create_org(x).json()['oid'], ORG_DATA))
+        self.assertEqual(set(self.get_owned_org().json()), oid)
+        self.assertEqual(set(self.get_org().json()), oid.union({extern_org['oid']}))

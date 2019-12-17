@@ -24,9 +24,15 @@ class OrgListCreateAPIView(GenericAPIView):
     write_permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        '''
+        GET org list
+        '''
         return Response([OrgSerializer(o).data for o in Org.valid_objects.all()])
 
     def post(self, request):
+        '''
+        POST create org
+        '''
         parse = OrgDeserializer(data=request.data)
         parse.is_valid(raise_exception=True)
 
@@ -43,6 +49,7 @@ class OrgListCreateAPIView(GenericAPIView):
         label = Group.valid_objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
 
         org = Org.valid_objects.create(name=name,
+                                       owner=self.request.user,
                                        dept=dept,
                                        group=group,
                                        direct=direct,
@@ -53,6 +60,9 @@ class OrgListCreateAPIView(GenericAPIView):
         return Response(OrgSerializer(org).data)
 
     def get_permissions(self):
+        '''
+        set permissions
+        '''
         method = self.request.method
         if method == 'POST':
             return [perm() for perm in self.write_permission_classes]
@@ -70,6 +80,9 @@ class OrgUserListAPIView(GenericAPIView):
 
     @staticmethod
     def validity_check(oid):
+        '''
+        check oid
+        '''
         try:
             org = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
             if org.exists():
@@ -79,26 +92,11 @@ class OrgUserListAPIView(GenericAPIView):
             raise ParseError(exc.messages)
 
     def get(self, request, **kwargs):
-        org = self.validity_check(kwargs['oid'])
-        org = org.first()
-
-        users = set()
-
-        def traverse_dept(dept):
-            nonlocal users
-            users = users.union({users.uid for users in dept.users})
-            for d in dept.depts:
-                traverse_dept(d)
-
-        def traverse_group(group):
-            nonlocal users
-            users = users.union({users.uid for users in group.users})
-            for g in group.groups:
-                traverse_group(g)
-
-        traverse_dept(org.dept)
-        traverse_group(org.group)
-        return Response(users)
+        '''
+        get org members
+        '''
+        org = self.validity_check(kwargs['oid']).first()
+        return Response(collect_org_user(org))
 
 
 class OrgDetailDestroyAPIView(GenericAPIView):
@@ -111,6 +109,9 @@ class OrgDetailDestroyAPIView(GenericAPIView):
 
     @staticmethod
     def validity_check(oid):
+        '''
+        check oid
+        '''
         try:
             org = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
             if org.exists():
@@ -120,10 +121,16 @@ class OrgDetailDestroyAPIView(GenericAPIView):
             raise ParseError(exc.messages)
 
     def get(self, request, **kwargs):
+        '''
+        org detail view
+        '''
         org = self.validity_check(kwargs['oid'])
         return Response(OrgSerializer(org.first()).data)
 
     def delete(self, request, **kwargs):
+        '''
+        delete org
+        '''
         org = self.validity_check(kwargs['oid']).first()
 
         org.dept.delete()
@@ -137,9 +144,73 @@ class OrgDetailDestroyAPIView(GenericAPIView):
         return Response(status=204)
 
     def get_permissions(self):
+        '''
+        set permissions
+        '''
         method = self.request.method
         if method == 'POST':
             return [perm() for perm in self.write_permission_classes]
         if method == 'GET':
             return [perm() for perm in self.read_permission_classes]
         return []
+
+
+class UcenterOrgListAPIView(GenericAPIView):
+    '''
+    个人所属组织列表查询 [GET]
+    '''
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        '''
+        get user org list
+        '''
+        oid = set()
+
+        for org in Org.valid_objects.all():
+            if self.request.user.username in collect_org_user(org):
+                oid.add(org.oid)
+        return Response(oid)
+
+
+class UcenterOwnOrgListAPIView(GenericAPIView):
+    '''
+    个人拥有组织列表查询 [GET]
+    '''
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        '''
+        get user owned org list
+        '''
+        oid = set()
+
+        for org in Org.valid_objects.all():
+            if self.request.user.username == org.owner.username:
+                oid.add(org.oid)
+        return Response(oid)
+
+
+def collect_org_user(org):
+    '''
+    collect all users in a org
+    '''
+    users = {org.owner.username}
+
+    def traverse_dept(dept):
+        nonlocal users
+        users.update({users.username for users in dept.users})
+        for d in dept.depts:
+            traverse_dept(d)
+
+    def traverse_group(group):
+        nonlocal users
+        users.update({users.username for users in group.users})
+        for g in group.groups:
+            traverse_group(g)
+
+    traverse_dept(org.dept)
+    traverse_group(org.group)
+    return users

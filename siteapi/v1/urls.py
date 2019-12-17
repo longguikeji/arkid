@@ -79,7 +79,6 @@ urlpatterns = [
     url(r'^dept/(?P<uid>[\w|-]+)/dept/$', dept_views.DeptChildDeptAPIView.as_view(), name='dept_child_dept'),
     url(r'^dept/(?P<uid>[\w|-]+)/user/$', dept_views.DeptChildUserAPIView.as_view(), name='dept_child_user'),
     # org
-    # TODO: url(r'ucenter/org/', name='ucenter_org_list'),
     url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_create'),
     url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailDestroyAPIView.as_view(), name='org_detail'),
     url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListAPIView.as_view(), name='org_user'),
@@ -144,6 +143,8 @@ urlpatterns = [
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/$', node_views.UcenterNodeDetailAPIView.as_view(), name='ucenter_node_detail'),
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/tree/$', node_views.UcenterNodeTreeAPIView.as_view(),
         name='ucenter_node_tree'),
+    url(r'^ucenter/orgs/$', org_views.UcenterOrgListAPIView.as_view(), name='ucenter_org_list'),
+    url(r'^ucenter/orgs/owned/$', org_views.UcenterOwnOrgListAPIView.as_view(), name='ucenter_own_org_list'),
     # ucenter app
     url(r'^ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'),
     # ucenter user
@@ -189,4 +190,3 @@ urlpatterns = [
     # statistics
     url(r'^statistics/user_statistic/$', UserStatisticView.as_view(), name='user_statistic'),
 ]
-
