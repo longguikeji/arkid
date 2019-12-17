@@ -34,6 +34,7 @@ APP_1_EXCEPT = {
     'oauth_app': None,
     'http_app': None,
     'ldap_app': None,
+    'saml_app': None,
     'allow_any_user': False,
     'auth_protocols': [],
 }
@@ -70,6 +71,7 @@ APP_2_EXCEPT = {
     'http_app': {
         'more_detail': []
     },
+    'saml_app': None,
     'auth_protocols': ['OAuth 2.0', 'LDAP', 'HTTP'],
 }
 
@@ -92,10 +94,10 @@ class APPTestCase(TestCase):
     @mock.patch('oneid_meta.models.app.HTTPAPP.more_detail', new_callable=mock.PropertyMock)
     @mock.patch('oauth2_provider.models.Application.more_detail', new_callable=mock.PropertyMock)
     def test_create_app(
-            self,
-            mock_oauth_info,
-            mock_http_info,
-            mock_ldap_info,
+        self,
+        mock_oauth_info,
+        mock_http_info,
+        mock_ldap_info,
     ):
         mock_oauth_info.return_value = []
         mock_http_info.return_value = []
@@ -140,10 +142,10 @@ class APPTestCase(TestCase):
     @mock.patch('oneid_meta.models.app.HTTPAPP.more_detail', new_callable=mock.PropertyMock)
     @mock.patch('oauth2_provider.models.Application.more_detail', new_callable=mock.PropertyMock)
     def test_employee_create_app(
-            self,
-            mock_oauth_info,
-            mock_http_info,
-            mock_ldap_info,
+        self,
+        mock_oauth_info,
+        mock_http_info,
+        mock_ldap_info,
     ):
         mock_oauth_info.return_value = []
         mock_http_info.return_value = []
@@ -165,10 +167,10 @@ class APPTestCase(TestCase):
     @mock.patch('oneid_meta.models.app.HTTPAPP.more_detail', new_callable=mock.PropertyMock)
     @mock.patch('oauth2_provider.models.Application.more_detail', new_callable=mock.PropertyMock)
     def test_update_app(
-            self,
-            mock_oauth_info,
-            mock_http_info,
-            mock_ldap_info,
+        self,
+        mock_oauth_info,
+        mock_http_info,
+        mock_ldap_info,
     ):
         mock_oauth_info.return_value = []
         mock_http_info.return_value = []
@@ -207,6 +209,7 @@ class APPTestCase(TestCase):
             },
             'http_app': None,
             'auth_protocols': ['OAuth 2.0', 'LDAP'],
+            'saml_app': None,
         }
         self.assertEqual(res, expect)
         self.assertTrue(OAuthAPP.objects.filter(app__uid=APP_1_EXCEPT['uid']).exists())
@@ -369,6 +372,7 @@ class APPTestCase(TestCase):
                 'oauth_app': None,
                 'ldap_app': None,
                 'http_app': None,
+                'saml_app': None,
                 'allow_any_user': False,
                 'access_perm': {
                     'perm_id': 3,
