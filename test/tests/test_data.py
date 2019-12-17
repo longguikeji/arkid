@@ -76,8 +76,11 @@ class TestDBCase(TestCase):
         '''
         测试数据集中的用户是否载入
         '''
-        client = self.client
-        res = client.get(reverse('siteapi:user_list'))
-        usernames = [i['user']['username'] for i in res.json()['results']]
+        client = APIClient()
+        res = client.post(reverse('siteapi:user_login'), data={'username': 'admin', 'password': 'admin'})
+        token = res.json()['token']
+        client.credentials(HTTP_AUTHORIZATION='token ' + token)
+        res2 = client.get(reverse('siteapi:user_list'))
+        usernames = [i['user']['username'] for i in res2.json()['results']]
         expect = [str(j) for j in range(13899990001, 13899990011)]
         self.assertEqual(usernames, expect)
