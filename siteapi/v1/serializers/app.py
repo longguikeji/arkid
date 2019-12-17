@@ -116,7 +116,7 @@ class APPSerializer(DynamicFieldsModelSerializer):
     http_app = HTTPAPPSerializer(many=False, required=False, allow_null=True)
     ldap_app = LDAPAPPSerializer(many=False, required=False, allow_null=True)
     oidc_app = OIDCAPPSerializer(many=False, required=False)
-    saml_app = SAMLAPPSerializer(many=False, required=False)
+    saml_app = SAMLAPPSerializer(many=False, required=False, allow_null=True)
 
     uid = serializers.CharField(required=False, help_text='默认情况下根据`name`生成')
 
@@ -190,7 +190,7 @@ class APPSerializer(DynamicFieldsModelSerializer):
         return app
 
     # TODO: support update name of app
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data):    # pylint: disable=too-many-branches, too-many-statements
         '''
         update app
         update/create oauth_app if provided
