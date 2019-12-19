@@ -17,7 +17,7 @@ from rest_framework.exceptions import (
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.db.models import Q
 from oneid_meta.models import User, Group, Dept
 from oneid.permissions import (
     IsAdminUser,
@@ -56,8 +56,13 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         '''
         return queryset for list [GET]
         '''
-        kwargs = {}
-        queryset = User.valid_objects.filter(**kwargs).exclude(is_boss=True).exclude(username='admin').order_by('id')
+        keyword = self.request.query_params.get('keyword', '')
+        if keyword != '':
+            queryset = User.valid_objects.filter(Q(username__icontains=keyword)|Q(email__icontains=keyword)|\
+                Q(private_email__icontains=keyword)|Q(mobile__icontains=keyword)|Q(name__icontains=keyword)).\
+                    exclude(is_boss=True).exclude(username='admin').order_by('id')
+        else:
+            queryset = User.valid_objects.exclude(is_boss=True).exclude(username='admin').order_by('id')
 
         return queryset
 

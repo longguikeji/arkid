@@ -877,7 +877,7 @@ TODO: 校对
 # Group User
 用户管理
 
-## 所有用户 [/user/]
+## 所有用户 [/user/{?keyword}]
 
 ### 创建用户 [POST]
 + Request JSON Message
@@ -897,6 +897,7 @@ TODO: 校对
             - default: 30
         + page (number)
             - default: 1
+        + keyword (string) - 查询关键字，进行用户名、姓名、邮箱、手机号模糊搜索
 
 + Response 200 (application/json)
     + Attributes
