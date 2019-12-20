@@ -2,6 +2,7 @@
 数据导入导出函数
 '''
 import os
+import re
 import pathlib
 import time
 import sqlite3
@@ -157,6 +158,8 @@ class DBManager:
             con = sqlite3.connect(BASE_DIR + '/db/db.sqlite3')
             with open(BASE_DIR + '/test/data/test.sql', 'w+') as f:
                 for line in con.iterdump():
+                    if len(re.findall(r'django_migrations', line)) > 0:
+                        continue
                     f.write('%s\n' % line)
             con.close()
         except Exception as err:    # pylint: disable=broad-except
