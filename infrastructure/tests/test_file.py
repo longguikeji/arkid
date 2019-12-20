@@ -7,10 +7,13 @@ from siteapi.v1.tests import TestCase
 
 
 class FileTestCase(TestCase):
-    '''测试文件存储
+    '''
+    测试文件存储
     '''
     def test_download_file(self):
-        '''请求图片失败返回
         '''
-        res = self.client.get(reverse('infra:download_file', args=('fjdkslaf.png', )))
+        请求图片失败返回404 NOT FOUND
+        '''
+        client = self.client
+        res = client.get(reverse('infra:download_file', args=('not_exist.png', )))
         self.assertEqual(res.status_code, HTTP_404_NOT_FOUND)
