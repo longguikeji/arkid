@@ -478,3 +478,15 @@ class MinioConfig(BaseModel, SingletonConfigMixin):
 
     def __str__(self):
         return f'Minio[{self.id}]: {self.display_name}'    # pylint: disable=no-member
+
+
+class IdPConfig(BaseModel, SingletonConfigMixin):
+    '''IdP配置信息
+    '''
+    site = models.OneToOneField(Site, related_name='idp_config', on_delete=models.CASCADE)
+
+    cert = models.CharField(max_length=2500, blank=True, default='', verbose_name='cert')
+    key = models.CharField(max_length=2500, blank=True, default='', verbose_name='key')
+
+    def __str__(self):
+        return f'IdP[{self.id}]: {self.display_name}'    # pylint: disable=no-member

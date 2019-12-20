@@ -288,7 +288,7 @@ class SAMLAPP(BaseModel):
     acs = models.CharField(max_length=255, blank=True, verbose_name='SP方acs地址')
     sls = models.CharField(max_length=255, blank=True, verbose_name='SP方sls地址')
     cert = models.CharField(max_length=2200, blank=True, verbose_name='证书公钥')
-    xmldata = models.CharField(max_length=5000, blank=True, verbose_name='本地SP元数据地址')
+    xmldata = models.CharField(max_length=5000, blank=True, verbose_name='本地SP元数据')
 
     def delete(self, *args, **kwargs):
         super().kill()
