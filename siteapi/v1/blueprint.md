@@ -327,11 +327,13 @@ FORMAT: 1A
 
 ## APP (object)
 + uid (string)
++ uuid (string)
 + name (string)
 + remark (string)
 + oauth_app (OAuthAPP)
 + ldap_app (LDAPAPP)
 + http_app (HTTPAPP)
++ saml_app (SAMLAPP)
 + auth_protocols (array[string])
 + logo (string) - file key
 + index (string) - 首页地址
@@ -375,6 +377,13 @@ FORMAT: 1A
         + key (string) - 键
         + value (string) - 值，用于显示
 
+## SAML2APP (object)
++ app (object) - OnetoOne关联APP对象
++ entity_id (string) - SP方SAML实体
++ acs (string) - SP单点登录uri
++ sls (string) - SP单点登出uri
++ cert (string) - SP公钥证书
++ xmldata (string) - SP方xml元数据文件
 
 ## CompanyConfig (object)
 + name_cn (string)
@@ -2424,3 +2433,49 @@ Content-Disposition: form-data; name='node_uid'
 + Response 403 (application/json)
     + Attributes
         + err_msg (string) - 'work_qq qr not allowed'
+
+# SAML2 APP配置接口
+
+## APP单点登录配置 [/saml/sso/redirect]
+
++ Request 302 Redirect
+    + Attributes
+        + SAMLRequest (string) - SP方SAML重定向请求
+
++ Response 302
+    + Attributes
+        + next (string) - 重定向未登录用户到oneid登录页
+
++ Response 302
+    + Attributes
+        + SAMLResponse (base64/string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
+            + Issuer - (string) IdP方处理元数据请求uri
+            + Audience - (string) SP方监听SMALResponse的uri
+            + entity - (string) IdP方获取元数据地址
+            + status_code - (string) 登录状态
+            + username - (string) IdP用户名
+            + email - (string) IdP用户邮箱
+            + private_email - (string) IdP用户私人邮箱
+            + token - （string）IdP用户token
+
+## SP获取元数据接口 [/saml/metadata/]
+
+### 获取xml [GET]
+
++ Request JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes
+        + metadata (html/xml) - SAML2元数据显示在网页，用于SP方获取
+
+## 下载元数据文件 [/saml/download/metadata/]
+
+### 下载 [GET]
+
++ Request JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes
+        + metadata.xml (file/xml) - IdP方新建时生成的元数据文件，用于在SP方配置时上传.

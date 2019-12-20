@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 import datetime
-
 from kombu import Exchange, Queue
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -54,6 +53,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'infrastructure',
     'captcha',
+    'djangosaml2idp',
     # 'ldap.sql_backend',
 ]
 
@@ -229,8 +229,10 @@ REDIS_CONFIG = {
     'PASSWORD': None,
 }
 
-REDIS_URL = 'redis://{}:{}/{}'.format(REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'], REDIS_CONFIG['DB']) if REDIS_CONFIG['PASSWORD'] is None \
-        else 'redis://:{}@{}:{}/{}'.format(REDIS_CONFIG['PASSWORD'], REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'], REDIS_CONFIG['DB'])
+REDIS_URL = 'redis://{}:{}/{}'.format(REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'],\
+    REDIS_CONFIG['DB']) if REDIS_CONFIG['PASSWORD'] is None \
+        else 'redis://:{}@{}:{}/{}'.format(REDIS_CONFIG['PASSWORD'],\
+            REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'], REDIS_CONFIG['DB'])
 
 
 CACHES = {
@@ -284,7 +286,6 @@ FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'    # 邮件重置密码页面
 FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'    # 邮件激活账号页面
 FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'    # 邮件重置邮箱页面
 LOGIN_URL = '/#/oneid/login'
-
 CREDIBLE_ARKERS = [
     'oneid_broker',
     'arkbe_broker',
