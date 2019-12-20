@@ -1,25 +1,14 @@
 from oneid_meta.models import User
 from .oauth2_backends import get_oauthlib_core
-
+from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 UserModel = User
 OAuthLibCore = get_oauthlib_core()
 
 
-class OAuth2Backend(object):
+class OAuth2Backend(ExpiringTokenAuthentication):
     """
     Authenticate against an OAuth2 access token
     """
 
-    def authenticate(self, request=None, **credentials):
-        if request is not None:
-            valid, r = OAuthLibCore.verify_request(request, scopes=[])
-            if valid:
-                return r.user, credentials
-        return None
-
-    def get_user(self, user_id):
-        try:
-            return UserModel.objects.get(pk=user_id)
-        except UserModel.DoesNotExist:
-            return None
+    keyword = "bearer"

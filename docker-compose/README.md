@@ -1,6 +1,6 @@
 # run ArkID by docker-compose
 
-1. 按提示修改 .env 文件、be_settings.py 文件
+1. 按提示修改 .env 文件、be/settings.py 文件
 
 2. $> docker-compose up
 
