@@ -27,4 +27,5 @@ urlpatterns = [    # pylint: disable=invalid-name
     url(r'^siteapi/oneid/', include(('siteapi.v1.urls', 'siteapi'), namespace='siteapi_oneid')),
     url(r'^oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^service/', include(('infrastructure.urls', 'infrastructure'), namespace='infra')),
+    url(r'^saml/', include('djangosaml2idp.urls', namespace='djangosaml2idp')),
 ]
