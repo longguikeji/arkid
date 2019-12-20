@@ -81,20 +81,17 @@ APP_3 = {
     'uid': 'test_app_uid',
     'name': 'test_app_name',
     'index': 'http://localhost:8087',
+    'auth_protocols': ["SAML2"],
     'remark': 'test_remark',
     'allow_any_user': True,
     'oauth_app': {},
     'ldap_app': {},
     'http_app': {},
     'saml_app': {
-        'entity_id':
-        'http://localhost/sp/saml',
-        'acs':
-        'http://localhost:8087/acs/post',
-        'sls':
-        'http://localhost:8087/sls/post',
-        'cert':
-        '-----BEGIN CERTIFICATE-----\n\
+        'entity_id': 'http://localhost/sp/saml',
+        'acs': 'http://localhost:8087/acs/post',
+        'sls': 'http://localhost:8087/sls/post',
+        'cert': '-----BEGIN CERTIFICATE-----\n\
 MIIC8jCCAlugAwIBAgIJAJHg2V5J31I8MA0GCSqGSIb3DQEBBQUAMFoxCzAJBgNV\
 BAYTAlNFMQ0wCwYDVQQHEwRVbWVhMRgwFgYDVQQKEw9VbWVhIFVuaXZlcnNpdHkx\
 EDAOBgNVBAsTB0lUIFVuaXQxEDAOBgNVBAMTB1Rlc3QgU1AwHhcNMDkxMDI2MTMz\
@@ -111,7 +108,8 @@ AxMHVGVzdCBTUIIJAJHg2V5J31I8MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEF\
 BQADgYEAMuRwwXRnsiyWzmRikpwinnhTmbooKm5TINPE7A7gSQ710RxioQePPhZO\
 zkM27NnHTrCe2rBVg0EGz7QTd1JIwLPvgoj4VTi/fSha/tXrYUaqc9AqU1kWI4WN\
 +vffBGQ09mo+6CffuFTZYeOhzP/2stAPwCTU4kxEoiy0KpZMANI=\n\
------END CERTIFICATE-----'
+-----END CERTIFICATE-----',
+        'xmldata': '',
     },
 }
 

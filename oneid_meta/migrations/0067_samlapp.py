@@ -13,29 +13,13 @@ def init_idp_config(apps, schema_editor):    # pylint: disable=unused-argument
     '''初始化IdP配置
     '''
     run()
-    IdPConfig = apps.get_model('oneid_meta', 'IdPConfig')
-    Site = apps.get_model('sites', 'Site')
-
-    site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
-    idp_config, _ = IdPConfig.objects.get_or_create(site=site)
-
-    if not settings.TESTING:
-        with open(BASEDIR+'/djangosaml2idp/certificates/mycert.pem', 'r') as f:
-            cert = f.readlines()
-            idp_config.cert = cert
-        with open(BASEDIR+'/djangosaml2idp/certificates/mykey.pem', 'r') as f:
-            key = f.readlines()
-            idp_config.key = key
-
-        idp_config.save()
-        os.remove(BASEDIR+'/djangosaml2idp/certificates/mycert.pem')
-        os.remove(BASEDIR+'/djangosaml2idp/certificates/mykey.pem')
 
 class Migration(migrations.Migration):
     '''生成saml_app表
     '''
     dependencies = [
         ('oneid_meta', '0066_minioconfig_storageconfig'),
+        ('sites', '0002_alter_domain_unique'),
     ]
 
     operations = [
@@ -52,7 +36,7 @@ class Migration(migrations.Migration):
                 ('acs', models.CharField(blank=True, max_length=255, verbose_name='SP方acs地址')),
                 ('sls', models.CharField(blank=True, max_length=255, verbose_name='SP方sls地址')),
                 ('cert', models.CharField(blank=True, max_length=2200, verbose_name='证书公钥')),
-                ('xmldata', models.CharField(blank=True, max_length=5000, verbose_name='本地SP元数据地址')),
+                ('xmldata', models.CharField(blank=True, max_length=5000, verbose_name='本地SP元数据')),
                 ('app', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,\
                     related_name='saml_app', to='oneid_meta.APP')),
             ],
