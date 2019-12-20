@@ -48,7 +48,9 @@ class ObtainExpiringAuthToken(ObtainAuthToken):
             data = {'token': token.key, **self.attachment(token)}
             LOG_CLI(user).user_login()
             user.update_last_active_time()
-            return Response(data)
+            response = Response(data)
+            response.set_cookie('spauthn', token.key)
+            return response
 
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
