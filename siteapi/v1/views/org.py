@@ -10,7 +10,7 @@ from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView, ValidationError
 from oneid.permissions import (IsAdminUser, IsAuthenticated)
-from oneid_meta.models import Dept, Group, Org
+from oneid_meta.models import Dept, Group, Org, GroupMember
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
 
 
@@ -48,6 +48,7 @@ class OrgListCreateAPIView(GenericAPIView):
         role = Group.valid_objects.create(uid=uuid4(), name=f'{name}-角色', parent=group)
         label = Group.valid_objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
 
+        GroupMember.valid_objects.create(user=self.request.user, owner=manager)
         org = Org.valid_objects.create(name=name,
                                        owner=self.request.user,
                                        dept=dept,
@@ -166,12 +167,19 @@ class UcenterOrgListAPIView(GenericAPIView):
         '''
         get user org list
         '''
-        oid = set()
+        orgs = set()
 
-        for org in Org.valid_objects.all():
-            if self.request.user.username in collect_org_user(org):
-                oid.add(org.oid)
-        return Response(oid)
+        def traverse_group(g):
+            for org in Org.valid_objects.filter(group=g):
+                orgs.add(org)
+                return
+            if g.parent is not None:
+                traverse_group(g.parent)
+
+        for node in GroupMember.valid_objects.filter(user=self.request.user):
+            traverse_group(node.owner)
+
+        return Response(map(lambda o: OrgSerializer(o).data, orgs))
 
 
 class UcenterOwnOrgListAPIView(GenericAPIView):
@@ -185,12 +193,11 @@ class UcenterOwnOrgListAPIView(GenericAPIView):
         '''
         get user owned org list
         '''
-        oid = set()
+        orgs = set()
 
-        for org in Org.valid_objects.all():
-            if self.request.user.username == org.owner.username:
-                oid.add(org.oid)
-        return Response(oid)
+        for org in Org.valid_objects.filter(owner=self.request.user):
+            orgs.add(org)
+        return Response(map(lambda o: OrgSerializer(o).data, orgs))
 
 
 def collect_org_user(org):

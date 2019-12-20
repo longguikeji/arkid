@@ -851,13 +851,13 @@ deprecated
 ### 获取用户所属组织 [GET]
 + Response 200 (application/json)
     + Attributes
-      orgs (array[string]) - 用户加入的所有组织的oid
+      orgs (array[org]) - 用户加入的所有组织
 
 ## 用户创建组织 [/ucenter/orgs/owned]
 ### 获取用户创建组织 [GET]
 + Response 200 (application/json)
     + Attributes
-      orgs (array[string]) - 用户创建的所有组织的oid
+      orgs (array[org]) - 用户创建的所有组织
 
 # Group Auth
 以下部分均只对管理员开放

@@ -199,5 +199,5 @@ class OrgTestCase(TestCase):
 
         self.set_client(self.login_as(user))
         oid = set(map(lambda x: self.create_org(x).json()['oid'], ORG_DATA))
-        self.assertEqual(set(self.get_owned_org().json()), oid)
-        self.assertEqual(set(self.get_org().json()), oid.union({extern_org['oid']}))
+        self.assertEqual(set(map(lambda o: o['oid'], self.get_owned_org().json())), oid)
+        self.assertEqual(set(map(lambda o: o['oid'], self.get_org().json())), oid.union({extern_org['oid']}))
