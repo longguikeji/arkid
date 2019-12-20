@@ -35,6 +35,7 @@ APP_1_EXCEPT = {
     'remark': '',
     'oauth_app': None,
     'http_app': None,
+    'saml_app': None,
     'ldap_app': None,
     'saml_app': None,
     'allow_any_user': False,
