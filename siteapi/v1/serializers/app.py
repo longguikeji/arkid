@@ -140,8 +140,6 @@ class SAMLAPPSerializer(DynamicFieldsModelSerializer):
             self.dump_cert(filename, cert)
             try:
                 self.gen_xml(filename=filename, entity_id=entity_id, acs=acs, sls=sls)
-                with open(BASEDIR + '/djangosaml2idp/saml2_config/%s.xml' % filename, 'rb') as f:
-                    xmldata = f.read()
             except CertificateError:
                 raise ValidationError({'msg': 'perm incorrect'})
 
@@ -164,15 +162,15 @@ class SAMLAPPSerializer(DynamicFieldsModelSerializer):
         sls = validated_data.get('sls', '')
         kwargs = {}
 
-        if entity_id not in ['', None]:
+        if entity_id != '':
             kwargs['entity_id'] = entity_id
-        if acs not in ['', None]:
+        if acs != '':
             kwargs['acs'] = acs
-        if sls not in ['', None]:
+        if sls != '':
             kwargs['sls'] = sls
-        if cert not in ['', None]:
+        if cert != '':
             kwargs['cert'] = cert
-        if xmldata not in ['', None]:
+        if xmldata != '':
             with open(BASEDIR + '/djangosaml2idp/saml2_config/%s.xml' % filename, 'w+') as f:
                 f.write(xmldata)
         else:
