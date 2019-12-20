@@ -114,6 +114,21 @@ class UserTestCase(TestCase):
                                     })
         return res
 
+    def test_query_userlist(self):
+        '''模糊搜索用户列表
+        '''
+        self.create_user()
+        client = self.client
+        res = client.get(reverse('siteapi:user_list'), data={'keyword': '188'})
+        user_list = res.json()['results']
+        expect_count = 1
+        self.assertEqual(expect_count, len(user_list))
+
+        res = client.get(reverse('siteapi:user_list'), data={'keyword': '189'})
+        user_list = res.json()['results']
+        expect_count = 0
+        self.assertEqual(expect_count, len(user_list))
+
     def test_username(self):
         res = self.client.json_post(reverse('siteapi:user_list'),
                                     data={
