@@ -70,7 +70,7 @@ docker-compose:
 	INSTANCE_ID=arkid WORKSPACE=/Users/yanghan/volume/arkid SQL_PWD=root LDAP_PASSWORD=root docker-compose up -d
 
 dataset:
-	python manage.py makemigrations && python manage.py migrate && python test/utils/test_data_manager.py -l
+	python manage.py migrate && python test/utils/test_data_manager.py -l
 
 sqlset:
 	python test/utils/test_data_manager.py -d
