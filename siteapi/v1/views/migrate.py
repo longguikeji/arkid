@@ -87,7 +87,7 @@ class UserCSVImportView(APIView):
             if not node:
                 raise NotFound
 
-        res = self.core_post(users_file, node_uid='')
+        res = self.core_post(users_file, node_uid=node_uid)
 
         return Response(res)
 
