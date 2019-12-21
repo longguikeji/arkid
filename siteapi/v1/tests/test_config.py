@@ -150,7 +150,7 @@ class ConfigTestCase(TestCase):
                                          'company_config': {
                                              'name_cn': 'demo',
                                              'fullname_cn': 'demo',
-                                             'color': 'color',
+                                             'color': '006404',
                                          },
                                          'ding_config': {
                                              'app_key': 'app_key',
@@ -187,7 +187,7 @@ class ConfigTestCase(TestCase):
                 'icon': '',
                 'address': '',
                 'domain': '',
-                'color': 'color',
+                'color': '006404',
             },
             'ding_config': {
                 'app_key': '',
@@ -242,6 +242,11 @@ class ConfigTestCase(TestCase):
                                      }})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['email_config']['host'], "12.12.12.13")
+
+        res = self.client.json_patch(reverse('siteapi:config'), data={'company_config':\
+            {'name_cn': "abc", 'icon': "", 'color': "zzzzzz"}})
+        expect = {'company_config': {'non_field_errors': ["color invalid"]}}
+        self.assertEqual(res.json(), expect)
 
     def test_update_config_valid(self):
         with mock.patch('oneid_meta.models.config.EmailManager.connect') as mock_connect:
