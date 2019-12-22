@@ -4,6 +4,7 @@ tests for api abort org
 
 # pylint: disable=missing-docstring, invalid-name, too-many-locals
 
+from uuid import uuid4
 from django.urls import reverse
 from oneid_meta.models import User, Dept, Group, GroupMember, Org
 
@@ -67,6 +68,12 @@ class OrgTestCase(TestCase):
     def get_owned_org(self):
         return self.client.get(reverse('siteapi:ucenter_own_org_list'))
 
+    def get_curr_org(self):
+        return self.client.get(reverse('siteapi:ucenter_org'))
+
+    def set_curr_org(self, data):
+        return self.client.json_post(reverse('siteapi:ucenter_org'), data=data)
+
     def create_user(self, grp_uids, dept_uids, name):
         return self.client.json_post(reverse('siteapi:user_list'),
                                      data={
@@ -112,7 +119,7 @@ class OrgTestCase(TestCase):
             self.assertEqual(res, self.inspect_org(res['oid']).json())
 
         self.assertEqual(self.inspect_org('invalid-oid').status_code, 400)
-        self.assertEqual(self.inspect_org('25518eea-f1ec-4cff-8f68-0cf58bb09962').status_code, 404)
+        self.assertEqual(self.inspect_org(uuid4()).status_code, 404)
 
         # external
         self.assertEqual(jorgs, self.list_org().json())
@@ -201,3 +208,14 @@ class OrgTestCase(TestCase):
         oid = set(map(lambda x: self.create_org(x).json()['oid'], ORG_DATA))
         self.assertEqual(set(map(lambda o: o['oid'], self.get_owned_org().json())), oid)
         self.assertEqual(set(map(lambda o: o['oid'], self.get_org().json())), oid.union({extern_org['oid']}))
+
+        self.assertEqual(self.get_curr_org().content, b'')
+        for o in oid:
+            self.assertEqual(self.set_curr_org({'oid': o}).status_code, 204)
+            self.assertEqual(self.get_curr_org().json()['oid'], o)
+
+        self.assertEqual(self.set_curr_org({'oid': extern_org['oid']}).status_code, 204)
+        self.assertEqual(self.get_curr_org().json()['oid'], extern_org['oid'])
+        self.assertEqual(self.set_curr_org({'no_oid': 123}).status_code, 400)
+        self.assertEqual(self.set_curr_org({'oid': 'invalid-oid'}).status_code, 400)
+        self.assertEqual(self.set_curr_org({'oid': str(uuid4())}).status_code, 404)

@@ -77,26 +77,14 @@ class OrgUserListAPIView(GenericAPIView):
     组织成员列表 [GET]
     '''
     permission_classes = [IsAuthenticated & IsAdminUser]
-    # permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgMember)]
 
-    @staticmethod
-    def validity_check(oid):
-        '''
-        check oid
-        '''
-        try:
-            org = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
-            if org.exists():
-                return org
-            raise NotFound
-        except ValidationError as exc:
-            raise ParseError(exc.messages)
+    # permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgMember)]
 
     def get(self, request, **kwargs):
         '''
         get org members
         '''
-        org = self.validity_check(kwargs['oid']).first()
+        org = validity_check(kwargs['oid'])
         return Response(collect_org_user(org))
 
 
@@ -108,31 +96,18 @@ class OrgDetailDestroyAPIView(GenericAPIView):
     read_permission_classes = [IsAuthenticated]    # TODO
     write_permission_classes = [IsAuthenticated]    # TODO
 
-    @staticmethod
-    def validity_check(oid):
-        '''
-        check oid
-        '''
-        try:
-            org = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
-            if org.exists():
-                return org
-            raise NotFound
-        except ValidationError as exc:
-            raise ParseError(exc.messages)
-
     def get(self, request, **kwargs):
         '''
         org detail view
         '''
-        org = self.validity_check(kwargs['oid'])
-        return Response(OrgSerializer(org.first()).data)
+        org = validity_check(kwargs['oid'])
+        return Response(OrgSerializer(org).data)
 
     def delete(self, request, **kwargs):
         '''
         delete org
         '''
-        org = self.validity_check(kwargs['oid']).first()
+        org = validity_check(kwargs['oid'])
 
         org.dept.delete()
         org.group.delete()
@@ -198,6 +173,49 @@ class UcenterOwnOrgListAPIView(GenericAPIView):
         for org in Org.valid_objects.filter(owner=self.request.user):
             orgs.add(org)
         return Response(map(lambda o: OrgSerializer(o).data, orgs))
+
+
+class UcenterCurrentOrgAPIView(GenericAPIView):
+    '''
+    个人当前组织查询/切换 [GET] [POST]
+    '''
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        '''
+        get user current org
+        '''
+        org = self.request.user.current_organization
+        if org is not None:
+            return Response(OrgSerializer(org).data)
+        return Response()    # 这里应该返回什么？
+
+    def post(self, request):
+        '''
+        change user current org
+        '''
+        try:
+            oid = request.data['oid']
+        except KeyError:
+            raise ParseError()
+        org = validity_check(oid)
+        self.request.user.current_organization = org
+        self.request.user.save()
+        return Response(status=204)
+
+
+def validity_check(oid):
+    '''
+    check oid
+    '''
+    try:
+        org = Org.valid_objects.filter(uuid=Org.to_uuid(oid))
+        if org.exists():
+            return org.first()
+        raise NotFound
+    except ValidationError as exc:
+        raise ParseError(exc.messages)
 
 
 def collect_org_user(org):

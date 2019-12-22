@@ -847,6 +847,26 @@ deprecated
         + count (number)
         + results (array[SubAccount]))
 
+## 用户当前登录组织 [/ucenter/org/]
+### 获取用户当前登录组织 [GET]
++ Response 200 (application/json)
+  + Attributes
+    + oid (string) - 组织唯一标识
+    + name (string) - 组织名
+    + dept_uid (string) - 组织下属部门唯一标识
+    + group_uid (string) - 组织下属组唯一标识
+    + direct_uid (string) - 组织下属直接成员组唯一标识
+    + manager_uid (string) - 组织下属管理员组唯一标识
+    + role_uid (string) - 组织下属角色组唯一标识
+    + label_uid (string) - 组织下属标签组唯一标识
+
+### 切换用户当前登录组织 [POST]
++ Request JSON Message
+  + Attributes
+    + oid (string) - 组织ID
+
++ Response 204
+
 ## 用户所属组织 [/ucenter/orgs/]
 ### 获取用户所属组织 [GET]
 + Response 200 (application/json)

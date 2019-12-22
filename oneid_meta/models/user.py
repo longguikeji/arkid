@@ -65,6 +65,7 @@ class User(BaseModel, PermOwnerMixin):
     remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
     last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')
     require_reset_password = models.BooleanField(default=False, verbose_name='是否需要重置密码')
+    current_organization = models.ForeignKey('oneid_meta.Org', null=True, blank=True, on_delete=models.SET_NULL)
 
     isolated_objects = IsolatedManager()
 

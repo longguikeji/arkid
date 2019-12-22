@@ -143,6 +143,8 @@ urlpatterns = [
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/$', node_views.UcenterNodeDetailAPIView.as_view(), name='ucenter_node_detail'),
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/tree/$', node_views.UcenterNodeTreeAPIView.as_view(),
         name='ucenter_node_tree'),
+    # ucenter org
+    url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
     url(r'^ucenter/orgs/$', org_views.UcenterOrgListAPIView.as_view(), name='ucenter_org_list'),
     url(r'^ucenter/orgs/owned/$', org_views.UcenterOwnOrgListAPIView.as_view(), name='ucenter_own_org_list'),
     # ucenter app
@@ -178,6 +180,12 @@ urlpatterns = [
     url(r'^meta/log/$', log_views.MetaLogAPIView.as_view(), name='meta_log'),
     url(r'^meta/perm/$', perm_views.MetaPermAPIView.as_view(), name='meta_perm'),
     # app
+    # url(r'^org/(?P<oid>[\w|-]+)/app/$',
+    #     app_views.OrgAPPListCreateAPIView.as_view(), name='org_app_list'),
+    # url(r'^org/(?P<oid>[\w|-]+)/app/(?P<uid>[\w|-]+)/$',
+    #     app_views.OrgAPPDetailAPIView.as_view(), name='org_app_detail'),
+    # url(r'^org/(?P<oid>[\w|-]+)/app/(?P<uid>[\w|-]+)/oauth/$',
+    #     app_views.OrgAPPOAuthRegisterAPIView.as_view(), name='org_app_register_oauth'),
     url(r'^app/$', app_views.APPListCreateAPIView.as_view(), name='app_list'),
     url(r'^app/(?P<uid>[\w|-]+)/$', app_views.APPDetailAPIView.as_view(), name='app_detail'),
     url(r'^app/(?P<uid>[\w|-]+)/oauth/$', app_views.APPOAuthRegisterAPIView.as_view(), name='app_register_oauth'),
