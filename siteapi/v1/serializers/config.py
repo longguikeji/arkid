@@ -1,6 +1,7 @@
 '''
 serializer for config
 '''
+import re
 from django.contrib.sites.models import Site
 from django.db import transaction
 from rest_framework import serializers
@@ -34,6 +35,12 @@ class CompanyConfigSerializer(DynamicFieldsModelSerializer):
             'domain',
             'color',
         )
+
+    def validate(self, attrs):
+        color = attrs.get('color')
+        if not re.match(r'[0-9a-f]{6}', color):
+            raise ValidationError('color invalid')
+        return attrs
 
 
 class AccountConfigSerializer(DynamicFieldsModelSerializer):
