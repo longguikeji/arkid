@@ -4,6 +4,7 @@ utils
 '''
 
 import re
+import uuid
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ValidationError
 from pypinyin import lazy_pinyin as pinyin
@@ -33,6 +34,8 @@ def gen_uid(name, cls=None, prefix='', suffix='', uid_field='uid'):
 
     slug = ''.join(pinyin(name.lower()))
     slug = ''.join([item for item in slug if re.match(r'[a-z0-9]{1}', item)])
+    if slug == '':
+        slug = uuid.uuid4().hex[:10]
     pattern = '{prefix}{name}{digit}{suffix}'
 
     index = ''
