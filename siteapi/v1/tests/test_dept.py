@@ -545,3 +545,24 @@ class DeptTestCase(TestCase):
 
         res = self.client.get(reverse('siteapi:node_list', args=('d_root', )))
         self.assertEqual(expect, res.json())
+
+    def test_create_dept_special_name(self):
+        '''测试创建全特殊字符部门
+        '''
+        client = self.client
+        data = {
+            'node_uid': '',
+            'name': "@@@",
+            'node_scope': [],
+            'user_scope': [],
+            'manager_group': {
+                'nodes': [],
+                'users': [],
+                'perms': [],
+                'apps': [],
+                'scope_subject': 1
+            },
+            'users': []
+        }
+        res = client.json_post(reverse('siteapi:node_child_node', args=('d_root', )), data=data)
+        self.assertEqual(res.status_code, 201)
