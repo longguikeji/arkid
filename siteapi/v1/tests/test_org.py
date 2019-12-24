@@ -89,6 +89,8 @@ class OrgTestCase(TestCase):
 
     def test_org_management(self):
         orgs = []
+        owner = User.create_user('owner', 'owner')
+        other = User.create_user('other', 'other')
 
         for org in ORG_DATA:
             orgs.append((org, self.create_org(org)))
@@ -127,6 +129,11 @@ class OrgTestCase(TestCase):
         # internal
         self.assertEqual(self.list_org().json(), [OrgSerializer(o).data for o in Org.valid_objects.all()])
 
+        # perm
+        self.set_client(self.login_as(owner))
+        self.assertEqual(self.list_org().status_code, 403)
+        self.unset_client()
+
         def eq_leibniz(x, y, f):
             self.assertEqual(x, y)
             self.assertEqual(f(x), f(y))
@@ -158,8 +165,21 @@ class OrgTestCase(TestCase):
         # soft delete
         self.assertEqual(jorgs, [OrgSerializer(o).data for o in Org.objects.all()])
 
+        # perm
+        self.set_client(self.login_as(owner))
+        op1 = self.create_org({'name': 'org_perm_1'}).json()['oid']
+        op2 = self.create_org({'name': 'org_perm_2'}).json()['oid']
+        self.set_client(self.login_as(other))
+        self.assertEqual(self.delete_org(op1).status_code, 403)
+        self.set_client(self.login_as(owner))
+        self.assertEqual(self.delete_org(op1).status_code, 204)
+        self.unset_client()
+        self.assertEqual(self.delete_org(op2).status_code, 204)
+
+
     def test_org_member(self):
         owner = User.create_user('owner', 'owner')
+        other = User.create_user('other', 'other')
 
         self.set_client(self.login_as(owner))
         org = self.create_org({'name': '组织1'}).json()
@@ -195,6 +215,14 @@ class OrgTestCase(TestCase):
         # with owner
         user_data = {'owner', 'user0', 'user1', 'user2', 'user3', 'user4', 'user5'}
         self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
+
+        #perm
+        self.set_client(self.login_as(owner))
+        self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
+        self.set_client(self.login_as(other))
+        self.assertEqual(self.get_user(org['oid']).status_code, 403)
+        self.unset_client()
+
 
     # 节点-添加成员-API
 
