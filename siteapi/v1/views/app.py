@@ -33,6 +33,7 @@ from oneid.permissions import (
     IsAPPManager,
     IsAdminUser,
     IsManagerUser,
+    IsOrgOwnerOf,
     CustomPerm,
 )
 from executer.core import CLI
@@ -46,8 +47,8 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
     '''
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
-    write_permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_app_create'))]
+    read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf() | IsManagerUser)]
+    write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf() | CustomPerm('system_app_create'))]
 
     def get_permissions(self):
         '''

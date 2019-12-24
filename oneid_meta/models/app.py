@@ -29,6 +29,7 @@ class APP(BaseModel):
 
     logo = models.TextField(default='', blank=True, null=True, verbose_name='LOGO')
     index = models.CharField(max_length=512, blank=True, null=True, default='', verbose_name='应用首页')
+    owner = models.ForeignKey('oneid_meta.Org', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'APP: {self.uid}({self.name})'
