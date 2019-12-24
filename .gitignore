@@ -143,4 +143,5 @@ key
 
 # demo
 pysaml2/
+djangosaml2idp/saml2_config/*.xml
 djangosaml2config/saml2_config/*.xml
