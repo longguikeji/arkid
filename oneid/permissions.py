@@ -146,6 +146,31 @@ class HasAPPAccess(BasePermission):
         ).exists()
 
 
+class IsOrgOwnerOf():
+    '''
+    是否为组织的拥有者，默认检查当前组织
+    '''
+    def __new__(cls, *args):
+        _cls = type('_IsOrgOwnerOf', (BasePermission, ), {'args': args})
+
+        def has_permission(self, request, view):    # pylint: disable=unused-argument
+            '''
+            org owner
+            '''
+            return request.user and request.user.is_authenticated and request.user.is_org_owner(*(self.args))
+
+        def has_object_permission(self, request, view, _):
+            '''
+            org owner
+            '''
+            return self.has_permission(request, view)
+
+        setattr(_cls, 'has_permission', has_permission)
+        setattr(_cls, 'has_object_permission', has_object_permission)
+
+        return _cls
+
+
 class CustomPerm():
     '''
     自定义权限，基于OneID自身Perm

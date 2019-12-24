@@ -5,6 +5,7 @@ schema of Users
 
 # pylint: disable=too-many-lines
 from itertools import chain
+from functools import reduce
 from django.core.cache import cache
 from django.db import models
 from django.contrib.auth.models import User as DjangoUser
@@ -243,6 +244,14 @@ class User(BaseModel, PermOwnerMixin):
         '''
         return self.username == 'admin' or self.is_boss or \
             UserPerm.valid_objects.filter(owner=self, perm__uid='system_oneid_all', value=True).exists()
+
+    def is_org_owner(self, *args):
+        '''
+        是否是参数中所指定组织的管理员
+        '''
+        if args:
+            return reduce(lambda ret, org: ret & org.owner.username == self.username, (True, ) + args)
+        return self.current_organization.owner.username == self.username if self.current_organization else False    # pylint: disable=no-member
 
     @property
     def is_manager(self):

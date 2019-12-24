@@ -9,7 +9,7 @@ from uuid import uuid4
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView, ValidationError
-from oneid.permissions import (IsAdminUser, IsAuthenticated)
+from oneid.permissions import (IsAdminUser, IsAuthenticated, IsOrgOwnerOf)
 from oneid_meta.models import Dept, Group, Org, GroupMember
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
 
@@ -76,9 +76,7 @@ class OrgUserListAPIView(GenericAPIView):
     '''
     组织成员列表 [GET]
     '''
-    permission_classes = [IsAuthenticated & IsAdminUser]
-
-    # permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgMember)]
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf())]    # TODO@saas
 
     def get(self, request, **kwargs):
         '''
