@@ -8,7 +8,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.conf import settings
-from django.http.response import HttpResponseRedirect, HttpResponse, Http404
+from django.http.response import HttpResponseRedirect, HttpResponse, HttpResponseNotFound
 from django.views.generic import View
 from common.minio_utils import (
     put_object,
@@ -74,4 +74,4 @@ class FileAPIView(View):
             res['Content-Type'] = 'application/octet-stream'
             res['Content-Disposition'] = 'attachment;filename="{0}"'.format(filename)
             return res
-        return Http404()
+        return HttpResponseNotFound()

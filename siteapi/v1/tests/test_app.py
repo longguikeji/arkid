@@ -2,10 +2,10 @@
 tests for api about app
 '''
 # pylint: disable=missing-docstring
-
+import os
 from unittest import mock
-
 from django.urls import reverse
+from djangosaml2idp.scripts.idpinit import run
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
@@ -20,6 +20,8 @@ from oneid_meta.models import (
     ManagerGroup,
 )
 
+BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 MAX_APP_ID = 2
 
 APP_1 = {'name': 'demo'}
@@ -33,6 +35,7 @@ APP_1_EXCEPT = {
     'remark': '',
     'oauth_app': None,
     'http_app': None,
+    'saml_app': None,
     'ldap_app': None,
     'allow_any_user': False,
     'auth_protocols': [],
@@ -70,12 +73,50 @@ APP_2_EXCEPT = {
     'http_app': {
         'more_detail': []
     },
+    'saml_app': None,
     'auth_protocols': ['OAuth 2.0', 'LDAP', 'HTTP'],
+}
+
+APP_3 = {
+    'uid': 'test_app_uid',
+    'name': 'test_app_name',
+    'index': 'http://localhost:8087',
+    'auth_protocols': ["SAML2"],
+    'remark': 'test_remark',
+    'allow_any_user': True,
+    'oauth_app': {},
+    'ldap_app': {},
+    'http_app': {},
+    'saml_app': {
+        'entity_id': 'http://localhost/sp/saml',
+        'acs': 'http://localhost:8087/acs/post',
+        'sls': 'http://localhost:8087/sls/post',
+        'cert': '-----BEGIN CERTIFICATE-----\n\
+MIIC8jCCAlugAwIBAgIJAJHg2V5J31I8MA0GCSqGSIb3DQEBBQUAMFoxCzAJBgNV\
+BAYTAlNFMQ0wCwYDVQQHEwRVbWVhMRgwFgYDVQQKEw9VbWVhIFVuaXZlcnNpdHkx\
+EDAOBgNVBAsTB0lUIFVuaXQxEDAOBgNVBAMTB1Rlc3QgU1AwHhcNMDkxMDI2MTMz\
+MTE1WhcNMTAxMDI2MTMzMTE1WjBaMQswCQYDVQQGEwJTRTENMAsGA1UEBxMEVW1l\
+YTEYMBYGA1UEChMPVW1lYSBVbml2ZXJzaXR5MRAwDgYDVQQLEwdJVCBVbml0MRAw\
+DgYDVQQDEwdUZXN0IFNQMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDkJWP7\
+bwOxtH+E15VTaulNzVQ/0cSbM5G7abqeqSNSs0l0veHr6/ROgW96ZeQ57fzVy2MC\
+FiQRw2fzBs0n7leEmDJyVVtBTavYlhAVXDNa3stgvh43qCfLx+clUlOvtnsoMiiR\
+mo7qf0BoPKTj7c0uLKpDpEbAHQT4OF1HRYVxMwIDAQABo4G/MIG8MB0GA1UdDgQW\
+BBQ7RgbMJFDGRBu9o3tDQDuSoBy7JjCBjAYDVR0jBIGEMIGBgBQ7RgbMJFDGRBu9\
+o3tDQDuSoBy7JqFepFwwWjELMAkGA1UEBhMCU0UxDTALBgNVBAcTBFVtZWExGDAW\
+BgNVBAoTD1VtZWEgVW5pdmVyc2l0eTEQMA4GA1UECxMHSVQgVW5pdDEQMA4GA1UE\
+AxMHVGVzdCBTUIIJAJHg2V5J31I8MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEF\
+BQADgYEAMuRwwXRnsiyWzmRikpwinnhTmbooKm5TINPE7A7gSQ710RxioQePPhZO\
+zkM27NnHTrCe2rBVg0EGz7QTd1JIwLPvgoj4VTi/fSha/tXrYUaqc9AqU1kWI4WN\
++vffBGQ09mo+6CffuFTZYeOhzP/2stAPwCTU4kxEoiy0KpZMANI=\n\
+-----END CERTIFICATE-----',
+        'xmldata': '',
+    },
 }
 
 
 class APPTestCase(TestCase):
     def setUp(self):
+        run()
         super().setUp()
         employee = User.create_user('employee', 'employee')
         self.employee = self.login_as(employee)
@@ -88,19 +129,24 @@ class APPTestCase(TestCase):
         ManagerGroup.objects.create(group=group, scope_subject=2, apps=['app', 'demo'])
         GroupMember.objects.create(owner=group, user=User.objects.get(username='manager'))
 
+    @mock.patch('siteapi.v1.serializers.app.SAMLAPPSerializer.gen_xml')
+    @mock.patch('oneid_meta.models.app.SAMLAPP.more_detail', new_callable=mock.PropertyMock)
     @mock.patch('oneid_meta.models.app.LDAPAPP.more_detail', new_callable=mock.PropertyMock)
     @mock.patch('oneid_meta.models.app.HTTPAPP.more_detail', new_callable=mock.PropertyMock)
     @mock.patch('oauth2_provider.models.Application.more_detail', new_callable=mock.PropertyMock)
     def test_create_app(
-            self,
-            mock_oauth_info,
-            mock_http_info,
-            mock_ldap_info,
+        self,
+        mock_oauth_info,
+        mock_http_info,
+        mock_ldap_info,
+        mock_saml_info,
+        mock_gen_xml,
     ):
         mock_oauth_info.return_value = []
         mock_http_info.return_value = []
         mock_ldap_info.return_value = []
-
+        mock_saml_info.return_value = []
+        mock_gen_xml.side_effects = []
         res = self.client.json_post(reverse('siteapi:app_list'), data=APP_1)
         self.assertEqual(res.json(), APP_1_EXCEPT)
 
@@ -136,14 +182,19 @@ class APPTestCase(TestCase):
 
         self.assertTrue(Perm.valid_objects.filter(uid='app_test_uid_access').exists())
 
+        res = self.client.json_post(reverse('siteapi:app_list'), data=APP_3)
+        self.assertEqual(res.status_code, 201)
+        res = res.json()
+        self.assertIn('acs', res['saml_app'])
+
     @mock.patch('oneid_meta.models.app.LDAPAPP.more_detail', new_callable=mock.PropertyMock)
     @mock.patch('oneid_meta.models.app.HTTPAPP.more_detail', new_callable=mock.PropertyMock)
     @mock.patch('oauth2_provider.models.Application.more_detail', new_callable=mock.PropertyMock)
     def test_employee_create_app(
-            self,
-            mock_oauth_info,
-            mock_http_info,
-            mock_ldap_info,
+        self,
+        mock_oauth_info,
+        mock_http_info,
+        mock_ldap_info,
     ):
         mock_oauth_info.return_value = []
         mock_http_info.return_value = []
@@ -165,10 +216,10 @@ class APPTestCase(TestCase):
     @mock.patch('oneid_meta.models.app.HTTPAPP.more_detail', new_callable=mock.PropertyMock)
     @mock.patch('oauth2_provider.models.Application.more_detail', new_callable=mock.PropertyMock)
     def test_update_app(
-            self,
-            mock_oauth_info,
-            mock_http_info,
-            mock_ldap_info,
+        self,
+        mock_oauth_info,
+        mock_http_info,
+        mock_ldap_info,
     ):
         mock_oauth_info.return_value = []
         mock_http_info.return_value = []
@@ -206,6 +257,7 @@ class APPTestCase(TestCase):
                 'more_detail': [],
             },
             'http_app': None,
+            'saml_app': None,
             'auth_protocols': ['OAuth 2.0', 'LDAP'],
         }
         self.assertEqual(res, expect)
@@ -369,6 +421,7 @@ class APPTestCase(TestCase):
                 'oauth_app': None,
                 'ldap_app': None,
                 'http_app': None,
+                'saml_app': None,
                 'allow_any_user': False,
                 'access_perm': {
                     'perm_id': 3,

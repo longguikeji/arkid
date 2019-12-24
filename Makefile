@@ -14,7 +14,7 @@ ci:
 	-t harbor.longguikeji.com/ark-releases/arkid:$(VERSION) .
 
 test:
-	python manage.py migrate && python manage.py test siteapi.v1.tests --settings=oneid.settings_test \
+	python manage.py migrate && python manage.py test siteapi.v1.tests infrastructure.tests.test_file --settings=oneid.settings_test \
 	&& python manage.py migrate --settings=oneid.settings_test_with_data && python manage.py test test.tests --settings=oneid.settings_test_with_data
 
 lint: 
@@ -64,3 +64,13 @@ native-ldap-docker-build:
 
 native-ldap-docker-push:
 	docker push longguikeji/ark-native-ldap:$(VERSION)
+
+
+docker-compose:
+	INSTANCE_ID=arkid WORKSPACE=/Users/yanghan/volume/arkid SQL_PWD=root LDAP_PASSWORD=root docker-compose up -d
+
+dataset:
+	python manage.py migrate && python test/utils/test_data_manager.py -l
+
+sqlset:
+	python test/utils/test_data_manager.py -d

@@ -12,42 +12,42 @@
 
 appnope==0.1.0 ; sys_platform == 'darwin'
 aspy.yaml==1.3.0
-astroid==2.3.2
+astroid==2.3.3
 backcall==0.1.0
-certifi==2019.9.11
+certifi==2019.11.28
 cfgv==2.0.1
-decorator==4.4.0
-identify==1.4.7
-importlib-metadata==0.23
+decorator==4.4.1
+identify==1.4.8
+importlib-metadata==1.3.0 ; python_version < '3.8'
 importlib-resources==1.0.2 ; python_version < '3.7'
 ipython-genutils==0.2.0
-ipython==7.8.0
+ipython==7.10.1
 isort==4.3.21
 jedi==0.15.1
-lazy-object-proxy==1.4.2
+lazy-object-proxy==1.4.3
 mccabe==0.6.1
-more-itertools==7.2.0
+more-itertools==8.0.2
 nodeenv==1.3.3
 parso==0.5.1
-pbr==5.4.3
+pbr==5.4.4
 pexpect==4.7.0 ; sys_platform != 'win32'
 pickleshare==0.7.5
 pipenv-to-requirements==0.8.2
 pipenv==2018.11.26
-pre-commit==1.18.3
-prompt-toolkit==2.0.10
+pre-commit==1.20.0
+prompt-toolkit==3.0.2
 ptyprocess==0.6.0
-pygments==2.4.2
-pylint==2.4.3
-pyyaml==5.1.2
-six==1.12.0
+pygments==2.5.2
+pylint==2.4.4
+pyyaml==5.2
+six==1.13.0
 toml==0.10.0
 traitlets==4.3.3
 typed-ast==1.4.0 ; implementation_name == 'cpython' and python_version < '3.8'
 v==0.0.0
 virtualenv-clone==0.5.3
-virtualenv==16.7.7
+virtualenv==16.7.8
 wcwidth==0.1.7
 wrapt==1.11.2
-yapf==0.28.0
+yapf==0.29.0
 zipp==0.6.0
