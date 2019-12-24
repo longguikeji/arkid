@@ -76,14 +76,20 @@ class OrgUserListAPIView(GenericAPIView):
     '''
     组织成员列表 [GET]
     '''
-    permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf())]    # TODO@saas
-
-    def get(self, request, **kwargs):
+    def get(self, request, oid):
         '''
         get org members
         '''
-        org = validity_check(kwargs['oid'])
+        org = validity_check(oid)
         return Response(collect_org_user(org))
+
+    def get_permissions(self):
+        '''
+        set permissions
+        '''
+        IsOrgOwner = IsOrgOwnerOf(validity_check(self.kwargs['oid']))
+        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]
+        return [perm() for perm in permission_classes]
 
 
 class OrgDetailDestroyAPIView(GenericAPIView):
@@ -91,21 +97,20 @@ class OrgDetailDestroyAPIView(GenericAPIView):
     组织详情查询 [GET]
     组织删除 [DELETE]
     '''
-    read_permission_classes = [IsAuthenticated]    # TODO
-    write_permission_classes = [IsAuthenticated]    # TODO
+    read_permission_classes = [IsAuthenticated]
 
-    def get(self, request, **kwargs):
+    def get(self, request, oid):
         '''
         org detail view
         '''
-        org = validity_check(kwargs['oid'])
+        org = validity_check(oid)
         return Response(OrgSerializer(org).data)
 
-    def delete(self, request, **kwargs):
+    def delete(self, request, oid):
         '''
         delete org
         '''
-        org = validity_check(kwargs['oid'])
+        org = validity_check(oid)
 
         org.dept.delete()
         org.group.delete()
@@ -122,10 +127,12 @@ class OrgDetailDestroyAPIView(GenericAPIView):
         set permissions
         '''
         method = self.request.method
-        if method == 'POST':
-            return [perm() for perm in self.write_permission_classes]
         if method == 'GET':
             return [perm() for perm in self.read_permission_classes]
+        if method == 'DELETE':
+            IsOrgOwner = IsOrgOwnerOf(validity_check(self.kwargs['oid']))
+            permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]
+            return [perm() for perm in permission_classes]
         return []
 
 
