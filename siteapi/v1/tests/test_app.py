@@ -515,6 +515,7 @@ class APPTestCase(TestCase):
         self.assertEqual(res.json()['redirect_uris'], 'http://new.test.com/oauth/callback')
         self.assertEqual(APP.objects.get(uid=uid).index, 'http://new.test.com')
 
+
     def test_org_app(self):
         usr1 = User.create_user('usr1', 'usr1')
         self.usr1 = self.login_as(usr1)
@@ -563,3 +564,7 @@ class APPTestCase(TestCase):
         self.assertEqual(usr1_org2, {'app4'})
         self.assertEqual(usr2_org1, {'app2'})
         self.assertEqual(usr2_org2, {'app3', 'app4'})
+
+    def test_create_app_empty_name(self):
+        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': '  '})
+        self.assertEqual(res.json(), {"name": ["This field may not be blank."]})

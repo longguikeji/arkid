@@ -3,7 +3,7 @@
 from unittest import mock
 
 from django.urls import reverse
-
+from rest_framework.status import HTTP_200_OK
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import User, CustomField, SMSConfig, EmailConfig
 
@@ -247,6 +247,10 @@ class ConfigTestCase(TestCase):
             {'name_cn': "abc", 'icon': "", 'color': "zzzzzz"}})
         expect = {'company_config': {'non_field_errors': ["color invalid"]}}
         self.assertEqual(res.json(), expect)
+
+        res = self.client.json_patch(reverse('siteapi:config'), data={'company_config':\
+            {'name_cn': "abc", 'icon': "", 'color': "AAFEAE"}})
+        self.assertEqual(res.status_code, HTTP_200_OK)
 
     def test_update_config_valid(self):
         with mock.patch('oneid_meta.models.config.EmailManager.connect') as mock_connect:

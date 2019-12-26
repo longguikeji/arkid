@@ -38,7 +38,7 @@ class CompanyConfigSerializer(DynamicFieldsModelSerializer):
 
     def validate(self, attrs):
         color = attrs.get('color')
-        if not re.match(r'[0-9a-f]{6}', color):
+        if not re.match(r'[0-9a-fA-F]{6}', color):
             raise ValidationError('color invalid')
         return attrs
 
