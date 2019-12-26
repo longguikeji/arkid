@@ -108,27 +108,30 @@ class NodeTestCase(TestCase):
                 'remark': '',
                 'dept_id': 2
             },
-            'nodes': [{
-                'info': {
-                    'uid': 'level_2-2',
-                    'node_uid': 'd_level_2-2',
-                    'node_subject': 'dept',
-                    'name': 'level_2-2',
-                    'remark': '',
-                    'dept_id': 4
+            'nodes': [
+                {
+                    'info': {
+                        'uid': 'level_2-2',
+                        'node_uid': 'd_level_2-2',
+                        'node_subject': 'dept',
+                        'name': 'level_2-2',
+                        'remark': '',
+                        'dept_id': 4
+                    },
+                    'nodes': []
                 },
-                'nodes': []
-            }, {
-                'info': {
-                    'uid': 'level_2-1',
-                    'node_uid': 'd_level_2-1',
-                    'node_subject': 'dept',
-                    'name': 'level_2-1',
-                    'remark': '',
-                    'dept_id': 3
+                {
+                    'info': {
+                        'uid': 'level_2-1',
+                        'node_uid': 'd_level_2-1',
+                        'node_subject': 'dept',
+                        'name': 'level_2-1',
+                        'remark': '',
+                        'dept_id': 3
+                    },
+                    'nodes': []
                 },
-                'nodes': []
-            }]
+            ]
         }
         self.assertEqual(res.json(), expect)
 
@@ -159,13 +162,59 @@ class NodeTestCase(TestCase):
         expect = ['d_level_2-2', 'd_level_2-1', 'd_level_2-3']
         self.assertEqual(expect, [item['node_uid'] for item in res.json()['nodes']])
 
+    def test_node_child_node_sort(self):
+        dept_1 = {
+            'node_uid': "",
+            'name': "123",
+            'node_scope': [],
+            'user_scope': [],
+            'manager_group': {
+                'nodes': [],
+                'users': [],
+                'perms': [],
+                'apps': [],
+                'scope_subject': 1
+            },
+            'nodes': [],
+            'perms': [],
+            'apps': [],
+            'scope_subject': 1,
+            'users': [],
+        }
+        self.client.json_post(reverse('siteapi:node_child_node', args=('d_root', )), data=dept_1)
+
+        expect = {
+            'nodes': [{
+                'dept_id': 2,
+                'name': 'level_1',
+                'node_subject': 'dept',
+                'node_uid': 'd_level_1',
+                'remark': '',
+                'uid': 'level_1'
+            }, {
+                'dept_id': 5,
+                'name': '123',
+                'node_subject': 'dept',
+                'node_uid': 'd_123',
+                'remark': '',
+                'uid': '123'
+            }]
+        }
+        res = self.client.json_patch(reverse('siteapi:node_child_node', args=('d_root', )),\
+            data={'node_uids':["d_level_1"], 'subject':'add'})
+        self.assertEqual(res.json(), expect)
+
+        res2 = self.client.json_patch(reverse('siteapi:node_child_node', args=('d_root', )),\
+            data={'node_uids':["d_123"], 'subject':'add'})
+        self.assertEqual(res2.json(), expect)
+
     def test_delete_node(self):
         res = self.client.delete(reverse('siteapi:node_detail', args=('g_role_2', )))
         self.assertEqual(res.status_code, 204)
         self.assertFalse(Group.valid_objects.filter(uid='role_2').exists())
 
     def test_create_user(self):
-        from siteapi.v1.tests.test_user import USER_DATA
+        from siteapi.v1.tests.test_user import USER_DATA    # pylint: disable=import-outside-toplevel
         res = self.client.json_post(
             reverse('siteapi:user_list'),
             data={
