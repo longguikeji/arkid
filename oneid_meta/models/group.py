@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db.utils import IntegrityError
 
 from common.django.model import BaseOrderedModel, BaseModel
+from oneid_meta.models.org import Org
 from oneid_meta.models.perm import GroupPerm, PermOwnerMixin
 from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
 
@@ -59,6 +60,18 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         下属子组
         '''
         return Group.valid_objects.filter(parent=self).order_by('order_no')
+
+    @property
+    def org(self):
+        '''
+        所属组织
+        '''
+        try:    # TODO@saas: Normalization of Group
+            if self.parent.uid != 'root':
+                return self.parent.org
+            return Org.valid_objects.filter(group=self).first()
+        except AttributeError:
+            return None
 
     @property
     def dn(self):
@@ -147,7 +160,7 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         '''
         详情序列化类
         '''
-        from siteapi.v1.serializers.dept import DeptDetailSerializer
+        from siteapi.v1.serializers.dept import DeptDetailSerializer    # pylint: disable=import-outside-toplevel
         return DeptDetailSerializer
 
     @property

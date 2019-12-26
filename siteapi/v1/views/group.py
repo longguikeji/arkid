@@ -23,6 +23,7 @@ from rest_framework.exceptions import (
 from oneid_meta.models import Group, GroupMember, User
 from oneid.permissions import (
     IsAdminUser,
+    IsOrgOwnerOf,
     IsManagerUser,
     IsNodeManager,
     NodeManagerReadable,
@@ -204,15 +205,11 @@ class GroupChildGroupAPIView(
     '''
     serializer_class = GroupListSerializer
 
-    read_permission_classes = [IsAuthenticated & (IsAdminUser | NodeManagerReadable)]
-    write_permission_classes = [IsAuthenticated & (IsAdminUser | IsNodeManager)]
-    create_category_permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_category_create'))]
-
     def dispatch(self, request, *args, **kwargs):
         '''
         管理员组下的子管理员组用专用View
         '''
-        if kwargs['uid'] == 'manager' and request.method == 'GET':
+        if kwargs['uid'] == 'manager' and request.method == 'GET':    # TODO@saas
             return ManagerGroupListAPIView().dispatch(request, *args, **kwargs)
         return super().dispatch(request, *args, **kwargs)
 
@@ -220,12 +217,19 @@ class GroupChildGroupAPIView(
         '''
         读写权限
         '''
+        group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(group.org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(group.org) | IsNodeManager)]
+        create_category_permission_classes = [
+            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(group.org) | CustomPerm('system_category_create'))
+        ]
+
         if self.request.method in SAFE_METHODS:
-            permissions = self.read_permission_classes
-        elif self.kwargs['uid'] == 'intra' and self.request.method == 'POST':    # 新建大类
-            permissions = self.create_category_permission_classes
+            permissions = read_permission_classes
+        elif self.kwargs['uid'] == 'intra' and self.request.method == 'POST':    # 新建大类 TODO@saas
+            permissions = create_category_permission_classes
         else:
-            permissions = self.write_permission_classes
+            permissions = write_permission_classes
 
         return [perm() for perm in permissions]
 

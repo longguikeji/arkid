@@ -876,6 +876,9 @@ deprecated
 
 + Response 204
 
+### 退出用户当前登录组织 [DELETE]
++ Response 204
+
 ## 用户所属组织 [/ucenter/orgs/]
 ### 获取用户所属组织 [GET]
 + Response 200 (application/json)
@@ -1867,10 +1870,11 @@ TODO: 可见权限的处理
 
 # Group APP
 
-## 所有应用 [/app/{?name,node_uid,user_uid,owner_access}]
+## 所有应用 [/org/{oid}/app/{?name,node_uid,user_uid,owner_access}]
 受管理员管理范围影响
 
 + Parameters
+    + org (string) - (应用所属组织id)
     + name (string, optional)
     + node_uid (string) - 查询该节点的权限
     + user_uid (string) - 查询该用户权限
@@ -1902,9 +1906,10 @@ TODO: 可见权限的处理
     + Attributes (array[PublicAPP])
 
 
-## 特定应用 [/app/{uid}/]
+## 特定应用 [/org/{oid}/app/{uid}/]
 
 + Parameters
+    + org (string) - (应用所属组织id)
     + uid (string) - 应用唯一标识。
 
 ### 获取特定应用 [GET]
@@ -1924,8 +1929,9 @@ TODO: 可见权限的处理
 
 + Response 204 (application/json)
 
-## 应用 OAuth2.0 Client [/app/{uid}/oauth/]
+## 应用 OAuth2.0 Client [/org/{oid}/app/{uid}/oauth/]
 + Parameters
+    + org (string) - (应用所属组织id)
     + uid (string) - 应用唯一标识。
 
 ### 注册应用 [POST]

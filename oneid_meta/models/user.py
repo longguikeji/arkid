@@ -249,6 +249,8 @@ class User(BaseModel, PermOwnerMixin):
         '''
         是否是参数中所指定组织的管理员
         '''
+        args = tuple(filter(lambda o: o is not None, args))    # TODO@saas: LEGACY CODE
+
         if args:
             return reduce(lambda ret, org: ret and org.owner.username == self.username, (True, ) + args)
         return self.current_organization.owner.username == self.username if self.current_organization else False    # pylint: disable=no-member
@@ -267,6 +269,18 @@ class User(BaseModel, PermOwnerMixin):
         '''
         for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
             yield group_member.owner.manager_group
+
+    def org_manager_groups(self, *args):
+        '''
+        组织下子管理员组
+        '''
+        if not args:
+            args = (self.current_organization, )
+
+        for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
+            group = group_member.owner.manager_group
+            if group.group.org in args:
+                yield group
 
     @property
     def token(self):

@@ -28,7 +28,7 @@ from siteapi.v1.serializers.app import (
 )
 from siteapi.v1.views.utils import gen_uid
 from common.django.drf.paginator import DefaultListPaginator
-from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
+from oneid_meta.models import APP, Org, Perm, UserPerm, Dept, User, Group, OAuthAPP
 from oneid.permissions import (
     IsAPPManager,
     IsAdminUser,
@@ -47,16 +47,21 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
     '''
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf() | IsManagerUser)]
-    write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf() | CustomPerm('system_app_create'))]
-
     def get_permissions(self):
         '''
         读写权限
         '''
+        org = Org.valid_objects.filter(uuid=Org.to_uuid(self.kwargs['oid'])).first()
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsManagerUser)]
+        write_permission_classes = [
+            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | CustomPerm('system_app_create'))
+        ]
+        # TODO@saas Custom Perm per Org
+
         if self.request.method in SAFE_METHODS:
-            return [perm() for perm in self.read_permission_classes]
-        return [perm() for perm in self.write_permission_classes]
+            return [perm() for perm in read_permission_classes]
+        return [perm() for perm in write_permission_classes]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -67,6 +72,8 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         '''
         get app list
         '''
+        org = Org.valid_objects.filter(uuid=Org.to_uuid(self.kwargs['oid'])).first()
+
         kwargs = {}
         name = self.request.query_params.get('name', '')
         if name:
@@ -74,7 +81,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
 
         # 可管理范围
         manager_app_uids = set()
-        for manager_group in self.request.user.manager_groups:
+        for manager_group in self.request.user.org_manager_groups(org):
             manager_app_uids.update(set(manager_group.apps))
         kwargs['uid__in'] = manager_app_uids
         if self.request.user.is_admin:
@@ -123,7 +130,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         return apps
 
     @transaction.atomic()
-    def create(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def create(self, request, oid, *args, **kwargs):    # pylint: disable=unused-argument
         '''
         create app [POST]
         '''
@@ -132,6 +139,8 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         app = serializer.instance
+        app.owner = Org.valid_objects.filter(uuid=Org.to_uuid(oid)).first()
+        app.save()
         self._auto_create_access_perm(app)
         self._auto_create_manager_group(request, app)
         if data.get("secret_required", False):
@@ -162,8 +171,11 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
             }
         }
         manager_group = cli.create_group(data)
-        parent, _ = Group.valid_objects.get_or_create(uid='manager')
-        cli.add_group_to_group(manager_group, parent)
+        if app.owner:
+            cli.add_group_to_group(manager_group, app.owner.manager)
+        else:
+            parent, _ = Group.valid_objects.get_or_create(uid='manager')
+            cli.add_group_to_group(manager_group, parent)
         cli.add_users_to_group([request.user], manager_group)
 
     @staticmethod
@@ -288,7 +300,7 @@ class APPOAuthRegisterAPIView(generics.CreateAPIView):
         '''
         return APP.valid_objects.filter(uid=self.kwargs['uid']).first()
 
-    def create(self, request, uid):    # pylint: disable=arguments-differ
+    def create(self, request, oid, uid):    # pylint: disable=arguments-differ
         '''
         [POST] 实际扮演 [POST] 或 [PATCH]
         '''

@@ -182,7 +182,7 @@ class UcenterOwnOrgListAPIView(GenericAPIView):
 
 class UcenterCurrentOrgAPIView(GenericAPIView):
     '''
-    个人当前组织查询/切换 [GET] [POST]
+    个人当前组织查询/切换 [GET] [POST] [DELETE]
     '''
 
     permission_classes = [IsAuthenticated]
@@ -195,6 +195,14 @@ class UcenterCurrentOrgAPIView(GenericAPIView):
         if org is not None:
             return Response(OrgSerializer(org).data)
         return Response()    # 这里应该返回什么？
+
+    def delete(self, request):
+        '''
+        clear user current org
+        '''
+        self.request.user.current_organization = None
+        self.request.user.save()
+        return Response(status=204)
 
     def post(self, request):
         '''

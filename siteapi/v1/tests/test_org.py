@@ -74,6 +74,9 @@ class OrgTestCase(TestCase):
     def set_curr_org(self, data):
         return self.client.json_post(reverse('siteapi:ucenter_org'), data=data)
 
+    def clear_curr_org(self):
+        return self.client.delete(reverse('siteapi:ucenter_org'))
+
     def create_user(self, grp_uids, dept_uids, name):
         return self.client.json_post(reverse('siteapi:user_list'),
                                      data={
@@ -176,7 +179,6 @@ class OrgTestCase(TestCase):
         self.unset_client()
         self.assertEqual(self.delete_org(op2).status_code, 204)
 
-
     def test_org_member(self):
         owner = User.create_user('owner', 'owner')
         other = User.create_user('other', 'other')
@@ -223,7 +225,6 @@ class OrgTestCase(TestCase):
         self.assertEqual(self.get_user(org['oid']).status_code, 403)
         self.unset_client()
 
-
     # 节点-添加成员-API
 
     def test_user_org(self):
@@ -247,3 +248,7 @@ class OrgTestCase(TestCase):
         self.assertEqual(self.set_curr_org({'no_oid': 123}).status_code, 400)
         self.assertEqual(self.set_curr_org({'oid': 'invalid-oid'}).status_code, 400)
         self.assertEqual(self.set_curr_org({'oid': str(uuid4())}).status_code, 404)
+
+        self.assertEqual(self.get_curr_org().json()['oid'], extern_org['oid'])
+        self.assertEqual(self.clear_curr_org().status_code, 204)
+        self.assertEqual(self.get_curr_org().content, b'')
