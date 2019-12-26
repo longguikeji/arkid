@@ -22,7 +22,7 @@ class APP(BaseModel):
     '''
 
     uid = models.CharField(max_length=255, blank=False, verbose_name='APP唯一标识')
-    name = models.CharField(max_length=255, blank=True, default='', verbose_name='权限名称')
+    name = models.CharField(max_length=255, blank=False, default='', verbose_name='权限名称')
     remark = models.TextField(blank=True, default='', verbose_name='详细介绍')
     editable = models.BooleanField(default=True, verbose_name='是否可编辑、删除')
     allow_any_user = models.BooleanField(default=False, verbose_name='任何OneID用户都可以访问')    # 不包括匿名用户
