@@ -83,7 +83,6 @@ class BaseOrderedModel(BaseModel):
         :param list objs:
         '''
         order_numbers = sorted([obj.order_no for obj in objs])
-
         for order_number, obj in zip(order_numbers, objs):
             obj.order_no = order_number
             obj.save()
