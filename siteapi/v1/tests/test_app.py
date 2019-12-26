@@ -469,3 +469,7 @@ class APPTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['redirect_uris'], 'http://new.test.com/oauth/callback')
         self.assertEqual(APP.objects.get(uid=uid).index, 'http://new.test.com')
+
+    def test_create_app_empty_name(self):
+        res = self.client.json_post(reverse('siteapi:app_list'), data={'name': '  '})
+        self.assertEqual(res.json(), {"name": ["This field may not be blank."]})
