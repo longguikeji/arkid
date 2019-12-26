@@ -24,7 +24,7 @@ from oneid.permissions import (
     IsManagerUser,
     NodeManagerReadable,
 )
-from siteapi.v1.serializers.user import UserListSerializer, UserSerializer, EmployeeSerializer
+from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
 from siteapi.v1.serializers.dept import (
     DeptTreeSerializer,
     DeptListSerializer,
@@ -280,7 +280,8 @@ class DeptChildDeptAPIView(
             cli.sort_depts_in_dept(depts, parent_dept)
         elif subject == 'add':
             for dept in depts:
-                cli.move_dept_to_dept(dept, parent_dept)
+                if dept.parent != parent_dept:
+                    cli.move_dept_to_dept(dept, parent_dept)
 
         return Response(DeptListSerializer(parent_dept).data)
 

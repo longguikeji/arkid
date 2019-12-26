@@ -143,3 +143,6 @@ key
 # demo
 pysaml2/
 djangosaml2config/saml2_config/*.xml
+
+# sql
+test/data/test_*.sql
