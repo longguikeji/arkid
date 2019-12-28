@@ -16,11 +16,13 @@ from rest_framework.exceptions import (
 )
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
+from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from oneid_meta.models import User, Group, Dept
 from oneid.permissions import (
     IsAdminUser,
+    IsManagerUser,
     IsUserManager,
     UserEmployeeReadable,
     UserManagerReadable,
@@ -37,11 +39,18 @@ from executer.utils import operation
 class UserListCreateAPIView(generics.ListCreateAPIView):
     '''
     用户列表 [GET],[POST]
+    
+    :GET
+    - 主管理员可见全部
+    - 子管理员可见管理范围内的指定人、指定节点及其子孙节点内的所有人
+    :POST
+    - 主管理员可以创建用户
+    - 拥有 system_user_create 权限的子管理员
     '''
     serializer_class = EmployeeSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & IsAdminUser]
+    read_permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
     write_permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_user_create'))]
 
     def get_permissions(self):
@@ -63,6 +72,20 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
                     exclude(is_boss=True).exclude(username='admin').order_by('id')
         else:
             queryset = User.valid_objects.exclude(is_boss=True).exclude(username='admin').order_by('id')
+
+        user = self.request.user
+        if user.is_admin:
+            return queryset
+
+        all_manage_node_uids = user.all_manage_node_uids
+        all_manage_dept_uids = [node_uid for node_uid in all_manage_node_uids if node_uid.startswith(Dept.NODE_PREFIX)]
+        all_manage_group_uids = [
+            node_uid for node_uid in all_manage_node_uids if node_uid.startswith(Group.NODE_PREFIX)
+        ]
+
+        queryset.filter(
+            Q(deptmember__owner__uid__in=all_manage_dept_uids) | Q(groupmember__owner__uid__in=all_manage_group_uids)
+            | Q(username__in=user.manage_user_uids))
 
         return queryset
 

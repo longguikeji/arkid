@@ -191,14 +191,45 @@ class TreeNode():
 
         return chain([self.node_uid], res)
 
+    @classmethod
+    def get_upstream_uids(cls, node_uid):
+        '''
+        节点向上追溯的路径，包括该节点本身，包括终点节点，以node_uid形式返回
+        '''
+        key = f'oneid:node:{node_uid}:upstream'
+        res = cache.get(key)
+        if res is None:
+            node, _ = cls.retrieve_node(node_uid)
+            if node:
+                node_uids = [item.node_uid for item in node.path_up_to()]
+                cache.set(key, node_uids[1:])
+                return node_uids
+
+        return chain([node_uid], res)
+
     @property
     def downstream_uids(self):
         '''
         节点以及其子孙节点，以node_uid形式返回
-        目前使用频次不大
         '''
-        for node in self.downstream:
-            yield node.node_uid
+        return self.get_downstream_uids(self.node_uid)
+
+    @classmethod
+    def get_downstream_uids(cls, node_uid):
+        '''
+        节点以及其子孙节点，以node_uid形式返回
+        TODO: 继续优化，从子节点的 downstream_uids 聚合
+        TODO: 删除节点时，删除缓存
+        '''
+        key = f'oneid:node:{node_uid}:downstream'
+        res = cache.get(key)
+        if res is None:
+            node, _ = cls.retrieve_node(node_uid)
+            if node:
+                res = [item.node_uid for item in node.downstream]
+                cache.set(key, res[1:0])
+                return res
+        return chain([node_uid], res)
 
     @property
     def downstream(self):
