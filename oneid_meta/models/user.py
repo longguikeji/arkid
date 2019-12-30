@@ -368,7 +368,7 @@ class User(BaseModel, PermOwnerMixin):
         self_all_node_uids = self.all_node_uids
         for manager_group in user.manager_groups:
             if manager_group.scope_subject == 2:    # 指定节点、人
-                if user.username in manager_group.users:
+                if self.username in manager_group.users:
                     return True
                 if self_all_node_uids & set(manager_group.nodes):
                     return True
@@ -399,14 +399,14 @@ class User(BaseModel, PermOwnerMixin):
     @property
     def manage_node_uids(self):
         '''
-        管理的节点（不包含下级）
+        直接管理的节点（不包含下级）
         '''
         res = set()
         for manager_group in self.manager_groups:
-            if manager_group.scope_subject == 2:
+            if manager_group.scope_subject == 2:    # 指定节点、人
                 res.update(manager_group.nodes)
                 continue
-            if manager_group.scope_subject == 1:
+            if manager_group.scope_subject == 1:    # 所在节点
                 res.update(self.node_uids)
         return res
 
