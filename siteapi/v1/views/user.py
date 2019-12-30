@@ -79,7 +79,7 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         under_manage_user_ids = set()
 
         for item in queryset:
-            if item.under_manage(user):
+            if item.is_visible_to_manager(user):
                 under_manage_user_ids.add(item.username)
 
         under_manage_user_query_set = queryset.filter(username__in=under_manage_user_ids)

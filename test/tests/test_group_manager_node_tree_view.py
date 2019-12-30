@@ -3,9 +3,84 @@
 test for api about node
 '''
 from django.urls import reverse
+from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
     User, )
+
+USER_ONE = {
+    "avatar":
+    "",
+    "email":
+    "",
+    "employee_number":
+    "",
+    "gender":
+    0,
+    "mobile":
+    "13899990001",
+    "name":
+    "部门一admin",
+    "position":
+    "",
+    "private_email":
+    "",
+    "username":
+    "13899990001",
+    "depts":
+    '',
+    "roles":
+    '',
+    "nodes": [{
+        "node_uid": "g_wdexnpal",
+        "name": "wdexnpal",
+        "node_scope": [],
+        "user_scope": [],
+        "manager_group": {
+            "nodes": [],
+            "users": [],
+            "perms": [],
+            "apps": [''],
+            "scope_subject": 1
+        },
+        "users": []
+    }, {
+        "node_uid": "d_bumenyi",
+        "name": "部门一（所有人可见）",
+        "node_scope": [],
+        "user_scope": [],
+        "users": []
+    }],
+    "is_settled":
+    'true',
+    "require_reset_password":
+    'false',
+    "has_password":
+    'true'
+}
+USER_SIX = {
+    "avatar": "",
+    "email": "",
+    "employee_number": "",
+    "gender": 0,
+    "mobile": "13899990006",
+    "name": "部门一一user",
+    "position": "",
+    "private_email": "",
+    "username": "13899990006",
+    "depts": '',
+    "roles": '',
+    "nodes": [{
+        "node_uid": "d_bumenyiyi",
+        "name": "部门一（一）",
+        "node_scope": [],
+        "user_scope": [],
+        "users": []
+    }],
+    "is_settled": 'true',
+    "require_reset_password": 'false',
+    "has_password": 'true'
+}
 
 
 class GroupManagerViewTestCase(TestCase):
@@ -42,3 +117,15 @@ class GroupManagerViewTestCase(TestCase):
         ]
         self.assertEqual(res.json()['count'], 14)
         self.assertEqual([i['user']['username'] for i in res.json()['results']], expect)
+
+        # /user/13899990001, 可修改直接管理人员
+        res = client.json_patch(reverse('siteapi:user_detail', args=('13899990001', )), data=USER_ONE)
+        self.assertEqual(res.status_code, HTTP_200_OK)
+
+        # /user/13899990006, 不可修改间接管理人员，但是可见
+        res = client.json_patch(reverse('siteapi:user_detail', args=('13899990006', )), data=USER_SIX)
+        self.assertEqual(res.status_code, HTTP_404_NOT_FOUND)
+
+        # /user/13899990007, 不可删除间接管理人员，但是可见
+        res = client.delete(reverse('siteapi:user_detail', args=('13899990007', )))
+        self.assertEqual(res.status_code, HTTP_404_NOT_FOUND)
