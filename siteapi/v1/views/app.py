@@ -29,13 +29,8 @@ from siteapi.v1.serializers.app import (
 from siteapi.v1.views.utils import gen_uid
 from common.django.drf.paginator import DefaultListPaginator
 from oneid_meta.models import APP, Org, Perm, UserPerm, Dept, User, Group, OAuthAPP
-from oneid.permissions import (
-    IsAPPManager,
-    IsAdminUser,
-    IsManagerUser,
-    IsOrgOwnerOf,
-    CustomPermPerOrg,
-)
+from siteapi.v1.views.org import validity_check
+from oneid.permissions import (IsAPPManager, IsAdminUser, IsManagerUser, IsOrgOwnerOf, CustomPerm)
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
@@ -51,13 +46,12 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         '''
         读写权限
         '''
-        org = Org.valid_objects.filter(uuid=Org.to_uuid(self.kwargs['oid'])).first()
+        org = validity_check(self.kwargs['oid'])
 
         read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsManagerUser)]
         write_permission_classes = [
-            IsAuthenticated & (CustomPermPerOrg(org, 'system_app_create') | IsAdminUser | IsOrgOwnerOf(org))
+            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | CustomPerm(f'{self.kwargs["oid"]}_app_create'))
         ]
-        # TODO@saas Custom Perm per Org
 
         if self.request.method in SAFE_METHODS:
             return [perm() for perm in read_permission_classes]
@@ -72,7 +66,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         '''
         get app list
         '''
-        org = Org.valid_objects.filter(uuid=Org.to_uuid(self.kwargs['oid'])).first()
+        org = validity_check(self.kwargs['oid'])
 
         kwargs = {}
         name = self.request.query_params.get('name', '')
@@ -139,7 +133,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         app = serializer.instance
-        app.owner = Org.valid_objects.filter(uuid=Org.to_uuid(oid)).first()
+        app.owner = validity_check(oid)
         app.save()
         self._auto_create_access_perm(app)
         self._auto_create_manager_group(request, app)
@@ -216,8 +210,9 @@ class UcenterAPPListAPIView(generics.ListAPIView):
 
         if self.request.user.is_admin:
             return APP.valid_objects.filter(**kwargs).order_by('-created')
-        return APP.valid_objects.filter(Q(uid__in=uids, allow_any_user=False)
-                                        | Q(allow_any_user=True), **kwargs).order_by('-created')
+        return APP.valid_objects.filter(
+            Q(uid__in=uids, owner__in=self.request.user.organizations, allow_any_user=False)
+            | Q(allow_any_user=True), **kwargs).order_by('-created')
 
 
 def create_secret_for_app(app):

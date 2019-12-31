@@ -190,28 +190,3 @@ class CustomPerm():
         setattr(_cls, 'has_object_permission', has_object_permission)
 
         return _cls
-
-
-class CustomPermPerOrg():
-    '''
-    自定义权限，按组织校验
-    '''
-    def __new__(cls, org, perm_uid):
-        _cls = type('_CustomPermPerOrg', (BasePermission, ), {
-            'org': org,
-            'perm_uid': perm_uid,
-        })
-
-        def has_permission(self, request, view):    # pylint: disable=unused-argument
-            ret = False
-            for grp in request.user.org_manager_groups((self.org)):
-                ret = ret | (self.perm_uid in grp.perms)
-            return ret
-
-        def has_object_permission(self, request, view, _):
-            return self.has_permission(request, view)
-
-        setattr(_cls, 'has_permission', has_permission)
-        setattr(_cls, 'has_object_permission', has_object_permission)
-
-        return _cls

@@ -131,6 +131,8 @@ class APPTestCase(TestCase):
         self.manager = self.login_as(manager)
         self._manager = manager
 
+        self.client.json_post(reverse('siteapi:org_user', args=(self.org, )) + '?username=employee')
+
         group = Group.objects.create(name='test', parent=Group.valid_objects.filter(uid=org['manager_uid']).first())
         ManagerGroup.objects.create(group=group, scope_subject=2, apps=['app', 'demo'])
         GroupMember.objects.create(owner=group, user=User.objects.get(username='manager'))
@@ -209,17 +211,15 @@ class APPTestCase(TestCase):
         res = self.employee.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': 'testname'})
         self.assertEqual(res.status_code, 403)
 
-        mgr = Group.valid_objects.create(uid='employee',
-                                         name='employee',
-                                         parent=Group.valid_objects.filter(uid=self.org_data['manager_uid']).first())
-        GroupMember.valid_objects.create(user=self._employee, owner=mgr)
-        ManagerGroup.objects.create(group=mgr, scope_subject=2, perms=['system_app_create'])
+        perm, _ = Perm.objects.get_or_create(subject=self.org, scope='app', action='create')
+        user_perm = UserPerm.get(self._employee, perm)
+        user_perm.permit()
 
         res = self.employee.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': 'testname'})
 
         self.assertEqual(res.status_code, 201)
-        self.assertEqual(len(list(self._employee.manager_groups)), 2)
-        manager_group = list(self._employee.manager_groups)[1]
+        self.assertEqual(len(list(self._employee.manager_groups)), 1)
+        manager_group = list(self._employee.manager_groups)[0]
         self.assertEqual(manager_group.apps, ['testname'])
         self.assertEqual(manager_group.group.users, [self._employee])
 
@@ -578,11 +578,9 @@ class APPTestCase(TestCase):
                 'name': 'app5'
             }).status_code, 403)
 
-        mgr = Group.valid_objects.create(uid='usr3',
-                                         name='usr3',
-                                         parent=Group.valid_objects.filter(uid=org1['manager_uid']).first())
-        GroupMember.valid_objects.create(user=usr3, owner=mgr)
-        ManagerGroup.objects.create(group=mgr, scope_subject=2, perms=['system_app_create'])
+        perm, _ = Perm.objects.get_or_create(subject=org1['oid'], scope='app', action='create')
+        user_perm = UserPerm.get(usr3, perm)
+        user_perm.permit()
 
         self.assertEqual(
             self.usr3.json_post(reverse('siteapi:app_list', args=(org2['oid'], )), data={

@@ -2,7 +2,7 @@
 tests for api abort org
 '''
 
-# pylint: disable=missing-docstring, invalid-name, too-many-locals
+# pylint: disable=missing-docstring, invalid-name, too-many-locals, too-many-statements
 
 from uuid import uuid4
 from django.urls import reverse
@@ -89,6 +89,12 @@ class OrgTestCase(TestCase):
 
     def get_user(self, org_oid):
         return self.client.get(reverse('siteapi:org_user', args=(org_oid, )))
+
+    def add_user(self, org_oid, username):
+        return self.client.post(reverse('siteapi:org_user', args=(org_oid, )) + f'?username={username}')
+
+    def delete_user(self, org_oid, username):
+        return self.client.delete(reverse('siteapi:org_user', args=(org_oid, )) + f'?username={username}')
 
     def test_org_management(self):
         orgs = []
@@ -223,6 +229,21 @@ class OrgTestCase(TestCase):
         self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
         self.set_client(self.login_as(other))
         self.assertEqual(self.get_user(org['oid']).status_code, 403)
+        self.unset_client()
+
+        # mutation
+        User.create_user('username', 'password')
+        self.set_client(self.login_as(owner))
+        self.assertEqual(self.add_user(org['oid'], 'username').status_code, 204)
+        self.assertEqual(set(self.get_user(org['oid']).json()), user_data.union({'username'}))
+        self.assertEqual(self.delete_user(org['oid'], 'username').status_code, 204)
+        self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
+        self.set_client(self.login_as(other))
+
+        self.assertEqual(self.add_user(org['oid'], 'username').status_code, 403)
+        self.assertEqual(self.delete_user(org['oid'], 'username').status_code, 403)
+        self.set_client(self.login_as(owner))
+        self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
         self.unset_client()
 
     # 节点-添加成员-API

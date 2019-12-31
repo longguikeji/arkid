@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db.utils import IntegrityError
 
 from common.django.model import BaseOrderedModel
+from oneid_meta.models.org import Org
 from oneid_meta.models.perm import DeptPerm, PermOwnerMixin
 from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
 
@@ -74,6 +75,18 @@ class Dept(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         下属子部门
         '''
         return Dept.valid_objects.filter(parent=self).order_by('order_no')
+
+    @property
+    def org(self):
+        '''
+        所属组织
+        '''
+        try:
+            if self.parent.uid != 'root':
+                return self.parent.org
+            return Org.valid_objects.filter(group=self).first()
+        except AttributeError:
+            return None
 
     def if_belong_to_dept(self, dept, recursive):
         '''

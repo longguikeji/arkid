@@ -10,7 +10,7 @@ from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView, ValidationError
 from oneid.permissions import (IsAdminUser, IsAuthenticated, IsOrgOwnerOf)
-from oneid_meta.models import Dept, Group, Org, GroupMember
+from oneid_meta.models import Dept, Group, Org, GroupMember, DeptMember, User
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
 
 
@@ -72,9 +72,9 @@ class OrgListCreateAPIView(GenericAPIView):
         return []
 
 
-class OrgUserListAPIView(GenericAPIView):
+class OrgUserListCreateDestroyAPIView(GenericAPIView):
     '''
-    组织成员列表 [GET]
+    组织成员列表/添加/删除 [GET] [POST] [DELETE]
     '''
     def get(self, request, oid):
         '''
@@ -83,12 +83,42 @@ class OrgUserListAPIView(GenericAPIView):
         org = validity_check(oid)
         return Response(collect_org_user(org))
 
+    def post(self, request, oid):
+        '''
+        add org members
+        '''
+        org = validity_check(oid)
+        user = request.query_params.get('username', None)
+        if user is None:
+            raise NotFound
+        user = User.valid_objects.filter(username=user)
+        if user.exists():
+            GroupMember.valid_objects.create(user=user.first(), owner=org.direct)
+        else:
+            raise NotFound
+        return Response(status=204)
+
+    def delete(self, request, oid):
+        '''
+        delete org members
+        '''
+        org = validity_check(oid)
+        user = request.query_params.get('username', None)
+        if user is None:
+            raise NotFound
+        user = User.valid_objects.filter(username=user)
+        if user.exists():
+            delete_org_user(org, user.first())
+        else:
+            raise NotFound
+        return Response(status=204)
+
     def get_permissions(self):
         '''
         set permissions
         '''
         IsOrgOwner = IsOrgOwnerOf(validity_check(self.kwargs['oid']))
-        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]
+        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]    # TODO@saas: OrgMgr?
         return [perm() for perm in permission_classes]
 
 
@@ -147,19 +177,7 @@ class UcenterOrgListAPIView(GenericAPIView):
         '''
         get user org list
         '''
-        orgs = set()
-
-        def traverse_group(g):
-            for org in Org.valid_objects.filter(group=g):
-                orgs.add(org)
-                return
-            if g.parent is not None:
-                traverse_group(g.parent)
-
-        for node in GroupMember.valid_objects.filter(user=self.request.user):
-            traverse_group(node.owner)
-
-        return Response(map(lambda o: OrgSerializer(o).data, orgs))
+        return Response([OrgSerializer(org).data for org in self.request.user.organizations])
 
 
 class UcenterOwnOrgListAPIView(GenericAPIView):
@@ -233,7 +251,7 @@ def validity_check(oid):
 
 def collect_org_user(org):
     '''
-    collect all users in a org
+    collect all users in an org
     '''
     users = {org.owner.username}
 
@@ -252,3 +270,16 @@ def collect_org_user(org):
     traverse_dept(org.dept)
     traverse_group(org.group)
     return users
+
+
+def delete_org_user(org, user):
+    '''
+    delete a user from an org
+    '''
+
+    for gm in GroupMember.valid_objects.filter(user=user):
+        if gm.owner.org.uuid == org.uuid:
+            gm.delete()
+    for dm in DeptMember.valid_objects.filter(user=user):
+        if dm.owner.org.uuid == org.uuid:
+            dm.delete()

@@ -1619,7 +1619,7 @@ TODO: 可见权限的处理
     + oid (string) - 组织唯一标识
 + Response 204
 
-## 特定组织成员操作 [/org/{oid}/user/]
+## 特定组织成员操作 [/org/{oid}/user/{?username}]
 
 ### 查看特定组织成员列表 [GET]
 
@@ -1629,6 +1629,20 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
   + Attributes
     + users (array[string]) - 组织中所有用户名列表
+
+### 添加成员到特定组织 [POST]
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
+    + username (string) 用户名
+  + Response 204
+
+### 从组织中删除特定成员 [DELETE]
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
+    + username (string) 用户名
+  + Response 204
 
 # Group Perm
 
