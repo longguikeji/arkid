@@ -34,7 +34,7 @@ from oneid.permissions import (
     IsAdminUser,
     IsManagerUser,
     IsOrgOwnerOf,
-    CustomPerm,
+    CustomPermPerOrg,
 )
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
@@ -55,7 +55,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
 
         read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsManagerUser)]
         write_permission_classes = [
-            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | CustomPerm('system_app_create'))
+            IsAuthenticated & (CustomPermPerOrg(org, 'system_app_create') | IsAdminUser | IsOrgOwnerOf(org))
         ]
         # TODO@saas Custom Perm per Org
 

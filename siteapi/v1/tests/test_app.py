@@ -1,7 +1,7 @@
 '''
 tests for api about app
 '''
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring, too-many-lines, attribute-defined-outside-init
 import os
 from unittest import mock
 from django.urls import reverse
@@ -121,6 +121,7 @@ class APPTestCase(TestCase):
 
         org = self.client.json_post(reverse('siteapi:org_create'), data={'name': 'org1'}).json()
         self.org = org['oid']
+        self.org_data = org
 
         employee = User.create_user('employee', 'employee')
         self.employee = self.login_as(employee)
@@ -207,13 +208,18 @@ class APPTestCase(TestCase):
 
         res = self.employee.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': 'testname'})
         self.assertEqual(res.status_code, 403)
-        perm, _ = Perm.objects.get_or_create(subject='system', scope='app', action='create')
-        user_perm = UserPerm.get(self._employee, perm)
-        user_perm.permit()
+
+        mgr = Group.valid_objects.create(uid='employee',
+                                         name='employee',
+                                         parent=Group.valid_objects.filter(uid=self.org_data['manager_uid']).first())
+        GroupMember.valid_objects.create(user=self._employee, owner=mgr)
+        ManagerGroup.objects.create(group=mgr, scope_subject=2, perms=['system_app_create'])
+
         res = self.employee.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': 'testname'})
+
         self.assertEqual(res.status_code, 201)
-        self.assertEqual(len(list(self._employee.manager_groups)), 1)
-        manager_group = list(self._employee.manager_groups)[0]
+        self.assertEqual(len(list(self._employee.manager_groups)), 2)
+        manager_group = list(self._employee.manager_groups)[1]
         self.assertEqual(manager_group.apps, ['testname'])
         self.assertEqual(manager_group.group.users, [self._employee])
 
@@ -515,7 +521,6 @@ class APPTestCase(TestCase):
         self.assertEqual(res.json()['redirect_uris'], 'http://new.test.com/oauth/callback')
         self.assertEqual(APP.objects.get(uid=uid).index, 'http://new.test.com')
 
-
     def test_org_app(self):
         usr1 = User.create_user('usr1', 'usr1')
         self.usr1 = self.login_as(usr1)
@@ -564,6 +569,35 @@ class APPTestCase(TestCase):
         self.assertEqual(usr1_org2, {'app4'})
         self.assertEqual(usr2_org1, {'app2'})
         self.assertEqual(usr2_org2, {'app3', 'app4'})
+
+        usr3 = User.create_user('usr3', 'usr3')
+        self.usr3 = self.login_as(usr3)
+
+        self.assertEqual(
+            self.usr3.json_post(reverse('siteapi:app_list', args=(org1['oid'], )), data={
+                'name': 'app5'
+            }).status_code, 403)
+
+        mgr = Group.valid_objects.create(uid='usr3',
+                                         name='usr3',
+                                         parent=Group.valid_objects.filter(uid=org1['manager_uid']).first())
+        GroupMember.valid_objects.create(user=usr3, owner=mgr)
+        ManagerGroup.objects.create(group=mgr, scope_subject=2, perms=['system_app_create'])
+
+        self.assertEqual(
+            self.usr3.json_post(reverse('siteapi:app_list', args=(org2['oid'], )), data={
+                'name': 'app5'
+            }).status_code, 403)
+        self.assertEqual(
+            self.usr3.json_post(reverse('siteapi:app_list', args=(org1['oid'], )), data={
+                'name': 'app5'
+            }).json()['name'], 'app5')
+
+    def test_app_detail_org(self):
+        pass
+
+    def test_app_oauth_org(self):
+        pass
 
     def test_create_app_empty_name(self):
         res = self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': '  '})
