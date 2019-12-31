@@ -392,7 +392,7 @@ class User(BaseModel, PermOwnerMixin):
                 if self_all_node_uids & set(manager_group.nodes):
                     return True
             if manager_group.scope_subject == 1:    # 所在节点
-                if self_all_node_uids & user.node_uids:
+                if self_all_node_uids & set(manager_group.nodes):
                     return True
         return False
 
@@ -420,6 +420,28 @@ class User(BaseModel, PermOwnerMixin):
                 continue
             if manager_group.scope_subject == 1:    # 所在节点
                 res.update(self.node_uids)
+        return res
+
+    @property
+    def manage_user_uids(self):
+        '''
+        直接管理的人员(不包括从管理组继承而来的可管理的人)
+        '''
+        res = set()
+        for manager_group in self.manager_groups:
+            if manager_group.scope_subject == 2:    # 指定节点、人
+                res.update(manager_group.users)
+        return res
+
+    @property
+    def all_manage_node_uids(self):
+        '''
+        所有可管理的节点（包含直接管理的节点，及其下属节点）
+        '''
+
+        res = set()
+        for node_uid in self.manage_node_uids:
+            res.update(Node.get_downstream_uids(node_uid))
         return res
 
     def check_password(self, password):
