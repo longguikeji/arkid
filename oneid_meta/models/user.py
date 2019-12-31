@@ -368,8 +368,8 @@ class User(BaseModel, PermOwnerMixin):
         self_all_node_uids = self.all_node_uids
         for manager_group in user.manager_groups:
             if manager_group.scope_subject == 2:    # 指定节点、人
-                for item in self.nodes:
-                    if item.under_manage(user):
+                for node in self.nodes:
+                    if node.under_manage(user):
                         return True
                 if self.username in manager_group.users:
                     return True
@@ -386,14 +386,10 @@ class User(BaseModel, PermOwnerMixin):
             return True
         self_all_node_uids = self.all_node_uids
         for manager_group in user.manager_groups:
-            if manager_group.scope_subject == 2:    # 指定节点、人
-                if self.username in manager_group.users:
-                    return True
-                if self_all_node_uids & set(manager_group.nodes):
-                    return True
-            if manager_group.scope_subject == 1:    # 所在节点
-                if self_all_node_uids & set(manager_group.nodes):
-                    return True
+            if self.username in manager_group.users:
+                return True
+            if self_all_node_uids & set(manager_group.nodes):
+                return True
         return False
 
     def is_visible_to_employee(self, user):
