@@ -3,7 +3,7 @@
 test for api about node
 '''
 from django.urls import reverse
-from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_204_NO_CONTENT
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
     User, )
@@ -84,6 +84,36 @@ USER_SIX = {
 
 
 class GroupManagerViewTestCase(TestCase):
+    def test_manager_one_perm_view(self):
+        '''
+        测试用户13899990001(部门一admin)可见范围
+        管理范围:所在分组及下级
+        其他权限:空
+        应用权限:应用二
+        '''
+        manager_one = User.objects.filter(username=13899990001).first()
+        client = self.login_as(manager_one)
+
+        # 分组管理可见本部门及下属6人
+        res = client.get(reverse('siteapi:node_tree', args=('d_root', )), data={'user_required': True})
+        self.assertEqual(res.json()['headcount'], 6)
+        expect = ['13899990006', '13899990007', '13899990008', '13899990009', '13899990010']
+        self.assertEqual([j['username'] for i in res.json()['nodes'][0]['nodes'] for j in i['users']], expect)
+
+        # 账户管理不可见，因为分组管理已经包括了可管理人员
+        res = client.get(reverse('siteapi:user_list'))
+        self.assertEqual(res.json()['count'], 0)
+        expect = []
+        self.assertEqual([i['user']['username'] for i in res.json()['results']], expect)
+
+        # /user/13899990006, 可修改管理人员
+        res = client.json_patch(reverse('siteapi:user_detail', args=('13899990006', )), data=USER_SIX)
+        self.assertEqual(res.status_code, HTTP_200_OK)
+
+        # /user/13899990007, 可删除管理人员
+        res = client.delete(reverse('siteapi:user_detail', args=('13899990007', )))
+        self.assertEqual(res.status_code, HTTP_204_NO_CONTENT)
+
     def test_manager_two_perm_view(self):
         '''
         测试用户 13899990002（部门二admin）可见性
