@@ -38,7 +38,6 @@ from executer.utils import operation
 class UserListCreateAPIView(generics.ListCreateAPIView):
     '''
     用户列表 [GET],[POST]
-
     :GET
     - 主管理员可见全部
     - 子管理员可见管理范围内的指定人、指定节点及其子孙节点内的所有人
