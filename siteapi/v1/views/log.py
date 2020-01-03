@@ -27,6 +27,7 @@ class LogListAPIView(generics.ListAPIView):
     serializer_class = LogLiteSerializer
     pagination_class = DefaultListPaginator
 
+    # TODO@saas: filter by org
     def get_queryset(self):
         '''
         filter queryset

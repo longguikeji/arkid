@@ -28,7 +28,7 @@ from siteapi.v1.serializers.app import (
 )
 from siteapi.v1.views.utils import gen_uid
 from common.django.drf.paginator import DefaultListPaginator
-from oneid_meta.models import APP, Org, Perm, UserPerm, Dept, User, Group, OAuthAPP
+from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
 from siteapi.v1.views.org import validity_check
 from oneid.permissions import (IsAPPManager, IsAdminUser, IsManagerUser, IsOrgOwnerOf, CustomPerm)
 from executer.core import CLI
@@ -46,11 +46,11 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         '''
         读写权限
         '''
-        org = validity_check(self.kwargs['oid'])
+        self.org = validity_check(self.kwargs['oid'])
 
-        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsManagerUser)]
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsManagerUser)]
         write_permission_classes = [
-            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | CustomPerm(f'{self.kwargs["oid"]}_app_create'))
+            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | CustomPerm(f'{self.kwargs["oid"]}_app_create'))
         ]
 
         if self.request.method in SAFE_METHODS:
@@ -66,8 +66,6 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         '''
         get app list
         '''
-        org = validity_check(self.kwargs['oid'])
-
         kwargs = {}
         name = self.request.query_params.get('name', '')
         if name:
@@ -75,7 +73,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
 
         # 可管理范围
         manager_app_uids = set()
-        for manager_group in self.request.user.org_manager_groups(org):
+        for manager_group in self.request.user.org_manager_groups(self.org):
             manager_app_uids.update(set(manager_group.apps))
         kwargs['uid__in'] = manager_app_uids
         if self.request.user.is_admin:
@@ -133,7 +131,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         app = serializer.instance
-        app.owner = validity_check(oid)
+        app.owner = self.org
         app.save()
         self._auto_create_access_perm(app)
         self._auto_create_manager_group(request, app)
@@ -146,7 +144,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         super().perform_create(serializer)    # pylint: disable=no-member
         cli = LOG_CLI()
-        cli.create_app(serializer.validated_data)
+        cli.create_app(serializer.validated_data, self.org)
 
     @staticmethod
     def _auto_create_manager_group(request, app):

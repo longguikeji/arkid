@@ -4,13 +4,11 @@ views for organization
 
 # pylint: disable=no-self-use, invalid-name, unused-argument
 
-from uuid import uuid4
-
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView, ValidationError
 from oneid.permissions import (IsAdminUser, IsAuthenticated, IsOrgOwnerOf)
-from oneid_meta.models import Dept, Group, Org, GroupMember, DeptMember, User
+from oneid_meta.models import Org, GroupMember, User
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
 
 
@@ -35,30 +33,8 @@ class OrgListCreateAPIView(GenericAPIView):
         '''
         parse = OrgDeserializer(data=request.data)
         parse.is_valid(raise_exception=True)
-
         name = parse.validated_data['name']
-
-        dept_root = Dept.valid_objects.filter(uid='root').first()
-        group_root = Group.valid_objects.filter(uid='root').first()
-
-        dept = Dept.valid_objects.create(uid=uuid4(), name=name, parent=dept_root)
-        group = Group.valid_objects.create(uid=uuid4(), name=name, parent=group_root)
-        direct = Group.valid_objects.create(uid=uuid4(), name=f'{name}-无分组成员', parent=group)
-        manager = Group.valid_objects.create(uid=uuid4(), name=f'{name}-管理员', parent=group)
-        role = Group.valid_objects.create(uid=uuid4(), name=f'{name}-角色', parent=group)
-        label = Group.valid_objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
-
-        GroupMember.valid_objects.create(user=self.request.user, owner=manager)
-        org = Org.valid_objects.create(name=name,
-                                       owner=self.request.user,
-                                       dept=dept,
-                                       group=group,
-                                       direct=direct,
-                                       manager=manager,
-                                       role=role,
-                                       label=label)
-
-        return Response(OrgSerializer(org).data)
+        return Response(OrgSerializer(Org.create(name=name, owner=self.request.user)).data)
 
     def get_permissions(self):
         '''
@@ -80,20 +56,18 @@ class OrgUserListCreateDestroyAPIView(GenericAPIView):
         '''
         get org members
         '''
-        org = validity_check(oid)
-        return Response(collect_org_user(org))
+        return Response(self.org.users)
 
     def post(self, request, oid):
         '''
         add org members
         '''
-        org = validity_check(oid)
         user = request.query_params.get('username', None)
         if user is None:
             raise NotFound
         user = User.valid_objects.filter(username=user)
         if user.exists():
-            GroupMember.valid_objects.create(user=user.first(), owner=org.direct)
+            GroupMember.valid_objects.create(user=user.first(), owner=self.org.direct)
         else:
             raise NotFound
         return Response(status=204)
@@ -102,13 +76,12 @@ class OrgUserListCreateDestroyAPIView(GenericAPIView):
         '''
         delete org members
         '''
-        org = validity_check(oid)
         user = request.query_params.get('username', None)
         if user is None:
             raise NotFound
         user = User.valid_objects.filter(username=user)
         if user.exists():
-            delete_org_user(org, user.first())
+            self.org.remove(user.first())
         else:
             raise NotFound
         return Response(status=204)
@@ -117,7 +90,9 @@ class OrgUserListCreateDestroyAPIView(GenericAPIView):
         '''
         set permissions
         '''
-        IsOrgOwner = IsOrgOwnerOf(validity_check(self.kwargs['oid']))
+        self.org = validity_check(self.kwargs['oid'])
+
+        IsOrgOwner = IsOrgOwnerOf(self.org)
         permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]    # TODO@saas: OrgMgr?
         return [perm() for perm in permission_classes]
 
@@ -133,34 +108,26 @@ class OrgDetailDestroyAPIView(GenericAPIView):
         '''
         org detail view
         '''
-        org = validity_check(oid)
-        return Response(OrgSerializer(org).data)
+        return Response(OrgSerializer(self.org).data)
 
     def delete(self, request, oid):
         '''
         delete org
         '''
-        org = validity_check(oid)
-
-        org.dept.delete()
-        org.group.delete()
-        org.direct.delete()
-        org.manager.delete()
-        org.role.delete()
-        org.label.delete()
-        org.delete()
-
+        self.org.delete()
         return Response(status=204)
 
     def get_permissions(self):
         '''
         set permissions
         '''
+        self.org = validity_check(self.kwargs['oid'])
+
         method = self.request.method
         if method == 'GET':
             return [perm() for perm in self.read_permission_classes]
         if method == 'DELETE':
-            IsOrgOwner = IsOrgOwnerOf(validity_check(self.kwargs['oid']))
+            IsOrgOwner = IsOrgOwnerOf(self.org)
             permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]
             return [perm() for perm in permission_classes]
         return []
@@ -230,8 +197,7 @@ class UcenterCurrentOrgAPIView(GenericAPIView):
             oid = request.data['oid']
         except KeyError:
             raise ParseError()
-        org = validity_check(oid)
-        self.request.user.current_organization = org
+        self.request.user.current_organization = validity_check(oid)
         self.request.user.save()
         return Response(status=204)
 
@@ -247,39 +213,3 @@ def validity_check(oid):
         raise NotFound
     except ValidationError as exc:
         raise ParseError(exc.messages)
-
-
-def collect_org_user(org):
-    '''
-    collect all users in an org
-    '''
-    users = {org.owner.username}
-
-    def traverse_dept(dept):
-        nonlocal users
-        users.update({users.username for users in dept.users})
-        for d in dept.depts:
-            traverse_dept(d)
-
-    def traverse_group(group):
-        nonlocal users
-        users.update({users.username for users in group.users})
-        for g in group.groups:
-            traverse_group(g)
-
-    traverse_dept(org.dept)
-    traverse_group(org.group)
-    return users
-
-
-def delete_org_user(org, user):
-    '''
-    delete a user from an org
-    '''
-
-    for gm in GroupMember.valid_objects.filter(user=user):
-        if gm.owner.org.uuid == org.uuid:
-            gm.delete()
-    for dm in DeptMember.valid_objects.filter(user=user):
-        if dm.owner.org.uuid == org.uuid:
-            dm.delete()

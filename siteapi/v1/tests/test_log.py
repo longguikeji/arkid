@@ -13,6 +13,10 @@ class LogTestCase(TestCase):
         for log in Log.objects.all():
             log.delete()
 
+        org = self.client.json_post(reverse('siteapi:org_create'), data={'name': 'org1'}).json()
+        self.org = org['oid']
+        self.org_data = org
+
     def test_get_meta_log(self):
         res = self.client.get(reverse('siteapi:meta_log'))
         self.assertEqual(res.status_code, 200)
@@ -26,7 +30,7 @@ class LogTestCase(TestCase):
                               })
         self.assertEqual(Log.objects.count(), 3)
 
-        url = reverse('siteapi:log_list')
+        url = reverse('siteapi:log_list', args=(self.org, ))
         res = self.client.get(url)
 
         expect = ['group_member', 'dept_member', 'user_create']
@@ -57,5 +61,5 @@ class LogTestCase(TestCase):
                                   'user': USER_DATA,
                               })
         log = Log.objects.first()
-        res = self.client.get(reverse('siteapi:log_detail', args=(log.uuid.hex, )))
+        res = self.client.get(reverse('siteapi:log_detail', args=(self.org, log.uuid.hex)))
         self.assertIn('detail', res.json())

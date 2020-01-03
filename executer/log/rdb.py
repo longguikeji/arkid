@@ -6,6 +6,8 @@ from django.urls import resolve
 from executer.core import Executer, single_cli_factory
 from oneid_meta.models import Log, RequestAccessLog, RequestDataClientLog
 
+# TODO@saas: 1. test logs, 2. add switch org log, 3. add system org change log
+
 
 class RDBLogExecuter(Executer):
     '''
@@ -34,17 +36,21 @@ class RDBLogExecuter(Executer):
             self._data_log = RequestDataClientLog.parse(self.cli.request)
         return self._data_log
 
-    def log(self, subject, summary):
+    def log(self, subject, summary, org=None):
         '''
         创建日志
         '''
-        return Log.objects.create(    # pylint: disable=no-member
-            user=self.cli.user,
-            subject=subject,
-            summary=summary,
-            access=self.access_log,
-            data=self.data_log,
-        )
+        kwargs = {
+            'user': self.cli.user,
+            'subject': subject,
+            'summary': summary,
+            'access': self.access_log,
+            'data': self.data_log
+        }
+        if org is not None:
+            kwargs['org'] = org
+
+        return Log.objects.create(**kwargs)    # pylint: disable=no-member
 
     def create_user(self, user_info):
         '''
@@ -330,13 +336,13 @@ class RDBLogExecuter(Executer):
 
     # --- non-standard interface ---
 
-    def create_app(self, app_info):
+    def create_app(self, app_info, org):
         '''
         创建应用
         '''
         subject = 'app_create'
         summary = f"{self.cli.user.log_name}创建应用({app_info['name']})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org)
 
     def update_app(self, app, app_info):    # pylint: disable=unused-argument
         '''
@@ -344,7 +350,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'app_update'
         summary = f"{self.cli.user.log_name}更新应用({app.name})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, app.owner)
 
     def delete_app(self, app):
         '''
@@ -352,7 +358,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'app_delete'
         summary = f"{self.cli.user.log_name}删除应用({app.name})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, app.owner)
 
     def create_perm(self, perm):
         '''

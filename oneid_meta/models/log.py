@@ -72,6 +72,8 @@ class Log(models.Model):
 
     data = models.ForeignKey(RequestDataClientLog, blank=True, null=True, on_delete=models.SET_NULL)
 
+    org = models.ForeignKey('oneid_meta.Org', blank=True, null=True, on_delete=models.SET_NULL)
+
     objects = models.Manager()
 
     SUBJECT_CHOICES = OrderedDict({

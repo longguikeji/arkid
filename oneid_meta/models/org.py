@@ -2,6 +2,7 @@
 schema of Orgs
 '''
 
+from uuid import uuid4
 from django.db import models
 from common.django.model import BaseModel
 
@@ -51,3 +52,71 @@ class Org(BaseModel):
         convert oid to uuid
         '''
         return oid
+
+    def delete(self):
+        self.dept.delete()
+        self.group.delete()
+        self.direct.delete()
+        self.manager.delete()
+        self.role.delete()
+        self.label.delete()
+        super(Org, self).delete()
+
+    @staticmethod
+    def create(name, owner, **kwargs):
+        from oneid_meta.models import Dept, Group, GroupMember
+
+        dept_root = Dept.valid_objects.filter(uid='root').first()
+        group_root = Group.valid_objects.filter(uid='root').first()
+
+        dept = Dept.valid_objects.create(uid=uuid4(), name=name, parent=dept_root)
+        group = Group.valid_objects.create(uid=uuid4(), name=name, parent=group_root)
+        direct = Group.valid_objects.create(uid=uuid4(), name=f'{name}-无分组成员', parent=group)
+        manager = Group.valid_objects.create(uid=uuid4(), name=f'{name}-管理员', parent=group)
+        role = Group.valid_objects.create(uid=uuid4(), name=f'{name}-角色', parent=group)
+        label = Group.valid_objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
+
+        GroupMember.valid_objects.create(user=owner, owner=direct)
+
+        kw = {
+            'name': name,
+            'owner': owner,
+            'dept': dept,
+            'group': group,
+            'direct': direct,
+            'manager': manager,
+            'role': role,
+            'label': label
+        }
+
+        try:
+            kw['uuid'] = kwargs['uuid']
+        except KeyError:
+            pass
+
+        return Org.valid_objects.create(**kw)
+
+    @property
+    def users(self):
+        def traverse_dept(dept):
+            yield from (u.username for u in dept.users)
+            for d in dept.depts:
+                yield from traverse_dept(d)
+
+        def traverse_group(group):
+            yield from (u.username for u in group.users)
+            for g in group.groups:
+                yield from traverse_group(g)
+
+        yield from traverse_dept(self.dept)
+        yield from traverse_group(self.group)
+
+    def remove(self, user):
+        from oneid_meta.models import GroupMember, DeptMember
+
+        for gm in GroupMember.valid_objects.filter(user=user):
+            if gm.owner.org.uuid == self.uuid:
+                gm.delete()
+        for dm in DeptMember.valid_objects.filter(user=user):
+            if dm.owner.org.uuid == self.uuid:
+                dm.delete()

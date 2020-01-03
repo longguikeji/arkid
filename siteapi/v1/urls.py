@@ -172,8 +172,8 @@ urlpatterns = [
         NativeFieldDetailAPIView.as_view(),
         name='native_field_detail'),
     # log
-    url(r'^log/$', log_views.LogListAPIView.as_view(), name='log_list'),
-    url(r'^log/(?P<uuid>[\w|-]+)', log_views.LogDetailAPIView.as_view(), name='log_detail'),
+    url(r'^org/(?P<oid>[\w|-]+)/log/$', log_views.LogListAPIView.as_view(), name='log_list'),
+    url(r'^org/(?P<oid>[\w|-]+)/log/(?P<uuid>[\w|-]+)', log_views.LogDetailAPIView.as_view(), name='log_detail'),
     # meta
     url(r'^meta/$', MetaConfigAPIView.as_view(), name='meta'),
     url(r'^meta/node/$', node_views.MetaNodeAPIView.as_view(), name='meta_node'),

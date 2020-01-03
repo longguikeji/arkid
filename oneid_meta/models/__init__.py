@@ -18,7 +18,7 @@ from oneid_meta.models.group import (
     GroupMember,
 )
 
-from oneid_meta.models.org import (Org)
+from oneid_meta.models.org import Org
 
 from oneid_meta.models.perm import (
     Perm,
