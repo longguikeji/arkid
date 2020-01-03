@@ -381,10 +381,10 @@ def cli_factory(executer_clses):
 
 def single_cli_factory(executer_cls):
     '''
-    gen CLI class with single executer 
+    gen CLI class with single executer
     可运行executer内的非标准接口
     '''
-    class CLI_CLASS(cli_factory([executer_cls])):    # pylint: disable=abstract-method
+    class CLI_CLASS(cli_factory([executer_cls])):    # pylint: disable=abstract-method, invalid-name, missing-class-docstring
         def __getattribute__(self, name):
             try:
                 return super().__getattribute__(name)
