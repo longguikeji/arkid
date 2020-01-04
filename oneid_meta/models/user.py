@@ -263,6 +263,15 @@ class User(BaseModel, PermOwnerMixin):
         '''
         return GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False).exists()
 
+    def is_org_manager(self, *args):
+        if not args:
+            args = (self.current_organization, )
+
+        ret = False
+        for gm in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
+            ret = ret or gm.owner.org in args
+        return ret
+
     @property
     def organizations(self):
         def traverse_group(g):
@@ -290,9 +299,8 @@ class User(BaseModel, PermOwnerMixin):
             args = (self.current_organization, )
 
         for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
-            group = group_member.owner.manager_group
-            if group.group.org in args:
-                yield group
+            if group_member.owner.org in args:
+                    yield group_member.owner.manager_group
 
     @property
     def token(self):

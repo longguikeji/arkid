@@ -62,18 +62,6 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         return Group.valid_objects.filter(parent=self).order_by('order_no')
 
     @property
-    def org(self):
-        '''
-        所属组织
-        '''
-        try:    # TODO@saas: Normalization of Group
-            if self.parent.uid != 'root':
-                return self.parent.org
-            return Org.valid_objects.filter(group=self).first()
-        except AttributeError:
-            return None
-
-    @property
     def dn(self):
         '''
         distinguish name

@@ -156,6 +156,25 @@ class TreeNode():
         return (self.NODE_PREFIX + self.parent_uid) if self.parent_uid is not None else None
 
     @property
+    def org(self):
+        '''
+        所属组织
+        '''
+        from oneid_meta.models import Org
+
+        try:
+            if self.parent_uid != 'root':
+                return self.parent.org
+            if self.NODE_PREFIX == 'g_':
+                return Org.valid_objects.filter(group=self).first()
+            elif self.NODE_PREFIX == 'd_':
+                return Org.valid_objects.filter(dept=self).first()
+            else:
+                return None
+        except AttributeError:
+            return None
+
+    @property
     def parent_name(self):
         '''
         父级节点名称

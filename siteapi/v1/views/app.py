@@ -30,7 +30,7 @@ from siteapi.v1.views.utils import gen_uid
 from common.django.drf.paginator import DefaultListPaginator
 from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
 from siteapi.v1.views.org import validity_check
-from oneid.permissions import (IsAPPManager, IsAdminUser, IsManagerUser, IsOrgOwnerOf, CustomPerm)
+from oneid.permissions import (IsAPPManager, IsAdminUser, IsManagerOf, IsOrgOwnerOf, CustomPerm)
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
@@ -48,7 +48,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         '''
         self.org = validity_check(self.kwargs['oid'])
 
-        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsManagerUser)]
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsManagerOf(self.org))]
         write_permission_classes = [
             IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | CustomPerm(f'{self.kwargs["oid"]}_app_create'))
         ]

@@ -108,32 +108,33 @@ class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     '''
     serializer_class = GroupDetailSerializer
 
-    read_permission_classes = [IsAuthenticated & (NodeManagerReadable | IsAdminUser)]
-    write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
-
     def get_permissions(self):
         '''
         读写权限
         '''
+        self.group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not self.group:
+            raise NotFound
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | IsNodeManager)]
+
         if self.request.method in SAFE_METHODS:
-            return [perm() for perm in self.read_permission_classes]
-        return [perm() for perm in self.write_permission_classes]
+            return [perm() for perm in read_permission_classes]
+        return [perm() for perm in write_permission_classes]
 
     def get_object(self):
         '''
         find group
         '''
-        group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
-        if not group:
-            raise NotFound
         try:
-            self.check_object_permissions(self.request, group)
+            self.check_object_permissions(self.request, self.group)
         except PermissionDenied as exc:
             if self.request.method in SAFE_METHODS:
                 raise NotFound
             raise exc
-        group.refresh_visibility_scope()
-        return group
+        self.group.refresh_visibility_scope()
+        return self.group
 
     def perform_destroy(self, instance):
         '''
