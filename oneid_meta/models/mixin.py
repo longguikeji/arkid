@@ -161,11 +161,63 @@ class TreeNode():
 
     @property
     def is_group(self):
-        return self.NODE_PREFIX == 'g_'
+        from oneid_meta.models import Group
+
+        return self.NODE_PREFIX == Group.NODE_PREFIX
 
     @property
     def is_dept(self):
-        return self.NODE_PREFIX == 'd_'
+        from oneid_meta.models import Dept
+
+        return self.NODE_PREFIX == Dept.NODE_PREFIX
+
+    @property
+    def is_org_dept(self):
+        org = self.org # TODO@saas: Normalization of nodes, remove None
+        if org:
+            return self.uid == self.org.dept.uid
+        else:
+            return False
+
+    @property
+    def is_org_group(self):
+        org = self.org # TODO@saas: Normalization of nodes, remove None
+        if org:
+            return self.uid == self.org.group.uid
+        else:
+            return False
+
+    @property
+    def is_org_direct(self):
+        org = self.org # TODO@saas: Normalization of nodes, remove None
+        if org:
+            return self.uid == self.org.direct.uid
+        else:
+            return False
+
+    @property
+    def is_org_manager(self):
+        org = self.org # TODO@saas: Normalization of nodes, remove None
+        if org:
+            return self.uid == self.org.manager.uid
+        else:
+            return False
+
+    @property
+    def is_org_role(self):
+        org = self.org # TODO@saas: Normalization of nodes, remove None
+        if org:
+            return self.uid == self.org.role.uid
+        else:
+            return False
+
+    @property
+    def is_org_label(self):
+        org = self.org # TODO@saas: Normalization of nodes, remove None
+        if org:
+            return self.uid == self.org.direct.uid
+        else:
+            return False
 
     @property
     def org(self):

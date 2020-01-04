@@ -20,7 +20,7 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 
-from oneid_meta.models import Group, GroupMember, User
+from oneid_meta.models import Group, GroupMember, User, Org
 from oneid.permissions import (
     IsAdminUser,
     IsOrgOwnerOf,
@@ -210,7 +210,7 @@ class GroupChildGroupAPIView(
         '''
         管理员组下的子管理员组用专用View
         '''
-        if kwargs['uid'] == 'manager' and request.method == 'GET':    # TODO@saas
+        if Org.valid_objects.select_related('manager').filter(manager__uid=kwargs['uid']).exists() and request.method == 'GET':
             return ManagerGroupListAPIView().dispatch(request, *args, **kwargs)
         return super().dispatch(request, *args, **kwargs)
 
@@ -218,11 +218,14 @@ class GroupChildGroupAPIView(
         '''
         读写权限
         '''
-        group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
-        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(group.org) | NodeManagerReadable)]
-        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(group.org) | IsNodeManager)]
+        self.group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not self.group:
+            raise NotFound
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | IsNodeManager)]
         create_category_permission_classes = [
-            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(group.org) | CustomPerm('system_category_create'))
+            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | CustomPerm('system_category_create'))
         ]
 
         if self.request.method in SAFE_METHODS:
@@ -238,11 +241,8 @@ class GroupChildGroupAPIView(
         '''
         find group
         '''
-        group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
-        if not group:
-            raise NotFound
-        self.check_object_permissions(self.request, group)
-        return group
+        self.check_object_permissions(self.request, self.group)
+        return self.group
 
     def get(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''
@@ -260,7 +260,7 @@ class GroupChildGroupAPIView(
         group_data = request.data
         uid = group_data.get('uid', '')
         if 'manager_group' in group_data:
-            if parent_group.uid == 'manager':
+            if parent_group.is_org_manager:
                 if not group_data.get('name', ''):
                     name = "".join(random.choice(string.ascii_lowercase) for _ in range(8))
                     group_data.update(name=name)
@@ -334,7 +334,7 @@ class GroupChildGroupAPIView(
         }
         manager_group = cli.create_group(data)
         parent, _ = Group.valid_objects.get_or_create(uid='manager')
-        cli.add_group_to_group(manager_group, parent)
+        # cli.add_group_to_group(manager_group, child_group.org.manager) TODO@saas with category
         cli.add_users_to_group([request.user], manager_group)
 
 
@@ -346,11 +346,11 @@ class ManagerGroupListAPIView(generics.RetrieveAPIView):
 
     serializer_class = ManagerGroupListSerializer
 
-    def get_object(self):
+    def get_object(self, **kwargs):
         '''
         get `manager` group
         '''
-        group = Group.valid_objects.filter(uid='manager').first()
+        group = Group.valid_objects.filter(uid=kwargs['uid']).first()
         if not group:
             raise NotFound
         return group
@@ -359,7 +359,7 @@ class ManagerGroupListAPIView(generics.RetrieveAPIView):
         '''
         获取所有子管理员组
         '''
-        instance = self.get_object()
+        instance = self.get_object(**kwargs)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 

@@ -554,12 +554,13 @@ class GroupTestCase(TestCase):
         self.assertEqual([user['username'] for user in res.json()['users']], expect)
 
     def test_manager_group(self):
-        Group.objects.create(uid='manager', parent=self.root)
+        org = self.client.json_post(reverse('siteapi:org_create'), data={'name': 'org'}).json()
+
         Group.objects.create(uid='n1', parent=self.root)
         Group.objects.create(uid='n2', parent=self.root)
         perm1 = Perm.objects.create(subject='system', scope='demo', action='access')
         perm2 = Perm.objects.create(subject='system', scope='demo', action='admin')
-        res = self.client.json_post(reverse('siteapi:group_child_group', args=('manager', )),
+        res = self.client.json_post(reverse('siteapi:group_child_group', args=(org['manager_uid'], )),
                                     data={
                                         'manager_group': {
                                             'nodes': ['g_n1'],
@@ -602,14 +603,15 @@ class GroupTestCase(TestCase):
         self.assertEqual(manager_group.nodes, ['g_n2'])
         node_2 = Group.objects.get(uid='n2')
         node_2.delete()
-        res = self.client.get(reverse('siteapi:group_child_group', args=('manager', )))
+        res = self.client.get(reverse('siteapi:group_child_group', args=(org['manager_uid'], )))
         manager_group.refresh_from_db()
         self.assertEqual(manager_group.nodes, [])
 
     def test_manager_group_list(self):
         APP.objects.create(uid='demo', name='test')
         Perm.objects.create(subject='app', scope='demo', action='access')
-        parent = Group.objects.create(uid='manager')
+        org = self.client.json_post(reverse('siteapi:org_create'), data={'name': 'org'}).json()
+        parent = Group.valid_objects.filter(uid=org['manager_uid']).first()
 
         group = Group.objects.create(uid='manager_group_1', parent=parent)
         GroupMember.objects.create(owner=group, user=User.objects.get(username='employee'))
@@ -619,13 +621,13 @@ class GroupTestCase(TestCase):
                                     perms=['app_demo_access'],
                                     nodes=['root'],
                                     apps=['demo'])
-        res = self.client.get(reverse('siteapi:node_child_node', args=('g_manager', )))
+        res = self.client.get(reverse('siteapi:node_child_node', args=(f'g_{org["manager_uid"]}', )))
         expect = {
             'nodes': [{
-                'parent_uid': 'manager',
-                'parent_node_uid': 'g_manager',
-                'parent_name': '',
-                'group_id': 6,
+                'parent_uid': org['manager_uid'],
+                'parent_node_uid': f'g_{org["manager_uid"]}',
+                'parent_name': 'org-管理员',
+                'group_id': 10,
                 'node_uid': 'g_manager_group_1',
                 'node_subject': 'root',
                 'uid': 'manager_group_1',
