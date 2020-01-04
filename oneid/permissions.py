@@ -114,7 +114,7 @@ class NodeManagerReadable(BasePermission):
     '''
     def has_object_permission(self, request, view, obj):
         assert isinstance(obj, Node)
-        return request.user.is_manager and obj.is_visible_to_manager(request.user)
+        return request.user.is_org_manager(obj.org) and obj.is_visible_to_manager(request.user)
 
 
 class UserEmployeeReadable(BasePermission):

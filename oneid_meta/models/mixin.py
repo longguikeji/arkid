@@ -16,7 +16,7 @@ class NodeVisibilityScope(models.Model):
         abstract = True
 
     VISIBILITY_SUBJECT = (    # 此处`对...可见`，为`对...开放`的意思，即使判定不可见，最终也有可能可以看到
-        (1, '所有人可见'),
+        (1, '所有人可见'), # 同一组织内所有人
         (2, '节点成员可见'),
         (3, '节点成员及其下属节点均可见'),
         (4, '只对指定人、节点可见'),
@@ -26,7 +26,7 @@ class NodeVisibilityScope(models.Model):
     node_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定节点node_uids')
     user_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定人usernames')
 
-    def is_open_to_employee(self, user):
+    def is_open_to_employee(self, user): # TODO@saas: return self.node.org in user.orgs
         '''
         对user是否开放，由自身性质决定
         TODO: 优化
@@ -156,6 +156,18 @@ class TreeNode():
         return (self.NODE_PREFIX + self.parent_uid) if self.parent_uid is not None else None
 
     @property
+    def is_org(self):
+        return self.parent_uid == 'root'
+
+    @property
+    def is_group(self):
+        return self.NODE_PREFIX == 'g_'
+
+    @property
+    def is_dept(self):
+        return self.NODE_PREFIX == 'd_'
+
+    @property
     def org(self):
         '''
         所属组织
@@ -163,11 +175,11 @@ class TreeNode():
         from oneid_meta.models import Org
 
         try:
-            if self.parent_uid != 'root':
+            if not self.is_org:
                 return self.parent.org
-            if self.NODE_PREFIX == 'g_':
+            elif self.is_group:
                 return Org.valid_objects.filter(group=self).first()
-            elif self.NODE_PREFIX == 'd_':
+            elif self.is_dept:
                 return Org.valid_objects.filter(dept=self).first()
             else:
                 return None
@@ -288,7 +300,7 @@ class TreeNode():
         if user.is_admin:
             return True
         upstream_uids = set(self.upstream_uids)
-        for manager_group in user.manager_groups:
+        for manager_group in user.org_manager_groups(self.org):
             if manager_group.scope_subject == 2:    # 指定节点、人
                 if upstream_uids & set(manager_group.nodes):
                     return True
