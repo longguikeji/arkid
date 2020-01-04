@@ -237,10 +237,7 @@ class APPTestCase(TestCase):
         mock_ldap_info.return_value = []
 
         self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_1)
-        res = self.client.json_patch(reverse('siteapi:app_detail', args=(
-            self.org,
-            APP_1_EXCEPT['uid'],
-        )),
+        res = self.client.json_patch(reverse('siteapi:app_detail', args=(APP_1_EXCEPT['uid'], )),
                                      data={
                                          'remark': 'changed',
                                          'oauth_app': {
@@ -277,10 +274,7 @@ class APPTestCase(TestCase):
         self.assertEqual(res, expect)
         self.assertTrue(OAuthAPP.objects.filter(app__uid=APP_1_EXCEPT['uid']).exists())
 
-        res = self.client.json_patch(reverse('siteapi:app_detail', args=(
-            self.org,
-            APP_1_EXCEPT['uid'],
-        )),
+        res = self.client.json_patch(reverse('siteapi:app_detail', args=(APP_1_EXCEPT['uid'], )),
                                      data={
                                          'remark': 'changed',
                                          'oauth_app': None,
@@ -298,11 +292,7 @@ class APPTestCase(TestCase):
         app2 = APP.valid_objects.get(uid='test_uid')
         app2.editable = False
         app2.save()
-        res = self.client.json_patch(reverse('siteapi:app_detail', args=(
-            self.org,
-            'test_uid',
-        )),
-                                     data={'remark': 'new'})
+        res = self.client.json_patch(reverse('siteapi:app_detail', args=('test_uid', )), data={'remark': 'new'})
         self.assertEqual(res.status_code, 405)
 
     def test_delete_app(self):
@@ -310,10 +300,7 @@ class APPTestCase(TestCase):
         self.assertTrue(APP.valid_objects.filter(uid=APP_1_EXCEPT['uid']).exists())
         self.assertTrue(Perm.valid_objects.filter(uid='app_demo_access').exists())
 
-        res = self.client.delete(reverse('siteapi:app_detail', args=(
-            self.org,
-            APP_1_EXCEPT['uid'],
-        )))
+        res = self.client.delete(reverse('siteapi:app_detail', args=(APP_1_EXCEPT['uid'], )))
         self.assertEqual(res.status_code, 204)
         self.assertFalse(APP.valid_objects.filter(uid=APP_1_EXCEPT['uid']).exists())
         self.assertTrue(APP.objects.filter(uid=APP_1_EXCEPT['uid'], is_del=True).exists())
@@ -324,10 +311,7 @@ class APPTestCase(TestCase):
         app2 = APP.valid_objects.get(uid='test_uid')
         app2.editable = False
         app2.save()
-        res = self.client.delete(reverse('siteapi:app_detail', args=(
-            self.org,
-            'test_uid',
-        )))
+        res = self.client.delete(reverse('siteapi:app_detail', args=('test_uid', )))
         self.assertEqual(res.status_code, 405)
 
     def test_app_list(self):
@@ -410,16 +394,10 @@ class APPTestCase(TestCase):
         res = self.manager.get(reverse('siteapi:app_list', args=(self.org, )))
         self.assertEqual(res.status_code, 200)
 
-        res = self.employee.json_patch(reverse('siteapi:app_detail', args=(
-            self.org,
-            'app',
-        )), data={'name': 'new'})
+        res = self.employee.json_patch(reverse('siteapi:app_detail', args=('app', )), data={'name': 'new'})
         self.assertEqual(res.status_code, 403)
 
-        res = self.manager.json_patch(reverse('siteapi:app_detail', args=(
-            self.org,
-            'app',
-        )), data={'name': 'new'})
+        res = self.manager.json_patch(reverse('siteapi:app_detail', args=('app', )), data={'name': 'new'})
         self.assertEqual(res.status_code, 200)
 
     def test_app_list_with(self):
@@ -503,19 +481,13 @@ class APPTestCase(TestCase):
 
     def test_app_register_oauth(self):
         uid = 'mock-1'
-        res = self.client.json_post(reverse('siteapi:app_register_oauth', args=(
-            self.org,
-            uid,
-        )),
+        res = self.client.json_post(reverse('siteapi:app_register_oauth', args=(uid, )),
                                     data={'redirect_uris': 'http://test.com/oauth/callback'})
         self.assertEqual(res.status_code, 201)
         self.assertEqual(res.json()['redirect_uris'], 'http://test.com/oauth/callback')
         self.assertEqual(APP.objects.get(uid=uid).index, 'http://test.com')
 
-        res = self.client.json_post(reverse('siteapi:app_register_oauth', args=(
-            self.org,
-            uid,
-        )),
+        res = self.client.json_post(reverse('siteapi:app_register_oauth', args=(uid, )),
                                     data={'redirect_uris': 'http://new.test.com/oauth/callback'})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['redirect_uris'], 'http://new.test.com/oauth/callback')
@@ -590,12 +562,6 @@ class APPTestCase(TestCase):
             self.usr3.json_post(reverse('siteapi:app_list', args=(org1['oid'], )), data={
                 'name': 'app5'
             }).json()['name'], 'app5')
-
-    def test_app_detail_org(self):
-        pass
-
-    def test_app_oauth_org(self):
-        pass
 
     def test_create_app_empty_name(self):
         res = self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': '  '})

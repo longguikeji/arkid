@@ -122,7 +122,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         return apps
 
     @transaction.atomic()
-    def create(self, request, oid, *args, **kwargs):    # pylint: disable=unused-argument
+    def create(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''
         create app [POST]
         '''
@@ -293,7 +293,7 @@ class APPOAuthRegisterAPIView(generics.CreateAPIView):
         '''
         return APP.valid_objects.filter(uid=self.kwargs['uid']).first()
 
-    def create(self, request, oid, uid):    # pylint: disable=arguments-differ
+    def create(self, request, uid):    # pylint: disable=arguments-differ
         '''
         [POST] 实际扮演 [POST] 或 [PATCH]
         '''

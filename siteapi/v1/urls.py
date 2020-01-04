@@ -182,9 +182,9 @@ urlpatterns = [
     # app
     url(r'^org/(?P<oid>[\w|-]+)/app/$',
         app_views.APPListCreateAPIView.as_view(), name='app_list'),
-    url(r'^org/(?P<oid>[\w|-]+)/app/(?P<uid>[\w|-]+)/$',
+    url(r'^app/(?P<uid>[\w|-]+)/$',
         app_views.APPDetailAPIView.as_view(), name='app_detail'),
-    url(r'^org/(?P<oid>[\w|-]+)/app/(?P<uid>[\w|-]+)/oauth/$',
+    url(r'^app/(?P<uid>[\w|-]+)/oauth/$',
         app_views.APPOAuthRegisterAPIView.as_view(), name='app_register_oauth'),
     # migrate
     url(r'^migration/user/csv/export/$', migrate_views.UserCSVExportView.as_view(), name='export_user'),

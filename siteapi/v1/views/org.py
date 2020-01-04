@@ -52,13 +52,13 @@ class OrgUserListCreateDestroyAPIView(GenericAPIView):
     '''
     组织成员列表/添加/删除 [GET] [POST] [DELETE]
     '''
-    def get(self, request, oid):
+    def get(self, request, **kw):
         '''
         get org members
         '''
         return Response(self.org.users)
 
-    def post(self, request, oid):
+    def post(self, request, **kw):
         '''
         add org members
         '''
@@ -72,7 +72,7 @@ class OrgUserListCreateDestroyAPIView(GenericAPIView):
             raise NotFound
         return Response(status=204)
 
-    def delete(self, request, oid):
+    def delete(self, request, **kw):
         '''
         delete org members
         '''
@@ -104,13 +104,13 @@ class OrgDetailDestroyAPIView(GenericAPIView):
     '''
     read_permission_classes = [IsAuthenticated]
 
-    def get(self, request, oid):
+    def get(self, request, **kw):
         '''
         org detail view
         '''
         return Response(OrgSerializer(self.org).data)
 
-    def delete(self, request, oid):
+    def delete(self, request, **kw):
         '''
         delete org
         '''
