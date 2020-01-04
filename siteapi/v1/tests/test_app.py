@@ -135,7 +135,7 @@ class APPTestCase(TestCase):
 
         group = Group.objects.create(name='test', parent=Group.valid_objects.filter(uid=org['manager_uid']).first())
         ManagerGroup.objects.create(group=group, scope_subject=2, apps=['app', 'demo'])
-        GroupMember.objects.create(owner=group, user=User.objects.get(username='manager'))
+        GroupMember.objects.create(owner=group, user=manager)
 
     @mock.patch('siteapi.v1.serializers.app.SAMLAPPSerializer.gen_xml')
     @mock.patch('oneid_meta.models.app.SAMLAPP.more_detail', new_callable=mock.PropertyMock)
@@ -388,7 +388,8 @@ class APPTestCase(TestCase):
 
     def test_app_perm(self):
         User.objects.get(username='employee')
-        APP.objects.create(uid='app', name='app')
+
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'uid': 'app', 'name': 'app'})
         res = self.employee.get(reverse('siteapi:app_list', args=(self.org, )))
         self.assertEqual(res.status_code, 403)
         res = self.manager.get(reverse('siteapi:app_list', args=(self.org, )))

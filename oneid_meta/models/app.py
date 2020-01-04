@@ -130,7 +130,9 @@ class APP(BaseModel):
         '''
         if user.is_admin:
             return True
-        for manager_group in user.manager_groups:
+        if user.username == self.owner.owner.username:
+            return True
+        for manager_group in user.org_manager_groups(self.owner):
             if self.uid in manager_group.apps:
                 return True
         return False
