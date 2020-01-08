@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
+    Org,
     Group,
     User,
     GroupMember,
@@ -24,13 +25,11 @@ class GroupTestCase(TestCase):
     def setUp(self):
         super(GroupTestCase, self).setUp()
 
-        org = self.client.json_post(reverse('siteapi:org_create'), data={'name': 'org1'}).json()
-        self.org = org['oid']
-        self.org_data = org
 
-        root, _ = Group.valid_objects.get_or_create(uid=org['group_uid'])
-        self.root = root
-        role_group = Group.valid_objects.create(uid='role_group_1', name='role_group_1', parent=root, accept_user=False)
+        owner = User.create_user(username='owner', password='owner')
+        self.org = Org.create(name='org', owner=owner)
+
+        role_group = Group.valid_objects.create(uid='role_group_1', name='role_group_1', parent=self.org.group, accept_user=False)
         role_1 = Group.valid_objects.create(uid='role_1', name='role_1', parent=role_group, order_no=2)
         Group.valid_objects.create(uid='role_2', name='role_2', parent=role_group, order_no=1)
 
@@ -100,9 +99,9 @@ class GroupTestCase(TestCase):
     def test_get_group_detail(self):
         res = self.client.get(reverse('siteapi:group_detail', args=('role_group_1', )))
         expect = {
-            'parent_uid': self.org_data['group_uid'],
-            'parent_node_uid': f'g_{self.org_data["group_uid"]}',
-            'parent_name': self.org_data['name'],
+            'parent_uid': str(self.org.group.uid),
+            'parent_node_uid': f'g_{self.org.group.uid}',
+            'parent_name': self.org.name,
             'group_id': 7,
             'uid': 'role_group_1',
             'node_uid': 'g_role_group_1',
@@ -131,20 +130,20 @@ class GroupTestCase(TestCase):
             'groups': [{
                 'info': {
                     'group_id': 2,
-                    'uid': self.org_data['group_uid'],
-                    'node_uid': f'g_{self.org_data["group_uid"]}',
+                    'uid': str(self.org.group.uid),
+                    'node_uid': f'g_{self.org.group.uid}',
                     'node_subject': 'root',
-                    'name': self.org_data['name'],
+                    'name': self.org.name,
                     'remark': '',
                     'accept_user': True,
                 },
                 'groups': [{
                     'info': {
                         'group_id': 3,
-                        'uid': self.org_data['direct_uid'],
-                        'node_uid': f'g_{self.org_data["direct_uid"]}',
+                        'uid': str(self.org.direct.uid),
+                        'node_uid': f'g_{self.org.direct.uid}',
                         'node_subject': 'root',
-                        'name': f'{self.org_data["name"]}-无分组成员',
+                        'name': f'{self.org.name}-无分组成员',
                         'remark': '',
                         'accept_user': True,
                     },
@@ -152,10 +151,10 @@ class GroupTestCase(TestCase):
                 }, {
                     'info': {
                         'group_id': 4,
-                        'uid': self.org_data['manager_uid'],
-                        'node_uid': f'g_{self.org_data["manager_uid"]}',
+                        'uid': str(self.org.manager.uid),
+                        'node_uid': f'g_{self.org.manager.uid}',
                         'node_subject': 'root',
-                        'name': f'{self.org_data["name"]}-管理员',
+                        'name': f'{self.org.name}-管理员',
                         'remark': '',
                         'accept_user': True,
                     },
@@ -163,10 +162,10 @@ class GroupTestCase(TestCase):
                 }, {
                     'info': {
                         'group_id': 5,
-                        'uid': self.org_data['role_uid'],
-                        'node_uid': f'g_{self.org_data["role_uid"]}',
+                        'uid': str(self.org.role.uid),
+                        'node_uid': f'g_{self.org.role.uid}',
                         'node_subject': 'root',
-                        'name': f'{self.org_data["name"]}-角色',
+                        'name': f'{self.org.name}-角色',
                         'remark': '',
                         'accept_user': True,
                     },
@@ -174,10 +173,10 @@ class GroupTestCase(TestCase):
                 }, {
                     'info': {
                         'group_id': 6,
-                        'uid': self.org_data['label_uid'],
-                        'node_uid': f'g_{self.org_data["label_uid"]}',
+                        'uid': str(self.org.label.uid),
+                        'node_uid': f'g_{self.org.label.uid}',
                         'node_subject': 'root',
-                        'name': f'{self.org_data["name"]}-标签',
+                        'name': f'{self.org.name}-标签',
                         'remark': '',
                         'accept_user': True,
                     },
@@ -236,10 +235,10 @@ class GroupTestCase(TestCase):
             'groups': [{
                 'info': {
                     'group_id': 2,
-                    'uid': self.org_data['group_uid'],
-                    'node_uid': f'g_{self.org_data["group_uid"]}',
+                    'uid': str(self.org.group.uid),
+                    'node_uid': f'g_{self.org.group.uid}',
                     'node_subject': 'root',
-                    'name': self.org_data['name'],
+                    'name': self.org.name,
                     'remark': '',
                     'accept_user': True,
                 },
@@ -248,27 +247,27 @@ class GroupTestCase(TestCase):
                 'groups': [{
                     'info': {
                         'group_id': 3,
-                        'uid': self.org_data['direct_uid'],
-                        'node_uid': f'g_{self.org_data["direct_uid"]}',
+                        'uid': str(self.org.direct.uid),
+                        'node_uid': f'g_{self.org.direct.uid}',
                         'node_subject': 'root',
-                        'name': f'{self.org_data["name"]}-无分组成员',
+                        'name': f'{self.org.name}-无分组成员',
                         'remark': '',
                         'accept_user': True,
                     },
                     'headcount': 1,
                     'groups': [],
                     'users': [{
-                        'user_id': 1,
-                        'username': 'admin',
+                        'user_id': 2,
+                        'username': 'owner',
                         'name': ''
                     }],
                 }, {
                     'info': {
                         'group_id': 4,
-                        'uid': self.org_data['manager_uid'],
-                        'node_uid': f'g_{self.org_data["manager_uid"]}',
+                        'uid': str(self.org.manager.uid),
+                        'node_uid': f'g_{self.org.manager.uid}',
                         'node_subject': 'root',
-                        'name': f'{self.org_data["name"]}-管理员',
+                        'name': f'{self.org.name}-管理员',
                         'remark': '',
                         'accept_user': True,
                     },
@@ -278,10 +277,10 @@ class GroupTestCase(TestCase):
                 }, {
                     'info': {
                         'group_id': 5,
-                        'uid': self.org_data['role_uid'],
-                        'node_uid': f'g_{self.org_data["role_uid"]}',
+                        'uid': str(self.org.role.uid),
+                        'node_uid': f'g_{self.org.role.uid}',
                         'node_subject': 'root',
-                        'name': f'{self.org_data["name"]}-角色',
+                        'name': f'{self.org.name}-角色',
                         'remark': '',
                         'accept_user': True,
                     },
@@ -291,10 +290,10 @@ class GroupTestCase(TestCase):
                 }, {
                     'info': {
                         'group_id': 6,
-                        'uid': self.org_data['label_uid'],
-                        'node_uid': f'g_{self.org_data["label_uid"]}',
+                        'uid': str(self.org.label.uid),
+                        'node_uid': f'g_{self.org.label.uid}',
                         'node_subject': 'root',
-                        'name': f'{self.org_data["name"]}-标签',
+                        'name': f'{self.org.name}-标签',
                         'remark': '',
                         'accept_user': True,
                     },
@@ -339,7 +338,7 @@ class GroupTestCase(TestCase):
                         'headcount': 1,
                         'groups': [],
                         'users': [{
-                            'user_id': 2,
+                            'user_id': 3,
                             'username': 'employee',
                             'name': ''
                         }]
@@ -504,14 +503,14 @@ class GroupTestCase(TestCase):
         employee, _ = User.objects.get_or_create(username='employee')
         self.employee = self.login_as(employee)
 
-        res = self.employee.json_post(reverse('siteapi:group_child_group', args=(self.org_data['group_uid'], )),
+        res = self.employee.json_post(reverse('siteapi:group_child_group', args=(self.org.group.uid, )),
                                       data={'name': 'new'})
         self.assertEqual(res.status_code, 403)
 
-        perm, _ = Perm.objects.get_or_create(subject=self.org, scope='category', action='create')
+        perm, _ = Perm.objects.get_or_create(subject=self.org.oid, scope='category', action='create')
         UserPerm.get(employee, perm).permit()
 
-        res = self.employee.json_post(reverse('siteapi:group_child_group', args=(self.org_data['group_uid'], )),
+        res = self.employee.json_post(reverse('siteapi:group_child_group', args=(self.org.group.uid, )),
                                       data={'name': 'new'})
         self.assertEqual(res.status_code, 201)
 
@@ -580,7 +579,7 @@ class GroupTestCase(TestCase):
             None,
             'results': [{
                 'user_id':
-                2,
+                3,
                 'hiredate':
                 None,
                 'last_active_time':
@@ -688,8 +687,8 @@ class GroupTestCase(TestCase):
     def test_manager_group(self):
         org = self.client.json_post(reverse('siteapi:org_create'), data={'name': 'org'}).json()
 
-        Group.objects.create(uid='n1', parent=self.root)
-        Group.objects.create(uid='n2', parent=self.root)
+        Group.objects.create(uid='n1', parent=self.org.group)
+        Group.objects.create(uid='n2', parent=self.org.group)
         perm1 = Perm.objects.create(subject='system', scope='demo', action='access')
         perm2 = Perm.objects.create(subject='system', scope='demo', action='admin')
         res = self.client.json_post(reverse('siteapi:group_child_group', args=(org['manager_uid'], )),
@@ -786,7 +785,7 @@ class GroupTestCase(TestCase):
                 'node_scope': [],
                 'user_scope': [],
                 'users': [{
-                    'user_id': 2,
+                    'user_id': 3,
                     'username': 'employee',
                     'name': ''
                 }]
@@ -849,7 +848,7 @@ class GroupTestCase(TestCase):
     #     self.assertEqual(expect, res.json())
 
     def test_group_user_search(self):
-        role_group = Group.valid_objects.create(uid='group_3', name='group_3', parent=self.root, accept_user=False)
+        role_group = Group.valid_objects.create(uid='group_3', name='group_3', parent=self.org.group, accept_user=False)
         role_3 = Group.valid_objects.create(uid='role_3', name='role_3', parent=role_group, order_no=3)
         user = User.create_user('zhangsan', 'zhangsan')
         user.name = '张三'
@@ -883,9 +882,9 @@ class GroupTestCase(TestCase):
         user4.last_active_time = '2019-08-01T00:00:00+08:00'
         user4.save()
         GroupMember.valid_objects.create(user=user4, owner=role_3)
-        test_list = [{'email':'12341234'}, {'name':'张'}, {'username':'li'}, {'mobile':'12341234'}, \
-            {'before_created':'2019-06-01T00:00:00+08:00'}, {'after_created':'2019-06-01T00:00:00+08:00'}, \
-                {'before_last_active_time':'2019-03-01T00:00:00+08:00'}, \
+        test_list = [{'email':'12341234'}, {'name':'张'}, {'username':'li'}, {'mobile':'12341234'},
+            {'before_created':'2019-06-01T00:00:00+08:00'}, {'after_created':'2019-06-01T00:00:00+08:00'},
+                {'before_last_active_time':'2019-03-01T00:00:00+08:00'},
                     {'after_last_active_time':'2019-03-01T00:00:00+08:00'}]
         result_list = []
         for test in test_list:

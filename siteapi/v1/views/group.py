@@ -24,6 +24,7 @@ from oneid_meta.models import Group, GroupMember, User, Org
 from oneid.permissions import (
     IsAdminUser,
     IsOrgOwnerOf,
+    IsManagerOf,
     IsManagerUser,
     IsNodeManager,
     NodeManagerReadable,
@@ -117,6 +118,8 @@ class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             raise NotFound
 
         org = self.group.org
+        if not org:
+            return []
 
         read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | NodeManagerReadable)]
         write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsNodeManager)]
@@ -226,6 +229,8 @@ class GroupChildGroupAPIView(
             raise NotFound
 
         org = self.group.org
+        if not org:
+            return []
 
         read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | NodeManagerReadable)]
         write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsNodeManager)]
@@ -346,24 +351,23 @@ class ManagerGroupListAPIView(generics.RetrieveAPIView):
     '''
     get manager group in list
     '''
-    permission_classes = [IsAuthenticated & IsAdminUser]
 
     serializer_class = ManagerGroupListSerializer
 
-    def get_object(self, **kwargs):
-        '''
-        get `manager` group
-        '''
-        group = Group.valid_objects.filter(uid=kwargs['uid']).first()
-        if not group:
+    def get_permissions(self):
+        self.group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not self.group:
             raise NotFound
-        return group
+
+        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org))]
+
+        return [perm() for perm in permission_classes]
 
     def get(self, request, *args, **kwargs):
         '''
         获取所有子管理员组
         '''
-        instance = self.get_object(**kwargs)
+        instance = self.group
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -378,26 +382,32 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (IsManagerUser | IsAdminUser)]
-    write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_permissions(self):
         '''
         读写权限
         '''
+        self.group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not self.group:
+            raise NotFound
+
+        org = self.group.org
+        if not org:
+            return []
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsManagerOf(org))]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsNodeManager)]
+
         if self.request.method in SAFE_METHODS:
-            return [perm() for perm in self.read_permission_classes]
-        return [perm() for perm in self.write_permission_classes]
+            return [perm() for perm in read_permission_classes]
+        return [perm() for perm in write_permission_classes]
 
     def get_object(self):
         '''
         find group
         '''
-        group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
-        if not group:
-            raise NotFound
-        self.check_object_permissions(self.request, group)
-        return group
+        self.check_object_permissions(self.request, self.group)
+        return self.group
 
     def get_groups(self):
         '''

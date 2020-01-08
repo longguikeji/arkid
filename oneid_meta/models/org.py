@@ -115,8 +115,10 @@ class Org(BaseModel):
         from oneid_meta.models import GroupMember, DeptMember
 
         for gm in GroupMember.valid_objects.filter(user=user):
-            if gm.owner.org.uuid == self.uuid:
+            org = gm.owner.org
+            if org and org.uuid == self.uuid:
                 gm.delete()
         for dm in DeptMember.valid_objects.filter(user=user):
-            if dm.owner.org.uuid == self.uuid:
+            org = dm.owner.org
+            if org and org.uuid == self.uuid:
                 dm.delete()

@@ -173,49 +173,49 @@ class TreeNode():
 
     @property
     def is_org_dept(self):
-        org = self.org # TODO@saas: Normalization of nodes, remove None
+        org = self.org
         if org:
-            return self.uid == self.org.dept.uid
+            return self.uid == org.dept.uid
         else:
             return False
 
     @property
     def is_org_group(self):
-        org = self.org # TODO@saas: Normalization of nodes, remove None
+        org = self.org
         if org:
-            return self.uid == self.org.group.uid
+            return self.uid == org.group.uid
         else:
             return False
 
     @property
     def is_org_direct(self):
-        org = self.org # TODO@saas: Normalization of nodes, remove None
+        org = self.org
         if org:
-            return self.uid == self.org.direct.uid
+            return self.uid == org.direct.uid
         else:
             return False
 
     @property
     def is_org_manager(self):
-        org = self.org # TODO@saas: Normalization of nodes, remove None
+        org = self.org
         if org:
-            return self.uid == self.org.manager.uid
+            return self.uid == org.manager.uid
         else:
             return False
 
     @property
     def is_org_role(self):
-        org = self.org # TODO@saas: Normalization of nodes, remove None
+        org = self.org
         if org:
-            return self.uid == self.org.role.uid
+            return self.uid == org.role.uid
         else:
             return False
 
     @property
     def is_org_label(self):
-        org = self.org # TODO@saas: Normalization of nodes, remove None
+        org = self.org
         if org:
-            return self.uid == self.org.direct.uid
+            return self.uid == org.direct.uid
         else:
             return False
 
@@ -226,6 +226,8 @@ class TreeNode():
         '''
         from oneid_meta.models import Org
 
+        if self.uid == 'root':
+            return None
         try:
             if not self.is_org:
                 return self.parent.org
@@ -352,7 +354,11 @@ class TreeNode():
         if user.is_admin:
             return True
         upstream_uids = set(self.upstream_uids)
-        for manager_group in user.org_manager_groups(self.org):
+
+        org = self.org
+        if not org:
+            return False
+        for manager_group in user.org_manager_groups(org):
             if manager_group.scope_subject == 2:    # 指定节点、人
                 if upstream_uids & set(manager_group.nodes):
                     return True
