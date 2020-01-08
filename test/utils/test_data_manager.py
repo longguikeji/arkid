@@ -93,12 +93,13 @@ class SqliteToSqlManager:
         self.conn = sqlite3.connect(BASE_DIR + '/test/data/unittest.sqlite3')
         self.cur = self.conn.cursor()
 
-    def write_sql_to_test_db(self):    # pylint: disable=no-self-use
+    def write_sql_to_test_db(self):
         '''sql写入测试数据库
         '''
         try:
-            self.cur.execute('DELETE FROM sqlite_sequence')
-            self.conn.commit()
+            for table in TABLE_NAMES:
+                self.cur.execute('DELETE FROM %s' % table)
+                self.cur.execute('DELETE FROM sqlite_sequence WHERE name = "%s";' % table)
         except Exception as err:    # pylint: disable=broad-except
             log.info(err)
 
@@ -125,7 +126,7 @@ class DBManager:
         self.conn = sqlite3.connect(BASE_DIR + '/db/db.sqlite3')
         self.cur = self.conn.cursor()
 
-    def load_test_db(self):    # pylint: disable=no-self-use
+    def load_test_db(self):
         '''
         将测试数据放入项目操作数据库文件夹进行修改
         '''

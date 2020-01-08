@@ -22,6 +22,14 @@ def maintain_entries(apps, schema_editor):
         routing_key='sql_ldap',
     )
 
+    PeriodicTask.objects.get_or_create(
+        name='dingtalk_entry',
+        interval=interval_10min,
+        task='tasksapp.task.sync_ding',
+        queue='sql_ding',
+        routing_key='sql_ding',
+    )
+
 
 class Migration(migrations.Migration):
 

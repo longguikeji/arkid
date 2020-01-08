@@ -316,3 +316,5 @@ if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
 
 UPLOADFILES_PATH = BASE_DIR + '/upload/'
+
+DINGDING_APP_VERSION = 2
