@@ -59,22 +59,22 @@ urlpatterns = [
         perm_views.UserPermDetailView.as_view(),
         name='user_perm_detail'),
     # node
-    url(r'^node/(?P<uid>[\w|-]+)/list/$', node_views.NodeListAPIView.as_view(), name='node_list'),
+    # url(r'^node/(?P<uid>[\w|-]+)/list/$', node_views.NodeListAPIView.as_view(), name='node_list'), TODO@saas
     url(r'^node/(?P<uid>[\w|-]+)/$', node_views.NodeDetailAPIView.as_view(), name='node_detail'),
     url(r'^node/(?P<uid>[\w|-]+)/tree/$', node_views.ManagerNodeTreeAPIView.as_view(), name='node_tree'),
     url(r'^node/(?P<uid>[\w|-]+)/node/$', node_views.NodeChildNodeAPIView.as_view(), name='node_child_node'),
     url(r'^node/(?P<uid>[\w|-]+)/user/$', node_views.NodeChildUserAPIView.as_view(), name='node_child_user'),
     # group
-    url(r'^group/$', group_views.GroupListAPIView.as_view(), name='group_list'),
+    # url(r'^group/$', group_views.GroupListAPIView.as_view(), name='group_list'), TODO@saas
     url(r'^group/(?P<uid>[\w|-]+)/$', group_views.GroupDetailAPIView.as_view(), name='group_detail'),
-    url(r'^group/(?P<uid>[\w|-]+)/list/$', group_views.GroupScopeListAPIView.as_view(), name='group_scope_list'),
+    # url(r'^group/(?P<uid>[\w|-]+)/list/$', group_views.GroupScopeListAPIView.as_view(), name='group_scope_list'), TODO@saas
     url(r'^group/(?P<uid>[\w|-]+)/tree/$', group_views.ManagerGroupTreeAPIView.as_view(), name='group_tree'),
     url(r'^group/(?P<uid>[\w|-]+)/group/$', group_views.GroupChildGroupAPIView.as_view(), name='group_child_group'),
     url(r'^group/(?P<uid>[\w|-]+)/user/$', group_views.GroupChildUserAPIView.as_view(), name='group_child_user'),
     # dept
-    url(r'^dept/$', dept_views.DeptListAPIView.as_view(), name='dept_list'),
+    # url(r'^dept/$', dept_views.DeptListAPIView.as_view(), name='dept_list'), TODO@saas
     url(r'^dept/(?P<uid>[\w|-]+)/$', dept_views.DeptDetailAPIView.as_view(), name='dept_detail'),
-    url(r'^dept/(?P<uid>[\w|-]+)/list/$', dept_views.DeptScopeListAPIView.as_view(), name='dept_scope_list'),
+    # url(r'^dept/(?P<uid>[\w|-]+)/list/$', dept_views.DeptScopeListAPIView.as_view(), name='dept_scope_list'), TODO@saas
     url(r'^dept/(?P<uid>[\w|-]+)/tree/$', dept_views.ManagerDeptTreeAPIView.as_view(), name='dept_tree'),
     url(r'^dept/(?P<uid>[\w|-]+)/dept/$', dept_views.DeptChildDeptAPIView.as_view(), name='dept_child_dept'),
     url(r'^dept/(?P<uid>[\w|-]+)/user/$', dept_views.DeptChildUserAPIView.as_view(), name='dept_child_user'),

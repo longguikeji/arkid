@@ -116,8 +116,10 @@ class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         if not self.group:
             raise NotFound
 
-        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | NodeManagerReadable)]
-        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | IsNodeManager)]
+        org = self.group.org
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsNodeManager)]
 
         if self.request.method in SAFE_METHODS:
             return [perm() for perm in read_permission_classes]
@@ -210,7 +212,8 @@ class GroupChildGroupAPIView(
         '''
         管理员组下的子管理员组用专用View
         '''
-        if Org.valid_objects.select_related('manager').filter(manager__uid=kwargs['uid']).exists() and request.method == 'GET':
+        if Org.valid_objects.select_related('manager').filter(
+                manager__uid=kwargs['uid']).exists() and request.method == 'GET':
             return ManagerGroupListAPIView().dispatch(request, *args, **kwargs)
         return super().dispatch(request, *args, **kwargs)
 
@@ -222,15 +225,17 @@ class GroupChildGroupAPIView(
         if not self.group:
             raise NotFound
 
-        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | NodeManagerReadable)]
-        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | IsNodeManager)]
+        org = self.group.org
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsNodeManager)]
         create_category_permission_classes = [
-            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.group.org) | CustomPerm('system_category_create'))
+            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | CustomPerm(f'{org.oid}_category_create'))
         ]
 
         if self.request.method in SAFE_METHODS:
             permissions = read_permission_classes
-        elif self.kwargs['uid'] == 'intra' and self.request.method == 'POST':    # 新建大类 TODO@saas
+        elif self.group.is_org and self.request.method == 'POST':
             permissions = create_category_permission_classes
         else:
             permissions = write_permission_classes
@@ -278,7 +283,7 @@ class GroupChildGroupAPIView(
         child_group = cli.create_group(group_data)
         cli.add_group_to_group(child_group, parent_group)
 
-        if parent_group.uid == 'intra':
+        if parent_group.is_org:
             self._auto_create_manager_group(request, child_group)
         return Response(GroupDetailSerializer(child_group).data, status=status.HTTP_201_CREATED)
 
@@ -333,8 +338,7 @@ class GroupChildGroupAPIView(
             }
         }
         manager_group = cli.create_group(data)
-        parent, _ = Group.valid_objects.get_or_create(uid='manager')
-        # cli.add_group_to_group(manager_group, child_group.org.manager) TODO@saas with category
+        cli.add_group_to_group(manager_group, child_group.org.manager)
         cli.add_users_to_group([request.user], manager_group)
 
 

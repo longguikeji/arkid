@@ -191,10 +191,6 @@ class OrgTestCase(TestCase):
 
         self.set_client(self.login_as(owner))
         org = self.create_org({'name': '组织1'}).json()
-        self.unset_client()
-
-        dept = org['dept_uid']
-        dept_a = self.create_dept(dept, 'Dept A').json()['uid']
 
         grp = org['group_uid']
         grptype_a = self.create_group(grp, 'Type A').json()['uid']
@@ -212,6 +208,11 @@ class OrgTestCase(TestCase):
 
         label = org['label_uid']
         label_a = self.create_group(label, 'Label A').json()['uid']
+
+        self.unset_client()
+
+        dept = org['dept_uid']
+        dept_a = self.create_dept(dept, 'Dept A').json()['uid']    # TODO@saas unset_client here
 
         self.create_user(['root'], [dept_a], 'user0')
         self.create_user(['root', grp_a_a], ['root'], 'user1')
