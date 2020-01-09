@@ -47,6 +47,11 @@ class NodeVisibilityScope(models.Model):
             return self.member_cls.valid_objects.filter(user=user, owner__uid__in=node_uids).exists()
 
         if self.visibility == 4:
+            if self.org:
+                if self.org not in user.organizations:
+                    return False
+                self.node_scope = (uid for uid in self.user_scope if self.retrieve_node(uid).org.uuid == self.org.uuid)
+
             if user.username in self.user_scope:    # pylint: disable=no-member, unsupported-membership-test
                 return True
             if self.member_cls.valid_objects.filter(user=user, owner__uid__in=self.node_scope).exists():    # pylint: disable=no-member
