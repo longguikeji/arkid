@@ -212,26 +212,31 @@ class DeptChildDeptAPIView(
     '''
     serializer_class = DeptListSerializer
 
-    read_permission_classes = [IsAuthenticated & (NodeManagerReadable | IsManagerUser | IsAdminUser)]
-    write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
-
     def get_object(self):
         '''
         find dept
         '''
-        dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
-        if not dept:
-            raise NotFound
-        self.check_object_permissions(self.request, dept)
-        return dept
+        self.check_object_permissions(self.request, self.dept)
+        return self.dept
 
     def get_permissions(self):
         '''
         读写权限
         '''
+        self.dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not self.dept:
+            raise NotFound
+
+        org = self.dept.org
+        if not org:
+            return []
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsNodeManager)]
+
         if self.request.method in SAFE_METHODS:
-            return [perm() for perm in self.read_permission_classes]
-        return [perm() for perm in self.write_permission_classes]
+            return [perm() for perm in read_permission_classes]
+        return [perm() for perm in write_permission_classes]
 
     def get(self, request, *args, **kwargs):
         '''
@@ -303,26 +308,31 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
-    write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
-
     def get_permissions(self):
         '''
         读写权限
         '''
+        self.dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not self.dept:
+            raise NotFound
+
+        org = self.dept.org
+        if not org:
+            return []
+
+        read_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser | IsOrgOwnerOf(org))]
+        write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser | IsOrgOwnerOf(org))]
+
         if self.request.method in SAFE_METHODS:
-            return [perm() for perm in self.read_permission_classes]
-        return [perm() for perm in self.write_permission_classes]
+            return [perm() for perm in read_permission_classes]
+        return [perm() for perm in write_permission_classes]
 
     def get_object(self):
         '''
         find dept
         '''
-        dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
-        if not dept:
-            raise NotFound
-        self.check_object_permissions(self.request, dept)
-        return dept
+        self.check_object_permissions(self.request, self.dept)
+        return self.dept
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_object().users
