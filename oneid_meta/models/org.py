@@ -76,6 +76,18 @@ class Org(BaseModel):
         role = Group.valid_objects.create(uid=uuid4(), name=f'{name}-角色', parent=group)
         label = Group.valid_objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
 
+        group.top = group.uid
+        direct.top = direct.uid
+        manager.top = manager.uid
+        role.top = role.uid
+        label.top = label.uid
+
+        group.save()
+        direct.save()
+        manager.save()
+        role.save()
+        label.save()
+
         GroupMember.valid_objects.create(user=owner, owner=direct)
 
         kw = {

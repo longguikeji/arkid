@@ -16,7 +16,7 @@ class NodeVisibilityScope(models.Model):
         abstract = True
 
     VISIBILITY_SUBJECT = (    # 此处`对...可见`，为`对...开放`的意思，即使判定不可见，最终也有可能可以看到
-        (1, '所有人可见'), # 同一组织内所有人
+        (1, '所有人可见'),    # 同一组织内所有人
         (2, '节点成员可见'),
         (3, '节点成员及其下属节点均可见'),
         (4, '只对指定人、节点可见'),
@@ -26,7 +26,7 @@ class NodeVisibilityScope(models.Model):
     node_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定节点node_uids')
     user_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定人usernames')
 
-    def is_open_to_employee(self, user): # TODO@saas: return self.node.org in user.orgs
+    def is_open_to_employee(self, user):    # TODO@saas: return self.node.org in user.orgs
         '''
         对user是否开放，由自身性质决定
         TODO: 优化
@@ -226,19 +226,15 @@ class TreeNode():
         '''
         from oneid_meta.models import Org
 
-        if self.uid == 'root':
+        if self.is_root:
             return None
-        try:
-            if not self.is_org:
-                return self.parent.org
-            elif self.is_group:
-                return Org.valid_objects.filter(group=self).first()
-            elif self.is_dept:
-                return Org.valid_objects.filter(dept=self).first()
-            else:
-                return None
-        except AttributeError:
-            return None
+        elif not self.is_org:
+            return self.parent.org
+        elif self.is_group:
+            return Org.valid_objects.filter(group=self).first()
+        elif self.is_dept:
+            return Org.valid_objects.filter(dept=self).first()
+        return None
 
     @property
     def parent_name(self):

@@ -45,6 +45,16 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         节点类型
         Group中定义为范围顶点的uid
         '''
+        if Org.valid_objects.filter(group=self):
+            return 'org'
+        elif Org.valid_objects.filter(role__uid=self.top):
+            return 'role'
+        elif Org.valid_objects.filter(manager__uid=self.top):
+            return 'manager'
+        elif Org.valid_objects.filter(label__uid=self.top):
+            return 'label'
+        elif Org.valid_objects.filter(direct__uid=self.top):
+            return 'direct'
         return self.top
 
     @property

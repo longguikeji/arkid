@@ -25,11 +25,13 @@ class GroupTestCase(TestCase):
     def setUp(self):
         super(GroupTestCase, self).setUp()
 
-
         owner = User.create_user(username='owner', password='owner')
         self.org = Org.create(name='org', owner=owner)
 
-        role_group = Group.valid_objects.create(uid='role_group_1', name='role_group_1', parent=self.org.group, accept_user=False)
+        role_group = Group.valid_objects.create(uid='role_group_1',
+                                                name='role_group_1',
+                                                parent=self.org.group,
+                                                accept_user=False)
         role_1 = Group.valid_objects.create(uid='role_1', name='role_1', parent=role_group, order_no=2)
         Group.valid_objects.create(uid='role_2', name='role_2', parent=role_group, order_no=1)
 
@@ -132,7 +134,7 @@ class GroupTestCase(TestCase):
                     'group_id': 2,
                     'uid': str(self.org.group.uid),
                     'node_uid': f'g_{self.org.group.uid}',
-                    'node_subject': 'root',
+                    'node_subject': 'org',
                     'name': self.org.name,
                     'remark': '',
                     'accept_user': True,
@@ -142,7 +144,7 @@ class GroupTestCase(TestCase):
                         'group_id': 3,
                         'uid': str(self.org.direct.uid),
                         'node_uid': f'g_{self.org.direct.uid}',
-                        'node_subject': 'root',
+                        'node_subject': 'direct',
                         'name': f'{self.org.name}-无分组成员',
                         'remark': '',
                         'accept_user': True,
@@ -153,7 +155,7 @@ class GroupTestCase(TestCase):
                         'group_id': 4,
                         'uid': str(self.org.manager.uid),
                         'node_uid': f'g_{self.org.manager.uid}',
-                        'node_subject': 'root',
+                        'node_subject': 'manager',
                         'name': f'{self.org.name}-管理员',
                         'remark': '',
                         'accept_user': True,
@@ -164,7 +166,7 @@ class GroupTestCase(TestCase):
                         'group_id': 5,
                         'uid': str(self.org.role.uid),
                         'node_uid': f'g_{self.org.role.uid}',
-                        'node_subject': 'root',
+                        'node_subject': 'role',
                         'name': f'{self.org.name}-角色',
                         'remark': '',
                         'accept_user': True,
@@ -175,7 +177,7 @@ class GroupTestCase(TestCase):
                         'group_id': 6,
                         'uid': str(self.org.label.uid),
                         'node_uid': f'g_{self.org.label.uid}',
-                        'node_subject': 'root',
+                        'node_subject': 'label',
                         'name': f'{self.org.name}-标签',
                         'remark': '',
                         'accept_user': True,
@@ -237,7 +239,7 @@ class GroupTestCase(TestCase):
                     'group_id': 2,
                     'uid': str(self.org.group.uid),
                     'node_uid': f'g_{self.org.group.uid}',
-                    'node_subject': 'root',
+                    'node_subject': 'org',
                     'name': self.org.name,
                     'remark': '',
                     'accept_user': True,
@@ -249,7 +251,7 @@ class GroupTestCase(TestCase):
                         'group_id': 3,
                         'uid': str(self.org.direct.uid),
                         'node_uid': f'g_{self.org.direct.uid}',
-                        'node_subject': 'root',
+                        'node_subject': 'direct',
                         'name': f'{self.org.name}-无分组成员',
                         'remark': '',
                         'accept_user': True,
@@ -266,7 +268,7 @@ class GroupTestCase(TestCase):
                         'group_id': 4,
                         'uid': str(self.org.manager.uid),
                         'node_uid': f'g_{self.org.manager.uid}',
-                        'node_subject': 'root',
+                        'node_subject': 'manager',
                         'name': f'{self.org.name}-管理员',
                         'remark': '',
                         'accept_user': True,
@@ -279,7 +281,7 @@ class GroupTestCase(TestCase):
                         'group_id': 5,
                         'uid': str(self.org.role.uid),
                         'node_uid': f'g_{self.org.role.uid}',
-                        'node_subject': 'root',
+                        'node_subject': 'role',
                         'name': f'{self.org.name}-角色',
                         'remark': '',
                         'accept_user': True,
@@ -292,7 +294,7 @@ class GroupTestCase(TestCase):
                         'group_id': 6,
                         'uid': str(self.org.label.uid),
                         'node_uid': f'g_{self.org.label.uid}',
-                        'node_subject': 'root',
+                        'node_subject': 'label',
                         'name': f'{self.org.name}-标签',
                         'remark': '',
                         'accept_user': True,
@@ -882,9 +884,9 @@ class GroupTestCase(TestCase):
         user4.last_active_time = '2019-08-01T00:00:00+08:00'
         user4.save()
         GroupMember.valid_objects.create(user=user4, owner=role_3)
-        test_list = [{'email':'12341234'}, {'name':'张'}, {'username':'li'}, {'mobile':'12341234'},
-            {'before_created':'2019-06-01T00:00:00+08:00'}, {'after_created':'2019-06-01T00:00:00+08:00'},
-                {'before_last_active_time':'2019-03-01T00:00:00+08:00'},
+        test_list = [{'email':'12341234'}, {'name':'张'}, {'username':'li'}, {'mobile':'12341234'}, \
+            {'before_created':'2019-06-01T00:00:00+08:00'}, {'after_created':'2019-06-01T00:00:00+08:00'}, \
+                {'before_last_active_time':'2019-03-01T00:00:00+08:00'}, \
                     {'after_last_active_time':'2019-03-01T00:00:00+08:00'}]
         result_list = []
         for test in test_list:

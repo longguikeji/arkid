@@ -31,7 +31,6 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
     '''
     RDB数据操作接口
     '''
-
     def create_user(self, user_info):
         '''
         创建用户
@@ -188,7 +187,7 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         if group == parent_group or parent_group.if_belong_to_group(group, recursive=True):
             raise ValidationError({'node': ['deadlock']})
         group.parent = parent_group
-        if parent_group.uid == 'intra':
+        if parent_group.is_org:
             group.top = group.uid
         else:
             group.top = parent_group.top
