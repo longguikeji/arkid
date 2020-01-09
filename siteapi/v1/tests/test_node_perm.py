@@ -46,6 +46,9 @@ class DeptPermTestCase(TestCase):
         res = self.anonymous.get(reverse('siteapi:ucenter_node_detail', args=('d_l11', )))
         self.assertEqual(res.status_code, 401)
         res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=('d_l11', )))
+        self.assertEqual(res.status_code, 404)
+        GroupMember.valid_objects.create(user=User.valid_objects.get(username='employee'), owner=self.org.direct)
+        res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=('d_l11', )))
         self.assertEqual(res.status_code, 200)
 
         res = self.employee.get(reverse('siteapi:dept_tree', args=('l11', )))

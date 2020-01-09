@@ -26,13 +26,16 @@ class NodeVisibilityScope(models.Model):
     node_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定节点node_uids')
     user_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定人usernames')
 
-    def is_open_to_employee(self, user):    # TODO@saas: return self.node.org in user.orgs
+    def is_open_to_employee(self, user):
         '''
         对user是否开放，由自身性质决定
         TODO: 优化
         '''
         if self.visibility == 1:
+            if self.org:
+                return self.org in user.organizations
             return True
+
         if self.visibility == 5:
             return False
 
@@ -173,51 +176,33 @@ class TreeNode():
 
     @property
     def is_org_dept(self):
-        org = self.org
-        if org:
-            return self.uid == org.dept.uid
-        else:
-            return False
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(dept=self).exists()
 
     @property
     def is_org_group(self):
-        org = self.org
-        if org:
-            return self.uid == org.group.uid
-        else:
-            return False
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(group=self).exists()
 
     @property
     def is_org_direct(self):
-        org = self.org
-        if org:
-            return self.uid == org.direct.uid
-        else:
-            return False
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(direct=self).exists()
 
     @property
     def is_org_manager(self):
-        org = self.org
-        if org:
-            return self.uid == org.manager.uid
-        else:
-            return False
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(manager=self).exists()
 
     @property
     def is_org_role(self):
-        org = self.org
-        if org:
-            return self.uid == org.role.uid
-        else:
-            return False
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(role=self).exists()
 
     @property
     def is_org_label(self):
-        org = self.org
-        if org:
-            return self.uid == org.direct.uid
-        else:
-            return False
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(label=self).exists()
 
     @property
     def org(self):
@@ -225,7 +210,6 @@ class TreeNode():
         所属组织
         '''
         from oneid_meta.models import Org
-
         if self.is_root:
             return None
         elif not self.is_org:
