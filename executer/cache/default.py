@@ -58,7 +58,7 @@ class CacheExecuter(Executer):
         key = f'oneid:node:{dept.node_uid}:upstream'
         cache.delete(key)
 
-    def create_group(self, group_info):
+    def create_group(self, group_info, org):
         '''
         目前不影响缓存
         '''

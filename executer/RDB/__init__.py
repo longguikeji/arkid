@@ -138,7 +138,7 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             if target:
                 target.kill()
 
-    def create_dept(self, dept_info):
+    def create_dept(self, dept_info, org):
         '''
         创建部门
         '''
@@ -164,7 +164,7 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         dept.order_no = Dept.get_max_order_no(parent=parent_dept) + 1
         dept.save(update_fields=['order_no', 'parent'])
 
-    def create_group(self, group_info):
+    def create_group(self, group_info, org):
         '''
         创建组
         '''

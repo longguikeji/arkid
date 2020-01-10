@@ -149,6 +149,7 @@ urlpatterns = [
     url(r'^ucenter/orgs/owned/$', org_views.UcenterOwnOrgListAPIView.as_view(), name='ucenter_own_org_list'),
     # ucenter app
     url(r'^ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'),
+    # url(r'^org/(?P<oid>[\w|-]+)/ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'), # TODO@saas
     # ucenter user
     url(r'^ucenter/user/(?P<username>[\w]+)/$',
         user_views.UcenterUserDetailAPIView.as_view(),
@@ -172,8 +173,9 @@ urlpatterns = [
         NativeFieldDetailAPIView.as_view(),
         name='native_field_detail'),
     # log
-    url(r'^org/(?P<oid>[\w|-]+)/log/$', log_views.LogListAPIView.as_view(), name='log_list'),
-    url(r'^org/(?P<oid>[\w|-]+)/log/(?P<uuid>[\w|-]+)', log_views.LogDetailAPIView.as_view(), name='log_detail'),
+    url(r'^log/$', log_views.LogListAPIView.as_view(), name='log_list_all'),
+    url(r'^org/(?P<oid>[\w|-]+)/log/$', log_views.OrgLogListAPIView.as_view(), name='log_list'),
+    url(r'^log/(?P<uuid>[\w|-]+)', log_views.LogDetailAPIView.as_view(), name='log_detail'),
     # meta
     url(r'^meta/$', MetaConfigAPIView.as_view(), name='meta'),
     url(r'^meta/node/$', node_views.MetaNodeAPIView.as_view(), name='meta_node'),

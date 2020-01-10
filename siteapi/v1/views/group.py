@@ -228,14 +228,14 @@ class GroupChildGroupAPIView(
         if not self.group:
             raise NotFound
 
-        org = self.group.org
-        if not org:
+        self.org = self.group.org
+        if not self.org:
             return []
 
-        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | NodeManagerReadable)]
-        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsNodeManager)]
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsNodeManager)]
         create_category_permission_classes = [
-            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | CustomPerm(f'{org.oid}_category_create'))
+            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | CustomPerm(f'{self.org.oid}_category_create'))
         ]
 
         if self.request.method in SAFE_METHODS:
@@ -285,7 +285,7 @@ class GroupChildGroupAPIView(
 
         cli = CLI()
         group_data.update(parent_uid=self.kwargs['uid'])
-        child_group = cli.create_group(group_data)
+        child_group = cli.create_group(group_data, self.org)
         cli.add_group_to_group(child_group, parent_group)
 
         if parent_group.is_org:
@@ -342,7 +342,7 @@ class GroupChildGroupAPIView(
                 'scope_subject': 2,
             }
         }
-        manager_group = cli.create_group(data)
+        manager_group = cli.create_group(data, child_group.org)
         cli.add_group_to_group(manager_group, child_group.org.manager)
         cli.add_users_to_group([request.user], manager_group)
 
@@ -381,7 +381,6 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
     '''
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
-
 
     def get_permissions(self):
         '''

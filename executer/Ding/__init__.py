@@ -65,7 +65,7 @@ class DingExecuter(Executer):
             if user.ding_user:
                 self.user_manager.delete_user(user.ding_user.uid)
 
-    def create_dept(self, dept_info):
+    def create_dept(self, dept_info, org):
         """
         创建部门
         """
@@ -204,7 +204,7 @@ class DingExecuter(Executer):
                     depts.append(dept.ding_dept.uid)
                     self.user_manager.update_user(ding_user_uid, department=depts)
 
-    def create_group(self, group_info):
+    def create_group(self, group_info, org):
         """
         创建组
         """

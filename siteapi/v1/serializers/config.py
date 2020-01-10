@@ -226,7 +226,7 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
                     'name': company_config_data.get('name_cn', ''),
                     'uid': uid,
                 }
-                child_dept = cli.create_dept(dept_data)
+                child_dept = cli.create_dept(dept_data, parent_dept.org)
                 cli.add_dept_to_dept(child_dept, parent_dept)
             else:
                 company_dept = Dept.valid_objects.filter(parent__uid='root').first()

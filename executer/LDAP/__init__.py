@@ -162,7 +162,7 @@ class LDAPExecuter(Executer):
 
             self.conn.delete(user_dn)
 
-    def create_dept(self, dept_info):
+    def create_dept(self, dept_info, org):
         '''
         创建部门
         '''
@@ -255,7 +255,7 @@ class LDAPExecuter(Executer):
 
         return 'cn={},{}'.format(group.uid, parent_group.dn)
 
-    def create_group(self, group_info):
+    def create_group(self, group_info, org):
         '''
         创建组
         '''
@@ -389,19 +389,16 @@ class LDAPExecuter(Executer):
         调整一批组在父组中的排序
         LDAP中无需维护顺序
         '''
-
     def sort_depts_in_dept(self, depts, parent_dept):
         '''
         调整一批部门在父部门中的排序
         LDAP中无需维护顺序
         '''
-
     def sort_users_in_dept(self, users, dept):
         '''
         调整一批人在部门中的排序
         LDAP中无需维护
         '''
-
     def sort_users_in_group(self, users, group):
         '''
         调整一批人在组中的排序

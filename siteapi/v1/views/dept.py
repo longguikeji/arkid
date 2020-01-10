@@ -227,12 +227,12 @@ class DeptChildDeptAPIView(
         if not self.dept:
             raise NotFound
 
-        org = self.dept.org
-        if not org:
+        self.org = self.dept.org
+        if not self.org:
             return []
 
-        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | NodeManagerReadable)]
-        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsNodeManager)]
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsNodeManager)]
 
         if self.request.method in SAFE_METHODS:
             return [perm() for perm in read_permission_classes]
@@ -260,7 +260,7 @@ class DeptChildDeptAPIView(
             dept_data['uid'] = uid
         dept_data.update(parent_uid=self.kwargs['uid'])
         cli = CLI()
-        child_dept = cli.create_dept(dept_data)
+        child_dept = cli.create_dept(dept_data, self.org)
         cli.add_dept_to_dept(child_dept, parent_dept)
         return Response(DeptDetailSerializer(child_dept).data, status=status.HTTP_201_CREATED)
 
