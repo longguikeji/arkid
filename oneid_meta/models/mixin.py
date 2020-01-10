@@ -147,7 +147,7 @@ class TreeNode():
         '''
         节点UID，在部门和组范围内唯一
         '''
-        return self.NODE_PREFIX + self.uid
+        return self.NODE_PREFIX + str(self.uid)
 
     @property
     def parent_uid(self):

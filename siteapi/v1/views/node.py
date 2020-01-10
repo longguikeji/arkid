@@ -20,14 +20,20 @@ from siteapi.v1.views import (
 )
 from siteapi.v1.serializers.dept import DeptTreeSerializer, DeptSerializer
 from siteapi.v1.serializers.group import GroupTreeSerializer, GroupSerializer
-from oneid.permissions import IsAdminUser, IsManagerUser, NodeEmployeeReadable
+from oneid.permissions import IsAdminUser, IsOrgMember, IsManagerUser, NodeEmployeeReadable
 
 
 class MetaNodeAPIView(APIView):
     '''
     组织结构基本信息 [GET]
     '''
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        from siteapi.v1.views.org import validity_check
+        self.org = validity_check(self.kwargs['oid'])
+
+        permission_classes = [IsAuthenticated & IsOrgMember(self.org)]
+
+        return [perm() for perm in permission_classes]
 
     def get(self, request, *args, **kwargs):    # pylint: disable=unused-argument, no-self-use
         '''
@@ -35,8 +41,8 @@ class MetaNodeAPIView(APIView):
         '''
         data = {}
         if settings.SITE_META.lower() == 'native':
-            custom_nodes = Group.valid_objects.filter(parent__uid='intra').\
-                exclude(uid__in=['role', 'label', 'manager']).order_by('created')
+            custom_nodes = Group.valid_objects.filter(parent=self.org.group).\
+                exclude(uid__in=[self.org.direct.uid, self.org.role.uid, self.org.label.uid, self.org.manager.uid]).order_by('created')
             data = [
                 {
                     'name':
@@ -47,16 +53,24 @@ class MetaNodeAPIView(APIView):
                     None,
                     'nodes': [{
                         'name': '部门',
-                        'node_uid': 'd_root',
+                        'node_uid': self.org.dept.node_uid,
                         'node_subject': 'dept',
                     }, {
+                        'name': '直属成员',
+                        'node_uid': self.org.direct.node_uid,
+                        'node_subject': 'direct',
+                    }, {
                         'name': '角色',
-                        'node_uid': 'g_role',
+                        'node_uid': self.org.role.node_uid,
                         'node_subject': 'role',
                     }, {
                         'name': '标签',
-                        'node_uid': 'g_label',
+                        'node_uid': self.org.label.node_uid,
                         'node_subject': 'label',
+                    }, {
+                        'name': '管理员',
+                        'node_uid': self.org.manager.node_uid,
+                        'node_subject': 'manager',
                     }]
                 },
                 {
@@ -65,7 +79,7 @@ class MetaNodeAPIView(APIView):
                     'slug':
                     'custom',
                     'node_uid':
-                    'g_intra',
+                    self.org.group.node_uid,
                     'nodes': [{
                         'name': node.name,
                         'node_uid': node.node_uid,
@@ -80,7 +94,6 @@ def handle_exception(dispatch):
     '''
     处理异常
     '''
-
     @wraps(dispatch)
     def wrapper(self, request, *args, **kwargs):
         try:
@@ -124,7 +137,6 @@ def abstract_node(dispatch):
     '''
     将group、dept抽象成node
     '''
-
     @wraps(dispatch)
     def wrapper(self, request, *args, **kwargs):
         response = dispatch(self, request, *args, **kwargs)
@@ -138,7 +150,6 @@ class NodeListAPIView(APIView):
     '''
     某节点下所有子孙节点列表，包括该节点自身
     '''
-
     def dispatch(self, request, *args, **kwargs):
         uid = kwargs['uid']
 
@@ -155,7 +166,6 @@ class NodeDetailAPIView(APIView):
     '''
     以管理员身份管理节点
     '''
-
     @abstract_node
     @handle_exception
     def dispatch(self, request, *args, **kwargs):
@@ -272,7 +282,6 @@ class NodeChildNodeAPIView(APIView):
     '''
     某节点的子节点
     '''
-
     @abstract_node
     @handle_exception
     def dispatch(self, request, *args, **kwargs):
@@ -291,7 +300,6 @@ class NodeChildUserAPIView(APIView):
     '''
     节点下属成员
     '''
-
     @abstract_node
     @handle_exception
     def dispatch(self, request, *args, **kwargs):
@@ -310,7 +318,6 @@ class NodePermAPIView(APIView):
     '''
     节点权限
     '''
-
     @abstract_node
     @handle_exception
     def dispatch(self, request, *args, **kwargs):

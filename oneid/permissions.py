@@ -53,7 +53,7 @@ class IsManagerOf():
     def __new__(cls, *args, **kwargs):
         _cls = type('_IsManagerOf', (BasePermission, ), {'args': args})
 
-        def has_permission(self, request ,view):
+        def has_permission(self, request, view):
             return request.user and request.user.is_authenticated and request.user.is_org_manager(*(self.args))
 
         def has_object_permission(self, request, view, _):
@@ -63,6 +63,7 @@ class IsManagerOf():
         setattr(_cls, 'has_object_permission', has_object_permission)
 
         return _cls
+
 
 class IsNotSettledinUser(IsAuthenticated):
     '''
@@ -179,6 +180,22 @@ class IsOrgOwnerOf():
             '''
             org owner
             '''
+            return self.has_permission(request, view)
+
+        setattr(_cls, 'has_permission', has_permission)
+        setattr(_cls, 'has_object_permission', has_object_permission)
+
+        return _cls
+
+
+class IsOrgMember():
+    def __new__(cls, org):
+        _cls = type('_IsOrgMember', (BasePermission, ), {'org': org})
+
+        def has_permission(self, request, view):    # pylint: disable=unused-argument
+            return request.user and request.user.is_authenticated and self.org in request.user.organizations
+
+        def has_object_permission(self, request, view, _):
             return self.has_permission(request, view)
 
         setattr(_cls, 'has_permission', has_permission)
