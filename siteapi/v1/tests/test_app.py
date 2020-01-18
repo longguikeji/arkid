@@ -3,6 +3,7 @@ tests for api about app
 '''
 # pylint: disable=missing-docstring, too-many-lines, attribute-defined-outside-init
 import os
+from uuid import uuid4
 from unittest import mock
 from django.urls import reverse
 from djangosaml2idp.scripts.idpinit import run
@@ -12,6 +13,7 @@ from oneid_meta.models import (
     APP,
     OAuthAPP,
     Perm,
+    Org,
     User,
     UserPerm,
     Dept,
@@ -21,6 +23,77 @@ from oneid_meta.models import (
 )
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+
+class AppTestCase:
+    def __init__(self, id):
+        self.max_app_id = id
+
+    def update(self):
+        self.max_app_id += 1
+
+    def app_1(self):
+        self.update()
+        return {'name': 'demo'}
+
+    def app__1(self):
+        return {'name': 'demo'}
+
+    def app_1_except(self):
+        return {
+            'app_id': self.max_app_id,
+            'uid': 'demo',
+            'name': 'demo',
+            'logo': '',
+            'index': '',
+            'remark': '',
+            'oauth_app': None,
+            'http_app': None,
+            'saml_app': None,
+            'ldap_app': None,
+            'allow_any_user': False,
+            'auth_protocols': [],
+        }
+
+    def app_2(self):
+        self.update()
+        return {
+            'uid': 'test_uid',
+            'name': 'test_name',
+            'remark': 'test_remark',
+            'allow_any_user': True,
+            'oauth_app': {
+                'redirect_uris': 'http://localhost/callback'
+            },
+            'ldap_app': {},
+            'http_app': {},
+        }
+
+    def app_2_except(self):
+        return {
+            'app_id': self.max_app_id,
+            'uid': 'test_uid',
+            'name': 'test_name',
+            'logo': '',
+            'index': '',
+            'remark': 'test_remark',
+            'allow_any_user': True,
+            'oauth_app': {
+                'redirect_uris': 'http://localhost/callback',
+                'client_type': 'confidential',
+                'authorization_grant_type': 'authorization-code',
+                'more_detail': [],
+            },
+            'ldap_app': {
+                'more_detail': []
+            },
+            'http_app': {
+                'more_detail': []
+            },
+            'saml_app': None,
+            'auth_protocols': ['OAuth 2.0', 'LDAP', 'HTTP'],
+        }
+
 
 MAX_APP_ID = 2
 
@@ -119,9 +192,9 @@ class APPTestCase(TestCase):
         run()
         super().setUp()
 
-        org = self.client.json_post(reverse('siteapi:org_create'), data={'name': 'org1'}).json()
-        self.org = org['oid']
-        self.org_data = org
+        owner = User.create_user('owner', 'owner')
+        self.owner = self.login_as(owner)
+        self._owner = owner
 
         employee = User.create_user('employee', 'employee')
         self.employee = self.login_as(employee)
@@ -131,9 +204,10 @@ class APPTestCase(TestCase):
         self.manager = self.login_as(manager)
         self._manager = manager
 
-        self.client.json_post(reverse('siteapi:org_user', args=(self.org, )) + '?username=employee')
+        self.org = Org.create(name='org1', owner=owner)
+        self.owner.json_post(reverse('siteapi:org_user', args=(self.org.oid, )) + '?username=employee')
 
-        group = Group.objects.create(name='test', parent=Group.valid_objects.filter(uid=org['manager_uid']).first())
+        group = Group.objects.create(name='test', parent=self.org.manager)
         ManagerGroup.objects.create(group=group, scope_subject=2, apps=['app', 'demo'])
         GroupMember.objects.create(owner=group, user=manager)
 
@@ -155,19 +229,28 @@ class APPTestCase(TestCase):
         mock_ldap_info.return_value = []
         mock_saml_info.return_value = []
         mock_gen_xml.side_effects = []
-        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_1)
-        self.assertEqual(res.json(), APP_1_EXCEPT)
 
-        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_2)
+        case = AppTestCase(2)
+
+        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=case.app_1())
+        self.assertEqual(res.json(), case.app_1_except())
+
+        res = self.client.delete(reverse('siteapi:app_detail', args=(case.app_1_except()['uid'], )))
+        self.assertEqual(res.status_code, 204)
+
+        res = self.owner.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=case.app_1())
+        self.assertEqual(res.json(), case.app_1_except())
+
+        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=case.app_2())
 
         res = res.json()
         self.assertIn('client_id', res['oauth_app'])
         self.assertIn('client_secret', res['oauth_app'])
         del res['oauth_app']['client_id']
         del res['oauth_app']['client_secret']
-        self.assertEqual(res, APP_2_EXCEPT)
+        self.assertEqual(res, case.app_2_except())
 
-        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org, )),
+        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )),
                                     data={
                                         'uid': 'test_uid',
                                         'name': 'test_name',
@@ -190,7 +273,7 @@ class APPTestCase(TestCase):
 
         self.assertTrue(Perm.valid_objects.filter(uid='app_test_uid_access').exists())
 
-        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_3)
+        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=APP_3)
         self.assertEqual(res.status_code, 201)
         res = res.json()
         self.assertIn('acs', res['saml_app'])
@@ -208,14 +291,14 @@ class APPTestCase(TestCase):
         mock_http_info.return_value = []
         mock_ldap_info.return_value = []
 
-        res = self.employee.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': 'testname'})
+        res = self.employee.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data={'name': 'testname'})
         self.assertEqual(res.status_code, 403)
 
-        perm, _ = Perm.objects.get_or_create(subject=self.org, scope='app', action='create')
+        perm, _ = Perm.objects.get_or_create(subject=self.org.oid, scope='app', action='create')
         user_perm = UserPerm.get(self._employee, perm)
         user_perm.permit()
 
-        res = self.employee.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': 'testname'})
+        res = self.employee.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data={'name': 'testname'})
 
         self.assertEqual(res.status_code, 201)
         self.assertEqual(len(list(self._employee.manager_groups)), 1)
@@ -236,17 +319,19 @@ class APPTestCase(TestCase):
         mock_http_info.return_value = []
         mock_ldap_info.return_value = []
 
-        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_1)
-        res = self.client.json_patch(reverse('siteapi:app_detail', args=(APP_1_EXCEPT['uid'], )),
-                                     data={
-                                         'remark': 'changed',
-                                         'oauth_app': {
-                                             'redirect_uris': 'http://localhost/callback',
-                                         },
-                                         'index': 'index',
-                                         'logo': 'logo',
-                                         'ldap_app': {},
-                                     }).json()
+        case = AppTestCase(2)
+
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=case.app_1())
+        res = self.owner.json_patch(reverse('siteapi:app_detail', args=(case.app_1_except()['uid'], )),
+                                    data={
+                                        'remark': 'changed',
+                                        'oauth_app': {
+                                            'redirect_uris': 'http://localhost/callback',
+                                        },
+                                        'index': 'index',
+                                        'logo': 'logo',
+                                        'ldap_app': {},
+                                    }).json()
         self.assertIn('client_secret', res['oauth_app'])
         self.assertIn('client_id', res['oauth_app'])
         self.assertIn('ldap_app', res)
@@ -254,7 +339,7 @@ class APPTestCase(TestCase):
         del res['oauth_app']['client_id']
         del res['ldap_app']
         expect = {
-            'app_id': MAX_APP_ID + 1,
+            'app_id': case.max_app_id,
             'allow_any_user': False,
             'uid': 'demo',
             'name': 'demo',
@@ -272,23 +357,39 @@ class APPTestCase(TestCase):
             'auth_protocols': ['OAuth 2.0', 'LDAP'],
         }
         self.assertEqual(res, expect)
-        self.assertTrue(OAuthAPP.objects.filter(app__uid=APP_1_EXCEPT['uid']).exists())
+        self.assertTrue(OAuthAPP.objects.filter(app__uid=case.app_1_except()['uid']).exists())
 
-        res = self.client.json_patch(reverse('siteapi:app_detail', args=(APP_1_EXCEPT['uid'], )),
-                                     data={
-                                         'remark': 'changed',
-                                         'oauth_app': None,
-                                         'ldap_app': None,
-                                         'index': 'index',
-                                         'logo': 'logo',
-                                     })
+        res = self.employee.json_patch(reverse('siteapi:app_detail', args=(case.app_1_except()['uid'], )),
+                                       data={
+                                           'remark': 'changed',
+                                           'oauth_app': None,
+                                           'ldap_app': None,
+                                           'index': 'index',
+                                           'logo': 'logo',
+                                       })
+        self.assertEqual(res.status_code, 403)
+
+        group = Group.valid_objects.create(uid=uuid4(), name='patch', parent=self.org.manager)
+        ManagerGroup.valid_objects.create(group=group, scope_subject=2, apps=[case.app_1_except()['uid']])
+        GroupMember.valid_objects.create(owner=group, user=self._employee)
+
+        res = self.employee.json_patch(reverse('siteapi:app_detail', args=(case.app_1_except()['uid'], )),
+                                       data={
+                                           'remark': 'changed',
+                                           'oauth_app': None,
+                                           'ldap_app': None,
+                                           'index': 'index',
+                                           'logo': 'logo',
+                                       })
+
         self.assertIsNone(res.json()['oauth_app'])
         self.assertIsNone(res.json()['ldap_app'])
         self.assertEqual(res.json()['auth_protocols'], [])
 
     def test_update_app_protected(self):
+        case = AppTestCase(2)
 
-        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_2)
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=case.app_2())
         app2 = APP.valid_objects.get(uid='test_uid')
         app2.editable = False
         app2.save()
@@ -296,18 +397,23 @@ class APPTestCase(TestCase):
         self.assertEqual(res.status_code, 405)
 
     def test_delete_app(self):
-        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_1)
-        self.assertTrue(APP.valid_objects.filter(uid=APP_1_EXCEPT['uid']).exists())
+        case = AppTestCase(2)
+
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=case.app_1())
+        self.assertTrue(APP.valid_objects.filter(uid=case.app_1_except()['uid']).exists())
         self.assertTrue(Perm.valid_objects.filter(uid='app_demo_access').exists())
 
-        res = self.client.delete(reverse('siteapi:app_detail', args=(APP_1_EXCEPT['uid'], )))
+        res = self.employee.delete(reverse('siteapi:app_detail', args=(case.app_1_except()['uid'], )))
+        self.assertEqual(res.status_code, 403)
+
+        res = self.owner.delete(reverse('siteapi:app_detail', args=(case.app_1_except()['uid'], )))
         self.assertEqual(res.status_code, 204)
-        self.assertFalse(APP.valid_objects.filter(uid=APP_1_EXCEPT['uid']).exists())
-        self.assertTrue(APP.objects.filter(uid=APP_1_EXCEPT['uid'], is_del=True).exists())
-        self.assertFalse(OAuthAPP.objects.filter(app__uid=APP_1_EXCEPT['uid']).exists())
+        self.assertFalse(APP.valid_objects.filter(uid=case.app_1_except()['uid']).exists())
+        self.assertTrue(APP.objects.filter(uid=case.app_1_except()['uid'], is_del=True).exists())
+        self.assertFalse(OAuthAPP.objects.filter(app__uid=case.app_1_except()['uid']).exists())
         self.assertFalse(Perm.objects.filter(uid='app_demo_access').exists())
 
-        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_2)
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=case.app_2())
         app2 = APP.valid_objects.get(uid='test_uid')
         app2.editable = False
         app2.save()
@@ -315,9 +421,11 @@ class APPTestCase(TestCase):
         self.assertEqual(res.status_code, 405)
 
     def test_app_list(self):
-        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_1)
-        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_2)
-        res = self.client.get(reverse('siteapi:app_list', args=(self.org, )))
+        case = AppTestCase(2)
+
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=case.app_1())
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=case.app_2())
+        res = self.client.get(reverse('siteapi:app_list', args=(self.org.oid, )))
         expect = {    # pylint: disable=unused-variable
             'count':
             2,
@@ -366,16 +474,16 @@ class APPTestCase(TestCase):
                 },
                 'auth_protocols': ['OAuth 2.0'],
             }]
-        }    # only for display
+        }    # only for display TODO@saas check
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json()['count'], MAX_APP_ID + 2 - 1)    # 不包括OneID
+        self.assertEqual(res.json()['count'], case.max_app_id - 1)    # 不包括OneID
         self.assertIn('access_perm', res.json()['results'][0])
 
-        res = self.client.get(reverse('siteapi:app_list', args=(self.org, )), data={'page_size': 1, 'page': 2})
+        res = self.client.get(reverse('siteapi:app_list', args=(self.org.oid, )), data={'page_size': 1, 'page': 2})
         self.assertEqual(res.status_code, 200)
 
     def test_ucenter_app_list(self):
-        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_1)
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=APP_1)
 
         res = self.employee.get(reverse('siteapi:ucenter_app_list'))
         self.assertEqual(res.json()['count'], 0)
@@ -389,10 +497,10 @@ class APPTestCase(TestCase):
     def test_app_perm(self):
         User.objects.get(username='employee')
 
-        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'uid': 'app', 'name': 'app'})
-        res = self.employee.get(reverse('siteapi:app_list', args=(self.org, )))
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data={'uid': 'app', 'name': 'app'})
+        res = self.employee.get(reverse('siteapi:app_list', args=(self.org.oid, )))
         self.assertEqual(res.status_code, 403)
-        res = self.manager.get(reverse('siteapi:app_list', args=(self.org, )))
+        res = self.manager.get(reverse('siteapi:app_list', args=(self.org.oid, )))
         self.assertEqual(res.status_code, 200)
 
         res = self.employee.json_patch(reverse('siteapi:app_detail', args=('app', )), data={'name': 'new'})
@@ -402,16 +510,16 @@ class APPTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
 
     def test_app_list_with(self):
-        self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data=APP_1)
+        self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data=APP_1)
 
-        res = self.employee.get(reverse('siteapi:app_list', args=(self.org, )),
+        res = self.employee.get(reverse('siteapi:app_list', args=(self.org.oid, )),
                                 data={
                                     'node_uid': 'd_root',
                                     'owner_access': True
                                 })
         self.assertEqual(res.status_code, 403)
 
-        res = self.manager.get(reverse('siteapi:app_list', args=(self.org, )),
+        res = self.manager.get(reverse('siteapi:app_list', args=(self.org.oid, )),
                                data={
                                    'node_uid': 'd_root',
                                    'owner_access': True
@@ -423,7 +531,7 @@ class APPTestCase(TestCase):
         owner_perm = dept.owner_perm_cls.get(dept, perm)
         owner_perm.permit()
 
-        res = self.manager.get(reverse('siteapi:app_list', args=(self.org, )),
+        res = self.manager.get(reverse('siteapi:app_list', args=(self.org.oid, )),
                                data={
                                    'node_uid': 'd_root',
                                    'owner_access': True
@@ -565,5 +673,5 @@ class APPTestCase(TestCase):
             }).json()['name'], 'app5')
 
     def test_create_app_empty_name(self):
-        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org, )), data={'name': '  '})
+        res = self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )), data={'name': '  '})
         self.assertEqual(res.json(), {"name": ["This field may not be blank."]})

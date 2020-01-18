@@ -249,7 +249,7 @@ class APPDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     指定应用信息 [GET], [PATCH], [DELETE]
     '''
     serializer_class = APPSerializer
-    permission_classes = [IsAuthenticated & (IsAPPManager | IsAdminUser)]    # TODO
+    permission_classes = [IsAuthenticated & IsAPPManager]
 
     def get_object(self):
         '''
