@@ -78,3 +78,31 @@ class TestCase(django_TestCase):
         '''
         pre-work: create necessary objs
         '''
+
+
+class StatefulCase:
+    def __init__(self, state, update, reset):
+        self.state = state
+        self.reset = reset
+        self.update = update
+        self.excepts = {}
+
+    def reg(self, key, input, output_with_state):
+        self.excepts[key] = (input, output_with_state)
+
+    def get_input(self, key):
+        return self.excepts[key][0]
+
+    def get_input_with_update(self, key):
+        self.state = self.update('GET_INPUT', self.state)
+        return self.excepts[key][0]
+
+    def get_output(self, key):
+        return self.excepts[key][1](self.state)
+
+    def get_output_with_update(self, key):
+        self.state = self.update('GET_OUTPUT', self.state)
+        return self.excepts[key][1](self.state)
+
+    def reset_state(self):
+        self.state = self.reset()
