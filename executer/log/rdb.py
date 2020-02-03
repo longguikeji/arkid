@@ -440,5 +440,13 @@ class RDBLogExecuter(Executer):
         summary = f'{self.cli.user.log_name}更新系统配置'
         return self.log(subject, summary)
 
+    def update_org_config(self, org):
+        '''
+        更新组织配置
+        '''
+        subject = 'org_config'
+        summary = f'{self.cli.user.log_name}更新组织配置'
+        return self.log(subject, summary, org)
+
 
 LOG_CLI = single_cli_factory('executer.log.rdb.RDBLogExecuter')    # pylint: disable=invalid-name

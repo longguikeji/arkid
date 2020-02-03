@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from siteapi.v1.serializers.config import (
     ConfigSerializer,
+    OrgConfigSerializer,
     MetaConfigSerializer,
     AlterAdminSerializer,
     CustomFieldSerailizer,
@@ -16,8 +17,9 @@ from siteapi.v1.serializers.config import (
     StorageConfigSerializer,
 )
 from siteapi.v1.serializers.user import UserSerializer
+from siteapi.v1.views.org import validity_check
 
-from oneid.permissions import IsAdminUser, CustomPerm
+from oneid.permissions import IsAdminUser, CustomPerm, IsOrgOwnerOf
 from oneid_meta.models import User, CustomField, NativeField
 
 from executer.log.rdb import LOG_CLI
@@ -25,7 +27,7 @@ from executer.log.rdb import LOG_CLI
 
 class ConfigAPIView(generics.RetrieveUpdateAPIView):
     """
-    基本配置 [GET], [PATCH]
+    全局基本配置 [GET], [PATCH]
     管理员可见
     """
 
@@ -44,6 +46,35 @@ class ConfigAPIView(generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         super().perform_update(serializer)    # pylint: disable=no-member
         LOG_CLI().update_config()
+
+
+class OrgConfigAPIView(generics.RetrieveUpdateAPIView):
+    """
+    组织基本配置 [GET], [PATCH]
+    组织创建者可见
+    """
+
+    serializer_class = OrgConfigSerializer
+
+    permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_config_write'))]
+
+    def get_permissions(self):
+        '''
+        读写权限
+        '''
+        self.org = validity_check(self.kwargs['oid'])
+        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | CustomPerm(f'{self.org.oid}_config_write'))]
+        return [perm() for perm in permission_classes]
+
+    def get_object(self):
+        """
+        get current site
+        """
+        return self.org
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)    # pylint: disable=no-member
+        LOG_CLI().update_org_config()
 
 
 class MetaConfigAPIView(generics.RetrieveAPIView):

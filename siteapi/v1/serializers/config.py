@@ -6,7 +6,7 @@ from django.contrib.sites.models import Site
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
+from oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, Org, User, Dept, CustomField, NativeField,
                                AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QQConfig,
                                StorageConfig, MinioConfig)
 from common.django.drf.serializer import DynamicFieldsModelSerializer
@@ -191,12 +191,52 @@ class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
         )
 
 
+class OrgConfigSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for org configs
+    '''
+
+    company_config = CompanyConfigSerializer(many=False, required=False)
+
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = Org
+
+        fields = ('company_config', )
+
+    @transaction.atomic()
+    def update(self, instance, validated_data):
+        company_config_data = validated_data.pop('company_config', None)
+        if company_config_data:
+            # if not Dept.valid_objects.filter(parent__uid='root').exists(): TODO@saas
+            #     uid = gen_uid(name=company_config_data.get('name_cn', ''), cls=Dept)
+            #     parent_dept = Dept.valid_objects.filter(uid='root').first()
+            #     cli = CLI()
+            #     dept_data = {
+            #         'parent_uid': 'root',
+            #         'name': company_config_data.get('name_cn', ''),
+            #         'uid': uid,
+            #     }
+            #     child_dept = cli.create_dept(dept_data, parent_dept.org)
+            #     cli.add_dept_to_dept(child_dept, parent_dept)
+            # else:
+            #     company_dept = Dept.valid_objects.filter(parent__uid='root').first()
+            #     company_dept.name = company_config_data.get('name_cn', '')
+            #     company_dept.save()
+            serializer = CompanyConfigSerializer(CompanyConfig.get_current(), company_config_data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            instance.refresh_from_db()
+
+            return instance
+
+
 class ConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for configs
     '''
 
-    company_config = CompanyConfigSerializer(many=False, required=False)
     ding_config = DingConfigSerializer(many=False, required=False)
     account_config = AccountConfigSerializer(many=False, required=False)
     sms_config = SMSConfigSerializer(many=False, required=False)
@@ -210,32 +250,11 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
 
         model = Site
 
-        fields = ('company_config', 'ding_config', 'account_config', 'sms_config',\
+        fields = ('ding_config', 'account_config', 'sms_config',\
             'email_config', 'alipay_config', 'work_wechat_config', 'wechat_config', 'qq_config')
 
     @transaction.atomic()
     def update(self, instance, validated_data):    # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-        company_config_data = validated_data.pop('company_config', None)
-        if company_config_data:
-            if not Dept.valid_objects.filter(parent__uid='root').exists():
-                uid = gen_uid(name=company_config_data.get('name_cn', ''), cls=Dept)
-                parent_dept = Dept.valid_objects.filter(uid='root').first()
-                cli = CLI()
-                dept_data = {
-                    'parent_uid': 'root',
-                    'name': company_config_data.get('name_cn', ''),
-                    'uid': uid,
-                }
-                child_dept = cli.create_dept(dept_data, parent_dept.org)
-                cli.add_dept_to_dept(child_dept, parent_dept)
-            else:
-                company_dept = Dept.valid_objects.filter(parent__uid='root').first()
-                company_dept.name = company_config_data.get('name_cn', '')
-                company_dept.save()
-            serializer = CompanyConfigSerializer(CompanyConfig.get_current(), company_config_data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
         account_config_data = validated_data.pop('account_config', None)
         if account_config_data:
             serializer = AccountConfigSerializer(AccountConfig.get_current(), account_config_data, partial=True)

@@ -87,6 +87,7 @@ class Log(models.Model):
 
     ## 配置
         'config': '系统配置',
+        'org_config': '组织配置',
 
     ## 用户
         'user_create': '创建用户',

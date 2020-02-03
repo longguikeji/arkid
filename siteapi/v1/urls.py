@@ -13,6 +13,7 @@ from siteapi.v1.views.task import (
 )
 
 from siteapi.v1.views.config import (
+    OrgConfigAPIView,
     ConfigAPIView,
     AdminAPIView,
     MetaConfigAPIView,
@@ -149,7 +150,6 @@ urlpatterns = [
     url(r'^ucenter/orgs/owned/$', org_views.UcenterOwnOrgListAPIView.as_view(), name='ucenter_own_org_list'),
     # ucenter app
     url(r'^ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'),
-    # url(r'^org/(?P<oid>[\w|-]+)/ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'), # TODO@saas
     # ucenter user
     url(r'^ucenter/user/(?P<username>[\w]+)/$',
         user_views.UcenterUserDetailAPIView.as_view(),
@@ -158,6 +158,7 @@ urlpatterns = [
     url(r'^service/', include(('infrastructure.urls', 'infrastructure'), namespace='infra')),
     # config
     url(r'^config/$', ConfigAPIView.as_view(), name='config'),
+    url(r'^org/(?P<oid>[\w|-])+/config/$', OrgConfigAPIView.as_view(), name='org_config'),
     url(r'^config/admin/$', AdminAPIView.as_view(), name='alter_admin'),
     url(r'^config/storage/$', StorageConfigAPIView.as_view(), name='storage_config'),
     url(r'^config/custom/field/(?P<field_subject>[a-z_]+)/$',

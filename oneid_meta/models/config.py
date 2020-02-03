@@ -36,7 +36,8 @@ class CompanyConfig(BaseModel, SingletonConfigMixin):
     '''
     公司相关信息
     '''
-    site = models.OneToOneField(Site, related_name='company_config', on_delete=models.CASCADE)
+    from oneid_meta.models.org import Org
+    org = models.OneToOneField(Org, related_name='company_config', on_delete=models.CASCADE)
 
     name_cn = models.CharField(max_length=255, blank=True, default="", verbose_name='中文简称')
     fullname_cn = models.CharField(max_length=255, blank=True, default="", verbose_name='中文全称')
