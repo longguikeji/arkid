@@ -102,8 +102,8 @@ class GroupTestCase(TestCase):
         res = self.client.get(reverse('siteapi:group_detail', args=('role_group_1', )))
         expect = {
             'parent_uid': str(self.org.group.uid),
-            'parent_node_uid': f'g_{self.org.group.uid}',
-            'parent_name': self.org.name,
+            'parent_node_uid': self.org.group.node_uid,
+            'parent_name': self.org.group.name,
             'group_id': 7,
             'uid': 'role_group_1',
             'node_uid': 'g_role_group_1',
@@ -133,9 +133,9 @@ class GroupTestCase(TestCase):
                 'info': {
                     'group_id': 2,
                     'uid': str(self.org.group.uid),
-                    'node_uid': f'g_{self.org.group.uid}',
+                    'node_uid': self.org.group.node_uid,
                     'node_subject': 'org',
-                    'name': self.org.name,
+                    'name': self.org.group.name,
                     'remark': '',
                     'accept_user': True,
                 },
@@ -143,9 +143,9 @@ class GroupTestCase(TestCase):
                     'info': {
                         'group_id': 3,
                         'uid': str(self.org.direct.uid),
-                        'node_uid': f'g_{self.org.direct.uid}',
+                        'node_uid': self.org.direct.node_uid,
                         'node_subject': 'direct',
-                        'name': f'{self.org.name}-无分组成员',
+                        'name': self.org.direct.name,
                         'remark': '',
                         'accept_user': True,
                     },
@@ -154,9 +154,9 @@ class GroupTestCase(TestCase):
                     'info': {
                         'group_id': 4,
                         'uid': str(self.org.manager.uid),
-                        'node_uid': f'g_{self.org.manager.uid}',
+                        'node_uid': self.org.manager.node_uid,
                         'node_subject': 'manager',
-                        'name': f'{self.org.name}-管理员',
+                        'name': self.org.manager.name,
                         'remark': '',
                         'accept_user': True,
                     },
@@ -165,9 +165,9 @@ class GroupTestCase(TestCase):
                     'info': {
                         'group_id': 5,
                         'uid': str(self.org.role.uid),
-                        'node_uid': f'g_{self.org.role.uid}',
+                        'node_uid': self.org.role.node_uid,
                         'node_subject': 'role',
-                        'name': f'{self.org.name}-角色',
+                        'name': self.org.role.name,
                         'remark': '',
                         'accept_user': True,
                     },
@@ -176,9 +176,9 @@ class GroupTestCase(TestCase):
                     'info': {
                         'group_id': 6,
                         'uid': str(self.org.label.uid),
-                        'node_uid': f'g_{self.org.label.uid}',
+                        'node_uid': self.org.label.node_uid,
                         'node_subject': 'label',
-                        'name': f'{self.org.name}-标签',
+                        'name': self.org.label.name,
                         'remark': '',
                         'accept_user': True,
                     },
@@ -238,9 +238,9 @@ class GroupTestCase(TestCase):
                 'info': {
                     'group_id': 2,
                     'uid': str(self.org.group.uid),
-                    'node_uid': f'g_{self.org.group.uid}',
+                    'node_uid': self.org.group.node_uid,
                     'node_subject': 'org',
-                    'name': self.org.name,
+                    'name': self.org.group.name,
                     'remark': '',
                     'accept_user': True,
                 },
@@ -250,9 +250,9 @@ class GroupTestCase(TestCase):
                     'info': {
                         'group_id': 3,
                         'uid': str(self.org.direct.uid),
-                        'node_uid': f'g_{self.org.direct.uid}',
+                        'node_uid': self.org.direct.node_uid,
                         'node_subject': 'direct',
-                        'name': f'{self.org.name}-无分组成员',
+                        'name': self.org.direct.name,
                         'remark': '',
                         'accept_user': True,
                     },
@@ -267,9 +267,9 @@ class GroupTestCase(TestCase):
                     'info': {
                         'group_id': 4,
                         'uid': str(self.org.manager.uid),
-                        'node_uid': f'g_{self.org.manager.uid}',
+                        'node_uid': self.org.manager.node_uid,
                         'node_subject': 'manager',
-                        'name': f'{self.org.name}-管理员',
+                        'name': self.org.manager.name,
                         'remark': '',
                         'accept_user': True,
                     },
@@ -280,9 +280,9 @@ class GroupTestCase(TestCase):
                     'info': {
                         'group_id': 5,
                         'uid': str(self.org.role.uid),
-                        'node_uid': f'g_{self.org.role.uid}',
+                        'node_uid': self.org.role.node_uid,
                         'node_subject': 'role',
-                        'name': f'{self.org.name}-角色',
+                        'name': self.org.role.name,
                         'remark': '',
                         'accept_user': True,
                     },
@@ -293,9 +293,9 @@ class GroupTestCase(TestCase):
                     'info': {
                         'group_id': 6,
                         'uid': str(self.org.label.uid),
-                        'node_uid': f'g_{self.org.label.uid}',
+                        'node_uid': self.org.label.node_uid,
                         'node_subject': 'label',
-                        'name': f'{self.org.name}-标签',
+                        'name': self.org.label.name,
                         'remark': '',
                         'accept_user': True,
                     },
@@ -687,13 +687,12 @@ class GroupTestCase(TestCase):
         self.assertEqual([user['username'] for user in res.json()['users']], expect)
 
     def test_manager_group(self):
-        org = self.client.json_post(reverse('siteapi:org_create'), data={'name': 'org'}).json()
-
         Group.objects.create(uid='n1', parent=self.org.group)
         Group.objects.create(uid='n2', parent=self.org.group)
         perm1 = Perm.objects.create(subject='system', scope='demo', action='access')
         perm2 = Perm.objects.create(subject='system', scope='demo', action='admin')
-        res = self.client.json_post(reverse('siteapi:group_child_group', args=(org['manager_uid'], )),
+
+        res = self.client.json_post(reverse('siteapi:group_child_group', args=(self.org.manager.uid, )),
                                     data={
                                         'manager_group': {
                                             'nodes': ['g_n1'],
@@ -736,15 +735,14 @@ class GroupTestCase(TestCase):
         self.assertEqual(manager_group.nodes, ['g_n2'])
         node_2 = Group.objects.get(uid='n2')
         node_2.delete()
-        res = self.client.get(reverse('siteapi:group_child_group', args=(org['manager_uid'], )))
+        res = self.client.get(reverse('siteapi:group_child_group', args=(self.org.manager.uid, )))
         manager_group.refresh_from_db()
         self.assertEqual(manager_group.nodes, [])
 
     def test_manager_group_list(self):
         APP.objects.create(uid='demo', name='test')
         Perm.objects.create(subject='app', scope='demo', action='access')
-        org = self.client.json_post(reverse('siteapi:org_create'), data={'name': 'org'}).json()
-        parent = Group.valid_objects.filter(uid=org['manager_uid']).first()
+        parent = self.org.manager
 
         group = Group.objects.create(uid='manager_group_1', parent=parent)
         GroupMember.objects.create(owner=group, user=User.objects.get(username='employee'))
@@ -754,13 +752,13 @@ class GroupTestCase(TestCase):
                                     perms=['app_demo_access'],
                                     nodes=['root'],
                                     apps=['demo'])
-        res = self.client.get(reverse('siteapi:node_child_node', args=(f'g_{org["manager_uid"]}', )))
+        res = self.client.get(reverse('siteapi:node_child_node', args=(self.org.manager.node_uid, )))
         expect = {
             'nodes': [{
-                'parent_uid': org['manager_uid'],
-                'parent_node_uid': f'g_{org["manager_uid"]}',
-                'parent_name': 'org-管理员',
-                'group_id': 15,
+                'parent_uid': str(self.org.manager.uid),
+                'parent_node_uid': self.org.manager.node_uid,
+                'parent_name': self.org.manager.name,
+                'group_id': 10,
                 'node_uid': 'g_manager_group_1',
                 'node_subject': 'root',
                 'uid': 'manager_group_1',

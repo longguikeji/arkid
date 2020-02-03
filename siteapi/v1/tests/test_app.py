@@ -128,7 +128,7 @@ class APPTestCase(TestCase):
         self.manager = self.login_as(manager)
         self._manager = manager
 
-        self.org = Org.create(name='org1', owner=owner)
+        self.org = Org.create(name='org', owner=owner)
         self.owner.json_post(reverse('siteapi:org_user', args=(self.org.oid, )) + '?username=employee')
 
         group = Group.objects.create(name='test', parent=self.org.manager)

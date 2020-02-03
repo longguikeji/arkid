@@ -27,8 +27,8 @@ class DeptPermTestCase(TestCase):
         owner = User.create_user(username='owner', password='owner')
         self.org = Org.create(name='org', owner=owner)
 
-        root = Dept.valid_objects.get(uid='root')
-        level_1 = Dept.valid_objects.create(uid='l1', name='l1', parent=self.org.dept)
+        root = self.org.dept
+        level_1 = Dept.valid_objects.create(uid='l1', name='l1', parent=root)
         Dept.valid_objects.create(uid='l11', name='l11', parent=level_1, order_no=2)
         Dept.valid_objects.create(uid='l12', name='l12', parent=level_1, order_no=1)
         user = User.create_user('employee', 'employee')
