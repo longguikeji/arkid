@@ -209,10 +209,10 @@ class OrgTestCase(TestCase):
         label = org['label_uid']
         label_a = self.create_group(label, 'Label A').json()['uid']
 
-        self.unset_client()
-
         dept = org['dept_uid']
-        dept_a = self.create_dept(dept, 'Dept A').json()['uid']    # TODO@saas unset_client here
+        dept_a = self.create_dept(dept, 'Dept A').json()['uid']
+
+        self.unset_client()
 
         self.create_user(['root'], [dept_a], 'user0')
         self.create_user(['root', grp_a_a], ['root'], 'user1')

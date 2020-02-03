@@ -163,11 +163,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
             }
         }
         manager_group = cli.create_group(data, app.owner)
-        if app.owner:    # TODO@saas: remove else branch
-            cli.add_group_to_group(manager_group, app.owner.manager)
-        else:
-            parent, _ = Group.valid_objects.get_or_create(uid='manager')
-            cli.add_group_to_group(manager_group, parent)
+        cli.add_group_to_group(manager_group, app.owner.manager)
         cli.add_users_to_group([request.user], manager_group)
 
     @staticmethod

@@ -250,8 +250,6 @@ class User(BaseModel, PermOwnerMixin):
         '''
         是否是参数中所指定组织的管理员
         '''
-        args = tuple(filter(lambda o: o is not None, args))    # TODO@saas: LEGACY CODE
-
         if args:
             return reduce(lambda ret, org: ret and org.owner.username == self.username, (True, ) + args)
         return self.current_organization.owner.username == self.username if self.current_organization else False    # pylint: disable=no-member
