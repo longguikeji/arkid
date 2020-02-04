@@ -298,7 +298,7 @@ class User(BaseModel, PermOwnerMixin):
 
         for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
             if group_member.owner.org in args:
-                    yield group_member.owner.manager_group
+                yield group_member.owner.manager_group
 
     @property
     def token(self):
@@ -525,13 +525,15 @@ class CustomUser(BaseModel):
             kwargs.update(is_visible=True)
 
         if self.user.is_intra:
-            for field in CustomField.valid_objects.filter(subject='user', **kwargs):
+            for field in CustomField.valid_objects.filter(org=self.user.current_organization, subject='user', **kwargs):
                 res.append({
                     'uuid': field.uuid.hex,
                     'name': field.name,
                     'value': data.get(field.uuid.hex, ''),
                 })
-            for field in CustomField.valid_objects.filter(subject='extern_user', **kwargs):
+            for field in CustomField.valid_objects.filter(org=self.user.current_organization,
+                                                          subject='extern_user',
+                                                          **kwargs):
                 if field.uuid.hex in data:    # pylint: disable=unsupported-membership-test
                     res.append({
                         'uuid': field.uuid.hex,
@@ -539,13 +541,15 @@ class CustomUser(BaseModel):
                         'value': data.get(field.uuid.hex),
                     })
         else:
-            for field in CustomField.valid_objects.filter(subject='extern_user', **kwargs):
+            for field in CustomField.valid_objects.filter(org=self.user.current_organization,
+                                                          subject='extern_user',
+                                                          **kwargs):
                 res.append({
                     'uuid': field.uuid.hex,
                     'name': field.name,
                     'value': data.get(field.uuid.hex, ''),
                 })
-            for field in CustomField.valid_objects.filter(subject='user', **kwargs):
+            for field in CustomField.valid_objects.filter(org=self.user.current_organization, subject='user', **kwargs):
                 if field.uuid.hex in data:    # pylint: disable=unsupported-membership-test
                     res.append({
                         'uuid': field.uuid.hex,

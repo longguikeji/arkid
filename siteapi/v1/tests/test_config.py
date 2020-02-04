@@ -238,13 +238,13 @@ class ConfigTestCase(TestCase):
 
     def test_update_org_config(self):
         org = Org.create(name='org', owner=User.objects.get(username='admin'))
-        res = self.client.json_patch(reverse('siteapi:org_config', args=(org.oid, )),
-                                     data={
-                                         'company_config': {
-                                             'name_cn': 'demo',
-                                             'fullname_cn': 'demo',
-                                             'color': '006404',
-                                         }})
+        res = self.client.json_patch(
+            reverse('siteapi:org_config', args=(org.oid, )),
+            data={'company_config': {
+                'name_cn': 'demo',
+                'fullname_cn': 'demo',
+                'color': '006404',
+            }})
         expect = {
             'company_config': {
                 'name_cn': 'demo',
@@ -357,43 +357,108 @@ class ConfigAlterAdminTestCase(TestCase):
 
 class ConfigCustomFieldTestCase(TestCase):
     def test_custom_field(self):
-        res = self.client.json_post(reverse("siteapi:custom_field_list", args=('user', )), data={'name': '忌口'}).json()
+        org = Org.create(name='org', owner=User.objects.get(username='admin'))
+        res = self.client.json_post(reverse("siteapi:custom_field_list", args=(
+            org.oid,
+            'user',
+        )), data={
+            'name': '忌口'
+        }).json()
         uuid = res['uuid']
         expect = {'uuid': uuid, 'name': '忌口', 'subject': 'user', 'schema': {'type': 'string'}, 'is_visible': True}
         self.assertEqual(res, expect)
 
-        res = self.client.get(reverse("siteapi:custom_field_list", args=('user', )))
+        res = self.client.get(reverse("siteapi:custom_field_list", args=(
+            org.oid,
+            'user',
+        )))
         expect = [{'uuid': uuid, 'name': '忌口', 'subject': 'user', 'schema': {'type': 'string'}, 'is_visible': True}]
         self.assertEqual(res.json(), expect)
 
-        res = self.client.json_patch(reverse("siteapi:custom_field_detail", args=('user', uuid)), data={'name': '爱好'})
+        res = self.client.json_patch(reverse("siteapi:custom_field_detail", args=(org.oid, 'user', uuid)),
+                                     data={'name': '爱好'})
         expect = {'uuid': uuid, 'name': '爱好', 'subject': 'user', 'schema': {'type': 'string'}, 'is_visible': True}
         self.assertEqual(res.json(), expect)
 
-        res = self.client.delete(reverse("siteapi:custom_field_detail", args=('user', uuid)))
+        res = self.client.delete(reverse("siteapi:custom_field_detail", args=(org.oid, 'user', uuid)))
         self.assertEqual(res.status_code, 204)
         self.assertEqual(CustomField.valid_objects.count(), 0)
 
     def test_create_extern_user_custom_field(self):    # pylint: disable=invalid-name
-        res = self.client.json_post(reverse("siteapi:custom_field_list", args=('extern_user', )),\
+        org = Org.create(name='org', owner=User.objects.get(username='admin'))
+        res = self.client.json_post(reverse("siteapi:custom_field_list", args=(org.oid, 'extern_user', )),\
             data={'name': '忌口'}).json()
         res.pop('uuid')
         expect = {'name': '忌口', 'subject': 'extern_user', 'schema': {'type': 'string'}, 'is_visible': True}
         self.assertEqual(res, expect)
-        res = self.client.get(reverse("siteapi:custom_field_list", args=('extern_user', )))
+        res = self.client.get(reverse("siteapi:custom_field_list", args=(
+            org.oid,
+            'extern_user',
+        )))
         self.assertEqual(len(res.json()), 1)
 
     def test_custom_field_active(self):
-        res = self.client.json_post(reverse("siteapi:custom_field_list", args=('user', )), data={'name': '忌口'}).json()
+        org = Org.create(name='org', owner=User.objects.get(username='admin'))
+        res = self.client.json_post(reverse("siteapi:custom_field_list", args=(
+            org.oid,
+            'user',
+        )), data={
+            'name': '忌口'
+        }).json()
         uuid = res['uuid']
         self.assertTrue(res['is_visible'])
 
         res = self.client.json_patch(reverse('siteapi:custom_field_detail', args=(
+            org.oid,
             'user',
             uuid,
         )),
                                      data={'is_visible': False})
         self.assertFalse(res.json()['is_visible'])
+
+    def test_multi_org_custom_field(self):
+        owner1 = User.create_user('owner1', 'owner1')
+        self.owner1 = self.login_as(owner1)
+        owner2 = User.create_user('owner2', 'owner2')
+        self.owner2 = self.login_as(owner2)
+        org1 = Org.create(name='org1', owner=owner1)
+        org2 = Org.create(name='org2', owner=owner2)
+
+        url1 = reverse("siteapi:custom_field_list", args=(
+            org1.oid,
+            'user',
+        ))
+        res = self.owner1.json_post(url1, data={'name': '忌口'}).json()
+        uuid = res['uuid']
+        expect = {'uuid': uuid, 'name': '忌口', 'subject': 'user', 'schema': {'type': 'string'}, 'is_visible': True}
+        self.assertEqual(res, expect)
+
+        res = self.owner2.json_post(url1, data={'name': '忌口'})
+        self.assertEqual(res.status_code, 403)
+
+        res = self.owner1.get(url1)
+        expect = [{'uuid': uuid, 'name': '忌口', 'subject': 'user', 'schema': {'type': 'string'}, 'is_visible': True}]
+        self.assertEqual(res.json(), expect)
+
+        res = self.owner2.get(url1)
+        self.assertEqual(res.status_code, 403)
+
+        url2 = reverse("siteapi:custom_field_list", args=(
+            org2.oid,
+            'user',
+        ))
+        res = self.owner2.json_post(url2, data={'name': '忌口'}).json()
+        uuid_ = res['uuid']
+        expect = {'uuid': uuid_, 'name': '忌口', 'subject': 'user', 'schema': {'type': 'string'}, 'is_visible': True}
+        self.assertEqual(res, expect)
+
+        res = self.owner2.delete(reverse("siteapi:custom_field_detail", args=(org2.oid, 'user', uuid_)))
+        self.assertEqual(res.status_code, 204)
+        self.assertEqual(CustomField.valid_objects.count(), 1)
+
+        res = self.owner1.get(url1)
+        expect = [{'uuid': uuid, 'name': '忌口', 'subject': 'user', 'schema': {'type': 'string'}, 'is_visible': True}]
+        self.assertEqual(res.json(), expect)
 
 
 class ConfigNativeFieldTestCase(TestCase):

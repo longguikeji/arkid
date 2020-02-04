@@ -19,7 +19,7 @@ from siteapi.v1.serializers.config import (
 from siteapi.v1.serializers.user import UserSerializer
 from siteapi.v1.views.org import validity_check
 
-from oneid.permissions import IsAdminUser, CustomPerm, IsOrgOwnerOf
+from oneid.permissions import IsAdminUser, CustomPerm, IsOrgOwnerOf, IsOrgMember
 from oneid_meta.models import User, CustomField, NativeField
 
 from executer.log.rdb import LOG_CLI
@@ -61,7 +61,9 @@ class OrgConfigAPIView(generics.RetrieveUpdateAPIView):
         读写权限
         '''
         self.org = validity_check(self.kwargs['oid'])
-        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | CustomPerm(f'{self.org.oid}_config_write'))]
+        permission_classes = [
+            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | CustomPerm(f'{self.org.oid}_config_write'))
+        ]
         return [perm() for perm in permission_classes]
 
     def get_object(self):
@@ -137,23 +139,24 @@ class CustomFieldListCreateAPIView(generics.ListCreateAPIView):
         '''
         readonly for employee
         '''
+        self.org = validity_check(self.kwargs['oid'])
         if self.request.method == 'GET':
-            self.permission_classes = [IsAuthenticated]
+            permission_classes = [IsAuthenticated & IsOrgMember(self.org)]
         else:
-            self.permission_classes = [IsAdminUser]
-        return super().get_permissions()
+            permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org))]
+        return [perm() for perm in permission_classes]
 
     def get_queryset(self):
         '''
         filter the fields
         '''
-        return CustomField.valid_objects.filter(subject=self.kwargs['field_subject'])
+        return CustomField.valid_objects.filter(org=self.org, subject=self.kwargs['field_subject'])
 
     def perform_create(self, serializer):
         '''
         save with field_subject
         '''
-        serializer.save(subject=self.kwargs['field_subject'])
+        serializer.save(org=self.org, subject=self.kwargs['field_subject'])
 
 
 class CustomFieldDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -166,17 +169,20 @@ class CustomFieldDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         '''
         readonly for employee
         '''
+        self.org = validity_check(self.kwargs['oid'])
         if self.request.method == 'GET':
-            self.permission_classes = [IsAuthenticated]
+            permission_classes = [IsAuthenticated & IsOrgMember(self.org)]
         else:
-            self.permission_classes = [IsAdminUser]
-        return super().get_permissions()
+            permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org))]
+        return [perm() for perm in permission_classes]
 
     def get_object(self):
         '''
         filter the field
         '''
-        field = CustomField.valid_objects.filter(uuid=self.kwargs['uuid'], subject=self.kwargs['field_subject']).first()
+        field = CustomField.valid_objects.filter(org=self.org,
+                                                 uuid=self.kwargs['uuid'],
+                                                 subject=self.kwargs['field_subject']).first()
         if not field:
             raise NotFound
         return field

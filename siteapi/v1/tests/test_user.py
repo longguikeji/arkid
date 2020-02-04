@@ -8,7 +8,7 @@ import json
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import DingUser, PosixUser, Group, Dept, User, CustomField, DeptMember, Perm, UserPerm
+from oneid_meta.models import DingUser, PosixUser, Group, Dept, Org, User, CustomField, DeptMember, Perm, UserPerm
 
 EMPLOYEE = {
     'user': {
@@ -289,7 +289,8 @@ class UserTestCase(TestCase):
 
     def test_update_user(self):
         self.create_user()
-        cf = CustomField.valid_objects.create(name='忌口')    # pylint:disable=invalid-name
+        org = Org.create(name='org1', owner=User.objects.get(username='admin'))
+        cf = CustomField.valid_objects.create(org=org, name='忌口')    # pylint:disable=invalid-name
         patch_data = {
             'username': 'employee1',
             'name': 'new_employee1',
@@ -351,11 +352,13 @@ class UserTestCase(TestCase):
                 'data': {
                     cf.uuid.hex: '无'
                 },
-                'pretty': [{
-                    'uuid': cf.uuid.hex,
-                    'name': '忌口',
-                    'value': '无'
-                }]
+                'pretty': [
+        # {
+        # 'uuid': cf.uuid.hex, Deprecated TODO@saas
+        # 'name': '忌口',
+        # 'value': '无'
+        # }
+                ]
             },
             'hiredate': '2019-06-04T09:01:44+08:00',
             'require_reset_password': False,
