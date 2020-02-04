@@ -32,7 +32,7 @@ class SingletonConfigMixin:
         return obj
 
 
-class CompanyConfig(BaseModel, SingletonConfigMixin):
+class CompanyConfig(BaseModel):
     '''
     公司相关信息
     '''
@@ -59,6 +59,14 @@ class CompanyConfig(BaseModel, SingletonConfigMixin):
         首页展示用的公司名称
         '''
         return self.fullname_cn
+
+    @classmethod
+    def get_current(cls, org):
+        '''
+        当前所用配置
+        '''
+        obj, _ = cls.valid_objects.get_or_create(org=org)
+        return obj
 
 
 class DingConfig(BaseModel, SingletonConfigMixin):

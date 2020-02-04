@@ -5,23 +5,13 @@ from unittest import mock
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import User, CustomField, SMSConfig, EmailConfig
+from oneid_meta.models import Org, User, CustomField, SMSConfig, EmailConfig
 
 
 class ConfigTestCase(TestCase):
     def test_get_config(self):
         res = self.client.get(reverse('siteapi:config'))
         expect = {
-            'company_config': {
-                'name_cn': '',
-                'fullname_cn': '',
-                'name_en': '',
-                'fullname_en': '',
-                'icon': '',
-                'address': '',
-                'domain': '',
-                'color': '',
-            },
             'ding_config': {
                 'app_key': '',
                 'app_valid': False,
@@ -63,6 +53,24 @@ class ConfigTestCase(TestCase):
             'work_wechat_config': None,
             'wechat_config': None,
         }
+        self.assertEqual(res.json(), expect)
+
+    def test_org_config(self):
+        org = Org.create(name='org', owner=User.objects.get(username='admin'))
+        res = self.client.get(reverse('siteapi:org_config', args=(org.oid, )))
+        expect = {
+            'company_config': {
+                'name_cn': '',
+                'fullname_cn': '',
+                'name_en': '',
+                'fullname_en': '',
+                'icon': '',
+                'address': '',
+                'domain': '',
+                'color': ''
+            }
+        }
+
         self.assertEqual(res.json(), expect)
 
     @mock.patch('thirdparty_data_sdk.qq_sdk.qq_openid_sdk.QQInfoManager.check_config_valid')
@@ -147,11 +155,6 @@ class ConfigTestCase(TestCase):
         mock_send_auth_code.return_value = True
         res = self.client.json_patch(reverse('siteapi:config'),
                                      data={
-                                         'company_config': {
-                                             'name_cn': 'demo',
-                                             'fullname_cn': 'demo',
-                                             'color': '006404',
-                                         },
                                          'ding_config': {
                                              'app_key': 'app_key',
                                              'app_secret': 'pwd',
@@ -179,16 +182,6 @@ class ConfigTestCase(TestCase):
                                      })
 
         expect = {
-            'company_config': {
-                'name_cn': 'demo',
-                'fullname_cn': 'demo',
-                'name_en': '',
-                'fullname_en': '',
-                'icon': '',
-                'address': '',
-                'domain': '',
-                'color': '006404',
-            },
             'ding_config': {
                 'app_key': '',
                 'app_valid': False,
@@ -243,13 +236,36 @@ class ConfigTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['email_config']['host'], "12.12.12.13")
 
-        res = self.client.json_patch(reverse('siteapi:config'), data={'company_config':\
-            {'name_cn': "abc", 'icon': "", 'color': "zzzzzz"}})
+    def test_update_org_config(self):
+        org = Org.create(name='org', owner=User.objects.get(username='admin'))
+        res = self.client.json_patch(reverse('siteapi:org_config', args=(org.oid, )),
+                                     data={
+                                         'company_config': {
+                                             'name_cn': 'demo',
+                                             'fullname_cn': 'demo',
+                                             'color': '006404',
+                                         }})
+        expect = {
+            'company_config': {
+                'name_cn': 'demo',
+                'fullname_cn': 'demo',
+                'name_en': '',
+                'fullname_en': '',
+                'icon': '',
+                'address': '',
+                'domain': '',
+                'color': '006404',
+            }
+        }
+        self.assertEqual(res.json(), expect)
+
+        res = self.client.json_patch(reverse('siteapi:org_config', args=(org.oid, )), data={'company_config': \
+                                                                          {'name_cn': "abc", 'icon': "", 'color': "zzzzzz"}})
         expect = {'company_config': {'non_field_errors': ["color invalid"]}}
         self.assertEqual(res.json(), expect)
 
-        res = self.client.json_patch(reverse('siteapi:config'), data={'company_config':\
-            {'name_cn': "abc", 'icon': "", 'color': "AAFEAE"}})
+        res = self.client.json_patch(reverse('siteapi:org_config', args=(org.oid, )), data={'company_config': \
+                                                                          {'name_cn': "abc", 'icon': "", 'color': "AAFEAE"}})
         self.assertEqual(res.status_code, HTTP_200_OK)
 
     def test_update_config_valid(self):

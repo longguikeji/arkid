@@ -56,8 +56,6 @@ class OrgConfigAPIView(generics.RetrieveUpdateAPIView):
 
     serializer_class = OrgConfigSerializer
 
-    permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_config_write'))]
-
     def get_permissions(self):
         '''
         读写权限
@@ -74,7 +72,7 @@ class OrgConfigAPIView(generics.RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         super().perform_update(serializer)    # pylint: disable=no-member
-        LOG_CLI().update_org_config()
+        LOG_CLI().update_org_config(self.get_object())
 
 
 class MetaConfigAPIView(generics.RetrieveAPIView):

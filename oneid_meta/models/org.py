@@ -64,7 +64,7 @@ class Org(BaseModel):
 
     @staticmethod
     def create(name, owner, **kwargs):
-        from oneid_meta.models import Dept, Group, GroupMember
+        from oneid_meta.models import Dept, Group, GroupMember, CompanyConfig
 
         dept_root = Dept.valid_objects.filter(uid='root').first()
         group_root = Group.valid_objects.filter(uid='root').first()
@@ -106,7 +106,9 @@ class Org(BaseModel):
         except KeyError:
             pass
 
-        return Org.valid_objects.create(**kw)
+        org = Org.valid_objects.create(**kw)
+        CompanyConfig.objects.create(org=org)
+        return org
 
     @property
     def users(self):

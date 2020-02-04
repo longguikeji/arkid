@@ -223,7 +223,7 @@ class OrgConfigSerializer(DynamicFieldsModelSerializer):
             #     company_dept = Dept.valid_objects.filter(parent__uid='root').first()
             #     company_dept.name = company_config_data.get('name_cn', '')
             #     company_dept.save()
-            serializer = CompanyConfigSerializer(CompanyConfig.get_current(), company_config_data)
+            serializer = CompanyConfigSerializer(CompanyConfig.get_current(instance), company_config_data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
