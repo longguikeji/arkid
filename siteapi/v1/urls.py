@@ -83,7 +83,7 @@ urlpatterns = [
     url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_create'),
     url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailDestroyAPIView.as_view(), name='org_detail'),
     url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListCreateDestroyAPIView.as_view(), name='org_user'),
-    # url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username[\w]+>)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'), # TODO@saas
+    url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'), # TODO@saas
     # perm
     url(r'^perm/$', perm_views.PermListCreateAPIView.as_view(), name='perm_list'),
     url(r'^perm/(?P<uid>[\w|-]+)/$', perm_views.PermDetailAPIView.as_view(), name='perm_detail'),

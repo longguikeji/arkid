@@ -274,3 +274,46 @@ class OrgTestCase(TestCase):
         self.assertEqual(self.get_curr_org().json()['oid'], extern_org['oid'])
         self.assertEqual(self.clear_curr_org().status_code, 204)
         self.assertEqual(self.get_curr_org().content, b'')
+
+    def test_org_user_detail(self):
+        owner = User.create_user('owner', 'owner')
+        user1 = User.create_user('user1', 'user1')
+        user2 = User.create_user('user2', 'user2')
+        org = Org.create(name='org', owner=owner)
+
+        GroupMember.valid_objects.create(user=user1, owner=org.direct)
+        self.set_client(self.login_as(owner))
+
+        res = self.client.get(reverse('siteapi:org_user_detail', args=(
+            org.oid,
+            'user1',
+        )))
+        self.assertEqual(200, res.status_code)
+
+        res = self.client.get(reverse('siteapi:org_user_detail', args=(
+            org.oid,
+            'owner',
+        )))
+        self.assertEqual(200, res.status_code)
+
+        res = self.client.get(reverse('siteapi:org_user_detail', args=(
+            org.oid,
+            'user2',
+        )))
+        self.assertEqual(404, res.status_code)
+
+        GroupMember.valid_objects.create(user=user2, owner=org.group)
+
+        res = self.client.get(reverse('siteapi:org_user_detail', args=(
+            org.oid,
+            'user2',
+        )))
+        self.assertEqual(200, res.status_code)
+
+        self.set_client(self.login_as(user1))
+
+        res = self.client.get(reverse('siteapi:org_user_detail', args=(
+            org.oid,
+            'user1',
+        )))
+        self.assertEqual(403, res.status_code)

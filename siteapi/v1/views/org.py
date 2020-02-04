@@ -4,11 +4,12 @@ views for organization
 
 # pylint: disable=no-self-use, invalid-name, unused-argument
 
-from rest_framework.exceptions import ParseError, NotFound
+from rest_framework.exceptions import ParseError, NotFound, PermissionDenied
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView, ValidationError
-from oneid.permissions import (IsAdminUser, IsAuthenticated, IsOrgOwnerOf)
+from rest_framework.generics import GenericAPIView, ValidationError, RetrieveAPIView
+from oneid.permissions import IsAdminUser, IsAuthenticated, IsOrgOwnerOf, UserEmployeeReadable
 from oneid_meta.models import Org, GroupMember, User
+from siteapi.v1.serializers.user import UserSerializer
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
 
 
@@ -200,6 +201,39 @@ class UcenterCurrentOrgAPIView(GenericAPIView):
         self.request.user.current_organization = validity_check(oid)
         self.request.user.save()
         return Response(status=204)
+
+
+class OrgUserDetailAPIView(RetrieveAPIView):
+    '''
+    组织拥有者查看他人信息 [GET]
+    '''
+
+    serializer_class = UserSerializer
+
+    def get_permissions(self):
+        '''
+        set permissions
+        '''
+        self.org = validity_check(self.kwargs['oid'])
+        permission_classes = [IsAuthenticated & UserEmployeeReadable & (IsAdminUser | IsOrgOwnerOf(self.org))]
+        return [perm() for perm in permission_classes]
+
+    def get_object(self):
+        '''
+        find user
+        :rtype: oneid_meta.models.User
+        '''
+        user = User.valid_objects.filter(username=self.kwargs['username']).first()
+        if not user:
+            raise NotFound
+        if self.org not in user.organizations:
+            raise NotFound
+        try:
+            self.check_object_permissions(self.request, user)
+        except PermissionDenied:
+            raise NotFound
+
+        return user
 
 
 def validity_check(oid):
