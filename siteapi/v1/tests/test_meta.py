@@ -14,6 +14,7 @@ class MetaTestCase(TestCase):
         self.employee = self.login_as(employee)
 
     def test_meta(self):
+        org = Org.create(name='org', owner=User.objects.get(username='admin'))
         account_config = AccountConfig.get_current()
         account_config.allow_ding_qr = True
         account_config.allow_alipay_qr = True
@@ -21,7 +22,7 @@ class MetaTestCase(TestCase):
         account_config.allow_work_wechat_qr = True
         account_config.allow_wechat_qr = True
         account_config.save()
-        company_config = CompanyConfig.get_current()
+        company_config = CompanyConfig.get_current(org)
         company_config.fullname_cn = "demo"
         company_config.save()
         ding_config = DingConfig.get_current()
@@ -53,17 +54,6 @@ class MetaTestCase(TestCase):
 
         res = self.anonymous.get(reverse('siteapi:meta'))
         expect = {
-            'company_config': {
-                'name_cn': '',
-                'fullname_cn': 'demo',
-                'name_en': '',
-                'fullname_en': '',
-                'icon': '',
-                'address': '',
-                'domain': '',
-                'display_name': 'demo',
-                'color': '',
-            },
             'ding_config': {
                 'corp_id': 'corp_id',
                 'app_key': '',
@@ -93,6 +83,22 @@ class MetaTestCase(TestCase):
             'wechat_config': {
                 'appid': 'test_appid'
             },
+        }
+        self.assertEqual(res.json(), expect)
+
+        res = self.anonymous.get(reverse('siteapi:meta_org', args=(org.oid, )))
+        expect = {
+            'company_config': {
+                'name_cn': '',
+                'fullname_cn': 'demo',
+                'name_en': '',
+                'fullname_en': '',
+                'icon': '',
+                'address': '',
+                'domain': '',
+                'display_name': 'demo',
+                'color': '',
+            }
         }
         self.assertEqual(res.json(), expect)
 

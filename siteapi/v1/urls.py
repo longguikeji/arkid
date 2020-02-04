@@ -16,6 +16,7 @@ from siteapi.v1.views.config import (
     OrgConfigAPIView,
     ConfigAPIView,
     AdminAPIView,
+    OrgMetaConfigAPIView,
     MetaConfigAPIView,
     CustomFieldListCreateAPIView,
     CustomFieldDetailAPIView,
@@ -184,8 +185,9 @@ urlpatterns = [
     url(r'^meta/$', MetaConfigAPIView.as_view(), name='meta'),
     url(r'^meta/log/$', log_views.MetaLogAPIView.as_view(), name='meta_log'),
     url(r'^meta/perm/$', perm_views.MetaPermAPIView.as_view(), name='meta_perm'),
-    url(r'^meta/(?P<oid>[\w|-]+)/node/$', node_views.MetaNodeAPIView.as_view(), name='meta_node'),
-    url(r'^meta/(?P<oid>[\w|-]+)/perm/$', perm_views.MetaOrgPermAPIView.as_view(), name='meta_org_perm'), # TODO@saas document
+    url(r'^org/meta/(?P<oid>[\w|-]+)/$', OrgMetaConfigAPIView.as_view(), name='meta_org'),
+    url(r'^org/meta/(?P<oid>[\w|-]+)/node/$', node_views.MetaNodeAPIView.as_view(), name='meta_node'),
+    url(r'^org/meta/(?P<oid>[\w|-]+)/perm/$', perm_views.MetaOrgPermAPIView.as_view(), name='meta_org_perm'), # TODO@saas document
 
     # app
     url(r'^org/(?P<oid>[\w|-]+)/app/$', app_views.APPListCreateAPIView.as_view(), name='app_list'),

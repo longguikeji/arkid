@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from siteapi.v1.serializers.config import (
     ConfigSerializer,
     OrgConfigSerializer,
+    OrgMetaConfigSerializer,
     MetaConfigSerializer,
     AlterAdminSerializer,
     CustomFieldSerailizer,
@@ -68,7 +69,7 @@ class OrgConfigAPIView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         """
-        get current site
+        get current org
         """
         return self.org
 
@@ -95,6 +96,24 @@ class MetaConfigAPIView(generics.RetrieveAPIView):
         site = Site.objects.get_current()
         site.refresh_from_db()
         return site
+
+
+class OrgMetaConfigAPIView(generics.RetrieveAPIView):
+    '''
+    组织基本配置
+    所用用户可见
+    '''
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = OrgMetaConfigSerializer
+
+    def get_object(self):
+        """
+        get current org
+        """
+        return validity_check(self.kwargs['oid'])
 
 
 class AdminAPIView(generics.RetrieveUpdateAPIView):

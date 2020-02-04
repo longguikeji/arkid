@@ -348,12 +348,25 @@ class PublicCompanyConfigSerializer(DynamicFieldsModelSerializer):
         )
 
 
+class OrgMetaConfigSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for organization meta info
+    '''
+
+    company_config = PublicCompanyConfigSerializer(many=False, required=False, read_only=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = Org
+
+        fields = ('company_config', )
+
+
 class MetaConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for meta info
     '''
 
-    company_config = PublicCompanyConfigSerializer(many=False, required=False, read_only=True)
     ding_config = PublicDingConfigSerializer(many=False, required=False, read_only=True)
     account_config = PublicAccountConfigSerializer(many=False, required=False, read_only=True)
     alipay_config = PublicAlipayConfigSerializer(many=False, required=False, read_only=True)
@@ -365,7 +378,7 @@ class MetaConfigSerializer(DynamicFieldsModelSerializer):
 
         model = Site
 
-        fields = ('company_config', 'ding_config', 'account_config', 'alipay_config', 'work_wechat_config',
+        fields = ('ding_config', 'account_config', 'alipay_config', 'work_wechat_config',
                   'wechat_config', 'qq_config')
 
 
