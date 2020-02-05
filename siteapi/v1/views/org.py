@@ -7,7 +7,7 @@ views for organization
 from rest_framework.exceptions import ParseError, NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView, ValidationError, RetrieveAPIView
-from oneid.permissions import IsAdminUser, IsAuthenticated, IsOrgOwnerOf, UserEmployeeReadable
+from oneid.permissions import IsAdminUser, IsAuthenticated, IsOrgOwnerOf, UserManagerReadable
 from oneid_meta.models import Org, GroupMember, User
 from siteapi.v1.serializers.user import UserSerializer
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
@@ -215,7 +215,7 @@ class OrgUserDetailAPIView(RetrieveAPIView):
         set permissions
         '''
         self.org = validity_check(self.kwargs['oid'])
-        permission_classes = [IsAuthenticated & UserEmployeeReadable & (IsAdminUser | IsOrgOwnerOf(self.org))]
+        permission_classes = [IsAuthenticated & UserManagerReadable & (IsAdminUser | IsOrgOwnerOf(self.org))]
         return [perm() for perm in permission_classes]
 
     def get_object(self):

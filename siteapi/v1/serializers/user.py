@@ -400,10 +400,9 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
     '''
 
     user = UserSerializer(source='*')
-    groups = GroupSerializer(many=True, read_only=True)
-    depts = DeptSerializer(many=True, read_only=True)
-
     nodes = serializers.SerializerMethodField()
+    groups = serializers.SerializerMethodField()
+    depts = serializers.SerializerMethodField()
 
     group_uids = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(),
                                                     many=True,
@@ -442,14 +441,41 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
         for item in self.get_groups(obj):
             yield item
 
-        for item in DeptSerializer(obj.depts, many=True).data:
+        for item in self.get_depts(obj):
             yield item
+
+    def get_depts(self, obj):
+        ds = obj.depts
+        depts = []
+        orgs = self.context.get('org', None)
+        if orgs:
+            for org in orgs:
+                for d in ds:
+                    if d.org.oid == org.oid:
+                        ds.remove(d)
+                        depts.append(d)
+        else:
+            depts = ds
+
+        return DeptSerializer(depts, many=True).data
 
     def get_groups(self, obj):    # pylint: disable=no-self-use
         '''
         出于业务需要，extern 不予展示
         '''
-        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
+        gs = [group for group in obj.groups if group.uid != 'extern']
+        groups = []
+        orgs = self.context.get('org', None)
+        if orgs:
+            for org in orgs:
+                for g in gs:
+                    if g.org.oid == org.oid:
+                        gs.remove(g)
+                        groups.append(g)
+        else:
+            groups = gs
+
+        return GroupSerializer(groups, many=True).data
 
 
 class SubAccountSerializer(DynamicFieldsModelSerializer):
