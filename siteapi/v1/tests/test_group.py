@@ -892,3 +892,85 @@ class GroupTestCase(TestCase):
             result_list.append(res.json()['count'])
         expect = [1, 2, 2, 1, 3, 1, 1, 3]
         self.assertEqual(result_list, expect)
+
+    def test_group_child_group_subject(self):
+        res = self.client.json_post(reverse('siteapi:group_child_group', args=(self.org.label.uid, )),
+                                    data={
+                                        'uid': 'label1',
+                                        'name': 'label1',
+                                    })
+        expect = {
+            'parent_uid': str(self.org.label.uid),
+            'parent_node_uid': self.org.label.node_uid,
+            'parent_name': self.org.label.name,
+            'group_id': 10,
+            'node_uid': 'g_label1',
+            'node_subject': 'label',
+            'uid': 'label1',
+            'name': 'label1',
+            'remark': '',
+            'accept_user': True,
+            'visibility': 1,
+            'node_scope': [],
+            'user_scope': [],
+        }
+        self.assertEqual(res.json(), expect)
+        res = self.client.json_post(reverse('siteapi:group_child_group', args=(self.org.group.uid, )),
+                                    data={
+                                        'uid': 'other_type',
+                                        'name': 'other_type',
+                                    })
+        expect = {
+            'parent_uid': str(self.org.group.uid),
+            'parent_node_uid': self.org.group.node_uid,
+            'parent_name': self.org.group.name,
+            'group_id': 11,
+            'node_uid': 'g_other_type',
+            'node_subject': 'other_type',
+            'uid': 'other_type',
+            'name': 'other_type',
+            'remark': '',
+            'accept_user': True,
+            'visibility': 1,
+            'node_scope': [],
+            'user_scope': [],
+        }
+        self.assertEqual(res.json(), expect)
+        res = self.client.json_post(reverse('siteapi:group_child_group', args=('other_type', )),
+                                    data={
+                                        'uid': 'other',
+                                        'name': 'other',
+                                    })
+        expect = {
+            'parent_uid': 'other_type',
+            'parent_node_uid': 'g_other_type',
+            'parent_name': 'other_type',
+            'group_id': 13,
+            'node_uid': 'g_other',
+            'node_subject': 'other_type',
+            'uid': 'other',
+            'name': 'other',
+            'remark': '',
+            'accept_user': True,
+            'visibility': 1,
+            'node_scope': [],
+            'user_scope': [],
+        }
+        self.assertEqual(res.json(), expect)
+        self.client.json_post(reverse('siteapi:group_child_group', args=('other_type', )),
+                              data={
+                                  'uid': 'other2',
+                                  'name': 'other2',
+                              })
+        res = self.client.json_patch(reverse('siteapi:group_child_group', args=('label1', )),
+                                     data={
+                                         'group_uids': ['other', 'other2'],
+                                         'subject': 'add',
+                                     })
+        self.assertEqual(res.status_code, 400)
+        res = self.client.json_patch(reverse('siteapi:group_child_group', args=('other2', )),
+                                     data={
+                                         'group_uids': ['other'],
+                                         'subject': 'add',
+                                     })
+        self.assertEqual(res.status_code, 200)

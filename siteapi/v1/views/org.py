@@ -215,7 +215,7 @@ class OrgUserDetailAPIView(RetrieveAPIView):
         set permissions
         '''
         self.org = validity_check(self.kwargs['oid'])
-        permission_classes = [IsAuthenticated & UserManagerReadable & (IsAdminUser | IsOrgOwnerOf(self.org))]
+        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | UserManagerReadable)]
         return [perm() for perm in permission_classes]
 
     def get_object(self):
