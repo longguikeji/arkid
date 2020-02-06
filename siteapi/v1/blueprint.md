@@ -449,8 +449,10 @@ FORMAT: 1A
 + alipay_public_key (string) - 支付宝生成的公钥
 + qr_app_valid (boolean, readonly) - qr配置是否有效
 
-## Config (object)
+## OrgConfig (object)
 + company_config (CompanyConfig)
+
+## SiteConfig (object)
 + ding_config (DingConfig)
 + account_config (AccountConfig)
 + sms_config (SMSConfig)
@@ -506,11 +508,13 @@ FORMAT: 1A
 + support_work_wechat_qr (boolean) - 是否支持企业微信扫码登录
 
 ## MetaInfo (object)
-+ company_config (CompanyMetaInfo)
 + ding_config (DingMetaInfo)
 + account_config (AccountMetaInfo)
 + alipay_config (AlipayMetaInfo)
 + work_wechat_config (WorkWechatMetaInfo)
+
+## OrgMetaINfo (object)
++ company_config (CompanyMetaInfo)
 
 ## MetaNodeInfo (object)
 + name (string)
@@ -1644,6 +1648,15 @@ TODO: 可见权限的处理
     + username (string) 用户名
   + Response 204
 
+## 特定组织成员详细信息 [/org/{oid}/user/{username}]
+## 查看特定组织成员详细信息 [GET]
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
+    + username (string) 用户名
+ + Response 200 (application/json)
+    + Attribute (User)
+
 # Group Perm
 
 ## 所有权限 [/perm/{?action,action_except,scope,owner_subject,name}]
@@ -2009,13 +2022,31 @@ TODO: 可见权限的处理
 
 ### 获取当前配置 [GET]
 + Response 200 (application/json)
-    + Attributes (Config)
+    + Attributes (SiteConfig)
 
 ### 修改当前配置 [PATCH]
 + request JSON Message
-    + Attributes (Config)
+    + Attributes (SiteConfig)
 + Response 200 (application/json)
-    + Attributes (Config)
+    + Attributes (SiteConfig)
+
+## 组织配置 [/org/{oid}/config/]
+
+管理员及组织创建者可见
+
++ Parameters
+    + org (string) - (组织id)
+
+### 获取当前配置 [GET]
++ Response 200 (application/json)
+    + Attributes (OrgConfig)
+
+### 修改当前配置 [PATCH]
++ request JSON Message
+    + Attributes (OrgConfig)
++ Response 200 (application/json)
+    + Attributes (OrgConfig)
+
 
 ## 主管理员 [/config/admin/]
 仅主管理员可见
@@ -2033,9 +2064,10 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (User)
 
-## 自定义字段 [/config/custom/field/{subject}/]
+## 自定义字段 [/org/{oid}/config/custom/field/{subject}/]
 
 + Parameters
+    + org (string) - (组织id)
     + subject (enum[string]) - 字段分类
         - user - 内部用户
         - extern_user - 外部用户
@@ -2050,7 +2082,7 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (CustomField)
 
-## 特定自定义字段 [/config/custom/field/{subject}/{uuid}/]
+## 特定自定义字段 [/org/{oid}/config/custom/field/{subject}/{uuid}/]
 
 ### 获取特定自定义字段 [GET]
 + Response 200 (application/json)
@@ -2110,9 +2142,23 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (MetaInfo)
 
-## 组织架构基本信息 [/meta/node/]
+## 组织基本信息 [/org/{oid}/meta/]
 
-登录可见
+组织内成员可见
+
++ Parameters
+  + oid (string) 组织id
+
+### 获取当前基本信息 [GET]
++ Response 200 (application/json)
+    + Attributes (OrgMetaInfo)
+
+## 组织架构基本信息 [/org/{oid}/meta/node/]
+
+组织内成员可见
+
++ Parameters
+  + oid (string) 组织id
 
 ### 获取组织架构基本信息 [GET]
 + Response 200 (application/json)
@@ -2130,6 +2176,19 @@ TODO: 可见权限的处理
 
 ## 内置权限基本信息 [/meta/perm/]
 仅超级管理员可见
+
+### 获取权限基本信息 [GET]
++ Response 200 (application/json)
+    + Attributes (array)
+        + subject_item (object)
+            + name (string)
+            + uid (string)
+            
+## 组织内权限基本信息 [/org/{oid}/meta/perm/]
+组织创建者可见
+
++ Parameters
+  + oid (string) 组织id
 
 ### 获取权限基本信息 [GET]
 + Response 200 (application/json)
@@ -2222,9 +2281,27 @@ Content-Disposition: form-data; name='node_uid'
 
 # Group Log
 
-## 日志列表 [/log/{?days,user,subject,summary}]
+## 全局日志列表 [/log/{?days,user,subject,summary}]
 
 + Parameters
+    + days (number) - 距今天数，0特指当天
+    + user (string) - 操作者
+    + summary (string) - 事件信息
+    + subject (string) - 事件类型，具体枚举值从 /meta/log/中获取，多选时以`|`间隔，形如 `a|b`
+
+### 获取日志列表 [GET]
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + count (number)
+        + next (string)
+        + previous (string)
+        + results (array[LiteLog])
+
+## 组织内日志列表 [/org/{oid}/log/{?days,user,subject,summary}]
+
++ Parameters
+    + oid (string) - 组织id
     + days (number) - 距今天数，0特指当天
     + user (string) - 操作者
     + summary (string) - 事件信息

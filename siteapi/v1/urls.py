@@ -177,8 +177,8 @@ urlpatterns = [
         name='native_field_detail'),
 
     # log
-    url(r'^log/$', log_views.LogListAPIView.as_view(), name='log_list_all'), # TODO@saas document
-    url(r'^org/(?P<oid>[\w|-]+)/log/$', log_views.OrgLogListAPIView.as_view(), name='log_list'), # TODO@saas document
+    url(r'^log/$', log_views.LogListAPIView.as_view(), name='log_list_all'),
+    url(r'^org/(?P<oid>[\w|-]+)/log/$', log_views.OrgLogListAPIView.as_view(), name='log_list'),
     url(r'^log/(?P<uuid>[\w|-]+)', log_views.LogDetailAPIView.as_view(), name='log_detail'),
 
     # meta
@@ -187,7 +187,7 @@ urlpatterns = [
     url(r'^meta/perm/$', perm_views.MetaPermAPIView.as_view(), name='meta_perm'),
     url(r'^org/meta/(?P<oid>[\w|-]+)/$', OrgMetaConfigAPIView.as_view(), name='meta_org'),
     url(r'^org/meta/(?P<oid>[\w|-]+)/node/$', node_views.MetaNodeAPIView.as_view(), name='meta_node'),
-    url(r'^org/meta/(?P<oid>[\w|-]+)/perm/$', perm_views.MetaOrgPermAPIView.as_view(), name='meta_org_perm'), # TODO@saas document
+    url(r'^org/meta/(?P<oid>[\w|-]+)/perm/$', perm_views.MetaOrgPermAPIView.as_view(), name='meta_org_perm'),
 
     # app
     url(r'^org/(?P<oid>[\w|-]+)/app/$', app_views.APPListCreateAPIView.as_view(), name='app_list'),
