@@ -36,7 +36,7 @@ class OrgTestCase(TestCase):
         super(OrgTestCase, self).tearDown()
         for org in ORG_DATA:
             for o in Org.valid_objects.filter(name=org['name']):
-                o.kill()
+                o.delete()
 
     def set_client(self, client):
         self.client = client
@@ -281,7 +281,11 @@ class OrgTestCase(TestCase):
         user2 = User.create_user('user2', 'user2')
         org = Org.create(name='org', owner=owner)
 
-        GroupMember.valid_objects.create(user=user1, owner=org.direct)
+        self.client.json_patch(reverse('siteapi:group_child_user', args=(org.direct.uid, )),
+                               data={
+                                   'subject': 'add',
+                                   'user_uids': ['user1']
+                               })
         self.set_client(self.login_as(owner))
 
         res = self.client.get(reverse('siteapi:org_user_detail', args=(
@@ -302,7 +306,11 @@ class OrgTestCase(TestCase):
         )))
         self.assertEqual(404, res.status_code)
 
-        GroupMember.valid_objects.create(user=user2, owner=org.group)
+        self.client.json_patch(reverse('siteapi:group_child_user', args=(org.group.uid, )),
+                               data={
+                                   'subject': 'add',
+                                   'user_uids': ['user2']
+                               })
 
         res = self.client.get(reverse('siteapi:org_user_detail', args=(
             org.oid,

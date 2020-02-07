@@ -8,6 +8,7 @@ from executer.utils.password import encrypt_password
 from oneid_meta.models import (
     Dept,
     DeptMember,
+    OrgMember,
     DeptPerm,
     Group,
     GroupMember,
@@ -84,6 +85,8 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             if not DeptMember.valid_objects.filter(user=user, owner=dept).exists():
                 order_no += 1
                 DeptMember.valid_objects.create(user=user, owner=dept, order_no=order_no)
+                if dept.org and not OrgMember.valid_objects.filter(user=user, owner=dept.org).exists():
+                    OrgMember.valid_objects.create(user=user, owner=dept.org)
 
     def add_users_to_group(self, users, group):
         '''
@@ -97,6 +100,8 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             if not GroupMember.valid_objects.filter(user=user, owner=group).exists():
                 order_no += 1
                 GroupMember.valid_objects.create(user=user, owner=group, order_no=order_no)
+                if group.org and not OrgMember.valid_objects.filter(user=user, owner=group.org).exists():
+                    OrgMember.valid_objects.create(user=user, owner=group.org)
 
     def add_user_to_depts(self, user, depts):
         '''
@@ -108,6 +113,8 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             if not DeptMember.valid_objects.filter(user=user, owner=dept).exists():
                 order_no = DeptMember.get_max_order_no(owner=dept) + 1
                 DeptMember.valid_objects.create(user=user, owner=dept, order_no=order_no)
+                if dept.org and not OrgMember.valid_objects.filter(user=user, owner=dept.org).exists():
+                    OrgMember.valid_objects.create(user=user, owner=dept.org)
 
     def add_user_to_groups(self, user, groups):
         '''
@@ -119,6 +126,8 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             if not GroupMember.valid_objects.filter(user=user, owner=group).exists():
                 order_no = GroupMember.get_max_order_no(owner=group) + 1
                 GroupMember.valid_objects.create(user=user, owner=group, order_no=order_no)
+                if group.org and not OrgMember.valid_objects.filter(user=user, owner=group.org).exists():
+                    OrgMember.valid_objects.create(user=user, owner=group.org)
 
     def delete_user_from_depts(self, user, depts):
         '''
@@ -128,6 +137,10 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             target = DeptMember.valid_objects.filter(user=user, owner=dept).first()
             if target:
                 target.kill()
+            if dept.org and dept.org not in user.organizations:
+                target = OrgMember.valid_objects.filter(user=user, owner=dept.org).first()
+                if target:
+                    target.kill()
 
     def delete_user_from_groups(self, user, groups):
         '''
@@ -137,6 +150,10 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             target = GroupMember.valid_objects.filter(user=user, owner=group).first()
             if target:
                 target.kill()
+            if group.org and group.org not in user.organizations:
+                target = OrgMember.valid_objects.filter(user=user, owner=group.org).first()
+                if target:
+                    target.kill()
 
     def create_dept(self, dept_info, org):
         '''

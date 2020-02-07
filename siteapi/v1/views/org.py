@@ -6,10 +6,10 @@ views for organization
 
 from rest_framework.exceptions import ParseError, NotFound, PermissionDenied
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView, ValidationError, RetrieveAPIView
+from rest_framework.generics import GenericAPIView, ValidationError, RetrieveUpdateAPIView
 from oneid.permissions import IsAdminUser, IsAuthenticated, IsOrgOwnerOf, UserManagerReadable
-from oneid_meta.models import Org, GroupMember, User
-from siteapi.v1.serializers.user import UserSerializer
+from oneid_meta.models import Org, GroupMember, User, OrgMember
+from siteapi.v1.serializers.user import OrgUserSerializer, OrgUserDeserializer
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
 
 
@@ -203,12 +203,12 @@ class UcenterCurrentOrgAPIView(GenericAPIView):
         return Response(status=204)
 
 
-class OrgUserDetailAPIView(RetrieveAPIView):
+class OrgUserDetailAPIView(RetrieveUpdateAPIView):
     '''
-    组织拥有者查看他人信息 [GET]
+    组织拥有者查看他人信息 [GET] [PATCH]
     '''
 
-    serializer_class = UserSerializer
+    serializer_class = OrgUserSerializer
 
     def get_permissions(self):
         '''
@@ -226,14 +226,24 @@ class OrgUserDetailAPIView(RetrieveAPIView):
         user = User.valid_objects.filter(username=self.kwargs['username']).first()
         if not user:
             raise NotFound
-        if self.org not in user.organizations:
+        om = OrgMember.valid_objects.filter(user=user, owner=self.org).first()
+        if not om:
             raise NotFound
         try:
             self.check_object_permissions(self.request, user)
         except PermissionDenied:
             raise NotFound
 
-        return user
+        return om
+
+    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+        '''
+        update user
+        '''
+        serializer = OrgUserDeserializer(self.get_object(), data=request.data)
+        serializer.is_valid(raise_exception=True)
+        om = serializer.save()
+        return Response(OrgUserSerializer(om).data)
 
 
 def validity_check(oid):

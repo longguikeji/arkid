@@ -56,16 +56,12 @@ class User(BaseModel, PermOwnerMixin):
     email = models.CharField(max_length=255, blank=True, default='', verbose_name='邮箱')
     private_email = models.CharField(max_length=255, blank=True, default='', verbose_name='私人邮箱')    # 仅用于找回密码
     mobile = models.CharField(max_length=64, blank=True, default='', verbose_name='手机')
-    employee_number = models.CharField(max_length=255, blank=True, default='', verbose_name='工号')
-    position = models.CharField(max_length=255, blank=True, default='', verbose_name='职位')
     gender = models.IntegerField(choices=GENDER_CHOICES, default=0, verbose_name='性别')
     avatar = models.CharField(max_length=1024, blank=True, default='', verbose_name='头像')
     is_boss = models.BooleanField(default=False, verbose_name='是否为主管理员')
     from_register = models.BooleanField(default=False, verbose_name='是否来自自己注册')
     origin = models.IntegerField(choices=ORIGIN_CHOICES, default=0, verbose_name='账号来源')
-    hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
-    remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
-    last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')
+    last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')    # TODO@saas
     require_reset_password = models.BooleanField(default=False, verbose_name='是否需要重置密码')
     current_organization = models.ForeignKey('oneid_meta.Org', null=True, blank=True, on_delete=models.SET_NULL)
 

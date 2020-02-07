@@ -416,10 +416,6 @@ class DeptTestCase(TestCase):
                 self.now_str,
                 'last_active_time':
                 None,
-                'hiredate':
-                None,
-                'remark':
-                '',
                 'username':
                 'employee',
                 'name':
@@ -438,11 +434,7 @@ class DeptTestCase(TestCase):
                 '脚本添加',
                 'mobile':
                 '',
-                'position':
-                '',
                 'private_email':
-                '',
-                'employee_number':
                 '',
                 'gender':
                 0,

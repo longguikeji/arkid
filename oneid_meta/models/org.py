@@ -4,7 +4,7 @@ schema of Orgs
 
 from uuid import uuid4
 from django.db import models
-from common.django.model import BaseModel
+from common.django.model import BaseModel, BaseOrderedModel
 
 
 class Org(BaseModel):
@@ -60,6 +60,8 @@ class Org(BaseModel):
         self.manager.delete()
         self.role.delete()
         self.label.delete()
+        for om in OrgMember.valid_objects.filter(owner=self):
+            om.delete()
         super(Org, self).delete()
 
     @staticmethod
@@ -107,6 +109,7 @@ class Org(BaseModel):
             pass
 
         org = Org.valid_objects.create(**kw)
+        OrgMember.valid_objects.create(user=owner, owner=org)
         CompanyConfig.objects.create(org=org)
         return org
 
@@ -136,3 +139,23 @@ class Org(BaseModel):
             org = dm.owner.org
             if org and org.uuid == self.uuid:
                 dm.delete()
+
+
+class OrgMember(BaseOrderedModel):
+    '''
+    组织与用户的从属关系
+    这里部门仅收录末端部门
+    '''
+
+    user = models.ForeignKey('oneid_meta.User', on_delete=models.PROTECT)
+    owner = models.ForeignKey(Org, verbose_name='所属组织', on_delete=models.PROTECT)
+    employee_number = models.CharField(max_length=255, blank=True, default='', verbose_name='工号')
+    position = models.CharField(max_length=255, blank=True, default='', verbose_name='职位')
+    hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
+    remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
+
+    class Meta:    # pylint: disable=missing-docstring
+        unique_together = ('user', 'owner')
+
+    def __str__(self):
+        return f'OrgMember: {self.user} -> {self.owner}'

@@ -18,7 +18,6 @@ EMPLOYEE = {
         'name': 'employee1',
         'email': 'email',
         'mobile': '18812345678',
-        'employee_number': '',
         'gender': 2,
         'private_email': '',
         'is_settled': False,
@@ -26,9 +25,6 @@ EMPLOYEE = {
         'is_admin': False,
         'is_extern_user': False,
         'origin_verbose': '管理员添加',
-        'position': '',
-        'hiredate': None,
-        'remark': '',
         'last_active_time': None,
         'created': TestCase.now_str,
         'require_reset_password': False,
@@ -83,7 +79,6 @@ USER_DATA = {
     'email': 'email',
     'mobile': '18812345678',
     'private_email': '',
-    'position': '',
     'gender': 2,
     'ding_user': {
         'uid': 'ding_employee2',
@@ -203,20 +198,16 @@ class UserTestCase(TestCase):
                     'name': '',
                     'email': '',
                     'mobile': '',
-                    'employee_number': '',
                     'last_active_time': None,
                     'gender': 0,
                     'avatar': '',
                     'private_email': '',
                     'nodes': [],
-                    'position': '',
                     'is_settled': False,
                     'is_manager': False,
                     'is_admin': False,
                     'is_extern_user': False,
                     'origin_verbose': '脚本添加',
-                    'hiredate': None,
-                    'remark': '',
                     'require_reset_password': False,
                     'has_password': False,
                 },
@@ -226,6 +217,111 @@ class UserTestCase(TestCase):
             }]
         }
         self.assertEqual(res.json(), expect)
+
+    def test_org_user_detail(self):
+        org1 = Org.create(name='org1', owner=User.valid_objects.get(username='admin'))
+        org2 = Org.create(name='org2', owner=User.valid_objects.get(username='admin'))
+        User.objects.create(username='employee')
+        self.client.json_patch(reverse('siteapi:dept_child_user', args=(org1.dept.uid, )),
+                               data={
+                                   'subject': 'add',
+                                   'user_uids': ['employee']
+                               })
+        self.client.json_patch(reverse('siteapi:group_child_user', args=(org2.group.uid, )),
+                               data={
+                                   'subject': 'add',
+                                   'user_uids': ['employee']
+                               })
+        res = self.client.get(reverse('siteapi:org_user_detail', args=(
+            org1.oid,
+            'employee',
+        )))
+        expect = {
+            'user': {
+                'user_id':
+                2,
+                'username':
+                'employee',
+                'name':
+                '',
+                'email':
+                '',
+                'mobile':
+                '',
+                'gender':
+                0,
+                'avatar':
+                '',
+                'private_email':
+                '',
+                'is_settled':
+                False,
+                'is_manager':
+                False,
+                'is_admin':
+                False,
+                'origin_verbose':
+                '脚本添加',
+                'nodes': [
+                    {
+                        'group_id': 8,
+                        'node_uid': org2.group.node_uid,
+                        'node_subject': 'org',
+                        'uid': str(org2.group.uid),
+                        'name': 'org2',
+                        'remark': '',
+                        'accept_user': True
+                    },
+                    {
+                        'dept_id': 3,
+                        'node_uid': org1.dept.node_uid,
+                        'node_subject': 'dept',    # TODO@saas node subject & top for dept
+                        'uid': str(org1.dept.uid),
+                        'name': 'org1',
+                        'remark': ''
+                    }
+                ],
+                'created':
+                self.now_str,
+                'last_active_time':
+                None,
+                'is_extern_user':
+                False,
+                'require_reset_password':
+                False,
+                'has_password':
+                False
+            },
+            'employee_number': '',
+            'position': '',
+            'hiredate': None,
+            'remark': ''
+        }
+        self.assertEqual(expect, res.json())
+        res = self.client.json_patch(reverse('siteapi:org_user_detail', args=(org1.oid, 'employee')),
+                                     data={
+                                         'remark': 'remark1',
+                                         'position': 'position1'
+                                     }).json()
+        del res['user']
+        expect = {'employee_number': '', 'position': 'position1', 'hiredate': None, 'remark': 'remark1'}
+        self.assertEqual(expect, res)
+        res = self.client.get(reverse('siteapi:org_user_detail', args=(org1.oid, 'employee'))).json()
+        del res['user']
+        self.assertEqual(expect, res)
+
+        self.client.json_patch(reverse('siteapi:org_user_detail', args=(org2.oid, 'employee')),
+                               data={
+                                   'position': 'position2',
+                                   'employee_number': '123',
+                               })
+        expect_ = {'employee_number': '123', 'position': 'position2', 'hiredate': None, 'remark': ''}
+        res = self.client.get(reverse('siteapi:org_user_detail', args=(org2.oid, 'employee'))).json()
+        del res['user']
+        self.assertEqual(expect_, res)
+        res = self.client.get(reverse('siteapi:org_user_detail', args=(org1.oid, 'employee'))).json()
+        del res['user']
+        self.assertEqual(expect, res)
 
     def test_create_user(self):
         res = self.create_user()
@@ -299,7 +395,6 @@ class UserTestCase(TestCase):
             'gender': 2,
             'is_settled': False,
             'private_email': 'private_email',
-            'position': 'position',
             'ding_user': {
                 'data': '{"key": "new_val"}',
             },
@@ -312,7 +407,6 @@ class UserTestCase(TestCase):
                     cf.uuid.hex: '无',
                 }
             },
-            'hiredate': '2019-06-04T09:01:44+08:00',
         }
 
         res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
@@ -327,16 +421,13 @@ class UserTestCase(TestCase):
             'name': 'new_employee1',
             'email': 'new_email',
             'mobile': '18812345678',
-            'employee_number': '',
             'private_email': 'private_email',
-            'position': 'position',
             'is_settled': False,
             'is_manager': False,
             'is_admin': False,
             'is_extern_user': False,
             'origin_verbose': '管理员添加',
             'gender': 2,
-            'remark': '',
             'ding_user': {
                 'uid': 'ding_employee2',
                 'account': '18812345678',
@@ -360,7 +451,6 @@ class UserTestCase(TestCase):
         # }
                 ]
             },
-            'hiredate': '2019-06-04T09:01:44+08:00',
             'require_reset_password': False,
             'has_password': False,
         }

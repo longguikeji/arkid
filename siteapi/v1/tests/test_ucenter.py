@@ -157,11 +157,9 @@ class UCenterTestCase(TestCase):
             'user_id': 1,
             'username': 'admin',
             'private_email': '',
-            'position': '',
             'name': '',
             'email': '',
             'mobile': '',
-            'employee_number': '',
             'gender': 0,
             'perms': ['system_oneid_all', 'system_ark-meta-server_all'],
             'roles': ['admin'],
@@ -283,14 +281,11 @@ class UCenterTestCase(TestCase):
             'name': '',
             'email': '',
             'mobile': '',
-            'employee_number': '',
             'private_email': '',
-            'position': '',
             'gender': 0,
             'avatar': '',
             'visible_fields': VISIABLE_FIELDS,
             'depts': [],
-            'remark': '',
         }
         self.assertEqual(res.json(), expect)
 
@@ -301,13 +296,10 @@ class UCenterTestCase(TestCase):
             'email': '',
             'mobile': '',
             'gender': 0,
-            'employee_number': '',
             'private_email': '',
-            'position': '',
             'avatar': 'avatar_key',
             'visible_fields': VISIABLE_FIELDS,
             'depts': [],
-            'remark': '',
         }
         self.assertEqual(res.json(), expect)
 

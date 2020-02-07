@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from oneid_meta.models import (
     User,
+    OrgMember,
     DingUser,
     PosixUser,
     Dept,
@@ -69,15 +70,12 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'name',
             'email',
             'mobile',
-            'employee_number',
             'gender',
             'avatar',
             'depts',
             'custom_user',
             'visible_fields',    # 按需使用，不在该列表中不意味着不展示，反例如`avatar`
             'private_email',
-            'position',
-            'remark',
         )
 
         read_only_fields = ('user_id', 'username', 'mobile', 'depts', 'visible_fields')
@@ -181,11 +179,9 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'name',
             'email',
             'mobile',
-            'employee_number',
             'gender',
             'avatar',
             'private_email',
-            'position',
             'ding_user',
             'posix_user',
             'custom_user',
@@ -193,8 +189,6 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'is_manager',
             'is_admin',
             'origin_verbose',
-            'hiredate',
-            'remark',
             'nodes',
             'created',
             'last_active_time',
@@ -302,14 +296,87 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         for item in self.get_groups(obj):
             yield item
 
-        for item in DeptSerializer(obj.depts, many=True).data:
+        for item in self.get_depts(obj):
             yield item
+
+    def get_depts(self, obj):
+        ds = obj.depts
+        depts = []
+        orgs = self.context.get('org', None)
+        if orgs:
+            for org in orgs:
+                for d in ds:
+                    if d.org.oid == org.oid:
+                        ds.remove(d)
+                        depts.append(d)
+        else:
+            depts = ds
+
+        return DeptSerializer(depts, many=True).data
 
     def get_groups(self, obj):    # pylint: disable=no-self-use
         '''
         出于业务需要，extern 不予展示
         '''
-        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
+        gs = [group for group in obj.groups if group.uid != 'extern']
+        groups = []
+        orgs = self.context.get('org', None)
+        if orgs:
+            for org in orgs:
+                for g in gs:
+                    if g.org.oid == org.oid:
+                        gs.remove(g)
+                        groups.append(g)
+        else:
+            groups = gs
+
+        return GroupSerializer(groups, many=True).data
+
+
+class OrgUserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
+    '''
+    Serializer for User x Org
+    '''
+
+    user = UserSerializer(many=False, required=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = OrgMember
+
+        fields = (
+            'user',
+            'employee_number',
+            'position',
+            'hiredate',
+            'remark',
+        )
+
+
+class OrgUserDeserializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
+    '''
+    Deserializer for User x Org
+    '''
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = OrgMember
+
+        fields = (
+            'employee_number',
+            'position',
+            'hiredate',
+            'remark',
+        )
+
+    def update(self, instance, validated_data):
+        '''
+        update org profile
+        '''
+        om = instance
+        validated_data.pop('user', None)
+        om.__dict__.update(validated_data)
+        om.save()
+        return om
 
 
 class UserWithPermSerializer(UserSerializer):
@@ -331,7 +398,6 @@ class UserWithPermSerializer(UserSerializer):
             'name',
             'email',
             'mobile',
-            'employee_number',
             'gender',
             'ding_user',
             'posix_user',
@@ -339,7 +405,6 @@ class UserWithPermSerializer(UserSerializer):
             'avatar',
             'roles',
             'private_email',
-            'position',
             'custom_user',
             'is_settled',
             'is_manager',

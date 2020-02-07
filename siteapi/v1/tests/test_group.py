@@ -582,14 +582,10 @@ class GroupTestCase(TestCase):
             'results': [{
                 'user_id':
                 3,
-                'hiredate':
-                None,
                 'last_active_time':
                 None,
                 'created':
                 self.now_str,
-                'remark':
-                '',
                 'avatar':
                 '',
                 'username':
@@ -610,13 +606,9 @@ class GroupTestCase(TestCase):
                 '',
                 'email':
                 '',
-                'position':
-                '',
                 'private_email':
                 '',
                 'mobile':
-                '',
-                'employee_number':
                 '',
                 'gender':
                 0,

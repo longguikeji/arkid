@@ -27,10 +27,7 @@ FORMAT: 1A
 + email (string)
 + mobile (string)
 + avatar (string)
-+ number (string) - 工号
 + private_email (string) - 私人邮箱
-+ position (string) - 职位
-+ remark (string) - 备注
 + depts (array) - 所属部门列表
     + dept (object)
         + uid (string)
@@ -49,16 +46,12 @@ FORMAT: 1A
 + email (string)
 + mobile (string)
 + avatar (string)
-+ number (string) - 工号
 + private_email (string) - 私人邮箱
-+ position (string) - 职位
 + is_settled (boolean) - 是否已入驻
 + is_manager (boolean) - 是否是子管理员
 + is_admin (boolean) - 是否是超级管理员
 + is_extern_user (boolean) - 是否是外部用户
 + origin_verbose (string) - 注册来源
-+ remark (string) - 备注
-+ hiredate (string) - 入职时间 2019-06-04T09:01:44+08:00
 + created (string) - 创建时间、注册时间 2019-06-04T09:01:44+08:00
 + last_active_time (string) - 最后活跃时间
 + gender (enum[number])
@@ -102,6 +95,14 @@ FORMAT: 1A
 + groups (array[Group])
 + depts (array[Dept])
 + nodes (array[Node])
+
+## OrgUser(object)
++ user (User)
++ remark (string) - 备注
++ position (string) - 职位
++ employee_number (string) - 工号
++ hiredate (string) - 入职时间 2019-06-04T09:01:44+08:00
+
 
 ## SubAccount(object)
 + domain (string)
@@ -1655,7 +1656,14 @@ TODO: 可见权限的处理
     + oid (string) - 组织唯一标识
     + username (string) 用户名
  + Response 200 (application/json)
-    + Attribute (User)
+    + Attribute (OrgUser)
+## 修改特定组织成员详细信息 [POST]
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
+    + username (string) 用户名
+ + Response 200 (application/json)
+    + Attribute (OrgUser)
 
 # Group Perm
 
