@@ -1,8 +1,14 @@
+'''
+Migrate to multi-organization version
+'''
+# pylint: disable=invalid-name,too-many-locals,missing-class-docstring,missing-function-docstring
+
 from uuid import uuid4
 from django.db import migrations, models
 from django.conf import settings
 
-def migrate(apps, schema_editor):
+
+def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-branches,too-many-statements
     '''
     migrate with a default organization
     '''

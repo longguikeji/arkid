@@ -49,22 +49,6 @@ class IsManagerUser(BasePermission):
         return self.has_permission(request, view)
 
 
-class IsManagerOf():
-    def __new__(cls, *args, **kwargs):
-        _cls = type('_IsManagerOf', (BasePermission, ), {'args': args})
-
-        def has_permission(self, request, view):
-            return request.user and request.user.is_authenticated and request.user.is_org_manager(*(self.args))
-
-        def has_object_permission(self, request, view, _):
-            return self.has_permission(request, view)
-
-        setattr(_cls, 'has_permission', has_permission)
-        setattr(_cls, 'has_object_permission', has_object_permission)
-
-        return _cls
-
-
 class IsNotSettledinUser(IsAuthenticated):
     '''
     Allows access only to not settled users (password unset)
@@ -163,7 +147,26 @@ class HasAPPAccess(BasePermission):
         ).exists()
 
 
-class IsOrgOwnerOf():
+class IsManagerOf:
+    '''
+    是否为组织的管理员，默认检查当前组织
+    '''
+    def __new__(cls, *args):
+        _cls = type('_IsManagerOf', (BasePermission, ), {'args': args})
+
+        def has_permission(self, request, view):    # pylint: disable=unused-argument
+            return request.user and request.user.is_authenticated and request.user.is_org_manager(*(self.args))
+
+        def has_object_permission(self, request, view, _):
+            return self.has_permission(request, view)
+
+        setattr(_cls, 'has_permission', has_permission)
+        setattr(_cls, 'has_object_permission', has_object_permission)
+
+        return _cls
+
+
+class IsOrgOwnerOf:
     '''
     是否为组织的拥有者，默认检查当前组织
     '''
@@ -188,7 +191,10 @@ class IsOrgOwnerOf():
         return _cls
 
 
-class IsOrgMember():
+class IsOrgMember:
+    '''
+    是否为组织的成员
+    '''
     def __new__(cls, org):
         _cls = type('_IsOrgMember', (BasePermission, ), {'org': org})
 

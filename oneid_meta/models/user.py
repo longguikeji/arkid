@@ -258,6 +258,10 @@ class User(BaseModel, PermOwnerMixin):
         return GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False).exists()
 
     def is_org_manager(self, *args):
+        '''
+        是否是组织子管理员
+        '''
+        # pylint: disable=invalid-name
         if not args:
             args = (self.current_organization, )
 
@@ -268,6 +272,11 @@ class User(BaseModel, PermOwnerMixin):
 
     @property
     def organizations(self):
+        '''
+        所属组织
+        '''
+
+        # pylint: disable=invalid-name
         def traverse_group(g):
             for org in Org.valid_objects.filter(group=g):
                 return org
