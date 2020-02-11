@@ -1,7 +1,7 @@
 '''
 schema of Orgs
 '''
-
+# pylint: disable=invalid-name
 from uuid import uuid4
 from django.db import models
 from common.django.model import BaseModel, BaseOrderedModel
@@ -54,6 +54,7 @@ class Org(BaseModel):
         return oid
 
     def delete(self):
+        # pylint: disable=no-member, arguments-differ
         self.dept.delete()
         self.group.delete()
         self.direct.delete()
@@ -66,6 +67,10 @@ class Org(BaseModel):
 
     @staticmethod
     def create(name, owner, **kwargs):
+        '''
+        create org
+        '''
+        # pylint: disable=too-many-locals,import-outside-toplevel
         from oneid_meta.models import Dept, Group, GroupMember, CompanyConfig
 
         dept_root = Dept.valid_objects.filter(uid='root').first()
@@ -115,6 +120,9 @@ class Org(BaseModel):
 
     @property
     def users(self):
+        '''
+        org user list
+        '''
         def traverse_dept(dept):
             yield from (u.username for u in dept.users)
             for d in dept.depts:
@@ -129,6 +137,10 @@ class Org(BaseModel):
         yield from traverse_group(self.group)
 
     def remove(self, user):
+        '''
+        remove user from org
+        '''
+        # pylint: disable=import-outside-toplevel
         from oneid_meta.models import GroupMember, DeptMember
 
         for gm in GroupMember.valid_objects.filter(user=user):

@@ -2,7 +2,7 @@
 views for organization
 '''
 
-# pylint: disable=no-self-use, invalid-name, unused-argument
+# pylint: disable=no-self-use, invalid-name, unused-argument, attribute-defined-outside-init, cyclic-import
 
 from rest_framework.exceptions import ParseError, NotFound, PermissionDenied
 from rest_framework.response import Response

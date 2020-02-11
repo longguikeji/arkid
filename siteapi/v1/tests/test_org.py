@@ -278,7 +278,7 @@ class OrgTestCase(TestCase):
     def test_org_user_detail(self):
         owner = User.create_user('owner', 'owner')
         user1 = User.create_user('user1', 'user1')
-        user2 = User.create_user('user2', 'user2')
+        User.create_user('user2', 'user2')
         org = Org.create(name='org', owner=owner)
 
         self.client.json_patch(reverse('siteapi:group_child_user', args=(org.direct.uid, )),

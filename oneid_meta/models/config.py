@@ -36,6 +36,7 @@ class CompanyConfig(BaseModel):
     '''
     公司相关信息
     '''
+    # pylint: disable=import-outside-toplevel
     from oneid_meta.models.org import Org
     org = models.OneToOneField(Org, related_name='company_config', on_delete=models.CASCADE)
 

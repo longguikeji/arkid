@@ -128,6 +128,7 @@ class APP(BaseModel):
         '''
         判断是否在某人管理之下
         '''
+        # pylint: disable=no-member
         if user.is_admin:
             return True
         if user.username == self.owner.owner.username:

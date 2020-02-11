@@ -1,6 +1,7 @@
 '''
 serializers for user
 '''
+# pylint: disable=too-many-lines,invalid-name
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -300,6 +301,9 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             yield item
 
     def get_depts(self, obj):
+        '''
+        get depts
+        '''
         ds = obj.depts
         depts = []
         orgs = self.context.get('org', None)
@@ -510,6 +514,9 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
             yield item
 
     def get_depts(self, obj):
+        '''
+        get depts
+        '''
         ds = obj.depts
         depts = []
         orgs = self.context.get('org', None)

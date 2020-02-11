@@ -1,7 +1,7 @@
 '''
 urls of apis
 '''
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,line-too-long
 
 from django.conf.urls import url, include
 

@@ -5,7 +5,7 @@ views about user
 - UserGroup
 - UserDept
 '''
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,invalid-name,import-outside-toplevel
 
 from rest_framework import generics, status, views
 from rest_framework.response import Response

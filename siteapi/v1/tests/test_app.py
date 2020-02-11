@@ -1,7 +1,7 @@
 '''
 tests for api about app
 '''
-# pylint: disable=missing-docstring, too-many-lines, attribute-defined-outside-init
+# pylint: disable=missing-docstring, too-many-lines, attribute-defined-outside-init, invalid-name, global-statement
 import os
 from uuid import uuid4
 from unittest import mock
@@ -16,7 +16,6 @@ from oneid_meta.models import (
     Org,
     User,
     UserPerm,
-    Dept,
     Group,
     GroupMember,
     ManagerGroup,

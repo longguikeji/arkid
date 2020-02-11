@@ -4,6 +4,7 @@ views about dept
 - DeptChildDept
 - DeptMemberUser
 '''
+# pylint: disable=attribute-defined-outside-init
 import json
 
 from django.core.exceptions import ObjectDoesNotExist

@@ -1,4 +1,4 @@
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,line-too-long,too-many-lines,attribute-defined-outside-init
 
 from unittest import mock
 

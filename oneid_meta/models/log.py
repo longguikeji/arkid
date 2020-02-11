@@ -1,6 +1,7 @@
 '''
 schema of log
 '''
+# pylint: disable=no-member,import-outside-toplevel
 import uuid
 from collections import OrderedDict
 

@@ -6,7 +6,6 @@ from django.conf import settings
 from django.db.utils import IntegrityError
 
 from common.django.model import BaseOrderedModel
-from oneid_meta.models.org import Org
 from oneid_meta.models.perm import DeptPerm, PermOwnerMixin
 from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
 

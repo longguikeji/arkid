@@ -1,7 +1,7 @@
 '''
 views for node
 '''
-
+# pylint: disable=line-too-long
 from functools import wraps
 
 from rest_framework import generics
@@ -28,6 +28,7 @@ class MetaNodeAPIView(APIView):
     组织结构基本信息 [GET]
     '''
     def get_permissions(self):
+        # pylint: disable=import-outside-toplevel,attribute-defined-outside-init
         from siteapi.v1.views.org import validity_check
         self.org = validity_check(self.kwargs['oid'])
 

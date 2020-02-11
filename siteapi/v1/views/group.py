@@ -4,6 +4,7 @@ views about group
 - GroupChildGroup
 - GroupChildUser
 '''
+# pylint: disable=attribute-defined-outside-init
 import json
 import random
 import string    # pylint: disable=deprecated-module
@@ -224,6 +225,7 @@ class GroupChildGroupAPIView(
         '''
         读写权限
         '''
+        # pylint: disable=invalid-name
         self.group = Group.valid_objects.filter(uid=self.kwargs['uid']).first()
         if not self.group:
             raise NotFound

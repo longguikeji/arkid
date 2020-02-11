@@ -1,6 +1,7 @@
 '''
 Mixin for models
 '''
+# pylint: disable=no-member,import-outside-toplevel
 from itertools import chain
 
 from django.core.cache import cache
@@ -12,7 +13,7 @@ class NodeVisibilityScope(models.Model):
     '''
     节点对员工的可见范围
     '''
-    class Meta:
+    class Meta:    # pylint: disable=missing-class-docstring
         abstract = True
 
     VISIBILITY_SUBJECT = (    # 此处`对...可见`，为`对...开放`的意思，即使判定不可见，最终也有可能可以看到
@@ -26,7 +27,7 @@ class NodeVisibilityScope(models.Model):
     node_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定节点node_uids')
     user_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定人usernames')
 
-    def is_open_to_employee(self, user):
+    def is_open_to_employee(self, user):    # pylint: disable=too-many-branches
         '''
         对user是否开放，由自身性质决定
         TODO: 优化
@@ -165,47 +166,74 @@ class TreeNode():
 
     @property
     def is_org(self):
+        '''
+        该节点是否是一个组织
+        '''
         return self.parent_uid == 'root'
 
     @property
     def is_group(self):
+        '''
+        该节点是否是一个群组
+        '''
         from oneid_meta.models import Group
 
         return self.NODE_PREFIX == Group.NODE_PREFIX
 
     @property
     def is_dept(self):
+        '''
+        该节点是否是一个部门
+        '''
         from oneid_meta.models import Dept
 
         return self.NODE_PREFIX == Dept.NODE_PREFIX
 
     @property
     def is_org_dept(self):
+        '''
+        该节点是否是某个组织的根节点部门
+        '''
         from oneid_meta.models import Org
         return Org.valid_objects.filter(dept=self).exists()
 
     @property
     def is_org_group(self):
+        '''
+        该节点是否是某个组织的根节点群组
+        '''
         from oneid_meta.models import Org
         return Org.valid_objects.filter(group=self).exists()
 
     @property
     def is_org_direct(self):
+        '''
+        该节点是否是某个组织的直接成员组
+        '''
         from oneid_meta.models import Org
         return Org.valid_objects.filter(direct=self).exists()
 
     @property
     def is_org_manager(self):
+        '''
+        该节点是否是某个组织的管理员组
+        '''
         from oneid_meta.models import Org
         return Org.valid_objects.filter(manager=self).exists()
 
     @property
     def is_org_role(self):
+        '''
+        该节点是否是某个组织的角色组
+        '''
         from oneid_meta.models import Org
         return Org.valid_objects.filter(role=self).exists()
 
     @property
     def is_org_label(self):
+        '''
+        该节点是否是某个组织的标签组
+        '''
         from oneid_meta.models import Org
         return Org.valid_objects.filter(label=self).exists()
 
@@ -217,11 +245,11 @@ class TreeNode():
         from oneid_meta.models import Org
         if self.is_root:
             return None
-        elif not self.is_org:
+        if not self.is_org:
             return self.parent.org
-        elif self.is_group:
+        if self.is_group:
             return Org.valid_objects.filter(group=self).first()
-        elif self.is_dept:
+        if self.is_dept:
             return Org.valid_objects.filter(dept=self).first()
         return None
 

@@ -22,6 +22,9 @@ from common.django.drf.paginator import DefaultListPaginator
 
 
 class LogListAPIView(generics.views.APIView):
+    '''
+    get log list [GET]
+    '''
     def dispatch(self, request, *args, **kwargs):
         kwargs['oid'] = '00000000-0000-0000-0000-000000000000'
         return OrgLogListAPIView().dispatch(request, *args, **kwargs)
@@ -29,7 +32,7 @@ class LogListAPIView(generics.views.APIView):
 
 class OrgLogListAPIView(generics.ListAPIView):
     '''
-    get log list [GET]
+    get org log list [GET]
     '''
 
     serializer_class = LogLiteSerializer
@@ -39,6 +42,7 @@ class OrgLogListAPIView(generics.ListAPIView):
         '''
         读写权限
         '''
+        # pylint: disable=import-outside-toplevel,attribute-defined-outside-init
         from siteapi.v1.views.org import validity_check
 
         if self.kwargs['oid'] == '00000000-0000-0000-0000-000000000000':

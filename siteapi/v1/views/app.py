@@ -1,6 +1,7 @@
 '''
 views about app
 '''
+# pylint: disable=attribute-defined-outside-init
 from urllib.parse import urlparse
 import uuid as uuid_utils
 import base64
@@ -27,9 +28,9 @@ from siteapi.v1.serializers.app import (
     OAuthAPPSerializer,
 )
 from siteapi.v1.views.utils import gen_uid
+from siteapi.v1.views.org import validity_check
 from common.django.drf.paginator import DefaultListPaginator
 from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
-from siteapi.v1.views.org import validity_check
 from oneid.permissions import (IsAPPManager, IsAdminUser, IsManagerOf, IsOrgOwnerOf, CustomPerm)
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
