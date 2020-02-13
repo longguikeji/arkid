@@ -1,7 +1,7 @@
 '''
 views about log
 '''
-
+# pylint: disable=cyclic-import
 import datetime
 
 from rest_framework import generics
