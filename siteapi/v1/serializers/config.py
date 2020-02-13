@@ -1,6 +1,7 @@
 '''
 serializer for config
 '''
+# pylint: disable=unused-import
 import re
 from django.contrib.sites.models import Site
 from django.db import transaction
@@ -378,8 +379,7 @@ class MetaConfigSerializer(DynamicFieldsModelSerializer):
 
         model = Site
 
-        fields = ('ding_config', 'account_config', 'alipay_config', 'work_wechat_config',
-                  'wechat_config', 'qq_config')
+        fields = ('ding_config', 'account_config', 'alipay_config', 'work_wechat_config', 'wechat_config', 'qq_config')
 
 
 class AlterAdminSerializer(serializers.Serializer):

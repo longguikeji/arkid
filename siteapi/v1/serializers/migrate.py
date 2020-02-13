@@ -10,7 +10,6 @@ class UserCSVSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for user csv
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = User
 

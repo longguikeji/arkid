@@ -17,7 +17,6 @@ class DingDeptSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for DingDept
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = DingDept
 
@@ -55,7 +54,6 @@ class DeptDetailSerializer(DeptSerializer):
     '''
     dept info with parent_uid
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = Dept
 

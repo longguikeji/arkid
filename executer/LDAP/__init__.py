@@ -389,16 +389,19 @@ class LDAPExecuter(Executer):
         调整一批组在父组中的排序
         LDAP中无需维护顺序
         '''
+
     def sort_depts_in_dept(self, depts, parent_dept):
         '''
         调整一批部门在父部门中的排序
         LDAP中无需维护顺序
         '''
+
     def sort_users_in_dept(self, users, dept):
         '''
         调整一批人在部门中的排序
         LDAP中无需维护
         '''
+
     def sort_users_in_group(self, users, group):
         '''
         调整一批人在组中的排序

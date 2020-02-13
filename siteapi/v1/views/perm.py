@@ -3,6 +3,7 @@ views about perm
 - PermList
 - PermDetail
 """
+# pylint: disable=too-many-lines,import-outside-toplevel
 import json
 
 from rest_framework import generics, status, mixins

@@ -18,7 +18,6 @@ class Connection(LDAPConnection):
     '''
     LDAP Client
     '''
-
     def get_entry_by_dn(self, dn, raise_exception=False, attributes=ATTRIBUTE_ALL):
         '''
         根据dn进行查询
