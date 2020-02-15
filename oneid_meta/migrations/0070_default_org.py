@@ -37,12 +37,12 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
     dept_root = Dept.objects.filter(uid='root').first()
     group_root = Group.objects.filter(uid='root').first()
 
-    dept = Dept.objects.create(uid=uuid4(), name=name, parent=dept_root)
-    group = Group.objects.create(uid=uuid4(), name=name, parent=group_root)
-    direct = Group.objects.create(uid=uuid4(), name=f'{name}-无分组成员', parent=group)
-    manager = Group.objects.create(uid=uuid4(), name=f'{name}-管理员', parent=group)
-    role = Group.objects.create(uid=uuid4(), name=f'{name}-角色', parent=group)
-    label = Group.objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
+    dept = Dept.objects.create(uid=str(uuid4()), name=name, parent=dept_root)
+    group = Group.objects.create(uid=str(uuid4()), name=name, parent=group_root)
+    direct = Group.objects.create(uid=str(uuid4()), name=f'{name}-无分组成员', parent=group)
+    manager = Group.objects.create(uid=str(uuid4()), name=f'{name}-管理员', parent=group)
+    role = Group.objects.create(uid=str(uuid4()), name=f'{name}-角色', parent=group)
+    label = Group.objects.create(uid=str(uuid4()), name=f'{name}-标签', parent=group)
 
     group.top = group.uid
     group.save()
@@ -125,7 +125,7 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
                 g.top = g_.uid
                 g.save()
 
-    for d in Dept.objects.filter(parent=dept_root):
+    for d in Dept.objects.filter(parent=dept_root).exclude(uid=dept.uid):
         d.parent = dept
         d.save()
 

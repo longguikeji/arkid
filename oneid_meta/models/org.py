@@ -76,12 +76,12 @@ class Org(BaseModel):
         dept_root = Dept.valid_objects.filter(uid='root').first()
         group_root = Group.valid_objects.filter(uid='root').first()
 
-        dept = Dept.valid_objects.create(uid=uuid4(), name=name, parent=dept_root)
-        group = Group.valid_objects.create(uid=uuid4(), name=name, parent=group_root)
-        direct = Group.valid_objects.create(uid=uuid4(), name=f'{name}-无分组成员', parent=group)
-        manager = Group.valid_objects.create(uid=uuid4(), name=f'{name}-管理员', parent=group)
-        role = Group.valid_objects.create(uid=uuid4(), name=f'{name}-角色', parent=group)
-        label = Group.valid_objects.create(uid=uuid4(), name=f'{name}-标签', parent=group)
+        dept = Dept.valid_objects.create(uid=str(uuid4()), name=name, parent=dept_root)
+        group = Group.valid_objects.create(uid=str(uuid4()), name=name, parent=group_root)
+        direct = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-无分组成员', parent=group)
+        manager = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-管理员', parent=group)
+        role = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-角色', parent=group)
+        label = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-标签', parent=group)
 
         group.top = group.uid
         direct.top = direct.uid
