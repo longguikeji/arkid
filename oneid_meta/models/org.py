@@ -78,7 +78,7 @@ class Org(BaseModel):
 
         dept = Dept.valid_objects.create(uid=str(uuid4()), name=name, parent=dept_root)
         group = Group.valid_objects.create(uid=str(uuid4()), name=name, parent=group_root)
-        direct = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-无分组成员', parent=group)
+        direct = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-直属成员', parent=group)
         manager = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-管理员', parent=group)
         role = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-角色', parent=group)
         label = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-标签', parent=group)

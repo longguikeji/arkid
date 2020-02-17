@@ -27,6 +27,9 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
 
     config = CompanyConfig.objects.all().first()
     name = config.fullname_cn
+    if not name:
+        name = '一账通'
+
     owner = None
     for user in User.objects.filter().all():
         if user.is_boss or user.username == 'admin'\
@@ -37,9 +40,9 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
     dept_root = Dept.objects.filter(uid='root').first()
     group_root = Group.objects.filter(uid='root').first()
 
-    dept = Dept.objects.create(uid=str(uuid4()), name=name, parent=dept_root)
-    group = Group.objects.create(uid=str(uuid4()), name=name, parent=group_root)
-    direct = Group.objects.create(uid=str(uuid4()), name=f'{name}-无分组成员', parent=group)
+    dept = Dept.objects.create(uid=str(uuid4()), name=f'{name}-部门', parent=dept_root)
+    group = Group.objects.create(uid=str(uuid4()), name=f'{name}-分组', parent=group_root)
+    direct = Group.objects.create(uid=str(uuid4()), name=f'{name}-直属成员', parent=group)
     manager = Group.objects.create(uid=str(uuid4()), name=f'{name}-管理员', parent=group)
     role = Group.objects.create(uid=str(uuid4()), name=f'{name}-角色', parent=group)
     label = Group.objects.create(uid=str(uuid4()), name=f'{name}-标签', parent=group)

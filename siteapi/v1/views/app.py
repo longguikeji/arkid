@@ -290,7 +290,7 @@ class APPOAuthRegisterAPIView(generics.CreateAPIView):
         '''
         return APP.valid_objects.filter(uid=self.kwargs['uid']).first()
 
-    def create(self, request, uid):    # pylint: disable=arguments-differ
+    def create(self, request, uid, **kwargs):    # pylint: disable=arguments-differ
         '''
         [POST] 实际扮演 [POST] 或 [PATCH]
         '''
