@@ -324,4 +324,4 @@ class OrgTestCase(TestCase):
             org.oid,
             'user1',
         )))
-        self.assertEqual(404, res.status_code)
+        self.assertEqual(200, res.status_code)
