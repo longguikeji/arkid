@@ -16,11 +16,12 @@ from rest_framework.exceptions import (
 )
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 from oneid_meta.models import User, Group, Dept
 from oneid.permissions import (
     IsAdminUser,
+    IsManagerUser,
     IsUserManager,
     UserEmployeeReadable,
     UserManagerReadable,
@@ -37,11 +38,17 @@ from executer.utils import operation
 class UserListCreateAPIView(generics.ListCreateAPIView):
     '''
     用户列表 [GET],[POST]
+    :GET
+    - 主管理员可见全部
+    - 子管理员可见管理范围内的指定人、指定节点及其子孙节点内的所有人
+    :POST
+    - 主管理员可以创建用户
+    - 拥有 system_user_create 权限的子管理员
     '''
     serializer_class = EmployeeSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & IsAdminUser]
+    read_permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
     write_permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_user_create'))]
 
     def get_permissions(self):
@@ -64,7 +71,18 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         else:
             queryset = User.valid_objects.exclude(is_boss=True).exclude(username='admin').order_by('id')
 
-        return queryset
+        user = self.request.user
+        if user.is_admin:
+            return queryset
+
+        under_manage_user_ids = set()
+
+        for item in queryset:
+            if item.is_visible_to_manager(user):
+                under_manage_user_ids.add(item.username)
+
+        under_manage_user_query_set = queryset.filter(username__in=under_manage_user_ids)
+        return under_manage_user_query_set
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):    # pylint: disable=unused-argument
