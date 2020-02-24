@@ -1,7 +1,7 @@
 '''
 views for node
 '''
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, cyclic-import
 from functools import wraps
 
 from rest_framework import generics

@@ -1,6 +1,7 @@
 '''
 schema of Users,Departmments,Groups,Perms
 '''
+#pylinit: disable=cyclic-import
 
 from oneid_meta.models.user import (User, PosixUser, CustomUser, DingUser, AlipayUser,\
     WorkWechatUser, WechatUser, QQUser, SubAccount)
