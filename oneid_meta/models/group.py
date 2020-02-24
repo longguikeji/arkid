@@ -147,7 +147,7 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         '''
         详情序列化类
         '''
-        from siteapi.v1.serializers.dept import DeptDetailSerializer
+        from siteapi.v1.serializers.dept import DeptDetailSerializer    # pylint: disable=import-outside-toplevel
         return DeptDetailSerializer
 
     @property
