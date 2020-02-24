@@ -304,61 +304,7 @@ class GroupManagerViewTestCase(TestCase):
                     'remark': ''
                 },
                 'nodes': [
-                    {
-                        'info': {
-                            'dept_id': 7,
-                            'node_uid': 'd_bumenyiyi',
-                            'node_subject': 'dept',
-                            'uid': 'bumenyiyi',
-                            'name': '部门一（一）',
-                            'remark': ''
-                        },
-                        'nodes': []
-                    },
-                    {
-                        'info': {
-                            'dept_id': 8,
-                            'node_uid': 'd_bumenyier',
-                            'node_subject': 'dept',
-                            'uid': 'bumenyier',
-                            'name': '部门一（二）',
-                            'remark': ''
-                        },
-                        'nodes': []
-                    },
-                    {
-                        'info': {
-                            'dept_id': 9,
-                            'node_uid': 'd_bumenyisan',
-                            'node_subject': 'dept',
-                            'uid': 'bumenyisan',
-                            'name': '部门一（三）',
-                            'remark': ''
-                        },
-                        'nodes': []
-                    },
-                    {
-                        'info': {
-                            'dept_id': 10,
-                            'node_uid': 'd_bumenyisi',
-                            'node_subject': 'dept',
-                            'uid': 'bumenyisi',
-                            'name': '部门一（四）',
-                            'remark': ''
-                        },
-                        'nodes': []
-                    },
-                    {
-                        'info': {
-                            'dept_id': 11,
-                            'node_uid': 'd_bumenyiwu',
-                            'node_subject': 'dept',
-                            'uid': 'bumenyiwu',
-                            'name': '部门一（五）',
-                            'remark': ''
-                        },
-                        'nodes': []
-                    },
+                    
                 ]
             }]
         }
