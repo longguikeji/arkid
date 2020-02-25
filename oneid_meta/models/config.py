@@ -70,7 +70,11 @@ class DingConfig(BaseModel, SingletonConfigMixin):
         ('', '断开'),
     )
     site = models.OneToOneField(Site, related_name='ding_config', on_delete=models.CASCADE)
-    sync_state = models.CharField(max_length=128, choices=SYNC_CHOICES, blank=True, default='', verbose_name='同步钉钉账户方向')
+    sync_state = models.CharField(max_length=128,
+                                  choices=SYNC_CHOICES,
+                                  blank=False,
+                                  default='pull',
+                                  verbose_name='同步钉钉账户方向')
 
     app_key = models.CharField(max_length=255, blank=True, default="", verbose_name="APP KEY")
     app_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="APP SECRET")
