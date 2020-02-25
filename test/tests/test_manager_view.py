@@ -267,8 +267,9 @@ class GroupManagerViewTestCase(TestCase):
             "require_reset_password": 'false',
             "has_password": 'true'
         }
+        # 不可修改非直接管理权限下人员
         res = client.json_patch(reverse('siteapi:user_detail', args=('13899990006', )), data=patch_user_data)
-        self.assertEqual(res.status_code, HTTP_200_OK)
+        self.assertEqual(res.status_code, HTTP_404_NOT_FOUND)
 
         # 不可添加顶层部门
         res = client.json_post(reverse('siteapi:node_child_node', args=('d_root', )), data=NEW_TOP_LEVEL_DEPT)
@@ -303,9 +304,7 @@ class GroupManagerViewTestCase(TestCase):
                     'name': '部门一（所有人可见）',
                     'remark': ''
                 },
-                'nodes': [
-                    
-                ]
+                'nodes': []
             }]
         }
         self.assertEqual(expect, res_view_phonebook.json())
@@ -330,18 +329,7 @@ class GroupManagerViewTestCase(TestCase):
                     'remark': '',
                     'accept_user': True
                 },
-                'nodes': [{
-                    'info': {
-                        'group_id': 27,
-                        'node_uid': 'g_juesesanyi',
-                        'node_subject': 'role',
-                        'uid': 'juesesanyi',
-                        'name': '角色三（一）',
-                        'remark': '',
-                        'accept_user': True
-                    },
-                    'nodes': []
-                }]
+                'nodes': []
             }]
         }
         self.assertEqual(res.json(), expect)
@@ -419,7 +407,7 @@ class GroupManagerViewTestCase(TestCase):
             "has_password": 'true'
         }
         res = client.json_patch(reverse('siteapi:user_detail', args=('13899990006', )), data=patch_user_data)
-        self.assertEqual(res.status_code, HTTP_200_OK)
+        self.assertEqual(res.status_code, HTTP_404_NOT_FOUND)
 
         # 不可编辑管理范围外用户信息
         patch_user_data = {
