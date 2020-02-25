@@ -300,9 +300,10 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
 
         alipay_config_data = validated_data.pop('alipay_config', None)
         if alipay_config_data:
-            serializer = AlipayConfigSerializer(AlipayConfig.get_current(), alipay_config_data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            if alipay_config_data["app_id"] != '':
+                serializer = AlipayConfigSerializer(AlipayConfig.get_current(), alipay_config_data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
 
         qq_config_data = validated_data.pop('qq_config', None)
         if qq_config_data:
