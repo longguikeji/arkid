@@ -15,7 +15,7 @@ ci:
 
 test:
 	python manage.py migrate && python manage.py test siteapi.v1.tests infrastructure.tests.test_file --settings=oneid.settings_test \
-	&& python manage.py migrate --settings=oneid.settings_test_with_data && python manage.py test test.tests --settings=oneid.settings_test_with_data
+#	&& python manage.py migrate --settings=oneid.settings_test_with_data && python manage.py test test.tests --settings=oneid.settings_test_with_data
 
 lint: 
 	@if [ ${BASE_COMMIT_ID}x != ""x ]; \

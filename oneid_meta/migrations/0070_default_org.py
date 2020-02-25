@@ -108,14 +108,14 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
             for g in g_successor(g_):
                 g.top = role.uid
                 g.save()
-        if g_.uid == 'label':
+        elif g_.uid == 'label':
             for g in g_child(g_):
                 g.parent = label
                 g.save()
             for g in g_successor(g_):
                 g.top = label.uid
                 g.save()
-        if g_.uid == 'manager':
+        elif g_.uid == 'manager':
             for g in g_child(g_):
                 g.parent = manager
                 g.save()
@@ -124,6 +124,7 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
                 g.save()
         else:
             g_.parent = group
+            g_.save()
             for g in g_successor(g_):
                 g.top = g_.uid
                 g.save()
