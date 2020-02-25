@@ -242,41 +242,7 @@ INSERT INTO "django_celery_results_taskresult" VALUES(32,'5cf1b118-63e6-4b5a-8f2
 INSERT INTO "django_celery_results_taskresult" VALUES(34,'24aa77ba-786f-4877-a23a-cdb8ba555cc1','SUCCESS','application/json','utf-8','null','2019-12-27 09:31:00.605837',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(36,'5b865cf8-01fe-4ff7-be0d-68b0a651ef0e','SUCCESS','application/json','utf-8','null','2019-12-27 09:36:01.159561',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(38,'6d541922-b710-4310-8c26-bcf28f2a3d47','SUCCESS','application/json','utf-8','null','2019-12-27 09:41:00.991343',NULL,0,'{"children": []}');
-INSERT INTO "django_celery_results_taskresult" VALUES(39,'e5196e94-00fd-403b-b627-a25cb12dc449','FAILURE','application/json','utf-8','{"exc_type": "LDAPSocketOpenError", "exc_message": ["unable to open socket", "[(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))]"], "exc_module": "ldap3.core.exceptions"}','2019-12-27 10:55:42.496643','Traceback (most recent call last):
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 382, in trace_task
-    R = retval = fun(*args, **kwargs)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 641, in __protected_call__
-    return self.run(*args, **kwargs)
-  File "/Users/user/Documents/arkid-core/tasksapp/tasks.py", line 60, in flush_user_perm_in_ldap
-    raise_exceptions=True,
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 325, in __init__
-    self.do_auto_bind()
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 340, in do_auto_bind
-    self.open(read_server_info=False)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/sync.py", line 56, in open
-    BaseStrategy.open(self, reset_usage, read_server_info)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/base.py", line 147, in open
-    raise LDAPSocketOpenError(''unable to open socket'', exception_history)
-ldap3.core.exceptions.LDAPSocketOpenError: (''unable to open socket'', [(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))])
-',0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(40,'38f9686c-e889-48e0-8e2f-914a7c79cfb0','SUCCESS','application/json','utf-8','null','2019-12-27 10:56:03.764267',NULL,0,'{"children": []}');
-INSERT INTO "django_celery_results_taskresult" VALUES(41,'8fb0c720-05d9-45af-88bb-8847b14c11d6','FAILURE','application/json','utf-8','{"exc_type": "LDAPSocketOpenError", "exc_message": ["unable to open socket", "[(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))]"], "exc_module": "ldap3.core.exceptions"}','2019-12-27 11:00:42.508154','Traceback (most recent call last):
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 382, in trace_task
-    R = retval = fun(*args, **kwargs)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 641, in __protected_call__
-    return self.run(*args, **kwargs)
-  File "/Users/user/Documents/arkid-core/tasksapp/tasks.py", line 60, in flush_user_perm_in_ldap
-    raise_exceptions=True,
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 325, in __init__
-    self.do_auto_bind()
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 340, in do_auto_bind
-    self.open(read_server_info=False)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/sync.py", line 56, in open
-    BaseStrategy.open(self, reset_usage, read_server_info)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/base.py", line 147, in open
-    raise LDAPSocketOpenError(''unable to open socket'', exception_history)
-ldap3.core.exceptions.LDAPSocketOpenError: (''unable to open socket'', [(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))])
-',0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(42,'f96749fa-3313-4313-9e18-50d5b965a2f1','SUCCESS','application/json','utf-8','null','2019-12-27 11:01:01.731238',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(43,'79ae6096-09e4-4700-86d3-0461a4cdb220','SUCCESS','application/json','utf-8','null','2019-12-27 11:01:43.390536',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(44,'75316e8e-9dcd-4901-8bdf-83016a409919','SUCCESS','application/json','utf-8','null','2019-12-27 11:02:13.172562',NULL,0,'{"children": []}');
@@ -291,23 +257,6 @@ INSERT INTO "django_celery_results_taskresult" VALUES(52,'0e374ebb-de16-40be-a89
 INSERT INTO "django_celery_results_taskresult" VALUES(53,'480e4561-7296-4678-a220-c1400d7fc914','SUCCESS','application/json','utf-8','null','2019-12-27 11:04:56.513371',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(54,'1213c41f-0e62-4264-9107-f302111ac4e3','SUCCESS','application/json','utf-8','null','2019-12-27 11:05:12.283482',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(55,'59fda9cd-d914-4ad1-890d-badea55ffb6b','SUCCESS','application/json','utf-8','null','2019-12-27 11:05:31.483619',NULL,0,'{"children": []}');
-INSERT INTO "django_celery_results_taskresult" VALUES(56,'c098dbc1-e05f-489c-8442-563359999fc8','FAILURE','application/json','utf-8','{"exc_type": "LDAPSocketOpenError", "exc_message": ["unable to open socket", "[(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))]"], "exc_module": "ldap3.core.exceptions"}','2019-12-27 11:05:42.508701','Traceback (most recent call last):
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 382, in trace_task
-    R = retval = fun(*args, **kwargs)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 641, in __protected_call__
-    return self.run(*args, **kwargs)
-  File "/Users/user/Documents/arkid-core/tasksapp/tasks.py", line 60, in flush_user_perm_in_ldap
-    raise_exceptions=True,
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 325, in __init__
-    self.do_auto_bind()
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 340, in do_auto_bind
-    self.open(read_server_info=False)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/sync.py", line 56, in open
-    BaseStrategy.open(self, reset_usage, read_server_info)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/base.py", line 147, in open
-    raise LDAPSocketOpenError(''unable to open socket'', exception_history)
-ldap3.core.exceptions.LDAPSocketOpenError: (''unable to open socket'', [(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))])
-',0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(57,'de556751-b344-4c73-ae80-99373a295fa0','SUCCESS','application/json','utf-8','null','2019-12-27 11:05:47.586045',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(58,'f7651f8f-ebfe-4899-be0d-e10268fba13c','SUCCESS','application/json','utf-8','null','2019-12-27 11:06:04.685239',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(59,'7a96c212-2cab-4bba-8e6c-ec0ce1521611','SUCCESS','application/json','utf-8','null','2019-12-27 11:06:05.140808',NULL,0,'{"children": []}');
@@ -359,23 +308,6 @@ INSERT INTO "django_celery_results_taskresult" VALUES(104,'a9fb4cbb-a256-45b3-9d
 INSERT INTO "django_celery_results_taskresult" VALUES(105,'48ae826f-6043-47b6-bbca-3264a40d4d47','SUCCESS','application/json','utf-8','null','2019-12-27 11:10:27.367333',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(106,'78f3eb04-1efe-47e5-8212-0f376ebb4ba2','SUCCESS','application/json','utf-8','null','2019-12-27 11:10:27.385373',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(107,'b63aff76-5c37-44ed-b334-e62d1aa85dc1','SUCCESS','application/json','utf-8','null','2019-12-27 11:10:27.397230',NULL,0,'{"children": []}');
-INSERT INTO "django_celery_results_taskresult" VALUES(108,'e202b8dd-e793-4002-b008-597338529bcf','FAILURE','application/json','utf-8','{"exc_type": "LDAPSocketOpenError", "exc_message": ["unable to open socket", "[(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))]"], "exc_module": "ldap3.core.exceptions"}','2019-12-27 11:10:42.509389','Traceback (most recent call last):
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 382, in trace_task
-    R = retval = fun(*args, **kwargs)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 641, in __protected_call__
-    return self.run(*args, **kwargs)
-  File "/Users/user/Documents/arkid-core/tasksapp/tasks.py", line 60, in flush_user_perm_in_ldap
-    raise_exceptions=True,
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 325, in __init__
-    self.do_auto_bind()
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 340, in do_auto_bind
-    self.open(read_server_info=False)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/sync.py", line 56, in open
-    BaseStrategy.open(self, reset_usage, read_server_info)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/base.py", line 147, in open
-    raise LDAPSocketOpenError(''unable to open socket'', exception_history)
-ldap3.core.exceptions.LDAPSocketOpenError: (''unable to open socket'', [(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))])
-',0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(109,'baef3795-83a4-4814-bd38-199272582301','SUCCESS','application/json','utf-8','null','2019-12-27 11:10:50.218648',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(110,'aae4c286-564d-42d2-8fbf-b3710d576413','SUCCESS','application/json','utf-8','null','2019-12-27 11:10:50.223618',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(111,'d557e22b-7468-4cb5-8716-e2f9ec866a5c','SUCCESS','application/json','utf-8','null','2019-12-27 11:11:00.381690',NULL,0,'{"children": []}');
@@ -402,77 +334,9 @@ INSERT INTO "django_celery_results_taskresult" VALUES(131,'9ed3e153-605f-4110-96
 INSERT INTO "django_celery_results_taskresult" VALUES(132,'4601ee44-ef37-4ea9-89e3-1aa69dc58cc7','SUCCESS','application/json','utf-8','null','2019-12-27 11:12:37.096563',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(133,'96a10f29-6913-48db-8336-8f3cf4b14b5e','SUCCESS','application/json','utf-8','null','2019-12-27 11:12:37.099649',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(134,'dae63fc4-7dcc-477a-bb72-4b1f3da79c25','SUCCESS','application/json','utf-8','null','2019-12-27 11:14:52.921522',NULL,0,'{"children": []}');
-INSERT INTO "django_celery_results_taskresult" VALUES(135,'63b9c031-754c-48d4-ae89-326d4f1afbcb','FAILURE','application/json','utf-8','{"exc_type": "LDAPSocketOpenError", "exc_message": ["unable to open socket", "[(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))]"], "exc_module": "ldap3.core.exceptions"}','2019-12-27 11:15:42.510477','Traceback (most recent call last):
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 382, in trace_task
-    R = retval = fun(*args, **kwargs)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 641, in __protected_call__
-    return self.run(*args, **kwargs)
-  File "/Users/user/Documents/arkid-core/tasksapp/tasks.py", line 60, in flush_user_perm_in_ldap
-    raise_exceptions=True,
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 325, in __init__
-    self.do_auto_bind()
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 340, in do_auto_bind
-    self.open(read_server_info=False)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/sync.py", line 56, in open
-    BaseStrategy.open(self, reset_usage, read_server_info)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/base.py", line 147, in open
-    raise LDAPSocketOpenError(''unable to open socket'', exception_history)
-ldap3.core.exceptions.LDAPSocketOpenError: (''unable to open socket'', [(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))])
-',0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(136,'66dbad9f-3882-4784-9a17-89ec61be29d5','SUCCESS','application/json','utf-8','null','2019-12-27 11:16:07.834661',NULL,0,'{"children": []}');
-INSERT INTO "django_celery_results_taskresult" VALUES(137,'bc3d6491-2158-4056-ae02-2ab0ed93fa04','FAILURE','application/json','utf-8','{"exc_type": "LDAPSocketOpenError", "exc_message": ["unable to open socket", "[(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))]"], "exc_module": "ldap3.core.exceptions"}','2019-12-27 11:20:42.518472','Traceback (most recent call last):
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 382, in trace_task
-    R = retval = fun(*args, **kwargs)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 641, in __protected_call__
-    return self.run(*args, **kwargs)
-  File "/Users/user/Documents/arkid-core/tasksapp/tasks.py", line 60, in flush_user_perm_in_ldap
-    raise_exceptions=True,
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 325, in __init__
-    self.do_auto_bind()
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 340, in do_auto_bind
-    self.open(read_server_info=False)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/sync.py", line 56, in open
-    BaseStrategy.open(self, reset_usage, read_server_info)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/base.py", line 147, in open
-    raise LDAPSocketOpenError(''unable to open socket'', exception_history)
-ldap3.core.exceptions.LDAPSocketOpenError: (''unable to open socket'', [(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))])
-',0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(138,'63dbf4ad-2e4f-4579-aa26-5cd7350b20c4','SUCCESS','application/json','utf-8','null','2019-12-27 11:21:07.576545',NULL,0,'{"children": []}');
-INSERT INTO "django_celery_results_taskresult" VALUES(139,'af225519-76a3-4e73-a448-bc93147a31a5','FAILURE','application/json','utf-8','{"exc_type": "LDAPSocketOpenError", "exc_message": ["unable to open socket", "[(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))]"], "exc_module": "ldap3.core.exceptions"}','2019-12-27 11:25:42.519485','Traceback (most recent call last):
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 382, in trace_task
-    R = retval = fun(*args, **kwargs)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 641, in __protected_call__
-    return self.run(*args, **kwargs)
-  File "/Users/user/Documents/arkid-core/tasksapp/tasks.py", line 60, in flush_user_perm_in_ldap
-    raise_exceptions=True,
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 325, in __init__
-    self.do_auto_bind()
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 340, in do_auto_bind
-    self.open(read_server_info=False)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/sync.py", line 56, in open
-    BaseStrategy.open(self, reset_usage, read_server_info)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/base.py", line 147, in open
-    raise LDAPSocketOpenError(''unable to open socket'', exception_history)
-ldap3.core.exceptions.LDAPSocketOpenError: (''unable to open socket'', [(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))])
-',0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(140,'07841dd5-7c2c-48ea-940c-7e1d7392091a','SUCCESS','application/json','utf-8','null','2019-12-27 11:26:07.212442',NULL,0,'{"children": []}');
-INSERT INTO "django_celery_results_taskresult" VALUES(141,'2d78ba27-9670-4f0f-b801-db0f0b817ea3','FAILURE','application/json','utf-8','{"exc_type": "LDAPSocketOpenError", "exc_message": ["unable to open socket", "[(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))]"], "exc_module": "ldap3.core.exceptions"}','2019-12-27 11:30:42.521424','Traceback (most recent call last):
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 382, in trace_task
-    R = retval = fun(*args, **kwargs)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/celery/app/trace.py", line 641, in __protected_call__
-    return self.run(*args, **kwargs)
-  File "/Users/user/Documents/arkid-core/tasksapp/tasks.py", line 60, in flush_user_perm_in_ldap
-    raise_exceptions=True,
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 325, in __init__
-    self.do_auto_bind()
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/core/connection.py", line 340, in do_auto_bind
-    self.open(read_server_info=False)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/sync.py", line 56, in open
-    BaseStrategy.open(self, reset_usage, read_server_info)
-  File "/Users/user/.local/share/virtualenvs/arkid-core-pWYnm8no/lib/python3.6/site-packages/ldap3/strategy/base.py", line 147, in open
-    raise LDAPSocketOpenError(''unable to open socket'', exception_history)
-ldap3.core.exceptions.LDAPSocketOpenError: (''unable to open socket'', [(LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''::1'', 389, 0, 0)), (LDAPSocketOpenError(''socket connection error while opening: [Errno 61] Connection refused'',), (''127.0.0.1'', 389))])
-',0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(142,'5ac6fca3-5af9-4ea8-82d6-8f8a7aaffa4d','SUCCESS','application/json','utf-8','null','2019-12-27 11:31:07.644155',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(143,'b4707816-697e-4fe3-82be-2febb0e7a080','SUCCESS','application/json','utf-8','null','2019-12-27 11:31:32.485555',NULL,0,'{"children": []}');
 INSERT INTO "django_celery_results_taskresult" VALUES(144,'0f44efca-e3f8-4d4d-8f4d-44aa09d7590b','SUCCESS','application/json','utf-8','null','2019-12-27 11:31:32.485662',NULL,0,'{"children": []}');
@@ -612,7 +476,6 @@ INSERT INTO "drf_expiring_authtoken_expiringtoken" VALUES('43f17913390866c56af46
 INSERT INTO "drf_expiring_authtoken_expiringtoken" VALUES('c2d5bbc8b2194d7179329cc68bf13ff20c76969d','2019-12-27 11:04:24.007550',23);
 INSERT INTO "drf_expiring_authtoken_expiringtoken" VALUES('16407639b71bb45b676ef4adeef98369ac3c5e2e','2019-12-27 11:04:39.866364',24);
 INSERT INTO "drf_expiring_authtoken_expiringtoken" VALUES('85756679bc8411ef8ba0b2e270300758ea0faf77','2019-12-27 11:04:56.510201',25);
-INSERT INTO "drf_expiring_authtoken_expiringtoken" VALUES('52913debe8dd2ea78846ee5cdd20362a32f192c9','2019-12-27 11:05:12.279854',26);
 INSERT INTO "drf_expiring_authtoken_expiringtoken" VALUES('8b63872746c5262ee3ce7e90edbdc7499781fd7f','2019-12-27 11:05:31.479365',27);
 INSERT INTO "drf_expiring_authtoken_expiringtoken" VALUES('0f908023dfa492a3175be45818c63b9f87e54bc5','2019-12-27 11:05:47.586577',28);
 INSERT INTO "drf_expiring_authtoken_expiringtoken" VALUES('683598eb58aac5e89a26a08b1bf8325288f632b7','2019-12-27 11:06:04.677245',29);
@@ -3553,6 +3416,7 @@ INSERT INTO "oneid_meta_log" VALUES(622,'be1b86f0a3994caa83955d93238b655f','2019
 INSERT INTO "oneid_meta_log" VALUES(623,'064ed5290f22413586632b5b0774a8c2','2019-12-27 11:35:02.928426','group_member','ADMIN(admin)将用户(部门五五user(13899990030))从一批组[]删除',393,393,1);
 INSERT INTO "oneid_meta_log" VALUES(624,'2b172f4759b84904b0fa0f5f0eeadcef','2019-12-27 11:35:02.938158','dept_member','ADMIN(admin)添加用户(f部门五五user(13899990030))至一批部门[部门五（五）]',394,394,1);
 INSERT INTO "oneid_meta_log" VALUES(625,'b4c7d491a8224fb8842de0b035db3596','2019-12-27 11:35:02.941032','dept_member','ADMIN(admin)将用户(部门五五user(13899990030))从一批部门()删除',394,394,1);
+INSERT INTO "oneid_meta_log" VALUES(626,'cafe6d020ac7471b9826d6f132e674de','2020-02-25 03:25:58.817571','ucenter_login','部门四二user(13899990022)登录',395,395,26);
 CREATE TABLE "oneid_meta_managergroup" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "uuid" char(32) NOT NULL UNIQUE, "is_del" bool NOT NULL, "is_active" bool NOT NULL, "updated" datetime NULL, "created" datetime NULL, "group_id" integer NOT NULL UNIQUE REFERENCES "oneid_meta_group" ("id") DEFERRABLE INITIALLY DEFERRED, "nodes" text NOT NULL, "perms" text NOT NULL, "scope_subject" integer NOT NULL, "users" text NOT NULL, "apps" text NOT NULL);
 INSERT INTO "oneid_meta_managergroup" VALUES(1,'fbe91a53d6e94659b5c9c17adf14c37b',0,1,'2019-12-27 09:25:11.215207','2019-11-16 10:07:27.468922',44,'["g_zidingyifenzuyi"]','[]',2,'["admin"]','[]');
 INSERT INTO "oneid_meta_managergroup" VALUES(2,'ec81ee5e2dad4d19bc2b901ccc36b99c',0,1,'2019-12-27 09:25:11.226793','2019-11-16 10:07:38.640101',46,'["g_zidingyifenzuer"]','[]',2,'["admin"]','[]');
@@ -4009,6 +3873,7 @@ INSERT INTO "oneid_meta_requestaccesslog" VALUES(391,'36.110.106.42','Mozilla/5.
 INSERT INTO "oneid_meta_requestaccesslog" VALUES(392,'36.110.106.42','Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36','/siteapi/oneid/user/13899990030/','PATCH');
 INSERT INTO "oneid_meta_requestaccesslog" VALUES(393,'36.110.106.42','Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36','/siteapi/oneid/user/13899990030/node/','PATCH');
 INSERT INTO "oneid_meta_requestaccesslog" VALUES(394,'36.110.106.42','Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36','/siteapi/oneid/user/13899990030/node/','PATCH');
+INSERT INTO "oneid_meta_requestaccesslog" VALUES(395,'36.110.106.42','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36','/siteapi/oneid/ucenter/login/','POST');
 CREATE TABLE "oneid_meta_requestdataclientlog" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "content" text NULL, "content_type" text NULL);
 INSERT INTO "oneid_meta_requestdataclientlog" VALUES(1,'{"password":"******","username":"admin"}','application/json');
 INSERT INTO "oneid_meta_requestdataclientlog" VALUES(2,'{"username":"admin","password":"******"}','application/json');
@@ -4404,6 +4269,7 @@ INSERT INTO "oneid_meta_requestdataclientlog" VALUES(391,'{"node_uids":["d_bumen
 INSERT INTO "oneid_meta_requestdataclientlog" VALUES(392,'{"avatar":"","email":"","employee_number":"","gender":0,"mobile":"13899990030","name":"部门五五user","position":"","private_email":"","username":"13899990030","depts":null,"roles":null,"nodes":[{"node_uid":"d_bumenwuwu","name":"部门五（五）","node_scope":[],"user_scope":[],"users":[]}],"is_settled":false,"require_reset_password":false,"has_password":true}','application/json');
 INSERT INTO "oneid_meta_requestdataclientlog" VALUES(393,'{"node_uids":["d_bumenwuwu"],"subject":"override"}','application/json');
 INSERT INTO "oneid_meta_requestdataclientlog" VALUES(394,'{"node_uids":["d_bumenwuwu"],"subject":"override"}','application/json');
+INSERT INTO "oneid_meta_requestdataclientlog" VALUES(395,'{"password":"******","username":"13899990022"}','application/json');
 CREATE TABLE "oneid_meta_samlapp" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "uuid" char(32) NOT NULL UNIQUE, "is_del" bool NOT NULL, "is_active" bool NOT NULL, "updated" datetime NULL, "created" datetime NULL, "entity_id" varchar(255) NOT NULL, "acs" varchar(255) NOT NULL, "sls" varchar(255) NOT NULL, "cert" varchar(2200) NOT NULL, "xmldata" varchar(5000) NOT NULL, "app_id" integer NULL UNIQUE REFERENCES "oneid_meta_app" ("id") DEFERRABLE INITIALLY DEFERRED);
 CREATE TABLE "oneid_meta_smsconfig" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "uuid" char(32) NOT NULL UNIQUE, "is_del" bool NOT NULL, "is_active" bool NOT NULL, "updated" datetime NULL, "created" datetime NULL, "vendor" varchar(128) NOT NULL, "access_key" varchar(255) NOT NULL, "access_secret" varchar(255) NOT NULL, "signature" varchar(64) NOT NULL, "template_code" varchar(255) NOT NULL, "template_register" varchar(255) NOT NULL, "template_reset_pwd" varchar(255) NOT NULL, "site_id" integer NOT NULL UNIQUE REFERENCES "django_site" ("id") DEFERRABLE INITIALLY DEFERRED, "is_valid" bool NOT NULL, "template_activate" varchar(255) NOT NULL, "template_reset_mobile" varchar(255) NOT NULL);
 INSERT INTO "oneid_meta_smsconfig" VALUES(1,'ef75f7be523d4569a0ac950ebdd9b94e',0,1,'2019-12-27 10:57:49.142438','2019-11-16 11:35:31.278635','aliyun','','','','','','',1,1,'','');
@@ -4434,7 +4300,7 @@ INSERT INTO "oneid_meta_user" VALUES(22,'84624434c9b14eed918d7186d059f8b5',0,1,'
 INSERT INTO "oneid_meta_user" VALUES(23,'1aa6aa9544364e5ebd86d406525dcb5c',0,1,'2019-12-27 11:32:05.743632','2019-12-27 11:04:23.937321','13899990019','{SMD5}HhhoqrsUi4LAFLcblE1jdUaolfI=','部门三四user','','13899990019','',0,NULL,1,0,'','','',3,NULL,'',NULL,0);
 INSERT INTO "oneid_meta_user" VALUES(24,'530f75ae20e04bb18d0d8d61fb0305cd',0,1,'2019-12-27 11:34:45.289651','2019-12-27 11:04:39.793498','13899990029','{SMD5}hn3dSl02Yk3GywTBiA+joG2tdS4=','部门五四user','','13899990029','',0,NULL,1,0,'','','',3,NULL,'',NULL,0);
 INSERT INTO "oneid_meta_user" VALUES(25,'2f36bd9505fb4df1a4c2d9dd2c4da679',0,1,'2019-12-27 11:32:45.114693','2019-12-27 11:04:56.436436','13899990021','{SMD5}xtfAMbcT3AcygWk7+FH9nOS8l7I=','部门四一user','','13899990021','',0,NULL,1,0,'','','',3,NULL,'',NULL,0);
-INSERT INTO "oneid_meta_user" VALUES(26,'6d162f957f044500b2146ae523b7f83f',0,1,'2019-12-27 11:32:58.843317','2019-12-27 11:05:12.208361','13899990022','{SMD5}t/X/CoLnpTaR5bcWoiaBeu0dA6A=','部门四二user','','13899990022','',0,NULL,1,0,'','','',3,NULL,'',NULL,0);
+INSERT INTO "oneid_meta_user" VALUES(26,'6d162f957f044500b2146ae523b7f83f',0,1,'2019-12-27 11:32:58.843317','2019-12-27 11:05:12.208361','13899990022','{SMD5}t/X/CoLnpTaR5bcWoiaBeu0dA6A=','部门四二user','','13899990022','',0,NULL,1,0,'','','',3,NULL,'','2020-02-25 03:25:58.854524',0);
 INSERT INTO "oneid_meta_user" VALUES(27,'c14caa1501d64eb7abd7008cbba6f352',0,1,'2019-12-27 11:33:12.263531','2019-12-27 11:05:31.401316','13899990023','{SMD5}WWtJbFwqxVl9b6T7cE9aMU5J6X0=','部门四三user','','13899990023','',0,NULL,1,0,'','','',3,NULL,'',NULL,0);
 INSERT INTO "oneid_meta_user" VALUES(28,'1486105a9fad4d208ce47f51102e1be9',0,1,'2019-12-27 11:33:25.022968','2019-12-27 11:05:47.490703','13899990024','{SMD5}nenob5izaOuMUO2kmhRdNBRCqBU=','部门四四user','','13899990024','',0,NULL,1,0,'','','',3,NULL,'',NULL,0);
 INSERT INTO "oneid_meta_user" VALUES(29,'600184edf79c44a89a60e5ac7affcee5',0,1,'2019-12-27 11:33:39.508663','2019-12-27 11:06:04.593505','13899990025','{SMD5}+sejYyVFzMuEQAwgzQH9MQ3BWAs=','部门四五user','','13899990025','',0,NULL,1,0,'','','',3,NULL,'',NULL,0);
@@ -5140,7 +5006,7 @@ INSERT INTO "sqlite_sequence" VALUES('oauth2_provider_grant',0);
 INSERT INTO "sqlite_sequence" VALUES('oauth2_provider_refreshtoken',0);
 INSERT INTO "sqlite_sequence" VALUES('oauth2_provider_application',1);
 INSERT INTO "sqlite_sequence" VALUES('django_site',1);
-INSERT INTO "sqlite_sequence" VALUES('oneid_meta_log',625);
+INSERT INTO "sqlite_sequence" VALUES('oneid_meta_log',626);
 INSERT INTO "sqlite_sequence" VALUES('oneid_meta_dept',31);
 INSERT INTO "sqlite_sequence" VALUES('oneid_meta_group',68);
 INSERT INTO "sqlite_sequence" VALUES('oneid_meta_companyconfig',1);
@@ -5156,8 +5022,8 @@ INSERT INTO "sqlite_sequence" VALUES('oneid_meta_user',34);
 INSERT INTO "sqlite_sequence" VALUES('oneid_meta_emailconfig',1);
 INSERT INTO "sqlite_sequence" VALUES('oneid_meta_perm',21);
 INSERT INTO "sqlite_sequence" VALUES('django_celery_beat_intervalschedule',2);
-INSERT INTO "sqlite_sequence" VALUES('oneid_meta_requestaccesslog',394);
-INSERT INTO "sqlite_sequence" VALUES('oneid_meta_requestdataclientlog',394);
+INSERT INTO "sqlite_sequence" VALUES('oneid_meta_requestaccesslog',395);
+INSERT INTO "sqlite_sequence" VALUES('oneid_meta_requestdataclientlog',395);
 INSERT INTO "sqlite_sequence" VALUES('oneid_meta_invitation',5);
 INSERT INTO "sqlite_sequence" VALUES('oneid_meta_ldapapp',1);
 INSERT INTO "sqlite_sequence" VALUES('oneid_meta_storageconfig',1);
@@ -5213,6 +5079,6 @@ CREATE INDEX "oneid_meta_log_user_id_d82583a3" ON "oneid_meta_log" ("user_id");
 CREATE INDEX "oneid_meta_dept_parent_id_1816bcc8" ON "oneid_meta_dept" ("parent_id");
 CREATE INDEX "oneid_meta_group_parent_id_9a86291d" ON "oneid_meta_group" ("parent_id");
 CREATE INDEX "oneid_meta_user_django_user_id_f1d43285" ON "oneid_meta_user" ("django_user_id");
-CREATE INDEX "oneid_meta_perm_sub_account_id_f29cb92f" ON "oneid_meta_perm" ("sub_account_id");
 CREATE INDEX "django_session_expire_date_a5c62663" ON "django_session" ("expire_date");
+CREATE INDEX "oneid_meta_perm_sub_account_id_f29cb92f" ON "oneid_meta_perm" ("sub_account_id");
 COMMIT;

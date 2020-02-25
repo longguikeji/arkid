@@ -40,7 +40,7 @@ class NormalUserViewTestCase(TestCase):
         '''
         黑名单：部门一成员13899990006为黑名单人员，不可见应用十
         '''
-        user = User.objects.filter(username='13899990006')
+        user = User.objects.filter(username='13899990006').first()
         client = self.login_as(user)
         res = client.get(reverse('siteapi:ucenter_app_list'))
         self.assertEqual(res.json()['count'], 0)
