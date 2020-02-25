@@ -45,7 +45,7 @@ class NodeVisibilityScope(models.Model):
 
         if self.visibility == 3:
             node_uids = map(lambda node: node.uid, self.tree_front_walker())    # pylint: disable=no-member
-            return self.member_cls.valid_objects.filter(user=user, owner__uid__in=node_uids).exists()
+            return self.member_cls.valid_objects.filter(user=user, owner__uid__in=node_uids).exists()    # pylint: disable=no-member
 
         if self.visibility == 4:
             if self.org:
@@ -76,7 +76,7 @@ class NodeVisibilityScope(models.Model):
         '''
         对管理员是否开放，由用户所在管理员组决定
         '''
-        return self.under_manage(user)
+        return self.under_manage(user)    # pylint: disable=no-member
 
     def is_visible_to_manager(self, user):
         '''
@@ -87,11 +87,11 @@ class NodeVisibilityScope(models.Model):
 
         manage_node_uids = user.manage_node_uids
 
-        if set(self.upstream_uids) & manage_node_uids:
+        if set(self.upstream_uids) & manage_node_uids:    # pylint: disable=no-member
             return True
 
-        for node in self.retrieve_nodes(manage_node_uids):
-            if self.node_uid in set(node.upstream_uids):
+        for node in self.retrieve_nodes(manage_node_uids):    # pylint: disable=no-member
+            if self.node_uid in set(node.upstream_uids):    # pylint: disable=no-member
                 return True
 
         return False
@@ -104,9 +104,9 @@ class NodeVisibilityScope(models.Model):
         old_node_scope = set(self.node_scope)
         old_user_scope = set(self.user_scope)
 
-        valid_node_scope = set(node.node_uid for node in self.retrieve_nodes(old_node_scope))
+        valid_node_scope = set(node.node_uid for node in self.retrieve_nodes(old_node_scope))    # pylint: disable=no-member
 
-        from oneid_meta.models import User
+        from oneid_meta.models import User    # pylint: disable=import-outside-toplevel
         valid_user_scope = set(user.username for user in User.get_from_pks(old_user_scope, pk_name='username'))
 
         if valid_node_scope != old_node_scope:
@@ -289,14 +289,45 @@ class TreeNode():
 
         return chain([self.node_uid], res)
 
+    @classmethod
+    def get_upstream_uids(cls, node_uid):
+        '''
+        节点向上追溯的路径，包括该节点本身，包括终点节点，以node_uid形式返回
+        '''
+        key = f'oneid:node:{node_uid}:upstream'
+        res = cache.get(key)
+        if res is None:
+            node, _ = cls.retrieve_node(node_uid)
+            if node:
+                node_uids = [item.node_uid for item in node.path_up_to()]
+                cache.set(key, node_uids[1:])
+                return node_uids
+
+        return chain([node_uid], res)
+
     @property
     def downstream_uids(self):
         '''
         节点以及其子孙节点，以node_uid形式返回
-        目前使用频次不大
         '''
-        for node in self.downstream:
-            yield node.node_uid
+        return self.get_downstream_uids(self.node_uid)
+
+    @classmethod
+    def get_downstream_uids(cls, node_uid):
+        '''
+        节点以及其子孙节点，以node_uid形式返回
+        TODO: 继续优化，从子节点的 downstream_uids 聚合
+        TODO: 删除节点时，删除缓存
+        '''
+        key = f'oneid:node:{node_uid}:downstream'
+        res = cache.get(key)
+        if res is None:
+            node, _ = cls.retrieve_node(node_uid)
+            if node:
+                res = [item.node_uid for item in node.downstream]
+                cache.set(key, res[1:0])
+                return res
+        return chain([node_uid], res)
 
     @property
     def downstream(self):
@@ -319,7 +350,7 @@ class TreeNode():
         '''
         通过node_uid 获取node及该节点类型
         '''
-        from oneid_meta.models import Dept, Group
+        from oneid_meta.models import Dept, Group    # pylint: disable=import-outside-toplevel
         if node_uid.startswith(Dept.NODE_PREFIX):
             uid = node_uid.replace(Dept.NODE_PREFIX, '', 1)
             return Dept.valid_objects.filter(uid=uid).first(), 'dept'
@@ -333,7 +364,7 @@ class TreeNode():
         '''
         通过node_uids 批量获取node
         '''
-        from oneid_meta.models import Dept, Group
+        from oneid_meta.models import Dept, Group    # pylint: disable=import-outside-toplevel
         dept_uids = set()
         group_uids = set()
         for node_uid in node_uids:
@@ -373,9 +404,9 @@ class TreeNode():
             return False
         for manager_group in user.org_manager_groups(org):
             if manager_group.scope_subject == 2:    # 指定节点、人
-                if upstream_uids & set(manager_group.nodes):
+                if self.node_uid in manager_group.nodes:
                     return True
-            if manager_group.scope_subject == 1:    # 所在节点
+            if manager_group.scope_subject == 1:    # 所在节点及下属节点
                 if upstream_uids & set(user.node_uids):
                     return True
         return False
