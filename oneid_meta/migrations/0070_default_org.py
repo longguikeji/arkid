@@ -82,7 +82,7 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
     for cf in CustomField.objects.all():
         cf.org = org
         cf.save()
-    for user in User.objects.all():
+    for user in User.objects.filter(is_del=False):
         user.current_organization = org
         user.save()
         GroupMember.objects.create(user=user, owner=direct)
