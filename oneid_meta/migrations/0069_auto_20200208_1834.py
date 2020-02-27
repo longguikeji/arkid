@@ -13,6 +13,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # DROP TABLE oneid_meta_org;
         migrations.CreateModel(
             name='Org',
             fields=[
@@ -33,6 +34,7 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
+        # DROP TABLE oneid_meta_orgmember;
         migrations.CreateModel(
             name='OrgMember',
             fields=[
@@ -50,6 +52,7 @@ class Migration(migrations.Migration):
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='oneid_meta.Org', verbose_name='所属组织')),
             ],
         ),
+        # ALTER TABLE oneid_meta_companyconfig ADD site_id int;
         migrations.RemoveField(
             model_name='companyconfig',
             name='site',
@@ -69,21 +72,23 @@ class Migration(migrations.Migration):
             name='role',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='role', to='oneid_meta.Group', verbose_name='角色节点'),
         ),
+        # ALTER TABLE oneid_meta_app DROP COLUMN owner_id;
         migrations.AddField(
             model_name='app',
             name='owner',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='oneid_meta.Org'),
         ),
+        # ----
         migrations.AddField(
             model_name='companyconfig',
             name='org',
-            field=models.OneToOneField(default=0, on_delete=django.db.models.deletion.CASCADE, related_name='company_config', to='oneid_meta.Org'),
+            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='company_config', to='oneid_meta.Org'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='customfield',
             name='org',
-            field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, to='oneid_meta.Org'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='oneid_meta.Org'),
             preserve_default=False,
         ),
         migrations.AddField(
