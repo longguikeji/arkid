@@ -45,7 +45,7 @@ from siteapi.v1.views.statistics import UserStatisticView
 urlpatterns = [
     # user
     url(r'^user/$', user_views.UserListCreateAPIView.as_view(), name='user_list'),
-    url(r'^user/isolated/$', user_views.UserIsolatedAPIView.as_view(), name='isolated_user_list'),    # FIX
+    # url(r'^user/isolated/$', user_views.UserIsolatedAPIView.as_view(), name='isolated_user_list'),    # FIX
     url(r'^user/(?P<username>[\w]+)/convert/intra/$',
         user_views.UserExtern2IntraView.as_view(),
         name='user_convert_to_intra'),

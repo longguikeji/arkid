@@ -15,6 +15,7 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
     invite user
     '''
 
+    # FIXME@SaaS
     def post(self, request, username):    # pylint: disable=arguments-differ
         data = request.data if request.data else {}
 
