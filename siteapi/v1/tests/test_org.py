@@ -50,6 +50,9 @@ class OrgTestCase(TestCase):
     def create_org(self, org_data):
         return self.client.json_post(reverse('siteapi:org_create'), data=org_data)
 
+    def patch_org(self, org_oid, org_data):
+        return self.client.json_patch(reverse('siteapi:org_detail', args=(org_oid, )), data=org_data)
+
     def delete_org(self, org_oid):
         return self.client.delete(reverse('siteapi:org_detail', args=(org_oid, )))
 
@@ -164,6 +167,14 @@ class OrgTestCase(TestCase):
             eq_group(o.role)
             eq_group(o.label)
 
+        # patch
+        for org in jorgs:
+            name = str(uuid4())
+            owner_ = other.username
+            org['name'] = name
+            org['owner'] = owner_
+            self.assertEqual(self.patch_org(org['oid'], {'name': name, 'owner': owner_}).json(), org)
+
         # external
         for res in jorgs:
             self.assertEqual(self.delete_org(res['oid']).status_code, 204)
@@ -171,8 +182,6 @@ class OrgTestCase(TestCase):
 
         # internal
         self.assertEqual([], [OrgSerializer(o).data for o in Org.valid_objects.all()])
-        # soft delete
-        self.assertEqual(jorgs, [OrgSerializer(o).data for o in Org.objects.all()])
 
         # perm
         self.set_client(self.login_as(owner))

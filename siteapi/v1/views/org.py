@@ -34,8 +34,14 @@ class OrgListCreateAPIView(GenericAPIView):
         '''
         parse = OrgDeserializer(data=request.data)
         parse.is_valid(raise_exception=True)
-        name = parse.validated_data['name']
-        return Response(OrgSerializer(Org.create(name=name, owner=self.request.user)).data)
+        name = parse.validated_data.get('name')
+        owner = parse.validated_data.get('owner')
+        if not name:
+            raise ParseError
+        owner = User.valid_objects.filter(username=owner).first()
+        if not owner:
+            owner = self.request.user
+        return Response(OrgSerializer(Org.create(name=name, owner=owner)).data)
 
     def get_permissions(self):
         '''
@@ -98,9 +104,10 @@ class OrgUserListCreateDestroyAPIView(GenericAPIView):
         return [perm() for perm in permission_classes]
 
 
-class OrgDetailDestroyAPIView(GenericAPIView):
+class OrgDetailAPIView(GenericAPIView):
     '''
     组织详情查询 [GET]
+    组织详情更改 [PATCH]
     组织删除 [DELETE]
     '''
     read_permission_classes = [IsAuthenticated]
@@ -109,6 +116,22 @@ class OrgDetailDestroyAPIView(GenericAPIView):
         '''
         org detail view
         '''
+        return Response(OrgSerializer(self.org).data)
+
+    def patch(self, request, **kw):
+        '''
+        org info update
+        '''
+        parse = OrgDeserializer(data=request.data)
+        parse.is_valid(raise_exception=True)
+        name = parse.validated_data.get('name')
+        owner = parse.validated_data.get('owner')
+        if name:
+            self.org.name = name
+        if owner:
+            if not User.valid_objects.filter(username=owner).exists():
+                raise NotFound
+            self.org.owner = User.valid_objects.filter(username=owner).first()
         return Response(OrgSerializer(self.org).data)
 
     def delete(self, request, **kw):
