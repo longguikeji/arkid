@@ -128,10 +128,12 @@ class OrgDetailAPIView(GenericAPIView):
         owner = parse.validated_data.get('owner')
         if name:
             self.org.name = name
+            self.org.save()
         if owner:
             if not User.valid_objects.filter(username=owner).exists():
-                raise NotFound
+                raise ValidationError
             self.org.owner = User.valid_objects.filter(username=owner).first()
+            self.org.save()
         return Response(OrgSerializer(self.org).data)
 
     def delete(self, request, **kw):

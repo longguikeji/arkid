@@ -1633,7 +1633,7 @@ TODO: 可见权限的处理
     + Attributes
         + name (string)
         + owner (string)
- + Response 204
+ + Response Organization (object)
 
 ## 特定组织成员操作 [/org/{oid}/user/{?username}]
 
