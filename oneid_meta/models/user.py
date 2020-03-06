@@ -5,6 +5,7 @@ schema of Users
 
 # pylint: disable=too-many-lines
 from itertools import chain
+from functools import reduce
 from django.core.cache import cache
 from django.db import models
 from django.contrib.auth.models import User as DjangoUser
@@ -17,6 +18,7 @@ from common.django.model import BaseModel, IgnoreDeletedManager
 from oneid_meta.models.config import CustomField
 from oneid_meta.models.group import GroupMember
 from oneid_meta.models.dept import DeptMember
+from oneid_meta.models.org import Org
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
@@ -54,17 +56,14 @@ class User(BaseModel, PermOwnerMixin):
     email = models.CharField(max_length=255, blank=True, default='', verbose_name='邮箱')
     private_email = models.CharField(max_length=255, blank=True, default='', verbose_name='私人邮箱')    # 仅用于找回密码
     mobile = models.CharField(max_length=64, blank=True, default='', verbose_name='手机')
-    employee_number = models.CharField(max_length=255, blank=True, default='', verbose_name='工号')
-    position = models.CharField(max_length=255, blank=True, default='', verbose_name='职位')
     gender = models.IntegerField(choices=GENDER_CHOICES, default=0, verbose_name='性别')
     avatar = models.CharField(max_length=1024, blank=True, default='', verbose_name='头像')
     is_boss = models.BooleanField(default=False, verbose_name='是否为主管理员')
     from_register = models.BooleanField(default=False, verbose_name='是否来自自己注册')
     origin = models.IntegerField(choices=ORIGIN_CHOICES, default=0, verbose_name='账号来源')
-    hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
-    remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
-    last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')
+    last_active_time = models.DateTimeField(blank=True, null=True, verbose_name='最近活跃时间')    # TODO@saas
     require_reset_password = models.BooleanField(default=False, verbose_name='是否需要重置密码')
+    current_organization = models.ForeignKey('oneid_meta.Org', null=True, blank=True, on_delete=models.SET_NULL)
 
     isolated_objects = IsolatedManager()
 
@@ -243,12 +242,49 @@ class User(BaseModel, PermOwnerMixin):
         return self.username == 'admin' or self.is_boss or \
             UserPerm.valid_objects.filter(owner=self, perm__uid='system_oneid_all', value=True).exists()
 
+    def is_org_owner(self, *args):
+        '''
+        是否是参数中所指定组织的管理员
+        '''
+        if args:
+            return reduce(lambda ret, org: ret and org.owner.username == self.username, (True, ) + args)
+        return self.current_organization.owner.username == self.username if self.current_organization else False    # pylint: disable=no-member
+
     @property
     def is_manager(self):
         '''
         是否是子管理员
         '''
         return GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False).exists()
+
+    def is_org_manager(self, *args):
+        '''
+        是否是组织子管理员
+        '''
+        # pylint: disable=invalid-name
+        if not args:
+            args = (self.current_organization, )
+
+        ret = False
+        for gm in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
+            ret = ret or gm.owner.org in args
+        return ret
+
+    @property
+    def organizations(self):
+        '''
+        所属组织
+        '''
+
+        # pylint: disable=invalid-name
+        def traverse_group(g):
+            for org in Org.valid_objects.filter(group=g):
+                return org
+            if g.parent is not None:
+                return traverse_group(g.parent)
+
+        for node in GroupMember.valid_objects.filter(user=self):
+            yield traverse_group(node.owner)
 
     @property
     def manager_groups(self):
@@ -257,6 +293,17 @@ class User(BaseModel, PermOwnerMixin):
         '''
         for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
             yield group_member.owner.manager_group
+
+    def org_manager_groups(self, *args):
+        '''
+        组织下子管理员组
+        '''
+        if not args:
+            args = (self.current_organization, )
+
+        for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
+            if group_member.owner.org in args:
+                yield group_member.owner.manager_group
 
     @property
     def token(self):
@@ -513,13 +560,15 @@ class CustomUser(BaseModel):
             kwargs.update(is_visible=True)
 
         if self.user.is_intra:
-            for field in CustomField.valid_objects.filter(subject='user', **kwargs):
+            for field in CustomField.valid_objects.filter(org=self.user.current_organization, subject='user', **kwargs):
                 res.append({
                     'uuid': field.uuid.hex,
                     'name': field.name,
                     'value': data.get(field.uuid.hex, ''),
                 })
-            for field in CustomField.valid_objects.filter(subject='extern_user', **kwargs):
+            for field in CustomField.valid_objects.filter(org=self.user.current_organization,
+                                                          subject='extern_user',
+                                                          **kwargs):
                 if field.uuid.hex in data:    # pylint: disable=unsupported-membership-test
                     res.append({
                         'uuid': field.uuid.hex,
@@ -527,13 +576,15 @@ class CustomUser(BaseModel):
                         'value': data.get(field.uuid.hex),
                     })
         else:
-            for field in CustomField.valid_objects.filter(subject='extern_user', **kwargs):
+            for field in CustomField.valid_objects.filter(org=self.user.current_organization,
+                                                          subject='extern_user',
+                                                          **kwargs):
                 res.append({
                     'uuid': field.uuid.hex,
                     'name': field.name,
                     'value': data.get(field.uuid.hex, ''),
                 })
-            for field in CustomField.valid_objects.filter(subject='user', **kwargs):
+            for field in CustomField.valid_objects.filter(org=self.user.current_organization, subject='user', **kwargs):
                 if field.uuid.hex in data:    # pylint: disable=unsupported-membership-test
                     res.append({
                         'uuid': field.uuid.hex,

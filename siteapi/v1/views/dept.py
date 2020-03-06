@@ -4,6 +4,7 @@ views about dept
 - DeptChildDept
 - DeptMemberUser
 '''
+# pylint: disable=attribute-defined-outside-init, cyclic-import
 import json
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -22,6 +23,7 @@ from oneid.permissions import (
     IsNodeManager,
     IsAdminUser,
     IsManagerUser,
+    IsOrgOwnerOf,
     NodeManagerReadable,
 )
 from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
@@ -108,32 +110,38 @@ class DeptDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     普通用户有可能可读
     '''
     serializer_class = DeptDetailSerializer
-    read_permission_classes = [IsAuthenticated & (NodeManagerReadable | IsAdminUser)]
-    write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_permissions(self):
         '''
         读写权限
         '''
+        self.dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not self.dept:
+            raise NotFound
+
+        org = self.dept.org
+        if not org:
+            return []
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org) | IsNodeManager)]
+
         if self.request.method in SAFE_METHODS:
-            return [perm() for perm in self.read_permission_classes]
-        return [perm() for perm in self.write_permission_classes]
+            return [perm() for perm in read_permission_classes]
+        return [perm() for perm in write_permission_classes]
 
     def get_object(self):
         '''
         find dept
         '''
-        dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
-        if not dept:
-            raise NotFound
         try:
-            self.check_object_permissions(self.request, dept)
+            self.check_object_permissions(self.request, self.dept)
         except PermissionDenied as exc:
             if self.request.method in SAFE_METHODS:
                 raise NotFound
             raise exc
-        dept.refresh_visibility_scope()
-        return dept
+        self.dept.refresh_visibility_scope()
+        return self.dept
 
     def perform_destroy(self, instance):
         '''
@@ -205,26 +213,31 @@ class DeptChildDeptAPIView(
     '''
     serializer_class = DeptListSerializer
 
-    read_permission_classes = [IsAuthenticated & (NodeManagerReadable | IsManagerUser | IsAdminUser)]
-    write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
-
     def get_object(self):
         '''
         find dept
         '''
-        dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
-        if not dept:
-            raise NotFound
-        self.check_object_permissions(self.request, dept)
-        return dept
+        self.check_object_permissions(self.request, self.dept)
+        return self.dept
 
     def get_permissions(self):
         '''
         读写权限
         '''
+        self.dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not self.dept:
+            raise NotFound
+
+        self.org = self.dept.org
+        if not self.org:
+            return []
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsNodeManager)]
+
         if self.request.method in SAFE_METHODS:
-            return [perm() for perm in self.read_permission_classes]
-        return [perm() for perm in self.write_permission_classes]
+            return [perm() for perm in read_permission_classes]
+        return [perm() for perm in write_permission_classes]
 
     def get(self, request, *args, **kwargs):
         '''
@@ -248,7 +261,7 @@ class DeptChildDeptAPIView(
             dept_data['uid'] = uid
         dept_data.update(parent_uid=self.kwargs['uid'])
         cli = CLI()
-        child_dept = cli.create_dept(dept_data)
+        child_dept = cli.create_dept(dept_data, self.org)
         cli.add_dept_to_dept(child_dept, parent_dept)
         return Response(DeptDetailSerializer(child_dept).data, status=status.HTTP_201_CREATED)
 
@@ -296,26 +309,31 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
-    write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
-
     def get_permissions(self):
         '''
         读写权限
         '''
+        self.dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not self.dept:
+            raise NotFound
+
+        org = self.dept.org
+        if not org:
+            return []
+
+        read_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser | IsOrgOwnerOf(org))]
+        write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser | IsOrgOwnerOf(org))]
+
         if self.request.method in SAFE_METHODS:
-            return [perm() for perm in self.read_permission_classes]
-        return [perm() for perm in self.write_permission_classes]
+            return [perm() for perm in read_permission_classes]
+        return [perm() for perm in write_permission_classes]
 
     def get_object(self):
         '''
         find dept
         '''
-        dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
-        if not dept:
-            raise NotFound
-        self.check_object_permissions(self.request, dept)
-        return dept
+        self.check_object_permissions(self.request, self.dept)
+        return self.dept
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_object().users

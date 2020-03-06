@@ -1,6 +1,7 @@
 '''
 schema of log
 '''
+# pylint: disable=no-member,import-outside-toplevel
 import uuid
 from collections import OrderedDict
 
@@ -72,6 +73,8 @@ class Log(models.Model):
 
     data = models.ForeignKey(RequestDataClientLog, blank=True, null=True, on_delete=models.SET_NULL)
 
+    org = models.ForeignKey('oneid_meta.Org', blank=True, null=True, on_delete=models.SET_NULL)
+
     objects = models.Manager()
 
     SUBJECT_CHOICES = OrderedDict({
@@ -85,6 +88,7 @@ class Log(models.Model):
 
     ## 配置
         'config': '系统配置',
+        'org_config': '组织配置',
 
     ## 用户
         'user_create': '创建用户',

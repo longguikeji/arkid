@@ -27,10 +27,7 @@ FORMAT: 1A
 + email (string)
 + mobile (string)
 + avatar (string)
-+ number (string) - 工号
 + private_email (string) - 私人邮箱
-+ position (string) - 职位
-+ remark (string) - 备注
 + depts (array) - 所属部门列表
     + dept (object)
         + uid (string)
@@ -49,16 +46,12 @@ FORMAT: 1A
 + email (string)
 + mobile (string)
 + avatar (string)
-+ number (string) - 工号
 + private_email (string) - 私人邮箱
-+ position (string) - 职位
 + is_settled (boolean) - 是否已入驻
 + is_manager (boolean) - 是否是子管理员
 + is_admin (boolean) - 是否是超级管理员
 + is_extern_user (boolean) - 是否是外部用户
 + origin_verbose (string) - 注册来源
-+ remark (string) - 备注
-+ hiredate (string) - 入职时间 2019-06-04T09:01:44+08:00
 + created (string) - 创建时间、注册时间 2019-06-04T09:01:44+08:00
 + last_active_time (string) - 最后活跃时间
 + gender (enum[number])
@@ -102,6 +95,14 @@ FORMAT: 1A
 + groups (array[Group])
 + depts (array[Dept])
 + nodes (array[Node])
+
+## OrgUser(object)
++ user (User)
++ remark (string) - 备注
++ position (string) - 职位
++ employee_number (string) - 工号
++ hiredate (string) - 入职时间 2019-06-04T09:01:44+08:00
+
 
 ## SubAccount(object)
 + domain (string)
@@ -259,6 +260,17 @@ FORMAT: 1A
 ## NodeOnlyTree (object)
 + info (Node)
 + nodes (array[NodeOnlyTree]) - self
+
+## Organization (object)
++ oid (string)
++ name (string)
++ dept_uid (string(Dept))
++ group_uid (string(Group))
++ direct_uid (string(Group))
++ manager_uid (string(Group))
++ role_uid (string(Group))
++ label_uid (string(Group))
+
 
 ## Perm (object)
 + perm_id (number)
@@ -438,8 +450,10 @@ FORMAT: 1A
 + alipay_public_key (string) - 支付宝生成的公钥
 + qr_app_valid (boolean, readonly) - qr配置是否有效
 
-## Config (object)
+## OrgConfig (object)
 + company_config (CompanyConfig)
+
+## SiteConfig (object)
 + ding_config (DingConfig)
 + account_config (AccountConfig)
 + sms_config (SMSConfig)
@@ -495,11 +509,13 @@ FORMAT: 1A
 + support_work_wechat_qr (boolean) - 是否支持企业微信扫码登录
 
 ## MetaInfo (object)
-+ company_config (CompanyMetaInfo)
 + ding_config (DingMetaInfo)
 + account_config (AccountMetaInfo)
 + alipay_config (AlipayMetaInfo)
 + work_wechat_config (WorkWechatMetaInfo)
+
+## OrgMetaINfo (object)
++ company_config (CompanyMetaInfo)
 
 ## MetaNodeInfo (object)
 + name (string)
@@ -844,6 +860,41 @@ deprecated
         + next (string)
         + count (number)
         + results (array[SubAccount]))
+
+## 用户当前登录组织 [/ucenter/org/]
+### 获取用户当前登录组织 [GET]
++ Response 200 (application/json)
+  + Attributes
+    + oid (string) - 组织唯一标识
+    + name (string) - 组织名
+    + dept_uid (string) - 组织下属部门唯一标识
+    + group_uid (string) - 组织下属组唯一标识
+    + direct_uid (string) - 组织下属直接成员组唯一标识
+    + manager_uid (string) - 组织下属管理员组唯一标识
+    + role_uid (string) - 组织下属角色组唯一标识
+    + label_uid (string) - 组织下属标签组唯一标识
+
+### 切换用户当前登录组织 [POST]
++ Request JSON Message
+  + Attributes
+    + oid (string) - 组织ID
+
++ Response 204
+
+### 退出用户当前登录组织 [DELETE]
++ Response 204
+
+## 用户所属组织 [/ucenter/orgs/]
+### 获取用户所属组织 [GET]
++ Response 200 (application/json)
+    + Attributes
+      orgs (array[org]) - 用户加入的所有组织
+
+## 用户创建组织 [/ucenter/orgs/owned]
+### 获取用户创建组织 [GET]
++ Response 200 (application/json)
+    + Attributes
+      orgs (array[org]) - 用户创建的所有组织
 
 # Group Auth
 以下部分均只对管理员开放
@@ -1519,6 +1570,101 @@ TODO: 可见权限的处理
     "user": "unrelated"
 }
 
+# Group Org
+
+## 创建/列举组织 [/org/]
+
+### 查看所有组织 [GET]
+
++ Request
+    + Attributes
+    + Parameters
++ Response 200 (application/json)
+   + Attributes
+     + orgs (array[Organization]) - 组织信息列表
+
+### 创建组织 [POST]
+
++ Request (application/json)
+  + Attributes
+    + name (string) - 组织名
++ Response 200 (application/json)
+  + Attributes
+    + oid (string) - 组织唯一标识
+    + name (string) - 组织名
+    + dept_uid (string) - 组织下属部门唯一标识
+    + group_uid (string) - 组织下属组唯一标识
+    + direct_uid (string) - 组织下属直接成员组唯一标识
+    + manager_uid (string) - 组织下属管理员组唯一标识
+    + role_uid (string) - 组织下属角色组唯一标识
+    + label_uid (string) - 组织下属标签组唯一标识
+
+## 查看/删除特定组织 [/org/{oid}/]
+
+### 查看特定组织信息 [GET]
+
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
++ Response 200 (application/json)
+  + Attributes
+    + oid (string) - 组织唯一标识
+    + name (string) - 组织名
+    + dept_uid (string) - 组织下属部门唯一标识
+    + group_uid (string) - 组织下属组唯一标识
+    + direct_uid (string) - 组织下属直接成员组唯一标识
+    + manager_uid (string) - 组织下属管理员组唯一标识
+    + role_uid (string) - 组织下属角色组唯一标识
+    + label_uid (string) - 组织下属标签组唯一标识
+
+### 删除特定组织 [DELETE]
+
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
++ Response 204
+
+## 特定组织成员操作 [/org/{oid}/user/{?username}]
+
+### 查看特定组织成员列表 [GET]
+
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
++ Response 200 (application/json)
+  + Attributes
+    + users (array[string]) - 组织中所有用户名列表
+
+### 添加成员到特定组织 [POST]
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
+    + username (string) 用户名
+  + Response 204
+
+### 从组织中删除特定成员 [DELETE]
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
+    + username (string) 用户名
+  + Response 204
+
+## 特定组织成员详细信息 [/org/{oid}/user/{username}]
+## 查看特定组织成员详细信息 [GET]
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
+    + username (string) 用户名
+ + Response 200 (application/json)
+    + Attribute (OrgUser)
+## 修改特定组织成员详细信息 [POST]
++ Request
+  + Parameters
+    + oid (string) - 组织唯一标识
+    + username (string) 用户名
+ + Response 200 (application/json)
+    + Attribute (OrgUser)
+
 # Group Perm
 
 ## 所有权限 [/perm/{?action,action_except,scope,owner_subject,name}]
@@ -1759,10 +1905,11 @@ TODO: 可见权限的处理
 
 # Group APP
 
-## 所有应用 [/app/{?name,node_uid,user_uid,owner_access}]
+## 所有应用 [/org/{oid}/app/{?name,node_uid,user_uid,owner_access}]
 受管理员管理范围影响
 
 + Parameters
+    + org (string) - (应用所属组织id)
     + name (string, optional)
     + node_uid (string) - 查询该节点的权限
     + user_uid (string) - 查询该用户权限
@@ -1794,9 +1941,10 @@ TODO: 可见权限的处理
     + Attributes (array[PublicAPP])
 
 
-## 特定应用 [/app/{uid}/]
+## 特定应用 [/org/{oid}/app/{uid}/]
 
 + Parameters
+    + org (string) - (应用所属组织id)
     + uid (string) - 应用唯一标识。
 
 ### 获取特定应用 [GET]
@@ -1816,8 +1964,9 @@ TODO: 可见权限的处理
 
 + Response 204 (application/json)
 
-## 应用 OAuth2.0 Client [/app/{uid}/oauth/]
+## 应用 OAuth2.0 Client [/org/{oid}/app/{uid}/oauth/]
 + Parameters
+    + org (string) - (应用所属组织id)
     + uid (string) - 应用唯一标识。
 
 ### 注册应用 [POST]
@@ -1881,13 +2030,31 @@ TODO: 可见权限的处理
 
 ### 获取当前配置 [GET]
 + Response 200 (application/json)
-    + Attributes (Config)
+    + Attributes (SiteConfig)
 
 ### 修改当前配置 [PATCH]
 + request JSON Message
-    + Attributes (Config)
+    + Attributes (SiteConfig)
 + Response 200 (application/json)
-    + Attributes (Config)
+    + Attributes (SiteConfig)
+
+## 组织配置 [/org/{oid}/config/]
+
+管理员及组织创建者可见
+
++ Parameters
+    + org (string) - (组织id)
+
+### 获取当前配置 [GET]
++ Response 200 (application/json)
+    + Attributes (OrgConfig)
+
+### 修改当前配置 [PATCH]
++ request JSON Message
+    + Attributes (OrgConfig)
++ Response 200 (application/json)
+    + Attributes (OrgConfig)
+
 
 ## 主管理员 [/config/admin/]
 仅主管理员可见
@@ -1905,9 +2072,10 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (User)
 
-## 自定义字段 [/config/custom/field/{subject}/]
+## 自定义字段 [/org/{oid}/config/custom/field/{subject}/]
 
 + Parameters
+    + org (string) - (组织id)
     + subject (enum[string]) - 字段分类
         - user - 内部用户
         - extern_user - 外部用户
@@ -1922,7 +2090,7 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (CustomField)
 
-## 特定自定义字段 [/config/custom/field/{subject}/{uuid}/]
+## 特定自定义字段 [/org/{oid}/config/custom/field/{subject}/{uuid}/]
 
 ### 获取特定自定义字段 [GET]
 + Response 200 (application/json)
@@ -1982,9 +2150,23 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (MetaInfo)
 
-## 组织架构基本信息 [/meta/node/]
+## 组织基本信息 [/org/{oid}/meta/]
 
-登录可见
+组织内成员可见
+
++ Parameters
+  + oid (string) 组织id
+
+### 获取当前基本信息 [GET]
++ Response 200 (application/json)
+    + Attributes (OrgMetaInfo)
+
+## 组织架构基本信息 [/org/{oid}/meta/node/]
+
+组织内成员可见
+
++ Parameters
+  + oid (string) 组织id
 
 ### 获取组织架构基本信息 [GET]
 + Response 200 (application/json)
@@ -2002,6 +2184,19 @@ TODO: 可见权限的处理
 
 ## 内置权限基本信息 [/meta/perm/]
 仅超级管理员可见
+
+### 获取权限基本信息 [GET]
++ Response 200 (application/json)
+    + Attributes (array)
+        + subject_item (object)
+            + name (string)
+            + uid (string)
+            
+## 组织内权限基本信息 [/org/{oid}/meta/perm/]
+组织创建者可见
+
++ Parameters
+  + oid (string) 组织id
 
 ### 获取权限基本信息 [GET]
 + Response 200 (application/json)
@@ -2094,9 +2289,27 @@ Content-Disposition: form-data; name='node_uid'
 
 # Group Log
 
-## 日志列表 [/log/{?days,user,subject,summary}]
+## 全局日志列表 [/log/{?days,user,subject,summary}]
 
 + Parameters
+    + days (number) - 距今天数，0特指当天
+    + user (string) - 操作者
+    + summary (string) - 事件信息
+    + subject (string) - 事件类型，具体枚举值从 /meta/log/中获取，多选时以`|`间隔，形如 `a|b`
+
+### 获取日志列表 [GET]
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + count (number)
+        + next (string)
+        + previous (string)
+        + results (array[LiteLog])
+
+## 组织内日志列表 [/org/{oid}/log/{?days,user,subject,summary}]
+
++ Parameters
+    + oid (string) - 组织id
     + days (number) - 距今天数，0特指当天
     + user (string) - 操作者
     + summary (string) - 事件信息

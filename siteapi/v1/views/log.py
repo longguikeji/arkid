@@ -1,7 +1,7 @@
 '''
 views about log
 '''
-
+# pylint: disable=cyclic-import
 import datetime
 
 from rest_framework import generics
@@ -12,26 +12,55 @@ from django.utils import timezone
 from django.db.models import Q
 
 from oneid_meta.models import Log
-from oneid.permissions import CustomPerm, IsAdminUser
+from oneid.permissions import (
+    CustomPerm,
+    IsAdminUser,
+    IsOrgOwnerOf,
+)
 from siteapi.v1.serializers.log import LogSerializer, LogLiteSerializer
 from common.django.drf.paginator import DefaultListPaginator
 
 
-class LogListAPIView(generics.ListAPIView):
+class LogListAPIView(generics.views.APIView):
     '''
     get log list [GET]
     '''
+    def dispatch(self, request, *args, **kwargs):
+        kwargs['oid'] = '00000000-0000-0000-0000-000000000000'
+        return OrgLogListAPIView().dispatch(request, *args, **kwargs)
 
-    permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_log_read'))]
+
+class OrgLogListAPIView(generics.ListAPIView):
+    '''
+    get org log list [GET]
+    '''
 
     serializer_class = LogLiteSerializer
     pagination_class = DefaultListPaginator
+
+    def get_permissions(self):
+        '''
+        读写权限
+        '''
+        # pylint: disable=import-outside-toplevel,attribute-defined-outside-init
+        from siteapi.v1.views.org import validity_check
+
+        if self.kwargs['oid'] == '00000000-0000-0000-0000-000000000000':
+            permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_log_read'))]
+        else:
+            self.org = validity_check(self.kwargs['oid'])
+            permission_classes = [
+                IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | CustomPerm(f'{self.org.oid}_log_read'))
+            ]
+
+        return [perm() for perm in permission_classes]
 
     def get_queryset(self):
         '''
         filter queryset
         '''
-        kwargs = {}
+
+        kwargs = {'org': self.org} if self.kwargs['oid'] != '00000000-0000-0000-0000-000000000000' else {}
 
         subject = self.request.query_params.get('subject', '')
         if subject:

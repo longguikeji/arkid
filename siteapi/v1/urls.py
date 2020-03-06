@@ -1,7 +1,7 @@
 '''
 urls of apis
 '''
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,line-too-long
 
 from django.conf.urls import url, include
 
@@ -13,8 +13,10 @@ from siteapi.v1.views.task import (
 )
 
 from siteapi.v1.views.config import (
+    OrgConfigAPIView,
     ConfigAPIView,
     AdminAPIView,
+    OrgMetaConfigAPIView,
     MetaConfigAPIView,
     CustomFieldListCreateAPIView,
     CustomFieldDetailAPIView,
@@ -30,6 +32,7 @@ from siteapi.v1.views import (
     log as log_views,
     group as group_views,
     dept as dept_views,
+    org as org_views,
     user as user_views,
     app as app_views,
     shortcut as shortcut_views,
@@ -39,7 +42,6 @@ from siteapi.v1.views import (
 )
 
 from siteapi.v1.views.statistics import UserStatisticView
-
 urlpatterns = [
     # user
     url(r'^user/$', user_views.UserListCreateAPIView.as_view(), name='user_list'),
@@ -59,25 +61,30 @@ urlpatterns = [
         perm_views.UserPermDetailView.as_view(),
         name='user_perm_detail'),
     # node
-    url(r'^node/(?P<uid>[\w|-]+)/list/$', node_views.NodeListAPIView.as_view(), name='node_list'),
+    # url(r'^node/(?P<uid>[\w|-]+)/list/$', node_views.NodeListAPIView.as_view(), name='node_list'), TODO@saas
     url(r'^node/(?P<uid>[\w|-]+)/$', node_views.NodeDetailAPIView.as_view(), name='node_detail'),
     url(r'^node/(?P<uid>[\w|-]+)/tree/$', node_views.ManagerNodeTreeAPIView.as_view(), name='node_tree'),
     url(r'^node/(?P<uid>[\w|-]+)/node/$', node_views.NodeChildNodeAPIView.as_view(), name='node_child_node'),
     url(r'^node/(?P<uid>[\w|-]+)/user/$', node_views.NodeChildUserAPIView.as_view(), name='node_child_user'),
     # group
-    url(r'^group/$', group_views.GroupListAPIView.as_view(), name='group_list'),
+    # url(r'^group/$', group_views.GroupListAPIView.as_view(), name='group_list'), TODO@saas
     url(r'^group/(?P<uid>[\w|-]+)/$', group_views.GroupDetailAPIView.as_view(), name='group_detail'),
-    url(r'^group/(?P<uid>[\w|-]+)/list/$', group_views.GroupScopeListAPIView.as_view(), name='group_scope_list'),
+    # url(r'^group/(?P<uid>[\w|-]+)/list/$', group_views.GroupScopeListAPIView.as_view(), name='group_scope_list'), TODO@saas
     url(r'^group/(?P<uid>[\w|-]+)/tree/$', group_views.ManagerGroupTreeAPIView.as_view(), name='group_tree'),
     url(r'^group/(?P<uid>[\w|-]+)/group/$', group_views.GroupChildGroupAPIView.as_view(), name='group_child_group'),
     url(r'^group/(?P<uid>[\w|-]+)/user/$', group_views.GroupChildUserAPIView.as_view(), name='group_child_user'),
     # dept
-    url(r'^dept/$', dept_views.DeptListAPIView.as_view(), name='dept_list'),
+    # url(r'^dept/$', dept_views.DeptListAPIView.as_view(), name='dept_list'), TODO@saas
     url(r'^dept/(?P<uid>[\w|-]+)/$', dept_views.DeptDetailAPIView.as_view(), name='dept_detail'),
-    url(r'^dept/(?P<uid>[\w|-]+)/list/$', dept_views.DeptScopeListAPIView.as_view(), name='dept_scope_list'),
+    # url(r'^dept/(?P<uid>[\w|-]+)/list/$', dept_views.DeptScopeListAPIView.as_view(), name='dept_scope_list'), TODO@saas
     url(r'^dept/(?P<uid>[\w|-]+)/tree/$', dept_views.ManagerDeptTreeAPIView.as_view(), name='dept_tree'),
     url(r'^dept/(?P<uid>[\w|-]+)/dept/$', dept_views.DeptChildDeptAPIView.as_view(), name='dept_child_dept'),
     url(r'^dept/(?P<uid>[\w|-]+)/user/$', dept_views.DeptChildUserAPIView.as_view(), name='dept_child_user'),
+    # org
+    url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_create'),
+    url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailDestroyAPIView.as_view(), name='org_detail'),
+    url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListCreateDestroyAPIView.as_view(), name='org_user'),
+    url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'),
     # perm
     url(r'^perm/$', perm_views.PermListCreateAPIView.as_view(), name='perm_list'),
     url(r'^perm/(?P<uid>[\w|-]+)/$', perm_views.PermDetailAPIView.as_view(), name='perm_detail'),
@@ -139,6 +146,10 @@ urlpatterns = [
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/$', node_views.UcenterNodeDetailAPIView.as_view(), name='ucenter_node_detail'),
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/tree/$', node_views.UcenterNodeTreeAPIView.as_view(),
         name='ucenter_node_tree'),
+    # ucenter org
+    url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
+    url(r'^ucenter/orgs/$', org_views.UcenterOrgListAPIView.as_view(), name='ucenter_org_list'),
+    url(r'^ucenter/orgs/owned/$', org_views.UcenterOwnOrgListAPIView.as_view(), name='ucenter_own_org_list'),
     # ucenter app
     url(r'^ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'),
     # ucenter user
@@ -149,12 +160,13 @@ urlpatterns = [
     url(r'^service/', include(('infrastructure.urls', 'infrastructure'), namespace='infra')),
     # config
     url(r'^config/$', ConfigAPIView.as_view(), name='config'),
+    url(r'^org/(?P<oid>[\w|-]+)/config/$', OrgConfigAPIView.as_view(), name='org_config'),
     url(r'^config/admin/$', AdminAPIView.as_view(), name='alter_admin'),
     url(r'^config/storage/$', StorageConfigAPIView.as_view(), name='storage_config'),
-    url(r'^config/custom/field/(?P<field_subject>[a-z_]+)/$',
+    url(r'^org/(?P<oid>[\w|-]+)/config/custom/field/(?P<field_subject>[a-z_]+)/$',
         CustomFieldListCreateAPIView.as_view(),
         name='custom_field_list'),
-    url(r'^config/custom/field/(?P<field_subject>[a-z_]+)/(?P<uuid>[\w]+)/$',
+    url(r'^org/(?P<oid>[\w|-]+)/config/custom/field/(?P<field_subject>[a-z_]+)/(?P<uuid>[\w]+)/$',
         CustomFieldDetailAPIView.as_view(),
         name='custom_field_detail'),
     url(r'^config/native/field/(?P<field_subject>[a-z_]+)/$',
@@ -163,18 +175,25 @@ urlpatterns = [
     url(r'^config/native/field/(?P<field_subject>[a-z_]+)/(?P<uuid>[\w]+)/$',
         NativeFieldDetailAPIView.as_view(),
         name='native_field_detail'),
+
     # log
-    url(r'^log/$', log_views.LogListAPIView.as_view(), name='log_list'),
+    url(r'^log/$', log_views.LogListAPIView.as_view(), name='log_list_all'),
+    url(r'^org/(?P<oid>[\w|-]+)/log/$', log_views.OrgLogListAPIView.as_view(), name='log_list'),
     url(r'^log/(?P<uuid>[\w|-]+)', log_views.LogDetailAPIView.as_view(), name='log_detail'),
+
     # meta
     url(r'^meta/$', MetaConfigAPIView.as_view(), name='meta'),
-    url(r'^meta/node/$', node_views.MetaNodeAPIView.as_view(), name='meta_node'),
     url(r'^meta/log/$', log_views.MetaLogAPIView.as_view(), name='meta_log'),
     url(r'^meta/perm/$', perm_views.MetaPermAPIView.as_view(), name='meta_perm'),
+    url(r'^org/(?P<oid>[\w|-]+)/meta/$', OrgMetaConfigAPIView.as_view(), name='meta_org'),
+    url(r'^org/(?P<oid>[\w|-]+)/meta/node/$', node_views.MetaNodeAPIView.as_view(), name='meta_node'),
+    url(r'^org/(?P<oid>[\w|-]+)/meta/perm/$', perm_views.MetaOrgPermAPIView.as_view(), name='meta_org_perm'),
+
     # app
-    url(r'^app/$', app_views.APPListCreateAPIView.as_view(), name='app_list'),
-    url(r'^app/(?P<uid>[\w|-]+)/$', app_views.APPDetailAPIView.as_view(), name='app_detail'),
-    url(r'^app/(?P<uid>[\w|-]+)/oauth/$', app_views.APPOAuthRegisterAPIView.as_view(), name='app_register_oauth'),
+    url(r'^org/(?P<oid>[\w|-]+)/app/$', app_views.APPListCreateAPIView.as_view(), name='app_list'),
+    url(r'^org/(?P<oid>[\w|-]+)/app/(?P<uid>[\w|-]+)/$', app_views.APPDetailAPIView.as_view(), name='app_detail'),
+    url(r'^org/(?P<oid>[\w|-]+)/app/(?P<uid>[\w|-]+)/oauth/$', app_views.APPOAuthRegisterAPIView.as_view(), name='app_register_oauth'),
+
     # migrate
     url(r'^migration/user/csv/export/$', migrate_views.UserCSVExportView.as_view(), name='export_user'),
     url(r'^migration/user/csv/import/$', migrate_views.UserCSVImportView.as_view(), name='import_user'),

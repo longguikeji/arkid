@@ -99,7 +99,8 @@ class NodeManagerReadable(BasePermission):
     '''
     def has_object_permission(self, request, view, obj):
         assert isinstance(obj, Node)
-        return request.user.is_manager and obj.is_visible_to_manager(request.user)
+        org = obj.org
+        return org and request.user.is_org_manager(org) and obj.is_visible_to_manager(request.user)
 
 
 class UserEmployeeReadable(BasePermission):
@@ -144,6 +145,69 @@ class HasAPPAccess(BasePermission):
             perm__uid=f'app_{app.uid}_access',
             value=True,
         ).exists()
+
+
+class IsManagerOf:
+    '''
+    是否为组织的管理员，默认检查当前组织
+    '''
+    def __new__(cls, *args):
+        _cls = type('_IsManagerOf', (BasePermission, ), {'args': args})
+
+        def has_permission(self, request, view):    # pylint: disable=unused-argument
+            return request.user and request.user.is_authenticated and request.user.is_org_manager(*(self.args))
+
+        def has_object_permission(self, request, view, _):
+            return self.has_permission(request, view)
+
+        setattr(_cls, 'has_permission', has_permission)
+        setattr(_cls, 'has_object_permission', has_object_permission)
+
+        return _cls
+
+
+class IsOrgOwnerOf:
+    '''
+    是否为组织的拥有者，默认检查当前组织
+    '''
+    def __new__(cls, *args):
+        _cls = type('_IsOrgOwnerOf', (BasePermission, ), {'args': args})
+
+        def has_permission(self, request, view):    # pylint: disable=unused-argument
+            '''
+            org owner
+            '''
+            return request.user and request.user.is_authenticated and request.user.is_org_owner(*(self.args))
+
+        def has_object_permission(self, request, view, _):
+            '''
+            org owner
+            '''
+            return self.has_permission(request, view)
+
+        setattr(_cls, 'has_permission', has_permission)
+        setattr(_cls, 'has_object_permission', has_object_permission)
+
+        return _cls
+
+
+class IsOrgMember:
+    '''
+    是否为组织的成员
+    '''
+    def __new__(cls, org):
+        _cls = type('_IsOrgMember', (BasePermission, ), {'org': org})
+
+        def has_permission(self, request, view):    # pylint: disable=unused-argument
+            return request.user and request.user.is_authenticated and self.org in request.user.organizations
+
+        def has_object_permission(self, request, view, _):
+            return self.has_permission(request, view)
+
+        setattr(_cls, 'has_permission', has_permission)
+        setattr(_cls, 'has_object_permission', has_object_permission)
+
+        return _cls
 
 
 class CustomPerm():

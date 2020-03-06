@@ -5,7 +5,7 @@ views about user
 - UserGroup
 - UserDept
 '''
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,invalid-name,import-outside-toplevel
 
 from rest_framework import generics, status, views
 from rest_framework.response import Response
@@ -174,7 +174,7 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EmployeeSerializer
 
     read_permission_classes = [IsAuthenticated & (UserManagerReadable | IsAdminUser)]
-    write_permission_classess = [IsAuthenticated & (IsUserManager | IsAdminUser)]
+    write_permission_classess = [IsAuthenticated & IsAdminUser]
 
     def get_permissions(self):
         '''
@@ -204,8 +204,20 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         '''
         return user detail [GET]
         '''
+        from oneid_meta.models import Org
         user = self.get_object()
-        return Response(EmployeeSerializer(user).data)
+
+        orgs = []
+        user_all_node_uids = user.all_node_uids
+        for mg in request.user.manager_groups:
+            if mg.scope_subject == 2:
+                if user.username in mg.users or user_all_node_uids & set(mg.nodes):
+                    orgs.append(Org.valid_objects.filter(manager=mg.group))
+            if mg.scope_subject == 1:
+                if user_all_node_uids & request.user.node_uids:
+                    orgs.append(Org.valid_objects.filter(manager=mg.group))
+
+        return Response(EmployeeSerializer(user, context={'org': orgs}).data)
 
     def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''
@@ -276,8 +288,8 @@ class UserGroupView(generics.RetrieveUpdateAPIView):
     用户所属组信息 [GET],[PATCH]
     TODO: 交叉验证
     '''
-    read_permission_classes = [IsAuthenticated & (UserManagerReadable | IsAdminUser)]
-    write_permission_classess = [IsAuthenticated & (IsUserManager | IsAdminUser)]
+    read_permission_classes = [IsAuthenticated & IsAdminUser]
+    write_permission_classess = [IsAuthenticated & IsAdminUser]
 
     serializer_class = GroupListSerializer
 
@@ -325,7 +337,7 @@ class UserDeptView(generics.RetrieveUpdateAPIView):
     '''
     serializer_class = DeptListSerializer
 
-    read_permission_classes = [IsAuthenticated & (UserManagerReadable | IsAdminUser)]
+    read_permission_classes = [IsAuthenticated & IsAdminUser]
     write_permission_classess = [IsAuthenticated & (IsUserManager | IsAdminUser)]
 
     def get_permissions(self):
@@ -367,8 +379,8 @@ class UserNodeView(generics.RetrieveUpdateAPIView):
     TODO: 交叉验证
     '''
 
-    read_permission_classes = [IsAuthenticated & (UserManagerReadable | IsAdminUser)]
-    write_permission_classess = [IsAuthenticated & (IsUserManager | IsAdminUser)]
+    read_permission_classes = [IsAuthenticated & IsAdminUser]
+    write_permission_classess = [IsAuthenticated & IsAdminUser]
 
     def get_permissions(self):
         '''

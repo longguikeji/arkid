@@ -1,6 +1,7 @@
 '''
 serializers for group
 '''
+# pylint: disable=import-outside-toplevel
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from common.django.drf.serializer import (
@@ -25,7 +26,6 @@ class DingGroupSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for DingGroup
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = DingGroup
         fields = (
@@ -40,7 +40,6 @@ class ManagerGroupSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for ManagerGroup
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = ManagerGroup
         fields = (
@@ -177,7 +176,7 @@ class VerboseManagerGroupSerializer(DynamicFieldsModelSerializer):
         '''
         更新有效管理范围
         '''
-        res= super().to_representation(instance)
+        res = super().to_representation(instance)
 
         if instance.scope_subject == 2:
             res['nodes'] = list(res['nodes'])
@@ -228,7 +227,6 @@ class GroupDetailSerializer(GroupSerializer):
     '''
     group info with parent_uid
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = Group
 

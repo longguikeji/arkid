@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db.utils import IntegrityError
 
 from common.django.model import BaseOrderedModel, BaseModel
+from oneid_meta.models.org import Org
 from oneid_meta.models.perm import GroupPerm, PermOwnerMixin
 from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
 
@@ -44,6 +45,16 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         节点类型
         Group中定义为范围顶点的uid
         '''
+        if Org.valid_objects.filter(group=self).exists():
+            return 'org'
+        if Org.valid_objects.filter(role__uid=self.top).exists():
+            return 'role'
+        if Org.valid_objects.filter(manager__uid=self.top).exists():
+            return 'manager'
+        if Org.valid_objects.filter(label__uid=self.top).exists():
+            return 'label'
+        if Org.valid_objects.filter(direct__uid=self.top).exists():
+            return 'direct'
         return self.top
 
     @property

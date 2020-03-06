@@ -8,6 +8,7 @@ from common.django.drf.client import APIClient
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
+    Org,
     Dept,
     User,
     DeptMember,
@@ -22,7 +23,11 @@ from oneid_meta.models import (
 class DeptPermTestCase(TestCase):
     def setUp(self):
         super(DeptPermTestCase, self).setUp()
-        root = Dept.valid_objects.get(uid='root')
+
+        owner = User.create_user(username='owner', password='owner')
+        self.org = Org.create(name='org', owner=owner)
+
+        root = self.org.dept
         level_1 = Dept.valid_objects.create(uid='l1', name='l1', parent=root)
         Dept.valid_objects.create(uid='l11', name='l11', parent=level_1, order_no=2)
         Dept.valid_objects.create(uid='l12', name='l12', parent=level_1, order_no=1)
@@ -40,6 +45,9 @@ class DeptPermTestCase(TestCase):
     def test_no_perm(self):
         res = self.anonymous.get(reverse('siteapi:ucenter_node_detail', args=('d_l11', )))
         self.assertEqual(res.status_code, 401)
+        res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=('d_l11', )))
+        self.assertEqual(res.status_code, 404)
+        GroupMember.valid_objects.create(user=User.valid_objects.get(username='employee'), owner=self.org.direct)
         res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=('d_l11', )))
         self.assertEqual(res.status_code, 200)
 
@@ -61,7 +69,7 @@ class DeptPermTestCase(TestCase):
         perm = Perm.get('dept_nodel1_admin')
         UserPerm.valid_objects.create(owner=User.objects.get(username='employee'), perm=perm, value=True)
 
-        group = Group.objects.create(name='test')
+        group = Group.objects.create(name='test', parent=self.org.manager)
         ManagerGroup.objects.create(group=group, scope_subject=2, nodes=['d_l11'])
         GroupMember.objects.create(owner=group, user=User.objects.get(username='employee'))
         res = self.employee.json_patch(reverse('siteapi:dept_detail', args=('l11', )), data={'name': 'new'})

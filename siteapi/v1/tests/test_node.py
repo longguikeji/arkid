@@ -11,6 +11,7 @@ from oneid_meta.models import (
     Group,
     GroupMember,
     User,
+    Org,
     Perm,
     DeptPerm,
     GroupPerm,
@@ -37,7 +38,12 @@ class NodeTestCase(TestCase):
     def setUp(self):
         super().setUp()
 
-        root = Dept.valid_objects.get(uid='root')
+        owner = User.create_user('owner', 'owner')
+        self.owner = self.login_as(owner)
+        self._owner = owner
+        self.org = Org.create(name='org', owner=owner)
+
+        root = self.org.dept
         level_1 = Dept.valid_objects.create(uid='level_1', name='level_1', parent=root)
         Dept.valid_objects.create(uid='level_2-1', name='level_2-1', parent=level_1, order_no=2)
         Dept.valid_objects.create(uid='level_2-2', name='level_2-2', parent=level_1, order_no=1)
@@ -45,7 +51,7 @@ class NodeTestCase(TestCase):
         DeptMember.valid_objects.create(user=user, owner=root)
         user = User.create_user('employee_2', 'employee_2')
 
-        root = Group.valid_objects.get(uid='root')
+        root = self.org.group
         role_group = Group.valid_objects.create(uid='role_group_1', name='role_group_1', parent=root, accept_user=False)
         role_1 = Group.valid_objects.create(uid='role_1', name='role_1', parent=role_group, order_no=2)
         Group.valid_objects.create(uid='role_2', name='role_2', parent=role_group, order_no=1)
@@ -54,13 +60,13 @@ class NodeTestCase(TestCase):
     def test_get_node_detail(self):
         res = self.client.get(reverse('siteapi:node_detail', args=('d_level_1', )))
         expect = {
-            'parent_uid': 'root',
-            'parent_node_uid': 'd_root',
-            'parent_name': 'root',
+            'parent_uid': str(self.org.dept.uid),
+            'parent_node_uid': self.org.dept.node_uid,
+            'parent_name': self.org.dept.name,
             'uid': 'level_1',
             'name': 'level_1',
             'remark': '',
-            'dept_id': 2,
+            'dept_id': 3,
             'node_subject': 'dept',
             'node_uid': 'd_level_1',
             'node_scope': [],
@@ -72,15 +78,15 @@ class NodeTestCase(TestCase):
 
         res = self.client.get(reverse('siteapi:node_detail', args=('g_role_group_1', )))
         expect = {
-            'parent_uid': 'root',
-            'parent_node_uid': 'g_root',
-            'parent_name': 'root',
+            'parent_uid': str(self.org.group.uid),
+            'parent_node_uid': self.org.group.node_uid,
+            'parent_name': self.org.group.name,
             'uid': 'role_group_1',
             'node_uid': 'g_role_group_1',
             'node_subject': 'root',
             'name': 'role_group_1',
             'remark': '',
-            'group_id': 2,
+            'group_id': 7,
             'accept_user': False,
             'node_scope': [],
             'user_scope': [],
@@ -106,7 +112,7 @@ class NodeTestCase(TestCase):
                 'node_subject': 'dept',
                 'name': 'level_1',
                 'remark': '',
-                'dept_id': 2
+                'dept_id': 3
             },
             'nodes': [
                 {
@@ -116,7 +122,7 @@ class NodeTestCase(TestCase):
                         'node_subject': 'dept',
                         'name': 'level_2-2',
                         'remark': '',
-                        'dept_id': 4
+                        'dept_id': 5
                     },
                     'nodes': []
                 },
@@ -127,7 +133,7 @@ class NodeTestCase(TestCase):
                         'node_subject': 'dept',
                         'name': 'level_2-1',
                         'remark': '',
-                        'dept_id': 3
+                        'dept_id': 4
                     },
                     'nodes': []
                 },
@@ -138,20 +144,28 @@ class NodeTestCase(TestCase):
     def test_get_node_child_node(self):
         res = self.client.get(reverse('siteapi:node_child_node', args=('g_role_group_1', )))
         expect = {
-            'nodes': [{
-                'uid': 'role_2',
-                'name': 'role_2',
-                'remark': '',
-                'accept_user': True,
-                'node_id': 4
-            }, {
-                'uid': 'role_1',
-                'name': 'role_1',
-                'remark': '',
-                'accept_user': True,
-                'node_id': 3
-            }]
+            'nodes': [
+                {
+                    'group_id': 9,
+                    'node_subject': 'root',    # TODO@saas node subject
+                    'node_uid': 'g_role_2',
+                    'uid': 'role_2',
+                    'name': 'role_2',
+                    'remark': '',
+                    'accept_user': True,
+                },
+                {
+                    'group_id': 8,
+                    'node_subject': 'root',
+                    'node_uid': 'g_role_1',
+                    'uid': 'role_1',
+                    'name': 'role_1',
+                    'remark': '',
+                    'accept_user': True,
+                }
+            ]
         }
+        self.assertEqual(expect, res.json())
 
         Dept.valid_objects.create(uid='level_2-3', name='level_2-3')
         res = self.client.json_patch(reverse('siteapi:node_child_node', args=('d_level_1', )),
@@ -181,18 +195,18 @@ class NodeTestCase(TestCase):
             'scope_subject': 1,
             'users': [],
         }
-        self.client.json_post(reverse('siteapi:node_child_node', args=('d_root', )), data=dept_1)
+        self.client.json_post(reverse('siteapi:node_child_node', args=(self.org.dept.node_uid, )), data=dept_1)
 
         expect = {
             'nodes': [{
-                'dept_id': 2,
+                'dept_id': 3,
                 'name': 'level_1',
                 'node_subject': 'dept',
                 'node_uid': 'd_level_1',
                 'remark': '',
                 'uid': 'level_1'
             }, {
-                'dept_id': 5,
+                'dept_id': 6,
                 'name': '123',
                 'node_subject': 'dept',
                 'node_uid': 'd_123',
@@ -200,13 +214,13 @@ class NodeTestCase(TestCase):
                 'uid': '123'
             }]
         }
-        res = self.client.json_patch(reverse('siteapi:node_child_node', args=('d_root', )),\
+        res = self.client.json_patch(reverse('siteapi:node_child_node', args=(self.org.dept.node_uid, )),\
             data={'node_uids':["d_level_1"], 'subject':'add'})
         self.assertEqual(res.json(), expect)
 
-        res2 = self.client.json_patch(reverse('siteapi:node_child_node', args=('d_root', )),\
+        res = self.client.json_patch(reverse('siteapi:node_child_node', args=(self.org.dept.node_uid, )),\
             data={'node_uids':["d_123"], 'subject':'add'})
-        self.assertEqual(res2.json(), expect)
+        self.assertEqual(res.json(), expect)
 
     def test_delete_node(self):
         res = self.client.delete(reverse('siteapi:node_detail', args=('g_role_2', )))
@@ -231,17 +245,17 @@ class NodeTestCase(TestCase):
 
     def test_user_node(self):
         res = self.client.get(reverse('siteapi:user_node', args=('employee', )))
-        expect = ['d_root']
+        expect = [self.org.dept.node_uid]
         self.assertEqual(expect, [item['node_uid'] for item in res.json()['nodes']])
 
         res = self.client.json_patch(
             reverse('siteapi:user_node', args=('employee', )),
             data={
-                'node_uids': ['g_root'],
+                'node_uids': [self.org.group.node_uid],
                 'subject': 'add'
             },
         )
-        expect = ['d_root', 'g_root']
+        expect = [self.org.dept.node_uid, self.org.group.node_uid]
         self.assertEqual(expect, [item['node_uid'] for item in res.json()['nodes']])
 
     def test_node_perm(self):
@@ -272,7 +286,12 @@ class UcenterNodeTestCase(TestCase):
     def setUp(self):
         super().setUp()
 
-        root = Dept.valid_objects.get(uid='root')
+        owner = User.create_user('owner', 'owner')
+        self.owner = self.login_as(owner)
+        self._owner = owner
+        self.org = Org.create(name='org', owner=owner)
+
+        root = self.org.dept
         level_1 = Dept.valid_objects.create(uid='level_1', name='level_1', parent=root)
         Dept.valid_objects.create(uid='level_2-1', name='level_2-1', parent=level_1, order_no=2)
         Dept.valid_objects.create(uid='level_2-2', name='level_2-2', parent=level_1, order_no=1)
@@ -281,7 +300,7 @@ class UcenterNodeTestCase(TestCase):
         DeptMember.valid_objects.create(user=user, owner=root)
         user = User.create_user('employee_2', 'employee_2')
 
-        root = Group.valid_objects.get(uid='root')
+        root = self.org.group
         role_group = Group.valid_objects.create(uid='role_group_1', name='role_group_1', parent=root, accept_user=False)
         role_1 = Group.valid_objects.create(uid='role_1', name='role_1', parent=role_group, order_no=2)
         Group.valid_objects.create(uid='role_2', name='role_2', parent=role_group, order_no=1)
@@ -290,13 +309,13 @@ class UcenterNodeTestCase(TestCase):
         self.employee = self.login_as(self._employee)
 
     def test_node_detail(self):
-        root = Dept.objects.get(uid='root')
+        root = self.org.dept
         root.visibility = 5    # 均不可见, TODO: 实际这里应因下级可见
         root.save()
-        res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=('d_root', )))
+        res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=(self.org.dept.node_uid, )))
         self.assertEqual(res.status_code, 404)
 
         root.visibility = 2    # 直属成员可见
         root.save()
-        res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=('d_root', )))
+        res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=(self.org.dept.node_uid, )))
         self.assertEqual(res.status_code, 200)

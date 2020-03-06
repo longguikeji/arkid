@@ -1,6 +1,7 @@
 '''
 views about app
 '''
+# pylint: disable=attribute-defined-outside-init
 from urllib.parse import urlparse
 import uuid as uuid_utils
 import base64
@@ -27,14 +28,10 @@ from siteapi.v1.serializers.app import (
     OAuthAPPSerializer,
 )
 from siteapi.v1.views.utils import gen_uid
+from siteapi.v1.views.org import validity_check
 from common.django.drf.paginator import DefaultListPaginator
 from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
-from oneid.permissions import (
-    IsAPPManager,
-    IsAdminUser,
-    IsManagerUser,
-    CustomPerm,
-)
+from oneid.permissions import (IsAPPManager, IsAdminUser, IsManagerOf, IsOrgOwnerOf, CustomPerm)
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
 
@@ -46,16 +43,20 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
     '''
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
-    write_permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_app_create'))]
-
     def get_permissions(self):
         '''
         读写权限
         '''
+        self.org = validity_check(self.kwargs['oid'])
+
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsManagerOf(self.org))]
+        write_permission_classes = [
+            IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | CustomPerm(f'{self.kwargs["oid"]}_app_create'))
+        ]
+
         if self.request.method in SAFE_METHODS:
-            return [perm() for perm in self.read_permission_classes]
-        return [perm() for perm in self.write_permission_classes]
+            return [perm() for perm in read_permission_classes]
+        return [perm() for perm in write_permission_classes]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -73,7 +74,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
 
         # 可管理范围
         manager_app_uids = set()
-        for manager_group in self.request.user.manager_groups:
+        for manager_group in self.request.user.org_manager_groups(self.org):
             manager_app_uids.update(set(manager_group.apps))
         kwargs['uid__in'] = manager_app_uids
         if self.request.user.is_admin:
@@ -131,6 +132,8 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         app = serializer.instance
+        app.owner = self.org
+        app.save()
         self._auto_create_access_perm(app)
         self._auto_create_manager_group(request, app)
         if data.get("secret_required", False):
@@ -142,7 +145,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         super().perform_create(serializer)    # pylint: disable=no-member
         cli = LOG_CLI()
-        cli.create_app(serializer.validated_data)
+        cli.create_app(serializer.validated_data, self.org)
 
     @staticmethod
     def _auto_create_manager_group(request, app):
@@ -160,9 +163,8 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
                 'scope_subject': 2,
             }
         }
-        manager_group = cli.create_group(data)
-        parent, _ = Group.valid_objects.get_or_create(uid='manager')
-        cli.add_group_to_group(manager_group, parent)
+        manager_group = cli.create_group(data, app.owner)
+        cli.add_group_to_group(manager_group, app.owner.manager)
         cli.add_users_to_group([request.user], manager_group)
 
     @staticmethod
@@ -203,8 +205,9 @@ class UcenterAPPListAPIView(generics.ListAPIView):
 
         if self.request.user.is_admin:
             return APP.valid_objects.filter(**kwargs).order_by('-created')
-        return APP.valid_objects.filter(Q(uid__in=uids, allow_any_user=False)
-                                        | Q(allow_any_user=True), **kwargs).order_by('-created')
+        return APP.valid_objects.filter(
+            Q(uid__in=uids, owner__in=self.request.user.organizations, allow_any_user=False)
+            | Q(allow_any_user=True), **kwargs).order_by('-created')
 
 
 def create_secret_for_app(app):
@@ -243,7 +246,7 @@ class APPDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     指定应用信息 [GET], [PATCH], [DELETE]
     '''
     serializer_class = APPSerializer
-    permission_classes = [IsAuthenticated & (IsAPPManager | IsAdminUser)]    # TODO
+    permission_classes = [IsAuthenticated & IsAPPManager]
 
     def get_object(self):
         '''
@@ -287,7 +290,7 @@ class APPOAuthRegisterAPIView(generics.CreateAPIView):
         '''
         return APP.valid_objects.filter(uid=self.kwargs['uid']).first()
 
-    def create(self, request, uid):    # pylint: disable=arguments-differ
+    def create(self, request, uid, **kwargs):    # pylint: disable=arguments-differ
         '''
         [POST] 实际扮演 [POST] 或 [PATCH]
         '''

@@ -10,6 +10,7 @@ from common.django.drf.client import APIClient
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import (
+    Org,
     User,
     Perm,
     UserPerm,
@@ -156,11 +157,9 @@ class UCenterTestCase(TestCase):
             'user_id': 1,
             'username': 'admin',
             'private_email': '',
-            'position': '',
             'name': '',
             'email': '',
             'mobile': '',
-            'employee_number': '',
             'gender': 0,
             'perms': ['system_oneid_all', 'system_ark-meta-server_all'],
             'roles': ['admin'],
@@ -282,14 +281,11 @@ class UCenterTestCase(TestCase):
             'name': '',
             'email': '',
             'mobile': '',
-            'employee_number': '',
             'private_email': '',
-            'position': '',
             'gender': 0,
             'avatar': '',
             'visible_fields': VISIABLE_FIELDS,
             'depts': [],
-            'remark': '',
         }
         self.assertEqual(res.json(), expect)
 
@@ -300,13 +296,10 @@ class UCenterTestCase(TestCase):
             'email': '',
             'mobile': '',
             'gender': 0,
-            'employee_number': '',
             'private_email': '',
-            'position': '',
             'avatar': 'avatar_key',
             'visible_fields': VISIABLE_FIELDS,
             'depts': [],
-            'remark': '',
         }
         self.assertEqual(res.json(), expect)
 
@@ -362,7 +355,9 @@ class UCenterTestCase(TestCase):
 
 class UcenterCustomProfileTestCase(TestCase):
     def test_custom_profile(self):
-        cf = CustomField.valid_objects.create(name='忌口')    # pylint:disable=invalid-name
+        org = Org.create(name='org1', owner=User.objects.get(username='admin'))
+        cf = CustomField.valid_objects.create(org=org, name='忌口')    # pylint:disable=invalid-name
+        self.client.json_post(reverse('siteapi:ucenter_org'), data={'oid': org.oid_str})
         res = self.client.json_patch(reverse('siteapi:ucenter_profile'),
                                      data={'custom_user': {
                                          'data': {

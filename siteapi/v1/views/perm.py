@@ -3,6 +3,7 @@ views about perm
 - PermList
 - PermDetail
 """
+# pylint: disable=too-many-lines,import-outside-toplevel
 import json
 
 from rest_framework import generics, status, mixins
@@ -24,7 +25,7 @@ from siteapi.v1.serializers.perm import (
 )
 from common.django.drf.paginator import DefaultListPaginator
 from common.django.drf.views import catch_json_load_error
-from oneid.permissions import IsAdminUser
+from oneid.permissions import IsAdminUser, IsOrgOwnerOf
 from executer.log.rdb import LOG_CLI
 
 
@@ -471,6 +472,47 @@ class MetaPermAPIView(APIView):
             },
             {
                 'uid': 'system_account_sync',
+                'name': '账号同步',
+            },
+        ]
+        return Response(data)
+
+
+class MetaOrgPermAPIView(APIView):
+    '''
+    获取组织内置权限基本信息
+    '''
+    def get_permissions(self):
+        from siteapi.v1.views.org import validity_check
+        org = validity_check(self.kwargs['oid'])
+
+        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(org))]
+
+        return [perm() for perm in permission_classes]
+
+    def get(self, request, oid):    # pylint: disable=unused-argument, no-self-use
+        '''
+        获取内置权限
+        '''
+        data = [
+            {
+                'uid': f'{oid}_category_create',
+                'name': '创建大类',
+            },
+            {
+                'uid': f'{oid}_app_create',
+                'name': '创建应用',
+            },
+            {
+                'uid': f'{oid}_log_read',
+                'name': '查看日志',
+            },
+            {
+                'uid': f'{oid}_config_write',
+                'name': '公司基本信息配置、基础设施配置',
+            },
+            {
+                'uid': f'{oid}_account_sync',
                 'name': '账号同步',
             },
         ]

@@ -32,11 +32,13 @@ class SingletonConfigMixin:
         return obj
 
 
-class CompanyConfig(BaseModel, SingletonConfigMixin):
+class CompanyConfig(BaseModel):
     '''
     公司相关信息
     '''
-    site = models.OneToOneField(Site, related_name='company_config', on_delete=models.CASCADE)
+    # pylint: disable=import-outside-toplevel
+    from oneid_meta.models.org import Org
+    org = models.OneToOneField(Org, related_name='company_config', on_delete=models.CASCADE)
 
     name_cn = models.CharField(max_length=255, blank=True, default="", verbose_name='中文简称')
     fullname_cn = models.CharField(max_length=255, blank=True, default="", verbose_name='中文全称')
@@ -58,6 +60,14 @@ class CompanyConfig(BaseModel, SingletonConfigMixin):
         首页展示用的公司名称
         '''
         return self.fullname_cn
+
+    @classmethod
+    def get_current(cls, org):
+        '''
+        当前所用配置
+        '''
+        obj, _ = cls.valid_objects.get_or_create(org=org)
+        return obj
 
 
 class DingConfig(BaseModel, SingletonConfigMixin):
@@ -332,6 +342,7 @@ class CustomField(BaseModel):
         ('extern_user', '外部联系人'),
     )
 
+    org = models.ForeignKey('oneid_meta.Org', on_delete=models.CASCADE)
     name = models.CharField(max_length=128, verbose_name='字段名称')
     subject = models.CharField(choices=SUBJECT_CHOICES, default='user', max_length=128, verbose_name='字段分类')
     schema = jsonfield.JSONField(default={'type': 'string'}, verbose_name='字段定义')

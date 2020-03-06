@@ -4,6 +4,7 @@ schema of Perms
 GroupPerm, DeptPerm实时更新
 UserPerm存在一定延迟
 '''
+# pylint: disable=too-many-lines,import-outside-toplevel, cyclic-import
 import re
 
 from django.db import models

@@ -8,11 +8,10 @@ from django.utils import timezone
 
 from siteapi.v1.tests import TestCase
 from drf_expiring_authtoken.settings import token_settings
-from oneid_meta.models import UserPerm, User
+from oneid_meta.models import UserPerm
 
 
 class AdminTestCase(TestCase):
-
     def test_access_admin_reject(self):
         res = self.anonymous.get(reverse('siteapi:dept_tree', args=('root', )))
         self.assertEqual(res.status_code, 401)

@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
 from siteapi.v1.tests.test_user import USER_DATA
-from oneid_meta.models import Log
+from oneid_meta.models import Org, Log, User
 
 
 class LogTestCase(TestCase):
@@ -13,6 +13,9 @@ class LogTestCase(TestCase):
         for log in Log.objects.all():
             log.delete()
 
+        admin, _ = User.valid_objects.get_or_create(username='admin')
+        self.org = Org.create(name='org1', owner=admin)
+
     def test_get_meta_log(self):
         res = self.client.get(reverse('siteapi:meta_log'))
         self.assertEqual(res.status_code, 200)
@@ -20,18 +23,25 @@ class LogTestCase(TestCase):
     def test_get_log_list(self):
         self.client.json_post(reverse('siteapi:user_list'),
                               data={
-                                  'group_uids': ['root'],
-                                  'dept_uids': ['root'],
+                                  'group_uids': [str(self.org.group.uid)],
+                                  'dept_uids': [str(self.org.dept.uid)],
                                   'user': USER_DATA,
                               })
         self.assertEqual(Log.objects.count(), 3)
 
-        url = reverse('siteapi:log_list')
+        url = reverse('siteapi:log_list_all')
         res = self.client.get(url)
 
         expect = ['group_member', 'dept_member', 'user_create']
         self.assertEqual(expect, [item['subject'] for item in res.json()['results']])
 
+        url = reverse('siteapi:log_list', args=(self.org.oid, ))
+        res = self.client.get(url)
+
+        expect = ['group_member', 'dept_member']
+        self.assertEqual(expect, [item['subject'] for item in res.json()['results']])
+
+        url = reverse('siteapi:log_list_all')
         res = self.client.get(url, data={'subject': 'ucenter_login'})
         self.assertEqual(res.json()['count'], 0)
 

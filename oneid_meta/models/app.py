@@ -29,6 +29,7 @@ class APP(BaseModel):
 
     logo = models.TextField(default='', blank=True, null=True, verbose_name='LOGO')
     index = models.CharField(max_length=512, blank=True, null=True, default='', verbose_name='应用首页')
+    owner = models.ForeignKey('oneid_meta.Org', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'APP: {self.uid}({self.name})'
@@ -127,9 +128,12 @@ class APP(BaseModel):
         '''
         判断是否在某人管理之下
         '''
+        # pylint: disable=no-member
         if user.is_admin:
             return True
-        for manager_group in user.manager_groups:
+        if user.username == self.owner.owner.username:
+            return True
+        for manager_group in user.org_manager_groups(self.owner):
             if self.uid in manager_group.apps:
                 return True
         return False

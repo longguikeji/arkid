@@ -65,7 +65,7 @@ class DingExecuter(Executer):
             if user.ding_user:
                 self.user_manager.delete_user(user.ding_user.uid)
 
-    def create_dept(self, dept_info):
+    def create_dept(self, dept_info, org):
         """
         创建部门
         """
@@ -204,7 +204,7 @@ class DingExecuter(Executer):
                     depts.append(dept.ding_dept.uid)
                     self.user_manager.update_user(ding_user_uid, department=depts)
 
-    def create_group(self, group_info):
+    def create_group(self, group_info, org):
         """
         创建组
         """
@@ -287,18 +287,22 @@ class DingExecuter(Executer):
         """
         创建组时已经做了加入
         """
+
     def move_group_to_group(self, group, parent_group):
         """
         钉钉需要角色下没有员工才可以删除
         """
+
     def sort_groups_in_group(self, groups, parent_group):
         """
         钉钉的角色没有顺序
         """
+
     def sort_users_in_group(self, users, group):
         """
         钉钉的角色没有顺序
         """
+
     def set_user_password(self, user, plaintext):
         """
         钉钉没有用户名密码

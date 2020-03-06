@@ -162,7 +162,7 @@ class LDAPExecuter(Executer):
 
             self.conn.delete(user_dn)
 
-    def create_dept(self, dept_info):
+    def create_dept(self, dept_info, org):
         '''
         创建部门
         '''
@@ -255,7 +255,7 @@ class LDAPExecuter(Executer):
 
         return 'cn={},{}'.format(group.uid, parent_group.dn)
 
-    def create_group(self, group_info):
+    def create_group(self, group_info, org):
         '''
         创建组
         '''

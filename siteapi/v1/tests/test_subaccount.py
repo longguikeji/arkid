@@ -5,7 +5,8 @@ tests for sub account
 
 from django.urls import reverse
 
-from oneid_meta.models import User, APP, Perm, UserPerm
+from oneid_meta.models import User, APP, Perm, UserPerm, GroupMember
+from siteapi.v1.views.org import validity_check
 from siteapi.v1.tests import TestCase
 
 
@@ -16,7 +17,11 @@ class AdminSubAccountPermTestCase(TestCase):
     def setUp(self):
         super().setUp()
 
-        self.app = APP.objects.create(name='lg', uid='lg')
+        self.org = validity_check(
+            self.client.json_post(reverse('siteapi:org_create'), data={
+                'name': 'org'
+            }).json()['oid'])
+        self.app = APP.objects.create(name='lg', uid='lg', owner=self.org)
 
     def create_sub_account_perm(self):
         res = self.client.json_post(reverse("siteapi:perm_list"),
@@ -85,6 +90,8 @@ class AdminSubAccountPermTestCase(TestCase):
         res = self.create_sub_account_perm()
         perm = Perm.objects.get(uid=res.json()['uid'])
         employee = User.create_user(username='employee', password='employee')
+        GroupMember.valid_objects.create(user=employee, owner=self.org.direct)
+
         client = self.login_as(employee)
         res = client.get(reverse('siteapi:ucenter_sub_account_list'))
         self.assertEqual(res.json()['count'], 0)

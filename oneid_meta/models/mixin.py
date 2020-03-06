@@ -1,6 +1,7 @@
 '''
 Mixin for models
 '''
+# pylint: disable=no-member,import-outside-toplevel
 from itertools import chain
 
 from django.core.cache import cache
@@ -16,7 +17,7 @@ class NodeVisibilityScope(models.Model):
         abstract = True
 
     VISIBILITY_SUBJECT = (    # 此处`对...可见`，为`对...开放`的意思，即使判定不可见，最终也有可能可以看到
-        (1, '所有人可见'),
+        (1, '所有人可见'),    # 同一组织内所有人
         (2, '节点成员可见'),
         (3, '节点成员及其下属节点均可见'),
         (4, '只对指定人、节点可见'),
@@ -26,13 +27,16 @@ class NodeVisibilityScope(models.Model):
     node_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定节点node_uids')
     user_scope = jsonfield.JSONField(default=[], blank=True, verbose_name='指定人usernames')
 
-    def is_open_to_employee(self, user):
+    def is_open_to_employee(self, user):    # pylint: disable=too-many-branches
         '''
         对user是否开放，由自身性质决定
         TODO: 优化
         '''
         if self.visibility == 1:
+            if self.org:
+                return self.org in user.organizations
             return True
+
         if self.visibility == 5:
             return False
 
@@ -44,6 +48,11 @@ class NodeVisibilityScope(models.Model):
             return self.member_cls.valid_objects.filter(user=user, owner__uid__in=node_uids).exists()    # pylint: disable=no-member
 
         if self.visibility == 4:
+            if self.org:
+                if self.org not in user.organizations:
+                    return False
+                self.node_scope = (uid for uid in self.user_scope if self.retrieve_node(uid).org.uuid == self.org.uuid)
+
             if user.username in self.user_scope:    # pylint: disable=no-member, unsupported-membership-test
                 return True
             if self.member_cls.valid_objects.filter(user=user, owner__uid__in=self.node_scope).exists():    # pylint: disable=no-member
@@ -139,7 +148,7 @@ class TreeNode():
         '''
         节点UID，在部门和组范围内唯一
         '''
-        return self.NODE_PREFIX + self.uid
+        return self.NODE_PREFIX + str(self.uid)
 
     @property
     def parent_uid(self):
@@ -154,6 +163,95 @@ class TreeNode():
         父级节点id
         '''
         return (self.NODE_PREFIX + self.parent_uid) if self.parent_uid is not None else None
+
+    @property
+    def is_org(self):
+        '''
+        该节点是否是一个组织
+        '''
+        return self.parent_uid == 'root'
+
+    @property
+    def is_group(self):
+        '''
+        该节点是否是一个群组
+        '''
+        from oneid_meta.models import Group
+
+        return self.NODE_PREFIX == Group.NODE_PREFIX
+
+    @property
+    def is_dept(self):
+        '''
+        该节点是否是一个部门
+        '''
+        from oneid_meta.models import Dept
+
+        return self.NODE_PREFIX == Dept.NODE_PREFIX
+
+    @property
+    def is_org_dept(self):
+        '''
+        该节点是否是某个组织的根节点部门
+        '''
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(dept=self).exists()
+
+    @property
+    def is_org_group(self):
+        '''
+        该节点是否是某个组织的根节点群组
+        '''
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(group=self).exists()
+
+    @property
+    def is_org_direct(self):
+        '''
+        该节点是否是某个组织的直接成员组
+        '''
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(direct=self).exists()
+
+    @property
+    def is_org_manager(self):
+        '''
+        该节点是否是某个组织的管理员组
+        '''
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(manager=self).exists()
+
+    @property
+    def is_org_role(self):
+        '''
+        该节点是否是某个组织的角色组
+        '''
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(role=self).exists()
+
+    @property
+    def is_org_label(self):
+        '''
+        该节点是否是某个组织的标签组
+        '''
+        from oneid_meta.models import Org
+        return Org.valid_objects.filter(label=self).exists()
+
+    @property
+    def org(self):
+        '''
+        所属组织
+        '''
+        from oneid_meta.models import Org
+        if self.is_root:
+            return None
+        if not self.is_org:
+            return self.parent.org
+        if self.is_group:
+            return Org.valid_objects.filter(group=self).first()
+        if self.is_dept:
+            return Org.valid_objects.filter(dept=self).first()
+        return None
 
     @property
     def parent_name(self):
@@ -300,7 +398,11 @@ class TreeNode():
         if user.is_admin:
             return True
         upstream_uids = set(self.upstream_uids)
-        for manager_group in user.manager_groups:
+
+        org = self.org
+        if not org:
+            return False
+        for manager_group in user.org_manager_groups(org):
             if manager_group.scope_subject == 2:    # 指定节点、人
                 if self.node_uid in manager_group.nodes:
                     return True

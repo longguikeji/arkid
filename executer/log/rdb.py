@@ -6,6 +6,8 @@ from django.urls import resolve
 from executer.core import Executer, single_cli_factory
 from oneid_meta.models import Log, RequestAccessLog, RequestDataClientLog
 
+# TODO@saas: 1. add switch org log, 3. add system org change log
+
 
 class RDBLogExecuter(Executer):
     '''
@@ -34,17 +36,21 @@ class RDBLogExecuter(Executer):
             self._data_log = RequestDataClientLog.parse(self.cli.request)
         return self._data_log
 
-    def log(self, subject, summary):
+    def log(self, subject, summary, org=None):
         '''
         创建日志
         '''
-        return Log.objects.create(    # pylint: disable=no-member
-            user=self.cli.user,
-            subject=subject,
-            summary=summary,
-            access=self.access_log,
-            data=self.data_log,
-        )
+        kwargs = {
+            'user': self.cli.user,
+            'subject': subject,
+            'summary': summary,
+            'access': self.access_log,
+            'data': self.data_log
+        }
+        if org is not None:
+            kwargs['org'] = org
+
+        return Log.objects.create(**kwargs)    # pylint: disable=no-member
 
     def create_user(self, user_info):
         '''
@@ -98,7 +104,7 @@ class RDBLogExecuter(Executer):
         summary = f'{self.cli.user.log_name}批量删除用户[{user_names}]'
         return self.log(subject, summary)
 
-    def create_dept(self, dept_info):
+    def create_dept(self, dept_info, org):
         '''
         :param dict dept_info:
             + dept_id (number)
@@ -114,7 +120,7 @@ class RDBLogExecuter(Executer):
 
         subject = 'dept_create'
         summary = f"{self.cli.user.log_name}创建部门({dept_info['name']})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=org)
 
     def update_dept(self, dept, dept_info):
         '''
@@ -124,7 +130,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'dept_update'
         summary = f"{self.cli.user.log_name}编辑部门({dept.name})信息"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=dept.org)
 
     def delete_dept(self, dept):
         '''
@@ -132,9 +138,9 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'dept_delete'
         summary = f"{self.cli.user.log_name}删除部门({dept.name})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=dept.org)
 
-    def create_group(self, group_info):
+    def create_group(self, group_info, org):
         '''
         :param dict group_info:
             + group_id (number)
@@ -147,7 +153,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'group_create'
         summary = f"{self.cli.user.log_name}创建组({group_info['name']})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=org)
 
     def update_group(self, group, group_info):
         '''
@@ -157,7 +163,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'group_update'
         summary = f"{self.cli.user.log_name}编辑组({group.name})信息"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=group.org)
 
     def delete_group(self, group):
         '''
@@ -165,7 +171,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'group_delete'
         summary = f"{self.cli.user.log_name}删除组({group.name})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=group.org)
 
     def add_users_to_dept(self, users, dept):
         '''
@@ -175,7 +181,7 @@ class RDBLogExecuter(Executer):
         subject = 'dept_member'
         user_names = ','.join([user.log_name for user in users])
         summary = f"{self.cli.user.log_name}添加一批用户[{user_names}]至部门({dept.name})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=dept.org)
 
     def sort_users_in_dept(self, users, dept):
         '''
@@ -186,7 +192,7 @@ class RDBLogExecuter(Executer):
         subject = 'dept_member'
         user_names = ','.join([user.log_name for user in users])
         summary = f"{self.cli.user.log_name}调整一批用户[{user_names}]在部门({dept.name})中的顺序"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=dept.org)
 
     def add_user_to_depts(self, user, depts):
         '''
@@ -196,7 +202,7 @@ class RDBLogExecuter(Executer):
         subject = 'dept_member'
         node_names = ','.join([node.name for node in depts])
         summary = f"{self.cli.user.log_name}添加用户(f{user.log_name})至一批部门[{node_names}]"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=depts[0].org if depts else None)
 
     def delete_users_from_dept(self, users, dept):
         '''
@@ -206,7 +212,7 @@ class RDBLogExecuter(Executer):
         subject = 'dept_member'
         user_names = ','.join([user.log_name for user in users])
         summary = f"{self.cli.user.log_name}将一批用户[{user_names}]从部门({dept.name})删除"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=dept.org)
 
     def delete_user_from_depts(self, user, depts):
         '''
@@ -216,7 +222,7 @@ class RDBLogExecuter(Executer):
         subject = 'dept_member'
         node_names = ','.join([node.name for node in depts])
         summary = f"{self.cli.user.log_name}将用户({user.log_name})从一批部门({node_names})删除"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=depts[0].org if depts else None)
 
     def add_users_to_group(self, users, group):
         '''
@@ -227,7 +233,7 @@ class RDBLogExecuter(Executer):
         user_names = ','.join([user.log_name for user in users])
         summary = f"{self.cli.user.log_name}添加一批用户[{user_names}]至组({group.name})"
 
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=group.org)
 
     def sort_users_in_group(self, users, group):
         '''
@@ -237,7 +243,7 @@ class RDBLogExecuter(Executer):
         subject = 'group_member'
         user_names = ','.join([user.log_name for user in users])
         summary = f"{self.cli.user.log_name}调整一批用户[{user_names}]在组({group.name})中的顺序"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=group.org)
 
     def add_user_to_groups(self, user, groups):
         '''
@@ -247,7 +253,7 @@ class RDBLogExecuter(Executer):
         subject = 'group_member'
         node_names = ','.join([node.name for node in groups])
         summary = f"{self.cli.user.log_name}添加用户({user.log_name})至一批组({node_names})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=groups[0].org if groups else None)
 
     def delete_user_from_groups(self, user, groups):
         '''
@@ -257,7 +263,7 @@ class RDBLogExecuter(Executer):
         subject = 'group_member'
         node_names = ','.join([node.name for node in groups])
         summary = f"{self.cli.user.log_name}将用户({user.log_name})从一批组[{node_names}]删除"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=groups[0].org if groups else None)
 
     def delete_users_from_group(self, users, group):
         '''
@@ -268,7 +274,7 @@ class RDBLogExecuter(Executer):
         user_names = ','.join([user.log_name for user in users])
         summary = f"{self.cli.user.log_name}将一批用户[{user_names}]从组({group.name})删除"
 
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=group.org)
 
     def add_dept_to_dept(self, dept, parent_dept):
         '''
@@ -278,7 +284,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'dept_move'
         summary = f"{self.cli.user.log_name}将新部门({dept.name})加入到部门({parent_dept})下"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=parent_dept.org)
 
     def move_dept_to_dept(self, dept, parent_dept):
         '''
@@ -287,7 +293,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'dept_move'
         summary = f"{self.cli.user.log_name}将部门({dept.name})移到部门({parent_dept.name})下"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=parent_dept.org)
 
     def sort_depts_in_dept(self, depts, parent_dept):
         '''
@@ -297,7 +303,7 @@ class RDBLogExecuter(Executer):
         subject = 'dept_move'
         node_names = ','.join([node.name for node in depts])
         summary = f"{self.cli.user.log_name}调整部门({node_names})在部门({parent_dept.name})中的排序"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=parent_dept.org)
 
     def add_group_to_group(self, group, parent_group):
         '''
@@ -307,7 +313,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'group_move'
         summary = f"{self.cli.user.log_name}将新组({group.name})加入到组({parent_group.name})下"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=parent_group.org)
 
     def move_group_to_group(self, group, parent_group):
         '''
@@ -316,7 +322,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'group_move'
         summary = f"{self.cli.user.log_name}将组({group.name})移到组({parent_group.name})下"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=parent_group.org)
 
     def sort_groups_in_group(self, groups, parent_group):
         '''
@@ -326,17 +332,17 @@ class RDBLogExecuter(Executer):
         subject = 'group_move'
         node_names = ','.join([node.name for node in groups])
         summary = f"{self.cli.user.log_name}调整组({node_names})在组({parent_group.name})中的排序"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org=parent_group.org)
 
     # --- non-standard interface ---
 
-    def create_app(self, app_info):
+    def create_app(self, app_info, org):
         '''
         创建应用
         '''
         subject = 'app_create'
         summary = f"{self.cli.user.log_name}创建应用({app_info['name']})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, org)
 
     def update_app(self, app, app_info):    # pylint: disable=unused-argument
         '''
@@ -344,7 +350,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'app_update'
         summary = f"{self.cli.user.log_name}更新应用({app.name})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, app.owner)
 
     def delete_app(self, app):
         '''
@@ -352,7 +358,7 @@ class RDBLogExecuter(Executer):
         '''
         subject = 'app_delete'
         summary = f"{self.cli.user.log_name}删除应用({app.name})"
-        return self.log(subject, summary)
+        return self.log(subject, summary, app.owner)
 
     def create_perm(self, perm):
         '''
@@ -433,6 +439,14 @@ class RDBLogExecuter(Executer):
         subject = 'config'
         summary = f'{self.cli.user.log_name}更新系统配置'
         return self.log(subject, summary)
+
+    def update_org_config(self, org):
+        '''
+        更新组织配置
+        '''
+        subject = 'org_config'
+        summary = f'{self.cli.user.log_name}更新组织配置'
+        return self.log(subject, summary, org)
 
 
 LOG_CLI = single_cli_factory('executer.log.rdb.RDBLogExecuter')    # pylint: disable=invalid-name

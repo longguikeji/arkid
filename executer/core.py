@@ -58,7 +58,7 @@ class Executer():
         '''
         raise NotImplementedError
 
-    def create_dept(self, dept_info):
+    def create_dept(self, dept_info, org):
         '''
         :param dict dept_info:
             + dept_id (number)
@@ -87,7 +87,7 @@ class Executer():
         '''
         raise NotImplementedError
 
-    def create_group(self, group_info):
+    def create_group(self, group_info, org):
         '''
         :param dict group_info:
             + group_id (number)
