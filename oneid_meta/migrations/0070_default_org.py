@@ -18,6 +18,7 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
     Org = apps.get_model('oneid_meta', 'Org')
     User = apps.get_model('oneid_meta', 'User')
     Dept = apps.get_model('oneid_meta', 'Dept')
+    Perm = apps.get_model('oneid_meta', 'Perm')
     Group = apps.get_model('oneid_meta', 'Group')
     UserPerm = apps.get_model('oneid_meta', 'UserPerm')
     OrgMember = apps.get_model('oneid_meta', 'OrgMember')
@@ -70,6 +71,13 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
         'label': label,
     }
     org = Org.objects.create(**kw)
+
+    oid = org.oid_str
+    Perm.objects.create(name='创建大类', uid=f'{oid}_category_create', subject=oid, scope='category', action='create')
+    Perm.objects.create(name='创建应用', uid=f'{oid}_app_create', subject=oid, scope='app', action='create')
+    Perm.objects.create(name='查看日志', uid=f'{oid}_log_read', subject=oid, scope='log', action='read')
+    Perm.objects.create(name='公司基本信息配置、基础设施配置', uid=f'{oid}_config_write', subject=oid, scope='config', action='write')
+    Perm.objects.create(name='账号同步', uid=f'{oid}_account_sync', subject=oid, scope='account', action='sync')
 
     config.org = org
     config.save()

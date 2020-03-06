@@ -38,7 +38,7 @@ class CompanyConfig(BaseModel):
     '''
     # pylint: disable=import-outside-toplevel
     from oneid_meta.models.org import Org
-    org = models.OneToOneField(Org, related_name='company_config', on_delete=models.CASCADE)
+    org = models.OneToOneField(Org, related_name='company_config', null=True, on_delete=models.CASCADE)
 
     name_cn = models.CharField(max_length=255, blank=True, default="", verbose_name='中文简称')
     fullname_cn = models.CharField(max_length=255, blank=True, default="", verbose_name='中文全称')

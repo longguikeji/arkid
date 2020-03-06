@@ -14,7 +14,8 @@ class OrgDeserializer(Serializer):
     '''
     deserializer for org
     '''
-    name = CharField()
+    name = CharField(required=False)
+    owner = CharField(required=False)
 
 
 class OrgSerializer(DynamicFieldsModelSerializer):

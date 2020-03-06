@@ -271,6 +271,10 @@ FORMAT: 1A
 + role_uid (string(Group))
 + label_uid (string(Group))
 
+## OrgRole (object)
++ org (string(Organization)
++ role (string)
+
 
 ## Perm (object)
 + perm_id (number)
@@ -888,7 +892,7 @@ deprecated
 ### 获取用户所属组织 [GET]
 + Response 200 (application/json)
     + Attributes
-      orgs (array[org]) - 用户加入的所有组织
+      orgs (array[orgrole]) - 用户加入的所有组织
 
 ## 用户创建组织 [/ucenter/orgs/owned]
 ### 获取用户创建组织 [GET]
@@ -1623,6 +1627,13 @@ TODO: 可见权限的处理
   + Parameters
     + oid (string) - 组织唯一标识
 + Response 204
+
+### 修改组织信息 [PATCH]
++ Request JSON Message
+    + Attributes
+        + name (string)
+        + owner (string)
+ + Response Organization (object)
 
 ## 特定组织成员操作 [/org/{oid}/user/{?username}]
 

@@ -71,7 +71,7 @@ class Org(BaseModel):
         create org
         '''
         # pylint: disable=too-many-locals,import-outside-toplevel
-        from oneid_meta.models import Dept, Group, GroupMember, CompanyConfig
+        from oneid_meta.models import Perm, Dept, Group, GroupMember, CompanyConfig
 
         dept_root = Dept.valid_objects.filter(uid='root').first()
         group_root = Group.valid_objects.filter(uid='root').first()
@@ -114,8 +114,20 @@ class Org(BaseModel):
             pass
 
         org = Org.valid_objects.create(**kw)
+
         OrgMember.valid_objects.create(user=owner, owner=org)
         CompanyConfig.objects.create(org=org)
+
+        oid = org.oid_str
+        Perm.objects.create(name='创建大类', uid=f'{oid}_category_create', subject=oid, scope='category', action='create')
+        Perm.objects.create(name='创建应用', uid=f'{oid}_app_create', subject=oid, scope='app', action='create')
+        Perm.objects.create(name='查看日志', uid=f'{oid}_log_read', subject=oid, scope='log', action='read')
+        Perm.objects.create(name='公司基本信息配置、基础设施配置',
+                            uid=f'{oid}_config_write',
+                            subject=oid,
+                            scope='config',
+                            action='write')
+        Perm.objects.create(name='账号同步', uid=f'{oid}_account_sync', subject=oid, scope='account', action='sync')
         return org
 
     @property

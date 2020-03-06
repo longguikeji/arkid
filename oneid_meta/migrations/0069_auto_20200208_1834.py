@@ -82,7 +82,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='companyconfig',
             name='org',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='company_config', to='oneid_meta.Org'),
+            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='company_config', to='oneid_meta.Org'),
             preserve_default=False,
         ),
         migrations.AddField(

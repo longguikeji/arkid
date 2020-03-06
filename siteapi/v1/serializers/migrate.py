@@ -21,6 +21,6 @@ class UserCSVSerializer(DynamicFieldsModelSerializer):
             'mobile',
             'gender',
             'avatar',
-            'position',
-            'employee_number',
+        # 'position',
+        # 'employee_number',
         )

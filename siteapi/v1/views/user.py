@@ -204,7 +204,6 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         '''
         return user detail [GET]
         '''
-        from oneid_meta.models import Org
         user = self.get_object()
 
         orgs = []
@@ -212,10 +211,10 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         for mg in request.user.manager_groups:
             if mg.scope_subject == 2:
                 if user.username in mg.users or user_all_node_uids & set(mg.nodes):
-                    orgs.append(Org.valid_objects.filter(manager=mg.group))
+                    orgs.append(mg.group.org)
             if mg.scope_subject == 1:
                 if user_all_node_uids & request.user.node_uids:
-                    orgs.append(Org.valid_objects.filter(manager=mg.group))
+                    orgs.append(mg.group.org)
 
         return Response(EmployeeSerializer(user, context={'org': orgs}).data)
 

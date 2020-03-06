@@ -513,7 +513,7 @@ class APPTestCase(TestCase):
                                })
         expect = {'count': 1, 'next': None, 'previous': None, 'results': [case.get_output('app1')]}
         expect['results'][0]['access_perm'] = {
-            'perm_id': 3,
+            'perm_id': 8,
             'uid': f'app_{uid}_access',
             'name': f'访问{name}',
             'remark': '',

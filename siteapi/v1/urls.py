@@ -45,7 +45,7 @@ from siteapi.v1.views.statistics import UserStatisticView
 urlpatterns = [
     # user
     url(r'^user/$', user_views.UserListCreateAPIView.as_view(), name='user_list'),
-    url(r'^user/isolated/$', user_views.UserIsolatedAPIView.as_view(), name='isolated_user_list'),    # FIX
+    # url(r'^user/isolated/$', user_views.UserIsolatedAPIView.as_view(), name='isolated_user_list'),    # FIX
     url(r'^user/(?P<username>[\w]+)/convert/intra/$',
         user_views.UserExtern2IntraView.as_view(),
         name='user_convert_to_intra'),
@@ -82,7 +82,7 @@ urlpatterns = [
     url(r'^dept/(?P<uid>[\w|-]+)/user/$', dept_views.DeptChildUserAPIView.as_view(), name='dept_child_user'),
     # org
     url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_create'),
-    url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailDestroyAPIView.as_view(), name='org_detail'),
+    url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailAPIView.as_view(), name='org_detail'),
     url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListCreateDestroyAPIView.as_view(), name='org_user'),
     url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'),
     # perm
