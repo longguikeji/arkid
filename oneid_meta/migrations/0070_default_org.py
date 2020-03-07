@@ -72,7 +72,7 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
     }
     org = Org.objects.create(**kw)
 
-    oid = org.oid_str
+    oid = str(org.uuid)
     Perm.objects.create(name='创建大类', uid=f'{oid}_category_create', subject=oid, scope='category', action='create')
     Perm.objects.create(name='创建应用', uid=f'{oid}_app_create', subject=oid, scope='app', action='create')
     Perm.objects.create(name='查看日志', uid=f'{oid}_log_read', subject=oid, scope='log', action='read')
