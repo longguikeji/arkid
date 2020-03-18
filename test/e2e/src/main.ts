@@ -144,7 +144,7 @@ describe('一账通-通讯录测试', () => {
         await useraction.login(page, 'admin', 'longguikeji');
 
         let organizationaction = new organizationAction();
-        await organizationaction.origanization(page, "111");
+        await organizationaction.origanization(page);
         
     },30000)
     afterEach ( async () => {
@@ -155,6 +155,8 @@ describe('一账通-通讯录测试', () => {
         const url = await page.url();
         await expect(url).toBe('https://arkid.demo.longguikeji.com/#/workspace/contacts');
     },30000);
+
+
 
 })
 
@@ -170,7 +172,7 @@ describe('一账通-个人资料测试', () => {
         await useraction.login(page, 'admin', 'longguikeji');
 
         let setaction = new setAction();
-        await setaction.setting(page, "abc");
+        await setaction.setting(page);
         
     },30000)
     afterEach ( async () => {
@@ -181,6 +183,70 @@ describe('一账通-个人资料测试', () => {
     test('TEST_001:验证个人资料页面链接' , async() => {
         const url = await page.url();
         await expect(url).toBe('https://arkid.demo.longguikeji.com/#/workspace/userinfo');
+    },30000);
+
+    test('TEST_002:验证个人资料页面添加手机号' , async() => {
+        const addMobileBtn = await page.waitForSelector('.mobile .ivu-btn.ivu-btn-default');
+         await addMobileBtn.click();
+
+        const phoneTitle1 = await page.$eval('.ui-workspace-userinfo-verify-password .title', elem => {
+            return elem.innerHTML;
+        });
+        await expect(phoneTitle1).toEqual('修改个人邮箱/手机号需要验证密码');
+
+        const pwdInput = await page.waitForSelector('input[placeholder="输入密码"]');
+        await pwdInput.type("longguikeji");
+
+        const phoneBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large');
+        await phoneBtn.click();
+
+        const phoneTitle2 = await page.$eval('.ui-workspace-userinfo-reset-mobile .title', elem => {
+            return elem.innerHTML;
+        });
+        await expect(phoneTitle2).toEqual('修改手机号');
+
+    },30000);
+
+    test('TEST_003:验证个人资料页面添加邮箱' , async() => {
+        const addEmailBtn = await page.waitForSelector('.email .ivu-btn.ivu-btn-default');
+         await addEmailBtn.click();
+
+        const emailTitle1 = await page.$eval('.ui-workspace-userinfo-verify-password .title', elem => {
+            return elem.innerHTML;
+        });
+        await expect(emailTitle1).toEqual('修改个人邮箱/手机号需要验证密码');
+
+        const pwdInput = await page.waitForSelector('input[placeholder="输入密码"]');
+        await pwdInput.type("longguikeji");
+
+        const emailBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large');
+        await emailBtn.click();
+
+        const emailTitle2 = await page.$eval('.ui-workspace-userinfo-reset-email .title', elem => {
+            return elem.innerHTML;
+        });
+        await expect(emailTitle2).toEqual('修改个人邮箱');
+
+    },30000);
+
+
+    test('TEST_004:验证个人资料页面修改姓名' , async() => {
+        const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
+        await nameInput.type("abc");
+
+        const saveBtn = await page.waitForSelector('.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
+         await saveBtn.click();
+
+        const personName1 = await page.$eval('.ui-workspace-userinfo--summary h4', elem => {
+            return elem.innerHTML;
+        });
+        await expect(personName1).toEqual('abc');
+
+        const personName2 = await page.$eval('.ui-user-info li[data-label="姓名"]', elem => {
+            return elem.innerHTML;
+        });
+        await expect(personName2).toEqual('abc');
+
     },30000);
 
 
