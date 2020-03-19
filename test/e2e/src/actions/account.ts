@@ -4,6 +4,9 @@ export class accountAction{
     public async addAccount(page:Page, username:string, name:string, password:string, 
         repassword:string, phone:string, personalemail:string, email:string, search:string){
 
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
         const addAccountBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
         await addAccountBtn.click();
 
@@ -133,5 +136,79 @@ export class accountAction{
 
         const synchroBtn = await page.waitForSelector('.btns>button:last-child');
         await synchroBtn.click();
+    }
+
+    public async searchAccount(page:Page, search:string){
+
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const searchAccountInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
+        await searchAccountInput.type(search);
+
+    }
+
+    public async reviseAccount(page:Page, name:string, password:string, repassword:string, phone:string, 
+        personalemail:string, email:string, search:string){
+
+        const reviseAccount = await page.waitForSelector('.ivu-table-cell>div>span:first-child');
+        await reviseAccount.click();
+
+        const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
+        await page.$eval('input[placeholder="请输入 姓名"]',input => input.value=name);
+        //await nameInput.type(name);
+
+        const pwdBtn = await page.waitForSelector('.ivu-form-item-content .ivu-btn.ivu-btn-primary');
+        await pwdBtn.click();
+
+        const pwdInput = await page.waitForSelector('input[placeholder="请添加新登录密码"]');
+        await pwdInput.type(password);
+
+        const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
+        await repwdInput.type(repassword);
+
+        const primaryBtn= await page.waitForSelector('.ivu-modal-footer .ivu-btn.ivu-btn-primary');
+        await primaryBtn.click();
+
+        const phoneInput = await page.waitForSelector('input[placeholder="请输入 手机"]');
+        await page.$eval('input[placeholder="请输入 手机"]',input => input.value=phone);
+        //await phoneInput.type(phone);
+
+        const perEmailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(5) .ivu-input.ivu-input-default');
+        await page.$eval('.form.ivu-form.ivu-form-label-right>div:nth-child(5) .ivu-input.ivu-input-default',input => input.value=personalemail);
+        //await perEmailInput.type(personalemail);
+
+        const emailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default');
+        await page.$eval('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default',input => input.value=email);
+        //await emailInput.type(email);
+
+        const departmentBtn = await page.waitForSelector('input[placeholder="请添加部门"]');
+        await departmentBtn.click();
+
+        const searchInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
+        await searchInput.type(search);
+
+        const selectBtn = await page.waitForSelector('.ivu-checkbox-input');
+        await selectBtn.click();
+
+        const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
+        await keepBtn.click();
+
+        const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
+        await addBtn.click();
+
+    }
+
+    public async deleteAccount(page:Page){
+
+        const checkbox = await page.waitForSelector('.ivu-checkbox-input');
+        await checkbox.click();
+
+        const deleteAccountBtn = await page.waitForSelector('.ui-account-page .flex-row.flex-auto>button:last-child');
+        await deleteAccountBtn.click();
+
+        const deleteBtn = await page.waitForSelector('.ivu-modal-confirm-footer>button:last-child');
+        await deleteBtn.click();
+
     }
 }
