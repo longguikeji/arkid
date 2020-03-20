@@ -155,6 +155,7 @@ export class accountAction{
         await reviseAccount.click();
 
         const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
+        
         await page.$eval('input[placeholder="请输入 姓名"]',input => input.value=name);
         //await nameInput.type(name);
 
@@ -171,16 +172,17 @@ export class accountAction{
         await primaryBtn.click();
 
         const phoneInput = await page.waitForSelector('input[placeholder="请输入 手机"]');
+        
         await page.$eval('input[placeholder="请输入 手机"]',input => input.value=phone);
         //await phoneInput.type(phone);
 
-        const perEmailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(5) .ivu-input.ivu-input-default');
-        await page.$eval('.form.ivu-form.ivu-form-label-right>div:nth-child(5) .ivu-input.ivu-input-default',input => input.value=personalemail);
-        //await perEmailInput.type(personalemail);
+        // const perEmailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(5) .ivu-input.ivu-input-default');
+        // await page.$eval('.form.ivu-form.ivu-form-label-right>div:nth-child(5) .ivu-input.ivu-input-default',input => input.value=personalemail);
+        // await perEmailInput.type(personalemail);
 
-        const emailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default');
-        await page.$eval('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default',input => input.value=email);
-        //await emailInput.type(email);
+        // const emailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default');
+        // await page.$eval('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default',input => input.value=email);
+        // await emailInput.type(email);
 
         const departmentBtn = await page.waitForSelector('input[placeholder="请添加部门"]');
         await departmentBtn.click();
