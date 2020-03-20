@@ -27,7 +27,7 @@ SECRET_KEY = 'pueg+1f_su-h_=wxz98+gr9#f5_49f-267^%j^ry^pbcd4+wio'
 DEBUG = True
 TESTING = False    # always False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', ]
 
 # Application definition
 
@@ -135,10 +135,27 @@ WSGI_APPLICATION = 'oneid.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db', 'db.sqlite3'),
+#     }
+# }
+
+import pymysql
+pymysql.install_as_MySQLdb()
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db', 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'remote_test',
+        'USER': 'root',
+        'PASSWORD': '1314',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'autocommit': True,
+            'init_command': 'SET default_storage_engine=MyISAM',
+        },
     }
 }
 
