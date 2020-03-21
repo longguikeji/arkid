@@ -156,7 +156,13 @@ DATABASES = {
             'autocommit': True,
             'init_command': 'SET default_storage_engine=MyISAM',
         },
+        'TEST': {
+            'NAME': 'test_remote_test',
+            'CHARSET': 'utf8',
+            'COLLATION': 'utf8_general_ci',
+        },
     }
+
 }
 
 # Password validation
