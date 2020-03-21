@@ -1043,37 +1043,350 @@ describe('一账通-分组管理删除账号是否生效', () => {
 })
 
 
-
-
-
-/*async function run(){
-    let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
-    let page:Page = await browser.newPage();
-    let useraction = new UserAction();
-    let deskaction = new deskAction();
-    let organizationaction = new organizationAction();
-    let setaction = new setAction();
-    let accountaction = new accountAction(); 
+describe('一账通-分组管理添加直属成员分组', () => {
+    let page : Page;
     
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
 
-    await useraction.login(page, 'admin', 'longguikeji');
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
 
-    await page.goto('https://arkid.demo.longguikeji.com/#/workspace/apps');
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.directUserGroup(page, "直属成员分组一");
 
-    await deskaction.appinformation(page, '街道');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
 
-    await organizationaction.origanization(page, "111");
+    test('TEST_001:验证添加直属成员分组后是否生效' , async() => {
+        const dirUserGroupName1 = await page.$eval('.ui-tree-item-title span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirUserGroupName1).toEqual('直属成员分组一 ( 0 人 )');
 
-    await setaction.setting(page, "abc");
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
 
-    await accountaction.addAccount(page, "meixinyue", "meixinyue", "mei123456", "mei123456", "15822186268", "1821788073@qq.com", "meixinyue11@163.com", "zxzx");
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
 
-    await accountaction.setAccount(page, "123456", "123456", "LTAIOWvU6MD0np72", "123456", "SMS_158010015", "aaaa");
+        const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(3)');
+        await groupBtn.click();
 
-    await accountaction.synchroAccount(page, "123456", "123456", "123456", "123456");
+        const dirUserGroupName2 = await page.$eval('.org-main.flex-col .flex-row .name.flex-auto', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirUserGroupName2).toEqual('直属成员分组一 ( 0 人 )');
+        
+    },30000);
 
+})
 
+describe('一账通-分组管理添加直属成员分组可见性', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
 
-}
+        let useraction = new UserAction();
+        await useraction.login(page, 'mei123', 'mei123');
 
-run();*/
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证添加直属成员分组后可见性是否生效' , async() => {
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(3)');
+        await groupBtn.click();
+
+        const dirUserGroupName2 = await page.$eval('.org-main.flex-col .flex-row .name.flex-auto', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirUserGroupName2).toBeNull();
+
+    },30000);
+
+})
+
+describe('一账通-分组管理编辑直属成员分组', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.editGroup(page, "1");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证编辑直属成员分组后是否生效' , async() => {
+        const dirUserGroupName1 = await page.$eval('.ui-tree-item-title span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirUserGroupName1).toEqual('直属成员分组一1 ( 0 人 )');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(3)');
+        await groupBtn.click();
+
+        const dirUserGroupName2 = await page.$eval('.org-main.flex-col .flex-row .name.flex-auto', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirUserGroupName2).toEqual('直属成员分组一1 ( 0 人 )');
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理直属成员分组添加下级分组', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.addDirLowGroup(page, "分组一");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证直属成员分组添加下级分组是否生效' , async() => {
+        const dirLowGroupName1 = await page.$eval('ul[visible="visible"] .ivu-tree-children .ui-tree-item-title span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirLowGroupName1).toEqual('分组一 ( 0 人 )');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(3)');
+        await groupBtn.click();
+
+        const dirUserBtn = await page.waitForSelector('.org-main.flex-col .flex-row');
+        await dirUserBtn.click();
+
+        const dirLowGroupName2 = await page.$eval('.dept-list .name.flex-auto', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirLowGroupName2).toEqual('分组一 ( 0 人 )');
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理直属成员分组添加成员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.addDirUser(page, "directuser", "directuser", "directuser", "directuser");
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证直属成员分组添加成员是否生效' , async() => {
+        const userName1 = await page.$eval('.ivu-table-row>td:nth-child(2) .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName1).toEqual('directuser');
+
+        const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
+        await accountBtn.click();
+
+        const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName2).toEqual('directuser');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const dirGroupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(3)');
+        await dirGroupBtn.click();
+
+        const groupBtn = await page.waitForSelector('.dept-list>li:first-child');
+        await groupBtn.click();
+
+        const userName3 = await page.$eval('.user-list .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName3).toEqual('directuser');
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理直属成员分组编辑账号', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.editDirUser(page, "1", "directuser1", "directuser1");
+       
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改是否生效' , async() => {
+
+        const userName1 = await page.$eval('.ivu-table-row>td:nth-child(2) .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName1).toEqual('directuser1');
+
+        const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
+        await accountBtn.click();
+
+        const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName2).toEqual('directuser1');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const dirGroupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(3)');
+        await dirGroupBtn.click();
+
+        const groupBtn = await page.waitForSelector('.dept-list>li:first-child');
+        await groupBtn.click();
+
+        const userName3 = await page.$eval('.user-list .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName3).toEqual('directuser');
+
+    },30000);
+
+})
+
+describe('一账通-分组管理直属分组编辑账号密码', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'directuser', 'directuser1');
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改密码后能否登录' , async() => {
+        const url = await page.url();
+        await expect(url).toBe('https://arkid.demo.longguikeji.com/#/workspace/apps');
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理直属分组调整分组', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.editDirUserGroup(page, "部门一");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证调整分组后是否生效' , async() => {
+        const apartBtn = await page.waitForSelector('.default-list>li');
+        await apartBtn.click();
+
+        const userName = await page.$eval('.ivu-table-row>td:nth-child(2) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName).toEqual('directuser1');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const groupBtn = await page.waitForSelector('.dept-list>li:nth-child(1)');
+        await groupBtn.click();
+
+        const userName3 = await page.$eval('.user-list>li:last-child .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName3).toEqual('directuser1');
+        
+    },30000);
+
+})
