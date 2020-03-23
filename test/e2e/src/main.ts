@@ -1390,3 +1390,347 @@ describe('一账通-分组管理直属分组调整分组', () => {
     },30000);
 
 })
+
+describe('一账通-分组管理添加自定义分组', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.addPersonalGroup(page, "项目组");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证添加自定义分组是否生效' , async() => {
+
+        const groupName1 = await page.$eval(''.custom-list>li span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(groupName1).toEqual('项目组');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const groupName2 = await page.$eval('.ui-contact-page--side>li:nth-child(7)', elem => {
+            return elem.innerHTML;
+        });
+        await expect(groupName2).toEqual('项目组');
+        
+    },30000);
+
+})
+
+describe('一账通-自定义分类添加分组分组', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.personalUserGroup(page, "A项目组");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证自定义分类添加分组后是否生效' , async() => {
+        const perUserGroupName1 = await page.$eval('.ui-tree-item-title span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(perUserGroupName1).toEqual('A项目组 ( 0 人 )');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
+        await groupBtn.click();
+
+        const perUserGroupName2 = await page.$eval('.name.flex-auto', elem => {
+            return elem.innerHTML;
+        });
+        await expect(perUserGroupName2).toEqual('A项目组 ( 0 人 )');
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理自定义分类添加分组可见性', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'mei123', 'mei123');
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证自定义分类添加分组后可见性是否生效' , async() => {
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
+        await groupBtn.click();
+
+        const perUserGroupName = await page.$eval('.name.flex-auto', elem => {
+            return elem.innerHTML;
+        });
+        await expect(perUserGroupName).toBeNull();
+
+    },30000);
+
+})
+
+describe('一账通-分组管理编辑自定义分类下分组', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.editPerGroup(page, "A");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证编辑自定义分类下分组后是否生效' , async() => {
+        const perUserGroupName1 = await page.$eval('.ui-tree-item-title span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(perUserGroupName1).toEqual('A项目组A ( 0 人 )');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
+        await groupBtn.click();
+
+        const perUserGroupName2 = await page.$eval('.name.flex-auto', elem => {
+            return elem.innerHTML;
+        });
+        await expect(perUserGroupName2).toEqual('A项目组A ( 0 人 )');
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理自定义分类分组添加下级分组', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.addPerLowGroup(page, "分组一");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证自定义分类分组添加下级分组是否生效' , async() => {
+        const dirLowGroupName1 = await page.$eval('.ivu-tree-children .ivu-tree-children .ui-tree-item-title span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirLowGroupName1).toEqual('分组一 ( 0 人 )');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
+        await groupBtn.click();
+
+        const dirUserBtn = await page.waitForSelector('.dept-list>li');
+        await dirUserBtn.click();
+
+        const dirLowGroupName2 = await page.$eval('.name.flex-auto', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirLowGroupName2).toEqual('分组一 ( 0 人 )');
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理自定义分类分组添加成员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.addPerUser(page, "perectuser", "perectuser", "perectuser", "perectuser");
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证自定义分类分组添加成员是否生效' , async() => {
+        const userName1 = await page.$eval('.ivu-table-row>td:nth-child(2) .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName1).toEqual('perectuser');
+
+        const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
+        await accountBtn.click();
+
+        const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName2).toEqual('perectuser');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const dirGroupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
+        await dirGroupBtn.click();
+
+        const dirUserBtn = await page.waitForSelector('.dept-list>li');
+        await dirUserBtn.click();
+
+        const userName3 = await page.$eval('.user-list .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName3).toEqual('perectuser');
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理自定义分类分组编辑账号', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.editPerUser(page, "1", "perectuser1", "perectuser1");
+       
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改是否生效' , async() => {
+
+        const userName1 = await page.$eval('.ivu-table-row>td:nth-child(2) .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName1).toEqual('perectuser1');
+
+        const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
+        await accountBtn.click();
+
+        const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName2).toEqual('perectuser1');
+
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        const dirGroupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
+        await dirGroupBtn.click();
+
+        const groupBtn = await page.waitForSelector('.dept-list>li');
+        await groupBtn.click();
+
+        const userName3 = await page.$eval('.user-list .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName3).toEqual('perectuser1');
+
+    },30000);
+
+})
+
+describe('一账通-分组管理自定义分类分组编辑账号密码', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'perectuser', 'perectuser1');
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改密码后能否登录' , async() => {
+        const url = await page.url();
+        await expect(url).toBe('https://arkid.demo.longguikeji.com/#/workspace/apps');
+        
+    },30000);
+
+})
+
