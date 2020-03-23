@@ -12,7 +12,7 @@ class OneIDBasicAuthBackend:
     检查以下三项：
     - 账号密码
     - 是否删除
-    - 是否可用
+    - 是否可用666
     '''
     def authenticate(self, request, username=None, password=None):    # pylint: disable=no-self-use,unused-argument
         '''
