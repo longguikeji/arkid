@@ -243,6 +243,42 @@ class RegisterSMSClaimSerializer(SMSClaimSerializer):
         return validated_data
 
 
+class LoginSMSClaimSerializer(SMSClaimSerializer):
+    '''
+    用户登录时发短信，需要该手机号存在
+    '''
+    def get_template_id(self):
+        '''
+        读取模板ID
+        '''
+        sms_config = SMSConfig.get_current()
+        if sms_config.template_login:
+            return sms_config.template_login
+        return super().get_template_id()
+
+    @staticmethod
+    def gen_sms_code_key(mobile):
+        '''
+        生成短信验证码的key
+        '''
+        return f'sms:login:{mobile}'
+
+    @staticmethod
+    def gen_sms_token_key(sms_token):
+        '''
+        生成sms_token的key
+        '''
+        return f'sms_token:login:{sms_token}'
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+
+        mobile = validated_data['mobile']
+        if not User.valid_objects.filter(mobile=mobile).exists():
+            raise ValidationError({'mobile': 'invalid'})
+        return validated_data
+
+
 class UserActivateSMSClaimSerializer(SMSClaimSerializer):
     '''
     激活用户时发短信，需要该用户处于激活状态
