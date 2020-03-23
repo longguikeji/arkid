@@ -232,6 +232,7 @@ class SMSConfig(BaseModel, SingletonConfigMixin):
     template_reset_pwd = models.CharField(max_length=255, default='', blank=True, verbose_name='重置密码文案模板ID')
     template_activate = models.CharField(max_length=255, default='', blank=True, verbose_name='用户激活文案模板ID')
     template_reset_mobile = models.CharField(max_length=255, default='', blank=True, verbose_name='用户重置手机文案模板ID')
+    template_login = models.CharField(max_length=255, default='', blank=True, verbose_name='登录文案模板ID')
 
     is_valid = models.BooleanField(default=False, blank=True, verbose_name='配置是否有效')
 

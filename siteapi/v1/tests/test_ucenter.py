@@ -219,7 +219,10 @@ class UCenterTestCase(TestCase):
         res = self.client.get(url, data={'oauth_client_id': oauth_app.client_id})
         self.assertEqual(res.json()['perms'], ['manage'])
 
-    def test_login(self):
+    @mock.patch('drf_expiring_authtoken.serializers.LoginSMSClaimSerializer.check_sms_token')
+    def test_login(self, mock_check_sms_token):
+        mock_check_sms_token.side_effect = [{'mobile': '18812341234'}]
+
         user = User.create_user(username='test', password='test')
         user.mobile = '18812341234'
         user.private_email = '12@34.com'
@@ -233,7 +236,7 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
         res = client.post(reverse('siteapi:user_login'), data={'private_email': '12@34.com', 'password': 'test'})
         self.assertEqual(res.status_code, 200)
-        res = client.post(reverse('siteapi:user_login'), data={'mobile': '18812341234', 'password': 'test'})
+        res = client.post(reverse('siteapi:user_login'), data={'mobile': '18812341234', 'sms_token': 'mock'})
         self.assertEqual(res.status_code, 200)
 
         user = User.objects.get(username='test')
@@ -255,10 +258,10 @@ class UCenterTestCase(TestCase):
         self.assertEqual(res.status_code, 400)
 
         mobile_config = SMSConfig.get_current()
-        mobile_config.is_valid = True
+        mobile_config.is_valid = False
         mobile_config.save()
-        res = client.post(reverse('siteapi:user_login'), data={'mobile': '18812341234', 'password': 'test'})
-        self.assertEqual(res.status_code, 200)
+        res = client.post(reverse('siteapi:user_login'), data={'mobile': '18812341234', 'sms_token': 'mock'})
+        self.assertEqual(res.status_code, 400)
 
     @mock.patch('siteapi.v1.views.ucenter.DingLoginAPIView.auth_code')
     def test_ding_login(self, mock_auth_code):
