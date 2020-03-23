@@ -564,6 +564,27 @@ FORMAT: 1A
 + Response 400 (application/json)
 失败
 
+## 短信验证码-登录 [/service/sms/login/{?mobile,code}]
++ Parameters
+    + mobile (string)
+    + code (string)
+### 发送短信验证码 [POST]
++ Request JSON Message
+    + Attributes
+        + mobile (string, required)
+        + captcha_key (string)
+        + captcha (string)
++ Response 201 (application/json)
+
+### 验证短信验证码 [GET]
++ Response 200 (application/json)
+    + Attributes
+        + sms_token (string)
+        + expired (string)
+
++ Response 400 (application/json)
+失败
+
 ## 短信验证码-重置密码 [/service/sms/reset_password/{?mobile,code}]
 + Parameters
     + mobile (string)
@@ -710,7 +731,8 @@ FORMAT: 1A
         + username (string, optional)
         + private_email (string, optional)
         + mobile (string, optional)
-        + password (string, required)
+        + password (string, optional)
+        + sms_token (string, optional)
 + Response 200 (application/json)
     + Attributes (UserWithPermWithToken)
 

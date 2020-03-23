@@ -14,6 +14,7 @@ from infrastructure.serializers.sms import (
     UpdateMobileSMSClaimSerializer,
     UserActivateSMSClaimSerializer,
     SMSClaimSerializer,
+    LoginSMSClaimSerializer,
 )
 from oneid_meta.models import AccountConfig
 
@@ -54,25 +55,23 @@ class SMSClaimAPIView(GenericAPIView):
                 raise ValidationError({'mobile': ['unsupported']})
             return RegisterSMSClaimSerializer
 
+        if not account_config.support_mobile:
+            raise ValidationError({'mobile': ['unsupported']})
+
         if subject == 'reset_password':
-            if not account_config.support_mobile:
-                raise ValidationError({'mobile': ['unsupported']})
             return ResetPWDSMSClaimSerializer
 
         if subject == 'activate_user':
-            if not account_config.support_mobile:
-                raise ValidationError({'mobile': ['unsupported']})
             return UserActivateSMSClaimSerializer
 
         if subject == 'update_mobile':
-            if not account_config.support_mobile:
-                raise ValidationError({'mobile': ['unsupported']})
             return UpdateMobileSMSClaimSerializer
 
         if subject == 'ding_bind':
-            if not account_config.support_mobile:
-                raise ValidationError({'mobile': ['unsupported']})
             return SMSClaimSerializer
+
+        if subject == 'login':
+            return LoginSMSClaimSerializer
 
         raise NotFound
 
