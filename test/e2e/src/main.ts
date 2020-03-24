@@ -1,5 +1,6 @@
 import {UserAction} from './actions/user'
 import {Page, launch} from 'puppeteer';
+import {personalSetAction} from './actions/personalSetting';
 import {appSearchAction} from './actions/appSearch';
 import {organizationAction} from './actions/organization';
 import {setAction} from './actions/setting';
@@ -8,7 +9,8 @@ import cofig from './config';
 import expectPuppeteer = require('expect-puppeteer');
 import { appMessageAction } from './actions/appMessage';
 import {groupAction} from './actions/group';
-
+import {configManageAction} from './actions/configManage';
+import {appsManageAction} from './actions/appsManage';
 
 
 describe('一账通-登录测试', () => {
@@ -39,6 +41,59 @@ describe('一账通-登录测试', () => {
         await expect(pageTitle).toEqual('ArkID');
     },30000);
 
+
+})
+
+describe('一账通-退出登录测试', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let personalSetaction = new personalSetAction();
+        await personalSetaction.exit(page);
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证退出链接' , async() => {
+        const url = await page.url();
+        await expect(url).toContain('https://arkid.demo.longguikeji.com');
+    },30000);
+
+})
+
+describe('一账通-修改密码测试', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'mei123', 'mei123');
+        let personalSetaction = new personalSetAction();
+        await personalSetaction.changePassword(page, "mei123", "meixinyue123", "meixinyue123");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改密码手否生效' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'mei123', 'meixinyue123');
+
+        const url = await page.url();
+        await expect(url).toContain('https://arkid.demo.longguikeji.com/#/workspace/apps');
+    },30000);
 
 })
 
@@ -1734,3 +1789,235 @@ describe('一账通-分组管理自定义分类分组编辑账号密码', () => 
 
 })
 
+describe('一账通-配置管理登录页面', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let configmanageaction = new configManageAction();
+        await configmanageaction.loginSetting(page,"北京龙归科技");
+        let personalsettingaction = new personalSetAction();
+        await personalsettingaction.exit(page);
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改公司面名称是否生效' , async() => {
+        const companyName = await page.$eval('.org-name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(companyName).toEqual('北京龙归科技');
+        
+    },30000);
+
+    test('TEST_002:验证配置管理页面链接' , async() => {
+        let configmanageaction = new configManageAction();
+        await configmanageaction.urlTest(page);
+
+        const url = await page.url();
+        await expect(url).toBe('https://arkid.demo.longguikeji.com/#/admin/account');
+        
+    },30000);
+
+
+})
+
+describe('一账通-应用管理添加应用', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.addApps(page, "bing test", "https://cn.bing.com/", "微软Bing搜索");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证添加应用是否生效' , async() => {
+        const appName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('bing test');
+
+        const mark = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(mark).toEqual('微软Bing搜索');
+    },30000);
+
+})
+
+describe('一账通-应用管理添加应用在我的应用是否生效', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证添加应用是否生效' , async() => {
+        const appName = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('bing test');
+
+        const mark = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .intro', elem => {
+            return elem.innerHTML;
+        });
+        await expect(mark).toEqual('微软Bing搜索');
+    },30000);
+
+    test('TEST_002:验证添加应用的链接是否正确' , async() => {
+        const appUrlBtn = await page.waitForSelector('.card-list.flex-row>li:last-child');
+        await appUrlBtn.click();
+
+        const appUrl = await page.url();
+        await expect(appUrl).toBe('https://cn.bing.com/');
+    },30000);
+})
+
+
+describe('一账通-应用管理编辑应用', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.editAppMassage(page, "bing test111",  "微软Bing搜索111");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证添加应用是否生效' , async() => {
+        const appName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('bing test111');
+
+        const mark = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(mark).toEqual('微软Bing搜索111');
+    },30000);
+
+})
+
+describe('一账通-应用管理添加应用在我的应用是否生效', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证添加应用是否生效' , async() => {
+        const appName = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('bing test111');
+
+        const mark = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .intro', elem => {
+            return elem.innerHTML;
+        });
+        await expect(mark).toEqual('微软Bing搜索111');
+    },30000);
+
+})
+
+describe('一账通-应用管理编辑应用', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.editAppMassage(page, "bing test111",  "微软Bing搜索111");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证删除应用是否生效' , async() => {
+        const appName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('街道OA');
+
+        const mark = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(mark).toBeNull();
+    },30000);
+
+})
+
+describe('一账通-应用管理删除应用', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.deleteApp(page);
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证删除应用是否生效' , async() => {
+        const appName = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('街道OA');
+
+        const mark = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .intro', elem => {
+            return elem.innerHTML;
+        });
+        await expect(mark).toBeNull();
+    },30000);
+
+})
