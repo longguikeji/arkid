@@ -411,4 +411,43 @@ export class groupAction{
 
     }
 
+    public async groupPower(page:Page, search:string){
+        const powerBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
+        await powerBtn.click();
+
+        const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
+        await appNameInput.type(search);
+
+        const appBtn = await page.waitForSelector('.result-list>li');
+        await appBtn.click();
+
+        const setBtn = await page.waitForSelector('.ui-operate-cell .ivu-icon.ivu-icon-md-arrow-dropdown');
+        await setBtn.click();
+
+        const yesBtn = await page.waitForSelector('.ivu-select-dropdown.ivu-dropdown-transfer .ivu-dropdown-menu>li');
+        await yesBtn.click();
+
+    }
+
+    public async personalGroupPower(page:Page, search:string){
+        const groupBtn = await page.waitForSelector('.custom-list>li span');
+        await groupBtn.click();
+        
+        const powerBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
+        await powerBtn.click();
+
+        const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
+        await appNameInput.type(search);
+
+        const appBtn = await page.waitForSelector('.result-list>li');
+        await appBtn.click();
+
+        const setBtn = await page.waitForSelector('.ui-operate-cell .ivu-icon.ivu-icon-md-arrow-dropdown');
+        await setBtn.click();
+
+        const yesBtn = await page.waitForSelector('.ivu-select-dropdown.ivu-dropdown-transfer .ivu-dropdown-menu>li');
+        await yesBtn.click();
+
+    }
+
 }

@@ -12,7 +12,6 @@ import {groupAction} from './actions/group';
 import {configManageAction} from './actions/configManage';
 import {appsManageAction} from './actions/appsManage';
 
-
 describe('一账通-登录测试', () => {
     let page : Page;
     
@@ -40,7 +39,6 @@ describe('一账通-登录测试', () => {
         });
         await expect(pageTitle).toEqual('ArkID');
     },30000);
-
 
 })
 
@@ -155,7 +153,6 @@ describe('一账通-我的应用信息测试', () => {
             return elem.innerHTML;
         });
         await expect(appPs3).toEqual('哈哈哈');
-
 
     },30000);
 
@@ -555,7 +552,7 @@ describe('一账通-账号管理编辑账号', () => {
 
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "meixinyue");
-        await accountaction.reviseAccount(page, "梅新悦", "meixinyue", "meixinyue", "13782921749", "meixinyue11@163.com", "1821788073@qq.com","部门二");
+        await accountaction.reviseAccount(page, "11", "meixinyue", "meixinyue", "部门二");
 
     },30000)
     afterEach ( async () => {
@@ -584,12 +581,8 @@ describe('一账通-账号管理编辑账号', () => {
         const name2 = await page.$eval('li[data-label="姓名"]', elem => {
             return elem.innerHTML;
         });
-        await expect(name2).toEqual('梅新悦');
+        await expect(name2).toEqual('meixinyue11');
 
-        const phoneNum = await page.$eval('li[data-label="电话"]', elem => {
-            return elem.innerHTML;
-        });
-        await expect(phoneNum).toEqual('13782921749');
     },30000);
 
 })
@@ -1468,7 +1461,7 @@ describe('一账通-分组管理添加自定义分组', () => {
 
     test('TEST_001:验证添加自定义分组是否生效' , async() => {
 
-        const groupName1 = await page.$eval(''.custom-list>li span', elem => {
+        const groupName1 = await page.$eval('.custom-list>li span', elem => {
             return elem.innerHTML;
         });
         await expect(groupName1).toEqual('项目组');
@@ -1789,6 +1782,130 @@ describe('一账通-分组管理自定义分类分组编辑账号密码', () => 
 
 })
 
+describe('一账通-分组管理编辑部门的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.groupPower(page, "街道OA");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改权限后是否生效' , async() => {
+        
+        const powerResult = await page.$eval('.ivu-table-row>td:nth-child(4) .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(powerResult).toEqual('是');
+       
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理编辑部门的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'mei123', 'mei123');
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改权限后是否生效' , async() => {
+
+        const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
+        await appNameInput.type("街道OA");
+
+        const appName = await page.$eval('.flex-row .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('街道OA');
+       
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理编辑自定义分组的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.personalGroupPower(page, "街道OA");
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改权限后是否生效' , async() => {
+        
+        const powerResult = await page.$eval('.ivu-table-row>td:nth-child(4) .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(powerResult).toEqual('是');
+       
+        
+    },30000);
+
+})
+
+describe('一账通-分组管理编辑自定义分组的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'xiangmuzua', 'xiangmuzua');
+
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证修改权限后是否生效' , async() => {
+
+        const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
+        await appNameInput.type("街道OA");
+
+        const appName = await page.$eval('.flex-row .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('街道OA');
+       
+        
+    },30000);
+
+})
+
 describe('一账通-配置管理登录页面', () => {
     let page : Page;
     
@@ -2018,6 +2135,165 @@ describe('一账通-应用管理删除应用', () => {
             return elem.innerHTML;
         });
         await expect(mark).toBeNull();
+    },30000);
+
+})
+
+describe('一账通-应用管理账号的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.userPower(page, "mei123");
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证账号的权限是否生效' , async() => {
+        const resultNameBtn = await page.waitForSelector('.perm-results span');
+        await resultNameBtn.click();
+
+        const resultName = await page.$eval('.ivu-modal-content .ivu-cell-group.name-list .ivu-cell-main .ivu-cell-title', elem => {
+            return elem.innerHTML;
+        });
+        await expect(resultName).toEqual('mei123');
+    },30000);
+
+})
+
+describe('一账通-应用管理账号的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'mei123', 'mei123');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证账号的权限是否生效' , async() => {
+        const appName = await page.$eval('.flex-row .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('百度');
+    },30000);
+
+})
+
+describe('一账通-应用管理部门的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.departmentPower(page, "部门一");
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证部门的权限是否生效' , async() => {
+        const resultNameBtn = await page.waitForSelector('.perm-results span');
+        await resultNameBtn.click();
+
+        const resultName = await page.$eval('.ivu-modal-content .ivu-cell-group.name-list .ivu-cell-main .ivu-cell-title', elem => {
+            return elem.innerHTML;
+        });
+        await expect(resultName).toEqual('部门一');
+    },30000);
+
+})
+
+describe('一账通-应用管理部门的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'mei123456', 'mei123456');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证账号的权限是否生效' , async() => {
+        const appName = await page.$eval('.flex-row .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('百度');
+    },30000);
+
+})
+
+describe('一账通-应用管理自定义分组的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.personalGroupPower(page, "项目组A");
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证自定义分组的权限是否生效' , async() => {
+        const resultNameBtn = await page.waitForSelector('.perm-results span');
+        await resultNameBtn.click();
+
+        const resultName = await page.$eval('.ivu-modal-content .ivu-cell-group.name-list .ivu-cell-main .ivu-cell-title', elem => {
+            return elem.innerHTML;
+        });
+        await expect(resultName).toEqual('项目组A');
+    },30000);
+
+})
+
+describe('一账通-应用管理部门的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'xiangmuzua', 'xiangmuzua');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证账号的权限是否生效' , async() => {
+        const appName = await page.$eval('.flex-row .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('百度');
     },30000);
 
 })
