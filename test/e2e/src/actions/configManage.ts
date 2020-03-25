@@ -5,7 +5,7 @@ export class configManageAction{
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
-        const configManageBtn = await page.waitForSelector('a[href="#/admin/app"]');
+        const configManageBtn = await page.waitForSelector('a[href="#/admin/config"]');
         await configManageBtn.click();
 
         const companyNameInput = await page.waitForSelector('input[placeholder="请输入公司名称"]');

@@ -59,4 +59,78 @@ export class appsManageAction{
         await deleteBtn.click();
 
     }
+
+    public async userPower(page:Page, searchname:string){
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const appsManageBtn = await page.waitForSelector('a[href="href="#/admin/app"]');
+        await appsManageBtn.click();
+
+        const appBtn = await page.waitForSelector('.flex-row>span:nth-child(3)');
+        await appBtn.click();
+
+        const editBtn = await page.waitForSelector('.permtags .table-btn');
+        await editBtn.click();
+
+        const searchInput = await page.waitForSelector('input[placeholder="搜索账号"]');
+        await searchInput.type(searchname);
+
+        const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large span');
+        await keepBtn.click();
+
+    }
+
+    public async departmentPower(page:Page, searchname:string){
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const appsManageBtn = await page.waitForSelector('a[href="href="#/admin/app"]');
+        await appsManageBtn.click();
+
+        const appBtn = await page.waitForSelector('.flex-row>span:nth-child(3)');
+        await appBtn.click();
+
+        const departmentPowerBtn = await page.waitForSelector('.ivu-menu.ivu-menu-light.ivu-menu-horizontal>li:nth-child(2)');
+        await departmentPowerBtn.click();
+
+        const editBtn = await page.waitForSelector('.permtags .table-btn');
+        await editBtn.click();
+
+        const searchInput = await page.waitForSelector('input[placeholder="搜索部门"]');
+        await searchInput.type(searchname);
+
+        const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large span');
+        await keepBtn.click();
+
+    }
+
+    public async personalGroupPower(page:Page, searchname:string){
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const appsManageBtn = await page.waitForSelector('a[href="href="#/admin/app"]');
+        await appsManageBtn.click();
+
+        const appBtn = await page.waitForSelector('.flex-row>span:nth-child(3)');
+        await appBtn.click();
+
+        const personalGroupBtn = await page.waitForSelector('.ivu-menu-submenu-title');
+        await personalGroupBtn.click();
+
+        const groupBtn = await page.waitForSelector('.ivu-menu-drop-list .ivu-menu-item');
+        await groupBtn.click();
+
+        const editBtn = await page.waitForSelector('.permtags .table-btn');
+        await editBtn.click();
+
+        const searchInput = await page.waitForSelector('input[placeholder="搜索"]');
+        await searchInput.type(searchname);
+
+        const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large span');
+        await keepBtn.click();
+
+    }
+
+
 }
