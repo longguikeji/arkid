@@ -2330,3 +2330,434 @@ describe('一账通-测试设置子管理员', () => {
     },30000);
 
 })
+
+describe('一账通-测试设置子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let managersettingaction = new managerSettingAction();
+        await managersettingaction.managerSettinga(page, "111111");
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员是否生效' , async() => {
+        const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(managerName).toEqual('111111');
+    },30000);
+
+})
+
+describe('一账通-测试设置子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, '111111', '111111');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员是否生效' , async() => {
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const groupBtn = await page.waitForSelector('.header-middle a[href="#/admin/group"]');
+        await groupBtn.click();
+
+        const xinjianGroupBtn = await page.waitForSelector('.ui-group-tree.ivu-tree>ul:nth-child(2) .ui-tree-item-bg');
+        await xinjianGroupBtn.click();
+
+        const addLowGroupBtn = await page.waitForSelector('.ui-group-page-detail-header.flex-row>button:nth-child(3)');
+        await addLowGroupBtn.click();
+
+        const groupNameInput = await page.waitForSelector('input[placeholder="请输入一账通-部门名称"]');
+        await groupNameInput.type("测试部门");
+
+        const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
+        await addBtn.click();
+
+        const groupName = await page.$eval('.ui-group-tree.ivu-tree>ul:nth-child(2)>li>ul:last-child .ui-tree-item-title span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(groupName).toEqual('测试部门 ( 0 人 )');
+    },30000);
+
+})
+
+describe('一账通-测试设置子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let managersettingaction = new managerSettingAction();
+        await managersettingaction.managerSettingb(page, "mei222");
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员是否生效' , async() => {
+        const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(managerName).toEqual('mei222');
+    },30000);
+
+})
+
+describe('一账通-测试设置子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'mei222', 'mei222');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员添加应用是否生效' , async() => {
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const appBtn = await page.waitForSelector('.header-middle a[href="#/admin/app"]');
+        await appBtn.click();
+
+        const addAppBtn = await page.waitForSelector('.ui-admin-apps-app-list--toolbar.flex-row .ivu-btn.ivu-btn-default');
+        await addAppBtn.click();
+
+        const addLowGroupBtn = await page.waitForSelector('.ui-group-page-detail-header.flex-row>button:nth-child(3)');
+        await addLowGroupBtn.click();
+
+        const groupNameInput = await page.waitForSelector('input[placeholder="请输入一账通-部门名称"]');
+        await groupNameInput.type("测试部门");
+
+        const appNameInput = await page.waitForSelector('input[placeholder="填写应用名称"]');
+        await appNameInput.type("测试应用");
+
+        const urlInput = await page.waitForSelector('input[placeholder="填写主页地址"]');
+        await urlInput.type("https://www.baidu.com/");
+
+        const remarksInput = await page.waitForSelector('input[placeholder="自定义备注"]');
+        await remarksInput.type("ceshiyingyong");
+
+        const addBtn = await page.waitForSelector('.buttons-right .ivu-btn.ivu-btn-primary');
+        await addBtn.click();
+
+        const cutPageBtn = await page.waitForSelector('.page.flex-row.ivu-page>li[title="4"]');
+        await cutPageBtn.click();
+
+        const appName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('测试应用');
+
+        const remarks = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(remarks).toEqual('ceshiyingyong');
+    },30000);
+
+
+    test('TEST_001:验证设置子管理员查看日志' , async() => {
+
+        const lookLogBtn = await page.waitForSelector('.header-middle a[href="#/admin/oplog"]');
+        await lookLogBtn.click();
+
+        const appName = await page.$eval('.ivu-table-row.table-normal-row>td:last-child>div>div', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('查看详细日志');
+    },30000);
+
+})
+
+describe('一账通-测试设置子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员添加应用是否生效' , async() => {
+        const appName = await page.$eval('.card-list.flex-row>li:last-child .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('测试应用');
+
+        const remarks = await page.$eval('.card-list.flex-row>li:last-child .intro', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('ceshiyingyong');
+
+    },30000);
+
+    test('TEST_001:验证设置子管理员添加应用是否生效' , async() => {
+
+        const appBtn = await page.waitForSelector('.card-list.flex-row>li:last-child');
+        await appBtn.click();
+
+        const appUrl = await page.url();
+        await expect(appUrl).toContain('https://www.baidu.com/');
+
+    },30000);
+
+})
+
+describe('一账通-测试设置子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let managersettingaction  = new managerSettingAction();
+        await managersettingaction.managerSettingc(page, "ffffff");
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员公司基础信息配置' , async() => {
+        const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(managerName).toEqual('ffffff');
+
+    },30000);
+
+})
+
+describe('一账通-测试设置子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'ffffff', 'ffffff');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员公司信息配置' , async() => {
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const companySetBtn = await page.waitForSelector('.header-middle a[href="#/admin/config"]');
+        await companySetBtn.click();
+
+        const companyNameInut = await page.waitForSelector('input[placeholder="请输入公司名称"]');
+        await companyNameInut.type("测试名称");
+
+        const colorSelectBtn = await page.waitForSelector('.ivu-select-selection');
+        await colorSelectBtn.click();
+
+        const keepBtn = await page.waitForSelector('.admin-button-area.flex-col .admin-save-button.ivu-btn.ivu-btn-primary span');
+        await keepBtn.click();
+
+        let personalSetaction = new personalSetAction();
+        await personalSetaction.exit(page);
+
+        const companyName = await page.$eval('.org-name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(companyName).toEqual('测试名称');
+    },30000);
+
+    test('TEST_001:验证设置子管理员文件存储' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'ffffff', 'ffffff');
+
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const companySetBtn = await page.waitForSelector('.header-middle a[href="#/admin/config"]');
+        await companySetBtn.click();
+
+        const saveSetBtn = await page.waitForSelector('.side-menu.ivu-menu.ivu-menu-light.ivu-menu-vertical>li:nth-child(2)');
+        await saveSetBtn.click();
+
+        const saveSetSelect = await page.$eval('.ivu-radio-group.ivu-radio-group-default.ivu-radio-default>label', elem => {
+            return elem.innerHTML;
+        });
+        await expect(saveSetSelect).toEqual('本地存储');
+    },30000);
+
+})
+
+describe('一账通-测试设置子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'longguikeji');
+        let managersettingaction = new managerSettingAction();
+        await managersettingaction.managerSettingd(page, "222222"); 
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员应用权限' , async() => {
+        const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(managerName).toEqual('ffffff');
+    },30000);
+
+})
+
+describe('一账通-测试设置子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, '222222', '222222');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员应用权限' , async() => {
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const appSetBtn = await page.waitForSelector('.header-middle a[href="#/admin/app"]');
+        await appSetBtn.click();
+
+        const appName1 = await page.$eval('.ivu-table-row>td:nth-child(2) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName1).toEqual('111');
+
+        const editBtn = await page.waitForSelector('.ivu-table-row .flex-row>span:nth-child(2)');
+        await editBtn.click();
+
+        const appNameInput = await page.waitForSelector('input[placeholder="填写应用名称"]');
+        await appNameInput.type("222");
+
+        const keepBtn = await page.waitForSelector('.buttons-right .ivu-btn.ivu-btn-primary');
+        await keepBtn.click();
+
+        const appName2 = await page.$eval('.ivu-table-row>td:nth-child(2) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName2).toEqual('111222');
+
+    },30000);
+
+    test('TEST_001:验证设置子管理员文件存储' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, '222222', '222222');
+
+        const appName = await page.$eval('.card-list.flex-row>li .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('111222');
+    },30000);
+
+})
+
+describe('一账通-测试编辑子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, '222222', '222222');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证编辑子管理员应用权限' , async() => {
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const logBtn = await page.waitForSelector('.header-middle a[href="#/admin/oplog"]');
+        await logBtn.click();
+
+        const editLog = await page.$eval('.ivu-table-tbody>tr>td:last-child>div>div', elem => {
+            return elem.innerHTML;
+        });
+        await expect(editLog).toEqual('查看详细日志');
+
+    },30000);
+
+})
+
+describe('一账通-测试删除子管理员', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false, defaultViewport:{width:1366,height:768}})
+        page = await browser.newPage();
+        await page.goto(cofig.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, '222222', '222222');
+    },30000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证删除子管理员' , async() => {
+
+        const manageBtn = await page.$eval('.workspace-btn.ivu-btn.ivu-btn-default span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(manageBtn).toBeNull();
+
+    },30000);
+
+})
