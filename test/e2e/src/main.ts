@@ -118,24 +118,24 @@ describe('一账通-我的应用信息测试', () => {
     test('TEST_001:验证我的应用页面应用数量' , async() => {
         const appsNum = document.getElementsByTagName(".card-list.flex-row").length;
         //const appsNum = await page.$$('.card-list.flex-row').children('li').length;
-        await expect(appsNum).toEqual('3');
+        await expect(appsNum).toEqual('20');
     },30000);
 
     test('TEST_002:验证我的应用页面应用名称' , async() => {
         const appName1 = await page.$eval('.card-list.flex-row>li:first-child .name', elem => {
             return elem.innerHTML;
         });
-        await expect(appName1).toEqual('百度');
+        await expect(appName1).toEqual('111');
 
         const appName2 = await page.$eval('.card-list.flex-row>li:nth-child(2) .name', elem => {
             return elem.innerHTML;
         });
-        await expect(appName2).toEqual('街道OA');
+        await expect(appName2).toEqual('111');
 
         const appName3 = await page.$eval('.card-list.flex-row>li:last-child .name', elem => {
             return elem.innerHTML;
         });
-        await expect(appName3).toEqual('啦啦啦');
+        await expect(appName3).toEqual('arkfbp-demo');
 
     },30000);
 
@@ -143,7 +143,7 @@ describe('一账通-我的应用信息测试', () => {
         const appPs1 = await page.$eval('.card-list.flex-row>li:first-child .intro', elem => {
             return elem.innerHTML;
         });
-        await expect(appPs1).toEqual('百度111');
+        await expect(appPs1).toEqual('111');
 
         const appPs2 = await page.$eval('.card-list.flex-row>li:nth-child(2) .intro', elem => {
             return elem.innerHTML;
@@ -153,7 +153,7 @@ describe('一账通-我的应用信息测试', () => {
         const appPs3 = await page.$eval('.card-list.flex-row>li:last-child .intro', elem => {
             return elem.innerHTML;
         });
-        await expect(appPs3).toEqual('哈哈哈');
+        await expect(appPs3).toBeNull();
 
     },30000);
 
@@ -215,7 +215,7 @@ describe('一账通-通讯录测试', () => {
         const departmentName1 = await page.$eval('.dept-list>li:first-child .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName1).toEqual('部门一 (0人)');
+        await expect(departmentName1).toEqual('zxzx (0人)');
 
         const departmentBtn1 = await page.waitForSelector('.dept-list>li:first-child');
         await departmentBtn1.click();
@@ -223,7 +223,7 @@ describe('一账通-通讯录测试', () => {
         const departmentName11 = await page.$eval('.dept-list .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName11).toEqual('部门一1 （0人）');
+        await expect(departmentName11).toEqual('ss (0人)');
 
         const departRetBtn1 = await page.waitForSelector('.path-name');
         await departRetBtn1.click();
@@ -231,36 +231,36 @@ describe('一账通-通讯录测试', () => {
         const departmentName2 = await page.$eval('.dept-list>li:nth-child(2) .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName2).toEqual('部门二 （1人）');
-
-        const departmentBtn2 = await page.waitForSelector('.dept-list>li:nth-child(2)');
-        await departmentBtn2.click();
+        await expect(departmentName2).toEqual('新建测试12 (1人)');
 
         const departmentName21 = await page.$eval('.user-list .flex-row .name', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName21).toEqual('部门二成员');
+        await expect(departmentName21).toEqual('111111');
 
         await departRetBtn1.click();
 
-        const departmentName3 = await page.$eval('.dept-list>li:last-child .name.flex-auto', elem => {
+        const departmentName3 = await page.$eval('.dept-list>li:nth-child(6) .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName3).toEqual('部门三 （1人）');
+        await expect(departmentName3).toEqual('测试名称 (1人)');
 
-        const departmentBtn3 = await page.waitForSelector('.dept-list>li:last-child');
+        const departmentBtn3 = await page.waitForSelector('.dept-list>li:nth-child(6)');
         await departmentBtn3.click();
 
         
-        const departmentName31 = await page.$eval('.user-list .flex-row .name.flex-auto', elem => {
+        const departmentName31 = await page.$eval('.dept-list>li:last-child .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName31).toEqual('部门三分组 （0人）');
+        await expect(departmentName31).toEqual('#### (1人)');
+
+        const departmentBtn31 = await page.waitForSelector('.dept-list>li:last-child');
+        await departmentBtn31.click();
 
         const departmentName32 = await page.$eval('.user-list .flex-row .name', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName32).toEqual('部门三成员');
+        await expect(departmentName32).toEqual('mei222');
 
         await departRetBtn1.click();
         
@@ -272,12 +272,12 @@ describe('一账通-通讯录测试', () => {
 
         const membersNum = document.getElementsByTagName(".user-list").length;
         //const membersNum = await page.$$('.user-list').children("li").length;
-        await expect(membersNum).toEqual('21');
+        await expect(membersNum).toEqual('19');
 
         const directName1 = await page.$eval('.org-main.flex-col>ul>li:first-child .name', elem => {
             return elem.innerHTML;
         });
-        await expect(directName1).toEqual('111111');
+        await expect(directName1).toEqual('mei333');
 
         const directName2 = await page.$eval('.org-main.flex-col>ul>li:nth-child(2) .name', elem => {
             return elem.innerHTML;
@@ -299,15 +299,20 @@ describe('一账通-通讯录测试', () => {
         const departmentName1 = await page.$eval('.dept-list>li:first-child .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName1).toEqual('A项目组 (0人)');
+        await expect(departmentName1).toEqual('A项目组 (1人)');
 
         const departmentBtn1 = await page.waitForSelector('.dept-list>li:first-child');
         await departmentBtn1.click();
 
-        const departmentName11 = await page.$eval('.dept-list .name.flex-auto', elem => {
+        const departmentName11 = await page.$eval('.dept-list>li:first-child .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName11).toEqual('A项目组1 （0人）');
+        await expect(departmentName11).toEqual('分组一 (0人)');
+
+        const userName11 = await page.$eval('.user-list .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName11).toEqual('李宝宝');
 
         const departRetBtn1 = await page.waitForSelector('.path-name');
         await departRetBtn1.click();
@@ -323,7 +328,7 @@ describe('一账通-通讯录测试', () => {
         const departmentName21 = await page.$eval('.user-list .flex-row .name', elem => {
             return elem.innerHTML;
         });
-        await expect(departmentName21).toEqual('B项目组成员');
+        await expect(departmentName21).toEqual('111111');
 
         await departRetBtn1.click();
 
@@ -455,7 +460,7 @@ describe('一账通-账号管理测试', () => {
         await useraction.login(page, 'admin', 'longguikeji');
 
         let accountaction = new accountAction();
-        await accountaction.addAccount(page, "meixinyue", "meixinyue", "mei123456", "mei123456", "15822186268", "1821788073@qq.com", "meixinyue11@163.com", "部门一");          
+        await accountaction.addAccount(page, "meixinyue", "meixinyue", "mei123456", "mei123456", "15822186268", "1821788073@qq.com", "meixinyue11@163.com", "zxzx");          
 
     },30000)
     afterEach ( async () => {
@@ -553,7 +558,7 @@ describe('一账通-账号管理编辑账号', () => {
 
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "meixinyue");
-        await accountaction.reviseAccount(page, "11", "meixinyue", "meixinyue", "部门二");
+        await accountaction.reviseAccount(page, "11", "meixinyue", "meixinyue", "新建测试12");
 
     },30000)
     afterEach ( async () => {
@@ -568,13 +573,13 @@ describe('一账通-账号管理编辑账号', () => {
         const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
         await orgBtn.click();
 
-        const groupBtn = await page.waitForSelector('.dept-list>li:first-child');
+        const groupBtn = await page.waitForSelector('.dept-list>li:nth-child(2)');
         await groupBtn.click();
 
-        const name = await page.$eval('.user-list .flex-row .name', elem => {
+        const name = await page.$eval('.user-list>li:last-child .name', elem => {
             return elem.innerHTML;
         });
-        await expect(name).toEqual('梅新悦');
+        await expect(name).toEqual('梅新悦11');
 
         const usereBtn = await page.waitForSelector('.flex-row.active .name');
         await usereBtn.click();
@@ -582,7 +587,7 @@ describe('一账通-账号管理编辑账号', () => {
         const name2 = await page.$eval('li[data-label="姓名"]', elem => {
             return elem.innerHTML;
         });
-        await expect(name2).toEqual('meixinyue11');
+        await expect(name2).toEqual('梅新悦11');
 
     },30000);
 
@@ -633,11 +638,13 @@ describe('一账通-账号管理删除账号', () => {
     })
 
     test('TEST_001:验证删除账号' , async() => {
-        await page.waitFor(5000);
+        const threePageBtn = await page.waitForSelector('li[title="3"]');
+        await threePageBtn.click();
+        //await page.waitFor(5000);
         const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
             return elem.innerHTML;
         });
-        await expect(userName).toEqual('ffffff');
+        await expect(userName).toEqual('222222');
 
         
     },30000);
@@ -712,7 +719,7 @@ describe('一账通-验证分组管理分组可见性', () => {
         const groupName = await page.$eval('.dept-list>li:last-child .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(groupName).toEqual('部门三 ( 1 人 )');
+        await expect(groupName).toEqual('111# (0人)');
 
     },30000);
 
@@ -742,7 +749,7 @@ describe('一账通-验证分组管理编辑部门', () => {
         const groupName1 = await page.$eval('.ui-group-tree.ivu-tree>ul:last-child .ui-tree-item-title span', elem => {
             return elem.innerHTML;
         });
-        await expect(groupName1).toEqual('部门一一 ( 0 人 )');
+        await expect(groupName1).toEqual('zxzx一 (0人)');
 
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
@@ -753,7 +760,7 @@ describe('一账通-验证分组管理编辑部门', () => {
         const groupName = await page.$eval('.dept-list>li:first-child .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(groupName).toEqual('部门一一 ( 0 人 )');
+        await expect(groupName).toEqual('zxzx一 (0人)');
 
     },30000);
 
@@ -768,7 +775,7 @@ describe('一账通-验证分组管理编辑部门可见性', () => {
         await page.goto(cofig.url);
 
         let useraction = new UserAction();
-        await useraction.login(page, 'mei111', 'mei111');
+        await useraction.login(page, 'mei123', 'mei123');
 
     },30000)
     afterEach ( async () => {
@@ -780,7 +787,7 @@ describe('一账通-验证分组管理编辑部门可见性', () => {
         const groupName1 = await page.$eval('.dept-list>li:first-child .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(groupName1).toEqual('部门二 ( 1 人 )');
+        await expect(groupName1).toEqual('新建测试12 (1人)');
 
     },30000);
 
@@ -819,7 +826,7 @@ describe('一账通-验证分组管理添加下级部门', () => {
         const groupName = await page.$eval('.org-main.flex-col .dept-list>li:last-child .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(groupName).toEqual('部门一2 ( 0 人 )');
+        await expect(groupName).toEqual('部门一2 (0人)');
 
     },30000);
 
@@ -837,7 +844,7 @@ describe('一账通-验证分组管理添加账号', () => {
         await useraction.login(page, 'admin', 'longguikeji');
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
-        await groupaction.addUser(page, "mei222", "mei222", "mei222", "mei222");
+        await groupaction.addUser(page, "mei22222", "mei22222", "mei22222", "mei22222");
 
     },30000)
     afterEach ( async () => {
@@ -849,7 +856,7 @@ describe('一账通-验证分组管理添加账号', () => {
         const userName1 = await page.$eval('.ivu-table-row>td:nth-child(2) .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(userName1).toEqual('mei222');
+        await expect(userName1).toEqual('mei22222');
 
         const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
         await accountBtn.click();
@@ -857,7 +864,7 @@ describe('一账通-验证分组管理添加账号', () => {
         const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
             return elem.innerHTML;
         });
-        await expect(userName2).toEqual('mei222');
+        await expect(userName2).toEqual('mei22222');
 
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
@@ -871,7 +878,7 @@ describe('一账通-验证分组管理添加账号', () => {
         const userName3 = await page.$eval('.user-list .name', elem => {
             return elem.innerHTML;
         });
-        await expect(userName3).toEqual('mei222');
+        await expect(userName3).toEqual('mei22222');
 
     },30000);
 
@@ -890,7 +897,7 @@ describe('一账通-分组管理编辑账号', () => {
 
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
-        await groupaction.editUser(page, "3", "mei2223", "mei2223");
+        await groupaction.editUser(page, "3", "mei222223", "mei222223");
        
     },30000)
     afterEach ( async () => {
@@ -902,7 +909,7 @@ describe('一账通-分组管理编辑账号', () => {
         const userName1 = await page.$eval('.ivu-table-row>td:nth-child(2) .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(userName1).toEqual('mei2223');
+        await expect(userName1).toEqual('mei222223');
 
         const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
         await accountBtn.click();
@@ -910,7 +917,7 @@ describe('一账通-分组管理编辑账号', () => {
         const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
             return elem.innerHTML;
         });
-        await expect(userName2).toEqual('mei2223');
+        await expect(userName2).toEqual('mei222223');
 
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
@@ -924,7 +931,7 @@ describe('一账通-分组管理编辑账号', () => {
         const userName3 = await page.$eval('.user-list .name', elem => {
             return elem.innerHTML;
         });
-        await expect(userName3).toEqual('mei2223');
+        await expect(userName3).toEqual('mei222223');
 
     },30000);
 
@@ -939,7 +946,7 @@ describe('一账通-分组管理编辑账号密码', () => {
         await page.goto(cofig.url);
 
         let useraction = new UserAction();
-        await useraction.login(page, 'mei2223', 'mei2223');
+        await useraction.login(page, 'mei222223', 'mei222223');
 
     },30000)
     afterEach ( async () => {
@@ -967,7 +974,7 @@ describe('一账通-分组管理调整分组', () => {
 
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
-        await groupaction.editUserGroup(page, "部门二");
+        await groupaction.editUserGroup(page, "qqq");
 
     },30000)
     afterEach ( async () => {
@@ -975,13 +982,13 @@ describe('一账通-分组管理调整分组', () => {
     })
 
     test('TEST_001:验证调整分组后是否生效' , async() => {
-        const groupUserBtn = await page.waitForSelector('.ui-group-tree.ivu-tree>ul:nth-child(2) .ui-tree-item-title span');
+        const groupUserBtn = await page.waitForSelector('.ui-group-tree.ivu-tree>ul:nth-child(5) .ui-tree-item-title span');
         await groupUserBtn.click();
 
-        const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
+        const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(5) span', elem => {
             return elem.innerHTML;
         });
-        await expect(userName).toEqual('mei2223');
+        await expect(userName).toEqual('mei222223');
 
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
@@ -989,13 +996,13 @@ describe('一账通-分组管理调整分组', () => {
         const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
         await orgBtn.click();
 
-        const groupBtn = await page.waitForSelector('.dept-list>li:nth-child(2)');
+        const groupBtn = await page.waitForSelector('.dept-list>li:nth-child(5)');
         await groupBtn.click();
 
         const userName3 = await page.$eval('.user-list>li:last-child .name', elem => {
             return elem.innerHTML;
         });
-        await expect(userName3).toEqual('mei2223');
+        await expect(userName3).toEqual('mei222223');
 
 
         
@@ -1024,10 +1031,10 @@ describe('一账通-分组管理移出分组是否生效', () => {
     })
 
     test('TEST_001:验证移出分组后是否生效' , async() => {
-        const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
+        const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(5) span', elem => {
             return elem.innerHTML;
         });
-        await expect(userName).toEqual('mei1122');
+        await expect(userName).toBeNull();
 
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
@@ -1035,13 +1042,13 @@ describe('一账通-分组管理移出分组是否生效', () => {
         const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
         await orgBtn.click();
 
-        const groupBtn = await page.waitForSelector('.dept-list>li:nth-child(2)');
+        const groupBtn = await page.waitForSelector('.dept-list>li:nth-child(5)');
         await groupBtn.click();
 
         const userName3 = await page.$eval('.user-list>li:last-child .name', elem => {
             return elem.innerHTML;
         });
-        await expect(userName3).toEqual('mei1122');
+        await expect(userName3).toBeNull();
         
     },30000);
 
@@ -1116,7 +1123,7 @@ describe('一账通-分组管理添加直属成员分组', () => {
         const dirUserGroupName1 = await page.$eval('.ui-tree-item-title span', elem => {
             return elem.innerHTML;
         });
-        await expect(dirUserGroupName1).toEqual('直属成员分组一 ( 0 人 )');
+        await expect(dirUserGroupName1).toEqual('直属成员分组一 (0人)');
 
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
@@ -1130,7 +1137,7 @@ describe('一账通-分组管理添加直属成员分组', () => {
         const dirUserGroupName2 = await page.$eval('.org-main.flex-col .flex-row .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(dirUserGroupName2).toEqual('直属成员分组一 ( 0 人 )');
+        await expect(dirUserGroupName2).toEqual('直属成员分组一 (0人)');
         
     },30000);
 
@@ -1192,7 +1199,7 @@ describe('一账通-分组管理编辑直属成员分组', () => {
         const dirUserGroupName1 = await page.$eval('.ui-tree-item-title span', elem => {
             return elem.innerHTML;
         });
-        await expect(dirUserGroupName1).toEqual('直属成员分组一1 ( 0 人 )');
+        await expect(dirUserGroupName1).toEqual('直属成员分组一1 (0人)');
 
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
@@ -1206,7 +1213,7 @@ describe('一账通-分组管理编辑直属成员分组', () => {
         const dirUserGroupName2 = await page.$eval('.org-main.flex-col .flex-row .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(dirUserGroupName2).toEqual('直属成员分组一1 ( 0 人 )');
+        await expect(dirUserGroupName2).toEqual('直属成员分组一1 (0人)');
         
     },30000);
 
@@ -1236,7 +1243,7 @@ describe('一账通-分组管理直属成员分组添加下级分组', () => {
         const dirLowGroupName1 = await page.$eval('ul[visible="visible"] .ivu-tree-children .ui-tree-item-title span', elem => {
             return elem.innerHTML;
         });
-        await expect(dirLowGroupName1).toEqual('分组一 ( 0 人 )');
+        await expect(dirLowGroupName1).toEqual('分组一 (0人)');
 
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
@@ -1253,7 +1260,7 @@ describe('一账通-分组管理直属成员分组添加下级分组', () => {
         const dirLowGroupName2 = await page.$eval('.dept-list .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(dirLowGroupName2).toEqual('分组一 ( 0 人 )');
+        await expect(dirLowGroupName2).toEqual('分组一 (0人)');
         
     },30000);
 
@@ -1406,7 +1413,7 @@ describe('一账通-分组管理直属分组调整分组', () => {
 
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
-        await groupaction.editDirUserGroup(page, "部门一");
+        await groupaction.editDirUserGroup(page, "zxzx");
 
     },30000)
     afterEach ( async () => {
@@ -1417,7 +1424,7 @@ describe('一账通-分组管理直属分组调整分组', () => {
         const apartBtn = await page.waitForSelector('.default-list>li');
         await apartBtn.click();
 
-        const userName = await page.$eval('.ivu-table-row>td:nth-child(2) span', elem => {
+        const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
             return elem.innerHTML;
         });
         await expect(userName).toEqual('directuser1');
@@ -1431,6 +1438,9 @@ describe('一账通-分组管理直属分组调整分组', () => {
         const groupBtn = await page.waitForSelector('.dept-list>li:nth-child(1)');
         await groupBtn.click();
 
+        const groupzxzxBtn = await page.waitForSelector('.dept-list>li');
+        await groupzxzxBtn.click();
+
         const userName3 = await page.$eval('.user-list>li:last-child .name', elem => {
             return elem.innerHTML;
         });
@@ -1439,6 +1449,8 @@ describe('一账通-分组管理直属分组调整分组', () => {
     },30000);
 
 })
+
+/////////////////////////////////////////////////分割线
 
 describe('一账通-分组管理添加自定义分组', () => {
     let page : Page;
