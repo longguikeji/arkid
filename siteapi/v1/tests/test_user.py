@@ -8,7 +8,18 @@ import json
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import DingUser, PosixUser, Group, Dept, User, CustomField, DeptMember, Perm, UserPerm
+from oneid_meta.models import (
+    DingUser,
+    PosixUser,
+    Group,
+    Dept,
+    User,
+    CustomField,
+    DeptMember,
+    Perm,
+    UserPerm,
+    WechatUser,
+)
 
 EMPLOYEE = {
     'user': {
@@ -128,6 +139,15 @@ class UserTestCase(TestCase):
         user_list = res.json()['results']
         expect_count = 0
         self.assertEqual(expect_count, len(user_list))
+
+        WechatUser.objects.create(
+            user=User.valid_objects.get(username='employee1'),
+            unionid='unionid-1',
+        )
+        res = client.get(reverse('siteapi:user_list'), data={'keyword': '188', 'wechat_unionid': 'unionid-1'})
+        self.assertEqual(1, res.json()['count'])
+        res = client.get(reverse('siteapi:user_list'), data={'keyword': '188', 'wechat_unionid': 'unionid-2'})
+        self.assertEqual(0, res.json()['count'])
 
     def test_username(self):
         res = self.client.json_post(reverse('siteapi:user_list'),
