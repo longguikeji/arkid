@@ -377,7 +377,7 @@ FORMAT: 1A
         + key (string) - 键
         + value (string) - 值，用于显示
 
-## SAML2APP (object)
+## SAMLAPP (object)
 + app (object) - OnetoOne关联APP对象
 + entity_id (string) - SP方SAML实体
 + acs (string) - SP单点登录uri
@@ -908,7 +908,7 @@ TODO: 校对
 # Group User
 用户管理
 
-## 所有用户 [/user/{?keyword}]
+## 所有用户 [/user/{?keyword,wechat_unionid,page,page_size}]
 
 ### 创建用户 [POST]
 + Request JSON Message
@@ -921,14 +921,16 @@ TODO: 校对
     + Attributes (Employee)
 
 ### 获取用户列表 [GET]
+
++ Parameters
+    + keyword (string, optional) - 查询关键字，进行用户名、姓名、邮箱、手机号模糊搜索
+    + wechat_unionid (string, optional)
+    + page (number, optional)
+        + default: 1
+    + page_size (number, optional)
+        + default: 30
+
 不考虑层级，单纯返回所有用户
-+ request JSON Message
-    + Attributes
-        + page_size (number)
-            - default: 30
-        + page (number)
-            - default: 1
-        + keyword (string) - 查询关键字，进行用户名、姓名、邮箱、手机号模糊搜索
 
 + Response 200 (application/json)
     + Attributes
@@ -2490,7 +2492,7 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 200 (application/json)
     + Attributes
-        + metadata (html/xml) - SAML2元数据显示在网页，用于SP方获取
+        + metadata (string) - SAML2元数据显示在网页，用于SP方获取   FIXME: content-type
 
 ## 下载元数据文件 [/saml/download/metadata/]
 
@@ -2501,4 +2503,4 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 200 (application/json)
     + Attributes
-        + metadata.xml (file/xml) - IdP方新建时生成的元数据文件，用于在SP方配置时上传.
+        + metadata.xml (string) - IdP方新建时生成的元数据文件，用于在SP方配置时上传.  FIXME: content-type
