@@ -14,12 +14,15 @@ FORMAT: 1A
 + name (string)
 
 ## CustomUser (object)
-    + data (object) - key为字段uuid
-    + pretty (array) - read only
-        + item (object)
-            + name (string) - 字段名称
-            + uuid (string) - 字段uuid
-            + value (string) - 值
++ data (object) - key为字段uuid
++ pretty (array) - read only
+    + item (object)
+        + name (string) - 字段名称
+        + uuid (string) - 字段uuid
+        + value (string) - 值
+
+## WechatUser (object)
++ unionid (string)
 
 ## UserProfile (object)
 + username (string)
@@ -84,6 +87,7 @@ FORMAT: 1A
     + home
     + pub_key
 + custom_user (CustomUser) - May Null-> 无该键
++ wechat_user (WechatUser)
 + require_reset_password(boolean) - 是否需要重置密码
 + has_password (boolean) - 是否有密码，目前仅用于邀请链接的页面
 
