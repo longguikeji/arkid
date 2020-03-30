@@ -2502,3 +2502,25 @@ Content-Disposition: form-data; name='node_uid'
 + Response 200 (application/json)
     + Attributes
         + metadata.xml (file/xml) - IdP方新建时生成的元数据文件，用于在SP方配置时上传.
+
+# 微信小程序登录 [/wechatprogram/login]
+
+### 用户登录请求 [POST]
+
++ Request JSON Message
+    + Attributes
+        + code (string) - 用户临时登录凭证
+
++ Response 200 (application/json)
+    + Attributes 
+        + token
+
++ Response 302
+    + Attributes
+        + {"message":"unregisted"} - 跳转注册加绑定页面
+        + unionid (string) - 微信用户标识
+
++ Response 302
+    + Attributes
+        + {"message":"unbind"} - 跳转绑定页面
+        + unionid - 微信用户标识
