@@ -17,6 +17,7 @@ from oneid_meta.models import (
 )
 
 MOBILE = '18812341234'
+I18N_MOBILE = '+86 18812341234'
 SMS_CODE = '123456'
 
 
@@ -24,6 +25,7 @@ class SMSTestCase(TestCase):
     def setUp(self):
         super().setUp()
         self.user = User.objects.create(username='u1', mobile=MOBILE)
+        self.user_2 = User.objects.create(username='u2', mobile=I18N_MOBILE)
 
         account_config = AccountConfig.get_current()
         account_config.allow_register = True
@@ -59,12 +61,11 @@ class SMSTestCase(TestCase):
 
     @mock.patch('infrastructure.serializers.sms.gen_code')
     @mock.patch('infrastructure.serializers.sms.send_sms')
-    @mock.patch('infrastructure.serializers.sms.redis')
-    def test_send_sms_to_activate_user(self, mock_redis, mock_send_sms, mock_gen_code):
-        mock_Redis = mock.Mock()    # pylint: disable=invalid-name
-        mock_redis.Redis.return_value = mock_Redis
-        mock_Redis.get.return_value = SMS_CODE.encode()
-        mock_Redis.set.return_value = True
+    @mock.patch('infrastructure.serializers.sms.redis_conn.get')
+    @mock.patch('infrastructure.serializers.sms.redis_conn.set')
+    def test_send_sms_to_activate_user(self, mock_redis_set, mock_redis_get, mock_send_sms, mock_gen_code):
+        mock_redis_get.return_value = SMS_CODE
+        mock_redis_set.return_value = True
 
         mock_send_sms.return_value = True
 
@@ -94,12 +95,11 @@ class SMSTestCase(TestCase):
 
     @mock.patch('infrastructure.serializers.sms.gen_code')
     @mock.patch('infrastructure.serializers.sms.send_sms')
-    @mock.patch('infrastructure.serializers.sms.redis')
-    def test_send_sms_to_update_mobile(self, mock_redis, mock_send_sms, mock_gen_code):
-        mock_Redis = mock.Mock()    # pylint: disable=invalid-name
-        mock_redis.Redis.return_value = mock_Redis
-        mock_Redis.get.return_value = SMS_CODE.encode()
-        mock_Redis.set.return_value = True
+    @mock.patch('infrastructure.serializers.sms.redis_conn.get')
+    @mock.patch('infrastructure.serializers.sms.redis_conn.set')
+    def test_send_sms_to_update_mobile(self, mock_redis_set, mock_redis_get, mock_send_sms, mock_gen_code):
+        mock_redis_get.return_value = SMS_CODE
+        mock_redis_set.return_value = True
 
         mock_send_sms.return_value = True
 
@@ -134,12 +134,11 @@ class SMSTestCase(TestCase):
     @mock.patch('infrastructure.serializers.sms.check_captcha')
     @mock.patch('infrastructure.serializers.sms.gen_code')
     @mock.patch('infrastructure.serializers.sms.send_sms')
-    @mock.patch('infrastructure.serializers.sms.redis')
-    def test_send_sms(self, mock_redis, mock_send_sms, mock_gen_code, mock_check_captcha):
-        mock_Redis = mock.Mock()    # pylint: disable=invalid-name
-        mock_redis.Redis.return_value = mock_Redis
-        mock_Redis.get.return_value = SMS_CODE.encode()
-        mock_Redis.set.return_value = True
+    @mock.patch('infrastructure.serializers.sms.redis_conn.get')
+    @mock.patch('infrastructure.serializers.sms.redis_conn.set')
+    def test_send_sms(self, mock_redis_set, mock_redis_get, mock_send_sms, mock_gen_code, mock_check_captcha):
+        mock_redis_get.return_value = SMS_CODE
+        mock_redis_set.return_value = True
 
         mock_send_sms.return_value = True
 
@@ -159,6 +158,20 @@ class SMSTestCase(TestCase):
                                       'username': 'u1',
                                   })
         self.assertEqual(res.status_code, 201)
+
+        res = self.anonymous.post(reverse('infra:sms', args=('reset_password', )),
+                                  data={
+                                      'mobile': I18N_MOBILE,
+                                      'username': 'u2',
+                                  })
+        self.assertEqual(res.status_code, 201)
+
+        res = self.anonymous.post(reverse('infra:sms', args=('reset_password', )),
+                                  data={
+                                      'mobile': '+ 86 18812341234',
+                                      'username': 'u2',
+                                  })
+        self.assertEqual(res.status_code, 400)
 
         res = self.anonymous.post(reverse('infra:sms', args=('reset_password', )),
                                   data={
@@ -213,6 +226,7 @@ class SMSTestCase(TestCase):
                                      'mobile': MOBILE,
                                      'code': SMS_CODE
                                  })
+
         self.assertEqual(res.status_code, 200)
 
         res = self.anonymous.get(reverse('infra:sms', args=('reset_password', )),
@@ -233,12 +247,11 @@ class SMSTestCase(TestCase):
 
     @mock.patch('infrastructure.serializers.sms.gen_code')
     @mock.patch('infrastructure.serializers.sms.send_sms')
-    @mock.patch('infrastructure.serializers.sms.redis')
-    def test_send_sms_to_ding_bind(self, mock_redis, mock_send_sms, mock_gen_code):
-        mock_Redis = mock.Mock()    # pylint: disable=invalid-name
-        mock_redis.Redis.return_value = mock_Redis
-        mock_Redis.get.return_value = SMS_CODE.encode()
-        mock_Redis.set.return_value = True
+    @mock.patch('infrastructure.serializers.sms.redis_conn.get')
+    @mock.patch('infrastructure.serializers.sms.redis_conn.set')
+    def test_send_sms_to_ding_bind(self, mock_redis_set, mock_redis_get, mock_send_sms, mock_gen_code):
+        mock_redis_get.return_value = SMS_CODE
+        mock_redis_set.return_value = True
 
         mock_send_sms.return_value = True
 
