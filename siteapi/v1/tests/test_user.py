@@ -407,6 +407,12 @@ class UserTestCase(TestCase):
         self.assertEqual(0, WechatUser.objects.filter(user=user).count())
         self.assertNotIn("wechat_user", res.json()['user'])
 
+        patch_data = {
+            'wechat_user': None,
+        }
+        res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
+        self.assertEqual(res.status_code, 200)
+
     def test_get_user_group(self):
         self.create_user()
         res = self.client.get(reverse('siteapi:user_group', args=('employee1', )))

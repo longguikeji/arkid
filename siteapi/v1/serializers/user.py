@@ -300,9 +300,10 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
                     wechat_user_serializer.is_valid(raise_exception=True)
                     wechat_user_serializer.save()
             else:
-                wechat_user_serializer = WechatUserSerializer(data=wechat_user_data)
-                wechat_user_serializer.is_valid(raise_exception=True)
-                wechat_user_serializer.save(user=user)
+                if wechat_user_data:
+                    wechat_user_serializer = WechatUserSerializer(data=wechat_user_data)
+                    wechat_user_serializer.is_valid(raise_exception=True)
+                    wechat_user_serializer.save(user=user)
 
         username = validated_data.pop('username', '')
         if username and username != user.username:
