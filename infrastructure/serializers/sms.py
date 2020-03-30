@@ -26,6 +26,8 @@ def send_sms(mobile, code, template=''):
         access_key=sms_config.access_key,
         access_key_secret=sms_config.access_secret,
     )
+    mobile = ''.join([literal for literal in mobile if literal.isdigit()])
+    # `+86 18812341234` -> `8618812341234`
     try:
         smser.send_auth_code(
             mobile=mobile,
@@ -68,7 +70,9 @@ class SMSClaimSerializer(serializers.Serializer):
         '''
         校验手机
         '''
-        if re.match(r'^1[\d]{10}$', value):
+        if re.match(r'^1[\d]{10}$', value):    # 默认中国手机号，形如 `18812341234`
+            return value
+        if re.match(r'^\+[\d]{1,4} [\d]{2,20}$', value):    # 支持国际手机号，形如 `+86 18812341234`
             return value
         raise ValidationError('invalid')
 
