@@ -384,6 +384,29 @@ class UserTestCase(TestCase):
         res['user'].pop('nodes')
         self.assertEqual(expect, res['user'])
 
+    def test_wechat_user(self):
+        self.create_user()
+        user = User.valid_objects.get(username='employee1')
+
+        # bound
+        patch_data = {'wechat_user': {'unionid': 'unionid-1'}}
+        res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
+        self.assertEqual("unionid-1", res.json()['user']['wechat_user']['unionid'])
+        self.assertEqual(1, WechatUser.objects.filter(user=user).count())
+
+        # update
+        patch_data = {'wechat_user': {'unionid': 'unionid-2'}}
+        res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
+        self.assertEqual("unionid-2", res.json()['user']['wechat_user']['unionid'])
+
+        # unbound
+        patch_data = {
+            'wechat_user': None,
+        }
+        res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
+        self.assertEqual(0, WechatUser.objects.filter(user=user).count())
+        self.assertNotIn("wechat_user", res.json()['user'])
+
     def test_get_user_group(self):
         self.create_user()
         res = self.client.get(reverse('siteapi:user_group', args=('employee1', )))
