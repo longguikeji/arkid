@@ -311,19 +311,19 @@ class ConfigAlterAdminTestCase(TestCase):
     def test_alter_admin(self, mock_sms_token):
         mock_sms_token.side_effect = [
             {
-                'mobile': 'mobile_1'
+                'mobile': '18812340001'
             },
             {
-                'mobile': 'mobile_2'
+                'mobile': '18812340002'
             },
         ]
         old_admin = User.create_user('old_admin', 'old_admin')
         old_admin.is_boss = True
-        old_admin.mobile = 'mobile_1'
+        old_admin.mobile = '18812340001'
         old_admin.save()
 
         new_admin = User.create_user('new_admin', '')
-        new_admin.mobile = 'mobile_2'
+        new_admin.mobile = '18812340002'
         new_admin.save()
 
         res = self.client.json_patch(reverse('siteapi:alter_admin'),

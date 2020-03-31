@@ -5,8 +5,6 @@ import random
 import string    # pylint:disable=deprecated-module
 import time
 
-import re
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
@@ -15,6 +13,7 @@ from oneid_meta.models import User, Invitation, SMSConfig
 from oneid.utils import redis_conn
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from infrastructure.views.captcha_img import check_captcha    # pylint: disable=unused-import
+from infrastructure.utils.sms import is_mobile
 
 
 def send_sms(mobile, code, template=''):
@@ -70,10 +69,9 @@ class SMSClaimSerializer(serializers.Serializer):
         '''
         校验手机
         '''
-        if re.match(r'^1[\d]{10}$', value):    # 默认中国手机号，形如 `18812341234`
+        if is_mobile(value):
             return value
-        if re.match(r'^\+[\d]{1,4} [\d]{2,20}$', value):    # 支持国际手机号，形如 `+86 18812341234`
-            return value
+
         raise ValidationError('invalid')
 
     def validate(self, attrs):

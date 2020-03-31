@@ -14,7 +14,7 @@ ci:
 	-t harbor.longguikeji.com/ark-releases/arkid:$(VERSION) .
 
 test:
-	python manage.py migrate && python manage.py test siteapi.v1.tests infrastructure.tests.test_file --settings=oneid.settings_test \
+	python manage.py migrate && python manage.py test siteapi.v1.tests infrastructure.tests.test_file infrastructure.tests.test_sms --settings=oneid.settings_test \
 	&& python manage.py migrate --settings=oneid.settings_test_with_data && python manage.py test test.tests --settings=oneid.settings_test_with_data
 
 lint: 
