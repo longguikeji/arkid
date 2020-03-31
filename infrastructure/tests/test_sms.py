@@ -17,7 +17,7 @@ from oneid_meta.models import (
 )
 
 MOBILE = '18812341234'
-I18N_MOBILE = '+86 18812341234'
+I18N_MOBILE = '+86 18812340000'
 SMS_CODE = '123456'
 
 
