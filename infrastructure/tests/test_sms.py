@@ -61,11 +61,14 @@ class SMSTestCase(TestCase):
 
     @mock.patch('infrastructure.serializers.sms.gen_code')
     @mock.patch('infrastructure.serializers.sms.send_sms')
+    @mock.patch('infrastructure.serializers.sms.redis_conn.delete')
     @mock.patch('infrastructure.serializers.sms.redis_conn.get')
     @mock.patch('infrastructure.serializers.sms.redis_conn.set')
-    def test_send_sms_to_activate_user(self, mock_redis_set, mock_redis_get, mock_send_sms, mock_gen_code):
+    def test_send_sms_to_activate_user(self, mock_redis_set, mock_redis_get, mock_redis_delete, mock_send_sms,
+                                       mock_gen_code):
         mock_redis_get.return_value = SMS_CODE
         mock_redis_set.return_value = True
+        mock_redis_delete.return_value = None
 
         mock_send_sms.return_value = True
 
@@ -95,11 +98,14 @@ class SMSTestCase(TestCase):
 
     @mock.patch('infrastructure.serializers.sms.gen_code')
     @mock.patch('infrastructure.serializers.sms.send_sms')
+    @mock.patch('infrastructure.serializers.sms.redis_conn.delete')
     @mock.patch('infrastructure.serializers.sms.redis_conn.get')
     @mock.patch('infrastructure.serializers.sms.redis_conn.set')
-    def test_send_sms_to_update_mobile(self, mock_redis_set, mock_redis_get, mock_send_sms, mock_gen_code):
+    def test_send_sms_to_update_mobile(self, mock_redis_set, mock_redis_get, mock_redis_delete, mock_send_sms,
+                                       mock_gen_code):
         mock_redis_get.return_value = SMS_CODE
         mock_redis_set.return_value = True
+        mock_redis_delete.return_value = None
 
         mock_send_sms.return_value = True
 
@@ -134,11 +140,14 @@ class SMSTestCase(TestCase):
     @mock.patch('infrastructure.serializers.sms.check_captcha')
     @mock.patch('infrastructure.serializers.sms.gen_code')
     @mock.patch('infrastructure.serializers.sms.send_sms')
+    @mock.patch('infrastructure.serializers.sms.redis_conn.delete')
     @mock.patch('infrastructure.serializers.sms.redis_conn.get')
     @mock.patch('infrastructure.serializers.sms.redis_conn.set')
-    def test_send_sms(self, mock_redis_set, mock_redis_get, mock_send_sms, mock_gen_code, mock_check_captcha):
+    def test_send_sms(self, mock_redis_set, mock_redis_get, mock_redis_delete, mock_send_sms, mock_gen_code,
+                      mock_check_captcha):
         mock_redis_get.return_value = SMS_CODE
         mock_redis_set.return_value = True
+        mock_redis_delete.return_value = None
 
         mock_send_sms.return_value = True
 
@@ -247,11 +256,14 @@ class SMSTestCase(TestCase):
 
     @mock.patch('infrastructure.serializers.sms.gen_code')
     @mock.patch('infrastructure.serializers.sms.send_sms')
+    @mock.patch('infrastructure.serializers.sms.redis_conn.delete')
     @mock.patch('infrastructure.serializers.sms.redis_conn.get')
     @mock.patch('infrastructure.serializers.sms.redis_conn.set')
-    def test_send_sms_to_ding_bind(self, mock_redis_set, mock_redis_get, mock_send_sms, mock_gen_code):
+    def test_send_sms_to_ding_bind(self, mock_redis_set, mock_redis_get, mock_redis_delete, mock_send_sms,
+                                   mock_gen_code):
         mock_redis_get.return_value = SMS_CODE
         mock_redis_set.return_value = True
+        mock_redis_delete.return_value = None
 
         mock_send_sms.return_value = True
 
