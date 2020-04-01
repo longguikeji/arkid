@@ -102,3 +102,26 @@ class AuthTestCase(TestCase):
         self.assertNotEqual(res.status_code, 401)
         res = client.json_post(reverse('infra:email', args=('update_email', )), data={})
         self.assertEqual(res.status_code, 401)
+
+    def test_sudo(self):
+        employee = User.objects.create(username='employee-1')
+        User.objects.create(username='employee-2')
+        res = self.client.get(reverse('siteapi:ucenter_profile'))
+        self.assertEqual(res.json()['username'], 'admin')
+
+        res = self.client.get(reverse('siteapi:ucenter_profile'), **{
+            'HTTP_SUDO': 'employee-1',
+        })
+        self.assertEqual(res.json()['username'], 'employee-1')
+
+        res = self.client.get(reverse('siteapi:ucenter_profile'), **{
+            'HTTP_SUDO': 'employee-3',
+        })
+        self.assertEqual(res.json(), {'detail': 'Invalid SUDO'})
+        self.assertEqual(res.status_code, 401)
+
+        client = self.login_as(employee)
+        res = client.get(reverse('siteapi:ucenter_profile'), **{
+            'HTTP_SUDO': 'employee-2',
+        })
+        self.assertEqual(res.json()['username'], 'employee-1')
