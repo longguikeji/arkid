@@ -51,7 +51,7 @@ services:
       - "--collation-server=utf8_unicode_ci"
 
   ldap:
-    image: longguikeji/ark-sql-ldap:1.0.0
+    image: longguikeji/ark-sql-ldap:1.2.0
     container_name: ${INSTANCE}-ldap
     restart: always
     networks:
