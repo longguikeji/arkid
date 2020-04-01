@@ -46,6 +46,23 @@ class ModelTestCase(TestCase):
         user.delete()
         User.create_user('user', 'user')
 
+    def test_valid_mobile_unique(self):
+        user = User.objects.create(username='u1', mobile='18812340001')
+        with self.assertRaises(ValidationError):
+            User.objects.create(username='u2', mobile='+86 18812340001')
+        User.objects.create(username='u2', mobile='+1 18812340001')
+
+        user.mobile = '+86 18812340001'
+        user.save()
+
+        with self.assertRaises(ValidationError):
+            User.objects.create(username='u3', mobile='18812340001')
+
+        with self.assertRaises(ValidationError):
+            User.objects.create(username='u4', mobile='invalid')
+
+        User.objects.create(username='u5')
+
     def test_valid_group_uid_unique(self):
         group = Group.valid_objects.create(uid='group')
         with self.assertRaises(db.utils.IntegrityError):

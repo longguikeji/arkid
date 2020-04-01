@@ -548,9 +548,7 @@ FORMAT: 1A
 失败
 
 ## 短信验证码-注册 [/service/sms/register/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
+
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
@@ -560,6 +558,10 @@ FORMAT: 1A
 + Response 201 (application/json)
 
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string) - 支持国际手机号，形如 `+86 18812341234`，作为URL QueryParams 时注意需要编码 -> `%2B86%2018813105748`
+    + code (string)
+
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
@@ -569,9 +571,7 @@ FORMAT: 1A
 失败
 
 ## 短信验证码-登录 [/service/sms/login/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
+
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
@@ -581,6 +581,10 @@ FORMAT: 1A
 + Response 201 (application/json)
 
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string)
+    + code (string)
+
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
@@ -590,9 +594,7 @@ FORMAT: 1A
 失败
 
 ## 短信验证码-重置密码 [/service/sms/reset_password/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
+
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
@@ -603,6 +605,9 @@ FORMAT: 1A
 + Response 201 (application/json)
 
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string)
+    + code (string)
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
@@ -612,51 +617,56 @@ FORMAT: 1A
 失败
 
 ## 短信验证码-激活账号 [/service/sms/activate_user/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
         + key (string, required) - 邀请码
 + Response 201 (application/json)
+
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string)
+    + code (string)
+
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
         + expired (string)
 
 ## 短信验证码-重置手机 [/service/sms/update_mobile/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
+
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
         + mobile (string, required) - 重置后的手机号
         + password (string, required)
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string) - 支持国际手机号，形如 `+86 18812341234`
+    + code (string)
+
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
         + expired (string)
 
 ## 验证邮件-注册 [/service/email/register/{?email_token}]
-+ Parameters
-    + email_token (string)
+
 ### 发送验证邮件 [POST]
 + Request JSON Message
     + Attributes
         + email (string, required)
 + Response 201 (application/json)
 ### 校验邮件验证码 [GET]
++ Parameters
+    + email_token (string)
+
 + Response 200 (application/json)
     + Attributes
         + email (string)
 
 ## 验证邮件-重置密码 [/service/email/reset_password/{?email_token}]
-+ Parameters
-    + email_token (string)
+
 ### 发送验证邮件 [POST]
 + Request JSON Message
     + Attributes
@@ -664,6 +674,9 @@ FORMAT: 1A
         + username (string, required)
 + Response 201 (application/json)
 ### 校验邮件验证码 [GET]
++ Parameters
+    + email_token (string)
+
 + Response 200 (application/json)
     + Attributes
         + email (string)
@@ -671,14 +684,17 @@ FORMAT: 1A
         + name (string)
 
 ## 验证邮件-激活账号 [/service/email/activate_user/{?email_token}]
-+ Parameters
-    + email_token (string)
+
 ### 发送验证邮件 [POST]
 + Request JSON Message
     + Attributes
         + key (string, required) - 邀请码
 + Response 201 (application/json)
+
 ### 校验邮件验证码 [GET]
++ Parameters
+    + email_token (string)
+
 + Response 200 (application/json)
     + Attributes
         + email (string)
@@ -687,15 +703,18 @@ FORMAT: 1A
         + key (string)
 
 ## 验证邮件-重置邮箱 [/service/email/update_email/{?email_token}]
-+ Parameters
-    + email_token (string)
+
 ### 发送验证邮件 [POST]
 + Request JSON Message
     + Attributes
         + email (string, required) - 重置后的邮箱
         + password (string, required)
 + Response 201 (application/json)
+
 ### 校验邮件验证码 [GET]
++ Parameters
+    + email_token (string)
+
 + Response 200 (application/json)
     + Attributes
         + email (string)
