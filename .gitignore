@@ -149,3 +149,6 @@ test/data/test_*.sql
 
 # saml
 idp_metadata.xml
+
+# docker-compose
+docker-compose/db
