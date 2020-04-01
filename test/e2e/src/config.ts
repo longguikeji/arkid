@@ -1,3 +1,3 @@
 export default{
-    url:'https://arkid.demo.longguikeji.com/'
+    url:'https://192.168.200.115:8989'
 }
