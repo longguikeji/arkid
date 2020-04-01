@@ -5,8 +5,6 @@ import random
 import string    # pylint:disable=deprecated-module
 import time
 
-import re
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
@@ -15,6 +13,7 @@ from oneid_meta.models import User, Invitation, SMSConfig
 from oneid.utils import redis_conn
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from infrastructure.views.captcha_img import check_captcha    # pylint: disable=unused-import
+from infrastructure.utils.sms import is_mobile
 
 
 def send_sms(mobile, code, template=''):
@@ -26,6 +25,8 @@ def send_sms(mobile, code, template=''):
         access_key=sms_config.access_key,
         access_key_secret=sms_config.access_secret,
     )
+    mobile = ''.join([literal for literal in mobile if literal.isdigit()])
+    # `+86 18812341234` -> `8618812341234`
     try:
         smser.send_auth_code(
             mobile=mobile,
@@ -68,8 +69,9 @@ class SMSClaimSerializer(serializers.Serializer):
         '''
         校验手机
         '''
-        if re.match(r'^1[\d]{10}$', value):
+        if is_mobile(value):
             return value
+
         raise ValidationError('invalid')
 
     def validate(self, attrs):
