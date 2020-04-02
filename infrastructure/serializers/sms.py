@@ -13,10 +13,10 @@ from oneid_meta.models import User, Invitation, SMSConfig
 from oneid.utils import redis_conn
 from common.sms.aliyun.sms_manager import SMSAliyunManager
 from infrastructure.views.captcha_img import check_captcha    # pylint: disable=unused-import
-from infrastructure.utils.sms import is_mobile
+from infrastructure.utils.sms import is_mobile, is_cn_mobile
 
 
-def send_sms(mobile, code, template=''):
+def send_sms(mobile, code, template):
     '''
     向指定手机发送验证
     '''
@@ -25,14 +25,16 @@ def send_sms(mobile, code, template=''):
         access_key=sms_config.access_key,
         access_key_secret=sms_config.access_secret,
     )
+    signature = sms_config.signature_i18n if is_cn_mobile(mobile) else sms_config.signature
     mobile = ''.join([literal for literal in mobile if literal.isdigit()])
+
     # `+86 18812341234` -> `8618812341234`
     try:
         smser.send_auth_code(
             mobile=mobile,
             vc_code=code,
-            sign_name=sms_config.signature,
-            template_code=sms_config.template_code if not template else template,
+            sign_name=signature,
+            template_code=template,
         )
     except RuntimeError as exc:
         if 'MOBILE_NUMBER_ILLEGAL' in repr(exc):
@@ -63,7 +65,8 @@ class SMSClaimSerializer(serializers.Serializer):
         读取模板id
         '''
         sms_config = SMSConfig.get_current()
-        return sms_config.template_code
+        i18n = not is_cn_mobile(self.validated_data['mobile'])    # 国内号码即使加上区号，也无法使用国际模板
+        return sms_config.get_template_code("code", i18n)
 
     def validate_mobile(self, value):    # pylint: disable=no-self-use
         '''
@@ -180,9 +183,9 @@ class ResetPWDSMSClaimSerializer(SMSClaimSerializer):
         读取模板ID
         '''
         sms_config = SMSConfig.get_current()
-        if sms_config.template_reset_pwd:
-            return sms_config.template_reset_pwd
-        return super().get_template_id()
+        i18n = not is_cn_mobile(self.validated_data['mobile'])
+        return sms_config.get_template_code("reset_pwd", i18n) or \
+            sms_config.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):
@@ -218,9 +221,9 @@ class RegisterSMSClaimSerializer(SMSClaimSerializer):
         读取模板ID
         '''
         sms_config = SMSConfig.get_current()
-        if sms_config.template_register:
-            return sms_config.template_register
-        return super().get_template_id()
+        i18n = not is_cn_mobile(self.validated_data['mobile'])
+        return sms_config.get_template_code("register", i18n) or \
+            sms_config.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):
@@ -254,9 +257,9 @@ class LoginSMSClaimSerializer(SMSClaimSerializer):
         读取模板ID
         '''
         sms_config = SMSConfig.get_current()
-        if sms_config.template_login:
-            return sms_config.template_login
-        return super().get_template_id()
+        i18n = not is_cn_mobile(self.validated_data['mobile'])
+        return sms_config.get_template_code("login", i18n) or \
+            sms_config.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):
@@ -294,9 +297,9 @@ class UserActivateSMSClaimSerializer(SMSClaimSerializer):
         读取模板ID
         '''
         sms_config = SMSConfig.get_current()
-        if sms_config.template_activate:
-            return sms_config.template_activate
-        return super().get_template_id()
+        i18n = not is_cn_mobile(self.validated_data['mobile'])
+        return sms_config.get_template_code("activate", i18n) or \
+            sms_config.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):
@@ -346,9 +349,9 @@ class UpdateMobileSMSClaimSerializer(SMSClaimSerializer):
         读取模板ID
         '''
         sms_config = SMSConfig.get_current()
-        if sms_config.template_reset_mobile:
-            return sms_config.template_reset_mobile
-        return super().get_template_id()
+        i18n = not is_cn_mobile(self.validated_data['mobile'])
+        return sms_config.get_template_code("reset_mobile", i18n) or \
+            sms_config.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):
