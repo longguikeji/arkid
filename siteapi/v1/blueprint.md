@@ -410,12 +410,20 @@ FORMAT: 1A
 + vendor (string)
 + access_key (string)
 + access_secret (string) - write_only
-+ signature (string)
++ signature (string) - 签名
 + template_code (string) - 通用短信模板ID
 + template_register (string) - 注册用短信模板ID
 + template_reset_pwd (string) - 重置密码用短信模板ID
 + template_activate （string) - 激活用短信模板ID
 + template_reset_mobile (string) - 重置手机用短信模板ID
++ template_login (string) - 登陆用短信模板ID
++ signature_i18n (string) - 国际-签名
++ template_code_i18n (string) - 国际-通用短信模板ID
++ template_register_i18n (string) - 国际-注册用短信模板ID
++ template_reset_pwd_i18n (string) - 国际-重置密码用短信模板ID
++ template_activate_i18n （string) - 国际-激活用短信模板ID
++ template_reset_mobile_i18n (string) - 国际-重置手机用短信模板ID
++ template_login_i18n (string) - 国际-登陆用短信模板ID
 + is_valid (boolean) - 是否有效
 
 ## EmailConfig (object)
