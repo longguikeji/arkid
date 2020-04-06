@@ -5,7 +5,7 @@ export class organizationAction{
             
         const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
         await orgBtn.click();
-        page.waitFor(3000);
+        await page.waitFor(3000);
 
             // const groups = await page.$$('.lg-layout--body .ui-contact-page--side>li');
             
