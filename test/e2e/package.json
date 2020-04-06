@@ -1,5 +1,5 @@
 {
-  "name": "puppeteer_tsc",
+  "name": "test",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,9 +15,13 @@
   "devDependencies": {
     "@types/expect-puppeteer": "^4.4.0",
     "@types/jest": "^25.1.4",
-    "@types/node": "^13.9.1",
+    "@types/node": "^13.9.8",
     "@types/puppeteer": "^2.0.1",
     "expect-puppeteer": "^4.4.0",
-    "jest": "^25.1.0"
+    "jest": "^25.2.4",
+    "jest-environment-puppeteer": "^4.4.0",
+    "jest-puppeteer": "^4.4.0",
+    "ts-jest": "^25.3.0",
+    "typescript": "^3.8.3"
   }
 }

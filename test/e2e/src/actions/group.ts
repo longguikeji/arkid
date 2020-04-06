@@ -7,6 +7,8 @@ export class groupAction{
 
         const groupBtn = await page.waitForSelector('.header-middle a[href="#/admin/group"]');
         await groupBtn.click();
+
+        await page.waitFor(6000);
  
     }
 

@@ -7,6 +7,8 @@ export class accountAction{
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
+        await page.waitFor(3000);
+
         const addAccountBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
         await addAccountBtn.click();
 
@@ -19,14 +21,16 @@ export class accountAction{
         const pwdBtn = await page.waitForSelector('.ivu-form-item-content .ivu-btn.ivu-btn-primary');
         await pwdBtn.click();
 
-        const pwdInput = await page.waitForSelector('input[placeholder="请添加新登录密码"]');
-        await pwdInput.type(password);
+        await page.waitFor(3000);
 
-        const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
-        await repwdInput.type(repassword);
+        // const pwdInput = await page.waitForSelector('input[placeholder="请添加新登录密码"]');
+        // await pwdInput.type(password);
 
-        const primaryBtn= await page.waitForSelector('.ivu-modal-footer .ivu-btn.ivu-btn-primary');
-        await primaryBtn.click();
+        // const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
+        // await repwdInput.type(repassword);
+
+        // const primaryBtn= await page.waitForSelector('.ivu-modal-content .ivu-modal-footer .ivu-btn.ivu-btn-primary');
+        // await primaryBtn.click();
 
         const phoneInput = await page.waitForSelector('input[placeholder="请输入 手机"]');
         await phoneInput.type(phone);
@@ -43,7 +47,7 @@ export class accountAction{
         const searchInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
         await searchInput.type(search);
 
-        const selectBtn = await page.waitForSelector('.ivu-checkbox-input');
+        const selectBtn = await page.waitForSelector('.ui-group-tree-component.tree .ivu-checkbox-input');
         await selectBtn.click();
 
         const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
@@ -55,6 +59,7 @@ export class accountAction{
     }
 
     public async setAccount(page:Page, did:string, dsecret:string, meskey:string, messecret:string, mesform:string, mesluok:string){
+
         const setActBtn = await page.waitForSelector('a[href="#/admin/account/settings"]');
         await setActBtn.click();
 
