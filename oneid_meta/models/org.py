@@ -177,6 +177,7 @@ class OrgMember(BaseOrderedModel):
     position = models.CharField(max_length=255, blank=True, default='', verbose_name='职位')
     hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
     remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
+    email = models.CharField(max_length=255, blank=True, default='', verbose_name='企业邮箱')
 
     class Meta:    # pylint: disable=missing-docstring
         unique_together = ('user', 'owner')

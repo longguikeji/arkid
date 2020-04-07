@@ -18,6 +18,9 @@ class DeptTestCase(TestCase):
         owner = User.create_user('owner', 'owner')
         self.owner = self.login_as(owner)
         self._owner = owner
+        default_org = Org.objects.first()
+        if default_org:
+            default_org.delete()
         self.org = Org.create(name='org', owner=owner)
 
         root = self.org.dept
@@ -34,7 +37,6 @@ class DeptTestCase(TestCase):
             'parent_uid': str(self.org.dept.uid),
             'parent_node_uid': self.org.dept.node_uid,
             'parent_name': self.org.dept.name,
-            'dept_id': 3,
             'uid': 'level_1',
             'node_uid': 'd_level_1',
             'node_subject': 'dept',
@@ -59,21 +61,18 @@ class DeptTestCase(TestCase):
     #         'previous':
     #         None,
     #         'results': [{
-    #             'dept_id': 2,
     #             'uid': 'level_1',
     #             'node_uid': 'd_level_1',
     #             'node_subject': 'dept',
     #             'name': 'level_1',
     #             'remark': '',
     #         }, {
-    #             'dept_id': 3,
     #             'uid': 'level_2-1',
     #             'node_uid': 'd_level_2-1',
     #             'node_subject': 'dept',
     #             'name': 'level_2-1',
     #             'remark': '',
     #         }, {
-    #             'dept_id': 4,
     #             'uid': 'level_2-2',
     #             'node_uid': 'd_level_2-2',
     #             'node_subject': 'dept',
@@ -92,7 +91,6 @@ class DeptTestCase(TestCase):
     #         'previous':
     #         None,
     #         'results': [{
-    #             'dept_id': 3,
     #             'uid': 'level_2-1',
     #             'name': 'level_2-1',
     #             'node_uid': 'd_level_2-1',
@@ -106,7 +104,6 @@ class DeptTestCase(TestCase):
         res = self.client.get(reverse('siteapi:dept_tree', args=('root', )), data={'user_required': True})
         expect = {
             'info': {
-                'dept_id': 1,
                 'uid': 'root',
                 'node_uid': 'd_root',
                 'node_subject': 'dept',
@@ -118,7 +115,6 @@ class DeptTestCase(TestCase):
             'users': [],
             'depts': [{
                 'info': {
-                    'dept_id': 2,
                     'uid': str(self.org.dept.uid),
                     'node_uid': self.org.dept.node_uid,
                     'node_subject': 'dept',
@@ -128,13 +124,11 @@ class DeptTestCase(TestCase):
                 'headcount':
                 1,
                 'users': [{
-                    'user_id': 3,
                     'username': 'employee',
                     'name': ''
                 }],
                 'depts': [{
                     'info': {
-                        'dept_id': 3,
                         'uid': 'level_1',
                         'node_uid': 'd_level_1',
                         'node_subject': 'dept',
@@ -147,7 +141,6 @@ class DeptTestCase(TestCase):
                     'depts': [
                         {
                             'info': {
-                                'dept_id': 5,
                                 'uid': 'level_2-2',
                                 'node_uid': 'd_level_2-2',
                                 'node_subject': 'dept',
@@ -160,7 +153,6 @@ class DeptTestCase(TestCase):
                         },
                         {
                             'info': {
-                                'dept_id': 4,
                                 'uid': 'level_2-1',
                                 'node_uid': 'd_level_2-1',
                                 'node_subject': 'dept',
@@ -180,7 +172,6 @@ class DeptTestCase(TestCase):
         res = self.client.get(reverse('siteapi:dept_tree', args=('root', )), data={'user_required': False})
         expect = {
             'info': {
-                'dept_id': 1,
                 'uid': 'root',
                 'node_uid': 'd_root',
                 'node_subject': 'dept',
@@ -189,7 +180,6 @@ class DeptTestCase(TestCase):
             },
             'depts': [{
                 'info': {
-                    'dept_id': 2,
                     'uid': str(self.org.dept.uid),
                     'node_uid': self.org.dept.node_uid,
                     'node_subject': 'dept',
@@ -198,7 +188,6 @@ class DeptTestCase(TestCase):
                 },
                 'depts': [{
                     'info': {
-                        'dept_id': 3,
                         'uid': 'level_1',
                         'node_uid': 'd_level_1',
                         'node_subject': 'dept',
@@ -208,7 +197,6 @@ class DeptTestCase(TestCase):
                     'depts': [
                         {
                             'info': {
-                                'dept_id': 5,
                                 'uid': 'level_2-2',
                                 'node_uid': 'd_level_2-2',
                                 'node_subject': 'dept',
@@ -219,7 +207,6 @@ class DeptTestCase(TestCase):
                         },
                         {
                             'info': {
-                                'dept_id': 4,
                                 'uid': 'level_2-1',
                                 'node_uid': 'd_level_2-1',
                                 'node_subject': 'dept',
@@ -266,7 +253,6 @@ class DeptTestCase(TestCase):
             'parent_uid': str(self.org.dept.uid),
             'parent_node_uid': self.org.dept.node_uid,
             'parent_name': self.org.dept.name,
-            'dept_id': 3,
             'uid': 'level_1',
             'node_uid': 'd_level_1',
             'node_subject': 'dept',
@@ -295,7 +281,6 @@ class DeptTestCase(TestCase):
         expect = {
             'depts': [
                 {
-                    'dept_id': 5,
                     'uid': 'level_2-2',
                     'node_uid': 'd_level_2-2',
                     'node_subject': 'dept',
@@ -303,7 +288,6 @@ class DeptTestCase(TestCase):
                     'remark': '',
                 },
                 {
-                    'dept_id': 4,
                     'uid': 'level_2-1',
                     'node_uid': 'd_level_2-1',
                     'node_subject': 'dept',
@@ -325,7 +309,6 @@ class DeptTestCase(TestCase):
                                         }
                                     })
         expect = {
-            'dept_id': 6,
             'uid': 'level_2-3',
             'node_uid': 'd_level_2-3',
             'node_subject': 'dept',
@@ -371,7 +354,6 @@ class DeptTestCase(TestCase):
         expect = {
             'depts': [
                 {
-                    'dept_id': 4,
                     'uid': 'level_2-1',
                     'node_uid': 'd_level_2-1',
                     'node_subject': 'dept',
@@ -379,7 +361,6 @@ class DeptTestCase(TestCase):
                     'remark': '',
                 },
                 {
-                    'dept_id': 5,
                     'uid': 'level_2-2',
                     'node_uid': 'd_level_2-2',
                     'node_subject': 'dept',
@@ -410,8 +391,6 @@ class DeptTestCase(TestCase):
             'previous':
             None,
             'results': [{
-                'user_id':
-                3,
                 'created':
                 self.now_str,
                 'last_active_time':
@@ -419,8 +398,6 @@ class DeptTestCase(TestCase):
                 'username':
                 'employee',
                 'name':
-                '',
-                'email':
                 '',
                 'is_settled':
                 False,
@@ -445,7 +422,6 @@ class DeptTestCase(TestCase):
                 'require_reset_password':
                 False,
                 'nodes': [{
-                    'dept_id': 2,
                     'name': self.org.dept.name,
                     'node_subject': 'dept',
                     'node_uid': self.org.dept.node_uid,
@@ -524,7 +500,6 @@ class DeptTestCase(TestCase):
     #     res = self.client.get(reverse('siteapi:dept_scope_list', args=('root', )))
     #     expect = [
     #         {
-    #             'dept_id': 1,
     #             'node_uid': 'd_root',
     #             'node_subject': 'dept',
     #             'uid': 'root',
@@ -534,7 +509,6 @@ class DeptTestCase(TestCase):
     #             'parent_node_uid': None
     #         },
     #         {
-    #             'dept_id': 2,
     #             'node_uid': 'd_level_1',
     #             'node_subject': 'dept',
     #             'uid': 'level_1',
@@ -544,7 +518,6 @@ class DeptTestCase(TestCase):
     #             'parent_node_uid': 'd_root'
     #         },
     #         {
-    #             'dept_id': 4,
     #             'node_uid': 'd_level_2-2',
     #             'node_subject': 'dept',
     #             'uid': 'level_2-2',
@@ -554,7 +527,6 @@ class DeptTestCase(TestCase):
     #             'parent_node_uid': 'd_level_1'
     #         },
     #         {
-    #             'dept_id': 3,
     #             'node_uid': 'd_level_2-1',
     #             'node_subject': 'dept',
     #             'uid': 'level_2-1',

@@ -45,6 +45,7 @@ class Migration(migrations.Migration):
                 ('updated', models.DateTimeField(auto_now=True, null=True, verbose_name='更新时间')),
                 ('created', models.DateTimeField(auto_now_add=True, null=True, verbose_name='创建时间')),
                 ('order_no', models.IntegerField(default=0, verbose_name='排序号')),
+                ('email', models.CharField(blank=True, default='', max_length=255, verbose_name='企业邮箱')),
                 ('employee_number', models.CharField(blank=True, default='', max_length=255, verbose_name='工号')),
                 ('position', models.CharField(blank=True, default='', max_length=255, verbose_name='职位')),
                 ('hiredate', models.DateTimeField(blank=True, null=True, verbose_name='入职时间')),

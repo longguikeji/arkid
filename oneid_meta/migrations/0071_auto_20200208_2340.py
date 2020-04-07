@@ -24,6 +24,10 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name='user',
+            name='email',
+        ),
+        migrations.RemoveField(
+            model_name='user',
             name='hiredate',
         ),
         migrations.RemoveField(

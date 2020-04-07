@@ -1,8 +1,10 @@
 from collections import OrderedDict
 
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.relations import PKOnlyObject
 from rest_framework.fields import SkipField
+from rest_framework.fields import Field
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
@@ -23,6 +25,20 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
             existing = set(self.fields.keys())
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
+
+        if getattr(settings, 'TESTING', False):
+            # Drop any field about id if TESTING
+            pk_fields = set([
+                'id',
+                'user_id',
+                'dept_id',
+                'group_id',
+                'perm_id',
+            ])
+            for pk_field in pk_fields:
+                field = self.fields.get(pk_field, None)
+                if field and isinstance(field, Field) and field.read_only:
+                    self.fields.pop(pk_field, None)
 
 
 class RecursiveField(serializers.Serializer):

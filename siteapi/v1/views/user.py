@@ -65,7 +65,7 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         '''
         keyword = self.request.query_params.get('keyword', '')
         if keyword != '':
-            queryset = User.valid_objects.filter(Q(username__icontains=keyword)|Q(email__icontains=keyword)|\
+            queryset = User.valid_objects.filter(Q(username__icontains=keyword)|\
                 Q(private_email__icontains=keyword)|Q(mobile__icontains=keyword)|Q(name__icontains=keyword)).\
                     exclude(is_boss=True).exclude(username='admin').order_by('id')
         else:

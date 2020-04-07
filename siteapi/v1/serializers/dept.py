@@ -223,7 +223,7 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
         if self._visible:
             return DeptSerializer(instance).data
         return {
-            'dept_id': instance.id,
+        # 'dept_id': instance.id,
             'node_uid': instance.node_uid,
             'node_subject': instance.node_subject,
             'uid': instance.uid,

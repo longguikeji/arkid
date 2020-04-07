@@ -12,11 +12,9 @@ from oneid_meta.models import DingUser, PosixUser, Group, Dept, Org, User, Custo
 
 EMPLOYEE = {
     'user': {
-        'user_id': 2,
         'avatar': '',
         'username': 'employee1',
         'name': 'employee1',
-        'email': 'email',
         'mobile': '18812345678',
         'gender': 2,
         'private_email': '',
@@ -37,7 +35,6 @@ EMPLOYEE = {
     },
     'depts': [
         {
-            'dept_id': 1,
             'name': 'root',
             'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
             'uid': 'root',
@@ -47,7 +44,6 @@ EMPLOYEE = {
     ],
     'groups': [{
         'accept_user': False,
-        'group_id': 1,
         'name': 'root',
         'remark': '所有顶级的组的父级，可视为整个公司。请勿修改',
         'uid': 'root',
@@ -56,14 +52,12 @@ EMPLOYEE = {
     }],
     'nodes': [{
         'accept_user': False,
-        'group_id': 1,
         'name': 'root',
         'remark': '所有顶级的组的父级，可视为整个公司。请勿修改',
         'uid': 'root',
         'node_uid': 'g_root',
         'node_subject': 'root',
     }, {
-        'dept_id': 1,
         'name': 'root',
         'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
         'uid': 'root',
@@ -76,7 +70,6 @@ USER_DATA = {
     'username': 'employee1',
     'name': 'employee1',
     'avatar': '',
-    'email': 'email',
     'mobile': '18812345678',
     'private_email': '',
     'gender': 2,
@@ -192,11 +185,9 @@ class UserTestCase(TestCase):
             None,
             'results': [{
                 'user': {
-                    'user_id': 2,
                     'created': self.now_str,
                     'username': 'employee',
                     'name': '',
-                    'email': '',
                     'mobile': '',
                     'last_active_time': None,
                     'gender': 0,
@@ -238,13 +229,9 @@ class UserTestCase(TestCase):
         )))
         expect = {
             'user': {
-                'user_id':
-                2,
                 'username':
                 'employee',
                 'name':
-                '',
-                'email':
                 '',
                 'mobile':
                 '',
@@ -264,7 +251,6 @@ class UserTestCase(TestCase):
                 '脚本添加',
                 'nodes': [
                     {
-                        'group_id': 8,
                         'node_uid': org2.group.node_uid,
                         'node_subject': 'org',
                         'uid': str(org2.group.uid),
@@ -273,7 +259,6 @@ class UserTestCase(TestCase):
                         'accept_user': True
                     },
                     {
-                        'dept_id': 3,
                         'node_uid': org1.dept.node_uid,
                         'node_subject': 'dept',    # TODO@saas node subject & top for dept
                         'uid': str(org1.dept.uid),
@@ -295,16 +280,24 @@ class UserTestCase(TestCase):
             'employee_number': '',
             'position': '',
             'hiredate': None,
-            'remark': ''
+            'remark': '',
+            'email': '',
         }
         self.assertEqual(expect, res.json())
         res = self.client.json_patch(reverse('siteapi:org_user_detail', args=(org1.oid, 'employee')),
                                      data={
                                          'remark': 'remark1',
-                                         'position': 'position1'
+                                         'position': 'position1',
+                                         'email': 'email1',
                                      }).json()
         del res['user']
-        expect = {'employee_number': '', 'position': 'position1', 'hiredate': None, 'remark': 'remark1'}
+        expect = {
+            'employee_number': '',
+            'position': 'position1',
+            'hiredate': None,
+            'remark': 'remark1',
+            'email': 'email1'
+        }
         self.assertEqual(expect, res)
         res = self.client.get(reverse('siteapi:org_user_detail', args=(org1.oid, 'employee'))).json()
         del res['user']
@@ -315,7 +308,7 @@ class UserTestCase(TestCase):
                                    'position': 'position2',
                                    'employee_number': '123',
                                })
-        expect_ = {'employee_number': '123', 'position': 'position2', 'hiredate': None, 'remark': ''}
+        expect_ = {'employee_number': '123', 'position': 'position2', 'hiredate': None, 'remark': '', 'email': ''}
         res = self.client.get(reverse('siteapi:org_user_detail', args=(org2.oid, 'employee'))).json()
         del res['user']
         self.assertEqual(expect_, res)
@@ -346,7 +339,6 @@ class UserTestCase(TestCase):
                                         'user': {
                                             'username': 'employee2',
                                             'name': 'employee2',
-                                            'email': 'email',
                                             'mobile': '18812345678',
                                             'gender': 2,
                                             'password': 'password',
@@ -390,7 +382,6 @@ class UserTestCase(TestCase):
         patch_data = {
             'username': 'employee1',
             'name': 'new_employee1',
-            'email': 'new_email',
             'mobile': '18812345678',
             'gender': 2,
             'is_settled': False,
@@ -413,13 +404,11 @@ class UserTestCase(TestCase):
         self.assertEqual(res.status_code, 200)
         res = res.json()
         expect = {
-            'user_id': 2,
             'username': 'employee1',
             'avatar': '',
             'created': self.now_str,
             'last_active_time': None,
             'name': 'new_employee1',
-            'email': 'new_email',
             'mobile': '18812345678',
             'private_email': 'private_email',
             'is_settled': False,
@@ -462,7 +451,6 @@ class UserTestCase(TestCase):
         res = self.client.get(reverse('siteapi:user_group', args=('employee1', )))
         expect = {
             'groups': [{
-                'group_id': 1,
                 'uid': 'root',
                 'node_uid': 'g_root',
                 'node_subject': 'root',
@@ -472,7 +460,6 @@ class UserTestCase(TestCase):
             }]
         }
         self.assertEqual(res.json(), expect)
-        self.assertEqual(Group.valid_objects.count(), 2)
 
     def test_user_group_operations(self):
         self.create_user()
@@ -508,7 +495,6 @@ class UserTestCase(TestCase):
         res = self.client.get(reverse('siteapi:user_dept', args=('employee1', )))
         expect = {
             'depts': [{
-                'dept_id': 1,
                 'uid': 'root',
                 'node_uid': 'd_root',
                 'node_subject': 'dept',

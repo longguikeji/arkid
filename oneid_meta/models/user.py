@@ -53,7 +53,6 @@ class User(BaseModel, PermOwnerMixin):
     username = models.CharField(max_length=255, blank=False, verbose_name='唯一标识')
     password = models.CharField(max_length=1024, blank=False, verbose_name='密码')
     name = models.CharField(max_length=255, blank=True, default='', verbose_name='姓名')
-    email = models.CharField(max_length=255, blank=True, default='', verbose_name='邮箱')
     private_email = models.CharField(max_length=255, blank=True, default='', verbose_name='私人邮箱')    # 仅用于找回密码
     mobile = models.CharField(max_length=64, blank=True, default='', verbose_name='手机')
     gender = models.IntegerField(choices=GENDER_CHOICES, default=0, verbose_name='性别')
@@ -70,7 +69,6 @@ class User(BaseModel, PermOwnerMixin):
     def save(self, *args, **kwargs):    # pylint: disable=arguments-differ
         for unique_feilds in [
                 'username',
-                'email',
                 'mobile',
                 'private_email',
         ]:

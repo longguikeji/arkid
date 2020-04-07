@@ -99,43 +99,24 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
         om.hiredate = user.hiredate
         om.position = user.position
         om.remark = user.remark
+        om.email = user.email
         om.save()
 
-    def g_child(grp):
-        yield from Group.objects.filter(parent=grp)
+    # def g_child(grp):
+    #     yield from Group.objects.filter(parent=grp)
 
-    def g_successor(grp):
-        for child in g_child(grp):
-            yield from g_successor(child)
+    # def g_successor(grp, include_root=False):
+    #     if include_root:
+    #         yield grp
+    #     for child in g_child(grp):
+    #         yield from g_successor(child, include_root=True)
 
-    for g_ in g_child(Group.objects.filter(uid='intra').first()):
-        if g_.uid == 'role':
-            for g in g_child(g_):
-                g.parent = role
-                g.save()
-            for g in g_successor(g_):
-                g.top = role.uid
-                g.save()
-        elif g_.uid == 'label':
-            for g in g_child(g_):
-                g.parent = label
-                g.save()
-            for g in g_successor(g_):
-                g.top = label.uid
-                g.save()
-        elif g_.uid == 'manager':
-            for g in g_child(g_):
-                g.parent = manager
-                g.save()
-            for g in g_successor(g_):
-                g.top = manager.uid
-                g.save()
-        else:
-            g_.parent = group
-            g_.save()
-            for g in g_successor(g_):
-                g.top = g_.uid
-                g.save()
+    for g in Group.objects.filter(parent__uid='intra'):
+        g.parent = group
+        g.save()
+    intra = Group.objects.filter(uid='intra')
+    if intra:
+        intra.delete()
 
     for d in Dept.objects.filter(parent=dept_root).exclude(uid=dept.uid):
         d.parent = dept
@@ -144,6 +125,8 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
 
 def go(*args):
     if not settings.TESTING:
+        migrate(*args)
+    else:
         migrate(*args)
 
 

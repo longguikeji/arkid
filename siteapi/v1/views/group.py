@@ -434,7 +434,7 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         filter_params_mapper = {
             'name': 'name__icontains',
             'username': 'username__icontains',
-            'email': 'email__icontains',
+            'private_email': 'private_email__icontains',
             'mobile': 'mobile__icontains',
             'before_last_active_time': 'last_active_time__lte',
             'after_last_active_time': 'last_active_time__gte',

@@ -243,7 +243,7 @@ class APPSerializer(DynamicFieldsModelSerializer):
     oauth_app = OAuthAPPSerializer(many=False, required=False, allow_null=True)
     http_app = HTTPAPPSerializer(many=False, required=False, allow_null=True)
     ldap_app = LDAPAPPSerializer(many=False, required=False, allow_null=True)
-    oidc_app = OIDCAPPSerializer(many=False, required=False)
+    # oidc_app = OIDCAPPSerializer(many=False, required=False, allow_null=True)
     saml_app = SAMLAPPSerializer(many=False, required=False, allow_null=True)
 
     uid = serializers.CharField(required=False, help_text='默认情况下根据`name`生成')
@@ -261,7 +261,7 @@ class APPSerializer(DynamicFieldsModelSerializer):
             "oauth_app",
             "ldap_app",
             "http_app",
-            "oidc_app",
+        # "oidc_app",
             "saml_app",
             "allow_any_user",
             'auth_protocols',
@@ -428,7 +428,7 @@ class APPWithAccessSerializer(APPSerializer):
             "logo",
             "remark",
             "oauth_app",
-            "oidc_app",
+        # "oidc_app",
             "saml_app",
             "ldap_app",
             "http_app",
@@ -456,7 +456,7 @@ class APPWithAccessOwnerSerializer(APPWithAccessSerializer):
             "logo",
             "remark",
             "oauth_app",
-            "oidc_app",
+        # "oidc_app",
             "saml_app",
             "ldap_app",
             "http_app",

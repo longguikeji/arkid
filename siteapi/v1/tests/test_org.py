@@ -28,6 +28,11 @@ class OrgTestCase(TestCase):
         super(OrgTestCase, self).setUp()
         self._client = self.client
 
+        # 删除默认组织
+        default_org = Org.objects.first()
+        if default_org:
+            default_org.delete()
+
         for org in ORG_DATA:
             for o in Org.valid_objects.filter(name=org['name']):
                 o.kill()

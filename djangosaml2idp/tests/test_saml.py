@@ -26,7 +26,6 @@ APP_3 = {
 MAX_PERM_ID = 2
 
 PERM_DATA = {
-    'perm_id': MAX_PERM_ID + 1,
     'uid': 'app_app1_access',
     'name': '登录',
     'remark': '',

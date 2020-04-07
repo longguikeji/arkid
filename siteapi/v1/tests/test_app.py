@@ -411,7 +411,6 @@ class APPTestCase(TestCase):
                     'authorization_grant_type': 'authorization-code'
                 },
                 'access_perm': {
-                    'perm_id': 4,
                     'uid': 'app_test_uid_access',
                     'name': '访问test_name',
                     'remark': '',
@@ -513,7 +512,6 @@ class APPTestCase(TestCase):
                                })
         expect = {'count': 1, 'next': None, 'previous': None, 'results': [case.get_output('app1')]}
         expect['results'][0]['access_perm'] = {
-            'perm_id': 8,
             'uid': f'app_{uid}_access',
             'name': f'访问{name}',
             'remark': '',

@@ -154,11 +154,9 @@ class UCenterTestCase(TestCase):
         res = self.client.get(reverse('siteapi:token_perm_auth'), data={'perm_uid': 'system_oneid_all'}).json()
         self.assertIsNotNone(res.pop('uuid', None))
         expect = {
-            'user_id': 1,
             'username': 'admin',
             'private_email': '',
             'name': '',
-            'email': '',
             'mobile': '',
             'gender': 0,
             'perms': ['system_oneid_all', 'system_ark-meta-server_all'],
@@ -279,7 +277,6 @@ class UCenterTestCase(TestCase):
         expect = {
             'username': 'admin',
             'name': '',
-            'email': '',
             'mobile': '',
             'private_email': '',
             'gender': 0,
@@ -293,7 +290,6 @@ class UCenterTestCase(TestCase):
         expect = {
             'username': 'admin',
             'name': '',
-            'email': '',
             'mobile': '',
             'gender': 0,
             'private_email': '',
