@@ -1,6 +1,5 @@
 import { UserAction } from './actions/user';
 import {Page, launch} from 'puppeteer';
-import {personalSetAction} from './actions/personalSetting';
 import {appSearchAction} from './actions/appSearch';
 import {organizationAction} from './actions/organization';
 import {setAction} from './actions/setting';
@@ -23,8 +22,8 @@ describe('一账通-登录测试', () => {
 
     },30000)
 
-    afterEach ( async () => {
-       // await page.close();
+    afterAll ( async () => {
+        await page.close();
     })
 
     test('TEST_001:验证标题' , async() => {
@@ -50,61 +49,6 @@ describe('一账通-登录测试', () => {
 
 })
 
-/*describe('一账通-退出登录测试', () => {
-    let page: Page;
-    
-    beforeEach( async () => {
-        let browser = await launch()
-        page = await browser.newPage();
-        await page.goto(config.url);
-
-        
-
-    },30000)
-    afterEach ( async () => {
-        //await page.close();
-    })
-
-    test('TEST_001:验证退出链接' , async() => {
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
-        let personalSetaction = new personalSetAction();
-        await personalSetaction.exit(page);
-
-        const url = await page.url();
-        await expect(url).toContain('https://192.168.200.115:8989/');
-    },30000);
-
-})
-
-describe('一账通-修改密码测试', () => {
-    let page : Page;
-    
-    beforeEach( async () => {
-        let browser = await launch()
-        page = await browser.newPage();
-        await page.goto(cofig.url);
-
-        let useraction = new UserAction();
-        await useraction.login(page, 'mei123', 'mei123');
-        let personalSetaction = new personalSetAction();
-        await personalSetaction.changePassword(page, "mei123", "meixinyue123", "meixinyue123");
-
-    },30000)
-    afterEach ( async () => {
-        await page.close();
-    })
-
-    test('TEST_001:验证修改密码手否生效' , async() => {
-        let useraction = new UserAction();
-        await useraction.login(page, 'mei123', 'meixinyue123');
-
-        const url = await page.url();
-        await expect(url).toContain('https://192.168.200.115:8989/#/workspace/apps');
-    },30000);
-
-})
-*/
 describe('一账通-我的应用信息测试', () => {
     let page : Page;
     
@@ -120,8 +64,8 @@ describe('一账通-我的应用信息测试', () => {
         await appmessageaction.appinformation(page);
         
     },30000)
-    afterEach ( async () => {
-        //await page.close();
+    afterAll ( async () => {
+        await page.close();
     })
 
 
@@ -206,8 +150,8 @@ describe('一账通-我的应用搜索框测试', () => {
         await appsearchaction.appinformation(page, 'bing');
         
     },30000)
-    afterEach ( async () => {
-        //await page.close();
+    afterAll ( async () => {
+        await page.close();
     })
 
     test('TEST_001:验证我的应用页面搜索框' , async() => {
@@ -216,7 +160,6 @@ describe('一账通-我的应用搜索框测试', () => {
         });
         await expect(appName).toEqual('bing test');
 
-       // await page.close();
     },30000);
 
     
@@ -239,11 +182,12 @@ describe('一账通-通讯录测试', () => {
         await organizationaction.origanization(page);
         
     },30000)
-    afterEach ( async () => {
-        //await page.close();
+    afterAll ( async () => {
+        await page.close();
     })
 
     test('TEST_001:验证通讯录页面链接' , async() => {
+        //await page.waitFor(2000);
         const url = await page.url();
         await expect(url).toBe('http://192.168.200.115:8989/#/workspace/contacts');
     },30000);
@@ -299,10 +243,8 @@ describe('一账通-通讯录测试', () => {
             return elem.innerHTML;
         });
         await expect(departmentName32).toEqual('bumen3user');
-
-        //await departRetBtn1.click();
         
-    },30000);
+    },100000);
 
     // test('TEST_003:验证通讯录页面的直属成员' , async() => {
     //     const directBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(3)');
@@ -408,7 +350,7 @@ describe('一账通-个人资料测试', () => {
         await useraction.login(page, 'admin', 'admin');
         
     },30000)
-    afterEach ( async () => {
+    afterAll ( async () => {
         await page.close();
     })
 
@@ -476,41 +418,123 @@ describe('一账通-个人资料测试', () => {
     },30000);
 
 
-    // test('TEST_004:验证个人资料页面修改姓名' , async() => {
-    //     let setaction = new setAction();
-    //     await setaction.setting(page);
+    test('TEST_004:验证个人资料页面修改姓名' , async() => {
+        let setaction = new setAction();
+        await setaction.setting(page);
 
-    //     const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
-    //     await nameInput.type("111");
+        const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
+        await nameInput.type("111");
 
-    //     const saveBtn = await page.waitForSelector('.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
-    //      await saveBtn.click();
+        const saveBtn = await page.waitForSelector('.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
+         await saveBtn.click();
 
-    //      let browser = await launch()
-    //     page = await browser.newPage();
-    //     await page.goto(config.url);
+         let browser = await launch()
+        page = await browser.newPage();
+        await page.goto(config.url);
 
-    //     let useraction = new UserAction();
-    //     await useraction.login(page, 'admin', 'admin');
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
 
-    //     const setBtn = await page.waitForSelector('a[href="#/workspace/userinfo"]');
-    //         await setBtn.click();
+        const setBtn = await page.waitForSelector('a[href="#/workspace/userinfo"]');
+            await setBtn.click();
 
-    //     const personName1 = await page.$eval('.ui-workspace-userinfo--summary h4', elem => {
-    //         return elem.innerHTML;
-    //     });
-    //     await expect(personName1).toEqual('ad111');
+        const personName1 = await page.$eval('.ui-workspace-userinfo--summary h4', elem => {
+            return elem.innerHTML;
+        });
+        await expect(personName1).toEqual('ad111');
 
-    //     const personName2 = await page.$eval('.ui-user-info li[data-label="姓名"]', elem => {
-    //         return elem.innerHTML;
-    //     });
-    //     await expect(personName2).toEqual('ad111');
+        const personName2 = await page.$eval('.ui-user-info li[data-label="姓名"]', elem => {
+            return elem.innerHTML;
+        });
+        await expect(personName2).toEqual('ad111');
 
-    // },30000);
+    },30000);
 
 })
 
 describe('一账通-账号管理测试', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false})
+        page = await browser.newPage();
+        await page.goto(config.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin'); 
+
+    },60000)
+    afterAll ( async () => {
+        //await page.close();
+    })
+
+    test('TEST_001:验证账号管理页面链接' , async() => {
+
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        await page.waitFor(5000);
+
+        const url = await page.url();
+        await expect(url).toBe('http://192.168.200.115:8989/#/admin/account');
+    },30000);
+
+    test('TEST_002:验证账号管理页面添加新账号' , async() => {
+        let accountaction = new accountAction();
+        await accountaction.addAccount(page, "mxyzz",  "meixinyue", "mei123456", "mei123456", "15822186268", "1821788073@qq.com", "meixinyue11@163.com");         
+
+        let browser = await launch({headless:false})
+        page = await browser.newPage();
+        await page.goto(config.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin'); 
+
+        const manageBtn2 = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn2.click();
+
+        await page.waitFor(5000);
+
+        const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(userName).toEqual('mxyzz');
+
+        const name = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(name).toEqual('meixinyue');
+
+        const phoneNumber = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(4) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(phoneNumber).toEqual('15822186268');
+
+        const email = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(5) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(email).toEqual('meixinyue11@163.com');
+
+    },60000);
+
+    test('TEST_003:验证账号管理页面添加新账号后是否生效' , async() => {
+        let browser = await launch({headless:false})
+        page = await browser.newPage();
+        await page.goto(config.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'mxyzz', 'mei123456'); 
+
+        await page.waitFor(2000);
+
+        const url = await page.url();
+        await expect(url).toBe('http://192.168.200.115:8989/#/workspace/apps');
+        
+    },40000);
+})
+
+
+describe('一账通-账号管理搜索账号', () => {
     let page : Page;
     
     beforeEach( async () => {
@@ -519,145 +543,58 @@ describe('一账通-账号管理测试', () => {
         await page.goto(config.url);
 
         let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin'); 
-
-    },30000)
-    afterEach ( async () => {
-        //await page.close();
-    })
-
-    test('TEST_001:验证账号管理页面链接' , async() => {
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-        await page.waitFor(3000);
-        const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/admin/account');
-    },30000);
-
-    test('TEST_002:验证账号管理页面添加新账号' , async() => {
-        let accountaction = new accountAction();
-        await accountaction.addAccount(page, "meixinyue", "meixinyue", "mei123456", "mei123456", "15822186268", "1821788073@qq.com", "meixinyue11@163.com", "部门一");         
-
-        const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(userName).toEqual('meixinyue');
-
-    },40000);
-
-    test('TEST_003:验证账号管理页面添加新账号后是否生效' , async() => {
-        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await returnDeskBtn.click();
-
-        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
-        await orgBtn.click();
-
-        const groupBtn = await page.waitForSelector('.dept-list>li:first-child');
-        await groupBtn.click();
-
-        const name = await page.$eval('.user-list .flex-row .name', elem => {
-            return elem.innerHTML;
-        });
-        await expect(name).toEqual('meixinyue');
-
-        const usereBtn = await page.waitForSelector('.flex-row.active .name');
-        await usereBtn.click();
-
-        const userName = await page.$eval('li[data-label="用户名"]', elem => {
-            return elem.innerHTML;
-        });
-        await expect(userName).toEqual('meixinyue');
-
-        const name2 = await page.$eval('li[data-label="姓名"]', elem => {
-            return elem.innerHTML;
-        });
-        await expect(name2).toEqual('meixinyue');
-
-        const phoneNum = await page.$eval('li[data-label="电话"]', elem => {
-            return elem.innerHTML;
-        });
-        await expect(phoneNum).toEqual('15822186268');
-
-    },30000);
-})
-/*
-
-describe('一账通-账号管理搜索账号', () => {
-    let page : Page;
-    
-    beforeEach( async () => {
-        let browser = await launch()
-        page = await browser.newPage();
-        await page.goto(cofig.url);
-
-        let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "meixinyue");          
 
     },30000)
-    afterEach ( async () => {
+    afterAll ( async () => {
         await page.close();
     })
 
     test('TEST_001:验证账号管理的搜索框' , async() => {
-        const name = await page.$eval('.ivu-table-row>td:nth-child(2) span', elem => {
+        const name = await page.$eval('.ivu-table-body.ivu-table-overflowX > table > tbody > tr > td:nth-child(2) > div > span:nth-child(1)', elem => {
             return elem.innerHTML;
         });
-        await expect(name).toEqual('meixinyue');
+        await expect(name).toEqual('mxyzz');
 
     },30000);
 
 })
 
+
 describe('一账通-账号管理编辑账号', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "meixinyue");
-        await accountaction.reviseAccount(page, "11", "meixinyue", "meixinyue", "新建测试12");
+        await accountaction.reviseAccount(page, "11", "meixinyue", "meixinyue");
 
-    },30000)
-    afterEach ( async () => {
-        await page.close();
+    },100000)
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证修改是否生效' , async() => {
 
-        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await returnDeskBtn.click();
 
-        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
-        await orgBtn.click();
-
-        const groupBtn = await page.waitForSelector('.dept-list>li:nth-child(2)');
-        await groupBtn.click();
-
-        const name = await page.$eval('.user-list>li:last-child .name', elem => {
+        const name = await page.$eval('.ivu-table-row>td:nth-child(3) span', elem => {
             return elem.innerHTML;
         });
-        await expect(name).toEqual('梅新悦11');
-
-        const usereBtn = await page.waitForSelector('.flex-row.active .name');
-        await usereBtn.click();
-
-        const name2 = await page.$eval('li[data-label="姓名"]', elem => {
-            return elem.innerHTML;
-        });
-        await expect(name2).toEqual('梅新悦11');
-
-    },30000);
+        await expect(name).toEqual('meixinyue11');
+    },40000);
 
 })
+
 
 describe('一账通-账号管理编辑账号密码', () => {
     let page : Page;
@@ -665,21 +602,22 @@ describe('一账通-账号管理编辑账号密码', () => {
     beforeEach( async () => {
         let browser = await launch()
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
-        await useraction.login(page, 'meixinyue', 'meixinyue');
+        await useraction.login(page, 'mxyzz', 'meixinyue');
 
-    },30000)
-    afterEach ( async () => {
+    },40000)
+    afterAll ( async () => {
         await page.close();
     })
 
     test('TEST_001:验证修改密码后能否登录' , async() => {
+        await page.waitFor(6000);
         const url = await page.url();
         await expect(url).toBe('http://192.168.200.115:8989/#/workspace/apps');
         
-    },30000);
+    },40000);
 
 })
 
@@ -687,33 +625,45 @@ describe('一账通-账号管理删除账号', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
         let accountaction = new accountAction();
-        await accountaction.searchAccount(page, "mei111");
+        await accountaction.searchAccount(page, "meixinyue");
         await accountaction.deleteAccount(page);
 
-    },30000)
-    afterEach ( async () => {
-        await page.close();
+    },50000)
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证删除账号' , async() => {
-        const userName = await page.$eval('.ivu-table-tbody>tr:nth-child(4)>td:nth-child(2) span', elem => {
+        let browser = await launch({headless:false})
+        page = await browser.newPage();
+        await page.goto(config.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        await page.waitFor(3000);
+
+        const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
             return elem.innerHTML;
         });
-        await expect(userName).toEqual('mei222');
+        await expect(userName).toEqual('cxiangmuzuuser');
 
         
-    },30000);
+    },50000);
 
 })
-
+/*
 describe('一账通-验证分组管理', () => {
     let page : Page;
     

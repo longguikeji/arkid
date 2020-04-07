@@ -2,12 +2,12 @@ import {Page, launch} from 'puppeteer';
 
 export class accountAction{
     public async addAccount(page:Page, username:string, name:string, password:string, 
-        repassword:string, phone:string, personalemail:string, email:string, search:string){
+        repassword:string, phone:string, personalemail:string, email:string){
 
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
-        await page.waitFor(3000);
+        await page.waitFor(2000);
 
         const addAccountBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
         await addAccountBtn.click();
@@ -21,16 +21,18 @@ export class accountAction{
         const pwdBtn = await page.waitForSelector('.ivu-form-item-content .ivu-btn.ivu-btn-primary');
         await pwdBtn.click();
 
-        await page.waitFor(3000);
+        await page.waitFor(2000);
 
-        // const pwdInput = await page.waitForSelector('input[placeholder="请添加新登录密码"]');
-        // await pwdInput.type(password);
+        const pwdInput = await page.waitForSelector('input[placeholder="请添加新登录密码"]');
+        await pwdInput.type(password);
 
-        // const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
-        // await repwdInput.type(repassword);
+        const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
+        await repwdInput.type(repassword);
 
-        // const primaryBtn= await page.waitForSelector('.ivu-modal-content .ivu-modal-footer .ivu-btn.ivu-btn-primary');
-        // await primaryBtn.click();
+        const primaryBtn= await page.waitForSelector('body > div:nth-child(6) > div.ivu-modal-wrap > div > div > div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
+        await primaryBtn.click();
+
+        await page.waitFor(1000);
 
         const phoneInput = await page.waitForSelector('input[placeholder="请输入 手机"]');
         await phoneInput.type(phone);
@@ -41,17 +43,19 @@ export class accountAction{
         const emailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default');
         await emailInput.type(email);
 
-        const departmentBtn = await page.waitForSelector('input[placeholder="请添加部门"]');
-        await departmentBtn.click();
+        // const departmentBtn = await page.waitForSelector('input[placeholder="请添加部门"]');
+        // await departmentBtn.click();
 
-        const searchInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
-        await searchInput.type(search);
+        // await page.waitFor(2000);
 
-        const selectBtn = await page.waitForSelector('.ui-group-tree-component.tree .ivu-checkbox-input');
-        await selectBtn.click();
+        // const searchInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
+        // await searchInput.type(search);
 
-        const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
-        await keepBtn.click();
+        // const selectBtn = await page.waitForSelector('.ui-group-tree-component.tree .ivu-checkbox-input');
+        // await selectBtn.click();
+
+        // const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
+        // await keepBtn.click();
 
         const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addBtn.click();
@@ -151,17 +155,18 @@ export class accountAction{
         const searchAccountInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
         await searchAccountInput.type(search);
 
+        await page.waitFor(4000);
+
     }
 
-    public async reviseAccount(page:Page, name:string, password:string, repassword:string, search:string){
+    public async reviseAccount(page:Page, name:string, password:string, repassword:string){
 
         const reviseAccount = await page.waitForSelector('.ivu-table-cell>div>span:first-child');
         await reviseAccount.click();
 
         const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
         
-        await nameInput.type('input[placeholder="请输入 姓名"]');
-        //await nameInput.type(name);
+        await nameInput.type(name);
 
         const pwdBtn = await page.waitForSelector('.ivu-form-item-content .ivu-btn.ivu-btn-primary');
         await pwdBtn.click();
@@ -172,8 +177,10 @@ export class accountAction{
         const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
         await repwdInput.type(repassword);
 
-        const primaryBtn= await page.waitForSelector('.ivu-modal-footer .ivu-btn.ivu-btn-primary');
+        const primaryBtn = await page.waitForSelector('body > div:nth-child(6) > div.ivu-modal-wrap > div > div > div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
         await primaryBtn.click();
+
+        await page.waitFor(2000);
 
         // const phoneInput = await page.waitForSelector('input[placeholder="请输入 手机"]');
         
@@ -188,26 +195,28 @@ export class accountAction{
         // await page.$eval('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default',input => input.value=email);
         // await emailInput.type(email);
 
-        const departmentBtn = await page.waitForSelector('input[placeholder="请添加部门"]');
-        await departmentBtn.click();
+        // const departmentBtn = await page.waitForSelector('input[placeholder="请添加部门"]');
+        // await departmentBtn.click();
 
-        const searchInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
-        await searchInput.type(search);
+        // const searchInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
+        // await searchInput.type(search);
 
-        const selectBtn = await page.waitForSelector('.ivu-checkbox-input');
-        await selectBtn.click();
+        // const selectBtn = await page.waitForSelector('.ivu-checkbox-input');
+        // await selectBtn.click();
 
-        const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
-        await keepBtn.click();
+        // const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
+        // await keepBtn.click();
 
-        const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
+        const addBtn = await page.waitForSelector('body > div:nth-child(5) > div.ivu-drawer-wrap.ui-edit-user > div > div > div > div.drawer-footer.flex-row.flex-auto > button.ivu-btn.ivu-btn-primary');
         await addBtn.click();
+
+        await page.waitFor(3000);
 
     }
 
     public async deleteAccount(page:Page){
 
-        const checkbox = await page.waitForSelector('.ivu-checkbox-input');
+        const checkbox = await page.waitForSelector('.ivu-table-body.ivu-table-overflowX > table > tbody > tr > td.ivu-table-column-center > div > label > span > input');
         await checkbox.click();
 
         const deleteAccountBtn = await page.waitForSelector('.ui-account-page .flex-row.flex-auto>button:last-child');
@@ -215,6 +224,8 @@ export class accountAction{
 
         const deleteBtn = await page.waitForSelector('.ivu-modal-confirm-footer>button:last-child');
         await deleteBtn.click();
+
+        await page.waitFor(2000);
 
     }
 }
