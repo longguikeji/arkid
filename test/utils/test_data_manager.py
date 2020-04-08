@@ -27,7 +27,7 @@ TABLE_NAMES = [
     'oneid_meta_emailconfig',
     'captcha_captchastore',
     'oneid_meta_group',
-    'corsheaders_corsmodel',
+    # 'corsheaders_corsmodel',
     'oneid_meta_groupmember',
     'django_admin_log',
     'oneid_meta_groupperm',

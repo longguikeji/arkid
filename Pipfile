@@ -37,8 +37,8 @@ mako = "==1.1.0"
 pyasn1 = "==0.4.8"
 repoze-who = "==2.3"
 cherrypy = "==18.4.0"
-
 # 当使用 MySQL 作为数据库时:
+yapf = "*"
 # mysqlclient = "1.4.6"
 
 [dev-packages]

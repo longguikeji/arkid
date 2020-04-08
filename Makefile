@@ -73,3 +73,6 @@ dataset:
 
 sqlset:
 	python test/utils/test_data_manager.py -d
+
+run:
+	python manage.py runserver 0:8000

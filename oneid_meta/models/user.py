@@ -15,8 +15,8 @@ import jsonfield
 from rest_framework.exceptions import ValidationError
 from common.django.model import BaseModel, IgnoreDeletedManager
 from oneid_meta.models.config import CustomField
-from oneid_meta.models.group import GroupMember
-from oneid_meta.models.dept import DeptMember
+from oneid_meta.models.group import GroupMember, Group
+from oneid_meta.models.dept import DeptMember, Dept
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
@@ -166,6 +166,32 @@ class User(BaseModel, PermOwnerMixin):
         :rtype: list of Group
         '''
         return [item.owner for item in GroupMember.valid_objects.filter(user=self)]
+
+    @property
+    def ding_depts(self):
+        '''
+        用户所在部门中与钉钉同步的部分
+        :rtype: list of Group
+        '''
+        root_dept = Dept.objects.filter(uid='root').first()
+        bind_ding_dept = []
+        for dept in self.depts:
+            if dept.if_belong_to_dept(root_dept, 1):
+                bind_ding_dept.append(dept)
+        return bind_ding_dept
+
+    @property
+    def ding_groups(self):
+        '''
+        用户所在角色中与钉钉同步的部分
+        :rtype: list of Group
+        '''
+        role_group = Group.objects.filter(uid='role').first()
+        bind_ding_group = []
+        for group in self.groups:
+            if group.if_belong_to_group(role_group, 1):
+                bind_ding_group.append(group)
+        return bind_ding_group
 
     @property
     def depts(self):
