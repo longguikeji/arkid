@@ -25,7 +25,7 @@ def send_sms(mobile, code, template):
         access_key=sms_config.access_key,
         access_key_secret=sms_config.access_secret,
     )
-    signature = sms_config.signature_i18n if is_cn_mobile(mobile) else sms_config.signature
+    signature = sms_config.signature if is_cn_mobile(mobile) else sms_config.signature_i18n
     mobile = ''.join([literal for literal in mobile if literal.isdigit()])
 
     # `+86 18812341234` -> `8618812341234`
