@@ -13,7 +13,7 @@ export class accountAction{
         await addAccountBtn.click();
 
         const usernameInput = await page.waitForSelector('input[placeholder="请输入 用户名"]');
-        usernameInput.type(username);
+        await usernameInput.type(username);
 
         const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
         await nameInput.type(name);
