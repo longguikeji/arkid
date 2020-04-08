@@ -18,7 +18,6 @@ from common.django.model import BaseModel, IgnoreDeletedManager
 from oneid_meta.models.config import CustomField
 from oneid_meta.models.group import GroupMember
 from oneid_meta.models.dept import DeptMember
-from oneid_meta.models.org import Org
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
@@ -271,18 +270,14 @@ class User(BaseModel, PermOwnerMixin):
     @property
     def organizations(self):
         '''
-        所属组织
+        所属组织，包括：
+        - 自己创建的
+        - 加入他人的
         '''
 
-        # pylint: disable=invalid-name
-        def traverse_group(g):
-            for org in Org.valid_objects.filter(group=g):
-                return org
-            if g.parent is not None:
-                return traverse_group(g.parent)
-
-        for node in GroupMember.valid_objects.filter(user=self):
-            yield traverse_group(node.owner)
+        from oneid_meta.models import OrgMember    # pylint: disable=import-outside-toplevel
+        for org_member in OrgMember.valid_objects.filter(user=self):
+            yield org_member.owner
 
     @property
     def manager_groups(self):
@@ -516,6 +511,13 @@ class User(BaseModel, PermOwnerMixin):
             self.last_active_time + timezone.timedelta(minutes=gap_minutes) < now:
             self.last_active_time = now
             self.save(update_fields=['last_active_time'])
+
+    def switch_org(self, org):
+        '''
+        不负责校验
+        '''
+        self.current_organization = org
+        self.save(update_fields=['current_organization'])
 
 
 class PosixUser(BaseModel):

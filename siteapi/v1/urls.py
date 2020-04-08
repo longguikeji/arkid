@@ -81,7 +81,8 @@ urlpatterns = [
     url(r'^dept/(?P<uid>[\w|-]+)/dept/$', dept_views.DeptChildDeptAPIView.as_view(), name='dept_child_dept'),
     url(r'^dept/(?P<uid>[\w|-]+)/user/$', dept_views.DeptChildUserAPIView.as_view(), name='dept_child_user'),
     # org
-    url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_create'),
+    url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
+    url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_list'),
     url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailAPIView.as_view(), name='org_detail'),
     url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListCreateDestroyAPIView.as_view(), name='org_user'),
     url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'),
@@ -146,10 +147,14 @@ urlpatterns = [
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/$', node_views.UcenterNodeDetailAPIView.as_view(), name='ucenter_node_detail'),
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/tree/$', node_views.UcenterNodeTreeAPIView.as_view(),
         name='ucenter_node_tree'),
+
     # ucenter org
-    url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
-    url(r'^ucenter/orgs/$', org_views.UcenterOrgListAPIView.as_view(), name='ucenter_org_list'),
-    url(r'^ucenter/orgs/owned/$', org_views.UcenterOwnOrgListAPIView.as_view(), name='ucenter_own_org_list'),
+    # <TODO 合并成一个>
+    # url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
+    # url(r'^ucenter/orgs/$', org_views.UcenterOrgListAPIView.as_view(), name='ucenter_org_list'),
+    # url(r'^ucenter/orgs/owned/$', org_views.UcenterOwnOrgListAPIView.as_view(), name='ucenter_own_org_list'),
+    # </TODO>
+
     # ucenter app
     url(r'^ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'),
     # ucenter user

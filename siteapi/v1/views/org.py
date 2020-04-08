@@ -6,105 +6,55 @@ views for organization
 
 from rest_framework.exceptions import ParseError, NotFound, PermissionDenied
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView, ValidationError, RetrieveUpdateAPIView
+from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
+from django.core import exceptions as django_exceptions
 from oneid.permissions import IsAdminUser, IsAuthenticated, IsOrgOwnerOf, IsOrgMember, UserManagerReadable
 from oneid_meta.models import Org, GroupMember, User, OrgMember
 from siteapi.v1.serializers.user import OrgUserSerializer, OrgUserDeserializer
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
 
 
-class OrgListCreateAPIView(GenericAPIView):
+class OrgListCreateAPIView(generics.ListCreateAPIView):
     '''
-    管理员 检视组织 [GET]
-    登录用户 创建组织 [POST]
+    面向普通用户
+    - 查看自己所属组织 [GET]
+        - 创建的
+        - 加入他人的
+    - 创建组织 [POST]
     '''
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrgSerializer
 
-    read_permission_classes = [IsAuthenticated & IsAdminUser]
-    write_permission_classes = [IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        '''
+        查看自己所属组织：
+        - 创建的
+        - 加入他人的
+        '''
+        items = self.request.user.organizations
+        role = self.request.query_params.get('role', '')
+        res = OrgSerializer(items, many=True).data
+        if role:
+            res = [item for item in res if item['role'] == role]
+        return Response(res)
 
-    def get(self, request):
+    def post(self, request, *args, **kwargs):
         '''
-        GET org list
+        创建组织
         '''
-        return Response([OrgSerializer(o).data for o in Org.valid_objects.all()])
+        serializer = OrgDeserializer(data=request.data)
+        serializer.context['request'] = request
+        serializer.is_valid(raise_exception=True)
+        org = serializer.save()
 
-    def post(self, request):
-        '''
-        POST create org
-        '''
-        parse = OrgDeserializer(data=request.data)
-        parse.is_valid(raise_exception=True)
-        name = parse.validated_data.get('name')
-        owner = parse.validated_data.get('owner')
-        if not name:
-            raise ParseError
-        owner = User.valid_objects.filter(username=owner).first()
-        if not owner:
-            owner = self.request.user
-        return Response(OrgSerializer(Org.create(name=name, owner=owner)).data)
-
-    def get_permissions(self):
-        '''
-        set permissions
-        '''
-        method = self.request.method
-        if method == 'POST':
-            return [perm() for perm in self.write_permission_classes]
-        if method == 'GET':
-            return [perm() for perm in self.read_permission_classes]
-        return []
+        user = request.user
+        org.add_member(user)
+        user.switch_org(org)
+        return Response(OrgSerializer(org).data, status=status.HTTP_201_CREATED)
 
 
-class OrgUserListCreateDestroyAPIView(GenericAPIView):
-    '''
-    组织成员列表/添加/删除 [GET] [POST] [DELETE]
-    '''
-    def get(self, request, **kw):
-        '''
-        get org members
-        '''
-        return Response(self.org.users)
-
-    def post(self, request, **kw):
-        '''
-        add org members
-        '''
-        user = request.query_params.get('username', None)
-        if user is None:
-            raise NotFound
-        user = User.valid_objects.filter(username=user)
-        if user.exists():
-            GroupMember.valid_objects.create(user=user.first(), owner=self.org.direct)
-        else:
-            raise NotFound
-        return Response(status=204)
-
-    def delete(self, request, **kw):
-        '''
-        delete org members
-        '''
-        user = request.query_params.get('username', None)
-        if user is None:
-            raise NotFound
-        user = User.valid_objects.filter(username=user)
-        if user.exists():
-            self.org.remove(user.first())
-        else:
-            raise NotFound
-        return Response(status=204)
-
-    def get_permissions(self):
-        '''
-        set permissions
-        '''
-        self.org = validity_check(self.kwargs['oid'])
-
-        IsOrgOwner = IsOrgOwnerOf(self.org)
-        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]    # TODO@saas: OrgMgr?
-        return [perm() for perm in permission_classes]
-
-
-class OrgDetailAPIView(GenericAPIView):
+class OrgDetailAPIView(generics.GenericAPIView):
     '''
     组织详情查询 [GET]
     组织详情更改 [PATCH]
@@ -129,10 +79,11 @@ class OrgDetailAPIView(GenericAPIView):
         if name:
             self.org.name = name
             self.org.save()
-        if owner:
-            if not User.valid_objects.filter(username=owner).exists():
+        if owner:    # TODO： 是否要更严谨的确认过程
+            user = User.valid_objects.filter(username=owner).first()
+            if not user:
                 raise ValidationError
-            self.org.owner = User.valid_objects.filter(username=owner).first()
+            self.org.owner = user
             self.org.save()
         return Response(OrgSerializer(self.org).data)
 
@@ -151,47 +102,16 @@ class OrgDetailAPIView(GenericAPIView):
 
         method = self.request.method
         if method == 'GET':
+            # TODO: 能否看到自己不在的组织的信息
             return [perm() for perm in self.read_permission_classes]
-        if method == 'DELETE':
+        if method in ('DELETE', 'PATCH', 'PUT'):
             IsOrgOwner = IsOrgOwnerOf(self.org)
             permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]
             return [perm() for perm in permission_classes]
         return []
 
 
-class UcenterOrgListAPIView(GenericAPIView):
-    '''
-    个人所属组织列表查询 [GET]
-    '''
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        '''
-        get user org list
-        '''
-        return Response([OrgSerializer(org).data for org in self.request.user.organizations])
-
-
-class UcenterOwnOrgListAPIView(GenericAPIView):
-    '''
-    个人拥有组织列表查询 [GET]
-    '''
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        '''
-        get user owned org list
-        '''
-        orgs = set()
-
-        for org in Org.valid_objects.filter(owner=self.request.user):
-            orgs.add(org)
-        return Response(map(lambda o: OrgSerializer(o).data, orgs))
-
-
-class UcenterCurrentOrgAPIView(GenericAPIView):
+class UcenterCurrentOrgAPIView(generics.GenericAPIView):
     '''
     个人当前组织查询/切换 [GET] [POST] [DELETE]
     '''
@@ -205,7 +125,7 @@ class UcenterCurrentOrgAPIView(GenericAPIView):
         org = self.request.user.current_organization
         if org is not None:
             return Response(OrgSerializer(org).data)
-        return Response()    # 这里应该返回什么？
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request):
         '''
@@ -213,22 +133,97 @@ class UcenterCurrentOrgAPIView(GenericAPIView):
         '''
         self.request.user.current_organization = None
         self.request.user.save()
-        return Response(status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def post(self, request):
+    def put(self, request):
         '''
         change user current org
         '''
-        try:
-            oid = request.data['oid']
-        except KeyError:
-            raise ParseError()
-        self.request.user.current_organization = validity_check(oid)
-        self.request.user.save()
+        oid = request.data.get('oid', '')
+        user = self.request.user
+        org = Org.valid_objects.filter(uuid=oid).first()
+        if not org or not org.has_user(request.user):
+            raise ValidationError({'oid': 'invalid'})
+        user.current_organization = org
+        user.save()
+        return Response(status=status.HTTP_200_OK)
+
+
+class OrgUserListCreateDestroyAPIView(generics.GenericAPIView):
+    '''
+    组织成员列表/添加/删除 [GET] [POST] [DELETE]
+    '''
+    def get(self, request, **kw):
+        '''
+        get org members
+        '''
+        return Response(self.org.users)
+
+    def patch(self, request):
+        '''
+        编辑成员列表
+        - 批量删除
+        - 批量添加
+        '''
+        usernames = request.data.get('usernames', [])
+        action = request.data.get('action', '')
+        if not usernames:
+            raise ValidationError({'usernames': ['required']})
+        if not action:
+            raise ValidationError({'action': ['required']})
+        if action not in ['add', 'delete']:
+            raise ValidationError({'action': ['must be one of `add` or `delete`']})
+
+        users = []
+        for username in usernames:
+            user = User.valid_objects.filter(username=username).first()
+            if not user:
+                raise ValidationError({'usernames': [f'valid: {username}']})
+        if action == 'add':
+            self.org.add_member(user)
+        elif action == 'delete':
+            self.org.remove_member(user)
+
+    def post(self, request, **kw):
+        '''
+        add org members
+        '''
+        user = request.query_params.get('username', None)
+        if user is None:
+            raise NotFound
+        user = User.valid_objects.filter(username=user)
+        if user.exists():
+            GroupMember.valid_objects.create(user=user.first(), owner=self.org.direct)
+        else:
+            raise NotFound
         return Response(status=204)
 
+    def delete(self, request, **kw):
+        '''
+        delete org members
+        '''
+        user = request.query_params.get('username', None)
+        if user is None:
+            raise NotFound
+        user = User.valid_objects.filter(username=user)
+        if user.exists():
+            self.org.remove_member(user.first())
+        else:
+            raise NotFound
+        return Response(status=204)
 
-class OrgUserDetailAPIView(RetrieveUpdateAPIView):
+    def get_permissions(self):
+        '''
+        set permissions
+        '''
+        self.org = validity_check(self.kwargs['oid'])
+
+        IsOrgOwner = IsOrgOwnerOf(self.org)
+        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]    # TODO@saas: OrgMgr?
+        return [perm() for perm in permission_classes]
+
+
+class OrgUserDetailAPIView(generics.RetrieveUpdateAPIView):
     '''
     组织拥有者查看他人信息 [GET] [PATCH]
     '''
@@ -286,5 +281,5 @@ def validity_check(oid):
         if org.exists():
             return org.first()
         raise NotFound
-    except ValidationError as exc:
+    except django_exceptions.ValidationError as exc:
         raise ParseError(exc.messages)
