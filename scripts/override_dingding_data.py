@@ -115,11 +115,11 @@ def create_node_meta(department_manager, node):
             ret = department_manager.update_dep(department_id=child.ding_dept.uid if node.__class__.__name__ == 'Dept'\
                 else child.ding_group.uid, kwargs=update_node_info)
             if ret['errcode'] == 0:
-                if node.__class__.__name__ == 'Dept':
+                if isinstance(node, Dept):
                     new_ding_dept = DingDept.valid_objects.get(dept=child)
                     new_ding_dept.uid = ret['id']
                     new_ding_dept.save()
-                elif node.__class__.__name__ == 'Group':
+                elif isinstance(node, Group):
                     new_ding_group = DingGroup.valid_objects.get(group=child)
                     new_ding_group.uid = ret['id']
                     new_ding_group.save()

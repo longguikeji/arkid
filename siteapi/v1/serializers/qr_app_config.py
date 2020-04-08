@@ -78,7 +78,7 @@ class DingConfigSerializer(DynamicFieldsModelSerializer):
     serializer for DingConfig
     '''
     app_secret = serializers.CharField(write_only=True)
-    # corp_secret = serializers.CharField(write_only=True)
+    corp_secret = serializers.CharField(write_only=True)
     qr_app_secret = serializers.CharField(write_only=True)
 
     class Meta:    # pylint: disable=missing-docstring

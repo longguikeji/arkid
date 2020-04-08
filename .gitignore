@@ -147,10 +147,6 @@ djangosaml2config/saml2_config/*.xml
 # sql
 test/data/test_*.sql
 
-python-3.6.8
-python-3.6.8.tgz
-
-
 # saml
 idp_metadata.xml
 
