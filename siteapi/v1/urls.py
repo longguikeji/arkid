@@ -84,7 +84,7 @@ urlpatterns = [
     url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
     url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_list'),
     url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailAPIView.as_view(), name='org_detail'),
-    url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListCreateDestroyAPIView.as_view(), name='org_user_list'),
+    url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListUpdateAPIView.as_view(), name='org_user_list'),
     url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'),
     # perm
     url(r'^perm/$', perm_views.PermListCreateAPIView.as_view(), name='perm_list'),
@@ -147,13 +147,6 @@ urlpatterns = [
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/$', node_views.UcenterNodeDetailAPIView.as_view(), name='ucenter_node_detail'),
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/tree/$', node_views.UcenterNodeTreeAPIView.as_view(),
         name='ucenter_node_tree'),
-
-    # ucenter org
-    # <TODO 合并成一个>
-    # url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
-    # url(r'^ucenter/orgs/$', org_views.UcenterOrgListAPIView.as_view(), name='ucenter_org_list'),
-    # url(r'^ucenter/orgs/owned/$', org_views.UcenterOwnOrgListAPIView.as_view(), name='ucenter_own_org_list'),
-    # </TODO>
 
     # ucenter app
     url(r'^ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'),

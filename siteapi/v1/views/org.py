@@ -112,45 +112,7 @@ class OrgDetailAPIView(generics.GenericAPIView):
         return []
 
 
-class UcenterCurrentOrgAPIView(generics.GenericAPIView):
-    '''
-    个人当前组织查询/切换 [GET] [POST] [DELETE]
-    '''
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        '''
-        get user current org
-        '''
-        org = self.request.user.current_organization
-        if org is not None:
-            return Response(OrgSerializer(org).data)
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    def delete(self, request):
-        '''
-        clear user current org
-        '''
-        self.request.user.current_organization = None
-        self.request.user.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def put(self, request):
-        '''
-        change user current org
-        '''
-        oid = request.data.get('oid', '')
-        user = self.request.user
-        org = Org.valid_objects.filter(uuid=oid).first()
-        if not org or not org.has_user(request.user):
-            raise ValidationError({'oid': 'invalid'})
-        user.current_organization = org
-        user.save()
-        return Response(status=status.HTTP_200_OK)
-
-
-class OrgUserListCreateDestroyAPIView(mixins.UpdateModelMixin, generics.ListAPIView):
+class OrgUserListUpdateAPIView(mixins.UpdateModelMixin, generics.ListAPIView):
     '''
     组织成员列表
     - 查询 [GET]
@@ -258,6 +220,44 @@ class OrgUserDetailAPIView(generics.RetrieveUpdateAPIView):
         serializer.is_valid(raise_exception=True)
         om = serializer.save()
         return Response(OrgUserSerializer(om).data)
+
+
+class UcenterCurrentOrgAPIView(generics.GenericAPIView):
+    '''
+    个人当前组织查询/切换 [GET] [POST] [DELETE]
+    '''
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        '''
+        get user current org
+        '''
+        org = self.request.user.current_organization
+        if org is not None:
+            return Response(OrgSerializer(org).data)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request):
+        '''
+        clear user current org
+        '''
+        self.request.user.current_organization = None
+        self.request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def put(self, request):
+        '''
+        change user current org
+        '''
+        oid = request.data.get('oid', '')
+        user = self.request.user
+        org = Org.valid_objects.filter(uuid=oid).first()
+        if not org or not org.has_user(request.user):
+            raise ValidationError({'oid': 'invalid'})
+        user.current_organization = org
+        user.save()
+        return Response(OrgSerializer(org).data, status=status.HTTP_200_OK)
 
 
 def validity_check(oid):
