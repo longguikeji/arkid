@@ -6,13 +6,14 @@ views for organization
 
 from rest_framework.exceptions import ParseError, NotFound, PermissionDenied
 from rest_framework.response import Response
-from rest_framework import generics, status
+from rest_framework import generics, status, mixins
 from rest_framework.exceptions import ValidationError
 from django.core import exceptions as django_exceptions
 from oneid.permissions import IsAdminUser, IsAuthenticated, IsOrgOwnerOf, IsOrgMember, UserManagerReadable
-from oneid_meta.models import Org, GroupMember, User, OrgMember
+from oneid_meta.models import Org, User, OrgMember
 from siteapi.v1.serializers.user import OrgUserSerializer, OrgUserDeserializer
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
+from common.django.drf.paginator import DefaultListPaginator
 
 
 class OrgListCreateAPIView(generics.ListCreateAPIView):
@@ -149,68 +150,55 @@ class UcenterCurrentOrgAPIView(generics.GenericAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class OrgUserListCreateDestroyAPIView(generics.GenericAPIView):
+class OrgUserListCreateDestroyAPIView(mixins.UpdateModelMixin, generics.ListAPIView):
     '''
-    组织成员列表/添加/删除 [GET] [POST] [DELETE]
+    组织成员列表
+    - 查询 [GET]
+    - 修改: 删除、添加 [PATCH]
     '''
-    def get(self, request, **kw):
+
+    pagination_class = DefaultListPaginator
+    serializer_class = OrgUserSerializer
+
+    def get(self, request, *args, **kwargs):
         '''
         get org members
         '''
-        return Response(self.org.users)
+        queryset = OrgMember.valid_objects.filter(owner=self.org)
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
-    def patch(self, request):
+    def patch(self, request, *args, **kwargs):
         '''
         编辑成员列表
         - 批量删除
         - 批量添加
         '''
         usernames = request.data.get('usernames', [])
-        action = request.data.get('action', '')
+        subject = request.data.get('subject', '')
         if not usernames:
             raise ValidationError({'usernames': ['required']})
-        if not action:
-            raise ValidationError({'action': ['required']})
-        if action not in ['add', 'delete']:
-            raise ValidationError({'action': ['must be one of `add` or `delete`']})
+        if not subject:
+            raise ValidationError({'subject': ['required']})
+        if subject not in ['add', 'delete']:
+            raise ValidationError({'subject': ['must be one of `add` or `delete`']})
 
-        users = []
+        users = set()
         for username in usernames:
             user = User.valid_objects.filter(username=username).first()
             if not user:
                 raise ValidationError({'usernames': [f'valid: {username}']})
-        if action == 'add':
-            self.org.add_member(user)
-        elif action == 'delete':
-            self.org.remove_member(user)
+            if username == self.org.owner.username:
+                raise ValidationError({'usernames': [f'protected: {username}']})
+            users.add(user)
+        for user in users:
+            if subject == 'add':
+                self.org.add_member(user)
+            elif subject == 'delete':
+                self.org.remove_member(user)
 
-    def post(self, request, **kw):
-        '''
-        add org members
-        '''
-        user = request.query_params.get('username', None)
-        if user is None:
-            raise NotFound
-        user = User.valid_objects.filter(username=user)
-        if user.exists():
-            GroupMember.valid_objects.create(user=user.first(), owner=self.org.direct)
-        else:
-            raise NotFound
-        return Response(status=204)
-
-    def delete(self, request, **kw):
-        '''
-        delete org members
-        '''
-        user = request.query_params.get('username', None)
-        if user is None:
-            raise NotFound
-        user = User.valid_objects.filter(username=user)
-        if user.exists():
-            self.org.remove_member(user.first())
-        else:
-            raise NotFound
-        return Response(status=204)
+        return Response({'username': usernames, 'subject': subject})
 
     def get_permissions(self):
         '''

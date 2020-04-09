@@ -356,6 +356,13 @@ class OrgUserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'remark',
         )
 
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        user = res.pop('user')    # 注意字段不要重复
+        res.update(user)
+        res.pop('nodes')
+        return res
+
 
 class OrgUserDeserializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     '''

@@ -84,7 +84,7 @@ urlpatterns = [
     url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
     url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_list'),
     url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailAPIView.as_view(), name='org_detail'),
-    url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListCreateDestroyAPIView.as_view(), name='org_user'),
+    url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListCreateDestroyAPIView.as_view(), name='org_user_list'),
     url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'),
     # perm
     url(r'^perm/$', perm_views.PermListCreateAPIView.as_view(), name='perm_list'),
