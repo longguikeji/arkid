@@ -399,11 +399,13 @@ export class groupAction{
     }
 
     public async addPerLowGroup(page:Page, groupName:string){
-        const directUserBtn = await page.waitForSelector('.custom-list>li');
+        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(2)');
         await directUserBtn.click();
 
         const addGroupBtn = await page.waitForSelector('.ui-group-page-detail-header.flex-row>button:nth-child(3)');
         await addGroupBtn.click();
+
+        await page.waitFor(2000);
 
         const groupNameINput = await page.waitForSelector('.ivu-drawer-body .ivu-input.ivu-input-default');
         await groupNameINput.type(groupName);
@@ -411,17 +413,21 @@ export class groupAction{
         const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
+        await page.waitFor(2000);
+
     }
 
     public async addPerUser(page:Page, username:string, name:string, password:string, repassword:string){
-        const directUserBtn = await page.waitForSelector('.custom-list>li');
+        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(2)');
         await directUserBtn.click();
+
+        await page.waitFor(2000);
 
         const addUserBtn = await page.waitForSelector('.ui-user-list .flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addUserBtn.click();
 
         const usernameInput = await page.waitForSelector('input[placeholder="请输入 用户名"]');
-        usernameInput.type(username);
+        await usernameInput.type(username);
 
         const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
         await nameInput.type(name);
@@ -429,26 +435,37 @@ export class groupAction{
         const pwdBtn = await page.waitForSelector('.ivu-form-item-content .ivu-btn.ivu-btn-primary');
         await pwdBtn.click();
 
+        await page.waitFor(1000);
+
         const pwdInput = await page.waitForSelector('input[placeholder="请添加新登录密码"]');
         await pwdInput.type(password);
 
         const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
         await repwdInput.type(repassword);
 
-        const primaryBtn= await page.waitForSelector('.ivu-modal-footer .ivu-btn.ivu-btn-primary');
+        const primaryBtn= await page.waitForSelector('div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
         await primaryBtn.click();
+
+        await page.waitFor(2000);
 
         const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
+        await page.waitFor(2000);
+
+
     }
 
     public async editPerUser(page:Page, name:string, password:string, repassword:string){
-        const directUserBtn = await page.waitForSelector('.custom-list>li');
+        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(2)');
         await directUserBtn.click();
+
+        await page.waitFor(1000);
 
         const editUserBtn = await page.waitForSelector('.ivu-table-cell .table-btn');
         await editUserBtn.click();
+
+        await page.waitFor(2000);
         
         const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
         await nameInput.type(name);
@@ -456,44 +473,61 @@ export class groupAction{
         const pwdBtn = await page.waitForSelector('.ivu-form-item-content .ivu-btn.ivu-btn-primary');
         await pwdBtn.click();
 
+        await page.waitFor(1000);
+
         const pwdInput = await page.waitForSelector('input[placeholder="请添加新登录密码"]');
         await pwdInput.type(password);
 
         const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
         await repwdInput.type(repassword);
 
-        const primaryBtn= await page.waitForSelector('.ivu-modal-footer .ivu-btn.ivu-btn-primary');
+        const primaryBtn= await page.waitForSelector('div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
         await primaryBtn.click();
+
+        await page.waitFor(2000);
 
         const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
+        await page.waitFor(2000);
     }
 
     public async groupPower(page:Page, search:string){
         const groupBtn = await page.waitForSelector('.ui-group-tree.ivu-tree>ul:nth-child(2)');
         await groupBtn.click();
+
+        await page.waitFor(2000);
         
         const powerBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
         await powerBtn.click();
 
+        await page.waitFor(2000);
+
         const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
         await appNameInput.type(search);
+
+        await page.waitFor(2000);
 
         const appBtn = await page.waitForSelector('.result-list>li');
         await appBtn.click();
 
-        const setBtn = await page.waitForSelector('.ui-operate-cell .ivu-icon.ivu-icon-md-arrow-dropdown');
+        await page.waitFor(6000);
+
+        const setBtn = await page.waitForSelector('div.ivu-table-body > table > tbody > tr > td:nth-child(3) > div > div > div > div');
         await setBtn.click();
 
         const yesBtn = await page.waitForSelector('.ivu-select-dropdown.ivu-dropdown-transfer .ivu-dropdown-menu>li');
         await yesBtn.click();
+
+        await page.waitFor(5000);
 
     }
 
     public async personalGroupPower(page:Page, search:string){
-        const groupBtn = await page.waitForSelector('.custom-list>li span');
+        const groupBtn = await page.waitForSelector('.custom-list>li');
         await groupBtn.click();
+
+        await page.waitFor(2000);
         
         const powerBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
         await powerBtn.click();
@@ -501,14 +535,20 @@ export class groupAction{
         const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
         await appNameInput.type(search);
 
+        await page.waitFor(2000);
+
         const appBtn = await page.waitForSelector('.result-list>li');
         await appBtn.click();
 
-        const setBtn = await page.waitForSelector('.ui-operate-cell .ivu-icon.ivu-icon-md-arrow-dropdown');
+        await page.waitFor(6000);
+
+        const setBtn = await page.waitForSelector('div.ivu-table-body > table > tbody > tr > td:nth-child(3) > div > div > div > div');
         await setBtn.click();
 
         const yesBtn = await page.waitForSelector('.ivu-select-dropdown.ivu-dropdown-transfer .ivu-dropdown-menu>li');
         await yesBtn.click();
+
+        await page.waitFor(3000);
 
     }
 

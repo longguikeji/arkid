@@ -17,8 +17,12 @@ export class configManageAction{
         const selectColor = await page.waitForSelector('.ivu-select-dropdown-list>li:nth-child(2)');
         await selectColor.click();
 
-        const keepBtn = await page.waitForSelector('.admin-save-button.ivu-btn.ivu-btn-primary span');
+        await page.waitFor(2000);
+
+        const keepBtn = await page.waitForSelector('div.ui-admin-config-save.flex-row > div > button > span');
         await keepBtn.click();
+
+        await page.waitFor(3000);
 
     }
 
@@ -26,11 +30,17 @@ export class configManageAction{
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
-        const configManageBtn = await page.waitForSelector('a[href="#/admin/app"]');
+        await page.waitFor(1000);
+
+        const configManageBtn = await page.waitForSelector('a[href="#/admin/config"]');
         await configManageBtn.click();
+
+        await page.waitFor(2000);
         
         const urlBtn = await page.waitForSelector('.go-to-accountconfig');
         await urlBtn.click();
+
+        await page.waitFor(2000);
     }
 
 }

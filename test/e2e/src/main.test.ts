@@ -675,10 +675,6 @@ describe('一账通-验证分组管理', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
-        // let groupaction = new groupAction();
-        // await groupaction.groupAddress(page);
-        //await groupaction.addGroup(page, "部门四");
-
     },60000)
     afterAll ( async () => {
        // await page.close();
@@ -1662,7 +1658,7 @@ describe('一账通-分组管理自定义分类添加分组可见性', () => {
 
 })
 
-/*
+
 describe('一账通-分组管理编辑自定义分类下分组', () => {
     let page : Page;
     
@@ -1684,7 +1680,7 @@ describe('一账通-分组管理编辑自定义分类下分组', () => {
         await groupaction.groupAddress(page);
         await groupaction.editPerGroup(page, "A");
 
-        const perUserGroupName1 = await page.$eval('.ui-tree-item-title span', elem => {
+        const perUserGroupName1 = await page.$eval('.ui-group-tree.ivu-tree>ul:last-child .ui-tree-item-title span', elem => {
             return elem.innerHTML;
         });
         await expect(perUserGroupName1).toEqual('团员A ( 0 人 )');
@@ -1707,15 +1703,11 @@ describe('一账通-分组管理编辑自定义分类下分组', () => {
         const perUserGroupName2 = await page.$eval('.dept-list>li:last-child .name.flex-auto', elem => {
             return elem.innerHTML;
         });
-        await expect(perUserGroupName2).toEqual('团员A ( 0 人 )');
+        await expect(perUserGroupName2).toEqual('团员A (0人)');
         
     },50000);
 
     test('TEST_001:验证编辑自定义分类下分组可见性后是否生效' , async() => {
-        let browser = await launch()
-        page = await browser.newPage();
-        await page.goto(config.url);
-
         let useraction = new UserAction();
         await useraction.login(page, 'mei333', 'mei333');
 
@@ -1736,60 +1728,72 @@ describe('一账通-分组管理编辑自定义分类下分组', () => {
 
 })
 
-// describe('一账通-分组管理自定义分类分组添加下级分组', () => {
-//     let page : Page;
+describe('一账通-分组管理自定义分类分组添加下级分组', () => {
+    let page : Page;
     
-//     beforeEach( async () => {
-//         let browser = await launch()
-//         page = await browser.newPage();
-//         await page.goto(config.url);
+    beforeEach( async () => {
+        let browser = await launch({headless:false})
+        page = await browser.newPage();
+        await page.goto(config.url);
 
-//         let useraction = new UserAction();
-//         await useraction.login(page, 'admin', 'admin');
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
 
-//         let groupaction = new groupAction();
-//         await groupaction.groupAddress(page);
-//         await groupaction.addPerLowGroup(page, "分组一");
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.addPerLowGroup(page, "分组一");
 
-//     },30000)
-//     afterEach ( async () => {
-//         await page.close();
-//     })
+    },50000)
+    afterEach ( async () => {
+        await page.close();
+    })
 
-//     test('TEST_001:验证自定义分类分组添加下级分组是否生效' , async() => {
-//         const dirLowGroupName1 = await page.$eval('.ivu-tree-children .ivu-tree-children .ui-tree-item-title span', elem => {
-//             return elem.innerHTML;
-//         });
-//         await expect(dirLowGroupName1).toEqual('分组一 ( 0 人 )');
-
-//         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-//         await returnDeskBtn.click();
-
-//         const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
-//         await orgBtn.click();
-
-//         const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
-//         await groupBtn.click();
-
-//         const dirUserBtn = await page.waitForSelector('.dept-list>li');
-//         await dirUserBtn.click();
-
-//         const dirLowGroupName2 = await page.$eval('.name.flex-auto', elem => {
-//             return elem.innerHTML;
-//         });
-//         await expect(dirLowGroupName2).toEqual('分组一 ( 0 人 )');
+    test('TEST_001:验证自定义分类分组添加下级分组是否生效' , async() => {
+        const dirLowGroupName1 = await page.$eval('.ivu-tree-children .ivu-tree-children .ui-tree-item-title span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirLowGroupName1).toEqual('分组一 ( 0 人 )');
         
-//     },30000);
+        await page.waitFor(1000);
 
-// })
+        const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await returnDeskBtn.click();
+
+        const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
+        await orgBtn.click();
+
+        await page.waitFor(2000);
+
+        const groupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
+        await groupBtn.click();
+
+        const dirUserBtn = await page.waitForSelector('.dept-list>li');
+        await dirUserBtn.click();
+
+        const dirLowGroupName2 = await page.$eval('.name.flex-auto', elem => {
+            return elem.innerHTML;
+        });
+        await expect(dirLowGroupName2).toEqual('分组一 (0人)');
+        
+    },50000);
+
+})
+
 
 describe('一账通-分组管理自定义分类分组添加成员', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
+
+    },50000)
+    afterEach ( async () => {
+        await page.close();
+    })
+
+    test('TEST_001:验证自定义分类分组添加成员是否生效' , async() => {
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
@@ -1797,30 +1801,35 @@ describe('一账通-分组管理自定义分类分组添加成员', () => {
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
         await groupaction.addPerUser(page, "perectuser", "perectuser", "perectuser", "perectuser");
-    },30000)
-    afterEach ( async () => {
-        await page.close();
-    })
 
-    test('TEST_001:验证自定义分类分组添加成员是否生效' , async() => {
         const userName1 = await page.$eval('.ivu-table-row>td:nth-child(2) .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
         await expect(userName1).toEqual('perectuser');
 
+        await page.waitFor(2000);
+
         const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
         await accountBtn.click();
+
+        await page.waitFor(3000);
 
         const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
             return elem.innerHTML;
         });
         await expect(userName2).toEqual('perectuser');
 
+        await page.waitFor(2000);
+
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
 
+        await page.waitFor(2000);
+
         const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
         await orgBtn.click();
+
+        await page.waitFor(2000);
 
         const dirGroupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
         await dirGroupBtn.click();
@@ -1833,9 +1842,22 @@ describe('一账通-分组管理自定义分类分组添加成员', () => {
         });
         await expect(userName3).toEqual('perectuser');
         
-    },30000);
+    },50000);
+
+    test('TEST_002:验证自定义分类分组添加成员能否登录' , async() => {
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'perectuser', 'perectuser');
+
+        const url = await page.url();
+        await expect(url).toEqual('http://192.168.200.115:8989/#/workspace/apps');
+        
+    },10000);
+
+
 
 })
+
 
 describe('一账通-分组管理自定义分类分组编辑账号', () => {
     let page : Page;
@@ -1843,7 +1865,7 @@ describe('一账通-分组管理自定义分类分组编辑账号', () => {
     beforeEach( async () => {
         let browser = await launch()
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
@@ -1852,44 +1874,54 @@ describe('一账通-分组管理自定义分类分组编辑账号', () => {
         await groupaction.groupAddress(page);
         await groupaction.editPerUser(page, "1", "perectuser1", "perectuser1");
        
-    },30000)
-    afterEach ( async () => {
-        await page.close();
+    },60000)
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证修改是否生效' , async() => {
 
-        const userName1 = await page.$eval('.ivu-table-row>td:nth-child(2) .ivu-table-cell span', elem => {
+        const userName1 = await page.$eval('.ivu-table-row>td:nth-child(3) .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
         await expect(userName1).toEqual('perectuser1');
 
+        await page.waitFor(2000);
+
         const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
         await accountBtn.click();
 
-        const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
+        await page.waitFor(3000);
+
+        const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) span', elem => {
             return elem.innerHTML;
         });
         await expect(userName2).toEqual('perectuser1');
 
+        await page.waitFor(2000);
+
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
+
+        await page.waitFor(2000);
 
         const orgBtn = await page.waitForSelector('a[href="#/workspace/contacts"]');
         await orgBtn.click();
 
+        await page.waitFor(2000);
+
         const dirGroupBtn = await page.waitForSelector('.ui-contact-page--side>li:nth-child(7)');
         await dirGroupBtn.click();
 
-        const groupBtn = await page.waitForSelector('.dept-list>li');
-        await groupBtn.click();
+        const dirUserBtn = await page.waitForSelector('.dept-list>li');
+        await dirUserBtn.click();
 
         const userName3 = await page.$eval('.user-list .name', elem => {
             return elem.innerHTML;
         });
         await expect(userName3).toEqual('perectuser1');
 
-    },30000);
+    },50000);
 
 })
 
@@ -1899,14 +1931,14 @@ describe('一账通-分组管理自定义分类分组编辑账号密码', () => 
     beforeEach( async () => {
         let browser = await launch()
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'perectuser', 'perectuser1');
 
     },30000)
-    afterEach ( async () => {
-        await page.close();
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证修改密码后能否登录' , async() => {
@@ -1917,13 +1949,14 @@ describe('一账通-分组管理自定义分类分组编辑账号密码', () => 
 
 })
 
+
 describe('一账通-分组管理编辑部门的权限', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
@@ -1932,8 +1965,8 @@ describe('一账通-分组管理编辑部门的权限', () => {
         await groupaction.groupPower(page, "百度");
 
     },30000)
-    afterEach ( async () => {
-        await page.close();
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证修改权限后是否生效' , async() => {
@@ -1948,36 +1981,7 @@ describe('一账通-分组管理编辑部门的权限', () => {
 
 })
 
-describe('一账通-分组管理编辑部门的权限', () => {
-    let page : Page;
-    
-    beforeEach( async () => {
-        let browser = await launch()
-        page = await browser.newPage();
-        await page.goto(cofig.url);
 
-        let useraction = new UserAction();
-        await useraction.login(page, 'bumen2user', 'bumen2user');
-
-    },30000)
-    afterEach ( async () => {
-        await page.close();
-    })
-
-    test('TEST_001:验证修改权限后是否生效' , async() => {
-
-        const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
-        await appNameInput.type("百度");
-
-        const appName = await page.$eval('.flex-row .name', elem => {
-            return elem.innerHTML;
-        });
-        await expect(appName).toEqual('百度');
-       
-        
-    },30000);
-
-})
 
 describe('一账通-分组管理编辑自定义分组的权限', () => {
     let page : Page;
@@ -1985,7 +1989,7 @@ describe('一账通-分组管理编辑自定义分组的权限', () => {
     beforeEach( async () => {
         let browser = await launch()
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
@@ -2010,26 +2014,85 @@ describe('一账通-分组管理编辑自定义分组的权限', () => {
 
 })
 
-describe('一账通-分组管理编辑自定义分组的权限', () => {
+describe('一账通-配置管理登录页面', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
-        await useraction.login(page, 'axiangmuzuuser', 'axiangmuzuuser');
+        await useraction.login(page, 'admin', 'admin');
+        
+
+    },60000)
+    afterAll ( async () => {
+        //await page.close();
+    })
+    
+    test('TEST_001:验证配置管理页面链接' , async() => {
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        await page.waitFor(1000);
+
+        const configManageBtn = await page.waitForSelector('a[href="#/admin/config"]');
+        await configManageBtn.click();
+
+        await page.waitFor(2000);
+
+        const url = await page.url();
+        await expect(url).toEqual('http://192.168.200.115:8989/#/admin/config');
+        
+    },30000);
+
+    test('TEST_002:验证修改公司面名称是否生效' , async() => {
+
+        let configmanageaction = new configManageAction();
+        await configmanageaction.loginSetting(page,"北京龙归科技");
+        
+        const companyName = await page.$eval('.org-name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(companyName).toEqual('北京龙归科技');
+        
+    },30000);
+
+    test('TEST_003:验证配置管理页面"去进行账号配置"链接' , async() => {
+        let configmanageaction = new configManageAction();
+        await configmanageaction.urlTest(page);
+
+        const url = await page.url();
+        await expect(url).toBe('http://192.168.200.115:8989/#/admin/account/settings');
+        
+    },30000);
+
+
+})
+
+describe('一账通-分组管理编辑部门的权限', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch({headless:false})
+        page = await browser.newPage();
+        await page.goto(config.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'bumen2user', 'bumen2111');
 
     },30000)
-    afterEach ( async () => {
-        await page.close();
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证修改权限后是否生效' , async() => {
 
         const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
-        await appNameInput.type("街道OA");
+        await appNameInput.type("百度");
+
+        await page.waitFor(1000);
 
         const appName = await page.$eval('.flex-row .name', elem => {
             return elem.innerHTML;
@@ -2041,112 +2104,84 @@ describe('一账通-分组管理编辑自定义分组的权限', () => {
 
 })
 
-describe('一账通-配置管理登录页面', () => {
+describe('一账通-分组管理编辑自定义分组的权限', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
-        let configmanageaction = new configManageAction();
-        await configmanageaction.loginSetting(page,"北京龙归科技");
-        let personalsettingaction = new personalSetAction();
-        await personalsettingaction.exit(page);
+        await useraction.login(page, 'axiangmuzuuser', 'axiangmuzuuser');
 
     },30000)
-    afterEach ( async () => {
-        await page.close();
+    afterAll ( async () => {
+        //await page.close();
     })
 
-    test('TEST_001:验证修改公司面名称是否生效' , async() => {
-        const companyName = await page.$eval('.org-name', elem => {
+    test('TEST_001:验证修改权限后是否生效' , async() => {
+
+        const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
+        await appNameInput.type("百度");
+
+        await page.waitFor(1000);
+
+        const appName = await page.$eval('.flex-row .name', elem => {
             return elem.innerHTML;
         });
-        await expect(companyName).toEqual('北京龙归科技');
+        await expect(appName).toEqual('百度');
+       
         
     },30000);
-
-    test('TEST_002:验证配置管理页面链接' , async() => {
-        let configmanageaction = new configManageAction();
-        await configmanageaction.urlTest(page);
-
-        const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/admin/account');
-        
-    },30000);
-
 
 })
+
+
 
 describe('一账通-应用管理添加应用', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
+
+    },60000)
+    afterAll ( async () => {
+        //await page.close();
+    })
+
+    test('TEST_001:验证添加应用是否生效' , async() => {
         let appsmanageaction = new appsManageAction();
         await appsmanageaction.addApps(page, "携程", "https://www.ctrip.com/", "携程应用");
 
-    },30000)
-    afterEach ( async () => {
-        await page.close();
-    })
-
-    test('TEST_001:验证添加应用是否生效' , async() => {
-        const appName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+        const appName = await page.$eval('.ivu-table-tbody>tr:first-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
         await expect(appName).toEqual('携程');
 
-        const mark = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) span', elem => {
+        const mark = await page.$eval('.ivu-table-tbody>tr:first-child>td:nth-child(3) span', elem => {
             return elem.innerHTML;
         });
         await expect(mark).toEqual('携程应用');
     },30000);
 
-})
-
-describe('一账通-应用管理添加应用在我的应用是否生效', () => {
-    let page : Page;
-    
-    beforeEach( async () => {
-        let browser = await launch()
-        page = await browser.newPage();
-        await page.goto(cofig.url);
-
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
-    },30000)
-    afterEach ( async () => {
-        await page.close();
-    })
-
-    test('TEST_001:验证添加应用是否生效' , async() => {
-        const appName = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .name', elem => {
+    test('TEST_002:验证添加应用在工作台是否生效' , async() => {
+        const appName = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .name', elem => {
             return elem.innerHTML;
         });
         await expect(appName).toEqual('携程');
 
-        const mark = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .intro', elem => {
+        const mark = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .intro', elem => {
             return elem.innerHTML;
         });
         await expect(mark).toEqual('携程应用');
     },30000);
 
-    test('TEST_002:验证添加应用的链接是否正确' , async() => {
-        const appUrlBtn = await page.waitForSelector('.card-list.flex-row>li:last-child');
-        await appUrlBtn.click();
-
-        const appUrl = await page.url();
-        await expect(appUrl).toBe('https://www.ctrip.com/');
-    },30000);
 })
 
 
@@ -2156,25 +2191,38 @@ describe('一账通-应用管理编辑应用', () => {
     beforeEach( async () => {
         let browser = await launch()
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-        let appsmanageaction = new appsManageAction();
-        await appsmanageaction.editAppMassage(page, "111",  "111");
-
+        
     },30000)
     afterEach ( async () => {
         await page.close();
     })
 
     test('TEST_001:验证编辑应用是否生效' , async() => {
-        const appName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.editAppMassage(page, "111",  "111");
+
+        const appName = await page.$eval('.ivu-table-tbody>tr:first-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
         await expect(appName).toEqual('携程111');
 
-        const mark = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) span', elem => {
+        const mark = await page.$eval('.ivu-table-tbody>tr:first-child>td:nth-child(3) span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(mark).toEqual('携程应用111');
+    },30000);
+
+    test('TEST_002:验证编辑应用在工作台是否生效' , async() => {
+        const appName = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('携程111');
+
+        const mark = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .intro', elem => {
             return elem.innerHTML;
         });
         await expect(mark).toEqual('携程应用111');
@@ -2182,67 +2230,45 @@ describe('一账通-应用管理编辑应用', () => {
 
 })
 
-describe('一账通-应用管理编辑应用在我的应用是否生效', () => {
-    let page : Page;
-    
-    beforeEach( async () => {
-        let browser = await launch()
-        page = await browser.newPage();
-        await page.goto(cofig.url);
-
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
-    },30000)
-    afterEach ( async () => {
-        await page.close();
-    })
-
-    test('TEST_001:验证添加应用是否生效' , async() => {
-        const appName = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .name', elem => {
-            return elem.innerHTML;
-        });
-        await expect(appName).toEqual('携程111');
-
-        const mark = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .intro', elem => {
-            return elem.innerHTML;
-        });
-        await expect(mark).toEqual('携程应用111');
-    },30000);
-
-})
 
 
 describe('一账通-应用管理删除应用', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-        let appsmanageaction = new appsManageAction();
-        await appsmanageaction.deleteApp(page);
+        
     },30000)
-    afterEach ( async () => {
-        await page.close();
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证删除应用是否生效' , async() => {
-        const appName = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .name', elem => {
-            return elem.innerHTML;
-        });
-        await expect(appName).toEqual('百度');
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.deleteApp(page);
 
-        const mark = await page.$eval('.card-list.flex-row>li:last-child .name-intro.flex-col.flex-auto .intro', elem => {
+        const appName = await page.$eval('.ivu-table-tbody>tr>td:nth-child(2) span', elem => {
             return elem.innerHTML;
         });
-        await expect(mark).toEqual('百度搜索');
+        await expect(appName).toEqual('猎聘');
+    },30000);
+
+    test('TEST_002:验证删除应用在工作台是否生效' , async() => {
+        const appName = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('猎聘');
+
     },30000);
 
 })
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
 describe('一账通-应用管理账号的权限', () => {
     let page : Page;
     
@@ -2392,24 +2418,41 @@ describe('一账通-测试设置子管理员', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-        let managersettingaction = new managerSettingAction();
-        await managersettingaction.managerSetting(page, "部门");
+
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        await page.waitFor(2000);
+
+        const managerBtn = await page.waitForSelector('a[href="#/admin/manager"]');
+        await managerBtn.click();
+
+        await page.waitFor(3000);
+        
     },30000)
-    afterEach ( async () => {
-        await page.close();
+    afterAll ( async () => {
+        //await page.close();
     })
 
-    test('TEST_001:验证设置子管理员是否生效' , async() => {
+    test('TEST_001:验证设置子管理员页面链接' , async() => {
+        const url = await page.url();
+        await expect(url).toBe('http://192.168.200.115:8989/#/admin/manager');
+    },30000);
+
+    test('TEST_002:验证设置子管理员是否生效' , async() => {
+        let managersettingaction = new managerSettingAction();
+        await managersettingaction.managerSetting(page);
+        
         const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(managerName).toEqual('mei333');
+        await expect(managerName).toEqual('bumen3user');
     },30000);
 
 })
@@ -2420,13 +2463,13 @@ describe('一账通-测试设置子管理员', () => {
     beforeEach( async () => {
         let browser = await launch()
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
-        await useraction.login(page, 'mei333', 'mei333');
+        await useraction.login(page, 'bumen3user', 'bumen3user');
     },30000)
-    afterEach ( async () => {
-        await page.close();
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证设置子管理员是否生效' , async() => {
@@ -2436,29 +2479,32 @@ describe('一账通-测试设置子管理员', () => {
         const groupBtn = await page.waitForSelector('.header-middle a[href="#/admin/group"]');
         await groupBtn.click();
 
-        const groupName = await page.$eval('.ui-tree-item.active .ui-tree-item-title span', elem => {
+        await page.waitFor(3000);
+
+        const groupName = await page.$eval('.ui-tree-item.active>span>span', elem => {
             return elem.innerHTML;
         });
-        await expect(groupName).toContain('部门 一1');
+        await expect(groupName).toContain('部门三 ( 1 人 )');
     },30000);
 
 })
+
 
 describe('一账通-测试设置子管理员', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch()
+        let browser = await launch({headless:false})
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
         let managersettingaction = new managerSettingAction();
-        await managersettingaction.managerSettinga(page, "mei111");
+        await managersettingaction.managerSettinga(page, "北京");
     },30000)
-    afterEach ( async () => {
-        await page.close();
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证设置子管理员是否生效' , async() => {
@@ -2470,26 +2516,26 @@ describe('一账通-测试设置子管理员', () => {
 
 })
 
-//////////////////////////////////////////////////////
-
 describe('一账通-测试设置子管理员', () => {
     let page : Page;
     
     beforeEach( async () => {
         let browser = await launch()
         page = await browser.newPage();
-        await page.goto(cofig.url);
+        await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'mei111', 'mei111');
     },30000)
-    afterEach ( async () => {
-        await page.close();
+    afterAll ( async () => {
+        //await page.close();
     })
 
     test('TEST_001:验证设置子管理员是否生效' , async() => {
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
+
+        await page.waitFor(2000);
 
         const groupBtn = await page.waitForSelector('.header-middle a[href="#/admin/group"]');
         await groupBtn.click();
@@ -2877,3 +2923,61 @@ describe('一账通-测试删除子管理员', () => {
 
 })
 */
+
+describe('一账通-测试操作日志', () => {
+    let page : Page;
+    
+    beforeEach( async () => {
+        let browser = await launch();
+        page = await browser.newPage();
+        await page.goto(config.url);
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        const logBtn = await page.waitForSelector('.header-middle a[href="#/admin/oplog"]');
+        await logBtn.click();
+
+        await page.waitFor(2000);
+    },30000)
+    afterAll ( async () => {
+       // await page.close();
+    })
+
+    test('TEST_001:验证操作日志' , async() => {
+        
+        const loginLog = await page.$eval('.ivu-table-tbody>tr>td>div>div', elem => {
+            return elem.innerHTML;
+        });
+        await expect(loginLog).toEqual('登录');
+
+        const loginLogPer = await page.$eval('.ivu-table-tbody>tr>td:nth-child(2)>div>div', elem => {
+            return elem.innerHTML;
+        });
+        await expect(loginLogPer).toEqual('ad111');
+
+    },30000);
+
+    test('TEST_001:验证查看详细日志' , async() => {
+
+        const logDetailsBtn = await page.waitForSelector('.ivu-table-tbody>tr>td:last-child>div');
+        await logDetailsBtn.click();
+        
+        await page.waitFor(2000);
+
+        const loginLog = await page.$eval('div.ivu-modal-body > div > div.left > div.basic > div:nth-child(1) > span.content', elem => {
+            return elem.innerHTML;
+        });
+        await expect(loginLog).toEqual('登录');
+
+        const loginLogPer = await page.$eval('div.ivu-modal-body > div > div.left > div.basic > div:nth-child(2) > span.content', elem => {
+            return elem.innerHTML;
+        });
+        await expect(loginLogPer).toEqual('ad111');
+
+    },30000);
+
+})
