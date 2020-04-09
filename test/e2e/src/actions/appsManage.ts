@@ -5,43 +5,61 @@ export class appsManageAction{
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
-        const appsManageBtn = await page.waitForSelector('a[href="href="#/admin/app"]');
+        await page.waitFor(1000);
+
+        const appsManageBtn = await page.waitForSelector('a[href="#/admin/app"]');
         await appsManageBtn.click();
+
+        await page.waitFor(2000);
 
         const addAppBtn = await page.waitForSelector('.ui-admin-apps-app-list--toolbar.flex-row .ivu-btn.ivu-btn-default');
         await addAppBtn.click();
 
-        const appNameInput = await page.waitForSelector('input[placeholder="填写应用名称]');
+        await page.waitFor(2000);
+
+        const appNameInput = await page.waitForSelector('input[placeholder="填写应用名称"]');
         await appNameInput.type(appName);
 
-        const urlInput = await page.waitForSelector('input[placeholder="填写主页地址]');
+        const urlInput = await page.waitForSelector('input[placeholder="填写主页地址"]');
         await urlInput.type(url);
 
         const remarkInput = await page.waitForSelector('input[placeholder="自定义备注"]');
         await remarkInput.type(remark);
 
+        await page.waitFor(2000);
+
         const keepBtn = await page.waitForSelector('.buttons-right .ivu-btn.ivu-btn-primary');
         await keepBtn.click();
+
+        await page.waitFor(3000);
     }
 
     public async editAppMassage(page:Page, appName:string, remark:string){
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
-        const appsManageBtn = await page.waitForSelector('a[href="href="#/admin/app"]');
+        await page.waitFor(2000);
+
+        const appsManageBtn = await page.waitForSelector('a[href="#/admin/app"]');
         await appsManageBtn.click();
         
-        const editAppBtn = await page.waitForSelector('.ivu-table-tbody>tr:last-child .flex-row span:nth-child(2)');
+        const editAppBtn = await page.waitForSelector('.ivu-table-tbody>tr:first-child .flex-row span:nth-child(2)');
         await editAppBtn.click();
 
-        const appNameInput = await page.waitForSelector('input[placeholder="填写应用名称]');
+        await page.waitFor(2000);
+
+        const appNameInput = await page.waitForSelector('input[placeholder="填写应用名称"]');
         await appNameInput.type(appName);
 
         const remarkInput = await page.waitForSelector('input[placeholder="自定义备注"]');
         await remarkInput.type(remark);
 
+        await page.waitFor(1000);
+
         const keepBtn = await page.waitForSelector('.buttons-right .ivu-btn.ivu-btn-primary');
         await keepBtn.click();
+
+        await page.waitFor(3000);
 
     }
 
@@ -49,14 +67,20 @@ export class appsManageAction{
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
-        const appsManageBtn = await page.waitForSelector('a[href="href="#/admin/app"]');
+        const appsManageBtn = await page.waitForSelector('a[href="#/admin/app"]');
         await appsManageBtn.click();
+
+        await page.waitFor(2000);
         
-        const editAppBtn = await page.waitForSelector('.ivu-table-tbody>tr:last-child .flex-row span:nth-child(2)');
+        const editAppBtn = await page.waitForSelector('.ivu-table-tbody>tr:first-child .flex-row span:nth-child(2)');
         await editAppBtn.click();
+
+        await page.waitFor(2000);
 
         const deleteBtn = await page.waitForSelector('.ivu-btn.ivu-btn-error');
         await deleteBtn.click();
+
+        await page.waitFor(2000);
 
     }
 

@@ -1,30 +1,75 @@
 import {Page, launch} from 'puppeteer';
 
 export class managerSettingAction{
-    public async managerSetting(page:Page, search:string){//特定账号和分组未分配权限
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        const managerBtn = await page.waitForSelector('a[href="href="#/admin/manager"]');
-        await managerBtn.click();
+    public async managerSetting(page:Page){//所在分组及下级分组未分配权限
 
         const addManagerBtn = await page.waitForSelector('.ui-manager-page--header .ivu-btn.ivu-btn-default');
         await addManagerBtn.click();
 
+        await page.waitFor(2000);
+
         const selectUserBtn = await page.waitForSelector('span.placeholder');
         await selectUserBtn.click();
+
+        await page.waitFor(2000);
 
         const userCheckbox = await page.waitForSelector('.user-list>li .ivu-checkbox-input');
         await userCheckbox.click();
 
+        await page.waitFor(2000);
+
         const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
         await keepBtn.click();
 
-        const manageScopeBtn = await page.waitForSelector('div[name="ivuRadioGroup_1585204233336_1"]>label:last-child input[name="ivuRadioGroup_1585204233336_1"]');
+        await page.waitFor(3000);
+
+        const addBtn = await page.waitForSelector('.ui-edit-manager-page--footer .ivu-btn.ivu-btn-primary');
+        await addBtn.click();
+
+        await page.waitFor(2000);
+
+    } 
+
+    public async managerSettinga(page:Page, search:string){//特定分组分配创建大类权限
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        await page.waitFor(2000);
+
+        const managerBtn = await page.waitForSelector('a[href="#/admin/manager"]');
+        await managerBtn.click();
+
+        await page.waitFor(3000);
+
+        const addManagerBtn = await page.waitForSelector('.ui-manager-page--header .ivu-btn.ivu-btn-default');
+        await addManagerBtn.click();
+
+        await page.waitFor(2000);
+
+        const selectUserBtn = await page.waitForSelector('span.placeholder');
+        await selectUserBtn.click();
+
+        await page.waitFor(2000);
+
+        const userCheckbox = await page.waitForSelector('.user-list>li:nth-child(2) .ivu-checkbox-input');
+        await userCheckbox.click();
+
+        await page.waitFor(2000);
+
+        const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
+        await keepBtn.click();
+
+        await page.waitFor(2000);
+
+        const manageScopeBtn = await page.waitForSelector('div.manager-settings-scopes > div > div > label:nth-child(2) > span > input');
         await manageScopeBtn.click();
+
+        await page.waitFor(2000);
 
         const scopeBtn = await page.waitForSelector('.manager-settings-scopes .placeholder');
         await scopeBtn.click();
+
+        await page.waitFor(2000);
 
         const groupBtn = await page.waitForSelector('.base-list>li:nth-child(2)');
         await groupBtn.click();
@@ -32,44 +77,23 @@ export class managerSettingAction{
         const searchUserInput = await page.waitForSelector('input[placeholder="搜索"]');
         await searchUserInput.type(search);
 
+        await page.waitFor(2000);
+
         const selectCheckbox = await page.waitForSelector('.ui-choose-base--middle .ivu-checkbox-input');
         await selectCheckbox.click();
 
         const keepScopeBtn = await page.waitForSelector('.ivu-modal-footer .ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
         await keepScopeBtn.click();
 
-        const addBtn = await page.waitForSelector('.ui-edit-manager-page--footer .ivu-btn.ivu-btn-primary');
-        await addBtn.click();
-
-    } 
-
-    public async managerSettinga(page:Page, searchName:string){//所在分组及下级分组分配创建大类权限
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        const managerBtn = await page.waitForSelector('a[href="href="#/admin/manager"]');
-        await managerBtn.click();
-
-        const addManagerBtn = await page.waitForSelector('.ui-manager-page--header .ivu-btn.ivu-btn-default');
-        await addManagerBtn.click();
-
-        const selectUserBtn = await page.waitForSelector('span.placeholder');
-        await selectUserBtn.click();
-
-        const searchUserInput = await page.waitForSelector('input[placeholder="搜索"]');
-        await searchUserInput.type(searchName);
-
-        const userCheckbox = await page.waitForSelector('.user-list>li .ivu-checkbox-input');
-        await userCheckbox.click();
-
-        const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
-        await keepBtn.click();
+        await page.waitFor(2000);
 
         const creatGroupBtn = await page.waitForSelector('.ivu-checkbox-group.ivu-checkbox-default>ul>li .ivu-checkbox-input');
         await creatGroupBtn.click();
 
         const addBtn = await page.waitForSelector('.ui-edit-manager-page--footer .ivu-btn.ivu-btn-primary');
         await addBtn.click();
+
+        await page.waitFor(2000);
 
     } 
 
