@@ -61,6 +61,7 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oneid.authentication.CustomExpiringTokenAuthentication',
+        # 'oneid.authentication.SUDOExpiringTokenAuthentication',
         'oneid.authentication.HeaderArkerBaseAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (

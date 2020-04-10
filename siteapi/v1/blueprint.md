@@ -14,12 +14,15 @@ FORMAT: 1A
 + name (string)
 
 ## CustomUser (object)
-    + data (object) - key为字段uuid
-    + pretty (array) - read only
-        + item (object)
-            + name (string) - 字段名称
-            + uuid (string) - 字段uuid
-            + value (string) - 值
++ data (object) - key为字段uuid
++ pretty (array) - read only
+    + item (object)
+        + name (string) - 字段名称
+        + uuid (string) - 字段uuid
+        + value (string) - 值
+
+## WechatUser (object)
++ unionid (string)
 
 ## UserProfile (object)
 + username (string)
@@ -84,6 +87,7 @@ FORMAT: 1A
     + home
     + pub_key
 + custom_user (CustomUser) - May Null-> 无该键
++ wechat_user (WechatUser)
 + require_reset_password(boolean) - 是否需要重置密码
 + has_password (boolean) - 是否有密码，目前仅用于邀请链接的页面
 
@@ -377,7 +381,7 @@ FORMAT: 1A
         + key (string) - 键
         + value (string) - 值，用于显示
 
-## SAML2APP (object)
+## SAMLAPP (object)
 + app (object) - OnetoOne关联APP对象
 + entity_id (string) - SP方SAML实体
 + acs (string) - SP单点登录uri
@@ -406,12 +410,20 @@ FORMAT: 1A
 + vendor (string)
 + access_key (string)
 + access_secret (string) - write_only
-+ signature (string)
++ signature (string) - 签名
 + template_code (string) - 通用短信模板ID
 + template_register (string) - 注册用短信模板ID
 + template_reset_pwd (string) - 重置密码用短信模板ID
 + template_activate （string) - 激活用短信模板ID
 + template_reset_mobile (string) - 重置手机用短信模板ID
++ template_login (string) - 登陆用短信模板ID
++ signature_i18n (string) - 国际-签名
++ template_code_i18n (string) - 国际-通用短信模板ID
++ template_register_i18n (string) - 国际-注册用短信模板ID
++ template_reset_pwd_i18n (string) - 国际-重置密码用短信模板ID
++ template_activate_i18n （string) - 国际-激活用短信模板ID
++ template_reset_mobile_i18n (string) - 国际-重置手机用短信模板ID
++ template_login_i18n (string) - 国际-登陆用短信模板ID
 + is_valid (boolean) - 是否有效
 
 ## EmailConfig (object)
@@ -544,9 +556,7 @@ FORMAT: 1A
 失败
 
 ## 短信验证码-注册 [/service/sms/register/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
+
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
@@ -556,6 +566,10 @@ FORMAT: 1A
 + Response 201 (application/json)
 
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string) - 支持国际手机号，形如 `+86 18812341234`，作为URL QueryParams 时注意需要编码 -> `%2B86%2018813105748`
+    + code (string)
+
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
@@ -565,9 +579,7 @@ FORMAT: 1A
 失败
 
 ## 短信验证码-登录 [/service/sms/login/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
+
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
@@ -577,6 +589,10 @@ FORMAT: 1A
 + Response 201 (application/json)
 
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string)
+    + code (string)
+
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
@@ -586,9 +602,7 @@ FORMAT: 1A
 失败
 
 ## 短信验证码-重置密码 [/service/sms/reset_password/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
+
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
@@ -599,6 +613,9 @@ FORMAT: 1A
 + Response 201 (application/json)
 
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string)
+    + code (string)
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
@@ -608,51 +625,56 @@ FORMAT: 1A
 失败
 
 ## 短信验证码-激活账号 [/service/sms/activate_user/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
         + key (string, required) - 邀请码
 + Response 201 (application/json)
+
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string)
+    + code (string)
+
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
         + expired (string)
 
 ## 短信验证码-重置手机 [/service/sms/update_mobile/{?mobile,code}]
-+ Parameters
-    + mobile (string)
-    + code (string)
+
 ### 发送短信验证码 [POST]
 + Request JSON Message
     + Attributes
         + mobile (string, required) - 重置后的手机号
         + password (string, required)
 ### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string) - 支持国际手机号，形如 `+86 18812341234`
+    + code (string)
+
 + Response 200 (application/json)
     + Attributes
         + sms_token (string)
         + expired (string)
 
 ## 验证邮件-注册 [/service/email/register/{?email_token}]
-+ Parameters
-    + email_token (string)
+
 ### 发送验证邮件 [POST]
 + Request JSON Message
     + Attributes
         + email (string, required)
 + Response 201 (application/json)
 ### 校验邮件验证码 [GET]
++ Parameters
+    + email_token (string)
+
 + Response 200 (application/json)
     + Attributes
         + email (string)
 
 ## 验证邮件-重置密码 [/service/email/reset_password/{?email_token}]
-+ Parameters
-    + email_token (string)
+
 ### 发送验证邮件 [POST]
 + Request JSON Message
     + Attributes
@@ -660,6 +682,9 @@ FORMAT: 1A
         + username (string, required)
 + Response 201 (application/json)
 ### 校验邮件验证码 [GET]
++ Parameters
+    + email_token (string)
+
 + Response 200 (application/json)
     + Attributes
         + email (string)
@@ -667,14 +692,17 @@ FORMAT: 1A
         + name (string)
 
 ## 验证邮件-激活账号 [/service/email/activate_user/{?email_token}]
-+ Parameters
-    + email_token (string)
+
 ### 发送验证邮件 [POST]
 + Request JSON Message
     + Attributes
         + key (string, required) - 邀请码
 + Response 201 (application/json)
+
 ### 校验邮件验证码 [GET]
++ Parameters
+    + email_token (string)
+
 + Response 200 (application/json)
     + Attributes
         + email (string)
@@ -683,15 +711,18 @@ FORMAT: 1A
         + key (string)
 
 ## 验证邮件-重置邮箱 [/service/email/update_email/{?email_token}]
-+ Parameters
-    + email_token (string)
+
 ### 发送验证邮件 [POST]
 + Request JSON Message
     + Attributes
         + email (string, required) - 重置后的邮箱
         + password (string, required)
 + Response 201 (application/json)
+
 ### 校验邮件验证码 [GET]
++ Parameters
+    + email_token (string)
+
 + Response 200 (application/json)
     + Attributes
         + email (string)
@@ -908,7 +939,7 @@ TODO: 校对
 # Group User
 用户管理
 
-## 所有用户 [/user/{?keyword}]
+## 所有用户 [/user/{?keyword,wechat_unionid,page,page_size}]
 
 ### 创建用户 [POST]
 + Request JSON Message
@@ -921,14 +952,16 @@ TODO: 校对
     + Attributes (Employee)
 
 ### 获取用户列表 [GET]
+
++ Parameters
+    + keyword (string, optional) - 查询关键字，进行用户名、姓名、邮箱、手机号模糊搜索
+    + wechat_unionid (string, optional)
+    + page (number, optional)
+        + default: 1
+    + page_size (number, optional)
+        + default: 30
+
 不考虑层级，单纯返回所有用户
-+ request JSON Message
-    + Attributes
-        + page_size (number)
-            - default: 30
-        + page (number)
-            - default: 1
-        + keyword (string) - 查询关键字，进行用户名、姓名、邮箱、手机号模糊搜索
 
 + Response 200 (application/json)
     + Attributes
@@ -2490,7 +2523,7 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 200 (application/json)
     + Attributes
-        + metadata (html/xml) - SAML2元数据显示在网页，用于SP方获取
+        + metadata (string) - SAML2元数据显示在网页，用于SP方获取   FIXME: content-type
 
 ## 下载元数据文件 [/saml/download/metadata/]
 
@@ -2501,4 +2534,4 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 200 (application/json)
     + Attributes
-        + metadata.xml (file/xml) - IdP方新建时生成的元数据文件，用于在SP方配置时上传.
+        + metadata.xml (string) - IdP方新建时生成的元数据文件，用于在SP方配置时上传.  FIXME: content-type

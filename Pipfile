@@ -8,7 +8,7 @@ url = "https://mirrors.aliyun.com/pypi/simple"
 verify_ssl = true
 
 [packages]
-django = "==2.0.13"
+django = "==2.2.10"
 djangorestframework = "==3.10.2"
 django-cors-headers = "==2.5.3"
 celery = "==4.2.1"
@@ -27,7 +27,6 @@ django-simple-captcha = "==0.5.12"
 aliyun-python-sdk-core-v3 = "==2.8.6"
 sqlparse = "*"
 kubernetes = "==10.0.0"
-pymysql = "==0.9.3"
 django-jsonfield = "==1.2.0"
 minio = "==4.0.18"
 cryptography = "==2.8"
@@ -38,6 +37,9 @@ mako = "==1.1.0"
 pyasn1 = "==0.4.8"
 repoze-who = "==2.3"
 cherrypy = "==18.4.0"
+
+# 当使用 MySQL 作为数据库时:
+# mysqlclient = "1.4.6"
 
 [dev-packages]
 ipython = "*"

@@ -5,7 +5,7 @@ from test.utils.test_data_manager import SqliteToSqlManager
 from django.test.utils import get_unique_databases_and_mirrors, connections
 
 
-def setup_databases(verbosity, keepdb=False, debug_sql=False, parallel=0):    # pylint: disable=too-many-locals
+def setup_databases(verbosity, keepdb=False, debug_sql=False, parallel=0, **kwargs):    # pylint: disable=too-many-locals, unused-argument
     """Create the test databases."""
     test_databases, mirrored_aliases = get_unique_databases_and_mirrors()
     old_names = []
