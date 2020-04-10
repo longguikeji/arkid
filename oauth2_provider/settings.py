@@ -16,17 +16,20 @@ OAuth2 Provider settings, checking for user settings first, then falling
 back to the defaults.
 """
 import importlib
-
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-
 
 USER_SETTINGS = getattr(settings, "OAUTH2_PROVIDER", None)
 
 APPLICATION_MODEL = getattr(settings, "OAUTH2_PROVIDER_APPLICATION_MODEL", "oauth2_provider.Application")
+OIDC_APPLICATION_MODEL = getattr(settings, "OAUTH2_PROVIDER_OIDC_APPLICATION_MODEL", "oauth2_provider.OidcApplication")
+OIDC_ACCESS_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_OIDC_ACCESS_TOKEN_MODEL", "oauth2_provider.OidcAccessToken")
 ACCESS_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL", "oauth2_provider.AccessToken")
+OIDC_GRANT_MODEL = getattr(settings, "OAUTH2_PROVIDER_OIDC_GRANT_MODEL", "oauth2_provider.OidcGrant")
 GRANT_MODEL = getattr(settings, "OAUTH2_PROVIDER_GRANT_MODEL", "oauth2_provider.Grant")
+OIDC_REFRESH_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_OIDC_REFRESH_TOKEN_MODEL", "oauth2_provider.OidcRefreshToken")
 REFRESH_TOKEN_MODEL = getattr(settings, "OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL", "oauth2_provider.RefreshToken")
+OIDC_RSA_KEY_MODEL = getattr(settings, "OAUTH2_PROVIDER_OIDC_RSA_KEY", "oauth2_provider.OidcRsaKey")
 
 DEFAULTS = {
     "CLIENT_ID_GENERATOR_CLASS": "oauth2_provider.generators.ClientIdGenerator",
@@ -35,21 +38,34 @@ DEFAULTS = {
     "OAUTH2_SERVER_CLASS": "oauthlib.oauth2.Server",
     "OAUTH2_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
     "OAUTH2_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OAuthLibCore",
-    "SCOPES": {"read": "Reading scope", "write": "Writing scope"},
+    "OIDC_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OidcLibCore",
+    "SCOPES": {"read": "Reading scope", "write": "Writing scope", "openid": "ID token scope", "introspect": "Token introspection"},
     "DEFAULT_SCOPES": ["__all__"],
     "SCOPES_BACKEND_CLASS": "oauth2_provider.scopes.SettingsScopes",
     "READ_SCOPE": "read",
     "WRITE_SCOPE": "write",
+    "OPENID_SCOPE": "id token",
+    "INTROSPECTION": "introspection token",
     "AUTHORIZATION_CODE_EXPIRE_SECONDS": 60,
     "ACCESS_TOKEN_EXPIRE_SECONDS": 36000,
+    "OIDC_ID_TOKEN_EXPIRE": 600,
     "REFRESH_TOKEN_EXPIRE_SECONDS": None,
     "REFRESH_TOKEN_GRACE_PERIOD_SECONDS": 0,
     "ROTATE_REFRESH_TOKEN": True,
     "ERROR_RESPONSE_WITH_SCOPES": False,
+    "OIDC_SITE_URL": "http://192.168.31.62:8000",  # OPTIONAL. The OP server url.
+    "OIDC_ID_TOKEN_INCLUDE_CLAIMS": False,  # OPTIONAL. If enabled, id_token will include standard claims of the user.
+    "OIDC_EXTRA_SCOPE_CLAIMS": None,  # OPTIONAL. A string with the location of your class. Used to add extra scopes specific for your app.
+
     "APPLICATION_MODEL": APPLICATION_MODEL,
+    "OIDC_APPLICATION_MODEL": OIDC_APPLICATION_MODEL,
     "ACCESS_TOKEN_MODEL": ACCESS_TOKEN_MODEL,
+    "OIDC_ACCESS_TOKEN_MODEL": OIDC_ACCESS_TOKEN_MODEL,
     "GRANT_MODEL": GRANT_MODEL,
+    "OIDC_GRANT_MODEL": OIDC_GRANT_MODEL,
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
+    "OIDC_REFRESH_TOKEN_MODEL": OIDC_REFRESH_TOKEN_MODEL,
+    "OIDC_RSA_KEY_MODEL": OIDC_RSA_KEY_MODEL,
     "REQUEST_APPROVAL_PROMPT": "force",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
 
@@ -68,8 +84,20 @@ DEFAULTS = {
         "next",
         "backPath",
         "next_path",
-    )
+    ),
+
+    # 兼容OIDC的响应类型
+    "UP_COMPATIBLE_OIDC_RESPONSE_TYPE": {
+        "code": "code",  # Authorization Code Flow
+        "id_token": "token",  # Implicit Flow
+        "id_token token": "token",  # Implicit Flow
+        "code token": "code",  # Hybrid Flow
+        "code id_token": "code",  # Hybrid Flow
+        "code id_token token": "code"  # Hybrid Flow
+    },
+
 }
+
 
 # List of settings that cannot be empty
 MANDATORY = (
@@ -91,6 +119,7 @@ IMPORT_STRINGS = (
     "OAUTH2_BACKEND_CLASS",
     "SCOPES_BACKEND_CLASS",
 )
+
 
 def perform_import(val, setting_name):
     """

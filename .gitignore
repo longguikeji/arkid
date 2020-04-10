@@ -146,3 +146,8 @@ djangosaml2config/saml2_config/*.xml
 
 # sql
 test/data/test_*.sql
+
+CHANGELOG.md
+node_modules/
+package-lock.json
+package.json

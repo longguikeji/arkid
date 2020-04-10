@@ -2,9 +2,14 @@ import json
 import logging
 import urllib
 import urllib.parse as urlparse
+from datetime import timedelta
 from urllib.parse import urlencode
+import importlib
 
-from django.http import HttpResponse, HttpResponseRedirect
+from Cryptodome.PublicKey import RSA
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.urls import reverse
+from jwkest import long_to_base64
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
@@ -18,14 +23,15 @@ from drf_expiring_authtoken.models import ExpiringToken
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
-from ..models import get_access_token_model, get_application_model
+from ..models import get_access_token_model, get_oidc_access_token_model, get_application_model, get_oidc_application_model, get_oidc_rsa_key_model
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..signals import app_authorized
 from ..backends import OAuth2Backend
 from .mixins import OAuthLibMixin
-from oauth2_provider.models import AccessToken
+from oauth2_provider.models import AccessToken, OidcAccessToken
 from oneid_meta.models import APP
+
 log = logging.getLogger("oauth2_provider")
 
 
@@ -35,11 +41,16 @@ from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 ONEID_TOKEN_KEY = 'oneid_token'
 
+
 class TokenRequiredMixin(AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
+        scope = (request.GET.get('scope', '').strip("\n")).split(' ')
         client_id = request.GET.get('client_id', '').strip("\n")
-        app = APP.valid_objects.filter(oauth_app__client_id=client_id).first()
+        if 'openid' in scope:
+            app = APP.valid_objects.filter(oidc_app__client_id=client_id).first()
+        else:
+            app = APP.valid_objects.filter(oauth_app__client_id=client_id).first()
         if not app:
             return HttpResponse("Can't find app, please contact your IT manager")
 
@@ -87,14 +98,14 @@ class TokenRequiredMixin(AccessMixin):
         # scheme='', netloc='', path='/_/', params='', query='', fragment='/oneid/login'
         # -> 
         # scheme='', netloc='', path='/_/#/oneid/login', params='', query='', fragment=''
-        login_url_parts[2] += '#{}'.format(login_url_parts[5])
+        login_url_parts[2] += '{}'.format(login_url_parts[5])
         login_url_parts[5] = ''
         if redirect_field_name:
             querystring = QueryDict(login_url_parts[4], mutable=True)
             querystring[redirect_field_name] = next_url
             login_url_parts[4] = querystring.urlencode(safe='/')
-
         return HttpResponseRedirect(urlunparse(login_url_parts))
+
 
 class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
     """
@@ -117,7 +128,6 @@ class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
         error details or providing an error response
         """
         redirect, error_response = super().error_response(error, **kwargs)
-
         if redirect:
             return self.redirect(error_response["url"], application)
 
@@ -133,6 +143,7 @@ class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
             allowed_schemes = application.get_allowed_schemes()
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
+
 class AuthorizationWraperView(View):
 
     def get(self, request):
@@ -147,7 +158,6 @@ class AuthorizationWraperView(View):
             return HttpResponseRedirect(url_path)
         else:
             fe_token_url = settings.FE_TOKEN_URL
-
             target = urllib.parse.quote(url_path)
             print('miss token, go to fe', fe_token_url)
             print('target', target)
@@ -179,8 +189,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     server_class = oauth2_settings.OAUTH2_SERVER_CLASS
     validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
     oauthlib_backend_class = oauth2_settings.OAUTH2_BACKEND_CLASS
+    oidclib_backend = 'oauth2_provider.oauth2_backends'
 
     skip_authorization_completely = False
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def get_initial(self):
         # TODO: move this scopes conversion from and to string into a utils function
@@ -192,26 +206,59 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "state": self.oauth2_data.get("state", None),
             "response_type": self.oauth2_data.get("response_type", None),
             "next_path": self.extra_data.get("next_path", None),
+            "nonce": self.oauth2_data.get("nonce", None),
+            "code_challenge": self.oauth2_data.get("code_challenge", None),
+            "code_challenge_method": self.oauth2_data.get("code_challenge_method", None),
         }
         return initial_data
 
     def form_valid(self, form):
         client_id = form.cleaned_data["client_id"]
-        application = get_application_model().objects.get(client_id=client_id)
+        scopes = form.cleaned_data.get("scope").split(' ')
+        if 'openid' in scopes:
+            application = get_oidc_application_model().objects.get(client_id=client_id)
+        else:
+            application = get_application_model().objects.get(client_id=client_id)
         credentials = {
             "client_id": form.cleaned_data.get("client_id"),
             "redirect_uri": form.cleaned_data.get("redirect_uri"),
             "response_type": form.cleaned_data.get("response_type", None),
             "state": form.cleaned_data.get("state", None),
+            "nonce": form.cleaned_data.get("nonce", None),
+            "code_challenge": form.cleaned_data.get("code_challenge", None),
+            "code_challenge_method": form.cleaned_data.get("code_challenge_method", None),
         }
-        next_path = form.cleaned_data.get("next_path")
         scopes = form.cleaned_data.get("scope")
+        next_path = form.cleaned_data.get("next_path")
         allow = form.cleaned_data.get("allow")
 
         try:
-            uri, headers, body, status = self.create_authorization_response(
+            uri, headers, body, status = self.create_authorization_response(  # oauth2_provider/views/mixins.py -> oauthlib\oauth2\rfc6749\endpoints\authorization.py -> oauthlib.oauth2.rfc6749.grant_types.implicit.ImplicitGrant -> ...
                 request=self.request, scopes=scopes, credentials=credentials, allow=allow
             )
+            if 'openid' in scopes.split(' ') and application.response_type != 'code':
+                oneid_token = ExpiringToken.objects.get(key=self.request.META.get('HTTP_AUTHORIZATION').split(' ')[1])
+                queryset = OidcAccessToken.objects.filter(token=oneid_token.key)
+                if queryset:
+                    access_token = queryset[0]
+                    access_token.expires = timezone.now() + timedelta(
+                        seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
+                else:
+                    access_token = OidcAccessToken.objects.create(
+                        token=oneid_token.key,
+                        application=application,
+                        expires=timezone.now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS),
+                    )
+                id_token = self.validator_class().create_id_token(access_token, oneid_token.user, client_id, nonce='',
+                                                                  at_hash=access_token.at_hash, request=None, scope=None)
+                access_token.scope = scopes
+                access_token.source_refresh_token = None
+                access_token.id_token = id_token
+                access_token.save()
+                id_token = get_oidc_access_token_model().encode_id_token(access_token.id_token, access_token.application)
+                uri = self.validator_class().refactor_oidc_authorization_uri(application.response_type,
+                                                                             access_token.token,
+                                                                             id_token, uri)
         except OAuthToolkitError as error:
             return self.error_response(error, application)
 
@@ -245,18 +292,19 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         kwargs["scopes_descriptions"] = [all_scopes[scope] for scope in scopes]
         kwargs["scopes"] = scopes
         # at this point we know an Application instance with such client_id exists in the database
-
         # TODO: Cache this!
-        application = get_application_model().objects.get(client_id=credentials["client_id"])
-
+        application = get_oidc_application_model().objects.get(client_id=credentials["client_id"]) if 'openid' in scopes \
+            else get_application_model().objects.get(client_id=credentials["client_id"])
         kwargs["application"] = application
         kwargs["client_id"] = credentials["client_id"]
         kwargs["redirect_uri"] = credentials["redirect_uri"]
         kwargs["response_type"] = credentials["response_type"]
         kwargs["state"] = credentials["state"]
+        kwargs["nonce"] = credentials.get('nonce', '')
+        kwargs["code_challenge"] = credentials.get('code_challenge', '')
+        kwargs["code_challenge_method"] = credentials.get('code_challenge_method', '')
 
         self.oauth2_data = kwargs
-
         next_path = ''
         for key in oauth2_settings.LOGIN_NEXT_PARAM_NAMES:
             value = request.GET.get(key)
@@ -265,7 +313,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         self.extra_data = {
             'next_path': next_path,
         }
-
 
         # following two loc are here only because of https://code.djangoproject.com/ticket/17795
         form = self.get_form(self.get_form_class())
@@ -302,10 +349,8 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                             credentials=credentials, allow=True
                         )
                         return self.redirect(uri, application)
-
         except OAuthToolkitError as error:
             return self.error_response(error, application)
-
         return self.render_to_response(self.get_context_data(**kwargs))
 
 
@@ -327,20 +372,23 @@ class TokenView(OAuthLibMixin, View):
     def post(self, request, *args, **kwargs):
         url, headers, body, status = self.create_token_response(request)
         if status == 200:
-            access_token = json.loads(body).get("access_token")
+            json_body = json.loads(body)
+            access_token = json_body.get("access_token")
             if access_token is not None:
-                token = get_access_token_model().objects.get(
-                    token=access_token)
+                access_token_model = get_access_token_model() if 'openid' not in json_body.get("scope") else get_oidc_access_token_model()
+                token = access_token_model.objects.get(token=access_token)
                 oneid_token, _ = ExpiringToken.objects.get_or_create(user=token.user)
-                for duplicate_token in get_access_token_model().objects.filter(token=oneid_token.key):
+                for duplicate_token in access_token_model.objects.filter(token=oneid_token.key):
                     duplicate_token.delete()
                 token.token = oneid_token.key
                 token.save()
                 app_authorized.send(
                     sender=self, request=request,
                     token=token)
-                dic_body = json.loads(body)
+                dic_body = json_body
                 dic_body['access_token'] = oneid_token.key
+                if 'openid' in json_body.get("scope"):
+                    dic_body['id_token'] = get_oidc_access_token_model().encode_id_token(token.id_token, token.application)
                 body = json.dumps(dic_body)
         response = HttpResponse(content=body, status=status)
 
@@ -368,7 +416,6 @@ class RevokeTokenView(OAuthLibMixin, View):
 
 
 class UserInfoOauthView(APIView):
-
     authentication_classes = [OAuth2Backend]
 
     def get(self, request):
@@ -386,4 +433,83 @@ class UserInfoOauthView(APIView):
         response["Access-Control-Allow-Origin"] = "*"
         response["Access-Control-Allow-Headers"] = "*"
         response["Access-Control-Allow-Credentials"] = "true"
+        return response
+
+
+class UserInfoOidcView(APIView):
+    authentication_classes = [OAuth2Backend]
+
+    def get(self, request):
+        user = request.user
+        response = Response({
+            "sub": user.id,
+            'preferred_username': user.username,
+            "email": user.email,
+        })
+
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "*"
+        response["Access-Control-Allow-Credentials"] = "true"
+        return response
+
+
+class JwksView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        dic = dict(keys=[])
+
+        for rsakey in get_oidc_rsa_key_model().objects.all():
+            public_key = RSA.importKey(rsakey.key).publickey()
+            dic['keys'].append({
+                'kty': 'RSA',
+                'alg': 'RS256',
+                'use': 'sig',
+                'kid': rsakey.kid,
+                'n': long_to_base64(public_key.n),
+                'e': long_to_base64(public_key.e),
+            })
+
+        response = JsonResponse(dic)
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
+
+
+class OidcProviderInfoView(View):
+
+    validator_module = 'oauth2_provider.oauth2_validators'
+
+    def get(self, request, *args, **kwargs):
+        dic = dict()
+
+        validator_module = importlib.import_module(self.validator_module)
+        site_url = validator_module.get_site_url(request=request)
+        # dic['issuer'] = validator_module.get_issuer(site_url=site_url, request=request)
+        dic['issuer'] = 'http://192.168.31.62:8000/oauth/'
+        dic['scopes_supported'] = ["openid", "write", "read", "introspect"]
+
+        dic['authorization_endpoint'] = site_url + reverse('oauth2_provider:authorize_wraper')
+        dic['token_endpoint'] = site_url + reverse('oauth2_provider:token')
+        dic['userinfo_endpoint'] = site_url + reverse('oauth2_provider:userinfo')
+        # dic['end_session_endpoint'] = site_url + reverse('oauth2_provider:end-session')
+        dic['introspection_endpoint'] = site_url + reverse('oauth2_provider:oidc_introspect')
+
+        types_supported = [response_type[0] for response_type in get_oidc_application_model().RESPONSE_TYPES]
+        dic['response_types_supported'] = types_supported
+
+        dic['jwks_uri'] = site_url + reverse('oauth2_provider:jwks')
+
+        dic['id_token_signing_alg_values_supported'] = ['HS256', 'RS256']
+
+        # See: http://openid.net/specs/openid-connect-core-1_0.html#SubjectIDTypes
+        dic['subject_types_supported'] = ['public']
+
+        dic['token_endpoint_auth_methods_supported'] = ['client_secret_post',
+                                                        'client_secret_basic']
+
+        # if settings.get('OIDC_SESSION_MANAGEMENT_ENABLE'):
+        #     dic['check_session_iframe'] = site_url + reverse('oidc_provider:check-session-iframe')
+
+        response = JsonResponse(dic)
+        response['Access-Control-Allow-Origin'] = '*'
+
         return response

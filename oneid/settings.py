@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'siteapi',
     'oneid_meta',
     'oauth2_provider',
+    # 'oidc_provider',
     'infrastructure',
     'captcha',
     'djangosaml2idp',
