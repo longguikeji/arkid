@@ -29,7 +29,9 @@ export class accountAction{
         const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
         await repwdInput.type(repassword);
 
-        const primaryBtn= await page.waitForSelector('body > div:nth-child(6) > div.ivu-modal-wrap > div > div > div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
+        await page.waitFor(2000);
+
+        const primaryBtn= await page.waitForSelector('div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
         await primaryBtn.click();
 
         await page.waitFor(1000);
@@ -177,7 +179,9 @@ export class accountAction{
         const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
         await repwdInput.type(repassword);
 
-        const primaryBtn = await page.waitForSelector('body > div:nth-child(6) > div.ivu-modal-wrap > div > div > div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
+        await page.waitFor(2000);
+
+        const primaryBtn= await page.waitForSelector('div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
         await primaryBtn.click();
 
         await page.waitFor(2000);
@@ -207,7 +211,7 @@ export class accountAction{
         // const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
         // await keepBtn.click();
 
-        const addBtn = await page.waitForSelector('body > div:nth-child(5) > div.ivu-drawer-wrap.ui-edit-user > div > div > div > div.drawer-footer.flex-row.flex-auto > button.ivu-btn.ivu-btn-primary');
+        const addBtn = await page.waitForSelector('div.drawer-footer.flex-row.flex-auto > button.ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
         await page.waitFor(3000);
