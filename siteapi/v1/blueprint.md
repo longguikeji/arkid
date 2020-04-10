@@ -555,6 +555,7 @@ FORMAT: 1A
 + Response 400 (application/json)
 失败
 
+
 ## 短信验证码-注册 [/service/sms/register/{?mobile,code}]
 
 ### 发送短信验证码 [POST]
@@ -657,6 +658,29 @@ FORMAT: 1A
     + Attributes
         + sms_token (string)
         + expired (string)
+
+
+## 短信验证码-通用 [/service/sms/]
+### 发送短信验证码 [POST]
++ Request JSON Message
+    + Attributes
+        + mobile (string, required)
+        + captcha_key (string)
+        + captcha (string)
++ Response 201 (application/json)
+
+### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string) - 支持国际手机号，形如 `+86 18812341234`，作为URL QueryParams 时注意需要编码 -> `%2B86%2018813105748`
+    + code (string)
+
++ Response 200 (application/json)
+    + Attributes
+        + sms_token (string)
+        + expired (string)
+
++ Response 400 (application/json)
+失败
 
 ## 验证邮件-注册 [/service/email/register/{?email_token}]
 
