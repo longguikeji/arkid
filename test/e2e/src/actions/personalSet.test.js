@@ -33,9 +33,9 @@ test('一账通-修改密码', async () => {
     await page.goto('http://192.168.200.115:8989');
 
     const usernameInput = await page.waitForSelector('input[type = "text"]');
-    await usernameInput.type("bumen3user");
+    await usernameInput.type("bxiangmuzuuser");
     const passwordInput = await page.waitForSelector('input[type = "password"]');
-    await passwordInput.type("bumen3user");
+    await passwordInput.type("bxiangmuzuuser");
         
     const loginBtn = await page.waitForSelector('button[type = "button"]');
     await loginBtn.click();
@@ -51,13 +51,13 @@ test('一账通-修改密码', async () => {
     await page.waitFor(3000);
 
     const oldPwdInput = await page.waitForSelector('input[placeholder="输入原密码"]');
-    await oldPwdInput.type("bumen3user");
+    await oldPwdInput.type("bxiangmuzuuser");
 
     const newPwdInput = await page.waitForSelector('input[placeholder="输入新密码"]');
-    await newPwdInput.type("bumen3111");
+    await newPwdInput.type("bxiangmuzu111");
 
     const renewPwdInput = await page.waitForSelector('input[placeholder="再次输入新密码"]');
-    await renewPwdInput.type("bumen3111");
+    await renewPwdInput.type("bxiangmuzu111");
 
     const defineBtn = await page.waitForSelector('.right-button.ivu-btn.ivu-btn-primary');
     await defineBtn.click();
@@ -65,9 +65,9 @@ test('一账通-修改密码', async () => {
     await page.waitFor(2000);
 
     const usernameInput1 = await page.waitForSelector('input[type = "text"]');
-    await usernameInput1.type("bumen3user");
+    await usernameInput1.type("bxiangmuzuuser");
     const passwordInput1 = await page.waitForSelector('input[type = "password"]');
-    await passwordInput1.type("bumen3111");
+    await passwordInput1.type("bxiangmuzu111");
         
     const loginBtn1 = await page.waitForSelector('button[type = "button"]');
     await loginBtn1.click();
