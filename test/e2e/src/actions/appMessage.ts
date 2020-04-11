@@ -1,6 +1,5 @@
 import {Page, launch} from 'puppeteer';
 
- 
 export class appMessageAction{
     public async appinformation(page:Page){
         const deskBtn = await page.waitForSelector('.ivu-menu-item.ivu-menu-item-active.ivu-menu-item-selected');
