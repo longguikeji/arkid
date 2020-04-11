@@ -3,7 +3,8 @@ EXPOSE 80
 WORKDIR /var/oneid
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        vim supervisor gettext xmlsec1
+        vim supervisor gettext xmlsec1 \
+        python-dev default-libmysqlclient-dev
 ADD devops/pip.conf /etc/pip.conf
 ADD requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
@@ -21,11 +22,9 @@ ADD . .
 RUN make test
 
 FROM build_deps as build
-RUN pip install uwsgi
+RUN pip install uwsgi mysqlclient==1.4.6
 ADD . .
 COPY uwsgi.ini /etc/uwsgi/uwsgi.ini
-RUN \
-    python manage.py compilemessages && \
-    sed -i "s|LANGUAGE_CODE = 'zh-hans'|LANGUAGE_CODE = 'zh_hans'|g" oneid/settings.py
+RUN python manage.py compilemessages
 CMD python manage.py migrate && supervisord
 

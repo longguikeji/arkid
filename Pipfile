@@ -41,6 +41,9 @@ cherrypy = "==18.4.0"
 pyjwkest = "*"
 #mysqlclient = "1.4.6"
 
+# 当使用 MySQL 作为数据库时:
+# mysqlclient = "1.4.6"
+
 [dev-packages]
 ipython = "*"
 pre-commit = "*"
