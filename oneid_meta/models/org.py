@@ -36,6 +36,7 @@ class Org(BaseModel):
     def oid(self):
         '''
         get oid
+        TODO: refactor: oid 应该为 string 类型
         '''
         return self.uuid
 

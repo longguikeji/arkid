@@ -128,7 +128,7 @@ class APPTestCase(TestCase):
         self._manager = manager
 
         self.org = Org.create(name='org', owner=owner)
-        self.owner.json_post(reverse('siteapi:org_user', args=(self.org.oid, )) + '?username=employee')
+        self.owner.json_post(reverse('siteapi:org_user_list', args=(self.org.oid, )) + '?username=employee')
 
         group = Group.objects.create(name='test', parent=self.org.manager)
         ManagerGroup.objects.create(group=group, scope_subject=2, apps=['app', 'demo'])
@@ -559,14 +559,14 @@ class APPTestCase(TestCase):
     def test_org_app(self):
         usr1 = User.create_user('usr1', 'usr1')
         self.usr1 = self.login_as(usr1)
-        org1 = self.usr1.json_post(reverse('siteapi:org_create'), data={'name': 'org1'}).json()
+        org1 = self.usr1.json_post(reverse('siteapi:org_list'), data={'name': 'org1'}).json()
 
         self.usr1.json_post(reverse('siteapi:app_list', args=(org1['oid'], )), data={'name': 'app1'}).json()
         self.usr1.json_post(reverse('siteapi:app_list', args=(org1['oid'], )), data={'name': 'app2'}).json()
 
         usr2 = User.create_user('usr2', 'usr2')
         self.usr2 = self.login_as(usr2)
-        org2 = self.usr2.json_post(reverse('siteapi:org_create'), data={'name': 'org2'}).json()
+        org2 = self.usr2.json_post(reverse('siteapi:org_list'), data={'name': 'org2'}).json()
 
         mgr = Group.valid_objects.create(uid='sub1',
                                          name='sub1',

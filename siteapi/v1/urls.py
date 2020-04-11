@@ -197,7 +197,9 @@ urlpatterns = [
     url(r'^migration/user/csv/import/$', migrate_views.UserCSVImportView.as_view(), name='import_user'),
 
     # events
-    url(r'^invitation/user/(?P<username>[\w]+)/', event_views.InviteUserCreateAPIView.as_view(), name='invite_user'),
+    url(r'^invitation/user/(?P<username>[\w]+)/$', event_views.InviteUserCreateAPIView.as_view(), name='invite_user'),
+    url(r'^org/(?P<oid>[\w|-]+)/invitation/$', org_views.OrgInvitationLinkAPIView.as_view(), name='org_invite_link'),
+    url(r'^org/(?P<oid>[\w|-]+)/invitation/(?P<key>[\w|-]+)/$', org_views.OrgInvitationLinkDetailAPIView.as_view(), name='org_invite_link_detail'),
     # statistics
     url(r'^statistics/user_statistic/$', UserStatisticView.as_view(), name='user_statistic'),
 ]

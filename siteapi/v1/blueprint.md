@@ -1691,6 +1691,31 @@ TODO: 可见权限的处理
 
 
 
+## 组织邀请链接 [/org/{oid}/invitation/]
++ Parameters
+    + oid
+### 获取最新邀请用的key [GET]
++ Response 200 (application/json)
+    + Attributes
+        + invite_link_key (string)
+
+### 刷新链接用的key [PUT]
++ Response 200 (application/json)
+    + Attributes
+        + invite_link_key (string)
+
+## 组织特定邀请链接 [/org/{oid}/invitation/{invite_link_key}/]
++ Parameters
+    + oid
+    + invite_link_key
+### 查看组织信息 [GET]
++ Response 200 (application/json)
+    + Attributes (Org)
+
+### 加入组织 [POST]
++ Response 200 (application/json)
+    + Attributes (Org)
+
 # Group Perm
 
 ## 所有权限 [/perm/{?action,action_except,scope,owner_subject,name}]

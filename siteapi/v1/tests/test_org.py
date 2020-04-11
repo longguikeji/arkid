@@ -4,6 +4,9 @@ tests for api abort org
 
 # pylint: disable=missing-docstring, invalid-name, too-many-locals, too-many-statements
 
+import uuid
+from unittest import mock
+
 from django.urls import reverse
 from oneid_meta.models import User, Org
 
@@ -199,3 +202,47 @@ class OrgMemberTestCase(TestCase):
         res = self.client.json_patch(url, data={'email': 'new_email'})
         expect = {'username': 'u1', 'email': 'new_email'}
         self.assertEqualScoped(res.json(), expect, keys=['username', 'email'])
+
+
+class OrgInvitationTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.owner = User.create_user('owner', 'owner')
+        self.org = Org.create(name='org', owner=self.owner)
+
+        self.new_user = User.create_user('u1', 'u1')
+
+    @mock.patch('siteapi.v1.views.org.redis_conn.get')
+    @mock.patch('siteapi.v1.views.org.redis_conn.set')
+    def test_invitation_link(self, _, mock_redis_get):
+        # 获取邀请key
+        mock_redis_get.return_value = None
+        self.client = self.login_as(self.owner)
+        res = self.client.get(reverse('siteapi:org_invite_link', args=(self.org.oid_str, )))
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('invite_link_key', res.json())
+        key = res.json()['invite_link_key']
+
+        # 刷新
+        res = self.client.json_put(reverse('siteapi:org_invite_link', args=(self.org.oid_str, )))
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('invite_link_key', res.json())
+        self.assertNotEqual(res.json()['invite_link_key'], key)
+        key = res.json()['invite_link_key']
+
+        # 查看
+        client = self.login_as(self.new_user)
+        mock_redis_get.return_value = key
+        res = client.get(reverse('siteapi:org_invite_link_detail', args=(self.org.oid_str, key)))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()['oid'], self.org.oid_str)
+        self.assertEqual(res.json()['role'], '')
+
+        res = client.get(reverse('siteapi:org_invite_link_detail', args=(str(uuid.uuid4()), key)))
+        self.assertEqual(res.status_code, 404)
+
+        # 加入
+        res = client.json_post(reverse('siteapi:org_invite_link_detail', args=(self.org.oid_str, key)))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()['role'], 'member')

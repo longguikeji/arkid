@@ -18,7 +18,7 @@ class AdminSubAccountPermTestCase(TestCase):
         super().setUp()
 
         self.org = validity_check(
-            self.client.json_post(reverse('siteapi:org_create'), data={
+            self.client.json_post(reverse('siteapi:org_list'), data={
                 'name': 'org'
             }).json()['oid'])
         self.app = APP.objects.create(name='lg', uid='lg', owner=self.org)

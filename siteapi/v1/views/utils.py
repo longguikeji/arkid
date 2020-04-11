@@ -5,6 +5,14 @@ utils
 
 import re
 import uuid
+import random
+import string    # pylint: disable=deprecated-module
+import base64
+import json
+
+from cryptography.fernet import Fernet, InvalidToken
+from django.utils import timezone
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ValidationError
 from pypinyin import lazy_pinyin as pinyin
@@ -125,3 +133,46 @@ def update_users_of_owner(owner, users, subject):
         add_func(add_users, owner)
         delete_func(delete_users, owner)
         sort_func(users, owner)
+
+
+class Secret():
+    '''
+    对提供的数据进行加加解密，并附带时间戳与随机数
+    数据必须可以json序列化
+    适用于简短字符串的加解密，其他场合不适合
+    '''
+
+    key = Fernet(base64.urlsafe_b64encode(settings.SECRET_KEY.encode()[:32]))
+
+    def __init__(self, **data):
+        self.payload = {
+            'timestamp': timezone.now().strftime('%Y%m%d%H%M%s'),
+            'nonce': ''.join(random.choices(string.ascii_lowercase, k=16)),
+            **data,
+        }
+
+    def __str__(self):
+        # 去掉 `=` ，对 url 友好
+        return self.key.encrypt(json.dumps(self.payload).encode()).decode('utf-8').replace('=', '')
+
+    @classmethod
+    def parse(cls, literal):
+        '''
+        load secret from literal
+        '''
+
+        # 补齐 `=`
+        tail = '=' * (len(literal) % 4)
+        literal += tail
+
+        try:
+            raw_payload = cls.key.decrypt(literal.encode())
+        except InvalidToken:
+            return None
+
+        try:
+            payload = json.loads(raw_payload)
+        except json.JSONDecodeError:
+            return None
+
+        return cls(**payload)
