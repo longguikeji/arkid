@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6fc98d4eba978cabe8d1fb8f55fd089979a17a69286737025ba05dcc77e3ec5e"
+            "sha256": "feea91efd47e113a5e58c3756bddc875b9465486f15d03e4e7a242c8f7746cae"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -183,11 +183,11 @@
         },
         "django": {
             "hashes": [
-                "sha256:665457d4146bbd34ae9d2970fa3b37082d7b225b0671bfd24c337458f229db78",
-                "sha256:bde46d4dbc410678e89bc95ea5d312dd6eb4c37d0fa0e19c9415cad94addf22f"
+                "sha256:1226168be1b1c7efd0e66ee79b0e0b58b2caa7ed87717909cd8a57bb13a7079a",
+                "sha256:9a4635813e2d498a3c01b10c701fe4a515d76dd290aaa792ccb65ca4ccb6b038"
             ],
             "index": "pypi",
-            "version": "==2.0.13"
+            "version": "==2.2.10"
         },
         "django-celery-beat": {
             "hashes": [
@@ -597,14 +597,6 @@
             ],
             "index": "pypi",
             "version": "==2.4.4"
-        },
-        "pymysql": {
-            "hashes": [
-                "sha256:3943fbbbc1e902f41daf7f9165519f140c4451c179380677e6a848587042561a",
-                "sha256:d8c059dcd81dedb85a9f034d5e22dcb4442c0b201908bede99e306d65ea7c8e7"
-            ],
-            "index": "pypi",
-            "version": "==0.9.3"
         },
         "pyopenssl": {
             "hashes": [

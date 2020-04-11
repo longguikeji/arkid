@@ -35,7 +35,7 @@ django-oauth-toolkit==1.2.0
 django-ranged-response==0.2.0
 django-redis==4.10.0
 django-simple-captcha==0.5.12
-django==2.0.13
+django==2.2.10
 djangorestframework==3.10.2
 future==0.18.2
 google-auth==1.13.1
@@ -66,7 +66,6 @@ pycryptodome==3.9.7
 pycryptodomex==3.9.7
 pyjwkest==1.4.2
 pylint==2.4.4
-pymysql==0.9.3
 pyopenssl==19.1.0
 pypinyin==0.37.0
 pysaml2==4.9.0
