@@ -10,7 +10,6 @@ export class UserAction{
         const passwordInput = await page.waitForSelector('input[type = "password"]');
         await passwordInput.type(password);
         
-
         const loginBtn = await page.waitForSelector('button[type = "button"]');
         await loginBtn.click();
 
