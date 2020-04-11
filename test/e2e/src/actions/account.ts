@@ -45,20 +45,6 @@ export class accountAction{
         const emailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default');
         await emailInput.type(email);
 
-        // const departmentBtn = await page.waitForSelector('input[placeholder="请添加部门"]');
-        // await departmentBtn.click();
-
-        // await page.waitFor(2000);
-
-        // const searchInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
-        // await searchInput.type(search);
-
-        // const selectBtn = await page.waitForSelector('.ui-group-tree-component.tree .ivu-checkbox-input');
-        // await selectBtn.click();
-
-        // const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
-        // await keepBtn.click();
-
         const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
@@ -185,31 +171,6 @@ export class accountAction{
         await primaryBtn.click();
 
         await page.waitFor(2000);
-
-        // const phoneInput = await page.waitForSelector('input[placeholder="请输入 手机"]');
-        
-        // await page.$eval('input[placeholder="请输入 手机"]',input => input.value=phone);
-        //await phoneInput.type(phone);
-
-        // const perEmailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(5) .ivu-input.ivu-input-default');
-        // await page.$eval('.form.ivu-form.ivu-form-label-right>div:nth-child(5) .ivu-input.ivu-input-default',input => input.value=personalemail);
-        // await perEmailInput.type(personalemail);
-
-        // const emailInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default');
-        // await page.$eval('.form.ivu-form.ivu-form-label-right>div:nth-child(6) .ivu-input.ivu-input-default',input => input.value=email);
-        // await emailInput.type(email);
-
-        // const departmentBtn = await page.waitForSelector('input[placeholder="请添加部门"]');
-        // await departmentBtn.click();
-
-        // const searchInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
-        // await searchInput.type(search);
-
-        // const selectBtn = await page.waitForSelector('.ivu-checkbox-input');
-        // await selectBtn.click();
-
-        // const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
-        // await keepBtn.click();
 
         const addBtn = await page.waitForSelector('div.drawer-footer.flex-row.flex-auto > button.ivu-btn.ivu-btn-primary');
         await addBtn.click();
