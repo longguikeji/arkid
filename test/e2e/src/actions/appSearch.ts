@@ -1,6 +1,5 @@
 import {Page, launch} from 'puppeteer';
 
- 
 export class appSearchAction{
     public async appinformation(page:Page,searchName:string){
 
@@ -10,7 +9,6 @@ export class appSearchAction{
 
         const appInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
         appInput.type(searchName);
-        //await page.keyboard.press('Enter');
 
     }
 }
