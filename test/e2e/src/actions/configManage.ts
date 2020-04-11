@@ -1,6 +1,7 @@
 import {Page, launch} from 'puppeteer';
 
 export class configManageAction{
+    
     public async loginSetting(page:Page, companyname:string){
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
