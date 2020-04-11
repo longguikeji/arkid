@@ -1,6 +1,5 @@
 import base64
 import binascii
-import hashlib
 import logging
 import re
 import time
@@ -22,7 +21,7 @@ from .exceptions import FatalClientError
 from .models import (
     AbstractApplication, get_access_token_model, get_oidc_application_model,
     get_application_model, get_grant_model, get_oidc_grant_model, get_refresh_token_model,
-    get_oidc_access_token_model, get_oidc_refresh_token_model, get_oidc_rsa_key_model
+    get_oidc_access_token_model, get_oidc_refresh_token_model,
 )
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
