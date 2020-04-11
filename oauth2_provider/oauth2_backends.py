@@ -1,7 +1,5 @@
 import json
-import string
 from urllib.parse import urlparse, urlunparse, parse_qs
-
 from oauthlib import oauth2
 from oauthlib.common import quote, urlencode, urlencoded
 from .exceptions import FatalClientError, OAuthToolkitError
