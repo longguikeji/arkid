@@ -44,10 +44,18 @@ class ConfigTestCase(TestCase):
                 'access_key': '',
                 'signature': '',
                 'template_code': '',
+                'template_login': '',
                 'template_register': '',
                 'template_reset_pwd': '',
                 'template_activate': '',
                 'template_reset_mobile': '',
+                'signature_i18n': '',
+                'template_code_i18n': '',
+                'template_login_i18n': '',
+                'template_register_i18n': '',
+                'template_reset_pwd_i18n': '',
+                'template_activate_i18n': '',
+                'template_reset_mobile_i18n': '',
                 'vendor': 'aliyun',
                 'is_valid': False,
             },
@@ -169,6 +177,10 @@ class ConfigTestCase(TestCase):
                                              'allow_work_wechat_qr': True
                                          },
                                          'sms_config': {
+                                             'signature': 's',
+                                             'signature_i18n': 's_i18n',
+                                             'template_login': 'tl',
+                                             'template_login_i18n': 'tl_i18n',
                                              'access_key': 'access_key',
                                              'access_secret': 'pwd',
                                          },
@@ -209,12 +221,20 @@ class ConfigTestCase(TestCase):
             },
             'sms_config': {
                 'access_key': 'access_key',
-                'signature': '',
+                'signature': 's',
                 'template_code': '',
+                'template_login': 'tl',
                 'template_register': '',
                 'template_reset_pwd': '',
                 'template_activate': '',
                 'template_reset_mobile': '',
+                'signature_i18n': 's_i18n',
+                'template_code_i18n': '',
+                'template_login_i18n': 'tl_i18n',
+                'template_register_i18n': '',
+                'template_reset_pwd_i18n': '',
+                'template_activate_i18n': '',
+                'template_reset_mobile_i18n': '',
                 'vendor': 'aliyun',
                 'is_valid': True,
             },
@@ -311,19 +331,19 @@ class ConfigAlterAdminTestCase(TestCase):
     def test_alter_admin(self, mock_sms_token):
         mock_sms_token.side_effect = [
             {
-                'mobile': 'mobile_1'
+                'mobile': '18812340001'
             },
             {
-                'mobile': 'mobile_2'
+                'mobile': '18812340002'
             },
         ]
         old_admin = User.create_user('old_admin', 'old_admin')
         old_admin.is_boss = True
-        old_admin.mobile = 'mobile_1'
+        old_admin.mobile = '18812340001'
         old_admin.save()
 
         new_admin = User.create_user('new_admin', '')
-        new_admin.mobile = 'mobile_2'
+        new_admin.mobile = '18812340002'
         new_admin.save()
 
         res = self.client.json_patch(reverse('siteapi:alter_admin'),

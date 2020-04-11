@@ -63,16 +63,16 @@ class UCenterTestCase(TestCase):
 
     @mock.patch('siteapi.v1.serializers.ucenter.ResetPWDSMSClaimSerializer.check_sms_token')
     def test_reset_user_password_by_sms(self, mock_check_sms_code):
-        self.user.mobile = 'mobile'
+        self.user.mobile = '18812341234'
         self.user.save()
-        mock_check_sms_code.side_effect = [{'mobile': 'wrong_mobile'}, {'mobile': 'mobile'}]
+        mock_check_sms_code.side_effect = [{'mobile': 'wrong_mobile'}, {'mobile': '18812341234'}]
 
-        data = {'new_password': 'new_password', 'mobile': 'mobile', 'sms_token': 'any'}
+        data = {'new_password': 'new_password', 'mobile': '18812341234', 'sms_token': 'any'}
         res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json(), {'mobile': ['invalid']})
 
-        data = {'new_password': 'new_password', 'mobile': 'mobile', 'sms_token': 'any'}
+        data = {'new_password': 'new_password', 'mobile': '18812341234', 'sms_token': 'any'}
         res = self.client.put(reverse('siteapi:ucenter_password'), data=data)
         self.assertEqual(res.status_code, 200)
 
@@ -317,26 +317,26 @@ class UCenterTestCase(TestCase):
     def test_update_self_mobile(self, mock_check_sms_token):
         mock_check_sms_token.side_effect = [
             {
-                'mobile': 'mobile_1'
+                'mobile': '18812340001'
             },
             {
-                'mobile': 'mobile_2'
+                'mobile': '18812340002'
             },
             {
-                'mobile': 'mobile_1'
+                'mobile': '18812340001'
             },
             {
-                'mobile': 'mobile_3'
+                'mobile': '18812340003'
             },
         ]
 
         employee_1 = User.create_user('employee_1', 'employee_1')
-        employee_1.mobile = 'mobile_1'
+        employee_1.mobile = '18812340001'
         employee_1.save()
         client_1 = self.login('employee_1', 'employee_1')
 
         employee_2 = User.create_user('employee_2', 'employee_2')
-        employee_2.mobile = 'mobile_2'
+        employee_2.mobile = '18812340002'
         employee_2.save()
 
         res = client_1.json_patch(reverse('siteapi:ucenter_mobile'),
@@ -351,7 +351,7 @@ class UCenterTestCase(TestCase):
                                       'old_mobile_sms_token': 'any',
                                       'new_mobile_sms_token': 'any'
                                   })
-        expect = {'new_mobile': 'mobile_3'}
+        expect = {'new_mobile': '18812340003'}
         self.assertEqual(res.json(), expect)
 
     def test_revoke_token(self):

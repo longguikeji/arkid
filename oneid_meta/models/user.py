@@ -20,6 +20,7 @@ from oneid_meta.models.dept import DeptMember
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
+from infrastructure.utils.sms import is_mobile, is_native_mobile, is_i18n_mobile, is_cn_mobile, CN_MOBILE_PREFIX
 
 
 class IsolatedManager(IgnoreDeletedManager):
@@ -54,6 +55,8 @@ class User(BaseModel, PermOwnerMixin):
     email = models.CharField(max_length=255, blank=True, default='', verbose_name='邮箱')
     private_email = models.CharField(max_length=255, blank=True, default='', verbose_name='私人邮箱')    # 仅用于找回密码
     mobile = models.CharField(max_length=64, blank=True, default='', verbose_name='手机')
+    # 支持 `18812341234`， `+86 18812341234` 两种格式
+
     employee_number = models.CharField(max_length=255, blank=True, default='', verbose_name='工号')
     position = models.CharField(max_length=255, blank=True, default='', verbose_name='职位')
     gender = models.IntegerField(choices=GENDER_CHOICES, default=0, verbose_name='性别')
@@ -78,11 +81,31 @@ class User(BaseModel, PermOwnerMixin):
             value = getattr(self, unique_feilds)
             if not value:
                 continue
-            _kwargs = {unique_feilds: value}
-            if User.valid_objects.filter(**_kwargs).exclude(pk=self.pk).exists():
+
+            existed = False
+
+            if unique_feilds == 'mobile':
+                if not is_mobile(value):
+                    raise ValidationError({unique_feilds: ['invalid']})
+
+                if is_i18n_mobile(value) and is_cn_mobile(value):
+                    existed = User.valid_objects.filter(
+                        models.Q(mobile=value)
+                        | models.Q(mobile=value.replace(CN_MOBILE_PREFIX, ""))).exclude(pk=self.pk).exists()    # pylint: disable=no-member
+                elif is_native_mobile(value):
+                    existed = User.valid_objects.filter(
+                        models.Q(mobile=value)
+                        | models.Q(mobile=CN_MOBILE_PREFIX + value)).exclude(pk=self.pk).exists()
+                else:
+                    existed = User.valid_objects.filter(mobile=value).exclude(pk=self.pk).exists()
+
+            else:
+                _kwargs = {unique_feilds: value}
+                existed = User.valid_objects.filter(**_kwargs).exclude(pk=self.pk).exists()
+
+            if existed:
                 msg = "UNIQUE constraint failed: " + \
-                    f"oneid_meta.User UniqueConstraint(fields=['{unique_feilds}'], condition=Q(is_del='False')"
-                # raise IntegrityError(msg)
+                        f"oneid_meta.User UniqueConstraint(fields=['{unique_feilds}'], condition=Q(is_del='False')"
                 print(msg)
                 raise ValidationError({unique_feilds: ['existed']})
 

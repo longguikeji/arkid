@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 '''
 serializers for user
 '''
@@ -14,6 +15,7 @@ from oneid_meta.models import (
     CustomUser,
     NativeField,
     SubAccount,
+    WechatUser,
 )
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from common.django.drf.serializer import IgnoreNoneMix
@@ -146,6 +148,16 @@ class PosixUserSerializer(DynamicFieldsModelSerializer):
         )
 
 
+class WechatUserSerializer(DynamicFieldsModelSerializer):
+    '''
+    Serializer for WechatUser
+    '''
+    class Meta:    # pylint: disable=missing-docstring
+        model = WechatUser
+
+        fields = ('unionid', )
+
+
 class UserLiteSerializer(DynamicFieldsModelSerializer):
     '''
     lite Serializer for User
@@ -165,9 +177,10 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     Serializer for User
     '''
 
-    ding_user = DingUserSerializer(many=False, required=False)
-    posix_user = PosixUserSerializer(many=False, required=False)
-    custom_user = AdvanceCustomUserSerializer(many=False, required=False)
+    ding_user = DingUserSerializer(many=False, required=False, allow_null=True)
+    posix_user = PosixUserSerializer(many=False, required=False, allow_null=True)
+    wechat_user = WechatUserSerializer(many=False, required=False, allow_null=True)
+    custom_user = AdvanceCustomUserSerializer(many=False, required=False, allow_null=True)
     user_id = serializers.IntegerField(source='id', read_only=True)
     nodes = serializers.SerializerMethodField()
 
@@ -189,6 +202,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'ding_user',
             'posix_user',
             'custom_user',
+            'wechat_user',
             'is_settled',
             'is_manager',
             'is_admin',
@@ -233,7 +247,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
 
         return user
 
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data):    # pylint: disable=too-many-statements,too-many-branches
         '''
         update user
         update/create ding_user if provided
@@ -241,11 +255,9 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         update/create custom_user if provided
         '''
         user = instance
-        ding_user_data = validated_data.pop('ding_user', None)
-        posix_user_data = validated_data.pop('posix_user', None)
-        custom_user_data = validated_data.pop('custom_user', None)
 
-        if ding_user_data:
+        if 'ding_user' in validated_data:
+            ding_user_data = validated_data.pop('ding_user')
             if hasattr(user, 'ding_user'):
                 ding_user_serializer = DingUserSerializer(user.ding_user, data=ding_user_data, partial=True)
                 ding_user_serializer.is_valid(raise_exception=True)
@@ -255,7 +267,8 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
                 ding_user_serializer.is_valid(raise_exception=True)
                 ding_user_serializer.save(user=user)
 
-        if posix_user_data:
+        if 'posix_user' in validated_data:
+            posix_user_data = validated_data.pop('posix_user')
             if hasattr(user, 'posix_user'):
                 posix_user_serializer = PosixUserSerializer(user.posix_user, data=posix_user_data, partial=True)
                 posix_user_serializer.is_valid(raise_exception=True)
@@ -265,7 +278,8 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
                 posix_user_serializer.is_valid(raise_exception=True)
                 posix_user_serializer.save(user=user)
 
-        if custom_user_data:
+        if 'custom_user' in validated_data:
+            custom_user_data = validated_data.pop('custom_user')
             if hasattr(user, 'custom_user'):
                 custom_user_serailizer = CustomUserSerailizer(user.custom_user, data=custom_user_data, partial=True)
                 custom_user_serailizer.is_valid(raise_exception=True)
@@ -274,6 +288,22 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
                 custom_user_serailizer = CustomUserSerailizer(data=custom_user_data)
                 custom_user_serailizer.is_valid(raise_exception=True)
                 custom_user_serailizer.save(user=user)
+
+        if 'wechat_user' in validated_data:
+            wechat_user_data = validated_data.pop('wechat_user')
+            if hasattr(user, 'wechat_user'):
+                if wechat_user_data is None:    # 解绑
+                    user.wechat_user.kill()
+                    user.wechat_user = None
+                else:
+                    wechat_user_serializer = WechatUserSerializer(user.wechat_user, data=wechat_user_data, partial=True)
+                    wechat_user_serializer.is_valid(raise_exception=True)
+                    wechat_user_serializer.save()
+            else:
+                if wechat_user_data:
+                    wechat_user_serializer = WechatUserSerializer(data=wechat_user_data)
+                    wechat_user_serializer.is_valid(raise_exception=True)
+                    wechat_user_serializer.save(user=user)
 
         username = validated_data.pop('username', '')
         if username and username != user.username:
