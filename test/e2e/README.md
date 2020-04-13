@@ -25,7 +25,7 @@ tsconfig.json配置
   }
 }
 ```
-6、jest --init  `//初始化，生成jest.config.js`
+6、jest --init  `//初始化，生成jest.config.js`        
 jest.config.js配置
 ```
 module.exports = {
@@ -90,4 +90,4 @@ module.exports = CustomEnvironmemnt
   "testEnvironment": "./puppeteer_enviroment.js",
 ```
 ### 三、运行
-使用Visual Studio Code编辑器 `New Terminal`，输入npm run test即可。
+使用Visual Studio Code编辑器 `New Terminal`，输入`npm run test`即可。
