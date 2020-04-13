@@ -12,7 +12,7 @@ Jest               | npm install jest --save-dev
 ts-jest     |npm install ts-jest --save-dev
 @types/jest |npm install @types/jest --save-dev                                              
 
-5、tsc --init  `// 初始化相关配置文件，生成tsconfig.json`
+5、tsc --init  `// 初始化相关配置文件，生成tsconfig.json`                
 tsconfig.json配置
 
 ```
