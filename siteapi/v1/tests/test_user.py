@@ -8,7 +8,18 @@ import json
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import DingUser, PosixUser, Group, Dept, User, CustomField, DeptMember, Perm, UserPerm
+from oneid_meta.models import (
+    DingUser,
+    PosixUser,
+    Group,
+    Dept,
+    User,
+    CustomField,
+    DeptMember,
+    Perm,
+    UserPerm,
+    WechatUser,
+)
 
 EMPLOYEE = {
     'user': {
@@ -128,6 +139,15 @@ class UserTestCase(TestCase):
         user_list = res.json()['results']
         expect_count = 0
         self.assertEqual(expect_count, len(user_list))
+
+        WechatUser.objects.create(
+            user=User.valid_objects.get(username='employee1'),
+            unionid='unionid-1',
+        )
+        res = client.get(reverse('siteapi:user_list'), data={'keyword': '188', 'wechat_unionid': 'unionid-1'})
+        self.assertEqual(1, res.json()['count'])
+        res = client.get(reverse('siteapi:user_list'), data={'keyword': '188', 'wechat_unionid': 'unionid-2'})
+        self.assertEqual(0, res.json()['count'])
 
     def test_username(self):
         res = self.client.json_post(reverse('siteapi:user_list'),
@@ -363,6 +383,35 @@ class UserTestCase(TestCase):
         }
         res['user'].pop('nodes')
         self.assertEqual(expect, res['user'])
+
+    def test_wechat_user(self):
+        self.create_user()
+        user = User.valid_objects.get(username='employee1')
+
+        # bound
+        patch_data = {'wechat_user': {'unionid': 'unionid-1'}}
+        res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
+        self.assertEqual("unionid-1", res.json()['user']['wechat_user']['unionid'])
+        self.assertEqual(1, WechatUser.objects.filter(user=user).count())
+
+        # update
+        patch_data = {'wechat_user': {'unionid': 'unionid-2'}}
+        res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
+        self.assertEqual("unionid-2", res.json()['user']['wechat_user']['unionid'])
+
+        # unbound
+        patch_data = {
+            'wechat_user': None,
+        }
+        res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
+        self.assertEqual(0, WechatUser.objects.filter(user=user).count())
+        self.assertNotIn("wechat_user", res.json()['user'])
+
+        patch_data = {
+            'wechat_user': None,
+        }
+        res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
+        self.assertEqual(res.status_code, 200)
 
     def test_get_user_group(self):
         self.create_user()

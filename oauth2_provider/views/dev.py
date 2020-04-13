@@ -16,8 +16,9 @@ class LoginView(View):
     run as FE
     '''
     def get(self, request):
-        token_url = '/siteapi/v1/admin/login/'
+        token_url = '/siteapi/v1/ucenter/login/'
         return render(request, 'oauth2_provider/dev/mock_login.html', context={'token_url': token_url})
+
 
 class TokenView(View):
     '''
