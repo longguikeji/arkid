@@ -555,6 +555,7 @@ FORMAT: 1A
 + Response 400 (application/json)
 失败
 
+
 ## 短信验证码-注册 [/service/sms/register/{?mobile,code}]
 
 ### 发送短信验证码 [POST]
@@ -657,6 +658,29 @@ FORMAT: 1A
     + Attributes
         + sms_token (string)
         + expired (string)
+
+
+## 短信验证码-通用 [/service/sms/]
+### 发送短信验证码 [POST]
++ Request JSON Message
+    + Attributes
+        + mobile (string, required)
+        + captcha_key (string)
+        + captcha (string)
++ Response 201 (application/json)
+
+### 验证短信验证码 [GET]
++ Parameters
+    + mobile (string) - 支持国际手机号，形如 `+86 18812341234`，作为URL QueryParams 时注意需要编码 -> `%2B86%2018813105748`
+    + code (string)
+
++ Response 200 (application/json)
+    + Attributes
+        + sms_token (string)
+        + expired (string)
+
++ Response 400 (application/json)
+失败
 
 ## 验证邮件-注册 [/service/email/register/{?email_token}]
 
@@ -1887,6 +1911,122 @@ TODO: 可见权限的处理
 + Response 201 (application/json)
 此应用不存在，新建成功
     + Attributes (OAuthAPP)
+    
+## 应用 OpenID Connect Client [/app/{uid}/oauth/]
++ Parameters
+    + uid (string) - 应用唯一标识。
+
+### 注册应用 [POST]
++ request JSON Message
+    + Attributes
+        + redirect_uris - callback url
+        + response_type
+        + client_type
+        
++ Response 200 (application/json)
+此应用存在，修改成功(启用OAuth并配置redirect_uris)
+    + Attributes (OAuthAPP)
+
++ Response 201 (application/json)
+此应用不存在，新建成功
+    + Attributes (OAuthAPP)
+
+### 授权请求 [/app/oauth/authorize/{?client_id,scope,response_type, state, nonce, code_challenge, code_challenge_method, redirect_uri, oneid_token}]
+
++ Parameters
+    + client_id (string) - OpenID Connect客户端标识符。
+    + response_type (string) - 用于确定要使用的授权处理流程，包括从使用的端点返回的参数。
+    + scope (string) - OpenID Connect请求必须包含openid范围值。如果不存在openid范围值，则行为完全不确定。可能存在其他范围值。实现所不能理解的作用域值应该被忽略。
+    + state (string) - 不透明的值，用于维持请求和回调之间的状态。
+    + nonce (string) - 字符串值，用于将客户端会话与ID令牌相关联，并减轻重放攻击。该值将未经修改地从身份验证请求传递到ID令牌。随机数值中必须存在足够的熵， 以防止攻击者猜测值。
+    + code_challenge (string) - 用于通过本地客户端的 Proof Key for Code Exchange (PKCE) 保护授权代码授权。 如果包含 code_challenge_method，则需要。
+    + code_challenge_method (string) - 用于为 code_challenge 参数编码 code_verifier 的方法。可选值为：plain、S256
+    + redirect_uri (string) - 响应将发送到的重定向URI。
+    + oneid_token (string) - ArkID用户的token字段值
+    
+#### [GET]
+
++ Response 302 ()
+    + Redirect Uri
+        + [<redirect_uri>/{?code, state}]
+    + Parameters
+        + code (string) - 应用程序请求的authorization_code。应用程序可以使用授权代码请求目标资源的访问令牌。Authorization_codes的生存期较短，通常在约10分钟后即过期。
+        + state (string) - 来自上文。如果请求中包含状态参数，响应中就应该出现相同的值。应用程序应该验证请求和响应中的状态值是否完全相同。
+
+### 令牌端点 [/app/oauth/token/]
+
+#### [POST]
+
++ Request Form-Data Message
+    + Attributes
+        + code (string) - 应用程序请求的 authorization_code。
+        + client_id (string) - OpenID Connect客户端标识符。
+        + client_secret (string) - 在应用程序注册门户中为应用程序创建的应用程序机密。
+        + redirect_uri (string) - 用于获取authorization_code的相同redirect_uri 值。
+        + grant_type (string) - 必须是授权代码流的 authorization_code。
+        + code_verifier (string) - 用于获取authorization_code的code_verifier。 如果在授权码授权请求中使用PKCE，则需要。
+        
++ Response 200 (application/json)
+    + Attributes (object)
+        + access_token (string)
+        + expires_in (string)
+        + token_type (string)
+        + scope (string)
+        + refresh_token (string)
+        + id_token (string)
+
+### 用户端点 [/app/oauth/oidc/userinfo/]
+
+#### [GET]
+
++ Request JSON Message
+    + Headers Attributes
+        + Authorization (string) - 形如 Bearer <access_token>，用于提供令牌给授权服务器验证。
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + sub (string)
+        + preferred_username (string)
+        + email (string)
+
+### 授权端点公钥信息 [/app/oauth/oidc/jwks/]
+
+#### [GET]
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + keys (array[KeyResult])
+
+### 授权端点动态发现协议 [/app/oauth/.well-known/openid-configuration/]
+
+#### [GET]
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + issuer (string)
+        + scopes_supported (array[ScopeResult])
+        + authorization_endpoint (string)
+        + token_endpoint (string)
+        + userinfo_endpoint (string)
+        + introspection_endpoint (string)
+        + response_types_supported (array[ResponseTypeResult])
+        + jwks_uri (string)
+        + id_token_signing_alg_values_supported (array[SigningAlgResult])
+        + subject_types_supported (array[KeyResult])
+        + token_endpoint_auth_methods_supported (array[AuthMethodResult])
+
+### 令牌内省 [/app/oauth/oidc/introspect/{?token}]
+
++ Parameters
+    + token (string) - 访问令牌。
+    
+### [GET]
+
++ Response 200 (application/json)
+    + Attributes (object)
+        + active (boolean)
+        + scope (string)
+        + exp (timestamp)
 
 # Group Shortcut
 

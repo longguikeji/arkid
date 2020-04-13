@@ -21,7 +21,6 @@ class HeaderArkerBaseAuthentication(BaseAuthentication):
         auth by header['HTTP_ARKER']
         '''
         arker = request.META.get('HTTP_ARKER', None)
-
         if arker in settings.CREDIBLE_ARKERS:
             return (self.get_user(request), None)
 

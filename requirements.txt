@@ -15,9 +15,9 @@ aliyun-python-sdk-core-v3==2.8.6
 amqp==2.5.2
 astroid==2.3.3
 billiard==3.5.0.5
-cachetools==4.0.0
+cachetools==4.1.0
 celery==4.2.1
-certifi==2019.11.28
+certifi==2020.4.5.1
 cffi==1.14.0
 chardet==3.0.4
 cheroot==8.3.0
@@ -38,7 +38,7 @@ django-simple-captcha==0.5.12
 django==2.2.10
 djangorestframework==3.10.2
 future==0.18.2
-google-auth==1.12.0
+google-auth==1.13.1
 idna==2.9
 importlib-metadata==1.6.0 ; python_version < '3.8'
 isort==4.3.21
@@ -56,13 +56,15 @@ minio==4.0.18
 more-itertools==8.2.0
 oauthlib==3.1.0
 passlib==1.7.2
-pillow==7.0.0
+pillow==7.1.1
 portend==2.6
 pyasn1-modules==0.2.8
 pyasn1==0.4.8
 pycparser==2.20
 pycrypto==2.6.1
 pycryptodome==3.9.7
+pycryptodomex==3.9.7
+pyjwkest==1.4.2
 pylint==2.4.4
 pyopenssl==19.1.0
 pypinyin==0.37.0
@@ -88,4 +90,4 @@ websocket-client==0.57.0
 wrapt==1.11.2
 zc.lockfile==2.0
 zipp==3.1.0
-zope.interface==5.0.2
+zope.interface==5.1.0

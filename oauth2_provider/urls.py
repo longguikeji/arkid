@@ -3,6 +3,8 @@ from django.conf.urls import url
 from oauth2_provider import views
 from oauth2_provider.views import dev as dev_views
 
+from django.views.decorators.csrf import csrf_exempt
+
 
 app_name = "oauth2_provider"
 
@@ -13,7 +15,12 @@ base_urlpatterns = [
     url(r"^token/$", views.TokenView.as_view(), name="token"),
     url(r"^revoke_token/$", views.RevokeTokenView.as_view(), name="revoke-token"),
     url(r"^introspect/$", views.IntrospectTokenView.as_view(), name="introspect"),
-    url(r'^userinfo/$', views.UserInfoOauthView.as_view()),
+    url(r"^oidc/introspect/$", views.OidcIntrospectTokenView.as_view(), name="oidc_introspect"),
+    url(r'^userinfo/$', views.UserInfoOauthView.as_view(), name="userinfo"),
+    url(r'^oidc/userinfo/$', views.UserInfoOidcView.as_view(), name="userinfo"),
+    url(r'^oidc/jwks/$', views.JwksView.as_view(), name="jwks"),
+    url(r'^\.well-known/openid-configuration/$', views.OidcProviderInfoView.as_view(),
+        name='provider-info'),
 ]
 
 
