@@ -17,9 +17,7 @@ except ImportError:
     get_xmlsec_binary = None
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError, MethodNotAllowed
-
 from common.django.drf.serializer import DynamicFieldsModelSerializer
-
 from oneid_meta.models import (
     APP,
     OAuthAPP,
@@ -37,7 +35,6 @@ if get_xmlsec_binary:
     xmlsec_path = get_xmlsec_binary(["/opt/local/bin", "/usr/local/bin"])    # pylint: disable=invalid-name
 else:
     xmlsec_path = '/usr/local/bin/xmlsec1'    # pylint: disable=invalid-name
-
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 
@@ -70,7 +67,20 @@ class OIDCAPPSerializer(DynamicFieldsModelSerializer):
     class Meta:    # pylint: disable=missing-docstring
         model = OIDCAPP
 
-        fields = ()
+        fields = (
+            'client_id',
+            'client_secret',
+            'redirect_uris',
+            'client_type',
+            'response_type',
+            'more_detail',
+        )
+
+        read_only_fields = (
+            'client_id',
+            'client_secret',
+            'more_detail',
+        )
 
 
 class SAMLAPPSerializer(DynamicFieldsModelSerializer):
@@ -238,7 +248,6 @@ class APPSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for APP
     '''
-
     app_id = serializers.IntegerField(source='id', read_only=True)
     oauth_app = OAuthAPPSerializer(many=False, required=False, allow_null=True)
     http_app = HTTPAPPSerializer(many=False, required=False, allow_null=True)
@@ -310,8 +319,10 @@ class APPSerializer(DynamicFieldsModelSerializer):
             serializer.is_valid(raise_exception=True)
             serializer.save(app=app)
 
-        if oidc_app_data:
-            pass
+        if oidc_app_data is not None:
+            oidc_app_serializer = OIDCAPPSerializer(data=oidc_app_data)
+            oidc_app_serializer.is_valid(raise_exception=True)
+            oidc_app_serializer.save(app=app, name=app.name)
 
         if saml_app_data is not None:
             saml_app_data['app'] = app
@@ -331,9 +342,7 @@ class APPSerializer(DynamicFieldsModelSerializer):
         app = instance
         if not app.editable:
             raise MethodNotAllowed('MODIFY protected APP')
-
         oidc_app_data = validated_data.pop('oidc_app', None)
-
         uid = validated_data.pop('uid', '')
         if uid and uid != app.uid:
             raise ValidationError({'uid': ['this field is immutable']})
@@ -404,11 +413,9 @@ class APPSerializer(DynamicFieldsModelSerializer):
                     serializer = SAMLAPPSerializer(data=data)
                     serializer.is_valid(raise_exception=True)
                     serializer.save(app=app)
-
         app.__dict__.update(validated_data)
         app.save()
         app.refresh_from_db()
-
         return app
 
 
@@ -473,21 +480,18 @@ class APPWithAccessOwnerSerializer(APPWithAccessSerializer):
         '''
         request = self.context['request']
         owner = None
-
         node_uid = request.query_params.get('node_uid', '')
         if node_uid:
             node, _ = Dept.retrieve_node(node_uid)
             if not node:
                 raise ValidationError({'node_uid': ['not found']})
             owner = node
-
         user_uid = request.query_params.get('user_uid', '')
         if user_uid:
             user = User.valid_objects.filter(username=user_uid).first()
             if not user:
                 raise ValidationError({'user_uid': ['not found']})
             owner = user
-
         return {
             'node_uid': node_uid,
             'user_uid': user_uid,
