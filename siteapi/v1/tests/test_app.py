@@ -68,6 +68,7 @@ APP_2_EXCEPT = {
         'authorization_grant_type': 'authorization-code',
         'more_detail': [],
     },
+    'oidc_app': None,
     'ldap_app': {
         'more_detail': []
     },
