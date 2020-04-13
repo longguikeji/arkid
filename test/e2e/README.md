@@ -90,4 +90,4 @@ module.exports = CustomEnvironmemnt
   "testEnvironment": "./puppeteer_enviroment.js",
 ```
 ### 三、运行
-使用Visual Studio Code编辑器 New Terminal，输入npm run test即可。
+使用Visual Studio Code编辑器 `New Terminal`，输入npm run test即可。
