@@ -34,6 +34,7 @@ APP_1_EXCEPT = {
     'index': '',
     'remark': '',
     'oauth_app': None,
+    'oidc_app': None,
     'http_app': None,
     'saml_app': None,
     'ldap_app': None,
@@ -67,6 +68,7 @@ APP_2_EXCEPT = {
         'authorization_grant_type': 'authorization-code',
         'more_detail': [],
     },
+    'oidc_app': None,
     'ldap_app': {
         'more_detail': []
     },
@@ -256,6 +258,7 @@ class APPTestCase(TestCase):
                 'authorization_grant_type': 'authorization-code',
                 'more_detail': [],
             },
+            'oidc_app': None,
             'http_app': None,
             'saml_app': None,
             'auth_protocols': ['OAuth 2.0', 'LDAP'],
@@ -419,6 +422,7 @@ class APPTestCase(TestCase):
                 'remark': '',
                 'index': '',
                 'oauth_app': None,
+                'oidc_app': None,
                 'ldap_app': None,
                 'http_app': None,
                 'saml_app': None,
