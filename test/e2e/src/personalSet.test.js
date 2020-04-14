@@ -24,7 +24,7 @@ test('一账通-退出登录', async () => {
     await page.waitFor(3000);
 
     const url = await page.url();
-    await expect(url).toBe('http://192.168.200.115:8989/#/oneid/login?backPath=%2Fworkspace%2Fapps');
+    await expect(url).toMatch('#/oneid/login?backPath=%2Fworkspace%2Fapps');
 },30000);
 
 test('一账通-修改密码', async () => {
@@ -53,16 +53,22 @@ test('一账通-修改密码', async () => {
     const oldPwdInput = await page.waitForSelector('input[placeholder="输入原密码"]');
     await oldPwdInput.type("bxiangmuzuuser");
 
+    await page.waitFor(1000);
+
     const newPwdInput = await page.waitForSelector('input[placeholder="输入新密码"]');
     await newPwdInput.type("bxiangmuzu111");
+
+    await page.waitFor(1000);
 
     const renewPwdInput = await page.waitForSelector('input[placeholder="再次输入新密码"]');
     await renewPwdInput.type("bxiangmuzu111");
 
+    await page.waitFor(1000);
+
     const defineBtn = await page.waitForSelector('.right-button.ivu-btn.ivu-btn-primary');
     await defineBtn.click();
 
-    await page.waitFor(2000);
+    await page.waitFor(3000);
 
     const usernameInput1 = await page.waitForSelector('input[type = "text"]');
     await usernameInput1.type("bxiangmuzuuser");
@@ -75,6 +81,6 @@ test('一账通-修改密码', async () => {
     await page.waitFor(3000);
 
     const url = await page.url();
-    await expect(url).toBe('http://192.168.200.115:8989/#/workspace/apps');
+    await expect(url).toMatch('#/workspace/apps');
 },50000);
 
