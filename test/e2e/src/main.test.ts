@@ -41,12 +41,9 @@ describe('一账通-登录测试', () => {
         await useraction.login(page, 'admin', 'admin');
 
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/workspace/apps');
+        await expect(url).toMatch('#/workspace/apps');
 
     },40000);
-
-    
-
 })
 
 describe('一账通-我的应用信息测试', () => {
@@ -67,8 +64,7 @@ describe('一账通-我的应用信息测试', () => {
     afterAll ( async () => {
         await page.close();
     })
-
-
+    
     test('TEST_001:验证我的应用页面应用名称' , async() => {
         const appName1 = await page.$eval('.card-list.flex-row>li:first-child .name', elem => {
             return elem.innerHTML;
@@ -158,7 +154,7 @@ describe('一账通-通讯录测试', () => {
     test('TEST_001:验证通讯录页面链接' , async() => {
         //await page.waitFor(2000);
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/workspace/contacts');
+        await expect(url).toMatch('workspace/contacts');
     },30000);
 
     test('TEST_002:验证通讯录页面的部门分类' , async() => {
@@ -302,7 +298,7 @@ describe('一账通-个人资料测试', () => {
         await setaction.setting(page);
 
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/workspace/userinfo');
+        await expect(url).toMatch('workspace/userinfo');
     },30000);
 
     test('TEST_002:验证个人资料页面添加手机号' , async() => {
@@ -358,7 +354,6 @@ describe('一账通-个人资料测试', () => {
         await expect(emailTitle2).toEqual('修改个人邮箱');
 
     },30000);
-
 
     test('TEST_004:验证个人资料页面修改姓名' , async() => {
         let setaction = new setAction();
@@ -418,7 +413,7 @@ describe('一账通-账号管理测试', () => {
         await page.waitFor(5000);
 
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/admin/account');
+        await expect(url).toMatch('admin/account');
     },30000);
 
     test('TEST_002:验证账号管理页面添加新账号' , async() => {
@@ -470,7 +465,7 @@ describe('一账通-账号管理测试', () => {
         await page.waitFor(2000);
 
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/workspace/apps');
+        await expect(url).toMatch('#/workspace/apps');
         
     },40000);
 })
@@ -503,7 +498,6 @@ describe('一账通-账号管理搜索账号', () => {
     },30000);
 
 })
-
 
 describe('一账通-账号管理编辑账号', () => {
     let page : Page;
@@ -556,7 +550,7 @@ describe('一账通-账号管理编辑账号密码', () => {
     test('TEST_001:验证修改密码后能否登录' , async() => {
         await page.waitFor(6000);
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/workspace/apps');
+        await expect(url).toMatch('#/workspace/apps');
         
     },40000);
 
@@ -627,7 +621,7 @@ describe('一账通-验证分组管理', () => {
         await groupaction.groupAddress(page);
 
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/admin/group/node?id=d_root');
+        await expect(url).toMatch('#/admin/group/node?id=d_root');
     },30000);
 
     test('TEST_002:验证分组管理页面添加分组' , async() => {
@@ -941,7 +935,7 @@ describe('一账通-分组管理编辑账号密码', () => {
 
     test('TEST_001:验证修改密码后能否登录' , async() => {
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/workspace/apps');
+        await expect(url).toMatch('#/workspace/apps');
         
     },30000);
 
@@ -1398,7 +1392,7 @@ describe('一账通-分组管理自定义分类分组添加成员', () => {
         await useraction.login(page, 'perectuser', 'perectuser');
 
         const url = await page.url();
-        await expect(url).toEqual('http://192.168.200.115:8989/#/workspace/apps');
+        await expect(url).toMatch('#/workspace/apps');
         
     },10000);
 
@@ -1491,7 +1485,7 @@ describe('一账通-分组管理自定义分类分组编辑账号密码', () => 
 
     test('TEST_001:验证修改密码后能否登录' , async() => {
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/workspace/apps');
+        await expect(url).toMatch('#/workspace/apps');
         
     },30000);
 
@@ -1655,7 +1649,7 @@ describe('一账通-配置管理登录页面', () => {
         await page.waitFor(2000);
 
         const url = await page.url();
-        await expect(url).toEqual('http://192.168.200.115:8989/#/admin/config');
+        await expect(url).toMatch('#/admin/config');
         
     },30000);
 
@@ -1676,7 +1670,7 @@ describe('一账通-配置管理登录页面', () => {
         await configmanageaction.urlTest(page);
 
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/admin/account/settings');
+        await expect(url).toMatch('#/admin/account/settings');
         
     },30000);
 
@@ -1924,7 +1918,7 @@ describe('一账通-测试设置子管理员', () => {
 
     test('TEST_001:验证设置子管理员页面链接' , async() => {
         const url = await page.url();
-        await expect(url).toBe('http://192.168.200.115:8989/#/admin/manager');
+        await expect(url).toMatch('#/admin/manager');
     },30000);
 
     test('TEST_002:验证设置子管理员是否生效' , async() => {
