@@ -12,12 +12,13 @@ import {configManageAction} from './actions/configManage';
 import {appsManageAction} from './actions/appsManage';
 import {managerSettingAction} from './actions/managerSetting';
 
+declare var global: any
+
 describe('一账通-登录测试', () => {
     let page : Page;
     
     beforeEach( async () => {
-        let browser = await launch();
-        page = await browser.newPage();
+        page = await global.browser.newPage()
         await page.goto(config.url);
 
     },30000)
