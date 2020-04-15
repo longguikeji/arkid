@@ -252,7 +252,7 @@ export class managerSettingAction{
 
     }
 
-    public async editManager(page:Page){//编辑管理员axiangmuzuuser的权限
+    public async editManager(page:Page){//编辑管理员bumen2user的权限
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
@@ -276,7 +276,7 @@ export class managerSettingAction{
 
     }
 
-    public async deleteManager(page:Page){//删除管理员axiangmuzuuser
+    public async deleteManager(page:Page){//删除管理员bumen2user
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
