@@ -11,6 +11,7 @@ module.exports = {
     "ts",
     "js",
   ],
+  "preset": "jest-puppeteer",
 
   "testMatch": [
     "**/*.test.*"
