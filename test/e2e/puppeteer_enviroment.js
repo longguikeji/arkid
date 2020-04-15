@@ -1,3 +1,4 @@
+
 const exec = require('child_process').exec
 
 const syncDataCmd = 'docker cp testdata.sql arkid-db:/'
@@ -5,7 +6,7 @@ const loadDataCmd = 'docker exec arkid-db bash -c "mysql -u root -proot arkid < 
 
 const PuppeteerEnviromenent = require('jest-environment-puppeteer');
 class CustomEnvironmemnt extends PuppeteerEnviromenent {
-    async setup() {
+    async () {
         await super.setup();
         exec(
             syncDataCmd, (error, stdout, stderr) => {

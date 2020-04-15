@@ -112,6 +112,10 @@ export class groupAction{
     }
 
     public async editUser(page:Page, name:string, password:string, repassword:string){
+        const groupBtn = await page.waitForSelector('.ui-group-tree.ivu-tree>ul:nth-child(2)');
+        await groupBtn.click();
+
+        await page.waitFor(2000);
 
         const editUserBtn = await page.waitForSelector('.ivu-table-cell .table-btn');
         await editUserBtn.click();
@@ -142,10 +146,14 @@ export class groupAction{
 
         await page.waitFor(2000);
 
-
     }
 
     public async editUserGroup(page:Page, search:string ){
+        const groupBtn = await page.waitForSelector('.ui-group-tree.ivu-tree>ul:nth-child(2)');
+        await groupBtn.click();
+
+        await page.waitFor(2000);
+
         const userCheckbox = await page.waitForSelector('.ivu-checkbox-input');
         await userCheckbox.click();
 
@@ -239,7 +247,7 @@ export class groupAction{
     }
 
     public async editPerGroup(page:Page, groupName:string){
-        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(2)');
+        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(1)');
         await directUserBtn.click();
 
         await page.waitFor(2000);
@@ -255,7 +263,7 @@ export class groupAction{
         const visibleBtn = await page.waitForSelector('form > div:nth-child(3) > div > div > div.ivu-select-selection > div');
         await visibleBtn.click();
 
-        const hiddenBtn = await page.waitForSelector('.ivu-form-item-content .ivu-select-dropdown-list>li:nth-child(1)');
+        const hiddenBtn = await page.waitForSelector('.ivu-form-item-content .ivu-select-dropdown-list>li:nth-child(4)');
         await hiddenBtn.click();
 
         const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
@@ -265,7 +273,7 @@ export class groupAction{
     }
 
     public async addPerLowGroup(page:Page, groupName:string){
-        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(2)');
+        const directUserBtn = await page.waitForSelector('.custom-list>li');
         await directUserBtn.click();
 
         const addGroupBtn = await page.waitForSelector('.ui-group-page-detail-header.flex-row>button:nth-child(3)');
@@ -284,7 +292,7 @@ export class groupAction{
     }
 
     public async addPerUser(page:Page, username:string, name:string, password:string, repassword:string){
-        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(2)');
+        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(1)');
         await directUserBtn.click();
 
         await page.waitFor(2000);
@@ -319,11 +327,10 @@ export class groupAction{
 
         await page.waitFor(2000);
 
-
     }
 
     public async editPerUser(page:Page, name:string, password:string, repassword:string){
-        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(2)');
+        const directUserBtn = await page.waitForSelector('.custom-list>li:nth-child(1)');
         await directUserBtn.click();
 
         await page.waitFor(1000);
