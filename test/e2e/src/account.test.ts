@@ -13,38 +13,50 @@ describe('一账通-账号管理测试', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin'); 
-
     },60000)
     afterAll ( async () => {
         //await page.close();
     })
 
     test('TEST_001:验证账号管理页面链接' , async() => {
+        await page.waitFor(2000);
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+        
+        await page.waitFor(2000);
 
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
-        await page.waitFor(5000);
+        await page.waitFor(2000);
+
+        //const accountBtn = await page.waitForSelector('a[href="#/workspace/account"]');
+        //await accountBtn.click();
+
+        //await page.waitFor(5000);
 
         const url = await page.url();
         await expect(url).toMatch('admin/account');
+     
+        await page.close();
     },30000);
-
+    
     test('TEST_002:验证账号管理页面添加新账号' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+        
+        await page.waitFor(5000);
+
         let accountaction = new accountAction();
         await accountaction.addAccount(page, "mxyzz",  "meixinyue", "mei123456", "mei123456", "15822186268", "1821788073@qq.com", "meixinyue11@163.com");         
 
-        let browser = await launch()
-        page = await browser.newPage();
+        page = await global.browser.newPage()
         await page.goto(config.url);
 
-        let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin'); 
 
-        const manageBtn2 = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn2.click();
+        //const manageBtn2 = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        //await manageBtn2.click();
 
         await page.waitFor(5000);
 
@@ -67,12 +79,11 @@ describe('一账通-账号管理测试', () => {
             return elem.innerHTML;
         });
         await expect(email).toEqual('meixinyue11@163.com');
-
-    },60000);
+        await page.close();
+    },50000);
 
     test('TEST_003:验证账号管理页面添加的新账号能否登录' , async() => {
-        let browser = await launch()
-        page = await browser.newPage();
+        page = await global.browser.newPage()
         await page.goto(config.url);
 
         let useraction = new UserAction();

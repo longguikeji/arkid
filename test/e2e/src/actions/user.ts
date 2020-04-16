@@ -12,7 +12,8 @@ export class UserAction{
         
         const loginBtn = await page.waitForSelector('button[type = "button"]');
         await loginBtn.click();
-
+        
+        console.log("login success");
         await page.waitFor(3000);
 
     }

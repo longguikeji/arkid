@@ -15,20 +15,22 @@ describe('一账通-测试操作日志', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        const logBtn = await page.waitForSelector('.header-middle a[href="#/admin/oplog"]');
-        await logBtn.click();
-
-        await page.waitFor(2000);
     },50000)
     afterAll ( async () => {
        // await page.close();
     })
 
     test('TEST_001:验证操作日志' , async() => {
-        
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        console.log(page.url());
+
+        const logBtn = await page.waitForSelector('.header-middle a[href="#/admin/oplog"]');
+        await logBtn.click();
+
+        await page.waitFor(2000);
+ 
         const loginLog = await page.$eval('.ivu-table-tbody>tr>td>div>div', elem => {
             return elem.innerHTML;
         });
@@ -41,7 +43,16 @@ describe('一账通-测试操作日志', () => {
 
     },30000);
 
-    test('TEST_001:验证查看详细日志' , async() => {
+    test('TEST_002:验证查看详细日志' , async() => {
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        //await manageBtn.click();
+
+        console.log(page.url());
+
+        const logBtn = await page.waitForSelector('.header-middle a[href="#/admin/oplog"]');
+        await logBtn.click();
+
+        await page.waitFor(2000);
 
         const logDetailsBtn = await page.waitForSelector('.ivu-table-tbody>tr>td:last-child>div');
         await logDetailsBtn.click();

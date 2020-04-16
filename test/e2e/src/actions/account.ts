@@ -3,13 +3,15 @@ import {Page, launch} from 'puppeteer';
 export class accountAction{
     public async addAccount(page:Page, username:string, name:string, password:string, 
         repassword:string, phone:string, personalemail:string, email:string){
+        
+        console.log("11111");
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+       // await manageBtn.click();
+        
+        console.log(page.url());
+        await page.waitFor(5000);
 
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        await page.waitFor(2000);
-
-        const addAccountBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
+        const addAccountBtn = await page.waitForSelector('div.ui-user-list-toolbar.flex-row > div.flex-row.flex-auto > button.ivu-btn.ivu-btn-primary');
         await addAccountBtn.click();
 
         const usernameInput = await page.waitForSelector('input[placeholder="请输入 用户名"]');
@@ -137,8 +139,10 @@ export class accountAction{
 
     public async searchAccount(page:Page, search:string){
 
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+       // await manageBtn.click();
+
+        await page.waitFor(2000);
 
         const searchAccountInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
         await searchAccountInput.type(search);

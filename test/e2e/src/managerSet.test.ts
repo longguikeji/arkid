@@ -15,7 +15,31 @@ describe('一账通-测试设置子管理员', () => {
     beforeEach( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
+        
+    },400000)
+    afterAll ( async () => {
+        //await page.close();
+    })
 
+    test('TEST_001:验证设置子管理员页面链接' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        await page.waitFor(2000);
+
+        const managerBtn = await page.waitForSelector('a[href="#/admin/manager"]');
+        await managerBtn.click();
+
+        await page.waitFor(3000);
+
+        const url = await page.url();
+        await expect(url).toMatch('#/admin/manager');
+    },30000);
+
+    test('TEST_002:验证设置子管理员是否生效' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
@@ -29,17 +53,6 @@ describe('一账通-测试设置子管理员', () => {
 
         await page.waitFor(3000);
         
-    },400000)
-    afterAll ( async () => {
-        //await page.close();
-    })
-
-    test('TEST_001:验证设置子管理员页面链接' , async() => {
-        const url = await page.url();
-        await expect(url).toMatch('#/admin/manager');
-    },30000);
-
-    test('TEST_002:验证设置子管理员是否生效' , async() => {
         let managersettingaction = new managerSettingAction();
         await managersettingaction.managerSetting(page);
         

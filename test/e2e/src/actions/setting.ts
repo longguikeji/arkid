@@ -2,6 +2,9 @@ import {Page, launch} from 'puppeteer';
 
     export class setAction{
         public async setting(page:Page){
+            const returnBtn = await page.waitForSelector('body > div.lg-layout > header > div.header-right > a:nth-child(1) > button');
+            await returnBtn.click();
+
             const setBtn = await page.waitForSelector('a[href="#/workspace/userinfo"]');
             await setBtn.click();
 

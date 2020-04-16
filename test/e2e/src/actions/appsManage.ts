@@ -35,8 +35,8 @@ export class appsManageAction{
     }
 
     public async editAppMassage(page:Page, appName:string, remark:string){
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+       // await manageBtn.click();
 
         await page.waitFor(2000);
 
@@ -64,8 +64,8 @@ export class appsManageAction{
     }
 
     public async deleteApp(page:Page){
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
+        //const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        //await manageBtn.click();
 
         const appsManageBtn = await page.waitForSelector('a[href="#/admin/app"]');
         await appsManageBtn.click();
@@ -85,8 +85,8 @@ export class appsManageAction{
     }
 
     public async userPower(page:Page, searchname:string){
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+       // await manageBtn.click();
 
         await page.waitFor(2000);
 
@@ -117,13 +117,13 @@ export class appsManageAction{
         const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large span');
         await keepBtn.click();
 
-        await page.waitFor(120000);
+        await page.waitFor(400000);
 
     }
 
     public async departmentPower(page:Page, searchname:string){
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        //await manageBtn.click();
 
         await page.waitFor(2000);
 
@@ -160,51 +160,7 @@ export class appsManageAction{
         const keepBtn = await page.waitForSelector('div.ivu-modal-footer > div > div > button.ivu-btn.ivu-btn-primary');
         await keepBtn.click();
 
-        await page.waitFor(300000);
-
-    }
-
-    public async personalGroupPower(page:Page, searchname:string){
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        await page.waitFor(2000);
-
-        const appsManageBtn = await page.waitForSelector('a[href="#/admin/app"]');
-        await appsManageBtn.click();
-
-        await page.waitFor(2000);
-
-        const appBtn = await page.waitForSelector('.flex-row>span:nth-child(3)');
-        await appBtn.click();
-
-        await page.waitFor(2000);
-
-        const personalGroupBtn = await page.waitForSelector('.ivu-menu-submenu-title');
-        await personalGroupBtn.click();
-
-        const groupBtn = await page.waitForSelector('.ivu-menu-drop-list .ivu-menu-item');
-        await groupBtn.click();
-
-        await page.waitFor(2000);
-
-        const editBtn = await page.waitForSelector('.permtags .table-btn');
-        await editBtn.click();
-
-        await page.waitFor(2000);
-
-        const searchInput = await page.waitForSelector('div.ui-choose-base--middle > div > div.search.ivu-input-wrapper.ivu-input-wrapper-default.ivu-input-type > input');
-        await searchInput.type(searchname);
-
-        const departmentCheckbox = await page.waitForSelector('div.ui-choose-base--middle > div > ul > li:nth-child(1) > label > span.ivu-checkbox > input');
-        await departmentCheckbox.click();
-
-        await page.waitFor(2000);
-
-        const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large span');
-        await keepBtn.click();
-
-        await page.waitFor(300000);
+        await page.waitFor(400000);
 
     }
 

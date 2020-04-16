@@ -17,19 +17,22 @@ declare var global: any
 describe('一账通-应用管理添加应用', () => {
     let page : Page;
     
-    beforeEach( async () => {
+    beforeAll( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
+        //let useraction = new UserAction();
+        //await useraction.login(page, 'admin', 'admin');
 
-    },60000)
+    },80000)
     afterAll ( async () => {
         //await page.close();
     })
 
     test('TEST_001:验证添加应用是否生效' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+
         let appsmanageaction = new appsManageAction();
         await appsmanageaction.addApps(page, "携程", "https://www.ctrip.com/", "携程应用");
 
@@ -42,15 +45,24 @@ describe('一账通-应用管理添加应用', () => {
             return elem.innerHTML;
         });
         await expect(mark).toEqual('携程应用');
-    },30000);
+    },50000);
 
     test('TEST_002:验证添加应用在工作台是否生效' , async() => {
-        const appName = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .name', elem => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+        
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+       // await manageBtn.click();
+
+        console.log(page.url());
+
+        await page.waitFor(3000);
+        const appName = await page.$eval('div.name-intro.flex-col.flex-auto > span.name', elem => {
             return elem.innerHTML;
         });
         await expect(appName).toEqual('携程');
 
-        const mark = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .intro', elem => {
+        const mark = await page.$eval('div.name-intro.flex-col.flex-auto > span.intro', elem => {
             return elem.innerHTML;
         });
         await expect(mark).toEqual('携程应用');
@@ -61,43 +73,59 @@ describe('一账通-应用管理添加应用', () => {
 describe('一账通-应用管理编辑应用', () => {
     let page : Page;
     
-    beforeEach( async () => {
+    beforeAll( async () => {
+       // page = await global.browser.newPage()
+       // await page.goto(config.url);
         page = await global.browser.newPage()
         await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-        
-    },30000)
+
+    },60000)
     afterEach ( async () => {
-        await page.close();
+       // await page.close();
     })
 
     test('TEST_001:验证编辑应用是否生效' , async() => {
+        //let useraction = new UserAction();
+       // await useraction.login(page, 'admin', 'admin');
+
         let appsmanageaction = new appsManageAction();
         await appsmanageaction.editAppMassage(page, "111",  "111");
 
         const appName = await page.$eval('.ivu-table-tbody>tr:first-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(appName).toEqual('猎聘111');
+        await expect(appName).toEqual('携程111');
 
         const mark = await page.$eval('.ivu-table-tbody>tr:first-child>td:nth-child(3) span', elem => {
             return elem.innerHTML;
         });
-        await expect(mark).toEqual('111');
-    },30000);
+        await expect(mark).toEqual('携程应用111');
+        await page.waitFor(3000);
+    },50000);
 
     test('TEST_002:验证编辑应用在工作台是否生效' , async() => {
+        //let useraction = new UserAction();
+        //await useraction.login(page, 'admin', 'admin');
+
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        console.log(page.url());
+       
+        await page.waitFor(3000);
+ 
         const appName = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .name', elem => {
             return elem.innerHTML;
         });
-        await expect(appName).toEqual('猎聘111');
+        await expect(appName).toEqual('携程111');
 
         const mark = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .intro', elem => {
             return elem.innerHTML;
         });
-        await expect(mark).toEqual('111');
+        await expect(mark).toEqual('携程应用111');
     },30000);
 
 })
@@ -105,14 +133,14 @@ describe('一账通-应用管理编辑应用', () => {
 describe('一账通-应用管理删除应用', () => {
     let page : Page;
     
-    beforeEach( async () => {
+    beforeAll( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
         
-    },30000)
+    },60000)
     afterAll ( async () => {
         //await page.close();
     })
@@ -124,14 +152,21 @@ describe('一账通-应用管理删除应用', () => {
         const appName = await page.$eval('.ivu-table-tbody>tr>td:nth-child(2) span', elem => {
             return elem.innerHTML;
         });
-        await expect(appName).toEqual('测试应用');
-    },30000);
+        await expect(appName).toEqual('猎聘');
+    },50000);
 
     test('TEST_002:验证删除应用在工作台是否生效' , async() => {
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        console.log(page.url());
+
+        await page.waitFor(3000);
+
         const appName = await page.$eval('.card-list.flex-row>li:first-child .name-intro.flex-col.flex-auto .name', elem => {
             return elem.innerHTML;
         });
-        await expect(appName).toEqual('测试应用');
+        await expect(appName).toEqual('猎聘');
 
     },30000);
 
@@ -144,7 +179,7 @@ describe('一账通-应用管理账号的权限', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },400000)
+    },500000)
     afterAll ( async () => {
         //await page.close();
     })
@@ -152,6 +187,7 @@ describe('一账通-应用管理账号的权限', () => {
     test('TEST_001:验证账号的权限是否生效' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
+        
         let appsmanageaction = new appsManageAction();
         await appsmanageaction.userPower(page, "mei333");
 
@@ -164,13 +200,13 @@ describe('一账通-应用管理账号的权限', () => {
             return elem.innerHTML;
         });
         await expect(resultName).toEqual('mei333');
-    },350000);
+    },450000);
 
     test('TEST_001:验证账号的权限是否生效' , async() => {
 
         let useraction = new UserAction();
         await useraction.login(page, 'mei333', 'mei333');
-
+        
         const appName = await page.$eval('.flex-row .name', elem => {
             return elem.innerHTML;
         });
@@ -190,7 +226,7 @@ describe('一账通-应用管理部门的权限', () => {
         await useraction.login(page, 'admin', 'admin');
         let appsmanageaction = new appsManageAction();
         await appsmanageaction.departmentPower(page, "部门三");
-    },350000)
+    },500000)
     afterAll ( async () => {
         //await page.close();
     })

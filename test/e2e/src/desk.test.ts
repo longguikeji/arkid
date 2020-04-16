@@ -8,10 +8,9 @@ import expectPuppeteer = require('expect-puppeteer');
 import { appMessageAction } from './actions/appMessage';
 
 declare var global: any
-
 describe('一账通-登录测试', () => {
     let page : Page;
-    
+
     beforeEach( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
@@ -97,7 +96,6 @@ describe('一账通-我的应用信息测试', () => {
     },30000);
 
 })
-
 describe('一账通-我的应用搜索框测试', () => {
     let page : Page;
     
@@ -357,15 +355,16 @@ describe('一账通-个人资料测试', () => {
         const saveBtn = await page.waitForSelector('.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
          await saveBtn.click();
 
-         let browser = await launch()
-        page = await browser.newPage();
+        page = await global.browser.newPage()
         await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
+        const returnBtn = await page.waitForSelector('body > div.lg-layout > header > div.header-right > a:nth-child(1) > button');
+        await returnBtn.click();
 
         const setBtn = await page.waitForSelector('a[href="#/workspace/userinfo"]');
-            await setBtn.click();
+        await setBtn.click();
 
         const personName1 = await page.$eval('.ui-workspace-userinfo--summary h4', elem => {
             return elem.innerHTML;
