@@ -14,8 +14,8 @@ describe('一账通-配置管理登录页面', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
+        //let useraction = new UserAction();
+       // await useraction.login(page, 'admin', 'admin');
         
 
     },90000)
@@ -24,6 +24,9 @@ describe('一账通-配置管理登录页面', () => {
     })
     
     test('TEST_001:验证配置管理页面链接' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
@@ -40,6 +43,8 @@ describe('一账通-配置管理登录页面', () => {
     },30000);
 
     test('TEST_002:验证修改公司面名称是否生效' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
 
         let configmanageaction = new configManageAction();
         await configmanageaction.loginSetting(page,"北京龙归科技");
@@ -52,6 +57,9 @@ describe('一账通-配置管理登录页面', () => {
     },30000);
 
     test('TEST_003:验证配置管理页面"去进行账号配置"链接' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+
         let configmanageaction = new configManageAction();
         await configmanageaction.urlTest(page);
 

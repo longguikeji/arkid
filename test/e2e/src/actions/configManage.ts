@@ -3,8 +3,8 @@ import {Page, launch} from 'puppeteer';
 export class configManageAction{
     
     public async loginSetting(page:Page, companyname:string){
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        //await manageBtn.click();
 
         const configManageBtn = await page.waitForSelector('a[href="#/admin/config"]');
         await configManageBtn.click();
@@ -28,8 +28,8 @@ export class configManageAction{
     }
 
     public async urlTest(page:Page){
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+       // await manageBtn.click();
 
         await page.waitFor(1000);
 
