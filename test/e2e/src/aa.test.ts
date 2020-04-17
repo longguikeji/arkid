@@ -15,6 +15,9 @@ describe('一账通-验证分组管理可见性', () => {
 
     },120000)
     afterAll ( async () => {
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
         await page.close();
     })
 
