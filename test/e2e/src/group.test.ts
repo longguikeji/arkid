@@ -22,13 +22,17 @@ describe('一账通-验证分组管理', () => {
     test('TEST_001:验证分组管理页面链接' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
+     
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
 
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
 
         const url = await page.url();
         await expect(url).toMatch('#/admin/group/node?id=d_root');
-    },30000);
+
+    },50000);
 
     test('TEST_002:验证分组管理页面添加分组' , async() => {
         let useraction = new UserAction();
@@ -55,9 +59,15 @@ describe('一账通-验证分组管理', () => {
             return elem.innerHTML;
         });
         await expect(groupName2).toEqual('部门三 (1人)');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },50000);
 
-    test('TEST_001:验证分组管理分组可见性' , async() => {
+    test('TEST_003:验证分组管理分组可见性' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'mei111', 'mei111');
 
@@ -70,6 +80,11 @@ describe('一账通-验证分组管理', () => {
             return elem.innerHTML;
         });
         await expect(groupName).toEqual('部门三 (1人)');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
 
     },50000);
 
@@ -88,6 +103,12 @@ describe('一账通-验证分组管理编辑部门', () => {
     })
 
     test('TEST_001:验证修改在分组管理页面是否生效' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+       
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+ 
         
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
@@ -98,7 +119,12 @@ describe('一账通-验证分组管理编辑部门', () => {
         });
         await expect(groupName1).toEqual('部门二一 ( 1 人 )');
 
-    },30000);
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
+    },50000);
 
     test('TEST_002:验证修改在通讯录是否生效' , async() => {
 
@@ -114,6 +140,11 @@ describe('一账通-验证分组管理编辑部门', () => {
             return elem.innerHTML;
         });
         await expect(groupName).toEqual('部门三 (1人)');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
 
     },30000);
 
@@ -133,7 +164,12 @@ describe('一账通-验证分组管理编辑部门', () => {
         });
         await expect(groupName1).toEqual('部门二一 (1人)');
 
-    },50000);
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
+    },40000);
 
 })
 
