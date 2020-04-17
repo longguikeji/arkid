@@ -5,12 +5,12 @@ ArkID 后端整体基于 Django 开发。异步任务通过 celery 实现。
 
 ## 核心数据模型
 
-用户(`oneid_meta.models.User`)对应一个账号，一个用户。
+用户(`oneid_meta.models.User`)对应一个账号。
 
-部门(`oneid_meta.models.Dept`), 组(`oneid_meta.models.Group`)都是节点的一种，在抽象层面完全一致。
+部门(`oneid_meta.models.Dept`), 组(`oneid_meta.models.Group`)都是节点的一种特化，在抽象层面完全一致。
 
-节点是树状结构，可以包含 0 至多个节点。除根节点无父节点外，其他所有节点都有一个父节点。
-用户可以属于任意 0 至多个节点。
+节点是树状结构，可以包含 0 至多个子节点。除根节点无父节点外，其他所有节点都有一个父节点。
+用户可以属于 0 至多个任意节点。
 
 ArkID 管理的核心内容就是用户与节点之间、节点与节点之间的关系。
 
