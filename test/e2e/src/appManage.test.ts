@@ -24,7 +24,7 @@ describe('一账通-应用管理添加应用', () => {
         //let useraction = new UserAction();
         //await useraction.login(page, 'admin', 'admin');
 
-    },80000)
+    },100000)
     afterAll ( async () => {
         //await page.close();
     })
@@ -36,6 +36,8 @@ describe('一账通-应用管理添加应用', () => {
         let appsmanageaction = new appsManageAction();
         await appsmanageaction.addApps(page, "携程", "https://www.ctrip.com/", "携程应用");
 
+        await page.waitFor(3000);
+        
         const appName = await page.$eval('.ivu-table-tbody>tr:first-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
@@ -66,7 +68,13 @@ describe('一账通-应用管理添加应用', () => {
             return elem.innerHTML;
         });
         await expect(mark).toEqual('携程应用');
-    },30000);
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
+    },50000);
 
 })
 
@@ -126,6 +134,12 @@ describe('一账通-应用管理编辑应用', () => {
             return elem.innerHTML;
         });
         await expect(mark).toEqual('携程应用111');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },30000);
 
 })
@@ -168,6 +182,11 @@ describe('一账通-应用管理删除应用', () => {
         });
         await expect(appName).toEqual('猎聘');
 
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },30000);
 
 })
@@ -200,6 +219,12 @@ describe('一账通-应用管理账号的权限', () => {
             return elem.innerHTML;
         });
         await expect(resultName).toEqual('mei333');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },450000);
 
     test('TEST_001:验证账号的权限是否生效' , async() => {
@@ -211,6 +236,12 @@ describe('一账通-应用管理账号的权限', () => {
             return elem.innerHTML;
         });
         await expect(appName).toEqual('猎聘');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },30000);
 
 })
@@ -218,7 +249,7 @@ describe('一账通-应用管理账号的权限', () => {
 describe('一账通-应用管理部门的权限', () => {
     let page : Page;
     
-    beforeEach( async () => {
+    beforeAll( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
@@ -226,6 +257,12 @@ describe('一账通-应用管理部门的权限', () => {
         await useraction.login(page, 'admin', 'admin');
         let appsmanageaction = new appsManageAction();
         await appsmanageaction.departmentPower(page, "部门三");
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },500000)
     afterAll ( async () => {
         //await page.close();

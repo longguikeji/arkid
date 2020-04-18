@@ -35,8 +35,8 @@ export class appsManageAction{
     }
 
     public async editAppMassage(page:Page, appName:string, remark:string){
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
 
         await page.waitFor(2000);
 
@@ -64,8 +64,8 @@ export class appsManageAction{
     }
 
     public async deleteApp(page:Page){
-        //const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        //await manageBtn.click();
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
 
         const appsManageBtn = await page.waitForSelector('a[href="#/admin/app"]');
         await appsManageBtn.click();
@@ -85,8 +85,8 @@ export class appsManageAction{
     }
 
     public async userPower(page:Page, searchname:string){
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
 
         await page.waitFor(2000);
 
@@ -122,8 +122,8 @@ export class appsManageAction{
     }
 
     public async departmentPower(page:Page, searchname:string){
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        //await manageBtn.click();
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
 
         await page.waitFor(2000);
 
