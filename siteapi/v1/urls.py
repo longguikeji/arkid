@@ -36,6 +36,7 @@ from siteapi.v1.views import (
     perm as perm_views,
     ucenter as ucenter_views,
     qr as qr_views,
+    advance as advance_views,
 )
 
 from siteapi.v1.views.statistics import UserStatisticView
@@ -183,4 +184,14 @@ urlpatterns = [
     url(r'^invitation/user/(?P<username>[\w]+)/', event_views.InviteUserCreateAPIView.as_view(), name='invite_user'),
     # statistics
     url(r'^statistics/user_statistic/$', UserStatisticView.as_view(), name='user_statistic'),
+
+    # advance
+    url(r'^plugin/crontab/$', advance_views.CrontabPluginListAPIView.as_view(),
+        name='crontab_plugin_list'),
+    url(r'^plugin/crontab/(?P<uuid>[\w]+)/$', advance_views.CrontabPluginDetailAPIView.as_view(),
+        name='crontab_plugin_detail'),
+    url(r'^plugin/middleware/$', advance_views.MiddlewarePluginListAPIView.as_view(),
+        name='middleware_plugin_list'),
+    url(r'^plugin/middleware/(?P<uuid>[\w]+)/$', advance_views.MiddlewarePluginDetailAPIView.as_view(),
+        name='middleware_plugin_detail'),
 ]
