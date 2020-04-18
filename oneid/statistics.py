@@ -17,8 +17,9 @@ class UserStatistics:
         get active count from cache
         '''
         date = datetime.datetime.today().date().isoformat()
-        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'ACTIVE_USER_REDIS_KEY_PREFIX')
-
+        getframe = _getframe()
+        validate_attr(getframe.f_code.co_filename, getframe.f_code.co_name, getframe.f_lineno,
+                      'ACTIVE_USER_REDIS_KEY_PREFIX')
         key = settings.ACTIVE_USER_REDIS_KEY_PREFIX + date
         count = redis_conn.hlen(key)
         if count:
@@ -32,8 +33,9 @@ class UserStatistics:
         '''
         date = datetime.datetime.today().date().isoformat()
         uuid = str(user.uuid)
-        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'ACTIVE_USER_REDIS_KEY_PREFIX')
-
+        getframe = _getframe()
+        validate_attr(getframe.f_code.co_filename, getframe.f_code.co_name, getframe.f_lineno,
+                      'ACTIVE_USER_REDIS_KEY_PREFIX')
         key = settings.ACTIVE_USER_REDIS_KEY_PREFIX + date
         res = redis_conn.hgetall(key)
 

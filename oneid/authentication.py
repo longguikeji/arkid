@@ -9,7 +9,7 @@ from rest_framework import exceptions
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
-from ..common.setup_utils import NotConfiguredException, validate_attr
+from ..common.setup_utils import validate_attr
 from ..drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from ..oneid_meta.models import User
 from ..oneid.statistics import UserStatistics

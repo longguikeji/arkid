@@ -11,6 +11,9 @@ from ....oneid.statistics import UserStatistics
 
 
 class UserStatisticView(generics.GenericAPIView):
+    """
+    user statistic view
+    """
     permission_classes = [IsAuthenticated & IsAdminUser]
 
     def get(self, request):

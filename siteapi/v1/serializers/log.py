@@ -29,6 +29,9 @@ class LogLiteSerializer(DynamicFieldsModelSerializer):
         )
 
     def get_user(self, instance):
+        """
+        serializer for user
+        """
         if instance.user:
             return UserLiteSerializer(instance.user).data
         return {'username': 'unknown', 'name': 'unknown'}

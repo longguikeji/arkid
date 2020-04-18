@@ -1,22 +1,21 @@
 from __future__ import print_function
 import io
 import os
-import sys
 from fnmatch import fnmatchcase
 from setuptools import convert_path, find_packages, setup
 import toml
 
-# Provided as an attribute, so you can append to these instead
-# of replicating them:
-standard_exclude = ["*.pyc", "*.bak", "CHANGELOG.md", "package.json", "package-lock.json", "settings_local.py"]
-
-standard_exclude_directories = [
-    "CVS", "./build", ".git", ".idea", "node_modules", "EGG-INFO", "dist", "django_arkid.egg-info", "pip-egg-info",
-    "*.egg-info"
-]
 
 BASE_DIR = 'arkid'
 
+# Provided as an attribute, so you can append to these instead
+# of replicating them:
+STANDARD_EXCLUDE = ["*.pyc", "*.bak", "CHANGELOG.md", "package.json", "package-lock.json", "settings_local.py"]
+
+STANDARD_EXCLUDE_DIRECTORIES = [
+    "CVS", "./build", ".git", ".idea", "node_modules", "EGG-INFO", "dist", "django_arkid.egg-info", "pip-egg-info",
+    "*.egg-info"
+]
 
 # Copied from paste/util/finddata.py
 def find_package_data(where=".",
@@ -80,29 +79,29 @@ def find_package_data(where=".",
     return out
 
 
-package_data = find_package_data(exclude_directories=standard_exclude_directories, exclude=standard_exclude)
-long_description = io.open(os.path.join(BASE_DIR, 'README.md'), encoding='utf-8').read()
+PACKAGE_DATA = find_package_data(exclude_directories=STANDARD_EXCLUDE_DIRECTORIES, exclude=STANDARD_EXCLUDE)
+LONG_DESCRIPTION = io.open(os.path.join(BASE_DIR, 'README.md'), encoding='utf-8').read()
 
 # Dynamically calculate the version based on allauth.VERSION.
-version = __import__(BASE_DIR).__version__
+VERSION = __import__(BASE_DIR).__version__
 
-content = toml.load(os.path.join(BASE_DIR, 'Pipfile'))['packages']
-install_requires = ['{0}{1}'.format(key, value) if value != '*' else key for key, value in content.items()]
+CONTENT = toml.load(os.path.join(BASE_DIR, 'Pipfile'))['packages']
+INSTALL_REQUIRES = ['{0}{1}'.format(key, value) if value != '*' else key for key, value in CONTENT.items()]
 
 METADATA = dict(
     name='django-arkid',
-    version=version,
+    version=VERSION,
     author='LongGuiKeJi',
     author_email='bd@longguikeji.com',
     description='Integrated set of Django applications addressing'
     ' authentication, registration, account management as well as'
     ' 3rd party (social) account authentication.',
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     url='https://github.com/longguikeji/arkid-core',
     download_url='https://github.com/longguikeji/arkid-core',
     keywords='django auth account sso social openid ldap saml oidc dingding wechat qq alipay',
     tests_require=[],
-    install_requires=install_requires,
+    install_requires=INSTALL_REQUIRES,
     include_package_data=True,
     dependency_links=["https://mirrors.aliyun.com/pypi/simple"],
     classifiers=[
@@ -121,7 +120,7 @@ METADATA = dict(
         'Framework :: Django :: 3.0',
     ],
     packages=find_packages(),
-    package_data=package_data,
+    package_data=PACKAGE_DATA,
     zip_safe=True,
 )
 

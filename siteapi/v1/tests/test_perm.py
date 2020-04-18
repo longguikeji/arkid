@@ -17,7 +17,7 @@ from ....oneid_meta.models import (
     GroupPerm,
     GroupMember,
 )
-from scripts.flush_perm import flush_all_perm
+from ....scripts.flush_perm import flush_all_perm
 
 MAX_PERM_ID = 2
 

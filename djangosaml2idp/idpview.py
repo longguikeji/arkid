@@ -1,6 +1,8 @@
 '''
 django SAML views
 '''
+
+from sys import _getframe
 import os
 import logging
 import copy
@@ -34,7 +36,6 @@ from ..common.setup_utils import get_top_level_dirname, validate_attr
 from ..drf_expiring_authtoken.models import ExpiringToken
 from ..djangosaml2idp.processors import BaseProcessor
 from ..djangosaml2idp import idpsettings
-from sys import _getframe
 
 logger = logging.getLogger(__name__)    # pylint: disable=invalid-name
 

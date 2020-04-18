@@ -1,11 +1,12 @@
 '''
 schema of Groups
 '''
+
+from sys import _getframe
 import jsonfield
 from django.db import models
 from django.conf import settings
 from django.db.utils import IntegrityError
-from sys import _getframe
 from ...common.setup_utils import validate_attr
 from ...common.django.model import BaseOrderedModel, BaseModel
 from ...oneid_meta.models.perm import GroupPerm, PermOwnerMixin
