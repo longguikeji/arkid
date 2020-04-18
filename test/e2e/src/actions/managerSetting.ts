@@ -59,7 +59,7 @@ export class managerSettingAction{
         const keepBtn = await page.waitForSelector('.ui-choose-base--footer.flex-row .ivu-btn.ivu-btn-primary');
         await keepBtn.click();
 
-        await page.waitFor(2000);
+        await page.waitFor(4000);
 
         const manageScopeBtn = await page.waitForSelector('div.manager-settings-scopes > div > div > label:nth-child(2) > span > input');
         await manageScopeBtn.click();
@@ -242,7 +242,7 @@ export class managerSettingAction{
 
         await page.waitFor(2000);
 
-        const appCheckbox = await page.waitForSelector('.perm-settings-main-app-list>div>ul>li .ivu-checkbox');
+        const appCheckbox = await page.waitForSelector('div.perm-settings-main-app-list > div > ul > li:last-child > label > span.ivu-checkbox > input');
         await appCheckbox.click();
 
         const addBtn = await page.waitForSelector('.ui-edit-manager-page--footer .ivu-btn.ivu-btn-primary');
@@ -298,7 +298,7 @@ export class managerSettingAction{
         const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large');
         await keepBtn.click();
 
-        await page.waitFor(120000);
+        await page.waitFor(10000);
 
     }
 

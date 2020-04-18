@@ -112,11 +112,7 @@ export class groupAction{
     }
 
     public async editUser(page:Page, name:string, password:string, repassword:string){
-        const groupBtn = await page.waitForSelector('.ui-group-tree.ivu-tree>ul:nth-child(2)');
-        await groupBtn.click();
-
-        await page.waitFor(2000);
-
+       
         const editUserBtn = await page.waitForSelector('.ivu-table-cell .table-btn');
         await editUserBtn.click();
         
