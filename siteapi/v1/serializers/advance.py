@@ -76,5 +76,22 @@ class MiddlewarePluginSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for MiddlewarePlugin
     '''
+
+    uuid = serializers.UUIDField(format='hex', read_only=True)
+
     class Meta:    # pylint: disable=missing-docstring
         model = MiddlewarePlugin
+
+        fields = (
+            'is_active',
+            'uuid',
+            'name',
+            'detail',
+            'import_path',
+            'order_no',
+        )
+
+        read_only_fields = (
+            'uuid',
+            'import_path',
+        )
