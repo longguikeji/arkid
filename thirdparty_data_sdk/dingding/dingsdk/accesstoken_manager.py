@@ -4,8 +4,8 @@ Dingding token manager get through appkey and appsecret or through corpid and co
 
 import time
 import requests
-from thirdparty_data_sdk.dingding.dingsdk import constants
-from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
+from ....thirdparty_data_sdk.dingding.dingsdk import constants
+from ....thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 
 
 class AccessTokenManager():

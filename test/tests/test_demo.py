@@ -5,8 +5,8 @@ import os
 from unittest import mock
 from django.urls import reverse
 from rest_framework.test import APIClient
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
+from ...siteapi.v1.tests import TestCase
+from ...oneid_meta.models import (
     AccountConfig,
     SMSConfig,
 )

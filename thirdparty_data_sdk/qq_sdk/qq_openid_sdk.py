@@ -3,8 +3,8 @@ qq API
 '''
 import re
 import requests
-from thirdparty_data_sdk.qq_sdk import constants
-from thirdparty_data_sdk.error_utils import APICallError
+from ...thirdparty_data_sdk.qq_sdk import constants
+from ...thirdparty_data_sdk.error_utils import APICallError
 
 
 class QQInfoManager():

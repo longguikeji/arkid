@@ -1,7 +1,9 @@
-
+from sys import _getframe
 
 from django.db import migrations, models
 from django.conf import settings
+
+from ...common.setup_utils import NotConfiguredException, validate_attr
 
 
 def move_manager_group_under_intra(apps, schema_editor):
@@ -42,10 +44,14 @@ class Migration(migrations.Migration):
 
     operations = []
 
+    validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'TESTING')
+
     if not settings.TESTING:
         operations += [
             migrations.RunPython(move_manager_group_under_intra)
         ]
+
+    validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'TESTING', 'SITE_META')
 
     if not settings.TESTING and settings.SITE_META.lower() == 'native':
         operations += [

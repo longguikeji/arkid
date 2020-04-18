@@ -6,7 +6,7 @@ from django_celery_results.models import TaskResult
 from celery import states
 from rest_framework import serializers
 
-from common.django.drf.serializer import DynamicFieldsModelSerializer
+from ....common.django.drf.serializer import DynamicFieldsModelSerializer
 
 WAITING = (
     states.RETRY,

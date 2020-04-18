@@ -3,13 +3,13 @@
 """
 import json
 import copy
-from executer.core import Executer
-from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
-from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPKEY_APPSECRET
-from thirdparty_data_sdk.dingding.dingsdk.user_manager import UserManager
-from thirdparty_data_sdk.dingding.dingsdk.department_manager import DepartmentManager
-from thirdparty_data_sdk.dingding.dingsdk.role_manager import RoleManager
-from oneid_meta.models import User, DeptMember, Dept, Group, DingConfig
+from ...executer.core import Executer
+from ...thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+from ...thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPKEY_APPSECRET
+from ...thirdparty_data_sdk.dingding.dingsdk.user_manager import UserManager
+from ...thirdparty_data_sdk.dingding.dingsdk.department_manager import DepartmentManager
+from ...thirdparty_data_sdk.dingding.dingsdk.role_manager import RoleManager
+from ...oneid_meta.models import User, DeptMember, Dept, Group, DingConfig
 
 DEFAULT_DEPT = '1'
 
@@ -287,18 +287,22 @@ class DingExecuter(Executer):
         """
         创建组时已经做了加入
         """
+
     def move_group_to_group(self, group, parent_group):
         """
         钉钉需要角色下没有员工才可以删除
         """
+
     def sort_groups_in_group(self, groups, parent_group):
         """
         钉钉的角色没有顺序
         """
+
     def sort_users_in_group(self, users, group):
         """
         钉钉的角色没有顺序
         """
+
     def set_user_password(self, user, plaintext):
         """
         钉钉没有用户名密码

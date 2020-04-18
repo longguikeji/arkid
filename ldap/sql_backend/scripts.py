@@ -5,9 +5,9 @@ import time
 
 from celery import shared_task
 
-from oneid_meta.models import User, Group, Dept, GroupMember, DeptMember
-from ldap.sql_backend.models import LDAPEntry as Entry
-from ldap.sql_backend.models import LDAPOCMappings as OCMap
+from ...oneid_meta.models import User, Group, Dept, GroupMember, DeptMember
+from ...ldap.sql_backend.models import LDAPEntry as Entry
+from ...ldap.sql_backend.models import LDAPOCMappings as OCMap
 
 
 def clear_deprecated_entries(entry_subject, required_tag):

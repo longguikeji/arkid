@@ -3,7 +3,7 @@ test for file
 '''
 from django.urls import reverse
 from rest_framework.status import HTTP_404_NOT_FOUND
-from siteapi.v1.tests import TestCase
+from ...siteapi.v1.tests import TestCase
 
 
 class FileTestCase(TestCase):

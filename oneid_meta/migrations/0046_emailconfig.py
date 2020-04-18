@@ -3,16 +3,21 @@
 from django.db import migrations, models
 from django.conf import settings
 import django.db.models.deletion
-import oneid_meta.models.config
+from sys import _getframe
+from ...common.setup_utils import validate_attr
+from ...oneid_meta.models import config
 import uuid
+
 
 def init_email_config(apps, schema_editor):
 
     EmailConfig = apps.get_model('oneid_meta', 'EmailConfig')
     Site = apps.get_model('sites', 'Site')
-
+    validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                  'SITE_ID')
     site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
     EmailConfig.objects.get_or_create(site=site)
+
 
 class Migration(migrations.Migration):
 
@@ -41,7 +46,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model, oneid_meta.models.config.SingletonConfigMixin),
+            bases=(models.Model, config.SingletonConfigMixin),
         ),
         migrations.RunPython(init_email_config)
     ]

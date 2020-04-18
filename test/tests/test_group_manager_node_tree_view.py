@@ -4,8 +4,8 @@ test for api about node
 '''
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_204_NO_CONTENT
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
+from ...siteapi.v1.tests import TestCase
+from ...oneid_meta.models import (
     User, )
 
 USER_ONE = {

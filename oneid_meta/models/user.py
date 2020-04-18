@@ -13,14 +13,16 @@ from django.utils import timezone
 # from django.db.utils import IntegrityError
 import jsonfield
 from rest_framework.exceptions import ValidationError
-from common.django.model import BaseModel, IgnoreDeletedManager
-from oneid_meta.models.config import CustomField
-from oneid_meta.models.group import GroupMember, Group
-from oneid_meta.models.dept import DeptMember, Dept
-from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
-from oneid_meta.models.mixin import TreeNode as Node
-from executer.utils.password import encrypt_password, verify_password
-from infrastructure.utils.sms import is_mobile, is_native_mobile, is_i18n_mobile, is_cn_mobile, CN_MOBILE_PREFIX
+from sys import _getframe
+from ...common.setup_utils import validate_attr
+from ...common.django.model import BaseModel, IgnoreDeletedManager
+from ...oneid_meta.models.config import CustomField
+from ...oneid_meta.models.group import GroupMember, Group
+from ...oneid_meta.models.dept import DeptMember, Dept
+from ...oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
+from ...oneid_meta.models.mixin import TreeNode as Node
+from ...executer.utils.password import encrypt_password, verify_password
+from ...infrastructure.utils.sms import is_mobile, is_native_mobile, is_i18n_mobile, is_cn_mobile, CN_MOBILE_PREFIX
 
 
 class IsolatedManager(IgnoreDeletedManager):
@@ -154,6 +156,8 @@ class User(BaseModel, PermOwnerMixin):
         '''
         创建用户
         '''
+        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                      'PASSWORD_ENCRYPTION')
         return cls.objects.create(
             username=username,
             password=encrypt_password(password, settings.PASSWORD_ENCRYPTION),
@@ -274,6 +278,8 @@ class User(BaseModel, PermOwnerMixin):
         '''
         distinguish name
         '''
+        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                      'LDAP_BASE')
         return 'uid={},ou=people,{}'.format(self.username, settings.LDAP_BASE)
 
     @property

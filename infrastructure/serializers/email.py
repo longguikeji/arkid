@@ -8,9 +8,9 @@ from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from django.template.loader import render_to_string
 
-from tasksapp.tasks import send_email
-from oneid_meta.models import User, Invitation, CompanyConfig
-from oneid.utils import redis_conn
+from ...tasksapp.tasks import send_email
+from ...oneid_meta.models import User, Invitation, CompanyConfig
+from ...oneid.utils import redis_conn
 
 
 class EmailClaimSerializer(serializers.Serializer):    # pylint: disable=abstract-method

@@ -5,8 +5,8 @@ tests for api about group
 
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import (
     Group,
     User,
     GroupMember,

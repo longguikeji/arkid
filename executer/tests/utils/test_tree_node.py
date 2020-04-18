@@ -5,11 +5,11 @@ tests for utils.tree_node
 
 from django.test import TestCase
 
-from oneid_meta.models import Dept
-from executer.tests import (DEPT_DATA, PARENT_DEPT_DATA, CHILD_DEPT_1_DATA, CHILD_DEPT_2_DATA)
-from executer.tests.LDAP.test_executer import LDAPExecuterDeptTestCase
-from executer.RDB import RDBExecuter
-from executer.utils import tree_node
+from ....oneid_meta.models import Dept
+from ....executer.tests import (DEPT_DATA, PARENT_DEPT_DATA, CHILD_DEPT_1_DATA, CHILD_DEPT_2_DATA)
+from ....executer.tests.LDAP.test_executer import LDAPExecuterDeptTestCase
+from ....executer.RDB import RDBExecuter
+from ....executer.utils import tree_node
 
 
 class TreeNodeTestCase(TestCase):

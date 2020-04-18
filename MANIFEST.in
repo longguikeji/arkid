@@ -1,0 +1,30 @@
+recursive-include */common *.py
+recursive-include */db .gitkeep *.py
+recursive-include */devops *.build *.release *.deploy *.status *.conf *.py
+recursive-include */djangosaml2idp .gitkeep *.py
+recursive-include */docker-compose .gitkeep .env *.yml *.conf *.md *.py
+recursive-include */docs *.md *.py
+recursive-include */drf_expiring_authtoken *.py
+recursive-include */executer *.md *.py
+recursive-include */infrastructure *.html *.py
+recursive-include */ldap Dockerfile *.ldif *.md *.sh *.conf hdb sql *.ini *.py
+recursive-include */locale *.po *.py
+recursive-include */oauth2_provider *.md *.html .gitignore Dockerfile *.lock *.yaml *.go Makefile *.py
+recursive-include */oneid *.py
+recursive-include */oneid_meta *.py
+recursive-include */scripts *.py
+recursive-include */siteadmin *.py
+recursive-include */siteapi *.py
+recursive-include */tasksapp *.md *.py
+recursive-include */test *.sql *.py
+recursive-include */thirdparty_data_sdk *.py
+recursive-include */upload .gitkeep *.py
+
+include */README.md */.dockerignore */.gitignore */.pre-commit-config.yaml */.pylintrc */.style.yapf
+include */Dockerfile */LICENSE.md */Makefile */Pipfile */Pipfile.lock */__init__.py */celery_app.py
+include */requirements.txt */requirements-dev.txt */supervisord.conf */uwsgi.ini */manage.py
+
+exclude */settings_local.py
+recursive-exclude */node_modules *
+recursive-exclude */.git *
+recursive-exclude */.idea *

@@ -55,10 +55,10 @@ from ldap3 import Server, MODIFY_ADD, MODIFY_DELETE
 from ldap3.core.exceptions import LDAPNoSuchObjectResult, LDAPNotAllowedOnNotLeafResult
 from django.conf import settings
 
-from executer.utils.operation import list_diff
-from executer.utils.password import encrypt_password
-from executer.LDAP.client import Connection
-from executer.core import Executer
+from ...executer.utils.operation import list_diff
+from ...executer.utils.password import encrypt_password
+from ...executer.LDAP.client import Connection
+from ...executer.core import Executer
 
 
 class LDAPExecuter(Executer):

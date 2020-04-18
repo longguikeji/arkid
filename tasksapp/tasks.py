@@ -8,11 +8,11 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from ldap3 import Server
 
-from scripts import flush_perm, ldap_user_perm, ldap_aggregate_user, user_manager
-from executer.LDAP.client import Connection
-from infrastructure.utils.email import send_email as send_email_func
-from oneid_meta.models import User, DingConfig
-from oneid_meta.models.mixin import TreeNode as Node
+from ..scripts import flush_perm, ldap_user_perm, ldap_aggregate_user, user_manager
+from ..executer.LDAP.client import Connection
+from ..infrastructure.utils.email import send_email as send_email_func
+from ..oneid_meta.models import User, DingConfig
+from ..oneid_meta.models.mixin import TreeNode as Node
 
 logger = get_task_logger(__name__)    # pylint: disable=invalid-name
 

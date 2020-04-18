@@ -7,8 +7,8 @@ from unittest import mock
 from datetime import timedelta
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import User, Invitation
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import User, Invitation
 
 
 class InvitationTestCase(TestCase):

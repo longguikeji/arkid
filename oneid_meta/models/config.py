@@ -9,15 +9,15 @@ from django.conf import settings
 import jsonfield
 from aliyunsdkcore.acs_exception.exceptions import ServerException
 
-from common.django.model import BaseModel
-from common.sms.aliyun.sms_manager import SMSAliyunManager
-from common.Email.email_manager import EmailManager
-from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
-from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPID_QR_APP_SECRET
-from thirdparty_data_sdk.alipay_api.alipay_oauth_manager import AlipayOauthManager
-from thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QQInfoManager
-from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
-from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
+from ...common.django.model import BaseModel
+from ...common.sms.aliyun.sms_manager import SMSAliyunManager
+from ...common.Email.email_manager import EmailManager
+from ...thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+from ...thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPID_QR_APP_SECRET
+from ...thirdparty_data_sdk.alipay_api.alipay_oauth_manager import AlipayOauthManager
+from ...thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QQInfoManager
+from ...thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
+from ...thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
 
 
 class SingletonConfigMixin:

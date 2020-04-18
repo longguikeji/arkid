@@ -3,9 +3,9 @@ RDB数据操作
 '''
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
-from executer.core import Executer
-from executer.utils.password import encrypt_password
-from oneid_meta.models import (
+from ...executer.core import Executer
+from ...executer.utils.password import encrypt_password
+from ...oneid_meta.models import (
     Dept,
     DeptMember,
     DeptPerm,
@@ -15,15 +15,15 @@ from oneid_meta.models import (
     UserPerm,
     Perm,
 )
-from siteapi.v1.serializers.user import (
+from ...siteapi.v1.serializers.user import (
     UserSerializer,
     DingUserSerializer,
     PosixUserSerializer,
 )
-from siteapi.v1.serializers.dept import (
+from ...siteapi.v1.serializers.dept import (
     DeptDetailSerializer, )
 
-from siteapi.v1.serializers.group import (
+from ...siteapi.v1.serializers.group import (
     GroupDetailSerializer, )
 
 
@@ -31,7 +31,6 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
     '''
     RDB数据操作接口
     '''
-
     def create_user(self, user_info):
         '''
         创建用户

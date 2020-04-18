@@ -3,11 +3,11 @@ serializers for group
 '''
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from common.django.drf.serializer import (
+from ....common.django.drf.serializer import (
     DynamicFieldsModelSerializer, )
-from common.django.drf.serializer import IgnoreNoneMix
+from ....common.django.drf.serializer import IgnoreNoneMix
 
-from oneid_meta.models import (
+from ....oneid_meta.models import (
     Group,
     DingGroup,
     ManagerGroup,
@@ -16,16 +16,15 @@ from oneid_meta.models import (
     User,
     APP,
 )
-from oneid_meta.models.mixin import TreeNode as Node
-from siteapi.v1.serializers import UserLiteSerializer
-from siteapi.v1.serializers.node import NodeSerialzierMixin
+from ....oneid_meta.models.mixin import TreeNode as Node
+from ....siteapi.v1.serializers import UserLiteSerializer
+from ....siteapi.v1.serializers.node import NodeSerialzierMixin
 
 
 class DingGroupSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for DingGroup
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = DingGroup
         fields = (
@@ -40,7 +39,6 @@ class ManagerGroupSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for ManagerGroup
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = ManagerGroup
         fields = (
@@ -177,7 +175,7 @@ class VerboseManagerGroupSerializer(DynamicFieldsModelSerializer):
         '''
         更新有效管理范围
         '''
-        res= super().to_representation(instance)
+        res = super().to_representation(instance)
 
         if instance.scope_subject == 2:
             res['nodes'] = list(res['nodes'])
@@ -228,7 +226,6 @@ class GroupDetailSerializer(GroupSerializer):
     '''
     group info with parent_uid
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = Group
 

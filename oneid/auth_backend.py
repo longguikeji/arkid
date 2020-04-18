@@ -2,8 +2,8 @@
 认证后端
 '''
 
-from oneid_meta.models import User
-from executer.utils.password import verify_password
+from ..oneid_meta.models import User
+from ..executer.utils.password import verify_password
 
 
 class OneIDBasicAuthBackend:

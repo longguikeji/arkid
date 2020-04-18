@@ -2,7 +2,7 @@
 用户管理
 '''
 
-from oneid_meta.models import User
+from ..oneid_meta.models import User
 
 
 def rm_unbonded_user():

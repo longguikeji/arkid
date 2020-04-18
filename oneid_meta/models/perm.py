@@ -8,7 +8,7 @@ import re
 
 from django.db import models
 
-from common.django.model import BaseModel
+from ...common.django.model import BaseModel
 
 
 class Perm(BaseModel):

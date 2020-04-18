@@ -5,10 +5,10 @@ tests for api about app
 import os
 from unittest import mock
 from django.urls import reverse
-from djangosaml2idp.scripts.idpinit import run
+from ....djangosaml2idp.scripts.idpinit import run
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import (
     APP,
     OAuthAPP,
     Perm,

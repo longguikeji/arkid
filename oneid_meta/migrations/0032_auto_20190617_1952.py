@@ -2,12 +2,16 @@
 
 from django.db import migrations, models
 from django.conf import settings
+from sys import _getframe
+from ...common.setup_utils import validate_attr
 
 
 def init_user_native_field(apps, schema_editor):
     '''
     补充初始化字段
     '''
+    validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                  'TESTING')
     if settings.TESTING:
         return None
     NativeField = apps.get_model('oneid_meta', 'NativeField')

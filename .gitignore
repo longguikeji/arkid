@@ -153,3 +153,8 @@ idp_metadata.xml
 # docker-compose
 docker-compose/db
 
+# check
+CHANGELOG.md
+node_modules/
+package-lock.json
+package.json

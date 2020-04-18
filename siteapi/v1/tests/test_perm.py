@@ -4,9 +4,9 @@ tests for api about perm
 
 # pylint: disable=missing-docstring, too-many-lines
 from django.urls import reverse
-from siteapi.v1.tests import TestCase
-from siteapi.v1.tests.test_node import create_node_tree
-from oneid_meta.models import (
+from ....siteapi.v1.tests import TestCase
+from ....siteapi.v1.tests.test_node import create_node_tree
+from ....oneid_meta.models import (
     Perm,
     User,
     UserPerm,

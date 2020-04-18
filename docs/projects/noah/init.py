@@ -2,9 +2,9 @@
 Noah 初始化脚本
 '''
 
-from oneid_meta.models import Group, User
+from ....oneid_meta.models import Group, User
 
-from executer.core import cli_factory
+from ....executer.core import cli_factory
 
 
 def entrypoint():

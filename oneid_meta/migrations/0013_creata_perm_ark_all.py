@@ -8,7 +8,7 @@ def creata_perm_ark_all(apps, schema_editor):
     '''
     创建权限：访问ark-meta-server所有接口
     '''
-    from oneid_meta.models import Perm
+    from ...oneid_meta.models import Perm
 
     Perm = apps.get_model('oneid_meta', 'Perm')
 
@@ -25,7 +25,7 @@ def assign_admin_with_perm_ark_all(apps, schema_editor):
     '''
     为管理员分配访问ark-meta-server所有接口的权限
     '''
-    from oneid_meta.models import User, UserPerm, Perm
+    from ...oneid_meta.models import User, UserPerm, Perm
     User = apps.get_model('oneid_meta', 'User')
     UserPerm = apps.get_model('oneid_meta', 'UserPerm')
     Perm = apps.get_model('oneid_meta', 'Perm')

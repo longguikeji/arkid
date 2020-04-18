@@ -3,9 +3,9 @@ test saml api
 '''
 import os
 from django.urls import reverse
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import Perm
-from djangosaml2idp.scripts.idpinit import run
+from ...siteapi.v1.tests import TestCase
+from ...oneid_meta.models import Perm
+from ...djangosaml2idp.scripts.idpinit import run
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

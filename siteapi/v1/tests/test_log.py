@@ -2,9 +2,9 @@
 
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
-from siteapi.v1.tests.test_user import USER_DATA
-from oneid_meta.models import Log
+from ....siteapi.v1.tests import TestCase
+from ....siteapi.v1.tests.test_user import USER_DATA
+from ....oneid_meta.models import Log
 
 
 class LogTestCase(TestCase):

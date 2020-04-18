@@ -8,7 +8,7 @@ from unittest import TestCase
 from unittest import mock
 from unittest.mock import call
 from unittest.mock import patch
-from executer.Ding import DingExecuter, DEFAULT_DEPT
+from ....executer.Ding import DingExecuter, DEFAULT_DEPT
 
 USER_INFO = {
     'username': 'test1',

@@ -11,10 +11,10 @@ from rest_framework.exceptions import NotFound, ValidationError
 from django.utils import timezone
 from django.db.models import Q
 
-from oneid_meta.models import Log
-from oneid.permissions import CustomPerm, IsAdminUser
-from siteapi.v1.serializers.log import LogSerializer, LogLiteSerializer
-from common.django.drf.paginator import DefaultListPaginator
+from ....oneid_meta.models import Log
+from ....oneid.permissions import CustomPerm, IsAdminUser
+from ....siteapi.v1.serializers.log import LogSerializer, LogLiteSerializer
+from ....common.django.drf.paginator import DefaultListPaginator
 
 
 class LogListAPIView(generics.ListAPIView):

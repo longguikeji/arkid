@@ -8,11 +8,11 @@ from django.db import models
 from django.db.utils import IntegrityError
 from django.conf import settings
 
-from oauth2_provider.models import Application as OAuthApplication
-from oauth2_provider.models import OidcApplication
+from ...oauth2_provider.models import Application as OAuthApplication
+from ...oauth2_provider.models import OidcApplication
 
-from common.django.model import BaseModel
-from oneid_meta.models import Perm
+from ...common.django.model import BaseModel
+from ...oneid_meta.models import Perm
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

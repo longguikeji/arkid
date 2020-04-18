@@ -2,9 +2,9 @@
 从第三方获取user_id
 '''
 import requests
-from thirdparty_data_sdk.dingding.dingsdk import constants
-from thirdparty_data_sdk.error_utils import APICallError
-from oneid_meta.models import DingConfig
+from ....thirdparty_data_sdk.dingding.dingsdk import constants
+from ....thirdparty_data_sdk.error_utils import APICallError
+from ....oneid_meta.models import DingConfig
 
 
 class DingIdManager():

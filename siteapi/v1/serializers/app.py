@@ -17,8 +17,8 @@ except ImportError:
     get_xmlsec_binary = None
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError, MethodNotAllowed
-from common.django.drf.serializer import DynamicFieldsModelSerializer
-from oneid_meta.models import (
+from ....common.django.drf.serializer import DynamicFieldsModelSerializer
+from ....oneid_meta.models import (
     APP,
     OAuthAPP,
     OIDCAPP,
@@ -28,8 +28,8 @@ from oneid_meta.models import (
     Dept,
     User,
 )
-from siteapi.v1.views.utils import gen_uid
-from siteapi.v1.serializers.perm import PermWithOwnerSerializer
+from ....siteapi.v1.views.utils import gen_uid
+from ....siteapi.v1.serializers.perm import PermWithOwnerSerializer
 
 if get_xmlsec_binary:
     xmlsec_path = get_xmlsec_binary(["/opt/local/bin", "/usr/local/bin"])    # pylint: disable=invalid-name

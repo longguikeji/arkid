@@ -7,9 +7,9 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
-from drf_expiring_authtoken.models import ExpiringToken
-from drf_expiring_authtoken.serializers import AuthTokenSerializer
-from executer.log.rdb import LOG_CLI
+from ..drf_expiring_authtoken.models import ExpiringToken
+from ..drf_expiring_authtoken.serializers import AuthTokenSerializer
+from ..executer.log.rdb import LOG_CLI
 
 
 class IsAuthenticatedExceptPost(IsAuthenticated):

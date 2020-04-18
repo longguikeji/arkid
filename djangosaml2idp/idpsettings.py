@@ -6,12 +6,16 @@ from django.conf import settings
 from saml2.saml import NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED
 from saml2.sigver import get_xmlsec_binary
 from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
-
+from sys import _getframe
 # djangosaml2idp config
+from ..common.setup_utils import validate_attr
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'BASE_URL')
+
 SAML_IDP_CONFIG = {
-    'debug' : settings.DEBUG,
+    'debug': settings.DEBUG,
     'xmlsec_binary': get_xmlsec_binary(['/opt/local/bin', '/usr/bin/xmlsec1']),
     'entityid': '%s/saml/metadata' % settings.BASE_URL,
     'description': 'longguikeji IdP setup',

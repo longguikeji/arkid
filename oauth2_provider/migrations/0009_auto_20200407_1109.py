@@ -2,8 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import oauth2_provider.generators
-
+from ...oauth2_provider import generators
 
 class Migration(migrations.Migration):
 
@@ -34,8 +33,8 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(primary_key=True, serialize=False)),
                 ('name', models.CharField(default='', max_length=100)),
                 ('client_type', models.CharField(choices=[('confidential', 'Confidential'), ('public', 'Public')], default='confidential', help_text='<b>Confidential</b> clients are capable of maintaining the confidentiality of their credentials. <b>Public</b> clients are incapable.', max_length=30, verbose_name='Client Type')),
-                ('client_id', models.CharField(default=oauth2_provider.generators.generate_client_id, max_length=255, unique=True)),
-                ('client_secret', models.CharField(blank=True, default=oauth2_provider.generators.generate_client_secret, max_length=255)),
+                ('client_id', models.CharField(default=generators.generate_client_id, max_length=255, unique=True)),
+                ('client_secret', models.CharField(blank=True, default=generators.generate_client_secret, max_length=255)),
                 ('response_type', models.CharField(choices=[('code', 'code (Authorization Code Flow)'), ('id_token', 'id_token (Implicit Flow)'), ('id_token token', 'id_token token (Implicit Flow)'), ('code token', 'code token (Hybrid Flow)'), ('code id_token', 'code id_token (Hybrid Flow)'), ('code id_token token', 'code id_token token (Hybrid Flow)')], default='code', max_length=32)),
                 ('jwt_alg', models.CharField(choices=[('HS256', 'HS256'), ('RS256', 'RS256')], default='RS256', help_text='Algorithm used to encode ID Tokens.', max_length=10)),
                 ('date_created', models.DateField(auto_now_add=True)),

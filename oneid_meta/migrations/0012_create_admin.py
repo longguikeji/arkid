@@ -1,7 +1,9 @@
 
 from django.db import migrations, models
 from django.conf import settings
-from executer.utils.password import encrypt_password
+from sys import _getframe
+from ...common.setup_utils import validate_attr
+from ...executer.utils.password import encrypt_password
 
 
 ADMIN_ACCESS_PERM = 'system_oneid_all'
@@ -28,6 +30,8 @@ def create_admin_user(apps, schema_editor):
     User = apps.get_model('oneid_meta', 'User')
     UserPerm = apps.get_model('oneid_meta', 'UserPerm')
     Perm = apps.get_model('oneid_meta', 'Perm')
+    validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                  'PASSWORD_ENCRYPTION')
     admin = User.objects.create(
         username='admin',
         password=encrypt_password('admin', settings.PASSWORD_ENCRYPTION),

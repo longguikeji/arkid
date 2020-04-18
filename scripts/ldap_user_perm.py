@@ -8,7 +8,7 @@ user的权限可以独立于组、部门另外自行设置
 暂不打算将组、部门的权限通过LDAP暴露
 '''
 
-from oneid_meta.models import User, UserPerm
+from ..oneid_meta.models import User, UserPerm
 
 
 def flush_user_perm(conn, users=None):

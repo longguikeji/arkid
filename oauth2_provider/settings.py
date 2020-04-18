@@ -16,8 +16,13 @@ OAuth2 Provider settings, checking for user settings first, then falling
 back to the defaults.
 """
 import importlib
+import re
+from sys import _getframe
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+
+from ..common.setup_utils import NotConfiguredException, get_top_level_dirname, validate_attr
 
 USER_SETTINGS = getattr(settings, "OAUTH2_PROVIDER", None)
 
@@ -53,7 +58,6 @@ DEFAULTS = {
     "REFRESH_TOKEN_GRACE_PERIOD_SECONDS": 0,
     "ROTATE_REFRESH_TOKEN": True,
     "ERROR_RESPONSE_WITH_SCOPES": False,
-    "OIDC_SITE_URL": settings.BASE_URL,  # OPTIONAL. The OP server url.
     "OIDC_ID_TOKEN_INCLUDE_CLAIMS": False,  # OPTIONAL. If enabled, id_token will include standard claims of the user.
     "OIDC_EXTRA_SCOPE_CLAIMS": None,  # OPTIONAL. A string with the location of your class. Used to add extra scopes specific for your app.
 
@@ -98,6 +102,8 @@ DEFAULTS = {
 
 }
 
+validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'BASE_URL')
+DEFAULTS['OIDC_SITE_URL'] = settings.BASE_URL
 
 # List of settings that cannot be empty
 MANDATORY = (
@@ -139,6 +145,7 @@ def import_from_string(val, setting_name):
     Attempt to import a class from a string representation.
     """
     try:
+        val = compatible_with_setup(val)
         parts = val.split(".")
         module_path, class_name = ".".join(parts[:-1]), parts[-1]
         module = importlib.import_module(module_path)
@@ -146,6 +153,13 @@ def import_from_string(val, setting_name):
     except ImportError as e:
         msg = "Could not import %r for setting %r. %s: %s." % (val, setting_name, e.__class__.__name__, e)
         raise ImportError(msg)
+
+
+def compatible_with_setup(val):
+    module = importlib.import_module('{0}{1}'.format(get_top_level_dirname(), '.oneid.settings_setup'))
+    if getattr(module, 'SERVE_AS_PLUGIN') and re.search('oauth2_provider', val):
+        return '{0}{1}{2}'.format(get_top_level_dirname(), '.', val)
+    return val
 
 
 class OAuth2ProviderSettings(object):

@@ -6,9 +6,9 @@ import re
 
 from ldap3 import LEVEL
 
-from oneid_meta.models import Dept, Group
-from executer.utils.tree_node import dn_lrd_walker
-from executer.LDAP.client import FILTER_ALL
+from ..oneid_meta.models import Dept, Group
+from ..executer.utils.tree_node import dn_lrd_walker
+from ..executer.LDAP.client import FILTER_ALL
 
 
 def get_member_from_children(conn, dn):

@@ -10,22 +10,22 @@ from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,\
     HTTP_400_BAD_REQUEST, HTTP_408_REQUEST_TIMEOUT, HTTP_403_FORBIDDEN)
 from rest_framework.response import Response
 
-from siteapi.v1.serializers.user import UserWithPermSerializer
-from siteapi.v1.serializers.ucenter import (RegisterAndBindSerializer, BindSerializer)
-from infrastructure.serializers.sms import SMSClaimSerializer
+from ....siteapi.v1.serializers.user import UserWithPermSerializer
+from ....siteapi.v1.serializers.ucenter import (RegisterAndBindSerializer, BindSerializer)
+from ....infrastructure.serializers.sms import SMSClaimSerializer
 
-from executer.core import CLI
-from executer.log.rdb import LOG_CLI
+from ....executer.core import CLI
+from ....executer.log.rdb import LOG_CLI
 
-from oneid_meta.models import User, Group, DingUser, AlipayUser, WechatUser, WorkWechatUser, QQUser
-from oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig, WechatConfig, QQConfig
+from ....oneid_meta.models import User, Group, DingUser, AlipayUser, WechatUser, WorkWechatUser, QQUser
+from ....oneid_meta.models.config import AlipayConfig, AccountConfig, WorkWechatConfig, WechatConfig, QQConfig
 
-from thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
-from thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
-from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
-from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
-from thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QQInfoManager
-from thirdparty_data_sdk.error_utils import APICallError
+from ....thirdparty_data_sdk.dingding.dingsdk.ding_id_manager import DingIdManager
+from ....thirdparty_data_sdk.alipay_api import alipay_user_id_sdk
+from ....thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
+from ....thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
+from ....thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QQInfoManager
+from ....thirdparty_data_sdk.error_utils import APICallError
 
 
 def require_ding_qr_supported(func):

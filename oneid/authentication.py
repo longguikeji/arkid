@@ -2,14 +2,17 @@
 authentications
 - HeaderArkerBaseAuthentication
 '''
+from sys import _getframe
+
 from rest_framework.authentication import BaseAuthentication
 from rest_framework import exceptions
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
-from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
-from oneid_meta.models import User
-from oneid.statistics import UserStatistics
+from ..common.setup_utils import NotConfiguredException, validate_attr
+from ..drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from ..oneid_meta.models import User
+from ..oneid.statistics import UserStatistics
 
 
 class HeaderArkerBaseAuthentication(BaseAuthentication):
@@ -21,6 +24,7 @@ class HeaderArkerBaseAuthentication(BaseAuthentication):
         auth by header['HTTP_ARKER']
         '''
         arker = request.META.get('HTTP_ARKER', None)
+
         if arker in settings.CREDIBLE_ARKERS:
             return (self.get_user(request), None)
 
@@ -42,6 +46,8 @@ class BaseExpiringTokenAuthentication(ExpiringTokenAuthentication):
         在校验 token 基础上记录活跃程度
         '''
         user, token = super().authenticate_credentials(key)
+
+        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'TESTING')
         if not settings.TESTING:
             UserStatistics.set_active_count(user)
             user.update_last_active_time()

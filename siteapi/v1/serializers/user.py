@@ -5,7 +5,7 @@ serializers for user
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from oneid_meta.models import (
+from ....oneid_meta.models import (
     User,
     DingUser,
     PosixUser,
@@ -17,11 +17,11 @@ from oneid_meta.models import (
     SubAccount,
     WechatUser,
 )
-from common.django.drf.serializer import DynamicFieldsModelSerializer
-from common.django.drf.serializer import IgnoreNoneMix
-from siteapi.v1.serializers.dept import DeptSerializer
-from siteapi.v1.serializers.group import GroupSerializer
-from siteapi.v1.serializers.utils import username_valid
+from ....common.django.drf.serializer import DynamicFieldsModelSerializer
+from ....common.django.drf.serializer import IgnoreNoneMix
+from ....siteapi.v1.serializers.dept import DeptSerializer
+from ....siteapi.v1.serializers.group import GroupSerializer
+from ....siteapi.v1.serializers.utils import username_valid
 
 
 class CustomUserSerailizer(DynamicFieldsModelSerializer):
@@ -516,7 +516,7 @@ class ResetUserPasswordSerializer(DynamicFieldsModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        from executer.core import CLI    # pylint: disable=import-outside-toplevel
+        from ....executer.core import CLI    # pylint: disable=import-outside-toplevel
         password = validated_data.get('password')
         cli = CLI()
         cli.set_user_password(instance, password)

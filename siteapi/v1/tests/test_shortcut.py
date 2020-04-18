@@ -4,8 +4,8 @@ test for shortcut
 '''
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import User
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import User
 
 
 class ShortcutTestCase(TestCase):

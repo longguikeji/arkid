@@ -4,7 +4,7 @@ create mock company for dev
 import django
 django.setup()
 
-from oneid_meta.models import Dept
+from ...oneid_meta.models import Dept
 
 
 def create_top_company():

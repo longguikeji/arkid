@@ -9,9 +9,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ValidationError
 from pypinyin import lazy_pinyin as pinyin
 
-from oneid_meta.models import Group, Dept, User
-from executer.core import CLI
-from executer.utils import operation
+from ....oneid_meta.models import Group, Dept, User
+from ....executer.core import CLI
+from ....executer.utils import operation
 
 
 def data_masking(content, mask='******'):

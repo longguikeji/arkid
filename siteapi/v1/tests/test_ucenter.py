@@ -6,10 +6,10 @@ tests for api about ucenter
 from unittest import mock
 
 from django.urls import reverse
-from common.django.drf.client import APIClient
+from ....common.django.drf.client import APIClient
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import (
     User,
     Perm,
     UserPerm,
@@ -24,7 +24,7 @@ from oneid_meta.models import (
     APP,
     OAuthAPP,
 )
-from executer.utils.password import verify_password
+from ....executer.utils.password import verify_password
 
 MAX_APP_ID = 2
 

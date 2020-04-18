@@ -2,15 +2,14 @@
 Dingding message manage api
 """
 
-from thirdparty_data_sdk.dingding.dingsdk import constants
-from thirdparty_data_sdk.dingding.dingsdk.request_manager import RequestManager
+from ....thirdparty_data_sdk.dingding.dingsdk import constants
+from ....thirdparty_data_sdk.dingding.dingsdk.request_manager import RequestManager
 
 
 class MessageManager():
     """
     Role Manage class, init with AccessTokenManager instance
     """
-
     def __init__(self, token_manager, agent_id):
         """
         init the MessageManager
@@ -21,11 +20,7 @@ class MessageManager():
         self.request_manager = RequestManager()
         self.agent_id = agent_id
 
-    def asyncsend_text_message(self,
-                               text,
-                               userid_list=None,
-                               dept_id_list=None,
-                               to_all_user=None):
+    def asyncsend_text_message(self, text, userid_list=None, dept_id_list=None, to_all_user=None):
         """
         异步发送文本通知，接口返回成功并不表示用户收到通知，需要通过“查询工作通知消息的发送结果”接口查询是否给用户发送成功
         :param text: String 消息内容
@@ -61,11 +56,7 @@ class MessageManager():
             request_data=extra_data,
         )
 
-    def asyncsend_image_message(self,
-                                media_id,
-                                userid_list=None,
-                                dept_id_list=None,
-                                to_all_user=None):
+    def asyncsend_image_message(self, media_id, userid_list=None, dept_id_list=None, to_all_user=None):
         """
         异步发送图片通知，接口返回成功并不表示用户收到通知，需要通过“查询工作通知消息的发送结果”接口查询是否给用户发送成功
         :param media_id: String 图片上传得到的media_id
@@ -100,11 +91,7 @@ class MessageManager():
             request_data=extra_data,
         )
 
-    def asyncsend_file_message(self,
-                               media_id,
-                               userid_list=None,
-                               dept_id_list=None,
-                               to_all_user=None):
+    def asyncsend_file_message(self, media_id, userid_list=None, dept_id_list=None, to_all_user=None):
         """
         异步发送文件通知，接口返回成功并不表示用户收到通知，需要通过“查询工作通知消息的发送结果”接口查询是否给用户发送成功
         :param media_id: String 文件上传得到的media_id

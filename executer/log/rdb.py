@@ -2,9 +2,9 @@
 数据操作日志写入RDB
 '''
 from django.urls import resolve
-
-from executer.core import Executer, single_cli_factory
-from oneid_meta.models import Log, RequestAccessLog, RequestDataClientLog
+from ...common.setup_utils import get_top_level_dirname
+from ...executer.core import Executer, single_cli_factory
+from ...oneid_meta.models import Log, RequestAccessLog, RequestDataClientLog
 
 
 class RDBLogExecuter(Executer):
@@ -435,4 +435,4 @@ class RDBLogExecuter(Executer):
         return self.log(subject, summary)
 
 
-LOG_CLI = single_cli_factory('executer.log.rdb.RDBLogExecuter')    # pylint: disable=invalid-name
+LOG_CLI = single_cli_factory('{0}{1}'.format(get_top_level_dirname(), '.executer.log.rdb.RDBLogExecuter'))    # pylint: disable=invalid-name

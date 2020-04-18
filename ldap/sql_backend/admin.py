@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from ldap.sql_backend.models import (
+from ...ldap.sql_backend.models import (
     LDAPOCMappings,
     LDAPAttrMapping,
     LDAPEntry,

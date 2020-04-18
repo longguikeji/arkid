@@ -1,8 +1,8 @@
-from oneid_meta.models import User, AccountConfig
+from ..oneid_meta.models import User, AccountConfig
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import serializers
-from infrastructure.serializers.sms import (
+from ..infrastructure.serializers.sms import (
     LoginSMSClaimSerializer,
 )
 

@@ -45,7 +45,7 @@ class RequestDataClientLog(models.Model):
         '''
         解析request
         '''
-        from siteapi.v1.views.utils import data_masking
+        from ...siteapi.v1.views.utils import data_masking
         content = data_masking(request.body.decode('utf-8'))
         return cls.objects.create(
             content=content,

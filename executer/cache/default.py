@@ -5,8 +5,8 @@
 from django.core.cache import cache
 from django_redis import get_redis_connection
 
-from executer.core import Executer
-from tasksapp.tasks import (
+from ...executer.core import Executer
+from ...tasksapp.tasks import (
     update_users_cache,
     update_nodes_cache,
 )
@@ -20,14 +20,17 @@ class CacheExecuter(Executer):
         '''
         目前不影响缓存
         '''
+
     def update_user(self, user, user_info):
         '''
         目前不影响缓存
         '''
+
     def set_user_password(self, user, plaintext):
         '''
         目前不影响缓存
         '''
+
     def delete_users(self, users):
         '''
         批量删除用户
@@ -46,10 +49,12 @@ class CacheExecuter(Executer):
         '''
         目前不影响缓存
         '''
+
     def update_dept(self, dept, dept_info):
         '''
         目前不影响缓存
         '''
+
     def delete_dept(self, dept):
         '''
         删除部门
@@ -62,10 +67,12 @@ class CacheExecuter(Executer):
         '''
         目前不影响缓存
         '''
+
     def update_group(self, group, group_info):
         '''
         目前不影响缓存
         '''
+
     def delete_group(self, group):
         '''
         删除组
@@ -84,6 +91,7 @@ class CacheExecuter(Executer):
         '''
         目前不影响缓存
         '''
+
     def add_user_to_depts(self, user, depts):
         '''
         更新用户缓存
@@ -112,6 +120,7 @@ class CacheExecuter(Executer):
         '''
         目前不影响缓存
         '''
+
     def add_user_to_groups(self, user, groups):
         '''
         更新用户缓存
@@ -140,6 +149,7 @@ class CacheExecuter(Executer):
         '''
         目前不影响缓存
         '''
+
     def add_group_to_group(self, group, parent_group):
         '''
         更新下属所有子孙组及其成员
@@ -150,6 +160,7 @@ class CacheExecuter(Executer):
         '''
         目前不影响缓存
         '''
+
     def move_group_to_group(self, group, parent_group):
         '''
         更新下属所有子孙组及其成员

@@ -3,17 +3,17 @@ Import Dingding datasource to oneID
 """
 
 import json
-from thirdparty_data_sdk.dingding.dingsdk.department_manager import DepartmentManager
-from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
-from thirdparty_data_sdk.dingding.dingsdk.user_manager import UserManager
-from thirdparty_data_sdk.dingding.dingsdk.role_manager import RoleManager
-from executer.core import cli_factory
-from oneid_meta.models.user import User, DingUser
-from oneid_meta.models.group import Group, GroupMember
-from oneid_meta.models.dept import Dept, DeptMember, DingDept
-from oneid_meta.models import DingConfig
-from oneid.settings import DINGDING_APP_VERSION
-from siteapi.v1.views.utils import gen_uid
+from ..thirdparty_data_sdk.dingding.dingsdk.department_manager import DepartmentManager
+from ..thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+from ..thirdparty_data_sdk.dingding.dingsdk.user_manager import UserManager
+from ..thirdparty_data_sdk.dingding.dingsdk.role_manager import RoleManager
+from ..executer.core import cli_factory
+from ..oneid_meta.models.user import User, DingUser
+from ..oneid_meta.models.group import Group, GroupMember
+from ..oneid_meta.models.dept import Dept, DeptMember, DingDept
+from ..oneid_meta.models import DingConfig
+from ..oneid.settings import DINGDING_APP_VERSION
+from ..siteapi.v1.views.utils import gen_uid
 
 PAGE_DEFAULT_SIZE = 30
 UNKNOWN_GENDER = 0

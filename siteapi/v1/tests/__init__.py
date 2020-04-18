@@ -11,10 +11,10 @@ from django.test import TestCase as django_TestCase
 from django.conf import settings
 from django.urls import reverse
 
-from oneid_meta.models import User, UserPerm, Perm
-from common.django.drf.client import APIClient
-from executer.RDB import RDBExecuter
-from executer.core import cli_factory
+from ....oneid_meta.models import User, UserPerm, Perm
+from ....common.django.drf.client import APIClient
+from ....executer.RDB import RDBExecuter
+from ....executer.core import cli_factory
 
 
 class TestCase(django_TestCase):

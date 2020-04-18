@@ -4,13 +4,16 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 import uuid
+from sys import _getframe
+from ...common.setup_utils import validate_attr
 
 
 def init_account_config(apps, schema_editor):
 
     AccountConfig = apps.get_model('oneid_meta', 'AccountConfig')
     Site = apps.get_model('sites', 'Site')
-
+    validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                  'SITE_ID')
     site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
     account_config, _ = AccountConfig.objects.get_or_create(site=site)
 

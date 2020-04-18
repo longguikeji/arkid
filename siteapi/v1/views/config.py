@@ -7,7 +7,7 @@ from rest_framework import generics
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 
-from siteapi.v1.serializers.config import (
+from ....siteapi.v1.serializers.config import (
     ConfigSerializer,
     MetaConfigSerializer,
     AlterAdminSerializer,
@@ -15,12 +15,12 @@ from siteapi.v1.serializers.config import (
     NativeFieldSerializer,
     StorageConfigSerializer,
 )
-from siteapi.v1.serializers.user import UserSerializer
+from ....siteapi.v1.serializers.user import UserSerializer
 
-from oneid.permissions import IsAdminUser, CustomPerm
-from oneid_meta.models import User, CustomField, NativeField
+from ....oneid.permissions import IsAdminUser, CustomPerm
+from ....oneid_meta.models import User, CustomField, NativeField
 
-from executer.log.rdb import LOG_CLI
+from ....executer.log.rdb import LOG_CLI
 
 
 class ConfigAPIView(generics.RetrieveUpdateAPIView):

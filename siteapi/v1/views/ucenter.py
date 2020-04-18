@@ -11,25 +11,25 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import AnonymousUser
 
-from drf_expiring_authtoken.views import ObtainExpiringAuthToken
-from siteapi.v1.serializers.user import (
+from ....drf_expiring_authtoken.views import ObtainExpiringAuthToken
+from ....siteapi.v1.serializers.user import (
     UserWithPermSerializer,
     UserProfileSerializer,
 )
-from siteapi.v1.serializers.ucenter import (
+from ....siteapi.v1.serializers.ucenter import (
     UserRegisterSerializer,
     SetPasswordSerializer,
     UserAlterMobileSerializer,
     UserInvitedProfileSerializer,
     UserContactSerializer,
 )
-from siteapi.v1.serializers.user import (
+from ....siteapi.v1.serializers.user import (
     SubAccountSerializer, )
-from executer.core import CLI
-from executer.log.rdb import LOG_CLI
-from oneid_meta.models import Perm, User, DingConfig, Invitation, Group, APP, OAuthAPP, UserPerm
-from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
-from common.django.drf.paginator import DefaultListPaginator
+from ....executer.core import CLI
+from ....executer.log.rdb import LOG_CLI
+from ....oneid_meta.models import Perm, User, DingConfig, Invitation, Group, APP, OAuthAPP, UserPerm
+from ....thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+from ....common.django.drf.paginator import DefaultListPaginator
 
 
 class SetPasswordAPIView(generics.UpdateAPIView):

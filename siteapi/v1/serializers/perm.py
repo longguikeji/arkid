@@ -4,11 +4,11 @@ serializers for perm
 import uuid
 from rest_framework import serializers
 from rest_framework.exceptions import MethodNotAllowed, ValidationError
-from common.django.drf.serializer import DynamicFieldsModelSerializer, IgnoreNoneMix
-from common.django.drf.paginator import DefaultListPaginator
-from oneid_meta.models import Perm, DeptPerm, UserPerm, GroupPerm, APP
-from siteapi.v1.views.utils import gen_uid
-from siteapi.v1.serializers.user import SubAccountSerializer
+from ....common.django.drf.serializer import DynamicFieldsModelSerializer, IgnoreNoneMix
+from ....common.django.drf.paginator import DefaultListPaginator
+from ....oneid_meta.models import Perm, DeptPerm, UserPerm, GroupPerm, APP
+from ....siteapi.v1.views.utils import gen_uid
+from ....siteapi.v1.serializers.user import SubAccountSerializer
 
 
 class PermSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
@@ -238,7 +238,7 @@ class UserPermDetailSerializer(UserPermResultSerializer):
         '''
         用户授权来源节点
         '''
-        from oneid_meta.models import DeptMember, GroupMember    # pylint: disable=import-outside-toplevel
+        from ....oneid_meta.models import DeptMember, GroupMember    # pylint: disable=import-outside-toplevel
         if instance.dept_perm_value:
             nodes = set()
             for dept_member in DeptMember.valid_objects.filter(user=instance.owner):

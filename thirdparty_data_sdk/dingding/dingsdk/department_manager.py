@@ -2,15 +2,14 @@
 Dingding department manage api
 """
 
-from thirdparty_data_sdk.dingding.dingsdk import constants
-from thirdparty_data_sdk.dingding.dingsdk.request_manager import RequestManager
+from ....thirdparty_data_sdk.dingding.dingsdk import constants
+from ....thirdparty_data_sdk.dingding.dingsdk.request_manager import RequestManager
 
 
 class DepartmentManager():
     """
     Department Manage class, init with AccessTokenManager instance
     """
-
     def __init__(self, token_manager):
         """
         init the DepartmentManager
@@ -30,12 +29,11 @@ class DepartmentManager():
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.DEPARTMENT_GET_SUB_DEP_LIST,
-            request_params={
-                'access_token': self.token(),
-                'id': department_id
-            })
+        return self.request_manager.get(request_url=constants.DEPARTMENT_GET_SUB_DEP_LIST,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'id': department_id
+                                        })
 
     def list_parent_deps(self, department_id='1'):
         """
@@ -53,12 +51,11 @@ class DepartmentManager():
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.DEPARTMENT_LIST_PARENT_DEPS,
-            request_params={
-                'access_token': self.token(),
-                'id': department_id
-            })
+        return self.request_manager.get(request_url=constants.DEPARTMENT_LIST_PARENT_DEPS,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'id': department_id
+                                        })
 
     def get_user_list_parentdeps(self, userid=''):
         """
@@ -76,12 +73,11 @@ class DepartmentManager():
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.DEPARTMENT_USER_LIST_PARENT_DEPS,
-            request_params={
-                'access_token': self.token(),
-                'userId': userid
-            })
+        return self.request_manager.get(request_url=constants.DEPARTMENT_USER_LIST_PARENT_DEPS,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'userId': userid
+                                        })
 
     def get_users(self, department_id, offset, size, order='custom'):
         """
@@ -130,15 +126,14 @@ class DepartmentManager():
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.DEPARTMENT_GET_USERS_URL,
-            request_params={
-                'access_token': self.token(),
-                'department_id': department_id,
-                'offset': offset,
-                'size': size,
-                'order': order,
-            })
+        return self.request_manager.get(request_url=constants.DEPARTMENT_GET_USERS_URL,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'department_id': department_id,
+                                            'offset': offset,
+                                            'size': size,
+                                            'order': order,
+                                        })
 
     def get_users_brief(self, department_id, offset, size, order='custom'):
         """
@@ -170,15 +165,14 @@ class DepartmentManager():
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.DEPARTMENT_USER_SIMPLELIST_URL,
-            request_params={
-                'access_token': self.token(),
-                'department_id': department_id,
-                'offset': offset,
-                'size': size,
-                'order': order,
-            })
+        return self.request_manager.get(request_url=constants.DEPARTMENT_USER_SIMPLELIST_URL,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'department_id': department_id,
+                                            'offset': offset,
+                                            'size': size,
+                                            'order': order,
+                                        })
 
     def get_subdep_list(self, department_id, fetch_child=True):
         """
@@ -206,13 +200,12 @@ class DepartmentManager():
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.DEPARTMENT_GET_DEP_LIST,
-            request_params={
-                'access_token': self.token(),
-                'id': department_id,
-                'fetch_child': fetch_child,
-            })
+        return self.request_manager.get(request_url=constants.DEPARTMENT_GET_DEP_LIST,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'id': department_id,
+                                            'fetch_child': fetch_child,
+                                        })
 
     def get_dep_detail(self, department_id):
         """
@@ -239,12 +232,11 @@ class DepartmentManager():
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.DEPARTMENT_GET_DETAIL,
-            request_params={
-                'access_token': self.token(),
-                'id': department_id,
-            })
+        return self.request_manager.get(request_url=constants.DEPARTMENT_GET_DETAIL,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'id': department_id,
+                                        })
 
     def create_dep(self, parent_id, name, **kwargs):
         """
@@ -331,12 +323,11 @@ class DepartmentManager():
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.DEPARTMENT_DEL_DEP,
-            request_params={
-                'access_token': self.token(),
-                'id': department_id
-            })
+        return self.request_manager.get(request_url=constants.DEPARTMENT_DEL_DEP,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'id': department_id
+                                        })
 
     def token(self):
         """

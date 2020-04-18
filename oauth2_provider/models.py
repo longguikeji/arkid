@@ -14,10 +14,10 @@ from jwkest.jws import JWS
 from Cryptodome.PublicKey.RSA import importKey
 from jwkest.jwk import RSAKey
 
-from oauth2_provider.generators import generate_client_id, generate_client_secret
-from oauth2_provider.scopes import get_scopes_backend
-from oauth2_provider.settings import oauth2_settings
-from oauth2_provider.validators import RedirectURIValidator, WildcardSet
+from ..oauth2_provider.generators import generate_client_id, generate_client_secret
+from ..oauth2_provider.scopes import get_scopes_backend
+from ..oauth2_provider.settings import oauth2_settings
+from ..oauth2_provider.validators import RedirectURIValidator, WildcardSet
 
 from hashlib import sha256, md5
 import json

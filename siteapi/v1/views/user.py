@@ -18,8 +18,8 @@ from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from oneid_meta.models import User, Group, Dept
-from oneid.permissions import (
+from ....oneid_meta.models import User, Group, Dept
+from ....oneid.permissions import (
     IsAdminUser,
     IsManagerUser,
     IsUserManager,
@@ -27,12 +27,12 @@ from oneid.permissions import (
     UserManagerReadable,
     CustomPerm,
 )
-from siteapi.v1.serializers.user import UserSerializer, EmployeeSerializer, ResetUserPasswordSerializer
-from siteapi.v1.serializers.group import GroupListSerializer, GroupSerializer
-from siteapi.v1.serializers.dept import DeptListSerializer, DeptSerializer
-from common.django.drf.paginator import DefaultListPaginator
-from executer.core import CLI
-from executer.utils import operation
+from ....siteapi.v1.serializers.user import UserSerializer, EmployeeSerializer, ResetUserPasswordSerializer
+from ....siteapi.v1.serializers.group import GroupListSerializer, GroupSerializer
+from ....siteapi.v1.serializers.dept import DeptListSerializer, DeptSerializer
+from ....common.django.drf.paginator import DefaultListPaginator
+from ....executer.core import CLI
+from ....executer.utils import operation
 
 
 class UserListCreateAPIView(generics.ListCreateAPIView):

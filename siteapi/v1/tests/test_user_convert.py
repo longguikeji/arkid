@@ -5,9 +5,9 @@ tests for user convert
 
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
-from siteapi.v1.tests.test_user import USER_DATA
-from oneid_meta.models import Dept, Group, User
+from ....siteapi.v1.tests import TestCase
+from ....siteapi.v1.tests.test_user import USER_DATA
+from ....oneid_meta.models import Dept, Group, User
 
 
 class UserConvertTestCase(TestCase):

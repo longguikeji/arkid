@@ -5,14 +5,15 @@ urls of apis
 
 from django.conf.urls import url, include
 
-from siteapi.v1.views.task import (
+from ...common.setup_utils import get_top_level_dirname
+from ...siteapi.v1.views.task import (
     ImportDingAPIView,
     OverrideDingAPIView,
     InitNoahAPIView,
     TaskResultAPIView,
 )
 
-from siteapi.v1.views.config import (
+from ...siteapi.v1.views.config import (
     ConfigAPIView,
     AdminAPIView,
     MetaConfigAPIView,
@@ -23,7 +24,7 @@ from siteapi.v1.views.config import (
     StorageConfigAPIView,
 )
 
-from siteapi.v1.views import (
+from ...siteapi.v1.views import (
     event as event_views,
     node as node_views,
     migrate as migrate_views,
@@ -38,7 +39,7 @@ from siteapi.v1.views import (
     qr as qr_views,
 )
 
-from siteapi.v1.views.statistics import UserStatisticView
+from ...siteapi.v1.views.statistics import UserStatisticView
 
 urlpatterns = [
     # user
@@ -146,7 +147,8 @@ urlpatterns = [
         user_views.UcenterUserDetailAPIView.as_view(),
         name='ucenter_user_detail'),
     # service
-    url(r'^service/', include(('infrastructure.urls', 'infrastructure'), namespace='infra')),
+    url(r'^service/', include((get_top_level_dirname() + '.infrastructure.urls', 'infrastructure'), namespace='infra')),
+
     # config
     url(r'^config/$', ConfigAPIView.as_view(), name='config'),
     url(r'^config/admin/$', AdminAPIView.as_view(), name='alter_admin'),

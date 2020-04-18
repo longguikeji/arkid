@@ -3,25 +3,25 @@ serializers for ucenter
 '''
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from common.django.drf.serializer import DynamicFieldsModelSerializer
-from oneid_meta.models import User, Invitation
-from executer.core import CLI
-from infrastructure.serializers.sms import (
+from ....common.django.drf.serializer import DynamicFieldsModelSerializer
+from ....oneid_meta.models import User, Invitation
+from ....executer.core import CLI
+from ....infrastructure.serializers.sms import (
     SMSClaimSerializer,
     RegisterSMSClaimSerializer,
     ResetPWDSMSClaimSerializer,
     UserActivateSMSClaimSerializer,
     UpdateMobileSMSClaimSerializer,
 )
-from infrastructure.serializers.email import (
+from ....infrastructure.serializers.email import (
     RegisterEmailClaimSerializer,
     ResetPWDEmailClaimSerializer,
     UserActivateEmailClaimSerializer,
     UpdateEmailEmailClaimSerializer,
 )
 
-from oneid.auth_backend import OneIDBasicAuthBackend
-from siteapi.v1.serializers.utils import username_valid
+from ....oneid.auth_backend import OneIDBasicAuthBackend
+from ....siteapi.v1.serializers.utils import username_valid
 
 
 class SetPasswordSerializer(serializers.Serializer):    # pylint: disable=abstract-method

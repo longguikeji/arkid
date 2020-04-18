@@ -2,7 +2,7 @@
 serialzier mixin for node
 '''
 
-from oneid_meta.models import Dept, Group
+from ....oneid_meta.models import Dept, Group
 
 
 class NodeSerialzierMixin():

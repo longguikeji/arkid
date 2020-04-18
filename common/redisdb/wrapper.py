@@ -8,7 +8,7 @@ import simplejson
 import zlib
 
 from .connection import get_conn
-from common.utils.serializer import CustomizedJSONSerializer
+from ...common.utils.serializer import CustomizedJSONSerializer
 
 
 class RedisWrapper(object):

@@ -1,8 +1,8 @@
 '''
 邮件
 '''
-from common.Email.email_manager import EmailManager
-from oneid_meta.models.config import EmailConfig
+from ...common.Email.email_manager import EmailManager
+from ...oneid_meta.models.config import EmailConfig
 
 
 def send_email(addrs, subject, content):

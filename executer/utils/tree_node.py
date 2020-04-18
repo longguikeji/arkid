@@ -3,8 +3,8 @@ funcs about tree
 '''
 from ldap3 import LEVEL
 
-from executer.utils.operation import list_diff
-from executer.LDAP.client import FILTER_ALL
+from ...executer.utils.operation import list_diff
+from ...executer.LDAP.client import FILTER_ALL
 
 
 def dn_lrd_walker(conn, dn):

@@ -10,7 +10,7 @@ from django.db import models
 from django.conf import settings
 from cryptography.fernet import Fernet, InvalidToken
 
-from common.django.model import BaseModel, IgnoreDeletedManager
+from ...common.django.model import BaseModel, IgnoreDeletedManager
 
 KEY = Fernet(base64.urlsafe_b64encode(settings.SECRET_KEY.encode()[:32]))
 
@@ -19,7 +19,6 @@ class InvitationActiveManager(IgnoreDeletedManager):
     '''
     ignore expired
     '''
-
     def get_queryset(self):
         '''
         filter && compare expired

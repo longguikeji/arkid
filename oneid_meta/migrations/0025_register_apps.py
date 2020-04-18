@@ -1,6 +1,9 @@
+from sys import _getframe
 
 from django.db import migrations, models
 from django.conf import settings
+
+from ...common.setup_utils import NotConfiguredException, validate_attr
 
 
 def register_noah_admin(apps, schema_editor):
@@ -50,7 +53,10 @@ class Migration(migrations.Migration):
         ('oneid_meta', '0024_register_arkbe'),
     ]
 
-    operations = [
-        migrations.RunPython(register_noah_admin),
-        migrations.RunPython(register_arker_editor),
-    ] if not settings.TESTING else []
+    validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'TESTING')
+
+    if not settings.TESTING:
+        operations = [
+            migrations.RunPython(register_noah_admin),
+            migrations.RunPython(register_arker_editor),
+        ]

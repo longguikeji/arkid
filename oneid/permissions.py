@@ -7,12 +7,12 @@ from rest_framework.permissions import (
     IsAuthenticated,
 )
 
-from oneid_meta.models import (
+from ..oneid_meta.models import (
     UserPerm,
     APP,
     User,
 )
-from oneid_meta.models.mixin import TreeNode as Node
+from ..oneid_meta.models.mixin import TreeNode as Node
 
 
 class IsAdminUser(BasePermission):

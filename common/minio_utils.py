@@ -1,7 +1,9 @@
 # pylint: disable=missing-docstring
 import functools
+from sys import _getframe
 from datetime import timedelta
 
+from ..common.setup_utils import NotConfiguredException, validate_attr
 from minio import Minio
 from minio.error import (
     NoSuchBucket,
@@ -11,6 +13,9 @@ from minio.error import (
 from django.conf import settings
 
 EXPIRES = timedelta(days=3)
+
+validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+              'MINIO_ENDPOINT', 'MINIO_ACCESS_KEY', 'MINIO_SECRET_KEY', 'MINIO_SECURE', 'MINIO_LOCATION')
 
 CLIENT = Minio(
     settings.MINIO_ENDPOINT,

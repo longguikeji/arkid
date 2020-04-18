@@ -2,15 +2,14 @@
 Dingding role manage api
 """
 
-from thirdparty_data_sdk.dingding.dingsdk import constants
-from thirdparty_data_sdk.dingding.dingsdk.request_manager import RequestManager
+from ....thirdparty_data_sdk.dingding.dingsdk import constants
+from ....thirdparty_data_sdk.dingding.dingsdk.request_manager import RequestManager
 
 
 class RoleManager():
     """
     Role Manage class, init with AccessTokenManager instance
     """
-
     def __init__(self, token_manager):
         """
         init the RoleManager
@@ -50,10 +49,9 @@ class RoleManager():
             'offset': offset,
         }
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_GET_ROLES_LIST,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_GET_ROLES_LIST,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def get_role_userlist(self, role_id, size, offset):
         """
@@ -82,10 +80,9 @@ class RoleManager():
             'offset': offset,
         }
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_GET_ROLE_USERLIST,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_GET_ROLE_USERLIST,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def get_role_group(self, group_id):
         """
@@ -108,10 +105,9 @@ class RoleManager():
 
         extra_data = {'group_id': group_id}
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_GET_ROLE_GROUP,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_GET_ROLE_GROUP,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def get_role_detail(self, role_id):
         """
@@ -129,10 +125,9 @@ class RoleManager():
 
         extra_data = {'roleId': role_id}
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_GET_ROLE_DETAIL,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_GET_ROLE_DETAIL,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def create_role(self, role_name, group_id):
         """
@@ -148,10 +143,9 @@ class RoleManager():
 
         extra_data = {'roleName': role_name, 'groupId': group_id}
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_CREATE_ROLE,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_CREATE_ROLE,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def update_role(self, role_name, role_id):
         """
@@ -169,10 +163,9 @@ class RoleManager():
             'roleId': role_id,
         }
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_UPDATE_ROL,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_UPDATE_ROL,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def delete_role(self, role_id):
         """
@@ -187,10 +180,9 @@ class RoleManager():
             'role_id': role_id,
         }
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_DELETE_ROLE,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_DELETE_ROLE,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def create_role_group(self, name):
         """
@@ -205,10 +197,9 @@ class RoleManager():
 
         extra_data = {'name': name}
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_CREATE_ROLE_GROUP,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_CREATE_ROLE_GROUP,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def add_users_roles(self, role_ids, user_ids):
         """
@@ -223,10 +214,9 @@ class RoleManager():
 
         extra_data = {'roleIds': role_ids, 'userIds': user_ids}
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_ADD_USERS_ROLES,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_ADD_USERS_ROLES,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def delete_users_roles(self, role_ids, user_ids):
         """
@@ -241,10 +231,9 @@ class RoleManager():
 
         extra_data = {'roleIds': role_ids, 'userIds': user_ids}
 
-        return self.request_manager.post(
-            request_url=constants.ROLE_DEL_USERS_ROLES,
-            request_params={'access_token': self.token()},
-            request_data=extra_data)
+        return self.request_manager.post(request_url=constants.ROLE_DEL_USERS_ROLES,
+                                         request_params={'access_token': self.token()},
+                                         request_data=extra_data)
 
     def token(self):
         """

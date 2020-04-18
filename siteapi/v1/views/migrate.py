@@ -12,11 +12,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, ValidationError
 
-from executer.core import CLI
-from oneid_meta.models import User
-from oneid_meta.models.mixin import TreeNode
-from oneid.permissions import IsAdminUser, IsManagerUser
-from siteapi.v1.serializers.migrate import UserCSVSerializer
+from ....executer.core import CLI
+from ....oneid_meta.models import User
+from ....oneid_meta.models.mixin import TreeNode
+from ....oneid.permissions import IsAdminUser, IsManagerUser
+from ....siteapi.v1.serializers.migrate import UserCSVSerializer
 
 
 class UserCSVExportView(APIView):

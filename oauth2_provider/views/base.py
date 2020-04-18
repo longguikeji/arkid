@@ -5,8 +5,9 @@ import urllib.parse as urlparse
 from datetime import timedelta
 from urllib.parse import urlencode
 import importlib
-
+from sys import _getframe
 from Cryptodome.PublicKey import RSA
+from ...oauth2_provider.settings import compatible_with_setup
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from jwkest import long_to_base64
@@ -19,7 +20,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
 from django.conf import settings
-from drf_expiring_authtoken.models import ExpiringToken
+
+from ...common.setup_utils import validate_attr
+from ...drf_expiring_authtoken.models import ExpiringToken
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
@@ -29,15 +32,13 @@ from ..settings import oauth2_settings
 from ..signals import app_authorized
 from ..backends import OAuth2Backend
 from .mixins import OAuthLibMixin
-from oauth2_provider.models import OidcAccessToken
-from oneid_meta.models import APP
-
-log = logging.getLogger("oauth2_provider")
-
-
+from ...oauth2_provider.models import OidcAccessToken
+from ...oneid_meta.models import APP
 from django.contrib.auth.mixins import AccessMixin
 from rest_framework.exceptions import AuthenticationFailed
-from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from ...drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
+
+log = logging.getLogger("oauth2_provider")
 
 ONEID_TOKEN_KEY = 'oneid_token'
 
@@ -92,6 +93,8 @@ class TokenRequiredMixin(AccessMixin):
         from django.shortcuts import resolve_url
         from urllib.parse import urlparse, urlunparse
         from django.http import QueryDict
+        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                      'LOGIN_URL')
 
         resolved_url = resolve_url(login_url or settings.LOGIN_URL)
         login_url_parts = list(urlparse(resolved_url))
@@ -157,6 +160,8 @@ class AuthorizationWraperView(View):
             url_path = url_path.replace('authorize', '_authorize', 1)
             return HttpResponseRedirect(url_path)
         else:
+            validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                          'FE_TOKEN_URL')
             fe_token_url = settings.FE_TOKEN_URL
             target = urllib.parse.quote(url_path)
             print('miss token, go to fe', fe_token_url)
@@ -480,8 +485,7 @@ class OidcProviderInfoView(View):
 
     def get(self, request, *args, **kwargs):
         dic = dict()
-
-        validator_module = importlib.import_module(self.validator_module)
+        validator_module = importlib.import_module(compatible_with_setup(self.validator_module))
         site_url = validator_module.get_site_url(request=request)
         dic['issuer'] = validator_module.get_issuer(site_url=site_url, request=request)
         dic['scopes_supported'] = [key for key in oauth2_settings.SCOPES.keys()]

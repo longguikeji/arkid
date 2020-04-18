@@ -7,8 +7,8 @@ from unittest import mock
 
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import (User, DingUser, AccountConfig, DingConfig)
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import (User, DingUser, AccountConfig, DingConfig)
 
 MAX_APP_ID = 2
 

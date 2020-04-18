@@ -6,16 +6,16 @@ from django.contrib.sites.models import Site
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
-                               AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QQConfig,
-                               StorageConfig, MinioConfig)
-from common.django.drf.serializer import DynamicFieldsModelSerializer
-from infrastructure.serializers.sms import SMSClaimSerializer
-from siteapi.v1.views.utils import gen_uid
-from siteapi.v1.serializers.qr_app_config import PublicAlipayConfigSerializer, PublicDingConfigSerializer,\
+from ....oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
+                                   AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QQConfig,
+                                   StorageConfig, MinioConfig)
+from ....common.django.drf.serializer import DynamicFieldsModelSerializer
+from ....infrastructure.serializers.sms import SMSClaimSerializer
+from ....siteapi.v1.views.utils import gen_uid
+from ....siteapi.v1.serializers.qr_app_config import PublicAlipayConfigSerializer, PublicDingConfigSerializer,\
     PublicWorkWechatConfigSerializer, PublicWechatConfigSerializer, PublicQQConfigSerializer, AlipayConfigSerializer,\
         DingConfigSerializer, WorkWechatConfigSerializer, WechatConfigSerializer, QQConfigSerializer
-from executer.core import CLI
+from ....executer.core import CLI
 
 
 class CompanyConfigSerializer(DynamicFieldsModelSerializer):

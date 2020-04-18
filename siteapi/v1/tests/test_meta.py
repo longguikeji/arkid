@@ -2,8 +2,8 @@
 
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig,\
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig,\
     AlipayConfig, WorkWechatConfig, WechatConfig, QQConfig
 
 

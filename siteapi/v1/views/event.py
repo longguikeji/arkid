@@ -7,14 +7,13 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
-from oneid_meta.models import User, Invitation
+from ....oneid_meta.models import User, Invitation
 
 
 class InviteUserCreateAPIView(generics.CreateAPIView):
     '''
     invite user
     '''
-
     def post(self, request, username):    # pylint: disable=arguments-differ
         data = request.data if request.data else {}
 

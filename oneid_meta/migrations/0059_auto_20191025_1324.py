@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import oneid_meta.models.config
+from ...oneid_meta.models import config
 import uuid
 
 
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model, oneid_meta.models.config.SingletonConfigMixin),
+            bases=(models.Model, config.SingletonConfigMixin),
         ),
         migrations.CreateModel(
             name='AlipayUser',

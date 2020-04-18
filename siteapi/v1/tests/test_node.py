@@ -4,8 +4,8 @@ test for api about node
 '''
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import (
     Dept,
     DeptMember,
     Group,
@@ -15,7 +15,7 @@ from oneid_meta.models import (
     DeptPerm,
     GroupPerm,
 )
-from oneid_meta.models.mixin import TreeNode as Node
+from ....oneid_meta.models.mixin import TreeNode as Node
 
 
 def create_node_tree(cls, trees):

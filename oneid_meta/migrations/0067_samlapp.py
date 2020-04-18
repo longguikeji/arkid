@@ -5,7 +5,7 @@ import uuid
 from django.db import migrations, models
 import django.db.models.deletion
 from django.conf import settings
-from djangosaml2idp.scripts.idpinit import run
+from ...djangosaml2idp.scripts.idpinit import run
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

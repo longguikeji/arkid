@@ -4,8 +4,8 @@ from unittest import mock
 
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import User, CustomField, SMSConfig, EmailConfig
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import User, CustomField, SMSConfig, EmailConfig
 
 
 class ConfigTestCase(TestCase):

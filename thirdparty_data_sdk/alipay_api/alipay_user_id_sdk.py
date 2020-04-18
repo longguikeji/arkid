@@ -9,7 +9,7 @@ from alipay.aop.api.DefaultAlipayClient import DefaultAlipayClient
 from alipay.aop.api.request.AlipaySystemOauthTokenRequest import AlipaySystemOauthTokenRequest
 from alipay.aop.api.response.AlipaySystemOauthTokenResponse import AlipaySystemOauthTokenResponse
 from alipay.aop.api.exception.Exception import AopException
-from thirdparty_data_sdk.alipay_api import constants
+from ...thirdparty_data_sdk.alipay_api import constants
 
 
 class AlipaySystemOauthTokenModel:

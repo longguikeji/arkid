@@ -6,7 +6,7 @@ tests for models
 from django import db
 from django.urls import reverse
 from rest_framework.exceptions import ValidationError
-from oneid_meta.models import (
+from ....oneid_meta.models import (
     User,
     Group,
     GroupMember,
@@ -15,7 +15,7 @@ from oneid_meta.models import (
     Perm,
 )
 
-from siteapi.v1.tests import TestCase
+from ....siteapi.v1.tests import TestCase
 
 
 class ModelTestCase(TestCase):

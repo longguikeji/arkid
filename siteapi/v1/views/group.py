@@ -20,32 +20,32 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 
-from oneid_meta.models import Group, GroupMember, User
-from oneid.permissions import (
+from ....oneid_meta.models import Group, GroupMember, User
+from ....oneid.permissions import (
     IsAdminUser,
     IsManagerUser,
     IsNodeManager,
     NodeManagerReadable,
     CustomPerm,
 )
-from siteapi.v1.serializers.user import UserListSerializer, UserSerializer    # EmployeeSerializer
-from siteapi.v1.serializers.group import (
+from ....siteapi.v1.serializers.user import UserListSerializer, UserSerializer    # EmployeeSerializer
+from ....siteapi.v1.serializers.group import (
     GroupSerializer,
     GroupTreeSerializer,
     GroupListSerializer,
     GroupDetailSerializer,
     ManagerGroupListSerializer,
 )
-from siteapi.v1.views import node as node_views
-from siteapi.v1.views.utils import (
+from ....siteapi.v1.views import node as node_views
+from ....siteapi.v1.views.utils import (
     get_users_from_uids,
     update_users_of_owner,
     get_groups_from_uids,
     gen_uid,
 )
-from executer.core import CLI
-from common.django.drf.paginator import DefaultListPaginator
-from common.django.drf.views import catch_json_load_error
+from ....executer.core import CLI
+from ....common.django.drf.paginator import DefaultListPaginator
+from ....common.django.drf.views import catch_json_load_error
 
 
 class GroupListAPIView(generics.ListAPIView):

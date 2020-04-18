@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import redis
-from common.decorator_utils import singleton
+from ...common.decorator_utils import singleton
 
 REDIS_DEFAULT_CONFIG = {
     'HOST': 'localhost',

@@ -3,9 +3,9 @@ tests for utils
 '''
 # pylint: disable=missing-docstring
 
-from siteapi.v1.tests import TestCase
-from siteapi.v1.views.utils import gen_uid, data_masking
-from oneid_meta.models import Perm
+from ....siteapi.v1.tests import TestCase
+from ....siteapi.v1.views.utils import gen_uid, data_masking
+from ....oneid_meta.models import Perm
 
 
 class UtilsTestCase(TestCase):

@@ -4,10 +4,10 @@ tests for dept perm checker
 # pylint: disable=missing-docstring,duplicate-code
 
 from django.urls import reverse
-from common.django.drf.client import APIClient
+from ....common.django.drf.client import APIClient
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import (
     Dept,
     User,
     DeptMember,

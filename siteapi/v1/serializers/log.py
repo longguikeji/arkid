@@ -3,9 +3,9 @@ serializers for Log
 '''
 from rest_framework import serializers
 
-from common.django.drf.serializer import DynamicFieldsModelSerializer
-from oneid_meta.models import Log
-from siteapi.v1.serializers.user import UserLiteSerializer
+from ....common.django.drf.serializer import DynamicFieldsModelSerializer
+from ....oneid_meta.models import Log
+from ....siteapi.v1.serializers.user import UserLiteSerializer
 
 
 class LogLiteSerializer(DynamicFieldsModelSerializer):

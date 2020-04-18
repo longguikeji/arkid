@@ -4,20 +4,19 @@ serializers for department
 from django.urls import resolve
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from common.django.drf.serializer import (
+from ....common.django.drf.serializer import (
     DynamicFieldsModelSerializer, )
-from common.django.drf.serializer import IgnoreNoneMix
+from ....common.django.drf.serializer import IgnoreNoneMix
 
-from oneid_meta.models import Dept, DingDept
-from siteapi.v1.serializers import UserLiteSerializer
-from siteapi.v1.serializers.node import NodeSerialzierMixin
+from ....oneid_meta.models import Dept, DingDept
+from ....siteapi.v1.serializers import UserLiteSerializer
+from ....siteapi.v1.serializers.node import NodeSerialzierMixin
 
 
 class DingDeptSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for DingDept
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = DingDept
 
@@ -55,7 +54,6 @@ class DeptDetailSerializer(DeptSerializer):
     '''
     dept info with parent_uid
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = Dept
 

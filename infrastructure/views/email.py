@@ -10,13 +10,13 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from infrastructure.serializers.email import (
+from ...infrastructure.serializers.email import (
     RegisterEmailClaimSerializer,
     ResetPWDEmailClaimSerializer,
     UserActivateEmailClaimSerializer,
     UpdateEmailEmailClaimSerializer,
 )
-from oneid_meta.models import AccountConfig
+from ...oneid_meta.models import AccountConfig
 
 
 class EmailClaimAPIView(GenericAPIView):

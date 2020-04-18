@@ -11,16 +11,16 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
 from django.conf import settings
 from django.urls import resolve
-from oneid_meta.models import Dept, Group
-from oneid_meta.models.mixin import TreeNode as Node
-from siteapi.v1.views import (
+from ....oneid_meta.models import Dept, Group
+from ....oneid_meta.models.mixin import TreeNode as Node
+from ....siteapi.v1.views import (
     dept as dept_view,
     group as group_view,
     perm as perm_view,
 )
-from siteapi.v1.serializers.dept import DeptTreeSerializer, DeptSerializer
-from siteapi.v1.serializers.group import GroupTreeSerializer, GroupSerializer
-from oneid.permissions import IsAdminUser, IsManagerUser, NodeEmployeeReadable
+from ....siteapi.v1.serializers.dept import DeptTreeSerializer, DeptSerializer
+from ....siteapi.v1.serializers.group import GroupTreeSerializer, GroupSerializer
+from ....oneid.permissions import IsAdminUser, IsManagerUser, NodeEmployeeReadable
 
 
 class MetaNodeAPIView(APIView):
@@ -80,7 +80,6 @@ def handle_exception(dispatch):
     '''
     处理异常
     '''
-
     @wraps(dispatch)
     def wrapper(self, request, *args, **kwargs):
         try:
@@ -124,7 +123,6 @@ def abstract_node(dispatch):
     '''
     将group、dept抽象成node
     '''
-
     @wraps(dispatch)
     def wrapper(self, request, *args, **kwargs):
         response = dispatch(self, request, *args, **kwargs)
@@ -138,7 +136,6 @@ class NodeListAPIView(APIView):
     '''
     某节点下所有子孙节点列表，包括该节点自身
     '''
-
     def dispatch(self, request, *args, **kwargs):
         uid = kwargs['uid']
 
@@ -155,7 +152,6 @@ class NodeDetailAPIView(APIView):
     '''
     以管理员身份管理节点
     '''
-
     @abstract_node
     @handle_exception
     def dispatch(self, request, *args, **kwargs):
@@ -272,7 +268,6 @@ class NodeChildNodeAPIView(APIView):
     '''
     某节点的子节点
     '''
-
     @abstract_node
     @handle_exception
     def dispatch(self, request, *args, **kwargs):
@@ -291,7 +286,6 @@ class NodeChildUserAPIView(APIView):
     '''
     节点下属成员
     '''
-
     @abstract_node
     @handle_exception
     def dispatch(self, request, *args, **kwargs):
@@ -310,7 +304,6 @@ class NodePermAPIView(APIView):
     '''
     节点权限
     '''
-
     @abstract_node
     @handle_exception
     def dispatch(self, request, *args, **kwargs):

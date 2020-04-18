@@ -5,9 +5,9 @@ from django.db import models
 from django.conf import settings
 from django.db.utils import IntegrityError
 
-from common.django.model import BaseOrderedModel
-from oneid_meta.models.perm import DeptPerm, PermOwnerMixin
-from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
+from ...common.django.model import BaseOrderedModel
+from ...oneid_meta.models.perm import DeptPerm, PermOwnerMixin
+from ...oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
 
 
 class Dept(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):

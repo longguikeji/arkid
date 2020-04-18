@@ -3,7 +3,7 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-from oauth2_provider.settings import oauth2_settings
+from ...oauth2_provider.settings import oauth2_settings
 
 
 class Migration(migrations.Migration):

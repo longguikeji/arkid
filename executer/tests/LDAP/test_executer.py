@@ -16,10 +16,10 @@ from ldap3.core.exceptions import (
     LDAPUnwillingToPerformResult,
 )
 
-from executer.core import cli_factory
-from executer.LDAP import LDAPExecuter
-from executer.RDB import RDBExecuter
-from executer.tests import (
+from ....executer.core import cli_factory
+from ....executer.LDAP import LDAPExecuter
+from ....executer.RDB import RDBExecuter
+from ....executer.tests import (
     DEPT_DATA,
     PARENT_DEPT_DATA,
     GROUP_DATA,
@@ -28,9 +28,9 @@ from executer.tests import (
     CHILD_DEPT_2_DATA,
     DEPT_2_DATA,
 )
-from executer.LDAP.client import Connection
-from siteapi.v1.tests.test_user import USER_DATA
-from oneid_meta.models import Dept, Group, User
+from ....executer.LDAP.client import Connection
+from ....siteapi.v1.tests.test_user import USER_DATA
+from ....oneid_meta.models import Dept, Group, User
 
 
 class LDAPBaseTestCase(TestCase):

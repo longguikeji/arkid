@@ -7,12 +7,12 @@ import time
 import string    # pylint: disable=deprecated-module
 import random
 
-from executer.tests.LDAP.test_executer import LDAPBaseTestCase, LDAPExecuterDeptTestCase
-from siteapi.v1.tests.test_user import USER_DATA
-from oneid_meta.models import UserPerm, Perm
+from ....executer.tests.LDAP.test_executer import LDAPBaseTestCase, LDAPExecuterDeptTestCase
+from ....siteapi.v1.tests.test_user import USER_DATA
+from ....oneid_meta.models import UserPerm, Perm
 
-from scripts.ldap_user_perm import flush_user_perm
-from scripts.ldap_aggregate_user import aggregate_user_in_dept, aggregate_user_in_group
+from ....scripts.ldap_user_perm import flush_user_perm
+from ....scripts.ldap_aggregate_user import aggregate_user_in_dept, aggregate_user_in_group
 
 
 class PerformanceTestCase(LDAPBaseTestCase):

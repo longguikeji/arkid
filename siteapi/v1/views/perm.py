@@ -13,8 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
-from oneid_meta.models import (Perm, UserPerm, DeptPerm, GroupPerm, User, Dept, Group)
-from siteapi.v1.serializers.perm import (
+from ....oneid_meta.models import (Perm, UserPerm, DeptPerm, GroupPerm, User, Dept, Group)
+from ....siteapi.v1.serializers.perm import (
     PermSerializer,
     PermWithOwnerSerializer,
     OwnerSerializer,
@@ -22,10 +22,10 @@ from siteapi.v1.serializers.perm import (
     UserPermResultSerializer,
     UserPermDetailSerializer,
 )
-from common.django.drf.paginator import DefaultListPaginator
-from common.django.drf.views import catch_json_load_error
-from oneid.permissions import IsAdminUser
-from executer.log.rdb import LOG_CLI
+from ....common.django.drf.paginator import DefaultListPaginator
+from ....common.django.drf.views import catch_json_load_error
+from ....oneid.permissions import IsAdminUser
+from ....executer.log.rdb import LOG_CLI
 
 
 class PermListCreateAPIView(generics.ListCreateAPIView):

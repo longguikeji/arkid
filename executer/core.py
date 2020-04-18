@@ -4,8 +4,8 @@
 
 from django.utils.module_loading import import_string
 from django.conf import settings
-
-from common.django.middleware import CrequestMiddleware
+from ..common.django.middleware import CrequestMiddleware
+from ..common.setup_utils import get_top_level_dirname
 
 
 class Executer():
@@ -394,4 +394,15 @@ def single_cli_factory(executer_cls):
     return CLI_CLASS
 
 
-CLI = cli_factory(settings.EXECUTERS)
+if not hasattr(settings, 'EXECUTERS'):
+    EXECUTERS = [    # 注意顺序
+        '{0}{1}'.format(get_top_level_dirname(), '.executer.RDB.RDBExecuter'),
+        '{0}{1}'.format(get_top_level_dirname(), '.executer.log.rdb.RDBLogExecuter'),
+        '{0}{1}'.format(get_top_level_dirname(), '.executer.cache.default.CacheExecuter'),
+    # '{0}{1}'.format(get_top_level_dirname(), '.executer.LDAP.LDAPExecuter'),
+    # '{0}{1}'.format(get_top_level_dirname(), '.executer.Ding.DingExecuter'),
+    ]
+
+    CLI = cli_factory(EXECUTERS)
+else:
+    CLI = cli_factory(settings.EXECUTERS)

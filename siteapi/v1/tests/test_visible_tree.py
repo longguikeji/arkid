@@ -5,9 +5,9 @@ tests for api about ucenter tree
 # pylint: disable=missing-docstring, too-many-lines
 
 from django.urls import reverse
-from siteapi.v1.tests import TestCase
-from siteapi.v1.tests.test_node import create_node_tree
-from oneid_meta.models import Dept, Group, User, GroupMember, DeptMember
+from ....siteapi.v1.tests import TestCase
+from ....siteapi.v1.tests.test_node import create_node_tree
+from ....oneid_meta.models import Dept, Group, User, GroupMember, DeptMember
 
 TREE = {
     '1': {

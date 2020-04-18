@@ -4,16 +4,17 @@ serializers for SMS
 import random
 import string    # pylint:disable=deprecated-module
 import time
-
+from sys import _getframe
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 
-from oneid_meta.models import User, Invitation, SMSConfig
-from oneid.utils import redis_conn
-from common.sms.aliyun.sms_manager import SMSAliyunManager
-from infrastructure.views.captcha_img import check_captcha    # pylint: disable=unused-import
-from infrastructure.utils.sms import is_mobile, is_cn_mobile
+from ...common.setup_utils import validate_attr
+from ...oneid_meta.models import User, Invitation, SMSConfig
+from ...oneid.utils import redis_conn
+from ...common.sms.aliyun.sms_manager import SMSAliyunManager
+from ...infrastructure.views.captcha_img import check_captcha    # pylint: disable=unused-import
+from ...infrastructure.utils.sms import is_mobile, is_cn_mobile
 
 
 def send_sms(mobile, code, template):
@@ -107,6 +108,7 @@ class SMSClaimSerializer(serializers.Serializer):
         send_sms(mobile, code, self.get_template_id())
         key = self.gen_sms_code_key(mobile)
         value = code
+        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'SMS_LIFESPAN')
 
         redis_conn.set(key, value, ex=settings.SMS_LIFESPAN.seconds)
         return '_'
@@ -146,6 +148,9 @@ class SMSClaimSerializer(serializers.Serializer):
             send_code = res
             if send_code and code == send_code:
                 sms_token = "".join(random.choice(string.ascii_letters + string.digits) for _ in range(24))
+                validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                              'SMS_LIFESPAN')
+
                 redis_conn.set(cls.gen_sms_token_key(sms_token), mobile, ex=settings.SMS_LIFESPAN.seconds * 10)
                 redis_conn.delete(cls.gen_sms_code_key(mobile))
                 return sms_token, int(time.time()) + settings.SMS_LIFESPAN.seconds * 10

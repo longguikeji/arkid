@@ -7,12 +7,12 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from oneid.permissions import IsManagerUser, IsAdminUser
-from oneid_meta.models import User, APP
-from oneid_meta.models.mixin import TreeNode as Node
-from siteapi.v1.serializers.user import UserSerializer
-from siteapi.v1.serializers.app import APPSerializer
-from executer.core import CLI
+from ....oneid.permissions import IsManagerUser, IsAdminUser
+from ....oneid_meta.models import User, APP
+from ....oneid_meta.models.mixin import TreeNode as Node
+from ....siteapi.v1.serializers.user import UserSerializer
+from ....siteapi.v1.serializers.app import APPSerializer
+from ....executer.core import CLI
 
 
 class ObjSliceAPIView(APIView):

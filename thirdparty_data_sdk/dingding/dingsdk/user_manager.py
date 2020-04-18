@@ -2,8 +2,8 @@
 Dingding user manage api
 """
 
-from thirdparty_data_sdk.dingding.dingsdk import constants
-from thirdparty_data_sdk.dingding.dingsdk.request_manager import RequestManager
+from ....thirdparty_data_sdk.dingding.dingsdk import constants
+from ....thirdparty_data_sdk.dingding.dingsdk.request_manager import RequestManager
 
 
 class UserManager():

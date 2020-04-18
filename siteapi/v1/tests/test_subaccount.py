@@ -5,8 +5,8 @@ tests for sub account
 
 from django.urls import reverse
 
-from oneid_meta.models import User, APP, Perm, UserPerm
-from siteapi.v1.tests import TestCase
+from ....oneid_meta.models import User, APP, Perm, UserPerm
+from ....siteapi.v1.tests import TestCase
 
 
 class AdminSubAccountPermTestCase(TestCase):

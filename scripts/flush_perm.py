@@ -2,9 +2,9 @@
 刷新权限判定结果
 '''
 
-from oneid_meta.models import User, Group, Dept
-from oneid_meta.models import GroupPerm, DeptPerm, UserPerm, Perm
-from oneid_meta.models import APP
+from ..oneid_meta.models import User, Group, Dept
+from ..oneid_meta.models import GroupPerm, DeptPerm, UserPerm, Perm
+from ..oneid_meta.models import APP
 
 
 def check_app_default_perm():
@@ -105,10 +105,10 @@ def flush_user_perm(users=None, perms=None):
     for user in users:
         for perm in perms:
             user_perm = user.get_perm(perm)
-            user_perm.group_perm_value = GroupPerm.valid_objects.filter(
-                owner__in=user.groups, perm=perm, value=True).exists()
-            user_perm.dept_perm_value = DeptPerm.valid_objects.filter(
-                owner__in=user.depts, perm=perm, value=True).exists()
+            user_perm.group_perm_value = GroupPerm.valid_objects.filter(owner__in=user.groups, perm=perm,
+                                                                        value=True).exists()
+            user_perm.dept_perm_value = DeptPerm.valid_objects.filter(owner__in=user.depts, perm=perm,
+                                                                      value=True).exists()
             user_perm.update_value()
 
 

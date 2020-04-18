@@ -1,7 +1,7 @@
 # pylint: disable=missing-docstring
 from django.test import TestCase
 
-from executer.utils import operation
+from ....executer.utils import operation
 
 
 class OperationTestCase(TestCase):

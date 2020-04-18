@@ -2,8 +2,8 @@
 检查是否有权限等
 '''
 from django.conf import settings
-from oneid_meta.models import SAMLAPP, Perm, UserPerm
-from drf_expiring_authtoken.models import ExpiringToken
+from ..oneid_meta.models import SAMLAPP, Perm, UserPerm
+from ..drf_expiring_authtoken.models import ExpiringToken
 
 
 class BaseProcessor:

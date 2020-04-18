@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
-from oauth2_provider import views
-from oauth2_provider.views import dev as dev_views
+from ..oauth2_provider import views
+from ..oauth2_provider.views import dev as dev_views
 
 from django.views.decorators.csrf import csrf_exempt
 

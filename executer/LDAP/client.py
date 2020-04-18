@@ -8,7 +8,7 @@ from ldap3.core.exceptions import LDAPNoSuchObjectResult, LDAPExceptionError
 from ldap3 import Connection as LDAPConnection
 from django.conf import settings
 
-from executer.utils.operation import list_diff
+from ...executer.utils.operation import list_diff
 
 FILTER_ALL = '(objectClass=*)'
 ATTRIBUTE_ALL = '*'
@@ -18,7 +18,6 @@ class Connection(LDAPConnection):
     '''
     LDAP Client
     '''
-
     def get_entry_by_dn(self, dn, raise_exception=False, attributes=ATTRIBUTE_ALL):
         '''
         根据dn进行查询

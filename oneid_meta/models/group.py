@@ -5,10 +5,11 @@ import jsonfield
 from django.db import models
 from django.conf import settings
 from django.db.utils import IntegrityError
-
-from common.django.model import BaseOrderedModel, BaseModel
-from oneid_meta.models.perm import GroupPerm, PermOwnerMixin
-from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
+from sys import _getframe
+from ...common.setup_utils import validate_attr
+from ...common.django.model import BaseOrderedModel, BaseModel
+from ...oneid_meta.models.perm import GroupPerm, PermOwnerMixin
+from ...oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
 
 
 class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
@@ -67,6 +68,8 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         在涉及修改dn的操作时慎用，自行在ldap中根据cn=uid查询dn
         '''
         if self.uid == 'root':
+            validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno,
+                          'LDAP_BASE')
             return 'ou=group,{}'.format(settings.LDAP_BASE)
         if self.parent:
             return 'cn={},{}'.format(self.uid, self.parent.dn)    # pylint: disable=no-member

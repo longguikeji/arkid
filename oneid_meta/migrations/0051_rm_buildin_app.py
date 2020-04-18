@@ -1,6 +1,10 @@
+from sys import _getframe
 
 from django.db import migrations, models
 from django.conf import settings
+
+from ...common.setup_utils import NotConfiguredException, validate_attr
+
 
 def delete_buildin_app(apps, schema_editor):
     '''
@@ -18,12 +22,12 @@ def delete_buildin_app(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-
     dependencies = [
         ('oneid_meta', '0050_add_buildin_perm'),
     ]
 
     operations = []
+    validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'TESTING')
 
     if not settings.TESTING:
         operations += [

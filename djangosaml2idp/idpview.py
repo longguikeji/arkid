@@ -30,9 +30,11 @@ from saml2.ident import NameID
 from saml2.metadata import entity_descriptor
 from saml2.s_utils import UnknownPrincipal, UnsupportedBinding
 from saml2.server import Server
-from drf_expiring_authtoken.models import ExpiringToken
-from djangosaml2idp.processors import BaseProcessor
-from djangosaml2idp import idpsettings
+from ..common.setup_utils import get_top_level_dirname, validate_attr
+from ..drf_expiring_authtoken.models import ExpiringToken
+from ..djangosaml2idp.processors import BaseProcessor
+from ..djangosaml2idp import idpsettings
+from sys import _getframe
 
 logger = logging.getLogger(__name__)    # pylint: disable=invalid-name
 
@@ -101,6 +103,8 @@ class AccessMixin:
     def get_login_url(self):
         """Override this method to override the login_url attribute.
         """
+        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'LOGIN_URL')
+
         login_url = self.login_url or settings.LOGIN_URL
         if not login_url:
             raise ImproperlyConfigured(
@@ -123,6 +127,7 @@ class AccessMixin:
         '''
         if self.raise_exception:
             raise PermissionDenied(self.get_permission_denied_message())
+        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'LOGIN_URL')
         return redirect(settings.LOGIN_URL)
 
 
@@ -143,9 +148,8 @@ class LoginRequiredMixin(AccessMixin):
 
 class IdPHandlerViewMixin:
     """ Contains some methods used by multiple views """
-
-    error_view = import_string(
-        getattr(idpsettings, 'SAML_IDP_ERROR_VIEW_CLASS', 'djangosaml2idp.error_views.SamlIDPErrorView'))
+    path = '{0}{1}'.format(get_top_level_dirname(), '.djangosaml2idp.error_views.SamlIDPErrorView')
+    error_view = import_string(getattr(idpsettings, 'SAML_IDP_ERROR_VIEW_CLASS', path))
 
     def handle_error(self, request, **kwargs):    # pylint: disable=missing-function-docstring
         return self.error_view.as_view()(request, **kwargs)
@@ -154,6 +158,8 @@ class IdPHandlerViewMixin:
         """ Construct IDP server with config from settings dict
         """
         conf = IdPConfig()
+        validate_attr(_getframe().f_code.co_filename, _getframe().f_code.co_name, _getframe().f_lineno, 'BASE_URL')
+
         try:
             SAML_IDP_CONFIG = {     # pylint: disable=invalid-name
             'debug' : settings.DEBUG,
@@ -264,7 +270,7 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
         try:
             # sp_config = SAML_IDP_SPCONFIG[resp_args['sp_entity_id']]
             sp_config = {
-                'processor': 'djangosaml2idp.processors.BaseProcessor',
+                'processor': '..djangosaml2idp.processors.BaseProcessor',
                 'attribute_mapping': {
             # DJANGO: SAML
                     'email': 'email',
@@ -352,7 +358,7 @@ class SSOInitView(LoginRequiredMixin, IdPHandlerViewMixin, View):
         try:
             # sp_config = SAML_IDP_SPCONFIG[sp_entity_id]
             sp_config = {
-                'processor': 'djangosaml2idp.processors.BaseProcessor',
+                'processor': '..djangosaml2idp.processors.BaseProcessor',
                 'attribute_mapping': {
             # DJANGO: SAML
                     'username': 'username',
@@ -441,6 +447,7 @@ def metadata(request):    # pylint: disable=unused-argument
     """ Returns an XML with the SAML 2.0 metadata for this Idp.
         The metadata is constructed on-the-fly based on the config dict in the django settings.
     """
+
     conf = IdPConfig()
     conf.load(idpsettings.SAML_IDP_CONFIG)
     meta_data = entity_descriptor(conf)

@@ -10,11 +10,11 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.http.response import HttpResponseRedirect, HttpResponse, HttpResponseNotFound
 from django.views.generic import View
-from common.minio_utils import (
+from ...common.minio_utils import (
     put_object,
     presign_get,
 )
-from oneid_meta.models.config import StorageConfig
+from ...oneid_meta.models.config import StorageConfig
 
 
 class FileCreateAPIView(generics.CreateAPIView):

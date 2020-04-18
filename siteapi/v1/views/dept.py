@@ -17,30 +17,30 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 
-from oneid_meta.models import Dept
-from oneid.permissions import (
+from ....oneid_meta.models import Dept
+from ....oneid.permissions import (
     IsNodeManager,
     IsAdminUser,
     IsManagerUser,
     NodeManagerReadable,
 )
-from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
-from siteapi.v1.serializers.dept import (
+from ....siteapi.v1.serializers.user import UserListSerializer, UserSerializer
+from ....siteapi.v1.serializers.dept import (
     DeptTreeSerializer,
     DeptListSerializer,
     DeptSerializer,
     DeptDetailSerializer,
 )
-from siteapi.v1.views.utils import (
+from ....siteapi.v1.views.utils import (
     get_users_from_uids,
     get_depts_from_uids,
     update_users_of_owner,
     gen_uid,
 )
-from siteapi.v1.views import node as node_views
-from executer.core import CLI
-from common.django.drf.paginator import DefaultListPaginator
-from common.django.drf.views import catch_json_load_error
+from ....siteapi.v1.views import node as node_views
+from ....executer.core import CLI
+from ....common.django.drf.paginator import DefaultListPaginator
+from ....common.django.drf.views import catch_json_load_error
 
 
 class DeptListAPIView(generics.ListAPIView):

@@ -8,7 +8,7 @@ from unittest import mock
 from django.urls import reverse
 from django_celery_results.models import TaskResult
 
-from siteapi.v1.tests import TestCase
+from ....siteapi.v1.tests import TestCase
 
 
 class ImportDingTestCase(TestCase):

@@ -20,23 +20,23 @@ from kubernetes import (
     config as k8s_config,
 )
 
-from siteapi.v1.serializers.app import (
+from ....siteapi.v1.serializers.app import (
     APPSerializer,
     APPWithAccessOwnerSerializer,
     APPPublicSerializer,
     OAuthAPPSerializer,
 )
-from siteapi.v1.views.utils import gen_uid
-from common.django.drf.paginator import DefaultListPaginator
-from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
-from oneid.permissions import (
+from ....siteapi.v1.views.utils import gen_uid
+from ....common.django.drf.paginator import DefaultListPaginator
+from ....oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
+from ....oneid.permissions import (
     IsAPPManager,
     IsAdminUser,
     IsManagerUser,
     CustomPerm,
 )
-from executer.core import CLI
-from executer.log.rdb import LOG_CLI
+from ....executer.core import CLI
+from ....executer.log.rdb import LOG_CLI
 
 
 class APPListCreateAPIView(generics.ListCreateAPIView):

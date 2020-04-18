@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from infrastructure.serializers.sms import (
+from ...infrastructure.serializers.sms import (
     ResetPWDSMSClaimSerializer,
     RegisterSMSClaimSerializer,
     UpdateMobileSMSClaimSerializer,
@@ -16,7 +16,7 @@ from infrastructure.serializers.sms import (
     SMSClaimSerializer,
     LoginSMSClaimSerializer,
 )
-from oneid_meta.models import AccountConfig
+from ...oneid_meta.models import AccountConfig
 
 
 class SMSClaimAPIView(GenericAPIView):

@@ -3,7 +3,7 @@ SAML
 '''
 from django.urls import path
 
-from djangosaml2idp import idpview
+from ..djangosaml2idp import idpview
 
 app_name = 'djangosaml2idp'    # pylint: disable=invalid-name
 

@@ -6,7 +6,7 @@ test for password_utils
 
 from django.test import TestCase
 
-from executer.utils.password import encrypt_password, verify_password
+from ....executer.utils.password import encrypt_password, verify_password
 
 
 class PasswordTestCase(TestCase):

@@ -8,12 +8,12 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from django_celery_results.models import TaskResult
 
-from oneid.permissions import CustomPerm, IsAdminUser, IsManagerUser
-from siteapi.v1.serializers.user import UserListSerializer
-from siteapi.v1.serializers.task import TaskResultSerializer
-from docs.projects.noah.init import entrypoint as init_noah
-from tasksapp.tasks import import_ding, override_ding
-from oneid_meta.models import DingConfig
+from ....oneid.permissions import CustomPerm, IsAdminUser, IsManagerUser
+from ....siteapi.v1.serializers.user import UserListSerializer
+from ....siteapi.v1.serializers.task import TaskResultSerializer
+from ....docs.projects.noah.init import entrypoint as init_noah
+from ....tasksapp.tasks import import_ding, override_ding
+from ....oneid_meta.models import DingConfig
 
 
 class ImportDingAPIView(generics.RetrieveUpdateAPIView):

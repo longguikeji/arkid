@@ -3,14 +3,13 @@ Manage request get, post and raise exception when api call failed
 """
 
 import requests
-from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
+from ....thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
 
 
 class RequestManager:
     """
     Manage request get, post and raise exception when api call failed
     """
-
     def __init__(self):
         self.request_count = 0
 
@@ -28,8 +27,7 @@ class RequestManager:
 
         tmp_json = res.json()
         if tmp_json['errcode'] != 0:
-            raise APICallError('errcode:%d, errmsg:%s.' % (tmp_json['errcode'],
-                                                           tmp_json['errmsg']))
+            raise APICallError('errcode:%d, errmsg:%s.' % (tmp_json['errcode'], tmp_json['errmsg']))
 
         return tmp_json
 
@@ -52,7 +50,6 @@ class RequestManager:
 
         tmp_json = res.json()
         if tmp_json['errcode'] != 0:
-            raise APICallError('errcode:%d, errmsg:%s.' % (tmp_json['errcode'],
-                                                           tmp_json['errmsg']))
+            raise APICallError('errcode:%d, errmsg:%s.' % (tmp_json['errcode'], tmp_json['errmsg']))
 
         return tmp_json

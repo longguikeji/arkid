@@ -7,7 +7,7 @@ from unittest import mock
 
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
+from ...siteapi.v1.tests import TestCase
 
 
 class CaptchaTestCase(TestCase):

@@ -3,12 +3,12 @@
 '''
 from rest_framework import serializers
 
-from common.django.drf.serializer import DynamicFieldsModelSerializer
+from ....common.django.drf.serializer import DynamicFieldsModelSerializer
 
-from oneid_meta.models import AlipayConfig, DingConfig, WorkWechatConfig, WechatConfig, QQConfig
-from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
-from thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
-from thirdparty_data_sdk.dingding.dingsdk import constants
+from ....oneid_meta.models import AlipayConfig, DingConfig, WorkWechatConfig, WechatConfig, QQConfig
+from ....thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
+from ....thirdparty_data_sdk.dingding.dingsdk.error_utils import APICallError
+from ....thirdparty_data_sdk.dingding.dingsdk import constants
 
 
 class PublicDingConfigSerializer(DynamicFieldsModelSerializer):

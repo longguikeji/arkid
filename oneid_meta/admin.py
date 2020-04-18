@@ -1,9 +1,8 @@
 # pylint: disable=missing-docstring
 
 from django.contrib import admin
-
-from executer.core import CLI
-from oneid_meta.models import (
+from ..executer.core import CLI
+from ..oneid_meta.models import (
     User,
     DingUser,
     PosixUser,

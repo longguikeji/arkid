@@ -5,8 +5,8 @@ tests for api about dept
 
 from django.urls import reverse
 
-from siteapi.v1.tests import TestCase
-from oneid_meta.models import Dept, User, DeptMember
+from ....siteapi.v1.tests import TestCase
+from ....oneid_meta.models import Dept, User, DeptMember
 
 
 class DeptTestCase(TestCase):

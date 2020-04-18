@@ -5,9 +5,9 @@ statistics
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from oneid.permissions import IsAdminUser
-from oneid_meta.models import User
-from oneid.statistics import UserStatistics
+from ....oneid.permissions import IsAdminUser
+from ....oneid_meta.models import User
+from ....oneid.statistics import UserStatistics
 
 
 class UserStatisticView(generics.GenericAPIView):

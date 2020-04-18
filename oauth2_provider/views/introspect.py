@@ -6,8 +6,8 @@ from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from oauth2_provider.models import get_access_token_model, get_oidc_access_token_model
-from oauth2_provider.views import ScopedProtectedResourceView
+from ...oauth2_provider.models import get_access_token_model, get_oidc_access_token_model
+from ...oauth2_provider.views import ScopedProtectedResourceView
 
 
 @method_decorator(csrf_exempt, name="dispatch")

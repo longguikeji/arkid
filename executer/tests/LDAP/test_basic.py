@@ -2,10 +2,10 @@
 
 from django.test import TestCase
 
-from executer.RDB import RDBExecuter
-from executer.tests import GROUP_DATA, PARENT_GROUP_DATA, DEPT_DATA, PARENT_DEPT_DATA
-from siteapi.v1.tests.test_user import USER_DATA
-from oneid_meta.models import Dept, Group
+from ....executer.RDB import RDBExecuter
+from ....executer.tests import GROUP_DATA, PARENT_GROUP_DATA, DEPT_DATA, PARENT_DEPT_DATA
+from ....siteapi.v1.tests.test_user import USER_DATA
+from ....oneid_meta.models import Dept, Group
 
 
 class BasicTestCase(TestCase):
