@@ -11,6 +11,7 @@
 ################################################################################
 
 appdirs==1.4.3
+appnope==0.1.0 ; sys_platform == 'darwin'
 astroid==2.3.3
 backcall==0.1.0
 certifi==2020.4.5.1
@@ -24,11 +25,11 @@ importlib-resources==1.4.0 ; python_version < '3.7'
 ipython-genutils==0.2.0
 ipython==7.13.0
 isort==4.3.21
-jedi==0.16.0
+jedi==0.17.0
 lazy-object-proxy==1.4.3
 mccabe==0.6.1
 nodeenv==1.3.5
-parso==0.6.2
+parso==0.7.0
 pbr==5.4.5
 pexpect==4.8.0 ; sys_platform != 'win32'
 pickleshare==0.7.5
@@ -46,7 +47,7 @@ traitlets==4.3.3
 typed-ast==1.4.1 ; implementation_name == 'cpython' and python_version < '3.8'
 v==0.0.0
 virtualenv-clone==0.5.4
-virtualenv==20.0.17
+virtualenv==20.0.18
 wcwidth==0.1.9
 wrapt==1.11.2
 yapf==0.29.0
