@@ -4,9 +4,12 @@
 
 
 ## crontab
+插件必须是 function 的形式，且名称以 `_plugin` 结尾。
 
+可以通过接口启用或关闭插件，以及设置此插件运行周期。
 
 ## middleware
+插件必须是 function 的形式，且名称以 `_plugin` 结尾。
 
 具体实现，参考文档 https://docs.djangoproject.com/en/2.2/topics/http/middleware/#writing-your-own-middleware
 
