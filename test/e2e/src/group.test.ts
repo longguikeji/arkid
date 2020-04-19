@@ -773,7 +773,7 @@ describe('一账通-分组管理自定义分类分组编辑账号', () => {
         
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "bxiangmuzuuser");
-        await page.waitFor(2000);
+        await page.waitFor(4000);
 
         const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) span', elem => {
             return elem.innerHTML;

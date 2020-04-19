@@ -8,17 +8,18 @@ import expectPuppeteer = require('expect-puppeteer');
 import { appMessageAction } from './actions/appMessage';
 
 declare var global: any
+
 describe('一账通-登录测试', () => {
     let page : Page;
 
-    beforeEach( async () => {
+    beforeAll( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
     },80000)
 
     afterAll ( async () => {
-        //await page.close();
+
     })
 
     test('TEST_001:验证标题' , async() => {
@@ -26,8 +27,7 @@ describe('一账通-登录测试', () => {
             return elem.innerHTML;
         });
         await expect(pageTitle).toEqual('ArkID');
-
-        await page.close();
+        
     },30000);
 
     test('TEST_002:验证登录跳转链接' , async() => {
@@ -38,28 +38,33 @@ describe('一账通-登录测试', () => {
         const url = await page.url();
         await expect(url).toMatch('#/workspace/apps');
 
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },50000);
 })
 
 describe('一账通-我的应用信息测试', () => {
     let page : Page;
     
-    beforeEach( async () => {
+    beforeAll( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-  
-        let appmessageaction = new appMessageAction();
-        await appmessageaction.appinformation(page);
         
-    },60000)
+    },120000)
     afterAll ( async () => {
        // await page.close();
     })
     
     test('TEST_001:验证我的应用页面应用名称' , async() => {
+        let appmessageaction = new appMessageAction();
+        await appmessageaction.appinformation(page);
+
         const appName1 = await page.$eval('.card-list.flex-row>li:first-child .name', elem => {
             return elem.innerHTML;
         });
@@ -95,39 +100,29 @@ describe('一账通-我的应用信息测试', () => {
 
     },30000);
 
-})
-describe('一账通-我的应用搜索框测试', () => {
-    let page : Page;
-    
-    beforeEach( async () => {
-        page = await global.browser.newPage()
-        await page.goto(config.url);
+    test('TEST_003:验证我的应用页面搜索框' , async() => {
 
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
-  
         let appsearchaction = new appSearchAction();
         await appsearchaction.appinformation(page, 'bing');
-        
-    },30000)
-    afterAll ( async () => {
-        //await page.close();
-    })
 
-    test('TEST_001:验证我的应用页面搜索框' , async() => {
         const appName = await page.$eval('.ws-apps--app-box.flex-col .name', elem => {
             return elem.innerHTML;
         });
         await expect(appName).toEqual('bing test');
 
-    },30000);
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
+    },60000);
 
 })
 
 describe('一账通-通讯录测试', () => {
     let page : Page;
     
-    beforeEach( async () => {
+    beforeAll( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
@@ -262,6 +257,11 @@ describe('一账通-通讯录测试', () => {
             return elem.innerHTML;
         });
         await expect(departmentName32).toEqual('cxiangmuzuuser');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
         
     },50000);   
 
@@ -289,6 +289,12 @@ describe('一账通-个人资料测试', () => {
 
         const url = await page.url();
         await expect(url).toMatch('workspace/userinfo');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },30000);
 
     test('TEST_002:验证个人资料页面添加手机号' , async() => {
@@ -316,7 +322,12 @@ describe('一账通-个人资料测试', () => {
         });
         await expect(phoneTitle2).toEqual('修改手机号');
 
-    },30000);
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
+    },50000);
 
     test('TEST_003:验证个人资料页面添加邮箱' , async() => {
         let setaction = new setAction();
@@ -342,6 +353,11 @@ describe('一账通-个人资料测试', () => {
             return elem.innerHTML;
         });
         await expect(emailTitle2).toEqual('修改个人邮箱');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
 
     },30000);
 
@@ -375,6 +391,11 @@ describe('一账通-个人资料测试', () => {
             return elem.innerHTML;
         });
         await expect(personName2).toEqual('ad111');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
 
     },50000);
 
