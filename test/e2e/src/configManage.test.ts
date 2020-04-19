@@ -12,11 +12,7 @@ describe('一账通-配置管理登录页面', () => {
     
     beforeEach( async () => {
         page = await global.browser.newPage()
-        await page.goto(config.url);
-
-        //let useraction = new UserAction();
-       // await useraction.login(page, 'admin', 'admin');
-        
+        await page.goto(config.url);      
 
     },90000)
     afterAll ( async () => {
@@ -32,13 +28,18 @@ describe('一账通-配置管理登录页面', () => {
 
         await page.waitFor(1000);
 
-        const configManageBtn = await page.waitForSelector('a[href="#/admin/config"]');
+        const configManageBtn = await page.waitForSelector('body > div.lg-layout > header > div.header-middle > ul > a:nth-child(4)');
         await configManageBtn.click();
 
         await page.waitFor(2000);
 
         const url = await page.url();
         await expect(url).toMatch('#/admin/config');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
         
     },30000);
 
@@ -53,6 +54,11 @@ describe('一账通-配置管理登录页面', () => {
             return elem.innerHTML;
         });
         await expect(companyName).toEqual('北京龙归科技');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
         
     },30000);
 
@@ -65,6 +71,11 @@ describe('一账通-配置管理登录页面', () => {
 
         const url = await page.url();
         await expect(url).toMatch('#/admin/account/settings');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
         
     },30000);
 

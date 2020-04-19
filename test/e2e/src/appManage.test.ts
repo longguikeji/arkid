@@ -17,7 +17,7 @@ declare var global: any
 describe('一账通-应用管理添加应用', () => {
     let page : Page;
     
-    beforeAll( async () => {
+    beforeEach( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
@@ -47,6 +47,12 @@ describe('一账通-应用管理添加应用', () => {
             return elem.innerHTML;
         });
         await expect(mark).toEqual('携程应用');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },50000);
 
     test('TEST_002:验证添加应用在工作台是否生效' , async() => {
@@ -81,7 +87,7 @@ describe('一账通-应用管理添加应用', () => {
 describe('一账通-应用管理编辑应用', () => {
     let page : Page;
     
-    beforeAll( async () => {
+    beforeEach( async () => {
        // page = await global.browser.newPage()
        // await page.goto(config.url);
         page = await global.browser.newPage()
@@ -112,14 +118,20 @@ describe('一账通-应用管理编辑应用', () => {
         });
         await expect(mark).toEqual('携程应用111');
         await page.waitFor(3000);
+        
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },50000);
 
     test('TEST_002:验证编辑应用在工作台是否生效' , async() => {
         //let useraction = new UserAction();
         //await useraction.login(page, 'admin', 'admin');
 
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+       // await manageBtn.click();
 
         console.log(page.url());
        
@@ -147,7 +159,7 @@ describe('一账通-应用管理编辑应用', () => {
 describe('一账通-应用管理删除应用', () => {
     let page : Page;
     
-    beforeAll( async () => {
+    beforeEach( async () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
@@ -167,11 +179,17 @@ describe('一账通-应用管理删除应用', () => {
             return elem.innerHTML;
         });
         await expect(appName).toEqual('猎聘');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },50000);
 
     test('TEST_002:验证删除应用在工作台是否生效' , async() => {
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
+       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+       // await manageBtn.click();
 
         console.log(page.url());
 
@@ -279,6 +297,12 @@ describe('一账通-应用管理部门的权限', () => {
             return elem.innerHTML;
         });
         await expect(appName).toEqual('猎聘');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
     },30000);
 
 })

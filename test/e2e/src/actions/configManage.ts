@@ -3,10 +3,10 @@ import {Page, launch} from 'puppeteer';
 export class configManageAction{
     
     public async loginSetting(page:Page, companyname:string){
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        //await manageBtn.click();
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
 
-        const configManageBtn = await page.waitForSelector('a[href="#/admin/config"]');
+        const configManageBtn = await page.waitForSelector('body > div.lg-layout > header > div.header-middle > ul > a:nth-child(4)');
         await configManageBtn.click();
 
         const companyNameInput = await page.waitForSelector('input[placeholder="请输入公司名称"]');
@@ -28,12 +28,12 @@ export class configManageAction{
     }
 
     public async urlTest(page:Page){
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
 
         await page.waitFor(1000);
 
-        const configManageBtn = await page.waitForSelector('a[href="#/admin/config"]');
+        const configManageBtn = await page.waitForSelector('body > div.lg-layout > header > div.header-middle > ul > a:nth-child(4)');
         await configManageBtn.click();
 
         await page.waitFor(2000);

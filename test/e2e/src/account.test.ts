@@ -30,15 +30,15 @@ describe('一账通-账号管理测试', () => {
 
         await page.waitFor(2000);
 
-        //const accountBtn = await page.waitForSelector('a[href="#/workspace/account"]');
-        //await accountBtn.click();
-
-        //await page.waitFor(5000);
-
         const url = await page.url();
         await expect(url).toMatch('admin/account');
      
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+
         await page.close();
+
     },30000);
     
     test('TEST_002:验证账号管理页面添加新账号' , async() => {
@@ -50,10 +50,10 @@ describe('一账通-账号管理测试', () => {
         let accountaction = new accountAction();
         await accountaction.addAccount(page, "mxyzz",  "meixinyue", "mei123456", "mei123456", "15822186268", "1821788073@qq.com", "meixinyue11@163.com");         
 
-        page = await global.browser.newPage()
-        await page.goto(config.url);
+        // page = await global.browser.newPage()
+        // await page.goto(config.url);
 
-        await useraction.login(page, 'admin', 'admin'); 
+        // await useraction.login(page, 'admin', 'admin'); 
 
         //const manageBtn2 = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         //await manageBtn2.click();
@@ -118,15 +118,10 @@ describe('一账通-账号管理搜索账号', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        await page.waitFor(1000);
-
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "mei111");          
 
-    },30000)
+    },50000)
     afterAll ( async () => {
         
     })
@@ -142,7 +137,8 @@ describe('一账通-账号管理搜索账号', () => {
         });
 
         await page.close();
-    },30000);
+
+    },50000);
 
 })
 
@@ -162,9 +158,6 @@ describe('一账通-账号管理编辑账号', () => {
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-
-          const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-          await manageBtn.click();
 
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "mei222");
@@ -210,7 +203,7 @@ describe('一账通-账号管理删除账号', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },60000)
+    },80000)
     afterAll ( async () => {
        
     })
@@ -218,11 +211,6 @@ describe('一账通-账号管理删除账号', () => {
     test('TEST_001:验证删除账号' , async() => {
        let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        await page.waitFor(1000);
    
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "bumen3user");
@@ -231,15 +219,19 @@ describe('一账通-账号管理删除账号', () => {
         await accountaction.deleteAccount(page);
 
         await page.waitFor(5000);
-      
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-        //let useraction = new UserAction();
+       // let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
-        //const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
 
         await page.waitFor(3000);
 
@@ -252,7 +244,7 @@ describe('一账通-账号管理删除账号', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();        
-    },60000);
+    },80000);
 
 })
 

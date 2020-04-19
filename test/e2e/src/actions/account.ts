@@ -5,8 +5,8 @@ export class accountAction{
         repassword:string, phone:string, personalemail:string, email:string){
         
         console.log("11111");
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
         
         console.log(page.url());
         await page.waitFor(5000);
@@ -52,95 +52,10 @@ export class accountAction{
 
     }
 
-    public async setAccount(page:Page, did:string, dsecret:string, meskey:string, messecret:string, mesform:string, mesluok:string){
-
-        const setActBtn = await page.waitForSelector('a[href="#/admin/account/settings"]');
-        await setActBtn.click();
-
-        const closeBtn = await page.waitForSelector('.ivu-radio .ivu-radio-input');
-        await closeBtn.click();
-
-        const openBtn = await page.waitForSelector('.ivu-radio.ivu-radio-checked .ivu-radio-input');
-        await openBtn.click();
-
-        const dSetBtn = await page.waitForSelector('.ivu-checkbox .ivu-checkbox-input');
-        await dSetBtn.click();
-
-        const dSet = await page.waitForSelector('.thirdparty-login .content>div:first-child .link');
-        await dSet.click();
-
-        const dIdInput = await page.waitForSelector('input[placeholder="填写 App Id"]');
-        await dIdInput.type(did);
-
-        const dSecretInput = await page.waitForSelector('input[placeholder="填写 App Secret"]');
-        await dSecretInput.type(dsecret);
-
-        const keepBtn = await page.waitForSelector('.footer>button:last-child');
-        await keepBtn.click();
-
-        const phoneLogonBtn = await page.waitForSelector('.ivu-checkbox.ivu-checkbox-checked .ivu-checkbox-input');
-        await phoneLogonBtn.click();
-
-        const messageSet = await page.waitForSelector('.register-type .content>div:last-child .link');
-        await messageSet.click();
-        
-        const mesKeyInput = await page.waitForSelector('input[placeholder="填写 Access Key"]');
-        await mesKeyInput.type(meskey);
-
-        const mesSecretInput = await page.waitForSelector('input[placeholder="填写 Access Secret"]');
-        await mesSecretInput.type(messecret);
-
-        const mesFormInput = await page.waitForSelector('input[placeholder="填写短信模板"]');
-        await mesFormInput.type(mesform);
-
-        const mesLuokInput = await page.waitForSelector('input[placeholder="填写短信落款"]');
-        await mesLuokInput.type(mesluok);
-
-        const mesKeepBtn = await page.waitForSelector('.footer>button:last-child');
-        await mesKeepBtn.click();
-
-        const keepReviseBtn = await page.waitForSelector('.register-submit .ivu-btn.ivu-btn-default');
-        await keepReviseBtn.click();
-
-        const goDisposeBtn = await page.waitForSelector('a[href="#/admin/config"]');
-        await goDisposeBtn.click();
-
-        const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
-        await accountBtn.click();
-
-    }
-
-    public async synchroAccount(page:Page, dkey:string, dsecret:string, dcorpid:string, dcorpsecret:string){
-
-        const synchroAcBtn = await page.waitForSelector('a[href="#/admin/account/thirdparty"]');
-        await synchroAcBtn.click();
-
-        const dAccountBtn = await page.waitForSelector('.third-party-list .name');
-        await dAccountBtn.click();
-
-        const dKeyInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:first-child .ivu-input.ivu-input-default');
-        await dKeyInput.type(dkey);
-
-        const dSecretInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(2) .ivu-input.ivu-input-default');
-        await dSecretInput.type(dsecret);
-
-        const dCorpIdInput = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:nth-child(3) .ivu-input.ivu-input-default');
-        await dCorpIdInput.type(dcorpid);
-
-        const dCorpSecret = await page.waitForSelector('.form.ivu-form.ivu-form-label-right>div:last-child .ivu-input.ivu-input-default');
-        await dCorpSecret.type(dcorpsecret);
-
-        const keepSetBtn = await page.waitForSelector('.btns>button:first-child');
-        await keepSetBtn.click();
-
-        const synchroBtn = await page.waitForSelector('.btns>button:last-child');
-        await synchroBtn.click();
-    }
-
     public async searchAccount(page:Page, search:string){
 
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
 
         await page.waitFor(2000);
 
@@ -169,7 +84,7 @@ export class accountAction{
         const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
         await repwdInput.type(repassword);
 
-        await page.waitFor(2000);
+        await page.waitFor(3000);
 
         const primaryBtn= await page.waitForSelector('div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
         await primaryBtn.click();
