@@ -4,7 +4,7 @@ views for user center
 '''
 import requests
 from rest_framework import generics, status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_200_OK
 from rest_framework.response import Response
@@ -15,6 +15,7 @@ from drf_expiring_authtoken.views import ObtainExpiringAuthToken
 from siteapi.v1.serializers.user import (
     UserWithPermSerializer,
     UserProfileSerializer,
+    UserOrgProfileSerializer,
 )
 from siteapi.v1.serializers.ucenter import (
     UserRegisterSerializer,
@@ -27,7 +28,7 @@ from siteapi.v1.serializers.user import (
     SubAccountSerializer, )
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
-from oneid_meta.models import Perm, User, DingConfig, Invitation, Group, APP, OAuthAPP, UserPerm
+from oneid_meta.models import Perm, User, DingConfig, Invitation, Group, APP, OAuthAPP, UserPerm, OrgMember, Org
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from common.django.drf.paginator import DefaultListPaginator
 
@@ -313,6 +314,24 @@ class UcenterProfileAPIView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class UcenterOrgProfileAPIView(generics.RetrieveAPIView):
+    '''
+    get profile in current org
+    '''
+
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = UserOrgProfileSerializer
+
+    def get_object(self):
+        user = self.request.user
+        org = Org.valid_objects.filter(uuid=self.kwargs['oid']).first()
+        org_member = OrgMember.valid_objects.filter(user=user, owner=org).first()
+        if org_member:
+            return org_member
+        raise NotFound
 
 
 class UcenterMobileAPIView(generics.UpdateAPIView):

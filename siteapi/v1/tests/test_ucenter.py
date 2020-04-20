@@ -436,3 +436,10 @@ class UcenterCustomProfileTestCase(TestCase):
         res = self.client.json_post(reverse('siteapi:user_register'), data=data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json(), {'username': ['invalid']})
+
+
+class UcenterOrgProfileTesCase(TestCase):
+    def test_get_org_profile(self):
+        res = self.client.get(reverse('siteapi:ucenter_org_profile', args=(self.user.current_organization.uuid.hex, )))
+        expect = {'employee_number': '', 'position': '', 'hiredate': None, 'remark': '', 'email': ''}
+        self.assertEqual(res.json(), expect)

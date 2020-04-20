@@ -118,6 +118,8 @@ class Org(BaseModel):
         org = Org.valid_objects.create(**kw)
 
         OrgMember.valid_objects.create(user=owner, owner=org)
+        owner.current_organization = org
+        owner.save(update_fields=['current_organization'])
         CompanyConfig.objects.create(org=org)
 
         oid = org.oid_str
