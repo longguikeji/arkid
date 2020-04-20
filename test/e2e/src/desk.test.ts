@@ -16,7 +16,7 @@ describe('一账通-登录测试', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },80000)
+    },150000)
 
     afterAll ( async () => {
 
@@ -43,7 +43,7 @@ describe('一账通-登录测试', () => {
         });
         await page.close();
 
-    },50000);
+    },80000);
 })
 
 describe('一账通-我的应用信息测试', () => {

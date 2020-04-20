@@ -12,24 +12,24 @@ describe('一账通-测试操作日志', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
+       // let useraction = new UserAction();
+       // await useraction.login(page, 'admin', 'admin');
 
-    },100000)
+    },150000)
     afterAll ( async () => {
        // await page.close();
     })
 
     test('TEST_001:验证操作日志' , async() => {
-       // let useraction = new UserAction();
-       // await useraction.login(page, 'admin', 'admin');
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+    
+        await page.waitFor(2000);
 
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
        
         await page.waitFor(3000);
-
-       // console.log(page.url());
 
         const logBtn = await page.waitForSelector('body > div.lg-layout > header > div.header-middle > ul > a:nth-child(6)');
         await logBtn.click();
@@ -48,31 +48,16 @@ describe('一账通-测试操作日志', () => {
         });
         await expect(loginLogPer).toMatch('ad');
 
-    },50000);
+    },100000);
 
     test('TEST_002:验证查看详细日志' , async() => {
-       // let useraction = new UserAction();
-       // await useraction.login(page, 'admin', 'admin');
-
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
-
-       // console.log(page.url());
-
-       // const logBtn = await page.waitForSelector('.header-middle a[href="#/admin/oplog"]');
-       // await logBtn.click();
-
+      
         await page.waitFor(2000);
 
         const logDetailsBtn = await page.waitForSelector('.ivu-table-tbody>tr>td:last-child>div');
         await logDetailsBtn.click();
         
         await page.waitFor(3000);
-
-       // const loginLog = await page.$eval('div.ivu-modal-body > div > div.left > div.basic > div:nth-child(1) > span.content', elem => {
-       //     return elem.innerHTML;
-       // });
-       // await expect(loginLog).toEqual('登录');
 
         const loginLogPer = await page.$eval('div.ivu-modal-body > div > div.left > div.basic > div:nth-child(2) > span.content', elem => {
             return elem.innerHTML;

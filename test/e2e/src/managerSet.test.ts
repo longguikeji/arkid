@@ -13,10 +13,11 @@ describe('一账通-测试设置子管理员', () => {
     let page : Page;
     
     beforeEach( async () => {
+
         page = await global.browser.newPage()
         await page.goto(config.url);
         
-    },400000)
+    },200000)
     afterAll ( async () => {
         //await page.close();
     })
@@ -42,7 +43,8 @@ describe('一账通-测试设置子管理员', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },30000);
+        
+    },100000);
 
     test('TEST_002:验证设置子管理员是否生效' , async() => {
         let useraction = new UserAction();
@@ -64,37 +66,13 @@ describe('一账通-测试设置子管理员', () => {
         const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(managerName).toEqual('bumen3user');
+        await expect(managerName).toEqual('mei111');
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },310000);
-
-    test('TEST_003:验证设置子管理员的管理范围是否生效' , async() => {
-        let useraction = new UserAction();
-        await useraction.login(page, 'bumen3user', 'bumen3user');
-
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        const groupBtn = await page.waitForSelector('.header-middle a[href="#/admin/group"]');
-        await groupBtn.click();
-
-        await page.waitFor(3000);
-
-        const groupName = await page.$eval('.ui-tree-item.active>span>span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(groupName).toContain('部门三 ( 1 人 )');
-
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-
-    },30000);
+    },100000);
 
 })
 
@@ -115,44 +93,31 @@ describe('一账通-测试设置子管理员a', () => {
         await useraction.login(page, 'admin', 'admin');
 
         let managersettingaction = new managerSettingAction();
-        await managersettingaction.managerSettinga(page, "部门一");
-
-        // page = await global.browser.newPage();
-        // await page.goto(config.url);
-
-        // await useraction.login(page, 'admin', 'admin');
-
-        // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        // await manageBtn.click();
-
-        // await page.waitFor(2000);
-
-        // const managerBtn = await page.waitForSelector('a[href="#/admin/manager"]');
-        // await managerBtn.click();
+        await managersettingaction.managerSettinga(page);
 
         await page.waitFor(3000);
 
         const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(managerName).toEqual('mei111');
+        await expect(managerName).toEqual('bumen3user');
    
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
         
-    },200000);
+    },400000);
 
     test('TEST_001:验证设置子管理员添加账号是否生效' , async() => {
         let useraction = new UserAction();
-        await useraction.login(page, 'mei111', 'mei111');
+        await useraction.login(page, 'bumen3user', 'bumen3user');
 
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
         await groupaction.addUser(page, "mei111add", "mei111add", "mei111add", "mei111add");
         
-        const userName = await page.$eval('.ivu-table-tbody>tr>td:nth-child(2)>div>span', elem => {
+        const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2)>div>span', elem => {
             return elem.innerHTML;
         });
         await expect(userName).toEqual('mei111add');
@@ -195,21 +160,9 @@ describe('一账通-测试设置子管理员b', () => {
     test('TEST_001:验证设置子管理员是否生效' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
+
         let managersettingaction = new managerSettingAction();
-        await managersettingaction.managerSettingb(page, "人力");
-
-        // page = await global.browser.newPage()
-        // await page.goto(config.url);
-
-        // await useraction.login(page, 'admin', 'admin');
-
-        // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        // await manageBtn.click();
-
-        // await page.waitFor(2000);
-
-        // const managerBtn = await page.waitForSelector('a[href="#/admin/manager"]');
-        // await managerBtn.click();
+        await managersettingaction.managerSettingb(page);
 
         await page.waitFor(3000);
 
@@ -222,7 +175,7 @@ describe('一账通-测试设置子管理员b', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },200000);
+    },400000);
 
     test('TEST_002:验证设置子管理员添加应用是否生效' , async() => {
         let useraction = new UserAction();
@@ -273,10 +226,10 @@ describe('一账通-测试设置子管理员b', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },30000);
+    },50000);
 
 })
-
+/*
 describe('一账通-测试设置子管理员c', () => {
     let page : Page;
     
@@ -314,9 +267,6 @@ describe('一账通-测试设置子管理员c', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'mei333', 'mei333');
  
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
- 
         let configmanageaction = new configManageAction();
         await configmanageaction.loginSetting(page, "111");
 
@@ -351,7 +301,7 @@ describe('一账通-测试设置子管理员d', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },500000)
+    },600000)
     afterAll ( async () => {
         //await page.close();
     })
@@ -443,7 +393,7 @@ describe('一账通-测试编辑子管理员', () => {
         });
         await page.close();
 
-    },400000)
+    },500000)
     afterAll ( async () => {
         //await page.close();
     })
@@ -490,7 +440,7 @@ describe('一账通-测试删除子管理员', () => {
         let managersettingaction = new managerSettingAction();
         await managersettingaction.deleteManager(page);
 
-    },400000)
+    },100000)
     afterAll ( async () => {
         //await page.close();
     })
@@ -509,4 +459,4 @@ describe('一账通-测试删除子管理员', () => {
 
     },80000);
 
-})
+})*/
