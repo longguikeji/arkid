@@ -70,21 +70,26 @@ export class accountAction{
 
         const reviseAccount = await page.waitForSelector('.ivu-table-cell>div>span:first-child');
         await reviseAccount.click();
+ 
+        await page.waitFor(3000);
 
         const nameInput = await page.waitForSelector('input[placeholder="请输入 姓名"]');
-        
         await nameInput.type(name);
 
         const pwdBtn = await page.waitForSelector('.ivu-form-item-content .ivu-btn.ivu-btn-primary');
         await pwdBtn.click();
+        
+        await page.waitFor(2000);
 
         const pwdInput = await page.waitForSelector('input[placeholder="请添加新登录密码"]');
         await pwdInput.type(password);
 
+        await page.waitFor(2000);
+
         const repwdInput = await page.waitForSelector('input[placeholder="再次输入登录密码"]');
         await repwdInput.type(repassword);
 
-        await page.waitFor(3000);
+        await page.waitFor(5000);
 
         const primaryBtn= await page.waitForSelector('div.ivu-modal-footer > div > button.ivu-btn.ivu-btn-primary');
         await primaryBtn.click();

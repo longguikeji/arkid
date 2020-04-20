@@ -24,7 +24,7 @@ describe('一账通-应用管理添加应用', () => {
         //let useraction = new UserAction();
         //await useraction.login(page, 'admin', 'admin');
 
-    },100000)
+    },200000)
     afterAll ( async () => {
         //await page.close();
     })
@@ -53,7 +53,7 @@ describe('一账通-应用管理添加应用', () => {
         });
         await page.close();
 
-    },50000);
+    },100000);
 
     test('TEST_002:验证添加应用在工作台是否生效' , async() => {
         let useraction = new UserAction();
@@ -96,7 +96,7 @@ describe('一账通-应用管理编辑应用', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
-    },60000)
+    },100000)
     afterEach ( async () => {
        // await page.close();
     })
@@ -152,7 +152,7 @@ describe('一账通-应用管理编辑应用', () => {
         });
         await page.close();
 
-    },30000);
+    },50000);
 
 })
 
@@ -208,7 +208,7 @@ describe('一账通-应用管理删除应用', () => {
     },30000);
 
 })
-
+/*
 describe('一账通-应用管理账号的权限', () => {
     let page : Page;
     
@@ -305,4 +305,4 @@ describe('一账通-应用管理部门的权限', () => {
 
     },30000);
 
-})
+})*/

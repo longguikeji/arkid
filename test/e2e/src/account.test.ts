@@ -13,7 +13,7 @@ describe('一账通-账号管理测试', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },90000)
+    },200000)
     afterEach ( async () => {
        
     })
@@ -39,7 +39,7 @@ describe('一账通-账号管理测试', () => {
 
         await page.close();
 
-    },30000);
+    },80000);
     
     test('TEST_002:验证账号管理页面添加新账号' , async() => {
         let useraction = new UserAction();
@@ -203,15 +203,9 @@ describe('一账通-账号管理删除账号', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },80000)
-    afterAll ( async () => {
-       
-    })
-
-    test('TEST_001:验证删除账号' , async() => {
-       let useraction = new UserAction();
+        let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-   
+
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "bumen3user");
         console.log("search bumen3user");
@@ -219,15 +213,23 @@ describe('一账通-账号管理删除账号', () => {
         await accountaction.deleteAccount(page);
 
         await page.waitFor(5000);
+
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
 
+    },80000)
+    afterAll ( async () => {
+       
+    })
+
+    test('TEST_001:验证删除账号' , async() => {
+      
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-       // let useraction = new UserAction();
+        let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
@@ -243,7 +245,8 @@ describe('一账通-账号管理删除账号', () => {
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
         });
-        await page.close();        
+        await page.close();     
+   
     },80000);
 
 })

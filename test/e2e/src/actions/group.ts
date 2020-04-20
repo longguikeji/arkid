@@ -186,7 +186,7 @@ export class groupAction{
         const removeGroupBtn = await page.waitForSelector('.ui-user-list .flex-row.flex-auto>button:nth-child(5)');
         await removeGroupBtn.click();
 
-        await page.waitFor(2000);
+        await page.waitFor(3000);
 
     }
 
@@ -229,11 +229,11 @@ export class groupAction{
         const directUserInput = await page.waitForSelector('div.ivu-drawer-wrap.ui-edit-group > div > div > div > form > div.ivu-form-item.ivu-form-item-required > div > div > input');
         await directUserInput.type(groupName);
 
-        const visibleBtn = await page.waitForSelector('.ivu-select-placeholder');
-        await visibleBtn.click();
+        // const visibleBtn = await page.waitForSelector('.ivu-select-placeholder');
+        // await visibleBtn.click();
 
-        const hiddenBtn = await page.waitForSelector('.ivu-select-dropdown-list>li:nth-child(4)');
-        await hiddenBtn.click();
+        // const hiddenBtn = await page.waitForSelector('.ivu-select-dropdown-list>li:nth-child(4)');
+        // await hiddenBtn.click();
 
         const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addBtn.click();
