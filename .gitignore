@@ -148,3 +148,10 @@ djangosaml2config/saml2_config/*.xml
 
 # sql
 test/data/test_*.sql
+
+
+# saml
+idp_metadata.xml
+
+# docker-compose
+docker-compose/db

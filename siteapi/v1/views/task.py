@@ -12,7 +12,8 @@ from oneid.permissions import CustomPerm, IsAdminUser, IsManagerUser
 from siteapi.v1.serializers.user import UserListSerializer
 from siteapi.v1.serializers.task import TaskResultSerializer
 from docs.projects.noah.init import entrypoint as init_noah
-from tasksapp.tasks import import_ding
+from tasksapp.tasks import import_ding, override_ding
+from oneid_meta.models import DingConfig
 
 
 class ImportDingAPIView(generics.RetrieveUpdateAPIView):
@@ -24,6 +25,10 @@ class ImportDingAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = UserListSerializer
 
     def get(self, request, *args, **kwargs):
+        ding_config = DingConfig.get_current()
+        ding_config.sync_state = 'pull'
+        ding_config.save()
+
         task = import_ding.delay()
         return Response({'task_id': task.task_id, 'task_msg': 'import ding'})
 
@@ -34,6 +39,16 @@ class OverrideDingAPIView(generics.RetrieveUpdateAPIView):
     '''
 
     permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_account_sync'))]
+
+    serializer_class = UserListSerializer
+
+    def get(self, request, *args, **kwargs):
+        ding_config = DingConfig.get_current()
+        ding_config.sync_state = 'push'
+        ding_config.save()
+
+        task = override_ding.delay()
+        return Response({'task_id': task.task_id, 'task_msg': 'override ding'})
 
 
 class InitNoahAPIView(generics.RetrieveUpdateAPIView):

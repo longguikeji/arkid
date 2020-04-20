@@ -1,7 +1,7 @@
 '''
 serializer for config
 '''
-# pylint: disable=unused-import
+# pylint: disable=unused-import, too-many-lines
 import re
 from django.contrib.sites.models import Site
 from django.db import transaction
@@ -38,9 +38,10 @@ class CompanyConfigSerializer(DynamicFieldsModelSerializer):
         )
 
     def validate(self, attrs):
-        color = attrs.get('color')
-        if not re.match(r'[0-9a-fA-F]{6}', color):
-            raise ValidationError('color invalid')
+        color = attrs.get('color', None)
+        if color:
+            if not re.match(r'[0-9a-fA-F]{6}', color):
+                raise ValidationError('color invalid')
         return attrs
 
 
@@ -75,11 +76,19 @@ class SMSConfigSerializer(DynamicFieldsModelSerializer):    # pylint: disable=mi
             'access_key',
             'access_secret',
             'signature',
+            'signature_i18n',
             'template_code',
             'template_register',
             'template_reset_pwd',
             'template_activate',
             'template_reset_mobile',
+            'template_login',
+            'template_code_i18n',
+            'template_register_i18n',
+            'template_reset_pwd_i18n',
+            'template_activate_i18n',
+            'template_reset_mobile_i18n',
+            'template_login_i18n',
             'is_valid',
         )
 
