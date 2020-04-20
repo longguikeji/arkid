@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 '''
 schema for GlobalConfig
 '''
@@ -74,7 +75,17 @@ class DingConfig(BaseModel, SingletonConfigMixin):
     '''
     钉钉配置信息
     '''
+    SYNC_CHOICES = (
+        ('pull', '拉取'),
+        ('push', '推送'),
+        ('', '断开'),
+    )
     site = models.OneToOneField(Site, related_name='ding_config', on_delete=models.CASCADE)
+    sync_state = models.CharField(max_length=128,
+                                  choices=SYNC_CHOICES,
+                                  blank=False,
+                                  default='pull',
+                                  verbose_name='同步钉钉账户方向')
 
     app_key = models.CharField(max_length=255, blank=True, default="", verbose_name="APP KEY")
     app_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="APP SECRET")
@@ -235,15 +246,37 @@ class SMSConfig(BaseModel, SingletonConfigMixin):
 
     access_key = models.CharField(max_length=255, default="", blank=True, verbose_name='AccessKey')
     access_secret = models.CharField(max_length=255, default="", blank=True, verbose_name='AccessSecret')
+
     signature = models.CharField(max_length=64, default='', blank=True, verbose_name='签名')
+    signature_i18n = models.CharField(max_length=64, default='', blank=True, verbose_name='国际-签名')
 
     template_code = models.CharField(max_length=255, default='', blank=True, verbose_name='验证码通用文案模板ID')
     template_register = models.CharField(max_length=255, default='', blank=True, verbose_name='注册文案模板ID')
     template_reset_pwd = models.CharField(max_length=255, default='', blank=True, verbose_name='重置密码文案模板ID')
     template_activate = models.CharField(max_length=255, default='', blank=True, verbose_name='用户激活文案模板ID')
     template_reset_mobile = models.CharField(max_length=255, default='', blank=True, verbose_name='用户重置手机文案模板ID')
+    template_login = models.CharField(max_length=255, default='', blank=True, verbose_name='登录文案模板ID')
+
+    template_code_i18n = models.CharField(max_length=255, default='', blank=True, verbose_name='国际-验证码通用文案模板ID')
+    template_register_i18n = models.CharField(max_length=255, default='', blank=True, verbose_name='国际-注册文案模板ID')
+    template_reset_pwd_i18n = models.CharField(max_length=255, default='', blank=True, verbose_name='国际-重置密码文案模板ID')
+    template_activate_i18n = models.CharField(max_length=255, default='', blank=True, verbose_name='国际-用户激活文案模板ID')
+    template_reset_mobile_i18n = models.CharField(max_length=255,
+                                                  default='',
+                                                  blank=True,
+                                                  verbose_name='国际-用户重置手机文案模板ID')
+    template_login_i18n = models.CharField(max_length=255, default='', blank=True, verbose_name='国际-登录文案模板ID')
 
     is_valid = models.BooleanField(default=False, blank=True, verbose_name='配置是否有效')
+
+    def get_template_code(self, key="", i18n=False):
+        '''
+        get template code by key
+        '''
+        if i18n:
+            return getattr(self, f"template_{key}_i18n")
+
+        return getattr(self, f"template_{key}")
 
     def check_valid(self):
         '''

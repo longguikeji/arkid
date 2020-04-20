@@ -9,6 +9,8 @@ from django.db.utils import IntegrityError
 from django.conf import settings
 
 from oauth2_provider.models import Application as OAuthApplication
+from oauth2_provider.models import OidcApplication
+
 from common.django.model import BaseModel
 from oneid_meta.models import Perm
 
@@ -270,13 +272,31 @@ class HTTPAPP(BaseModel):
         }]
 
 
-class OIDCAPP():
+class OIDCAPP(OidcApplication):
     '''
     OIDC client
-    TODO
     '''
     class Meta:    # pylint: disable=missing-docstring
-        abstract = True
+        proxy = True
+
+    @property
+    def more_detail(self):
+        '''
+        http 接口相关信息，用于展示
+        '''
+        return [{
+            'name': '认证地址',
+            'key': 'auth_url',
+            'value': settings.BASE_URL + '/oauth/authorize/',
+        }, {
+            'name': '获取token地址',
+            'key': 'token_url',
+            'value': settings.BASE_URL + '/oauth/token/',
+        }, {
+            'name': '身份信息地址',
+            'key': 'profile_url',
+            'value': settings.BASE_URL + '/oauth/userinfo/'
+        }]
 
 
 class SAMLAPP(BaseModel):

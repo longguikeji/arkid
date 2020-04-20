@@ -6,10 +6,10 @@ Login Success as admin
 </form>
 <script src="https://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
-    const oneid_base_url = 'http://127.0.0.1:8080'
+    const oneid_base_url = 'http://192.168.31.62:8000'
     const urlParams = new URLSearchParams(window.location.search);
-    var redirect_url = urlParams.get('next');
-    next = oneid_base_url + redirect_url
+    const redirect_url = urlParams.get('next');
+    let next = oneid_base_url + redirect_url;
     next = next.replace('_authorize', 'authorize', 1)
 
     $('#submit').click(function(){
@@ -26,6 +26,8 @@ Login Success as admin
                 if (urlParams.get('oneid_token')){
                     next = next.replace('oneid_token', '_oneid_token');
                 }
+                next = next + "&oneid_token=" + token
+                console.log("next is" + next)
                 window.location.href = next;
             }
         })

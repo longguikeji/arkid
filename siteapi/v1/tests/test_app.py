@@ -73,6 +73,64 @@ case.reg(
         'saml_app': None,
         'auth_protocols': ['OAuth 2.0', 'LDAP', 'HTTP'],
     })
+
+MAX_APP_ID = 2
+
+APP_1 = {'name': 'demo'}
+
+APP_1_EXCEPT = {
+    'app_id': MAX_APP_ID + 1,
+    'uid': 'demo',
+    'name': 'demo',
+    'logo': '',
+    'index': '',
+    'remark': '',
+    'oauth_app': None,
+    'oidc_app': None,
+    'http_app': None,
+    'saml_app': None,
+    'ldap_app': None,
+    'allow_any_user': False,
+    'auth_protocols': [],
+}
+
+APP_2 = {
+    'uid': 'test_uid',
+    'name': 'test_name',
+    'remark': 'test_remark',
+    'allow_any_user': True,
+    'oauth_app': {
+        'redirect_uris': 'http://localhost/callback'
+    },
+    'ldap_app': {},
+    'http_app': {},
+}
+
+APP_2_EXCEPT = {
+    'app_id': MAX_APP_ID + 2,
+    'uid': 'test_uid',
+    'name': 'test_name',
+    'logo': '',
+    'index': '',
+    'remark': 'test_remark',
+    'allow_any_user': True,
+    'oauth_app': {
+        'redirect_uris': 'http://localhost/callback',
+        'client_type': 'confidential',
+        'authorization_grant_type': 'authorization-code',
+        'more_detail': [],
+    },
+    'oidc_app': None,
+    'ldap_app': {
+        'more_detail': []
+    },
+    'http_app': {
+        'more_detail': []
+    },
+    'saml_app': None,
+    'auth_protocols': ['OAuth 2.0', 'LDAP', 'HTTP'],
+}
+
 APP_3 = {
     'uid': 'test_app_uid',
     'name': 'test_app_name',
@@ -277,17 +335,37 @@ class APPTestCase(TestCase):
         del res['oauth_app']['client_secret']
         del res['oauth_app']['client_id']
         del res['ldap_app']
+
         expect = case.get_output('app1')
         del expect['ldap_app']
         expect['logo'] = 'logo'
         expect['index'] = 'index'
         expect['remark'] = 'changed'
         expect['auth_protocols'] = ['OAuth 2.0', 'LDAP']
-        expect['oauth_app'] = {
-            'redirect_uris': 'http://localhost/callback',
-            'client_type': 'confidential',
-            'authorization_grant_type': 'authorization-code',
-            'more_detail': [],
+        # expect['oauth_app'] = {
+        #     'redirect_uris': 'http://localhost/callback',
+        #     'client_type': 'confidential',
+        #     'authorization_grant_type': 'authorization-code',
+        #     'more_detail': [],
+
+        expect = {
+            'app_id': MAX_APP_ID + 1,
+            'allow_any_user': False,
+            'uid': 'demo',
+            'name': 'demo',
+            'logo': 'logo',
+            'index': 'index',
+            'remark': 'changed',
+            'oauth_app': {
+                'redirect_uris': 'http://localhost/callback',
+                'client_type': 'confidential',
+                'authorization_grant_type': 'authorization-code',
+                'more_detail': [],
+            },
+            'oidc_app': None,
+            'http_app': None,
+            'saml_app': None,
+            'auth_protocols': ['OAuth 2.0', 'LDAP'],
         }
         self.assertEqual(res, expect)
         self.assertTrue(OAuthAPP.objects.filter(app__uid=uid).exists())

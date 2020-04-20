@@ -60,6 +60,7 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oneid.authentication.CustomExpiringTokenAuthentication',
+        # 'oneid.authentication.SUDOExpiringTokenAuthentication',
         'oneid.authentication.HeaderArkerBaseAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
@@ -316,3 +317,5 @@ if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
 
 UPLOADFILES_PATH = BASE_DIR + '/upload/'
+
+DINGDING_APP_VERSION = 2

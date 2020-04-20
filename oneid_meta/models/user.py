@@ -16,11 +16,12 @@ import jsonfield
 from rest_framework.exceptions import ValidationError
 from common.django.model import BaseModel, IgnoreDeletedManager
 from oneid_meta.models.config import CustomField
-from oneid_meta.models.group import GroupMember
-from oneid_meta.models.dept import DeptMember
+from oneid_meta.models.group import GroupMember, Group
+from oneid_meta.models.dept import DeptMember, Dept
 from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
+from infrastructure.utils.sms import is_mobile, is_native_mobile, is_i18n_mobile, is_cn_mobile, CN_MOBILE_PREFIX
 
 
 class IsolatedManager(IgnoreDeletedManager):
@@ -54,6 +55,8 @@ class User(BaseModel, PermOwnerMixin):
     name = models.CharField(max_length=255, blank=True, default='', verbose_name='姓名')
     private_email = models.CharField(max_length=255, blank=True, default='', verbose_name='私人邮箱')    # 仅用于找回密码
     mobile = models.CharField(max_length=64, blank=True, default='', verbose_name='手机')
+    # 支持 `18812341234`， `+86 18812341234` 两种格式
+
     gender = models.IntegerField(choices=GENDER_CHOICES, default=0, verbose_name='性别')
     avatar = models.CharField(max_length=1024, blank=True, default='', verbose_name='头像')
     is_boss = models.BooleanField(default=False, verbose_name='是否为主管理员')
@@ -74,11 +77,31 @@ class User(BaseModel, PermOwnerMixin):
             value = getattr(self, unique_feilds)
             if not value:
                 continue
-            _kwargs = {unique_feilds: value}
-            if User.valid_objects.filter(**_kwargs).exclude(pk=self.pk).exists():
+
+            existed = False
+
+            if unique_feilds == 'mobile':
+                if not is_mobile(value):
+                    raise ValidationError({unique_feilds: ['invalid']})
+
+                if is_i18n_mobile(value) and is_cn_mobile(value):
+                    existed = User.valid_objects.filter(
+                        models.Q(mobile=value)
+                        | models.Q(mobile=value.replace(CN_MOBILE_PREFIX, ""))).exclude(pk=self.pk).exists()    # pylint: disable=no-member
+                elif is_native_mobile(value):
+                    existed = User.valid_objects.filter(
+                        models.Q(mobile=value)
+                        | models.Q(mobile=CN_MOBILE_PREFIX + value)).exclude(pk=self.pk).exists()
+                else:
+                    existed = User.valid_objects.filter(mobile=value).exclude(pk=self.pk).exists()
+
+            else:
+                _kwargs = {unique_feilds: value}
+                existed = User.valid_objects.filter(**_kwargs).exclude(pk=self.pk).exists()
+
+            if existed:
                 msg = "UNIQUE constraint failed: " + \
-                    f"oneid_meta.User UniqueConstraint(fields=['{unique_feilds}'], condition=Q(is_del='False')"
-                # raise IntegrityError(msg)
+                        f"oneid_meta.User UniqueConstraint(fields=['{unique_feilds}'], condition=Q(is_del='False')"
                 print(msg)
                 raise ValidationError({unique_feilds: ['existed']})
 
@@ -139,6 +162,32 @@ class User(BaseModel, PermOwnerMixin):
         :rtype: list of Group
         '''
         return [item.owner for item in GroupMember.valid_objects.filter(user=self)]
+
+    @property
+    def ding_depts(self):
+        '''
+        用户所在部门中与钉钉同步的部分
+        :rtype: list of Group
+        '''
+        root_dept = Dept.objects.filter(uid='root').first()
+        bind_ding_dept = []
+        for dept in self.depts:
+            if dept.if_belong_to_dept(root_dept, 1):
+                bind_ding_dept.append(dept)
+        return bind_ding_dept
+
+    @property
+    def ding_groups(self):
+        '''
+        用户所在角色中与钉钉同步的部分
+        :rtype: list of Group
+        '''
+        role_group = Group.objects.filter(uid='role').first()
+        bind_ding_group = []
+        for group in self.groups:
+            if group.if_belong_to_group(role_group, 1):
+                bind_ding_group.append(group)
+        return bind_ding_group
 
     @property
     def depts(self):

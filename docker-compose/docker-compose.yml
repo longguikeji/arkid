@@ -16,7 +16,7 @@ services:
       - ${WORKSPACE}/portal.conf:/etc/nginx/conf.d/default.conf
 
   be:
-    image: longguikeji/arkid:1.1.1
+    image: longguikeji/arkid:1.2.1
     container_name: ${INSTANCE}-be
     restart: always
     networks:
@@ -28,7 +28,7 @@ services:
       - ${WORKSPACE}/be/upload:/var/oneid/upload
 
   fe:
-    image: longguikeji/arkid-fe:1.1.1
+    image: longguikeji/arkid-fe:1.2.0
     container_name: ${INSTANCE}-fe
     restart: always
     networks:
@@ -51,7 +51,7 @@ services:
       - "--collation-server=utf8_unicode_ci"
 
   ldap:
-    image: longguikeji/ark-sql-ldap:1.0.0
+    image: longguikeji/ark-sql-ldap:1.2.0
     container_name: ${INSTANCE}-ldap
     restart: always
     networks:
