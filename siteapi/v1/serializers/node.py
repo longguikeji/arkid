@@ -69,10 +69,10 @@ class NodeSerialzierMixin():
             "info": {},
             "users": [{"user_id": 1, "username": "a"}]
         }
-        这里按user_id统计
+        这里按 username 统计
         TODO: implent by to_present...
         '''
-        users = set(user['user_id'] for user in data['users'])
+        users = set(user['username'] for user in data['users'])
         for sub_data in data[self.children_name]:
             users = users | self.aggregate_headcount(sub_data)
         data['headcount'] = len(users)

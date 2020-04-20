@@ -16,13 +16,13 @@ from oneid_meta.models import (
     Group,
     GroupPerm,
     GroupMember,
+    Org,
 )
 from scripts.flush_perm import flush_all_perm
 
 MAX_PERM_ID = 2
 
 PERM_DATA = {
-    'perm_id': MAX_PERM_ID + 1,
     'uid': 'app_app1_denglu',
     'name': '登录',
     'remark': '',
@@ -34,7 +34,6 @@ PERM_DATA = {
 PERM_UID = 'app_app1_denglu'
 
 PERM_WITH_OWNERS = {
-    'perm_id': MAX_PERM_ID + 1,
     'uid': 'app_app1_denglu',
     'name': '登录',
     'remark': '',
@@ -115,7 +114,6 @@ class PermTestCase(TestCase):
         # update
         res = self.client.json_patch(reverse('siteapi:perm_detail', args=('app_app1_denglu', )), data={'name': 'new'})
         expect = {
-            'perm_id': MAX_PERM_ID + 1,
             'uid': 'app_app1_denglu',
             'name': 'new',
             'remark': '',
@@ -246,6 +244,10 @@ class PermTestCase(TestCase):
 
 class PermOwnerTestCase(TestCase):
     def setUp(self):
+
+        default_org = Org.valid_objects.first()
+        if default_org:
+            default_org.delete()
         super().setUp()
         self.client.json_post(reverse('siteapi:perm_list'), data={'scope': 'app1', 'name': '登录'})
         dept_perm = DeptPerm.objects.filter(perm__uid=PERM_UID).first()
@@ -273,7 +275,6 @@ class PermOwnerTestCase(TestCase):
             'previous':
             None,
             'results': [{
-                'perm_id': 3,
                 'uid': 'app_app1_denglu',
                 'name': '登录',
                 'remark': '',
@@ -490,7 +491,6 @@ class PermSourceTestCase(TestCase):
         res = self.client.get(reverse('siteapi:user_perm_detail', args=('test', perm_uid)))
         expect = {
             'perm': {
-                'perm_id': 3,
                 'uid': 'app_app1_denglu',
                 'name': '登录',
                 'remark': '',

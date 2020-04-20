@@ -4,6 +4,7 @@ schema of Orgs
 # pylint: disable=invalid-name
 from uuid import uuid4
 from django.db import models
+from django.utils import timezone
 from common.django.model import BaseModel, BaseOrderedModel
 
 
@@ -35,6 +36,7 @@ class Org(BaseModel):
     def oid(self):
         '''
         get oid
+        TODO: refactor: oid 应该为 string 类型
         '''
         return self.uuid
 
@@ -148,7 +150,7 @@ class Org(BaseModel):
         yield from traverse_dept(self.dept)
         yield from traverse_group(self.group)
 
-    def remove(self, user):
+    def remove_member(self, user):
         '''
         remove user from org
         '''
@@ -158,17 +160,52 @@ class Org(BaseModel):
         for gm in GroupMember.valid_objects.filter(user=user):
             org = gm.owner.org
             if org and org.uuid == self.uuid:
-                gm.delete()
+                gm.kill()
         for dm in DeptMember.valid_objects.filter(user=user):
             org = dm.owner.org
             if org and org.uuid == self.uuid:
-                dm.delete()
+                dm.kill()
+        om = OrgMember.valid_objects.filter(user=user, owner=self).first()
+        if om:
+            om.kill()
+
+    def add_member(self, user):
+        '''
+        将 user 加入到组织
+        不负责更具体的 node的加入 -> TODO: 需要负责
+        '''
+        org_member, created = OrgMember.valid_objects.get_or_create(user=user, owner=self)
+        if created:
+            org_member.hiredate = timezone.now()
+
+    def get_user_role(self, user):
+        '''
+        获取 user 在该组织中的角色，互斥
+        - owner - 管理员，创建者
+        - manager - 子管理员
+        - member - 普通成员
+        - "" - 不属于该组织
+        '''
+        if user == self.owner:
+            return 'owner'
+        if 1 == 2:    # @TODO
+            return 'manager'
+        if OrgMember.valid_objects.filter(user=user, owner=self).exists():
+            return 'member'
+        return ''
+
+    def has_user(self, user):
+        '''
+        判断一个用户是否属于该组织
+        '''
+        return OrgMember.valid_objects.filter(user=user, owner=self).exists()
 
 
 class OrgMember(BaseOrderedModel):
     '''
-    组织与用户的从属关系
-    这里部门仅收录末端部门
+    组织与用户的关系
+    - 记录用户在组织内部特有的信息
+    - 记录组织与用户的从属关系，会作为用户是否属于某组织的直接判断依据。-> 注意维护
     '''
 
     user = models.ForeignKey('oneid_meta.User', on_delete=models.PROTECT)
@@ -177,6 +214,7 @@ class OrgMember(BaseOrderedModel):
     position = models.CharField(max_length=255, blank=True, default='', verbose_name='职位')
     hiredate = models.DateTimeField(blank=True, null=True, verbose_name='入职时间')
     remark = models.CharField(max_length=512, blank=True, default='', verbose_name='备注')
+    email = models.CharField(max_length=255, blank=True, default='', verbose_name='企业邮箱')
 
     class Meta:    # pylint: disable=missing-docstring
         unique_together = ('user', 'owner')

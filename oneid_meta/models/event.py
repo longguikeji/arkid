@@ -19,7 +19,6 @@ class InvitationActiveManager(IgnoreDeletedManager):
     '''
     ignore expired
     '''
-
     def get_queryset(self):
         '''
         filter && compare expired
@@ -48,6 +47,7 @@ class Invitation(BaseModel):
                                 related_name='invitee',
                                 verbose_name='被邀请者',
                                 on_delete=models.CASCADE)
+    org = models.ForeignKey('oneid_meta.Org', on_delete=models.CASCADE, null=True, verbose_name='组织')
     duration = models.DurationField(default=datetime.timedelta(days=1), verbose_name='有效时长')
     is_accepted = models.BooleanField(default=False, verbose_name='是否确认接受邀请')
 

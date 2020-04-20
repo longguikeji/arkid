@@ -81,9 +81,10 @@ urlpatterns = [
     url(r'^dept/(?P<uid>[\w|-]+)/dept/$', dept_views.DeptChildDeptAPIView.as_view(), name='dept_child_dept'),
     url(r'^dept/(?P<uid>[\w|-]+)/user/$', dept_views.DeptChildUserAPIView.as_view(), name='dept_child_user'),
     # org
-    url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_create'),
+    url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
+    url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_list'),
     url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailAPIView.as_view(), name='org_detail'),
-    url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListCreateDestroyAPIView.as_view(), name='org_user'),
+    url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListUpdateAPIView.as_view(), name='org_user_list'),
     url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'),
     # perm
     url(r'^perm/$', perm_views.PermListCreateAPIView.as_view(), name='perm_list'),
@@ -146,10 +147,7 @@ urlpatterns = [
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/$', node_views.UcenterNodeDetailAPIView.as_view(), name='ucenter_node_detail'),
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/tree/$', node_views.UcenterNodeTreeAPIView.as_view(),
         name='ucenter_node_tree'),
-    # ucenter org
-    url(r'^ucenter/org/$', org_views.UcenterCurrentOrgAPIView.as_view(), name='ucenter_org'),
-    url(r'^ucenter/orgs/$', org_views.UcenterOrgListAPIView.as_view(), name='ucenter_org_list'),
-    url(r'^ucenter/orgs/owned/$', org_views.UcenterOwnOrgListAPIView.as_view(), name='ucenter_own_org_list'),
+
     # ucenter app
     url(r'^ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'),
     # ucenter user
@@ -199,7 +197,9 @@ urlpatterns = [
     url(r'^migration/user/csv/import/$', migrate_views.UserCSVImportView.as_view(), name='import_user'),
 
     # events
-    url(r'^invitation/user/(?P<username>[\w]+)/', event_views.InviteUserCreateAPIView.as_view(), name='invite_user'),
+    url(r'^invitation/user/(?P<username>[\w]+)/$', event_views.InviteUserCreateAPIView.as_view(), name='invite_user'),
+    url(r'^org/(?P<oid>[\w|-]+)/invitation/$', org_views.OrgInvitationLinkAPIView.as_view(), name='org_invite_link'),
+    url(r'^org/(?P<oid>[\w|-]+)/invitation/(?P<key>[\w|-]+)/$', org_views.OrgInvitationLinkDetailAPIView.as_view(), name='org_invite_link_detail'),
     # statistics
     url(r'^statistics/user_statistic/$', UserStatisticView.as_view(), name='user_statistic'),
 ]

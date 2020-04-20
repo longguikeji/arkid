@@ -4,12 +4,13 @@ tests for api abort org
 
 # pylint: disable=missing-docstring, invalid-name, too-many-locals, too-many-statements
 
-from uuid import uuid4
+import uuid
+from unittest import mock
+
 from django.urls import reverse
-from oneid_meta.models import User, Dept, Group, GroupMember, Org
+from oneid_meta.models import User, Org
 
 from siteapi.v1.tests import TestCase
-from siteapi.v1.serializers.org import OrgSerializer
 
 ORG_DATA = [
     {
@@ -25,312 +26,223 @@ ILL_FORMED_DATA = {'name2': '组织3'}
 
 class OrgTestCase(TestCase):
     def setUp(self):
-        super(OrgTestCase, self).setUp()
-        self._client = self.client
+        super().setUp()
 
-        for org in ORG_DATA:
-            for o in Org.valid_objects.filter(name=org['name']):
-                o.kill()
+        self.admin = User.valid_objects.get(username='admin')
+        self.org_1 = Org.create(name='org_1', owner=self.admin)
 
-    def tearDown(self):
-        super(OrgTestCase, self).tearDown()
-        for org in ORG_DATA:
-            for o in Org.valid_objects.filter(name=org['name']):
-                o.delete()
+        self.user = User.create_user('u1', 'u1')
+        self.client = self.login_as(self.user)
 
-    def set_client(self, client):
-        self.client = client
+        self.org_1.add_member(self.user)
+        self.user.switch_org(self.org_1)
 
-    def unset_client(self):
-        self.client = self._client
+        self.org_2 = Org.create(name='org_2', owner=self.user)
+        self.org_2.add_member(self.user)
 
-    def list_org(self):
-        return self.client.get(reverse('siteapi:org_create'))
+    def test_org_list(self):
+        res = self.client.get(reverse('siteapi:org_list'))
+        actual = [{
+            'name': item['name'],
+            'role': item['role'],
+        } for item in res.json()]
+        expect = [
+            {
+                'name': 'org_1',
+                'role': 'member'
+            },
+            {
+                'name': 'org_2',
+                'role': 'owner'
+            },
+        ]
+        self.assertEqual(actual, expect)
 
-    def create_org(self, org_data):
-        return self.client.json_post(reverse('siteapi:org_create'), data=org_data)
+        res = self.client.get(reverse('siteapi:org_list'), data={'role': 'owner'})
+        actual = [{
+            'name': item['name'],
+            'role': item['role'],
+        } for item in res.json()]
+        expect = [
+            {
+                'name': 'org_2',
+                'role': 'owner'
+            },
+        ]
+        self.assertEqual(actual, expect)
 
-    def patch_org(self, org_oid, org_data):
-        return self.client.json_patch(reverse('siteapi:org_detail', args=(org_oid, )), data=org_data)
+    def test_create_org(self):
+        res = self.client.post(reverse('siteapi:org_list'), data={
+            'name': 'org_3',
+        })
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.json()['name'], 'org_3')
 
-    def delete_org(self, org_oid):
-        return self.client.delete(reverse('siteapi:org_detail', args=(org_oid, )))
+    def test_org_detail(self):
+        # 查看自己的组织
+        res = self.client.get(reverse('siteapi:org_detail', args=(self.org_2.uuid.hex, )))
+        self.assertEqual(res.json()['name'], 'org_2')
 
-    def inspect_org(self, org_oid):
-        return self.client.get(reverse('siteapi:org_detail', args=(org_oid, )))
-
-    def create_dept(self, uid, name):
-        return self.client.json_post(reverse('siteapi:dept_child_dept', args=(uid, )), data={'name': name})
-
-    def create_group(self, uid, name):
-        return self.client.json_post(reverse('siteapi:group_child_group', args=(uid, )), data={'name': name})
-
-    def get_org(self):
-        return self.client.get(reverse('siteapi:ucenter_org_list'))
-
-    def get_owned_org(self):
-        return self.client.get(reverse('siteapi:ucenter_own_org_list'))
-
-    def get_curr_org(self):
-        return self.client.get(reverse('siteapi:ucenter_org'))
-
-    def set_curr_org(self, data):
-        return self.client.json_post(reverse('siteapi:ucenter_org'), data=data)
-
-    def clear_curr_org(self):
-        return self.client.delete(reverse('siteapi:ucenter_org'))
-
-    def create_user(self, grp_uids, dept_uids, name):
-        return self.client.json_post(reverse('siteapi:user_list'),
+        # 管理自己的组织
+        res = self.client.json_patch(reverse('siteapi:org_detail', args=(self.org_2.uuid.hex, )),
                                      data={
-                                         'group_uids': grp_uids,
-                                         'dept_uids': dept_uids,
-                                         'user': {
-                                             'username': name
-                                         }
+                                         'name': 'new_name',
                                      })
+        self.assertEqual(res.json()['name'], 'new_name')
 
-    def get_user(self, org_oid):
-        return self.client.get(reverse('siteapi:org_user', args=(org_oid, )))
+        # 查看自己所属组织
+        res = self.client.get(reverse('siteapi:org_detail', args=(self.org_1.uuid.hex, )))
+        self.assertEqual(res.json()['name'], 'org_1')
 
-    def add_user(self, org_oid, username):
-        return self.client.post(reverse('siteapi:org_user', args=(org_oid, )) + f'?username={username}')
+        # 管理他人的组织
+        res = self.client.json_patch(reverse('siteapi:org_detail', args=(self.org_1.uuid.hex, )),
+                                     data={
+                                         'name': 'new_name',
+                                     })
+        self.assertEqual(res.status_code, 403)
+        res = self.client.delete(reverse('siteapi:org_detail', args=(self.org_1.uuid.hex, )))
+        self.assertEqual(res.status_code, 403)
 
-    def delete_user(self, org_oid, username):
-        return self.client.delete(reverse('siteapi:org_user', args=(org_oid, )) + f'?username={username}')
+    def test_delete_org(self):
+        res = self.client.get(reverse('siteapi:org_list'))
+        self.assertEqual(2, len(res.json()))
 
-    def test_org_management(self):
-        orgs = []
-        owner = User.create_user('owner', 'owner')
-        other = User.create_user('other', 'other')
+        res = self.client.delete(reverse('siteapi:org_detail', args=(self.org_2.uuid.hex, )))
+        self.assertEqual(res.status_code, 204)
 
-        for org in ORG_DATA:
-            orgs.append((org, self.create_org(org)))
+        res = self.client.get(reverse('siteapi:org_list'))
+        self.assertEqual(1, len(res.json()))
 
-        self.assertEqual(self.create_org(ILL_FORMED_DATA).status_code, 400)
+    def test_ucenter_org(self):
+        res = self.client.get(reverse('siteapi:ucenter_org'))
+        self.assertEqual(res.json()['name'], 'org_1')
+        self.assertEqual(res.json()['role'], 'member')
 
-        # external
-        for (org, res) in orgs:
-            self.assertEqual(org['name'], res.json()['name'])
-        jorgs = [res.json() for (org, res) in orgs]
+        self.client.post(reverse('siteapi:org_list'), data={
+            'name': 'org_2',
+        })
+        res = self.client.get(reverse('siteapi:ucenter_org'))
+        self.assertEqual(res.json()['name'], 'org_2')
+        self.assertEqual(res.json()['role'], 'owner')
 
-        # internal
-        iorgs = []
-        for (org, res) in orgs:
-            o = Org.valid_objects.filter(uuid=Org.to_uuid(res.json()['oid'])).first()    # oid -> name
-            self.assertEqual(str(o.uuid), Org.to_uuid(res.json()['oid']))
-            self.assertEqual(o.name, res.json()['name'])
-            self.assertEqual(o.dept.uid, res.json()['dept_uid'])
-            self.assertEqual(o.group.uid, res.json()['group_uid'])
-            self.assertEqual(o.direct.uid, res.json()['direct_uid'])
-            self.assertEqual(o.manager.uid, res.json()['manager_uid'])
-            self.assertEqual(o.role.uid, res.json()['role_uid'])
-            self.assertEqual(o.label.uid, res.json()['label_uid'])
-            iorgs.append((o, res.json()))
+        # switch org
+        self.client.json_put(reverse('siteapi:ucenter_org'), data={
+            'oid': str(self.org_1.uuid),
+        })
+        res = self.client.get(reverse('siteapi:ucenter_org'))
+        self.assertEqual(res.json()['name'], 'org_1')
 
-        # external, internal behavior justified by previous assertion && transitivity
-        for res in jorgs:
-            self.assertEqual(res, self.inspect_org(res['oid']).json())
 
-        self.assertEqual(self.inspect_org('invalid-oid').status_code, 400)
-        self.assertEqual(self.inspect_org(uuid4()).status_code, 404)
+class OrgMemberTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
 
-        # external
-        self.assertEqual(jorgs, self.list_org().json())
+        self.admin = User.valid_objects.get(username='admin')
+        self.org_1 = Org.create(name='org_1', owner=self.admin)
 
-        # internal
-        self.assertEqual(self.list_org().json(), [OrgSerializer(o).data for o in Org.valid_objects.all()])
+        self.user = User.create_user('u1', 'u1')
+        self.client = self.login_as(self.user)
 
-        # perm
-        self.set_client(self.login_as(owner))
-        self.assertEqual(self.list_org().status_code, 403)
-        self.unset_client()
+        self.org_1.add_member(self.user)
+        self.user.switch_org(self.org_1)
 
-        def eq_leibniz(x, y, f):
-            self.assertEqual(x, y)
-            self.assertEqual(f(x), f(y))
+        self.org_2 = Org.create(name='org_2', owner=self.user)
+        self.org_2.add_member(self.user)
 
-        def eq_dept(d1):
-            d2 = Dept.valid_objects.filter(uid=d1.uid).first()
-            eq_leibniz(d1, d2, lambda x: x.parent)
+        self.client = self.login_as(self.user)
 
-        def eq_group(g1):
-            g2 = Group.valid_objects.filter(uid=g1.uid).first()
-            eq_leibniz(g1, g2, lambda x: x.parent)
+    def test_get_org_members(self):
+        res = self.client.get(reverse('siteapi:org_user_list', args=(self.org_2.uuid.hex, )))
+        self.assertEqual(res.json()['count'], 1)
+        self.assertEqual(len(res.json()['results']), 1)
+        self.assertEqual(res.json()['results'][0]['username'], 'u1')
 
-        # schema validity
-        for (o, res) in iorgs:
-            eq_dept(o.dept)
-            eq_group(o.group)
-            eq_group(o.direct)
-            eq_group(o.manager)
-            eq_group(o.role)
-            eq_group(o.label)
+        res = self.client.get(reverse('siteapi:org_user_list', args=(self.org_2.uuid.hex, )), data={'page': 2})
+        self.assertEqual(res.status_code, 404)
 
-        # patch
-        for org in jorgs:
-            name = str(uuid4())
-            owner_ = other.username
-            org['name'] = name
-            org['owner'] = owner_
-            self.assertEqual(self.patch_org(org['oid'], {'name': name, 'owner': owner_}).json(), org)
+    def test_manager_members(self):
+        url = reverse('siteapi:org_user_list', args=(self.org_2.uuid.hex, ))
 
-        # external
-        for res in jorgs:
-            self.assertEqual(self.delete_org(res['oid']).status_code, 204)
-        self.assertEqual([], self.list_org().json())
+        self.assertEqual(self.client.get(url).json()['count'], 1)
 
-        # internal
-        self.assertEqual([], [OrgSerializer(o).data for o in Org.valid_objects.all()])
+        res = self.client.json_patch(url, data={
+            'subject': 'add',
+            'usernames': ['admin11'],
+        })
+        self.assertEqual(res.status_code, 400)
 
-        # perm
-        self.set_client(self.login_as(owner))
-        op1 = self.create_org({'name': 'org_perm_1'}).json()['oid']
-        op2 = self.create_org({'name': 'org_perm_2'}).json()['oid']
-        self.set_client(self.login_as(other))
-        self.assertEqual(self.delete_org(op1).status_code, 403)
-        self.set_client(self.login_as(owner))
-        self.assertEqual(self.delete_org(op1).status_code, 204)
-        self.unset_client()
-        self.assertEqual(self.delete_org(op2).status_code, 204)
+        res = self.client.json_patch(url, data={
+            'subject': 'add',
+            'usernames': ['admin'],
+        })
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(self.client.get(url).json()['count'], 2)
 
-    def test_org_member(self):
-        owner = User.create_user('owner', 'owner')
-        other = User.create_user('other', 'other')
+        res = self.client.json_patch(url, data={
+            'subject': 'delete',
+            'usernames': ['admin'],
+        })
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(self.client.get(url).json()['count'], 1)
 
-        self.set_client(self.login_as(owner))
-        org = self.create_org({'name': '组织1'}).json()
+        res = self.client.json_patch(
+            url,
+            data={
+                'subject': 'delete',
+                'usernames': ['u1'],    # try to delete owner
+            })
+        self.assertEqual(res.status_code, 400)
 
-        grp = org['group_uid']
-        grptype_a = self.create_group(grp, 'Type A').json()['uid']
-        grp_a_a = self.create_group(grptype_a, 'Group A').json()['uid']
+    def test_edit_member(self):
+        url = reverse('siteapi:org_user_detail', args=(self.org_2.uuid.hex, self.user.username))
+        res = self.client.get(url)
+        expect = {'username': 'u1', 'email': ''}
+        self.assertEqualScoped(res.json(), expect, keys=['username', 'email'])
 
-        direct = org['direct_uid']
+        res = self.client.json_patch(url, data={'email': 'new_email'})
+        expect = {'username': 'u1', 'email': 'new_email'}
+        self.assertEqualScoped(res.json(), expect, keys=['username', 'email'])
 
-        manager = org['manager_uid']
 
-        role = org['role_uid']
-        role_a = self.create_group(role, 'Role A').json()['uid']
+class OrgInvitationTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
 
-        role_b = self.create_group(role, 'Role B').json()['uid']
-        role_ab = self.create_group(role_a, 'Subrole AB').json()['uid']
+        self.owner = User.create_user('owner', 'owner')
+        self.org = Org.create(name='org', owner=self.owner)
 
-        label = org['label_uid']
-        label_a = self.create_group(label, 'Label A').json()['uid']
+        self.new_user = User.create_user('u1', 'u1')
 
-        dept = org['dept_uid']
-        dept_a = self.create_dept(dept, 'Dept A').json()['uid']
+    @mock.patch('siteapi.v1.views.org.redis_conn.get')
+    @mock.patch('siteapi.v1.views.org.redis_conn.set')
+    def test_invitation_link(self, _, mock_redis_get):
+        # 获取邀请key
+        mock_redis_get.return_value = None
+        self.client = self.login_as(self.owner)
+        res = self.client.get(reverse('siteapi:org_invite_link', args=(self.org.oid_str, )))
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('invite_link_key', res.json())
+        key = res.json()['invite_link_key']
 
-        self.unset_client()
+        # 刷新
+        res = self.client.json_put(reverse('siteapi:org_invite_link', args=(self.org.oid_str, )))
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('invite_link_key', res.json())
+        self.assertNotEqual(res.json()['invite_link_key'], key)
+        key = res.json()['invite_link_key']
 
-        self.create_user(['root'], [dept_a], 'user0')
-        self.create_user(['root', grp_a_a], ['root'], 'user1')
-        self.create_user([direct], ['root'], 'user2')
-        self.create_user([manager, role_a, grp_a_a], [dept_a], 'user3')
-        self.create_user([direct, role_a, role_ab, label_a, manager], ['root'], 'user4')
-        self.create_user(['root', label_a, role_b, role_ab, role, grptype_a, grp], [dept, dept_a], 'user5')
+        # 查看
+        client = self.login_as(self.new_user)
+        mock_redis_get.return_value = key
+        res = client.get(reverse('siteapi:org_invite_link_detail', args=(self.org.oid_str, key)))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()['oid'], self.org.oid_str)
+        self.assertEqual(res.json()['role'], '')
 
-        # with owner
-        user_data = {'owner', 'user0', 'user1', 'user2', 'user3', 'user4', 'user5'}
-        self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
+        res = client.get(reverse('siteapi:org_invite_link_detail', args=(str(uuid.uuid4()), key)))
+        self.assertEqual(res.status_code, 404)
 
-        #perm
-        self.set_client(self.login_as(owner))
-        self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
-        self.set_client(self.login_as(other))
-        self.assertEqual(self.get_user(org['oid']).status_code, 403)
-        self.unset_client()
-
-        # mutation
-        User.create_user('username', 'password')
-        self.set_client(self.login_as(owner))
-        self.assertEqual(self.add_user(org['oid'], 'username').status_code, 204)
-        self.assertEqual(set(self.get_user(org['oid']).json()), user_data.union({'username'}))
-        self.assertEqual(self.delete_user(org['oid'], 'username').status_code, 204)
-        self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
-        self.set_client(self.login_as(other))
-
-        self.assertEqual(self.add_user(org['oid'], 'username').status_code, 403)
-        self.assertEqual(self.delete_user(org['oid'], 'username').status_code, 403)
-        self.set_client(self.login_as(owner))
-        self.assertEqual(set(self.get_user(org['oid']).json()), user_data)
-        self.unset_client()
-
-    # 节点-添加成员-API
-
-    def test_user_org(self):
-        user = User.create_user('user', 'user')
-        extern_org = self.create_org({'name': '外部组织'}).json()
-        GroupMember.valid_objects.create(user=user,
-                                         owner=Group.valid_objects.filter(uid=extern_org['direct_uid']).first())
-
-        self.set_client(self.login_as(user))
-        oid = set(map(lambda x: self.create_org(x).json()['oid'], ORG_DATA))
-        self.assertEqual(set(map(lambda o: o['oid'], self.get_owned_org().json())), oid)
-        self.assertEqual(set(map(lambda o: o['oid'], self.get_org().json())), oid.union({extern_org['oid']}))
-
-        self.assertEqual(self.get_curr_org().content, b'')
-        for o in oid:
-            self.assertEqual(self.set_curr_org({'oid': o}).status_code, 204)
-            self.assertEqual(self.get_curr_org().json()['oid'], o)
-
-        self.assertEqual(self.set_curr_org({'oid': extern_org['oid']}).status_code, 204)
-        self.assertEqual(self.get_curr_org().json()['oid'], extern_org['oid'])
-        self.assertEqual(self.set_curr_org({'no_oid': 123}).status_code, 400)
-        self.assertEqual(self.set_curr_org({'oid': 'invalid-oid'}).status_code, 400)
-        self.assertEqual(self.set_curr_org({'oid': str(uuid4())}).status_code, 404)
-
-        self.assertEqual(self.get_curr_org().json()['oid'], extern_org['oid'])
-        self.assertEqual(self.clear_curr_org().status_code, 204)
-        self.assertEqual(self.get_curr_org().content, b'')
-
-    def test_org_user_detail(self):
-        owner = User.create_user('owner', 'owner')
-        user1 = User.create_user('user1', 'user1')
-        User.create_user('user2', 'user2')
-        org = Org.create(name='org', owner=owner)
-
-        self.client.json_patch(reverse('siteapi:group_child_user', args=(org.direct.uid, )),
-                               data={
-                                   'subject': 'add',
-                                   'user_uids': ['user1']
-                               })
-        self.set_client(self.login_as(owner))
-
-        res = self.client.get(reverse('siteapi:org_user_detail', args=(
-            org.oid,
-            'user1',
-        )))
-        self.assertEqual(200, res.status_code)
-
-        res = self.client.get(reverse('siteapi:org_user_detail', args=(
-            org.oid,
-            'owner',
-        )))
-        self.assertEqual(200, res.status_code)
-
-        res = self.client.get(reverse('siteapi:org_user_detail', args=(
-            org.oid,
-            'user2',
-        )))
-        self.assertEqual(404, res.status_code)
-
-        self.client.json_patch(reverse('siteapi:group_child_user', args=(org.group.uid, )),
-                               data={
-                                   'subject': 'add',
-                                   'user_uids': ['user2']
-                               })
-
-        res = self.client.get(reverse('siteapi:org_user_detail', args=(
-            org.oid,
-            'user2',
-        )))
-        self.assertEqual(200, res.status_code)
-
-        self.set_client(self.login_as(user1))
-
-        res = self.client.get(reverse('siteapi:org_user_detail', args=(
-            org.oid,
-            'user1',
-        )))
-        self.assertEqual(200, res.status_code)
+        # 加入
+        res = client.json_post(reverse('siteapi:org_invite_link_detail', args=(self.org.oid_str, key)))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()['role'], 'member')

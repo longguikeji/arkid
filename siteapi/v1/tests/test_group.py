@@ -25,6 +25,10 @@ class GroupTestCase(TestCase):
     def setUp(self):
         super(GroupTestCase, self).setUp()
 
+        default_org = Org.objects.first()
+        if default_org:
+            default_org.delete()
+
         owner = User.create_user(username='owner', password='owner')
         self.org = Org.create(name='org', owner=owner)
 
@@ -51,7 +55,6 @@ class GroupTestCase(TestCase):
     #         'previous':
     #         None,
     #         'results': [{
-    #             'group_id': 2,
     #             'uid': 'role_group_1',
     #             'node_uid': 'g_role_group_1',
     #             'node_subject': 'root',
@@ -59,7 +62,6 @@ class GroupTestCase(TestCase):
     #             'remark': '',
     #             'accept_user': False
     #         }, {
-    #             'group_id': 3,
     #             'uid': 'role_1',
     #             'node_uid': 'g_role_1',
     #             'node_subject': 'root',
@@ -67,7 +69,6 @@ class GroupTestCase(TestCase):
     #             'remark': '',
     #             'accept_user': True
     #         }, {
-    #             'group_id': 4,
     #             'uid': 'role_2',
     #             'node_uid': 'g_role_2',
     #             'node_subject': 'root',
@@ -87,7 +88,6 @@ class GroupTestCase(TestCase):
     #         'previous':
     #         None,
     #         'results': [{
-    #             'group_id': 3,
     #             'uid': 'role_1',
     #             'node_uid': 'g_role_1',
     #             'node_subject': 'root',
@@ -104,7 +104,6 @@ class GroupTestCase(TestCase):
             'parent_uid': str(self.org.group.uid),
             'parent_node_uid': self.org.group.node_uid,
             'parent_name': self.org.group.name,
-            'group_id': 7,
             'uid': 'role_group_1',
             'node_uid': 'g_role_group_1',
             'node_subject': 'root',
@@ -121,7 +120,6 @@ class GroupTestCase(TestCase):
         res = self.client.get(reverse('siteapi:group_tree', args=('root', )))
         expect = {
             'info': {
-                'group_id': 1,
                 'uid': 'root',
                 'node_uid': 'g_root',
                 'node_subject': 'root',
@@ -131,7 +129,6 @@ class GroupTestCase(TestCase):
             },
             'groups': [{
                 'info': {
-                    'group_id': 2,
                     'uid': str(self.org.group.uid),
                     'node_uid': self.org.group.node_uid,
                     'node_subject': 'org',
@@ -141,7 +138,6 @@ class GroupTestCase(TestCase):
                 },
                 'groups': [{
                     'info': {
-                        'group_id': 3,
                         'uid': str(self.org.direct.uid),
                         'node_uid': self.org.direct.node_uid,
                         'node_subject': 'direct',
@@ -152,7 +148,6 @@ class GroupTestCase(TestCase):
                     'groups': []
                 }, {
                     'info': {
-                        'group_id': 4,
                         'uid': str(self.org.manager.uid),
                         'node_uid': self.org.manager.node_uid,
                         'node_subject': 'manager',
@@ -163,7 +158,6 @@ class GroupTestCase(TestCase):
                     'groups': []
                 }, {
                     'info': {
-                        'group_id': 5,
                         'uid': str(self.org.role.uid),
                         'node_uid': self.org.role.node_uid,
                         'node_subject': 'role',
@@ -174,7 +168,6 @@ class GroupTestCase(TestCase):
                     'groups': []
                 }, {
                     'info': {
-                        'group_id': 6,
                         'uid': str(self.org.label.uid),
                         'node_uid': self.org.label.node_uid,
                         'node_subject': 'label',
@@ -185,7 +178,6 @@ class GroupTestCase(TestCase):
                     'groups': []
                 }, {
                     'info': {
-                        'group_id': 7,
                         'uid': 'role_group_1',
                         'node_uid': 'g_role_group_1',
                         'node_subject': 'root',
@@ -195,7 +187,6 @@ class GroupTestCase(TestCase):
                     },
                     'groups': [{
                         'info': {
-                            'group_id': 9,
                             'uid': 'role_2',
                             'node_uid': 'g_role_2',
                             'node_subject': 'root',
@@ -206,7 +197,6 @@ class GroupTestCase(TestCase):
                         'groups': []
                     }, {
                         'info': {
-                            'group_id': 8,
                             'uid': 'role_1',
                             'node_uid': 'g_role_1',
                             'node_subject': 'root',
@@ -224,7 +214,6 @@ class GroupTestCase(TestCase):
         res = self.client.get(reverse('siteapi:group_tree', args=('root', )), data={'user_required': True})
         expect = {
             'info': {
-                'group_id': 1,
                 'uid': 'root',
                 'node_uid': 'g_root',
                 'node_subject': 'root',
@@ -236,7 +225,6 @@ class GroupTestCase(TestCase):
             2,
             'groups': [{
                 'info': {
-                    'group_id': 2,
                     'uid': str(self.org.group.uid),
                     'node_uid': self.org.group.node_uid,
                     'node_subject': 'org',
@@ -248,7 +236,6 @@ class GroupTestCase(TestCase):
                 2,
                 'groups': [{
                     'info': {
-                        'group_id': 3,
                         'uid': str(self.org.direct.uid),
                         'node_uid': self.org.direct.node_uid,
                         'node_subject': 'direct',
@@ -259,13 +246,11 @@ class GroupTestCase(TestCase):
                     'headcount': 1,
                     'groups': [],
                     'users': [{
-                        'user_id': 2,
                         'username': 'owner',
                         'name': ''
                     }],
                 }, {
                     'info': {
-                        'group_id': 4,
                         'uid': str(self.org.manager.uid),
                         'node_uid': self.org.manager.node_uid,
                         'node_subject': 'manager',
@@ -278,7 +263,6 @@ class GroupTestCase(TestCase):
                     'users': [],
                 }, {
                     'info': {
-                        'group_id': 5,
                         'uid': str(self.org.role.uid),
                         'node_uid': self.org.role.node_uid,
                         'node_subject': 'role',
@@ -291,7 +275,6 @@ class GroupTestCase(TestCase):
                     'users': [],
                 }, {
                     'info': {
-                        'group_id': 6,
                         'uid': str(self.org.label.uid),
                         'node_uid': self.org.label.node_uid,
                         'node_subject': 'label',
@@ -304,7 +287,6 @@ class GroupTestCase(TestCase):
                     'users': [],
                 }, {
                     'info': {
-                        'group_id': 7,
                         'uid': 'role_group_1',
                         'node_uid': 'g_role_group_1',
                         'node_subject': 'root',
@@ -316,7 +298,6 @@ class GroupTestCase(TestCase):
                     1,
                     'groups': [{
                         'info': {
-                            'group_id': 9,
                             'uid': 'role_2',
                             'node_uid': 'g_role_2',
                             'node_subject': 'root',
@@ -329,7 +310,6 @@ class GroupTestCase(TestCase):
                         'users': [],
                     }, {
                         'info': {
-                            'group_id': 8,
                             'uid': 'role_1',
                             'node_uid': 'g_role_1',
                             'node_subject': 'root',
@@ -340,7 +320,6 @@ class GroupTestCase(TestCase):
                         'headcount': 1,
                         'groups': [],
                         'users': [{
-                            'user_id': 3,
                             'username': 'employee',
                             'name': ''
                         }]
@@ -392,7 +371,6 @@ class GroupTestCase(TestCase):
             'parent_uid': None,
             'parent_node_uid': None,
             'parent_name': None,
-            'group_id': 1,
             'uid': 'root',
             'node_uid': 'g_root',
             'node_subject': 'root',
@@ -422,7 +400,6 @@ class GroupTestCase(TestCase):
         res = self.client.get(reverse('siteapi:group_child_group', args=('role_group_1', )))
         expect = {
             'groups': [{
-                'group_id': 9,
                 'uid': 'role_2',
                 'node_uid': 'g_role_2',
                 'node_subject': 'root',
@@ -430,7 +407,6 @@ class GroupTestCase(TestCase):
                 'remark': '',
                 'accept_user': True,
             }, {
-                'group_id': 8,
                 'uid': 'role_1',
                 'node_uid': 'g_role_1',
                 'node_subject': 'root',
@@ -451,7 +427,6 @@ class GroupTestCase(TestCase):
                                         }
                                     })
         expect = {
-            'group_id': 10,
             'uid': 'role_3',
             'node_uid': 'g_role_3',
             'node_subject': 'root',
@@ -540,7 +515,6 @@ class GroupTestCase(TestCase):
         expect = {
             'groups': [
                 {
-                    'group_id': 8,
                     'uid': 'role_1',
                     'node_uid': 'g_role_1',
                     'node_subject': 'root',
@@ -549,7 +523,6 @@ class GroupTestCase(TestCase):
                     'accept_user': True,
                 },
                 {
-                    'group_id': 9,
                     'uid': 'role_2',
                     'node_uid': 'g_role_2',
                     'node_subject': 'root',
@@ -580,8 +553,6 @@ class GroupTestCase(TestCase):
             'previous':
             None,
             'results': [{
-                'user_id':
-                3,
                 'last_active_time':
                 None,
                 'created':
@@ -604,8 +575,6 @@ class GroupTestCase(TestCase):
                 '脚本添加',
                 'name':
                 '',
-                'email':
-                '',
                 'private_email':
                 '',
                 'mobile':
@@ -616,7 +585,6 @@ class GroupTestCase(TestCase):
                 False,
                 'nodes': [{
                     'accept_user': True,
-                    'group_id': 8,
                     'name': 'role_1',
                     'node_subject': 'root',
                     'node_uid': 'g_role_1',
@@ -750,7 +718,6 @@ class GroupTestCase(TestCase):
                 'parent_uid': str(self.org.manager.uid),
                 'parent_node_uid': self.org.manager.node_uid,
                 'parent_name': self.org.manager.name,
-                'group_id': 10,
                 'node_uid': 'g_manager_group_1',
                 'node_subject': 'root',
                 'uid': 'manager_group_1',
@@ -777,7 +744,6 @@ class GroupTestCase(TestCase):
                 'node_scope': [],
                 'user_scope': [],
                 'users': [{
-                    'user_id': 3,
                     'username': 'employee',
                     'name': ''
                 }]
@@ -790,7 +756,6 @@ class GroupTestCase(TestCase):
     #     res = self.client.get(reverse('siteapi:group_scope_list', args=('root', )))
     #     expect = [
     #         {
-    #             'group_id': 1,
     #             'node_uid': 'g_root',
     #             'node_subject': 'root',
     #             'uid': 'root',
@@ -801,7 +766,6 @@ class GroupTestCase(TestCase):
     #             'parent_node_uid': None
     #         },
     #         {
-    #             'group_id': 2,
     #             'node_uid': 'g_role_group_1',
     #             'node_subject': 'root',
     #             'uid': 'role_group_1',
@@ -812,7 +776,6 @@ class GroupTestCase(TestCase):
     #             'parent_node_uid': 'g_root'
     #         },
     #         {
-    #             'group_id': 4,
     #             'node_uid': 'g_role_2',
     #             'node_subject': 'root',
     #             'uid': 'role_2',
@@ -823,7 +786,6 @@ class GroupTestCase(TestCase):
     #             'parent_node_uid': 'g_role_group_1'
     #         },
     #         {
-    #             'group_id': 3,
     #             'node_uid': 'g_role_1',
     #             'node_subject': 'root',
     #             'uid': 'role_1',
@@ -844,7 +806,7 @@ class GroupTestCase(TestCase):
         role_3 = Group.valid_objects.create(uid='role_3', name='role_3', parent=role_group, order_no=3)
         user = User.create_user('zhangsan', 'zhangsan')
         user.name = '张三'
-        user.email = '13412341233@qq.com'
+        user.private_email = '13412341233@qq.com'
         user.mobile = '13412341233'
         user.created = '2019-01-01T00:00:00+08:00'
         user.last_active_time = '2019-02-01T00:00:00+08:00'
@@ -852,7 +814,7 @@ class GroupTestCase(TestCase):
         GroupMember.valid_objects.create(user=user, owner=role_3)
         user2 = User.create_user('zhangsi', 'zhangsi')
         user2.name = '张四'
-        user2.email = '13412341234@qq.com'
+        user2.private_email = '13412341234@qq.com'
         user2.mobile = '13412341234'
         user2.created = '2019-03-01T00:00:00+08:00'
         user2.last_active_time = '2019-04-01T00:00:00+08:00'
@@ -860,7 +822,7 @@ class GroupTestCase(TestCase):
         GroupMember.valid_objects.create(user=user2, owner=role_3)
         user3 = User.create_user('lisan', 'lisan')
         user3.name = '李三'
-        user3.email = '13412341235@qq.com'
+        user3.private_email = '13412341235@qq.com'
         user3.mobile = '13412341235'
         user3.created = '2019-05-01T00:00:00+08:00'
         user3.last_active_time = '2019-06-01T00:00:00+08:00'
@@ -868,13 +830,13 @@ class GroupTestCase(TestCase):
         GroupMember.valid_objects.create(user=user3, owner=role_3)
         user4 = User.create_user('lisi', 'lisi')
         user4.name = '李四'
-        user4.email = '13412341236@qq.com'
+        user4.private_email = '13412341236@qq.com'
         user4.mobile = '13412341236'
         user4.created = '2019-07-01T00:00:00+08:00'
         user4.last_active_time = '2019-08-01T00:00:00+08:00'
         user4.save()
         GroupMember.valid_objects.create(user=user4, owner=role_3)
-        test_list = [{'email':'12341234'}, {'name':'张'}, {'username':'li'}, {'mobile':'12341234'}, \
+        test_list = [{'private_email':'12341234'}, {'name':'张'}, {'username':'li'}, {'mobile':'12341234'}, \
             {'before_created':'2019-06-01T00:00:00+08:00'}, {'after_created':'2019-06-01T00:00:00+08:00'}, \
                 {'before_last_active_time':'2019-03-01T00:00:00+08:00'}, \
                     {'after_last_active_time':'2019-03-01T00:00:00+08:00'}]
@@ -895,7 +857,6 @@ class GroupTestCase(TestCase):
             'parent_uid': str(self.org.label.uid),
             'parent_node_uid': self.org.label.node_uid,
             'parent_name': self.org.label.name,
-            'group_id': 10,
             'node_uid': 'g_label1',
             'node_subject': 'label',
             'uid': 'label1',
@@ -916,7 +877,6 @@ class GroupTestCase(TestCase):
             'parent_uid': str(self.org.group.uid),
             'parent_node_uid': self.org.group.node_uid,
             'parent_name': self.org.group.name,
-            'group_id': 11,
             'node_uid': 'g_other_type',
             'node_subject': 'other_type',
             'uid': 'other_type',
@@ -937,7 +897,6 @@ class GroupTestCase(TestCase):
             'parent_uid': 'other_type',
             'parent_node_uid': 'g_other_type',
             'parent_name': 'other_type',
-            'group_id': 13,
             'node_uid': 'g_other',
             'node_subject': 'other_type',
             'uid': 'other',

@@ -264,17 +264,29 @@ FORMAT: 1A
 ## Organization (object)
 + oid (string)
 + name (string)
-+ dept_uid (string(Dept))
-+ group_uid (string(Group))
-+ direct_uid (string(Group))
-+ manager_uid (string(Group))
-+ role_uid (string(Group))
-+ label_uid (string(Group))
++ dept_uid (string)
++ group_uid (string)
++ direct_uid (string)
++ manager_uid (string)
++ role_uid (string)
++ label_uid (string)
++ role (enum[string], readonly) - 当前用户在改组织内的身份
+    - owner - 创建者，主管理员
+    - manager - 子管理员
+    - member - 普通成员
+    - ""  - 不属于该组，或未知
 
-## OrgRole (object)
-+ org (string(Organization)
-+ role (string)
-
+## OrgUser (object)
++ user_id (number)
++ username (string)
++ name (string)
++ email (string)
++ mobile (string)
++ avatar (string)
++ private_email (string) - 私人邮箱
++ origin_verbose (string) - 注册来源
++ created (string) - 创建时间、注册时间 2019-06-04T09:01:44+08:00
++ last_active_time (string) - 最后活跃时间
 
 ## Perm (object)
 + perm_id (number)
@@ -1576,56 +1588,36 @@ TODO: 可见权限的处理
 
 # Group Org
 
-## 创建/列举组织 [/org/]
+## 自己所在组织 [/org/{?role}]
 
-### 查看所有组织 [GET]
+### 查看自己所在组织 [GET]
 
-+ Request
-    + Attributes
-    + Parameters
++ Parameters
+    + role (在该组织内的角色)
+
 + Response 200 (application/json)
-   + Attributes
-     + orgs (array[Organization]) - 组织信息列表
+   + Attributes (array[Organization]) - 组织信息列表
 
 ### 创建组织 [POST]
 
 + Request (application/json)
   + Attributes
     + name (string) - 组织名
-+ Response 200 (application/json)
-  + Attributes
-    + oid (string) - 组织唯一标识
-    + name (string) - 组织名
-    + dept_uid (string) - 组织下属部门唯一标识
-    + group_uid (string) - 组织下属组唯一标识
-    + direct_uid (string) - 组织下属直接成员组唯一标识
-    + manager_uid (string) - 组织下属管理员组唯一标识
-    + role_uid (string) - 组织下属角色组唯一标识
-    + label_uid (string) - 组织下属标签组唯一标识
++ Response 201 (application/json)
+  + Attributes (Organization)
 
-## 查看/删除特定组织 [/org/{oid}/]
+
+## 特定组织 [/org/{oid}/]
+ + Parameters
+    + oid (string) - 组织唯一标识
 
 ### 查看特定组织信息 [GET]
 
-+ Request
-  + Parameters
-    + oid (string) - 组织唯一标识
 + Response 200 (application/json)
-  + Attributes
-    + oid (string) - 组织唯一标识
-    + name (string) - 组织名
-    + dept_uid (string) - 组织下属部门唯一标识
-    + group_uid (string) - 组织下属组唯一标识
-    + direct_uid (string) - 组织下属直接成员组唯一标识
-    + manager_uid (string) - 组织下属管理员组唯一标识
-    + role_uid (string) - 组织下属角色组唯一标识
-    + label_uid (string) - 组织下属标签组唯一标识
+  + Attributes (Organization)
 
 ### 删除特定组织 [DELETE]
 
-+ Request
-  + Parameters
-    + oid (string) - 组织唯一标识
 + Response 204
 
 ### 修改组织信息 [PATCH]
@@ -1633,48 +1625,96 @@ TODO: 可见权限的处理
     + Attributes
         + name (string)
         + owner (string)
- + Response Organization (object)
+ + Response 200 (application/json)
+    + Attributes (Organization)
 
-## 特定组织成员操作 [/org/{oid}/user/{?username}]
+## 组织成员 [/org/{oid}/user/{?page,page_size}]
+ + Parameters
+    + oid (string) - 权限唯一标识
 
+### 查看组织成员 [GET]
+ + Parameters
+    + page (number)
+    + page_size (number)
++ Response 200 (application/json)
+    + Attributes
+        + count (number)
+        + next (string)
+        + previous (string)
+        + results (array[OrgUser])
+
+### 编辑组织成员构成 [PATCH]
++ Request JSON Message
+    + Attributes
+        + subject (enum[string])
+            - add
+            - delete
+        + usernames (array[string])
++ Response 200 (application/json)
+    + Attributes
+        + subject (string)
+        + usernames (array[string])
+
+## 组织内特定成员 [/org/{oid}/user/{username}/]
+
+ + Parameters
+    + oid (string) - 组织唯一标识
+    + username (string) - 用户唯一标识
 ### 查看特定组织成员列表 [GET]
 
-+ Request
-  + Parameters
-    + oid (string) - 组织唯一标识
 + Response 200 (application/json)
-  + Attributes
-    + users (array[string]) - 组织中所有用户名列表
+  + Attributes (OrgUser)
 
-### 添加成员到特定组织 [POST]
-+ Request
-  + Parameters
-    + oid (string) - 组织唯一标识
-    + username (string) 用户名
-  + Response 204
+### 编辑组织内成员信息 [PATCH]
++ Request JSON Message
+    + Attributes
+        + email (string)
+        + employee_number (string)
+        + position (string)
+        + hiredate (string)
+        + remark (string)
++ Response 200 (application/json)
+  + Attributes (OrgUser)
 
-### 从组织中删除特定成员 [DELETE]
-+ Request
-  + Parameters
-    + oid (string) - 组织唯一标识
-    + username (string) 用户名
-  + Response 204
+## 用户当前所在组织 [/ucenter/org/]
 
-## 特定组织成员详细信息 [/org/{oid}/user/{username}]
-## 查看特定组织成员详细信息 [GET]
-+ Request
-  + Parameters
-    + oid (string) - 组织唯一标识
-    + username (string) 用户名
- + Response 200 (application/json)
-    + Attribute (OrgUser)
-## 修改特定组织成员详细信息 [POST]
-+ Request
-  + Parameters
-    + oid (string) - 组织唯一标识
-    + username (string) 用户名
- + Response 200 (application/json)
-    + Attribute (OrgUser)
+### 查看当前所在组织 [GET]
++ Response 200 (application/json)
+  + Attributes (Organization)
+
+### 切换组织 [PUT]
++ Request JSON Message
+    + Attributes
+        + oid (string)
++ Response 200 (application/json)
+  + Attributes (Organization)
+
+
+
+## 组织邀请链接 [/org/{oid}/invitation/]
++ Parameters
+    + oid
+### 获取最新邀请用的key [GET]
++ Response 200 (application/json)
+    + Attributes
+        + invite_link_key (string)
+
+### 刷新链接用的key [PUT]
++ Response 200 (application/json)
+    + Attributes
+        + invite_link_key (string)
+
+## 组织特定邀请链接 [/org/{oid}/invitation/{invite_link_key}/]
++ Parameters
+    + oid
+    + invite_link_key
+### 查看组织信息 [GET]
++ Response 200 (application/json)
+    + Attributes (Org)
+
+### 加入组织 [POST]
++ Response 200 (application/json)
+    + Attributes (Org)
 
 # Group Perm
 

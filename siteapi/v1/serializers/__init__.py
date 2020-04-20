@@ -13,7 +13,7 @@ class UserLiteSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for User with basic info
     '''
-    user_id = serializers.IntegerField(source='id')
+    user_id = serializers.IntegerField(source='id', read_only=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = User

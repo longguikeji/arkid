@@ -61,7 +61,6 @@ class UserConvertTestCase(TestCase):
                                      })
         expect = {
             'nodes': [{
-                'group_id': 2,
                 'node_uid': 'g_extern',
                 'node_subject': 'root',
                 'uid': 'extern',
@@ -69,7 +68,6 @@ class UserConvertTestCase(TestCase):
                 'remark': '',
                 'accept_user': True
             }, {
-                'group_id': 3,
                 'node_uid': 'g_label1',
                 'node_subject': 'root',
                 'uid': 'label1',

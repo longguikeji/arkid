@@ -66,7 +66,6 @@ class NodeTestCase(TestCase):
             'uid': 'level_1',
             'name': 'level_1',
             'remark': '',
-            'dept_id': 3,
             'node_subject': 'dept',
             'node_uid': 'd_level_1',
             'node_scope': [],
@@ -86,7 +85,6 @@ class NodeTestCase(TestCase):
             'node_subject': 'root',
             'name': 'role_group_1',
             'remark': '',
-            'group_id': 7,
             'accept_user': False,
             'node_scope': [],
             'user_scope': [],
@@ -112,7 +110,6 @@ class NodeTestCase(TestCase):
                 'node_subject': 'dept',
                 'name': 'level_1',
                 'remark': '',
-                'dept_id': 3
             },
             'nodes': [
                 {
@@ -122,7 +119,6 @@ class NodeTestCase(TestCase):
                         'node_subject': 'dept',
                         'name': 'level_2-2',
                         'remark': '',
-                        'dept_id': 5
                     },
                     'nodes': []
                 },
@@ -133,7 +129,6 @@ class NodeTestCase(TestCase):
                         'node_subject': 'dept',
                         'name': 'level_2-1',
                         'remark': '',
-                        'dept_id': 4
                     },
                     'nodes': []
                 },
@@ -146,7 +141,6 @@ class NodeTestCase(TestCase):
         expect = {
             'nodes': [
                 {
-                    'group_id': 9,
                     'node_subject': 'root',    # TODO@saas node subject
                     'node_uid': 'g_role_2',
                     'uid': 'role_2',
@@ -155,7 +149,6 @@ class NodeTestCase(TestCase):
                     'accept_user': True,
                 },
                 {
-                    'group_id': 8,
                     'node_subject': 'root',
                     'node_uid': 'g_role_1',
                     'uid': 'role_1',
@@ -199,14 +192,12 @@ class NodeTestCase(TestCase):
 
         expect = {
             'nodes': [{
-                'dept_id': 3,
                 'name': 'level_1',
                 'node_subject': 'dept',
                 'node_uid': 'd_level_1',
                 'remark': '',
                 'uid': 'level_1'
             }, {
-                'dept_id': 6,
                 'name': '123',
                 'node_subject': 'dept',
                 'node_uid': 'd_123',

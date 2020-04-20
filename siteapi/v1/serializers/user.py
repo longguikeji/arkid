@@ -69,7 +69,7 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         fields = (
             'username',
             'name',
-            'email',
+            'private_email',
             'mobile',
             'gender',
             'avatar',
@@ -178,7 +178,6 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'user_id',
             'username',
             'name',
-            'email',
             'mobile',
             'gender',
             'avatar',
@@ -350,11 +349,19 @@ class OrgUserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
 
         fields = (
             'user',
+            'email',
             'employee_number',
             'position',
             'hiredate',
             'remark',
         )
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        user = res.pop('user')    # 注意字段不要重复
+        res.update(user)
+        res.pop('nodes')
+        return res
 
 
 class OrgUserDeserializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
@@ -366,6 +373,7 @@ class OrgUserDeserializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         model = OrgMember
 
         fields = (
+            'email',
             'employee_number',
             'position',
             'hiredate',
@@ -400,7 +408,6 @@ class UserWithPermSerializer(UserSerializer):
             'user_id',
             'username',
             'name',
-            'email',
             'mobile',
             'gender',
             'ding_user',

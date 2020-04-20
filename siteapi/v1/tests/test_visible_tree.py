@@ -56,7 +56,6 @@ class VisibleTreeTestCase(TestCase):
         res = self.client.get(reverse('siteapi:ucenter_node_tree', args=('d_1', )))
         expect = {
             'info': {
-                'dept_id': 2,
                 'node_uid': 'd_1',
                 'node_subject': 'dept',
                 'uid': '1',
@@ -65,7 +64,6 @@ class VisibleTreeTestCase(TestCase):
             },
             'nodes': [{
                 'info': {
-                    'dept_id': 3,
                     'node_uid': 'd_1-1',
                     'node_subject': 'dept',
                     'uid': '1-1',
@@ -73,7 +71,6 @@ class VisibleTreeTestCase(TestCase):
                 },
                 'nodes': [{
                     'info': {
-                        'dept_id': 4,
                         'node_uid': 'd_1-1-1',
                         'node_subject': 'dept',
                         'uid': '1-1-1',
@@ -81,7 +78,6 @@ class VisibleTreeTestCase(TestCase):
                     },
                     'nodes': [{
                         'info': {
-                            'dept_id': 5,
                             'node_uid': 'd_1-1-1-1',
                             'node_subject': 'dept',
                             'uid': '1-1-1-1',
@@ -92,7 +88,6 @@ class VisibleTreeTestCase(TestCase):
                     }]
                 }, {
                     'info': {
-                        'dept_id': 6,
                         'node_uid': 'd_1-1-2',
                         'node_subject': 'dept',
                         'uid': '1-1-2',
@@ -103,7 +98,6 @@ class VisibleTreeTestCase(TestCase):
                 }]
             }, {
                 'info': {
-                    'dept_id': 10,
                     'node_uid': 'd_1-3',
                     'node_subject': 'dept',
                     'uid': '1-3',
@@ -112,7 +106,6 @@ class VisibleTreeTestCase(TestCase):
                 },
                 'nodes': [{
                     'info': {
-                        'dept_id': 12,
                         'node_uid': 'd_1-3-2',
                         'node_subject': 'dept',
                         'uid': '1-3-2',
@@ -122,7 +115,6 @@ class VisibleTreeTestCase(TestCase):
                     'nodes': []
                 }, {
                     'info': {
-                        'dept_id': 13,
                         'node_uid': 'd_1-3-3',
                         'node_subject': 'dept',
                         'uid': '1-3-3',
@@ -138,7 +130,6 @@ class VisibleTreeTestCase(TestCase):
         res = self.client.get(reverse('siteapi:ucenter_node_tree', args=('d_1', )), data={'user_required': True})
         expect = {
             'info': {
-                'dept_id': 2,
                 'node_uid': 'd_1',
                 'node_subject': 'dept',
                 'uid': '1',
@@ -146,13 +137,11 @@ class VisibleTreeTestCase(TestCase):
                 'remark': ''
             },
             'users': [{
-                'user_id': 2,
                 'username': 'test',
                 'name': ''
             }],
             'nodes': [{
                 'info': {
-                    'dept_id': 3,
                     'node_uid': 'd_1-1',
                     'node_subject': 'dept',
                     'uid': '1-1',
@@ -161,7 +150,6 @@ class VisibleTreeTestCase(TestCase):
                 'users': [],
                 'nodes': [{
                     'info': {
-                        'dept_id': 4,
                         'node_uid': 'd_1-1-1',
                         'node_subject': 'dept',
                         'uid': '1-1-1',
@@ -170,7 +158,6 @@ class VisibleTreeTestCase(TestCase):
                     'users': [],
                     'nodes': [{
                         'info': {
-                            'dept_id': 5,
                             'node_uid': 'd_1-1-1-1',
                             'node_subject': 'dept',
                             'uid': '1-1-1-1',
@@ -178,7 +165,6 @@ class VisibleTreeTestCase(TestCase):
                             'remark': ''
                         },
                         'users': [{
-                            'user_id': 2,
                             'username': 'test',
                             'name': ''
                         }],
@@ -189,7 +175,6 @@ class VisibleTreeTestCase(TestCase):
                     1
                 }, {
                     'info': {
-                        'dept_id': 6,
                         'node_uid': 'd_1-1-2',
                         'node_subject': 'dept',
                         'uid': '1-1-2',
@@ -197,7 +182,6 @@ class VisibleTreeTestCase(TestCase):
                         'remark': ''
                     },
                     'users': [{
-                        'user_id': 2,
                         'username': 'test',
                         'name': ''
                     }],
@@ -208,7 +192,6 @@ class VisibleTreeTestCase(TestCase):
                 1
             }, {
                 'info': {
-                    'dept_id': 10,
                     'node_uid': 'd_1-3',
                     'node_subject': 'dept',
                     'uid': '1-3',
@@ -216,13 +199,11 @@ class VisibleTreeTestCase(TestCase):
                     'remark': ''
                 },
                 'users': [{
-                    'user_id': 2,
                     'username': 'test',
                     'name': ''
                 }],
                 'nodes': [{
                     'info': {
-                        'dept_id': 12,
                         'node_uid': 'd_1-3-2',
                         'node_subject': 'dept',
                         'uid': '1-3-2',
@@ -230,7 +211,6 @@ class VisibleTreeTestCase(TestCase):
                         'remark': ''
                     },
                     'users': [{
-                        'user_id': 2,
                         'username': 'test',
                         'name': ''
                     }],
@@ -238,7 +218,6 @@ class VisibleTreeTestCase(TestCase):
                     'headcount': 1
                 }, {
                     'info': {
-                        'dept_id': 13,
                         'node_uid': 'd_1-3-3',
                         'node_subject': 'dept',
                         'uid': '1-3-3',
@@ -246,7 +225,6 @@ class VisibleTreeTestCase(TestCase):
                         'remark': ''
                     },
                     'users': [{
-                        'user_id': 2,
                         'username': 'test',
                         'name': ''
                     }],
@@ -268,7 +246,6 @@ class VisibleTreeTestCase(TestCase):
         res = self.client.get(reverse('siteapi:ucenter_node_tree', args=('g_1', )))
         expect = {
             'info': {
-                'group_id': 2,
                 'node_uid': 'g_1',
                 'node_subject': 'root',
                 'uid': '1',
@@ -278,7 +255,6 @@ class VisibleTreeTestCase(TestCase):
             },
             'nodes': [{
                 'info': {
-                    'group_id': 3,
                     'node_uid': 'g_1-1',
                     'node_subject': 'root',
                     'uid': '1-1',
@@ -286,7 +262,6 @@ class VisibleTreeTestCase(TestCase):
                 },
                 'nodes': [{
                     'info': {
-                        'group_id': 4,
                         'node_uid': 'g_1-1-1',
                         'node_subject': 'root',
                         'uid': '1-1-1',
@@ -294,7 +269,6 @@ class VisibleTreeTestCase(TestCase):
                     },
                     'nodes': [{
                         'info': {
-                            'group_id': 5,
                             'node_uid': 'g_1-1-1-1',
                             'node_subject': 'root',
                             'uid': '1-1-1-1',
@@ -306,7 +280,6 @@ class VisibleTreeTestCase(TestCase):
                     }]
                 }, {
                     'info': {
-                        'group_id': 6,
                         'node_uid': 'g_1-1-2',
                         'node_subject': 'root',
                         'uid': '1-1-2',
@@ -318,7 +291,6 @@ class VisibleTreeTestCase(TestCase):
                 }]
             }, {
                 'info': {
-                    'group_id': 10,
                     'node_uid': 'g_1-3',
                     'node_subject': 'root',
                     'uid': '1-3',
@@ -328,7 +300,6 @@ class VisibleTreeTestCase(TestCase):
                 },
                 'nodes': [{
                     'info': {
-                        'group_id': 12,
                         'node_uid': 'g_1-3-2',
                         'node_subject': 'root',
                         'uid': '1-3-2',
@@ -339,7 +310,6 @@ class VisibleTreeTestCase(TestCase):
                     'nodes': []
                 }, {
                     'info': {
-                        'group_id': 13,
                         'node_uid': 'g_1-3-3',
                         'node_subject': 'root',
                         'uid': '1-3-3',
@@ -356,7 +326,6 @@ class VisibleTreeTestCase(TestCase):
         res = self.client.get(reverse('siteapi:ucenter_node_tree', args=('g_1', )), data={'user_required': True})
         expect = {
             'info': {
-                'group_id': 2,
                 'node_uid': 'g_1',
                 'node_subject': 'root',
                 'uid': '1',
@@ -365,13 +334,11 @@ class VisibleTreeTestCase(TestCase):
                 'accept_user': True
             },
             'users': [{
-                'user_id': 2,
                 'username': 'test',
                 'name': ''
             }],
             'nodes': [{
                 'info': {
-                    'group_id': 3,
                     'node_uid': 'g_1-1',
                     'node_subject': 'root',
                     'uid': '1-1',
@@ -380,7 +347,6 @@ class VisibleTreeTestCase(TestCase):
                 'users': [],
                 'nodes': [{
                     'info': {
-                        'group_id': 4,
                         'node_uid': 'g_1-1-1',
                         'node_subject': 'root',
                         'uid': '1-1-1',
@@ -389,7 +355,6 @@ class VisibleTreeTestCase(TestCase):
                     'users': [],
                     'nodes': [{
                         'info': {
-                            'group_id': 5,
                             'node_uid': 'g_1-1-1-1',
                             'node_subject': 'root',
                             'uid': '1-1-1-1',
@@ -398,7 +363,6 @@ class VisibleTreeTestCase(TestCase):
                             'accept_user': True
                         },
                         'users': [{
-                            'user_id': 2,
                             'username': 'test',
                             'name': ''
                         }],
@@ -409,7 +373,6 @@ class VisibleTreeTestCase(TestCase):
                     1
                 }, {
                     'info': {
-                        'group_id': 6,
                         'node_uid': 'g_1-1-2',
                         'node_subject': 'root',
                         'uid': '1-1-2',
@@ -418,7 +381,6 @@ class VisibleTreeTestCase(TestCase):
                         'accept_user': True
                     },
                     'users': [{
-                        'user_id': 2,
                         'username': 'test',
                         'name': ''
                     }],
@@ -429,7 +391,6 @@ class VisibleTreeTestCase(TestCase):
                 1
             }, {
                 'info': {
-                    'group_id': 10,
                     'node_uid': 'g_1-3',
                     'node_subject': 'root',
                     'uid': '1-3',
@@ -438,13 +399,11 @@ class VisibleTreeTestCase(TestCase):
                     'accept_user': True
                 },
                 'users': [{
-                    'user_id': 2,
                     'username': 'test',
                     'name': ''
                 }],
                 'nodes': [{
                     'info': {
-                        'group_id': 12,
                         'node_uid': 'g_1-3-2',
                         'node_subject': 'root',
                         'uid': '1-3-2',
@@ -453,7 +412,6 @@ class VisibleTreeTestCase(TestCase):
                         'accept_user': True
                     },
                     'users': [{
-                        'user_id': 2,
                         'username': 'test',
                         'name': ''
                     }],
@@ -461,7 +419,6 @@ class VisibleTreeTestCase(TestCase):
                     'headcount': 1
                 }, {
                     'info': {
-                        'group_id': 13,
                         'node_uid': 'g_1-3-3',
                         'node_subject': 'root',
                         'uid': '1-3-3',
@@ -470,7 +427,6 @@ class VisibleTreeTestCase(TestCase):
                         'accept_user': True
                     },
                     'users': [{
-                        'user_id': 2,
                         'username': 'test',
                         'name': ''
                     }],
