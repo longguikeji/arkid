@@ -885,6 +885,16 @@ https://open-doc.dingtalk.com/microapp/serverapi2/clotub
 + Response 200 (application/json)
     + Attributes (UserProfile)
 
+## 用户在当前组织内的信息 [/ucenter/org/profile/]
+
+### 获取用户在当前组织内的信息 [GET]
++ Response 200 (application/json)
+    + Attributes
+        + employee_number - 工号
+        + position - 职位
+        + hiredate - 入职时间
+        + remark - 备注
+        + email - 企业内部邮箱
 
 ## 用户手机 [/ucenter/mobile/]
 deprecated
@@ -1675,8 +1685,8 @@ TODO: 可见权限的处理
     + role (在该组织内的角色)
 
 + Response 200 (application/json)
-   + Attributes (array[Organization]) - 组织信息列表
-
+    + Attributes (array)
+        + (Organization)
 ### 创建组织 [POST]
 
 + Request (application/json)
@@ -1708,11 +1718,11 @@ TODO: 可见权限的处理
     + Attributes (Organization)
 
 ## 组织成员 [/org/{oid}/user/{?page,page_size}]
- + Parameters
++ Parameters
     + oid (string) - 权限唯一标识
 
 ### 查看组织成员 [GET]
- + Parameters
++ Parameters
     + page (number)
     + page_size (number)
 + Response 200 (application/json)

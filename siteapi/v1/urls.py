@@ -139,6 +139,7 @@ urlpatterns = [
     url(r'^ucenter/register/$', ucenter_views.UserRegisterAPIView.as_view(), name='user_register'),
     url(r'^ucenter/ding/login/$', ucenter_views.DingLoginAPIView.as_view(), name='ding_login'),
     url(r'^ucenter/profile/$', ucenter_views.UcenterProfileAPIView.as_view(), name='ucenter_profile'),
+    url(r'^ucenter/org/(?P<oid>[\w|-]+)/profile/$', ucenter_views.UcenterOrgProfileAPIView.as_view(), name='ucenter_org_profile'),
     url(r'^ucenter/mobile/$', ucenter_views.UcenterMobileAPIView.as_view(), name='ucenter_mobile'),
     url(r'^ucenter/profile/invited/$',
         ucenter_views.UcenterProfileInvitedAPIView.as_view(),

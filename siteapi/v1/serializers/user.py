@@ -118,6 +118,23 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         return user
 
 
+class UserOrgProfileSerializer(DynamicFieldsModelSerializer):
+    '''
+    user org profile
+    '''
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = OrgMember
+
+        fields = (
+            'employee_number',
+            'position',
+            'hiredate',
+            'remark',
+            'email',
+        )
+
+
 class DingUserSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for DingUser
