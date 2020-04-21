@@ -12,9 +12,6 @@ describe('一账通-测试操作日志', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-       // let useraction = new UserAction();
-       // await useraction.login(page, 'admin', 'admin');
-
     },150000)
     afterAll ( async () => {
        // await page.close();
