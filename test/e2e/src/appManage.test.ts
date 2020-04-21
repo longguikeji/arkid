@@ -21,12 +21,9 @@ describe('一账通-应用管理添加应用', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-        //let useraction = new UserAction();
-        //await useraction.login(page, 'admin', 'admin');
-
     },200000)
     afterAll ( async () => {
-        //await page.close();
+
     })
 
     test('TEST_001:验证添加应用是否生效' , async() => {
@@ -58,9 +55,6 @@ describe('一账通-应用管理添加应用', () => {
     test('TEST_002:验证添加应用在工作台是否生效' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-        
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
 
         console.log(page.url());
 
@@ -88,8 +82,7 @@ describe('一账通-应用管理编辑应用', () => {
     let page : Page;
     
     beforeEach( async () => {
-       // page = await global.browser.newPage()
-       // await page.goto(config.url);
+
         page = await global.browser.newPage()
         await page.goto(config.url);
 
@@ -102,8 +95,6 @@ describe('一账通-应用管理编辑应用', () => {
     })
 
     test('TEST_001:验证编辑应用是否生效' , async() => {
-        //let useraction = new UserAction();
-       // await useraction.login(page, 'admin', 'admin');
 
         let appsmanageaction = new appsManageAction();
         await appsmanageaction.editAppMassage(page, "111",  "111");
@@ -127,11 +118,6 @@ describe('一账通-应用管理编辑应用', () => {
     },50000);
 
     test('TEST_002:验证编辑应用在工作台是否生效' , async() => {
-        //let useraction = new UserAction();
-        //await useraction.login(page, 'admin', 'admin');
-
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
 
         console.log(page.url());
        
@@ -188,8 +174,6 @@ describe('一账通-应用管理删除应用', () => {
     },50000);
 
     test('TEST_002:验证删除应用在工作台是否生效' , async() => {
-       // const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-       // await manageBtn.click();
 
         console.log(page.url());
 
@@ -208,7 +192,7 @@ describe('一账通-应用管理删除应用', () => {
     },30000);
 
 })
-/*
+
 describe('一账通-应用管理账号的权限', () => {
     let page : Page;
     
@@ -218,7 +202,7 @@ describe('一账通-应用管理账号的权限', () => {
 
     },500000)
     afterAll ( async () => {
-        //await page.close();
+
     })
 
     test('TEST_001:验证账号的权限是否生效' , async() => {
@@ -305,4 +289,4 @@ describe('一账通-应用管理部门的权限', () => {
 
     },30000);
 
-})*/
+})
