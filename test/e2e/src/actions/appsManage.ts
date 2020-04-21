@@ -2,6 +2,7 @@ import {Page, launch} from 'puppeteer';
 
 export class appsManageAction{
     public async addApps(page:Page, appName:string, url:string, remark:string){
+        
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
@@ -114,7 +115,7 @@ export class appsManageAction{
         await userCheckbox.click();
 
         await page.waitFor(2000);
-        
+
         const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large span');
         await keepBtn.click();
 
