@@ -114,6 +114,7 @@ export class appsManageAction{
         await userCheckbox.click();
 
         await page.waitFor(2000);
+        
         const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large span');
         await keepBtn.click();
 
