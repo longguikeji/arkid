@@ -67,9 +67,6 @@ export class groupAction{
         const groupNameINput = await page.waitForSelector('.ivu-drawer-body .ivu-input.ivu-input-default');
         await groupNameINput.type(groupName);
 
-        // const hiddenBtn = await page.waitForSelector('.ivu-form-item-content .ivu-select-dropdown-list>li:nth-child(2)');
-        // await hiddenBtn.click();
-
         const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
@@ -229,12 +226,6 @@ export class groupAction{
         const directUserInput = await page.waitForSelector('div.ivu-drawer-wrap.ui-edit-group > div > div > div > form > div.ivu-form-item.ivu-form-item-required > div > div > input');
         await directUserInput.type(groupName);
 
-        // const visibleBtn = await page.waitForSelector('.ivu-select-placeholder');
-        // await visibleBtn.click();
-
-        // const hiddenBtn = await page.waitForSelector('.ivu-select-dropdown-list>li:nth-child(4)');
-        // await hiddenBtn.click();
-
         const addBtn = await page.waitForSelector('.drawer-footer.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
@@ -362,8 +353,6 @@ export class groupAction{
     }
 
     public async groupPower(page:Page, search:string){
-        const groupBtn = await page.waitForSelector('.ui-group-tree.ivu-tree>ul:nth-child(2)');
-        await groupBtn.click();
 
         await page.waitFor(2000);
         
