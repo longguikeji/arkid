@@ -369,7 +369,7 @@ describe('一账通-个人资料测试', () => {
         await nameInput.type("111");
 
         const saveBtn = await page.waitForSelector('.flex-row.flex-auto .ivu-btn.ivu-btn-primary');
-         await saveBtn.click();
+        await saveBtn.click();
 
         page = await global.browser.newPage()
         await page.goto(config.url);
