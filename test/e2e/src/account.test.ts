@@ -50,14 +50,6 @@ describe('一账通-账号管理测试', () => {
         let accountaction = new accountAction();
         await accountaction.addAccount(page, "mxyzz",  "meixinyue", "mei123456", "mei123456", "15822186268", "1821788073@qq.com", "meixinyue11@163.com");         
 
-        // page = await global.browser.newPage()
-        // await page.goto(config.url);
-
-        // await useraction.login(page, 'admin', 'admin'); 
-
-        //const manageBtn2 = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        //await manageBtn2.click();
-
         await page.waitFor(5000);
 
         const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
@@ -88,8 +80,6 @@ describe('一账通-账号管理测试', () => {
     },50000);
 
     test('TEST_003:验证账号管理页面添加的新账号能否登录' , async() => {
-       // page = await global.browser.newPage()
-       // await page.goto(config.url);
 
         let useraction = new UserAction();
         await useraction.login(page, 'mxyzz', 'mei123456'); 
