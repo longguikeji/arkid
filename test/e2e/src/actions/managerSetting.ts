@@ -61,34 +61,6 @@ export class managerSettingAction{
 
         await page.waitFor(4000);
 
-        // const manageScopeBtn = await page.waitForSelector('div.manager-settings-scopes > div > div > label:nth-child(2) > span > input');
-        // await manageScopeBtn.click();
-
-        // await page.waitFor(2000);
-
-        // const scopeBtn = await page.waitForSelector('.manager-settings-scopes .placeholder');
-        // await scopeBtn.click();
-
-        // await page.waitFor(2000);
-
-        // const groupBtn = await page.waitForSelector('.base-list>li:nth-child(2)');
-        // await groupBtn.click();
-
-        // await page.waitFor(3000);
-
-        // const searchUserInput = await page.waitForSelector('div.search.ivu-input-wrapper.ivu-input-wrapper-default.ivu-input-type > input');
-        // await searchUserInput.type(search);
-
-        // await page.waitFor(2000);
-
-        // const selectCheckbox = await page.waitForSelector('body > div:nth-child(7) > div.ivu-modal-wrap.ui-choose-base > div > div > div.ivu-modal-body > div > div.ui-choose-base--middle > div > ul > li > label > span.ivu-checkbox > input');
-        // await selectCheckbox.click();
-
-        // const keepScopeBtn = await page.waitForSelector('body > div:nth-child(7) > div.ivu-modal-wrap.ui-choose-base > div > div > div.ivu-modal-footer > div > div > button.ivu-btn.ivu-btn-primary');
-        // await keepScopeBtn.click();
-
-        // await page.waitFor(2000);
-
         const creatUserBtn = await page.waitForSelector('.ivu-checkbox-group.ivu-checkbox-default>ul>li .ivu-checkbox-input');
         await creatUserBtn.click();
 
