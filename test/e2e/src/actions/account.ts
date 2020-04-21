@@ -4,7 +4,6 @@ export class accountAction{
     public async addAccount(page:Page, username:string, name:string, password:string, 
         repassword:string, phone:string, personalemail:string, email:string){
         
-        console.log("11111");
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
         
