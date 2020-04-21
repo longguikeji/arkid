@@ -17,7 +17,7 @@ export class UserAction{
         await loginBtn.click();
         
         console.log("login success");
-        await page.waitFor(3000);
+        await page.waitFor(4000);
 
     }
 
