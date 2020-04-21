@@ -659,18 +659,6 @@ describe('一账通-分组管理自定义分类分组添加成员', () => {
 
         await page.waitFor(2000);
 
-        // const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
-        // await accountBtn.click();
-
-        // await page.waitFor(3000);
-
-        // const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) span', elem => {
-        //     return elem.innerHTML;
-        // });
-        // await expect(userName2).toEqual('perectuser');
-
-        // await page.waitFor(2000);
-
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
 
@@ -748,22 +736,6 @@ describe('一账通-分组管理自定义分类分组编辑账号', () => {
 
         await page.waitFor(2000);
 
-        // const accountBtn = await page.waitForSelector('a[href="#/admin/account"]');
-        // await accountBtn.click();
-
-        // await page.waitFor(3000);
-        
-        // let accountaction = new accountAction();
-        // await accountaction.searchAccount(page, "bxiangmuzuuser");
-        // await page.waitFor(4000);
-
-        // const userName2 = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) span', elem => {
-        //     return elem.innerHTML;
-        // });
-        // await expect(userName2).toEqual('bxiangmuzuuser1');
-
-        // await page.waitFor(2000);
-
         const returnDeskBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await returnDeskBtn.click();
 
@@ -807,7 +779,7 @@ describe('一账通-分组管理自定义分类分组编辑账号', () => {
     },30000);
 
 })
-/*
+
 describe('一账通-分组管理编辑部门的权限', () => {
     let page : Page;
     
@@ -855,7 +827,7 @@ describe('一账通-分组管理编辑部门的权限', () => {
 
     test('TEST_002:验证修改权限后是否生效' , async() => {
         let useraction = new UserAction();
-        await useraction.login(page, 'bumen2user', 'bumen2user');
+        await useraction.login(page, 'mei123', 'meixinyue');
 
         const appNameInput = await page.waitForSelector('input[placeholder="搜索应用"]');
         await appNameInput.type("百度");
@@ -885,6 +857,7 @@ describe('一账通-分组管理编辑自定义分组的权限', () => {
 
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
+        
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
         await groupaction.personalGroupPower(page, "百度");
@@ -944,4 +917,4 @@ describe('一账通-分组管理自定义分组的权限', () => {
     },30000);
 
 })
-*/
+
