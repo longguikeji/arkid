@@ -11,6 +11,7 @@ describe('一账通-配置管理登录页面', () => {
     let page : Page;
     
     beforeEach( async () => {
+        
         page = await global.browser.newPage()
         await page.goto(config.url);      
 
