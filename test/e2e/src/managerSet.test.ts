@@ -29,9 +29,9 @@ describe('一账通-测试设置子管理员', () => {
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
-        await page.waitFor(2000);
+        await page.waitFor(5000);
 
-        const managerBtn = await page.waitForSelector('a[href="#/admin/manager"]');
+        const managerBtn = await page.waitForSelector('body > div.lg-layout > header > div.header-middle > ul > a:nth-child(5)');
         await managerBtn.click();
 
         await page.waitFor(3000);
@@ -229,7 +229,7 @@ describe('一账通-测试设置子管理员b', () => {
     },50000);
 
 })
-/*
+
 describe('一账通-测试设置子管理员c', () => {
     let page : Page;
     
@@ -459,4 +459,4 @@ describe('一账通-测试删除子管理员', () => {
 
     },80000);
 
-})*/
+})
