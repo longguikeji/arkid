@@ -3,7 +3,9 @@ authentications
 - HeaderArkerBaseAuthentication
 '''
 from rest_framework.authentication import BaseAuthentication
+from rest_framework import exceptions
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from oneid_meta.models import User
@@ -19,7 +21,6 @@ class HeaderArkerBaseAuthentication(BaseAuthentication):
         auth by header['HTTP_ARKER']
         '''
         arker = request.META.get('HTTP_ARKER', None)
-
         if arker in settings.CREDIBLE_ARKERS:
             return (self.get_user(request), None)
 
@@ -32,7 +33,7 @@ class HeaderArkerBaseAuthentication(BaseAuthentication):
         return User.valid_objects.get(username='admin')
 
 
-class CustomExpiringTokenAuthentication(ExpiringTokenAuthentication):
+class BaseExpiringTokenAuthentication(ExpiringTokenAuthentication):
     '''
     自定义token校验
     '''
@@ -41,6 +42,38 @@ class CustomExpiringTokenAuthentication(ExpiringTokenAuthentication):
         在校验 token 基础上记录活跃程度
         '''
         user, token = super().authenticate_credentials(key)
-        UserStatistics.set_active_count(user)
-        user.update_last_active_time()
+        if not settings.TESTING:
+            UserStatistics.set_active_count(user)
+            user.update_last_active_time()
+        return user, token
+
+
+class CustomExpiringTokenAuthentication(BaseExpiringTokenAuthentication):
+    '''
+    默认配置
+    - 记录活跃程度
+    - ...
+    '''
+
+
+class SUDOExpiringTokenAuthentication(BaseExpiringTokenAuthentication):
+    '''
+    支持 admin 使用 sudo 模式，以他人身份调用接口
+
+    用于作为其他系统的子部分时的场景
+    '''
+    def authenticate(self, request):
+        res = super().authenticate(request)
+        if not res:
+            return res
+
+        user, token = res
+        if user.is_admin:
+            sudo = request.META.get('HTTP_SUDO', "")
+            if sudo:
+                target = User.valid_objects.filter(username=sudo).first()
+                if target:
+                    return target, token
+                msg = _("Invalid SUDO")
+                raise exceptions.AuthenticationFailed(msg)
         return user, token

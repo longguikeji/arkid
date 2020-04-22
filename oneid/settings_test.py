@@ -13,7 +13,7 @@ if os.path.exists(os.path.join(BASE_DIR, 'oneid', 'settings.py')):
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
     # 'oneid.authentication.CustomExpiringTokenAuthentication',
-        'drf_expiring_authtoken.authentication.ExpiringTokenAuthentication',
+        'oneid.authentication.SUDOExpiringTokenAuthentication',
         'oneid.authentication.HeaderArkerBaseAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (

@@ -73,14 +73,14 @@ def create_user_meta(db_executer, user):
 
     # 通过私人邮箱匹配
     private_email = user.get('email', '')
-    if private_email:
+    if private_email != '':
         exist_private_email_user = User.valid_objects.filter(private_email=private_email).first()
         if exist_private_email_user:
             return db_executer.update_user(exist_private_email_user, user_info)
 
     # 通过企业邮箱匹配
     email = user.get('orgEmail', '')
-    if email:
+    if email != '':
         exist_email_user = User.valid_objects.filter(email=email).first()
         if exist_email_user:
             return db_executer.update_user(exist_email_user, user_info)
@@ -169,7 +169,8 @@ def build_user_group_rawdata(db_executer, role_manager, role_id, group_accept_us
 
         for user in role_user_list['result']['list']:
             user_in_group = User.valid_objects.get_queryset().filter(ding_user__uid=user['userid']).first()
-            if user_in_group and not GroupMember.valid_objects.filter(user=user_in_group, owner=group_accept_user).exists():
+            if user_in_group and not GroupMember.valid_objects.filter(user=user_in_group,\
+                owner=group_accept_user).exists():
                 user_obj_list.append(user_in_group)
 
         db_executer.add_users_to_group(user_obj_list, group_accept_user)

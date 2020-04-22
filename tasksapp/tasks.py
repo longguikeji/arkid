@@ -11,21 +11,21 @@ from ldap3 import Server
 from scripts import flush_perm, ldap_user_perm, ldap_aggregate_user, user_manager
 from executer.LDAP.client import Connection
 from infrastructure.utils.email import send_email as send_email_func
-from oneid_meta.models import User
+from oneid_meta.models import User, DingConfig
 from oneid_meta.models.mixin import TreeNode as Node
 
-logger = get_task_logger(__name__)
+logger = get_task_logger(__name__)    # pylint: disable=invalid-name
 
 
-class BaseTask(celery.Task):
+class BaseTask(celery.Task):    # pylint: disable=abstract-method
     '''
     base celery task
     '''
-    def on_failure(self, exc, task_id, args, kwargs, info):
+    def on_failure(self, exc, task_id, args, kwargs, info):    # pylint: disable=arguments-differ, unused-argument
         '''
         print err msg if failed
         '''
-        import traceback
+        import traceback    # pylint: disable=import-outside-toplevel
         logger.error(traceback.format_exc())
 
 
@@ -106,8 +106,31 @@ def import_ding():
     '''
     导入钉钉数据
     '''
-    from scripts.import_dingding_data import entrypoint as _import_ding
+    from scripts.import_dingding_data import entrypoint as _import_ding    # pylint: disable=import-outside-toplevel
     _import_ding()
+
+
+@shared_task(base=BaseTask)
+def override_ding():
+    '''
+    覆盖钉钉数据
+    '''
+    from scripts.override_dingding_data import entrypoint as _override_ding    # pylint: disable=import-outside-toplevel
+    _override_ding()
+
+
+@shared_task(base=BaseTask)
+def sync_ding():
+    '''
+    同步钉钉数据
+    '''
+    ding_config = DingConfig.get_current()
+    if ding_config.sync_state == 'pull':
+        import_ding()
+    elif ding_config.sync_state == 'push':
+        override_ding()
+    elif ding_config.sync_state == '':
+        return
 
 
 @shared_task(base=BaseTask)

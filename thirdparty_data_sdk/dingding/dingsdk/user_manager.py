@@ -10,7 +10,6 @@ class UserManager():
     """
     User Manage class, init with AccessTokenManager instance
     """
-
     def __init__(self, token_manager):
         """
         init the UserManager
@@ -31,12 +30,11 @@ class UserManager():
         """
 
         onlyactive_opt = 1 if onlyactive else 0
-        return self.request_manager.get(
-            request_url=constants.USER_GET_USER_COUNT_URL,
-            request_params={
-                'access_token': self.token(),
-                'onlyActive': onlyactive_opt
-            })
+        return self.request_manager.get(request_url=constants.USER_GET_USER_COUNT_URL,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'onlyActive': onlyactive_opt
+                                        })
 
     def add_user(self, name, mobile, departments, **kwargs):
         """
@@ -72,12 +70,11 @@ class UserManager():
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.USER_DELETE_URL,
-            request_params={
-                'access_token': self.token(),
-                'userid': uid
-            })
+        return self.request_manager.get(request_url=constants.USER_DELETE_URL,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'userid': uid
+                                        })
 
     def update_user(self, uid, **kwargs):
         """
@@ -143,23 +140,21 @@ class UserManager():
             'isLeaderInDepts' : '{1:true, 2:false}',
             'isHide': false,
             'department': [1, 2],
-            'position': '工程师',
+            'position': '工程师',#职位信息
             'avatar': 'dingtalk.com/abc.jpg',
             'jobnumber': '111111',
             'isSenior': False,
             'stateCode': '86',
             'id': 394299625,
-            'position': '',#职位信息
             'roles': [{u'groupName': '岗位', 'type': 0, 'id': 394299625, 'name': '经理'}],
         }
         """
 
-        return self.request_manager.get(
-            request_url=constants.USER_GET_DETAIL_URL,
-            request_params={
-                'access_token': self.token(),
-                'userid': uid
-            })
+        return self.request_manager.get(request_url=constants.USER_GET_DETAIL_URL,
+                                        request_params={
+                                            'access_token': self.token(),
+                                            'userid': uid
+                                        })
 
     def token(self):
         """
