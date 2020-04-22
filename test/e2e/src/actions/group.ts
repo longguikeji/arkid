@@ -377,7 +377,7 @@ export class groupAction{
         const yesBtn = await page.waitForSelector('.ivu-select-dropdown.ivu-dropdown-transfer .ivu-dropdown-menu>li');
         await yesBtn.click();
 
-        await page.waitFor(300000);
+        await page.waitFor(300000);//等待权限生效
 
     }
 
@@ -406,7 +406,7 @@ export class groupAction{
         const yesBtn = await page.waitForSelector('.ivu-select-dropdown.ivu-dropdown-transfer .ivu-dropdown-menu>li');
         await yesBtn.click();
 
-        await page.waitFor(300000);
+        await page.waitFor(300000);//等待权限生效
 
     }
 

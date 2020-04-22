@@ -6,13 +6,14 @@ import {setAction} from './actions/setting';
 import {accountAction} from './actions/account';
 import config from './config';
 import expectPuppeteer = require('expect-puppeteer');
-import { appMessageAction } from './actions/appMessage';
 import {groupAction} from './actions/group';
 import {configManageAction} from './actions/configManage';
 import {appsManageAction} from './actions/appsManage';
 import {managerSettingAction} from './actions/managerSetting';
 
 declare var global: any
+
+jest.setTimeout(600000);
 
 describe('一账通-应用管理添加应用', () => {
     let page : Page;
@@ -21,7 +22,7 @@ describe('一账通-应用管理添加应用', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },200000)
+    })
     afterAll ( async () => {
 
     })
@@ -50,13 +51,11 @@ describe('一账通-应用管理添加应用', () => {
         });
         await page.close();
 
-    },100000);
+    });
 
     test('TEST_002:验证添加应用在工作台是否生效' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
-
-        console.log(page.url());
 
         await page.waitFor(3000);
         const appName = await page.$eval('div.name-intro.flex-col.flex-auto > span.name', elem => {
@@ -74,7 +73,7 @@ describe('一账通-应用管理添加应用', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
 })
 
@@ -89,7 +88,7 @@ describe('一账通-应用管理编辑应用', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
-    },100000)
+    })
     afterEach ( async () => {
        // await page.close();
     })
@@ -115,11 +114,9 @@ describe('一账通-应用管理编辑应用', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
     test('TEST_002:验证编辑应用在工作台是否生效' , async() => {
-
-        console.log(page.url());
        
         await page.waitFor(3000);
  
@@ -138,7 +135,7 @@ describe('一账通-应用管理编辑应用', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
 })
 
@@ -152,7 +149,7 @@ describe('一账通-应用管理删除应用', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
         
-    },60000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -171,11 +168,9 @@ describe('一账通-应用管理删除应用', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
     test('TEST_002:验证删除应用在工作台是否生效' , async() => {
-
-        console.log(page.url());
 
         await page.waitFor(3000);
 
@@ -189,7 +184,7 @@ describe('一账通-应用管理删除应用', () => {
         });
         await page.close();
 
-    },30000);
+    });
 
 })
 
@@ -200,7 +195,7 @@ describe('一账通-应用管理账号的权限', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },500000)
+    })
     afterAll ( async () => {
 
     })
@@ -227,7 +222,7 @@ describe('一账通-应用管理账号的权限', () => {
         });
         await page.close();
 
-    },450000);
+    });
 
     test('TEST_001:验证账号的权限是否生效' , async() => {
 
@@ -244,7 +239,7 @@ describe('一账通-应用管理账号的权限', () => {
         });
         await page.close();
 
-    },30000);
+    });
 
 })
 
@@ -265,7 +260,7 @@ describe('一账通-应用管理部门的权限', () => {
         });
         await page.close();
 
-    },500000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -287,6 +282,6 @@ describe('一账通-应用管理部门的权限', () => {
         });
         await page.close();
 
-    },30000);
+    });
 
 })

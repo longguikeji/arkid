@@ -7,7 +7,6 @@ export class accountAction{
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
         
-        console.log(page.url());
         await page.waitFor(5000);
 
         const addAccountBtn = await page.waitForSelector('div.ui-user-list-toolbar.flex-row > div.flex-row.flex-auto > button.ivu-btn.ivu-btn-primary');
@@ -113,7 +112,7 @@ export class accountAction{
         const deleteBtn = await page.waitForSelector('.ivu-modal-confirm-footer>button:last-child');
         await deleteBtn.click();
 
-        await page.waitFor(2000);
+        await page.waitFor(3000);
 
     }
 }

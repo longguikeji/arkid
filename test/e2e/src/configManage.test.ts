@@ -7,6 +7,8 @@ import {configManageAction} from './actions/configManage';
 
 declare var global: any
 
+jest.setTimeout(600000);
+
 describe('一账通-配置管理登录页面', () => {
     let page : Page;
     
@@ -15,7 +17,7 @@ describe('一账通-配置管理登录页面', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);      
 
-    },190000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -42,7 +44,7 @@ describe('一账通-配置管理登录页面', () => {
         });
         await page.close();
         
-    },80000);
+    });
 
     test('TEST_002:验证修改公司面名称是否生效' , async() => {
         let useraction = new UserAction();
@@ -61,7 +63,7 @@ describe('一账通-配置管理登录页面', () => {
         });
         await page.close();
         
-    },50000);
+    });
 
     test('TEST_003:验证配置管理页面"去进行账号配置"链接' , async() => {
         let useraction = new UserAction();
@@ -78,6 +80,6 @@ describe('一账通-配置管理登录页面', () => {
         });
         await page.close();
         
-    },50000);
+    });
 
 })

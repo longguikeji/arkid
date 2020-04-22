@@ -7,8 +7,6 @@ export class appSearchAction{
 
         const appInput = await page.waitForSelector('.ivu-input.ivu-input-default.ivu-input-with-suffix');
         await  appInput.type(searchName);
-
-        console.log("11111111");
     }
 }
 
