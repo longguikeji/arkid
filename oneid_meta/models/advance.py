@@ -3,6 +3,7 @@ model for advanced feature
 '''
 
 from django.db import models
+from django_celery_beat.models import PeriodicTask
 
 from common.django.model import BaseModel
 
@@ -24,6 +25,22 @@ class CrontabPlugin(Plugin):
     周期性任务
     '''
     schedule = models.CharField(max_length=255, verbose_name='执行周期')
+
+    def delete(self, *args, **kwargs):
+        '''
+        - delete Crontab
+        - delete PeriodicTask
+        '''
+        if self.task:
+            self.task.delete()
+        super().kill()
+
+    @property
+    def task(self):
+        '''
+        实际负责周期任务的对象
+        '''
+        return PeriodicTask.objects.filter(task=self.import_path).first()
 
 
 class MiddlewarePlugin(Plugin):

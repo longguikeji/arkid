@@ -7,6 +7,7 @@ import pathlib
 import os
 from inspect import getmembers, isfunction
 
+from celery import Task
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
@@ -18,7 +19,7 @@ from siteapi.v1.serializers.advance import CrontabPluginSerializer, MiddlewarePl
 from oneid.permissions import IsAdminUser
 
 
-def collect_plugins(workspace):
+def collect_plugins(workspace, p_type):
     '''
     在指定目录下寻找所有符合条件的插件，以路径形式返回
     - python function
@@ -35,8 +36,11 @@ def collect_plugins(workspace):
 
             __import__(module_path)
             for name, obj in getmembers(import_string(module_path)):
-                if isfunction(obj) and name.endswith('_plugin'):
-                    yield '.'.join([module_path, name])
+                if name.endswith('_plugin'):
+                    if p_type == 'crontab' and isinstance(obj, Task):
+                        yield '.'.join([module_path, name])
+                    if p_type == 'middleware' and isfunction(obj):
+                        yield '.'.join([module_path, name])
 
 
 class CrontabPluginListAPIView(generics.ListAPIView):
@@ -50,9 +54,9 @@ class CrontabPluginListAPIView(generics.ListAPIView):
 
     def get(self, request, *args, **kwargs):
         workspace = pathlib.Path(settings.BASE_DIR) / 'plugins' / 'crontab'
-        plugin_paths = set(collect_plugins(workspace))
+        plugin_paths = set(collect_plugins(workspace, 'crontab'))
 
-        for plugin in CrontabPlugin.valid_objects.all():
+        for plugin in CrontabPlugin.objects.all():
             if plugin.import_path not in plugin_paths:
                 plugin.delete()
             else:
@@ -96,7 +100,7 @@ class MiddlewarePluginListAPIView(generics.ListCreateAPIView):
 
     def get(self, request, *args, **kwargs):
         workspace = pathlib.Path(settings.BASE_DIR) / 'plugins' / 'middleware'
-        plugin_paths = set(collect_plugins(workspace))
+        plugin_paths = set(collect_plugins(workspace, 'middleware'))
 
         for plugin in MiddlewarePlugin.valid_objects.all():
             if plugin.import_path not in plugin_paths:
