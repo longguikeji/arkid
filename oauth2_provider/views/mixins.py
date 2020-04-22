@@ -7,7 +7,6 @@ from ..exceptions import FatalClientError
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 
-
 log = logging.getLogger("oauth2_provider")
 
 SAFE_HTTP_METHODS = ["GET", "HEAD", "OPTIONS"]
@@ -93,7 +92,7 @@ class OAuthLibMixin(object):
 
         :param request: The current django.http.HttpRequest object
         """
-        core = self.get_oauthlib_core()
+        core = self.get_oauthlib_core()  # oauth2_provider.oauth2_backends.OAuthLibCore
         return core.validate_authorization_request(request)
 
     def create_authorization_response(self, request, scopes, credentials, allow):
@@ -104,12 +103,11 @@ class OAuthLibMixin(object):
         :param request: The current django.http.HttpRequest object
         :param scopes: A space-separated string of provided scopes
         :param credentials: Authorization credentials dictionary containing
-                           `client_id`, `state`, `redirect_uri`, `response_type`
+                           `client_id`, `state`, `redirect_uri`, `response_type`, `nonce`
         :param allow: True if the user authorize the client, otherwise False
         """
         # TODO: move this scopes conversion from and to string into a utils function
         scopes = scopes.split(" ") if scopes else []
-
         core = self.get_oauthlib_core()
         return core.create_authorization_response(request, scopes, credentials, allow)
 
@@ -199,6 +197,7 @@ class ProtectedResourceMixin(OAuthLibMixin):
     Helper mixin that implements OAuth2 protection on request dispatch,
     specially useful for Django Generic Views
     """
+
     def dispatch(self, request, *args, **kwargs):
         # let preflight OPTIONS requests pass
         if request.method.upper() == "OPTIONS":
