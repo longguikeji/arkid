@@ -26,7 +26,7 @@ export class managerSettingAction{
         const addBtn = await page.waitForSelector('.ui-edit-manager-page--footer .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
-        await page.waitFor(10000);
+        await page.waitFor(10000);//等待修改生效
 
     } 
 
@@ -67,7 +67,7 @@ export class managerSettingAction{
         const addBtn = await page.waitForSelector('.ui-edit-manager-page--footer .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
-        await page.waitFor(300000);
+        await page.waitFor(300000);//等待权限生效
 
     } 
 
@@ -111,7 +111,7 @@ export class managerSettingAction{
         const addBtn = await page.waitForSelector('.ui-edit-manager-page--footer .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
-        await page.waitFor(300000);
+        await page.waitFor(300000);//等待权限生效
 
     }
 
@@ -151,7 +151,7 @@ export class managerSettingAction{
         const addBtn = await page.waitForSelector('.ui-edit-manager-page--footer .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
-        await page.waitFor(300000);
+        await page.waitFor(300000);//等待权限生效
 
     }
 
@@ -192,7 +192,7 @@ export class managerSettingAction{
         const addBtn = await page.waitForSelector('.ui-edit-manager-page--footer .ivu-btn.ivu-btn-primary');
         await addBtn.click();
 
-        await page.waitFor(300000);
+        await page.waitFor(300000);//等待权限生效
 
     }
 
@@ -242,7 +242,7 @@ export class managerSettingAction{
         const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large');
         await keepBtn.click();
 
-        await page.waitFor(10000);
+        await page.waitFor(10000);//等待修改生效
 
     }
 

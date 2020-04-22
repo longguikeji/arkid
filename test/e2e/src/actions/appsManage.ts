@@ -119,7 +119,7 @@ export class appsManageAction{
         const keepBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary.ivu-btn-large span');
         await keepBtn.click();
 
-        await page.waitFor(400000);
+        await page.waitFor(400000);//等待权限生效
 
     }
 
@@ -162,7 +162,7 @@ export class appsManageAction{
         const keepBtn = await page.waitForSelector('div.ivu-modal-footer > div > div > button.ivu-btn.ivu-btn-primary');
         await keepBtn.click();
 
-        await page.waitFor(400000);
+        await page.waitFor(400000);//等待权限生效
 
     }
 

@@ -5,6 +5,8 @@ import expectPuppeteer = require('expect-puppeteer');
 
 declare var global: any
 
+jest.setTimeout(600000);
+
 describe('一账通-测试操作日志', () => {
     let page : Page;
     
@@ -12,7 +14,7 @@ describe('一账通-测试操作日志', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },150000)
+    })
     afterAll ( async () => {
        // await page.close();
     })
@@ -32,8 +34,6 @@ describe('一账通-测试操作日志', () => {
         await logBtn.click();
        
         await page.waitFor(10000); 
-        console.log("111111111111111111111111");
-        console.log(page.url());
  
         const loginLog = await page.$eval('.ivu-table-tbody>tr:first-child>td:last-child>div>div', elem => {
             return elem.innerHTML;
@@ -45,7 +45,7 @@ describe('一账通-测试操作日志', () => {
         });
         await expect(loginLogPer).toMatch('ad');
 
-    },100000);
+    });
 
     test('TEST_002:验证查看详细日志' , async() => {
       
@@ -66,6 +66,6 @@ describe('一账通-测试操作日志', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
 })

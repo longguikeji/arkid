@@ -7,6 +7,7 @@ import {groupAction} from './actions/group';
 import {accountAction} from './actions/account';
 
 declare var global: any
+jest.setTimeout(600000);
 
 describe('一账通-验证分组管理', () => {
     let page : Page;
@@ -15,7 +16,7 @@ describe('一账通-验证分组管理', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },180000)
+    })
     afterAll ( async () => {
        // await page.close();
     })
@@ -35,7 +36,7 @@ describe('一账通-验证分组管理', () => {
         });
         await page.close();
 
-    },80000);
+    });
 
     test('TEST_002:验证分组管理页面添加分组' , async() => {
         let useraction = new UserAction();
@@ -68,7 +69,7 @@ describe('一账通-验证分组管理', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
     test('TEST_003:验证分组管理分组可见性' , async() => {
         let useraction = new UserAction();
@@ -91,7 +92,7 @@ describe('一账通-验证分组管理', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
 })
 
@@ -108,7 +109,7 @@ describe('一账通-验证分组管理添加下级部门', () => {
         await groupaction.groupAddress(page);
         await groupaction.addLowGroup(page, "部门一2");
 
-    },60000)
+    })
     afterAll ( async () => {
        // await page.close();
     })
@@ -136,7 +137,7 @@ describe('一账通-验证分组管理添加下级部门', () => {
         });
         await page.close();
 
-    },60000);
+    });
 
 })
 
@@ -153,7 +154,7 @@ describe('一账通-验证分组管理添加账号', () => {
         await groupaction.groupAddress(page);
         await groupaction.addUser(page, "mei123", "mei123", "mei123", "mei123");
 
-    },100000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -196,7 +197,7 @@ describe('一账通-验证分组管理添加账号', () => {
         });
         await page.close();
 
-    },60000);
+    });
 
 })
 
@@ -207,7 +208,7 @@ describe('一账通-分组管理编辑账号', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
        
-    },80000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -256,7 +257,7 @@ describe('一账通-分组管理编辑账号', () => {
         });
         await page.close();
 
-    },40000);
+    });
 
     test('TEST_001:验证修改密码后能否登录' , async() => {
         let useraction = new UserAction();
@@ -270,7 +271,7 @@ describe('一账通-分组管理编辑账号', () => {
         });
         await page.close();
         
-    },30000);
+    });
 
 })
 
@@ -284,7 +285,7 @@ describe('一账通-分组管理调整分组', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
-    },100000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -329,7 +330,7 @@ describe('一账通-分组管理调整分组', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
 })
 
@@ -340,7 +341,7 @@ describe('一账通-分组管理移出分组', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },50000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -388,7 +389,7 @@ describe('一账通-分组管理移出分组', () => {
         });
         await page.close();
         
-    },50000);
+    });
 
 })
 
@@ -399,7 +400,7 @@ describe('一账通-分组管理添加自定义分组', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },200000)
+    })
     afterEach ( async () => {
         //await page.close();
     })
@@ -437,7 +438,7 @@ describe('一账通-分组管理添加自定义分组', () => {
         });
         await page.close();
         
-    },30000);
+    });
 
 })
 
@@ -455,7 +456,7 @@ describe('一账通-自定义分类添加分组分组', () => {
         await groupaction.groupAddress(page);
         await groupaction.personalUserGroup(page, "团员");
 
-    },30000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -492,7 +493,7 @@ describe('一账通-自定义分类添加分组分组', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
 })
 
@@ -503,7 +504,7 @@ describe('一账通-分组管理编辑自定义分类下分组', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },150000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -546,7 +547,7 @@ describe('一账通-分组管理编辑自定义分类下分组', () => {
         });
         await page.close();
         
-    },50000);
+    });
 
     test('TEST_001:验证编辑自定义分类下分组可见性后是否生效' , async() => {
         let useraction = new UserAction();
@@ -572,7 +573,7 @@ describe('一账通-分组管理编辑自定义分类下分组', () => {
         });
         await page.close();
         
-    },50000);
+    });
 
 })
 
@@ -590,7 +591,7 @@ describe('一账通-分组管理自定义分类分组添加下级分组', () => 
         await groupaction.groupAddress(page);
         await groupaction.addPerLowGroup(page, "分组一");
 
-    },50000)
+    })
     afterEach ( async () => {
        // await page.close();
     })
@@ -627,7 +628,7 @@ describe('一账通-分组管理自定义分类分组添加下级分组', () => 
         });
         await page.close();
         
-    },50000);
+    });
 
 })
 
@@ -638,7 +639,7 @@ describe('一账通-分组管理自定义分类分组添加成员', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },80000)
+    })
     afterEach ( async () => {
        // await page.close();
     })
@@ -685,7 +686,7 @@ describe('一账通-分组管理自定义分类分组添加成员', () => {
         });
         await page.close();
         
-    },50000);
+    });
 
     test('TEST_002:验证自定义分类分组添加成员能否登录' , async() => {
 
@@ -700,7 +701,7 @@ describe('一账通-分组管理自定义分类分组添加成员', () => {
         });
         await page.close();
 
-    },30000);
+    });
 
 })
 
@@ -711,7 +712,7 @@ describe('一账通-分组管理自定义分类分组编辑账号', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
        
-    },80000)
+    })
     afterAll ( async () => {
 
         await page.evaluate(() => {
@@ -762,7 +763,7 @@ describe('一账通-分组管理自定义分类分组编辑账号', () => {
         });
         await page.close();        
 
-    },50000);
+    });
 
     test('TEST_002:验证修改密码后能否登录' , async() => {
         let useraction = new UserAction();
@@ -776,7 +777,7 @@ describe('一账通-分组管理自定义分类分组编辑账号', () => {
         });
         await page.close();
         
-    },30000);
+    });
 
 })
 
@@ -787,7 +788,7 @@ describe('一账通-分组管理编辑部门的权限', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },530000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -809,7 +810,7 @@ describe('一账通-分组管理编辑部门的权限', () => {
         });
         await page.close();
        
-    },500000);
+    });
 
 })
 
@@ -820,7 +821,7 @@ describe('一账通-分组管理编辑部门的权限', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },530000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -844,7 +845,7 @@ describe('一账通-分组管理编辑部门的权限', () => {
         });
         await page.close();
         
-    },30000);
+    });
 
 })
 
@@ -862,7 +863,7 @@ describe('一账通-分组管理编辑自定义分组的权限', () => {
         await groupaction.groupAddress(page);
         await groupaction.personalGroupPower(page, "百度");
 
-    },530000)
+    })
     afterEach ( async () => {
         //await page.close();
     })
@@ -879,7 +880,7 @@ describe('一账通-分组管理编辑自定义分组的权限', () => {
         });
         await page.close();
        
-    },500000);
+    });
 
 })
 
@@ -890,7 +891,7 @@ describe('一账通-分组管理自定义分组的权限', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },530000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -914,7 +915,7 @@ describe('一账通-分组管理自定义分组的权限', () => {
         });
         await page.close();
         
-    },30000);
+    });
 
 })
 

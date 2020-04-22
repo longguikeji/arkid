@@ -9,6 +9,8 @@ import {managerSettingAction} from './actions/managerSetting';
 
 declare var global: any
 
+jest.setTimeout(600000);
+
 describe('一账通-测试设置子管理员', () => {
     let page : Page;
     
@@ -17,7 +19,7 @@ describe('一账通-测试设置子管理员', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
         
-    },200000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -44,7 +46,7 @@ describe('一账通-测试设置子管理员', () => {
         });
         await page.close();
         
-    },100000);
+    });
 
     test('TEST_002:验证设置子管理员是否生效' , async() => {
         let useraction = new UserAction();
@@ -72,7 +74,7 @@ describe('一账通-测试设置子管理员', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },100000);
+    });
 
 })
 
@@ -83,7 +85,7 @@ describe('一账通-测试设置子管理员a', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },500000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -107,7 +109,7 @@ describe('一账通-测试设置子管理员a', () => {
         });
         await page.close();
         
-    },400000);
+    });
 
     test('TEST_001:验证设置子管理员添加账号是否生效' , async() => {
         let useraction = new UserAction();
@@ -126,7 +128,7 @@ describe('一账通-测试设置子管理员a', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },50000);
+    });
 
     test('TEST_001:验证设置子管理员添加的账号能否登录' , async() => {
         let useraction = new UserAction();
@@ -141,7 +143,7 @@ describe('一账通-测试设置子管理员a', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },50000);
+    });
 
 })
 
@@ -152,7 +154,7 @@ describe('一账通-测试设置子管理员b', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },500000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -175,7 +177,7 @@ describe('一账通-测试设置子管理员b', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },400000);
+    });
 
     test('TEST_002:验证设置子管理员添加应用是否生效' , async() => {
         let useraction = new UserAction();
@@ -200,7 +202,7 @@ describe('一账通-测试设置子管理员b', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },50000);
+    });
 
 
     test('TEST_003:验证设置子管理员查看日志' , async() => {
@@ -226,7 +228,7 @@ describe('一账通-测试设置子管理员b', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },50000);
+    });
 
 })
 
@@ -237,7 +239,7 @@ describe('一账通-测试设置子管理员c', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },600000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -261,7 +263,7 @@ describe('一账通-测试设置子管理员c', () => {
         });
         await page.close();
 
-    },400000);
+    });
 
     test('TEST_002:验证设置子管理员公司信息配置' , async() => {
         let useraction = new UserAction();
@@ -290,7 +292,7 @@ describe('一账通-测试设置子管理员c', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();
-    },200000);
+    });
 
 })
 
@@ -301,7 +303,7 @@ describe('一账通-测试设置子管理员d', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },600000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -324,7 +326,7 @@ describe('一账通-测试设置子管理员d', () => {
         });
         await page.close();
 
-    },400000);
+    });
 
     test('TEST_001:验证设置子管理员应用权限' , async() => {
 
@@ -371,7 +373,7 @@ describe('一账通-测试设置子管理员d', () => {
         });
         await page.close();
 
-    },100000);
+    });
 
 })
 
@@ -393,7 +395,7 @@ describe('一账通-测试编辑子管理员', () => {
         });
         await page.close();
 
-    },500000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -423,7 +425,7 @@ describe('一账通-测试编辑子管理员', () => {
         });
         await page.close();
 
-    },200000);
+    });
 
 })
 
@@ -440,7 +442,7 @@ describe('一账通-测试删除子管理员', () => {
         let managersettingaction = new managerSettingAction();
         await managersettingaction.deleteManager(page);
 
-    },100000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -457,6 +459,6 @@ describe('一账通-测试删除子管理员', () => {
         });
         await page.close()
 
-    },80000);
+    });
 
 })

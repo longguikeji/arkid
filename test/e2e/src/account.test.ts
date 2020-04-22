@@ -4,7 +4,9 @@ import {accountAction} from './actions/account';
 import config from './config';
 import expectPuppeteer = require('expect-puppeteer');
 
-declare var global: any
+declare var global: any;
+
+jest.setTimeout(600000);
 
 describe('一账通-账号管理测试', () => {
     let page : Page;
@@ -13,7 +15,7 @@ describe('一账通-账号管理测试', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },200000)
+    })
     afterEach ( async () => {
        
     })
@@ -39,7 +41,7 @@ describe('一账通-账号管理测试', () => {
 
         await page.close();
 
-    },80000);
+    });
     
     test('TEST_002:验证账号管理页面添加新账号' , async() => {
         let useraction = new UserAction();
@@ -77,16 +79,14 @@ describe('一账通-账号管理测试', () => {
         });
 
         await page.close();
-    },50000);
+    });
 
     test('TEST_003:验证账号管理页面添加的新账号能否登录' , async() => {
 
         let useraction = new UserAction();
         await useraction.login(page, 'mxyzz', 'mei123456'); 
 
-        console.log("mxyzz login");
         await page.waitFor(2000);
-        console.log(page.url());
 
         const url = await page.url();
         await expect(url).toMatch('#/workspace/apps');
@@ -95,7 +95,7 @@ describe('一账通-账号管理测试', () => {
             localStorage.setItem('oneid', '');
         });
         await page.close();      
-    },40000);
+    });
 })
 
 describe('一账通-账号管理搜索账号', () => {
@@ -111,7 +111,7 @@ describe('一账通-账号管理搜索账号', () => {
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "mei111");          
 
-    },50000)
+    })
     afterAll ( async () => {
         
     })
@@ -128,7 +128,7 @@ describe('一账通-账号管理搜索账号', () => {
 
         await page.close();
 
-    },50000);
+    });
 
 })
 
@@ -139,7 +139,7 @@ describe('一账通-账号管理编辑账号', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },100000)
+    })
     afterEach ( async () => {
        
     })
@@ -165,7 +165,7 @@ describe('一账通-账号管理编辑账号', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
     test('TEST_002:验证修改密码后能否登录' , async() => {
         page = await global.browser.newPage()
@@ -183,7 +183,7 @@ describe('一账通-账号管理编辑账号', () => {
         });
         await page.close(); 
         
-    },40000);
+    });
 })
 
 describe('一账通-账号管理删除账号', () => {
@@ -198,7 +198,6 @@ describe('一账通-账号管理删除账号', () => {
 
         let accountaction = new accountAction();
         await accountaction.searchAccount(page, "bumen3user");
-        console.log("search bumen3user");
 
         await accountaction.deleteAccount(page);
 
@@ -209,7 +208,7 @@ describe('一账通-账号管理删除账号', () => {
         });
         await page.close();
 
-    },80000)
+    })
     afterAll ( async () => {
        
     })
@@ -237,7 +236,7 @@ describe('一账通-账号管理删除账号', () => {
         });
         await page.close();     
    
-    },80000);
+    });
 
 })
 

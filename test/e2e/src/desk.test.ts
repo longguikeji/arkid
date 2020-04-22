@@ -5,9 +5,10 @@ import {organizationAction} from './actions/organization';
 import {setAction} from './actions/setting';
 import config from './config';
 import expectPuppeteer = require('expect-puppeteer');
-import { appMessageAction } from './actions/appMessage';
 
 declare var global: any
+
+jest.setTimeout(600000);
 
 describe('一账通-登录测试', () => {
     let page : Page;
@@ -16,7 +17,7 @@ describe('一账通-登录测试', () => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
-    },150000)
+    })
 
     afterAll ( async () => {
 
@@ -28,7 +29,7 @@ describe('一账通-登录测试', () => {
         });
         await expect(pageTitle).toEqual('ArkID');
         
-    },30000);
+    });
 
     test('TEST_002:验证登录跳转链接' , async() => {
 
@@ -43,7 +44,7 @@ describe('一账通-登录测试', () => {
         });
         await page.close();
 
-    },80000);
+    });
 })
 
 describe('一账通-我的应用信息测试', () => {
@@ -56,14 +57,12 @@ describe('一账通-我的应用信息测试', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
         
-    },120000)
+    })
     afterAll ( async () => {
        // await page.close();
     })
     
     test('TEST_001:验证我的应用页面应用名称' , async() => {
-        let appmessageaction = new appMessageAction();
-        await appmessageaction.appinformation(page);
 
         const appName1 = await page.$eval('.card-list.flex-row>li:first-child .name', elem => {
             return elem.innerHTML;
@@ -80,7 +79,7 @@ describe('一账通-我的应用信息测试', () => {
         });
         await expect(appName3).toEqual('百度');
 
-    },30000);
+    });
 
     test('TEST_002:验证我的应用页面应用备注' , async() => {
         const appPs1 = await page.$eval('.card-list.flex-row>li:first-child .intro', elem => {
@@ -98,7 +97,7 @@ describe('一账通-我的应用信息测试', () => {
         });
         await expect(appPs3).toEqual('百度搜索');
 
-    },30000);
+    });
 
     test('TEST_003:验证我的应用页面搜索框' , async() => {
 
@@ -115,7 +114,7 @@ describe('一账通-我的应用信息测试', () => {
         });
         await page.close();
 
-    },60000);
+    });
 
 })
 
@@ -132,7 +131,7 @@ describe('一账通-通讯录测试', () => {
         let organizationaction = new organizationAction();
         await organizationaction.origanization(page);
         
-    },150000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -141,7 +140,7 @@ describe('一账通-通讯录测试', () => {
         //await page.waitFor(2000);
         const url = await page.url();
         await expect(url).toMatch('workspace/contacts');
-    },30000);
+    });
 
     test('TEST_002:验证通讯录页面的部门分类' , async() => {
         const departmentName1 = await page.$eval('.dept-list>li:first-child .name.flex-auto', elem => {
@@ -195,7 +194,7 @@ describe('一账通-通讯录测试', () => {
         });
         await expect(departmentName32).toEqual('bumen3user');
         
-    },60000);
+    });
 
     test('TEST_004:验证通讯录页面自定义分类的项目组' , async() => {
         const departmentBtn = await page.waitForSelector('.ui-contact-page--side>li:last-child');
@@ -263,7 +262,7 @@ describe('一账通-通讯录测试', () => {
         });
         await page.close();
         
-    },50000);   
+    });   
 
 })
 
@@ -277,7 +276,7 @@ describe('一账通-个人资料测试', () => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
         
-    },130000)
+    })
     afterAll ( async () => {
         //await page.close();
     })
@@ -295,7 +294,7 @@ describe('一账通-个人资料测试', () => {
         });
         await page.close();
 
-    },30000);
+    });
 
     test('TEST_002:验证个人资料页面添加手机号' , async() => {
         let setaction = new setAction();
@@ -327,7 +326,7 @@ describe('一账通-个人资料测试', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
     test('TEST_003:验证个人资料页面添加邮箱' , async() => {
         let setaction = new setAction();
@@ -359,7 +358,7 @@ describe('一账通-个人资料测试', () => {
         });
         await page.close();
 
-    },30000);
+    });
 
     test('TEST_004:验证个人资料页面修改姓名' , async() => {
         let setaction = new setAction();
@@ -397,6 +396,6 @@ describe('一账通-个人资料测试', () => {
         });
         await page.close();
 
-    },50000);
+    });
 
 })
