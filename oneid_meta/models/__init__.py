@@ -46,3 +46,8 @@ from oneid_meta.models.log import (
     RequestAccessLog,
     RequestDataClientLog,
 )
+
+from oneid_meta.models.advance import (
+    MiddlewarePlugin,
+    CrontabPlugin,
+)
