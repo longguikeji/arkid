@@ -87,6 +87,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'oneid.middleware.dynamic_custom_middleware',
 ]
 
 TEMPLATE_CONTEXT_PROCESSORS = [
