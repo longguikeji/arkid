@@ -10,7 +10,8 @@ DATABASES = {
         'PORT': '3306',
         'OPTIONS': {
             'autocommit': True,
-            'init_command': 'SET default_storage_engine=MyISAM',
+            'init_command': 'SET default_storage_engine=InnoDB',
+            'charset': 'utf8mb4',
         },
     }
 }

@@ -48,8 +48,8 @@ services:
       - ${WORKSPACE}/db/data:/var/lib/mysql
       - ${WORKSPACE}/db/config:/etc/mysql/conf.d
     command:
-      - "--character-set-server=utf8"
-      - "--collation-server=utf8_unicode_ci"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
 
   ldap:
     image: longguikeji/ark-sql-ldap:1.2.0
