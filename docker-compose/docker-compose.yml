@@ -26,6 +26,7 @@ services:
     volumes:
       - ${WORKSPACE}/be/settings.py:/var/oneid/settings_local.py
       - ${WORKSPACE}/be/upload:/var/oneid/upload
+      - ${WORKSPACE}/be/plugins:/var/oneid/plugins
 
   fe:
     image: longguikeji/arkid-fe:1.2.0
