@@ -536,6 +536,22 @@ FORMAT: 1A
 ## Log (LiteLog)
 + detail (string) - 详细信息
 
+## CrontabPlugin (object)
++ uuid
++ name
++ detail
++ import_path
++ is_active (boolean)
++ schedule
+
+## MiddlewarePlugin (object)
++ uuid
++ name
++ detail
++ import_path
++ is_active (boolean)
++ order_no (number)
+
 # Group Infrastructure
 基础设施
 
@@ -2314,6 +2330,55 @@ Content-Disposition: form-data; name='node_uid'
 + Response 200 (application/json)
     + Attributes (Log)
 
+# Group advanced
+
+## crontab 插件 [/plugin/crontab/]
+
+### 获取所有 crontab 插件 [GET]
++ Response 200 (application/json)
+    + Attributes (array[CrontabPlugin])
+
+## 特定 crontab 插件 [/plugin/crontab/{uuid}/]
++ Parameters
+    + uuid (string) - 插件唯一标识
+
+### 获取指定 crontab 插件 [GET]
++ Response 200 (application/json)
+    + Attributes (CrontabPlugin)
+
+### 修改指定 crontab 插件 [PATCH]
++ Requests JSON Message
+    + name
+    + detail
+    + schedule
+    + is_active (boolean)
+
++ Response 200 (application/json)
+    + Attributes (CrontabPlugin)
+
+## middleware 插件 [/plugin/middleware/]
+
+### 获取所有 middleware 插件 [GET]
++ Response 200 (application/json)
+    + Attributes (array[MiddlewarePlugin])
+
+## 特定 middleware 插件 [/plugin/middleware/{uuid}/]
++ Parameters
+    + uuid (string) - 插件唯一标识
+
+### 获取指定 middleware 插件 [GET]
++ Response 200 (application/json)
+    + Attributes (MiddlewarePlugin)
+
+### 修改指定 middleware 插件 [PATCH]
++ Requests JSON Message
+    + name
+    + detail
+    + order_no (number)
+    + is_active (boolean)
+
++ Response 200 (application/json)
+    + Attributes (MiddlewarePlugin)
 
 # 钉钉扫码登录
 

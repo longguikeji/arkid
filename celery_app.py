@@ -16,6 +16,7 @@ app = Celery(    # pylint: disable=invalid-name
     include={
         'tasksapp.tasks',
         'ldap.sql_backend.scripts',
+        'plugins.crontab.tasks',
     },
 )
 app.config_from_object(settings, namespace='CELERY')

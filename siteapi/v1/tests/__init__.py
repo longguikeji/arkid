@@ -78,3 +78,22 @@ class TestCase(django_TestCase):
         '''
         pre-work: create necessary objs
         '''
+
+    def assertEqualScoped(self, first, second, keys=None, msg=""):    # pylint: disable=invalid-name
+        '''
+        断言两个对象的局部是否相等
+        目前仅限 dict 对象
+        '''
+        if keys is None:
+            return self.assertEqual(first, second, msg)
+        for key in keys:
+            self.assertEqual(first[key], second[key], msg=f'[{key}]:' + msg)
+
+    @staticmethod
+    def extract(data, keys=None):
+        '''
+        extract specified keys from dict
+        '''
+        if keys is None:
+            return data
+        return {key: data.get(key) for key in keys}
