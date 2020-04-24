@@ -1,6 +1,9 @@
+"""
+Define ArkIDResponse & it's Subclass
+"""
 import logging
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class ArkIDResponse(object):
@@ -14,7 +17,6 @@ class ArkIDResponse(object):
     < ArkIDResponse > 对象封装 HTTP 响应的数据给调用者，大多数的操作都是基于
     与这些数据进行交互。
     """
-
     def __init__(self, data, client=None):
         # 初始化客户端类型
         self.client = client
@@ -32,7 +34,7 @@ class ArkIDResponse(object):
         try:
             return data[key]
         except TypeError:
-            logger.error("无法基于<'{}'>类型索引响应数据".format(type(self)))
+            LOGGER.error("无法基于{}类型索引响应数据".format(type(self)))
             raise TypeError('此类型的响应数据不支持索引。')
 
     def __contains__(self, item):
@@ -63,19 +65,18 @@ class ArkIDHTTPResponse(ArkIDResponse):
     :ivar http_status: HTTP status code returned by the server (int)
     :ivar content_type: Content-Type header returned by the server (str)
     """
-
     def __init__(self, http_response, client=None):
         # 初始化 HTTP 响应数据
         ArkIDResponse.__init__(self, http_response, client=client)
         self.http_status = http_response.status_code
-        self.content_type = http_response.headers["Content-Type"]
+        self.content_type = http_response.headers.get('Content-Type', None)
 
     @property
     def data(self):
         try:
             return self._data.json()
         except ValueError:
-            logger.warning('由于无效的JSON格式，< ArkIDHTTPResponse > 对象的 `data` 参数值为空')
+            LOGGER.warning('由于无效的JSON格式，< ArkIDHTTPResponse > 对象的 `data` 参数值为空')
             return None
 
     @property

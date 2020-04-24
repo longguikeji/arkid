@@ -1,9 +1,12 @@
+"""
+Define AuthClient
+"""
 import logging
 
 from arkid_client.exceptions import AuthAPIError
 from arkid_client.base import BaseClient
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class AuthClient(BaseClient):
@@ -32,10 +35,5 @@ class AuthClient(BaseClient):
 
     error_class = AuthAPIError
 
-    def __init__(self, client_id=None, authorizer=None, **kwargs):
-        self.client_id = client_id
-
-        # an AuthClient may contain a ArkIDOIDCFlowManager in order to
-        # encapsulate the functionality of various different types of flow managers
-        # self.current_oidc_flow_manager = None
-        BaseClient.__init__(self, "ucenter", authorizer=authorizer, **kwargs)
+    def __init__(self, service=None, authorizer=None, **kwargs):
+        BaseClient.__init__(self, service or "ucenter", authorizer=authorizer, **kwargs)

@@ -14,11 +14,10 @@ from six.moves.configparser import (
 
 from arkid_client.exceptions import ArkIDError, ArkIDSDKUsageError
 
-logger = logging.getLogger(__name__)
-
+LOGGER = logging.getLogger(__name__)
 
 # at import-time, it's None
-_parser = None
+_PARSER = None
 
 
 def _get_lib_config_path():
@@ -28,11 +27,11 @@ def _get_lib_config_path():
     """
     fname = "oneid.cfg"
     try:
-        logger.debug("Attempting pkg_resources load of lib config")
+        LOGGER.debug("Attempting pkg_resources load of lib config")
         path = pkg_resources.resource_filename("arkid", fname)
-        logger.debug("pkg_resources load of lib config success")
+        LOGGER.debug("pkg_resources load of lib config success")
     except ImportError:
-        logger.debug("pkg_resources load of lib config failed, failing over to path joining")
+        LOGGER.debug("pkg_resources load of lib config failed, failing over to path joining")
         pkg_path = os.path.dirname(__file__)
         path = os.path.join(pkg_path, fname)
     return path
@@ -46,10 +45,10 @@ class ArkIDConfigParser(object):
     _GENERAL_CONF_SECTION = "general"
 
     def __init__(self):
-        logger.debug("Loading SDK Config parser")
+        LOGGER.debug("Loading SDK Config parser")
         self._parser = ConfigParser()
         self._load_config()
-        logger.debug("Config load succeeded")
+        LOGGER.debug("Config load succeeded")
 
     def _load_config(self):
         """
@@ -58,13 +57,11 @@ class ArkIDConfigParser(object):
         try:
             self._parser.read(_get_lib_config_path())
         except MissingSectionHeaderError:
-            logger.error(
-                (
-                    # TODO
-                )
-            )
+            LOGGER.error((
+            # TODO
+            ))
             raise ArkIDError(
-                # TODO
+            # TODO
             )
 
     def get(
@@ -100,14 +97,14 @@ class ArkIDConfigParser(object):
         env_option_name = "ARKID_SDK_{}".format(option.upper())
         value = None
         if check_env and env_option_name in os.environ:
-            logger.debug("载入来自{}={}环境的配置".format(env_option_name, value))
+            LOGGER.debug("载入来自{}={}环境的配置".format(env_option_name, value))
             value = os.environ[env_option_name]
         else:
             try:
                 value = self._parser.get(section, option)
             except (NoOptionError, NoSectionError):
                 if failover_to_general:
-                    logger.debug("载入配置 [{}]:{} 失败，将从[general]选项下加载配置".format(section, option))
+                    LOGGER.debug("载入配置 [{}]:{} 失败，将从[general]选项下加载配置".format(section, option))
                     value = self.get(option, section=self._GENERAL_CONF_SECTION)
 
         if value is not None:
@@ -120,34 +117,37 @@ def _get_parser():
     Singleton pattern implemented via a global variable and function.
     There is only ever one _parser, and it is always returned by this function.
     """
-    global _parser
-    if _parser is None:
-        _parser = ArkIDConfigParser()
-    return _parser
+    global _PARSER
+    if _PARSER is None:
+        _PARSER = ArkIDConfigParser()
+    return _PARSER
 
 
-def get_service_url(environment, service):
-    logger.debug(
-        'Service URL Lookup for "{}" under env "{}"'.format(service, environment)
-    )
-    p = _get_parser()
+def get_service_url(environment: str, service: str):
+    """
+    :param environment:
+    :param service:
+    """
+    LOGGER.debug('Service URL Lookup for "{}" under env "{}"'.format(service, environment))
+    _parser = _get_parser()
     option = service + "_service"
     # TODO: validate with urlparse?
-    url = p.get(option, environment=environment)
+    url = _parser.get(option, environment=environment)
     if url is None:
         raise ArkIDSDKUsageError(
-            (
-                'Failed to find a url for service "{}" in environment "{}". '
-                'Please double-check that ARKID_SDK_ENVIRONMENT is set correctly, or not set at all'
-            ).format(service, environment)
-        )
-    logger.debug('Service URL Lookup Result: "{}" is at "{}"'.format(service, url))
+            ('Failed to find a url for service "{}" in environment "{}". '
+             'Please double-check that ARKID_SDK_ENVIRONMENT is set correctly, or not set at all').format(
+                 service, environment))
+    LOGGER.debug('Service URL Lookup Result: "{}" is at "{}"'.format(service, url))
     return url
 
 
-def get_http_timeout(environment):
-    p = _get_parser()
-    value = p.get(
+def get_http_timeout(environment: str):
+    """
+    :param environment:
+    """
+    _parser = _get_parser()
+    value = _parser.get(
         "http_timeout",
         environment=environment,
         failover_to_general=True,
@@ -155,13 +155,16 @@ def get_http_timeout(environment):
         type_cast=float,
     )
     value = 60 if value is None else value
-    logger.debug("default http_timeout set to {}".format(value))
+    LOGGER.debug("default http_timeout set to {}".format(value))
     return value
 
 
-def get_ssl_verify(environment):
-    p = _get_parser()
-    value = p.get(
+def get_ssl_verify(environment: str):
+    """
+    :param environment:
+    """
+    _parser = _get_parser()
+    value = _parser.get(
         "ssl_verify",
         environment=environment,
         failover_to_general=False,
@@ -170,17 +173,20 @@ def get_ssl_verify(environment):
     )
     if value is None:
         return True
-    logger.debug("ssl_verify set to {}".format(value))
+    LOGGER.debug("ssl_verify set to {}".format(value))
     return value
 
 
-def _bool_cast(value):
+def _bool_cast(value: str):
+    """
+    :param value:
+    """
     value = value.lower()
     if value in ("1", "yes", "true", "on"):
         return True
-    elif value in ("0", "no", "false", "off"):
+    if value in ("0", "no", "false", "off"):
         return False
-    logger.error('Value "{}" can\'t cast to bool'.format(value))
+    LOGGER.error('Value "{}" can\'t cast to bool'.format(value))
     raise ValueError("Invalid config bool")
 
 
@@ -199,7 +205,5 @@ def get_arkid_environ(input_env=None):
         env = input_env
 
     if env != "default":
-        logger.info(
-            ("载入非默认配置环境 arkid_environment={}".format(env))
-        )
+        LOGGER.info(("载入非默认配置环境 arkid_environment={}".format(env)))
     return env

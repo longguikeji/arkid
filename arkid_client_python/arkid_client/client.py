@@ -1,3 +1,6 @@
+"""
+Define ArkIDClient
+"""
 from arkid_client.base import BaseClient
 from arkid_client.authorizers import BasicAuthorizer
 from arkid_client.authorizers import NullAuthorizer
@@ -20,10 +23,8 @@ class ArkIDClient(BaseClient):
     ]
 
     def __init__(self, service: str, authorizer=None, *args, **kwargs):
-        BaseClient.__init__(
-            self, service, authorizer=authorizer, *args, **kwargs
-        )
         self.__user_client = None
+        BaseClient.__init__(self, service, authorizer=authorizer, *args, **kwargs)
 
     def __init_client(self, client_class):
         """
@@ -41,9 +42,26 @@ class ArkIDClient(BaseClient):
             setattr(self, attr, _client)
         return _client
 
-    def query_user_list(self):
+    def query_user(self, **params):
         """
-        调用底层 < UserClient > 实例的方法
+        调用底层 < UserClient > 实例的 query_user 方法
+        :param params: 详情见底层说明
+        :return:
         """
         self.__user_client = self.__init_client(UserClient)
-        return self.__user_client.query_user_list()
+        return self.__user_client.query_user(**params)
+
+    def query_isolated_user(self):
+        """
+        调用底层 < UserClient > 实例的 query_isolated_user 方法
+        :return:
+        """
+
+    def create_user(self, json_body: dict):
+        """
+        调用底层 < UserClient > 实例的 create_user 方法
+        :param json_body: 详情见底层说明
+        :return:
+        """
+        self.__user_client = self.__init_client(UserClient)
+        return self.__user_client.create_user(json_body)

@@ -1,7 +1,10 @@
+"""
+Define ArkIDError & it's Subclass
+"""
 import logging
 import requests
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class ArkIDError(Exception):
@@ -31,37 +34,18 @@ class ArkIDAPIError(ArkIDError):
                    useful to developers, but there may be cases where it's
                    suitable for display to end users.
     """
-
     def __init__(self, response, *args, **kwargs):
         self._underlying_response = response
         self.http_status = response.status_code
-        if "Content-Type" in response.headers and (
-            "application/json" in response.headers["Content-Type"]
-        ):
-            logger.debug(
-                (
-                    "响应对象的 Content-Type 为 `application/json`。 "
-                    "正在以 JSON 格式载入错误信息。"
-                )
-            )
+        if "Content-Type" in response.headers and ("application/json" in response.headers["Content-Type"]):
+            LOGGER.debug("响应对象的 Content-Type 为 `application/json`。 " "正在以 JSON 格式载入错误信息。")
             try:
                 self._load_from_json(response.json())
             except (KeyError, ValueError):
-                logger.error(
-                    (
-                        "无法对错误信息进行 JSON 格式解析，"
-                        "响应对象的 Content-Type 参数值使用错误，"
-                        "或者响应消息体不符合规范。"
-                    )
-                )
+                LOGGER.error("无法对错误信息进行 JSON 格式解析，" "响应对象的 Content-Type 参数值使用错误，" "或者响应消息体不符合规范。")
                 self._load_from_text(response.text)
         else:
-            logger.debug(
-                (
-                    "暂不支持响应对象的 Content-Type 类型， "
-                    "正在以文本格式加载错误信息（默认）。"
-                )
-            )
+            LOGGER.debug("暂不支持响应对象的 Content-Type 类型， " "正在以文本格式加载错误信息（默认）。")
             # fallback to using the entire body as the message for all other types
             self._load_from_text(response.text)
         args = self._get_args()
@@ -76,19 +60,11 @@ class ArkIDAPIError(ArkIDError):
         如果响应信息无法通过 JSON 格式加载， 则返回 None 。
         """
         response = self._underlying_response
-        if "Content-Type" in response.headers and (
-            "application/json" in response.headers["Content-Type"]
-        ):
+        if "Content-Type" in response.headers and ("application/json" in response.headers["Content-Type"]):
             try:
                 return response.json()
             except ValueError:
-                logger.error(
-                    (
-                        "无法对错误信息进行 JSON 格式解析，"
-                        "响应对象的 Content-Type 参数值使用错误，"
-                        "或者响应消息体不符合规范。"
-                    )
-                )
+                LOGGER.error("无法对错误信息进行 JSON 格式解析，" "响应对象的 Content-Type 参数值使用错误，" "或者响应消息体不符合规范。")
                 return None
         else:
             return None
@@ -126,12 +102,11 @@ class ArkIDAPIError(ArkIDError):
 class UserAPIError(ArkIDAPIError):
     """
     Error class for the User API client. In addition to the
-    inherited ``code`` and ``message`` instance variables, provides:
+    inherited ``message`` instance variables, provides:
 
     :ivar error_data: Additional object returned in the error response. May be
                       a dict, list, or None.
     """
-
     def __init__(self, response):
         self.error_data = None
         ArkIDAPIError.__init__(self, response)
@@ -140,15 +115,14 @@ class UserAPIError(ArkIDAPIError):
         return self.http_status, self.message
 
 
-class ConfigAPIError(ArkIDAPIError):
+class OrgAPIError(ArkIDAPIError):
     """
-    Error class for the Config API client. In addition to the
-    inherited ``code`` and ``message`` instance variables, provides:
+    Error class for the Org API client. In addition to the
+    inherited ``message`` instance variables, provides:
 
     :ivar error_data: Additional object returned in the error response. May be
                       a dict, list, or None.
     """
-
     def __init__(self, response):
         self.error_data = None
         ArkIDAPIError.__init__(self, response)
@@ -159,7 +133,7 @@ class ConfigAPIError(ArkIDAPIError):
 
 class AuthAPIError(ArkIDAPIError):
     """
-    Error class for the API components of Globus Auth.
+    Error class for the API components of ArkID Auth.
 
     Customizes JSON parsing.
     """
@@ -173,7 +147,6 @@ class NetworkError(ArkIDError):
     Holds onto original exception data, but also takes a message
     to explain potentially confusing or inconsistent exceptions passed to us
     """
-
     def __init__(self, message, exception, *args, **kwargs):
         super(NetworkError, self).__init__(message)
         self.underlying_exception = exception
@@ -201,7 +174,7 @@ def convert_request_exception(exception):
     if isinstance(exception, requests.Timeout):
         return ArkIDTimeoutError("Timeout Error on request", exception)
 
-    elif isinstance(exception, requests.ConnectionError):
+    if isinstance(exception, requests.ConnectionError):
         return ArkIDConnectionError("Connection Error on request", exception)
 
     return NetworkError("Network Error on request", exception)
