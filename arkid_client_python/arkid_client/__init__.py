@@ -9,15 +9,14 @@ r"""
 
 import logging
 
-from arkid.auth import (
+from arkid_client.auth import (
     AuthClient,
-
 )
-from arkid.authorizers import (
+from arkid_client.authorizers import (
     AccessTokenAuthorizer,
     BasicAuthorizer,
 )
-from arkid.exceptions import (
+from arkid_client.exceptions import (
     AuthAPIError,
     ArkIDAPIError,
     ArkIDConnectionError,
@@ -27,10 +26,25 @@ from arkid.exceptions import (
     ArkIDTimeoutError,
     NetworkError,
 )
-from arkid.response import ArkIDHTTPResponse, ArkIDResponse
+from arkid_client.response import ArkIDHTTPResponse, ArkIDResponse
+from arkid_client.version import (
+    __version__,
+    __author__,
+    __copyright__,
+    __license__,
+    __version_info__,
+    __title__,
+)
 
 
 __all__ = (
+    '__version__',
+    '__author__',
+    '__copyright__',
+    '__license__',
+    '__version_info__',
+    '__title__',
+
     'AuthClient',
 
     "ArkIDError",
@@ -51,14 +65,4 @@ __all__ = (
 
 )
 
-
-VERSION = (0, 1, 0, 'final', 0)
-__title__ = 'arkid-sdk'
-__version_info__ = VERSION
-__version__ = '.'.join(map(
-    str, VERSION[:3])) + ('-{}{}'.format(VERSION[3], VERSION[4] or '') if VERSION[3] != 'final' else '')
-__author__ = 'LongGuiKeJi'
-__license__ = 'GNU'
-__copyright__ = 'Copyright 2018-2020 LongGuiKeJi'
-
-logging.getLogger("arkid").addHandler(logging.NullHandler())
+logging.getLogger("arkid_client").addHandler(logging.NullHandler())

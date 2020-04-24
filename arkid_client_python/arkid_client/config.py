@@ -12,7 +12,7 @@ from six.moves.configparser import (
     NoSectionError,
 )
 
-from arkid.exceptions import ArkIDError, ArkIDSDKUsageError
+from arkid_client.exceptions import ArkIDError, ArkIDSDKUsageError
 
 logger = logging.getLogger(__name__)
 

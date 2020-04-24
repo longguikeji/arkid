@@ -2,9 +2,10 @@ import json
 import requests
 import logging
 
-from arkid import config
-from arkid.exceptions import ArkIDAPIError, ArkIDSDKUsageError, convert_request_exception
-from arkid.response import ArkIDHTTPResponse
+from arkid_client import config
+from arkid_client.exceptions import ArkIDAPIError, ArkIDSDKUsageError, convert_request_exception
+from arkid_client.response import ArkIDHTTPResponse
+from arkid_client.version import __version__
 
 
 class ClientLogAdapter(logging.LoggerAdapter):
@@ -52,7 +53,7 @@ class BaseClient(object):
     allowed_authorizer_types = None
 
     # 置于请求头部，用作 `User-Agent` 属性值
-    BASE_USER_AGENT = "ArkID-sdk-py-{0}".format(__import__('arkid').__version__)
+    BASE_USER_AGENT = "ArkID-sdk-py-{0}".format(__version__)
 
     def __init__(
             self,
@@ -67,7 +68,7 @@ class BaseClient(object):
             **kwargs
     ):
         self._init_logger_adapter()
-        self.logger.info('Creating client of type {} for service "{}"'.format(type(self), service))
+        self.logger.info("正在创建访问 ArkID 官方 {} 服务的'{}'类型的客户端".format(service, type(self)))
 
         # 若子类重写 `allowed_authorizer_types` 参数值，需检查并确保未违背所提供的约束
         if self.allowed_authorizer_types is not None and (
@@ -75,11 +76,11 @@ class BaseClient(object):
                 type(authorizer) not in self.allowed_authorizer_types
         ):
             self.logger.error(
-                "<'{}'>客户端不支持授权器<'{}'>".format(type(self), type(authorizer))
+                "'{}'客户端不支持授权器'{}'".format(type(self), type(authorizer))
             )
             raise ArkIDSDKUsageError(
                 (
-                    "<'{}'>客户端目前仅支持'{}'中的授权器类型, 而您提供的授权器类型为'<{}>'"
+                    "'{}'客户端目前仅支持'{}'中的授权器类型, 而您提供的授权器类型为'{}'"
                 ).format(type(self), self.allowed_authorizer_types, type(authorizer))
             )
 
@@ -88,7 +89,6 @@ class BaseClient(object):
         self.authorizer = authorizer
         self.base_url = config.get_service_url(self.environment, service) if base_url is None else base_url
         self.base_url = slash_join(self.base_url, base_path)
-
         # 封装 < requests.Session > 对象
         self._session = requests.Session()
 
@@ -117,6 +117,13 @@ class BaseClient(object):
         # 获取客户端类的完全限定名， 可标识为 ArkID SDK 所有
         self.logger = ClientLogAdapter(logging.getLogger(self.__module__ + "." + self.__class__.__name__),
                                        {"client": self})
+        # 初始化 console_handler ，用于在终端输出调试信息
+        # 如果 console_handler 存在，则不会继续添加
+        if not self.logger.logger.handlers:
+            self.logger.setLevel(logging.DEBUG)
+            console_handler = logging.StreamHandler()
+            console_handler.setLevel(logging.DEBUG)
+            self.logger.logger.addHandler(console_handler)
 
     def set_app_name(self, app_name):
         """
@@ -159,7 +166,7 @@ class BaseClient(object):
         :return: :class:`< ArkIDHTTPResponse > \
         < arkid.response.ArkIDHTTPResponse >` object
         """
-        self.logger.debug("GET to {} with params {}".format(path, params))
+        self.logger.debug("GET to {} with params {}".format(self.base_url + path, params))
         return self._request(
             "GET",
             path,
@@ -211,7 +218,7 @@ class BaseClient(object):
         :return: :class:`< ArkIDHTTPResponse > \
         < arkid.response.ArkIDHTTPResponse >` object
         """
-        self.logger.debug("POST to {} with params {}".format(path, params))
+        self.logger.debug("POST to {} with params {}".format(self.base_url + path, params))
         return self._request(
             "POST",
             path,
@@ -255,7 +262,7 @@ class BaseClient(object):
         :return: :class:`< ArkIDHTTPResponse > \
         < arkid.response.ArkIDHTTPResponse >` object
         """
-        self.logger.debug("DELETE to {} with params {}".format(path, params))
+        self.logger.debug("DELETE to {} with params {}".format(self.base_url + path, params))
         return self._request(
             "DELETE",
             path,
@@ -307,7 +314,7 @@ class BaseClient(object):
         :return: :class:`< ArkIDHTTPResponse > \
         < arkid.response.ArkIDHTTPResponse >` object
         """
-        self.logger.debug("PUT to {} with params {}".format(path, params))
+        self.logger.debug("PUT to {} with params {}".format(self.base_url + path, params))
         return self._request(
             "PUT",
             path,
@@ -361,7 +368,7 @@ class BaseClient(object):
         :return: :class:`< ArkIDHTTPResponse > \
         < arkid.response.ArkIDHTTPResponse >` object
         """
-        self.logger.debug("PATCH to {} with params {}".format(path, params))
+        self.logger.debug("PATCH to {} with params {}".format(self.base_url + path, params))
         return self._request(
             "PATCH",
             path,
@@ -432,11 +439,11 @@ class BaseClient(object):
 
         # add Authorization header
         if self.authorizer is not None:
-            self.logger.debug("request will have authorization of type {}".format(type(self.authorizer)))
+            self.logger.debug("HTTP 请求将装载'{}'类型的授权器".format(type(self.authorizer)))
             self.authorizer.set_authorization_header(_headers)
 
         url = slash_join(self.base_url, path)
-        self.logger.debug("request will hit URL:{}".format(url))
+        self.logger.debug("HTTP 请求开始访问 URL: {}".format(url))
 
         # because a 401 can trigger retry, we need to wrap the retry-able thing in a method
         def send_request():
@@ -456,7 +463,7 @@ class BaseClient(object):
 
         # initial request
         response = send_request()
-        self.logger.debug("Request made to URL: {}".format(response.url))
+        self.logger.debug("HTTP 请求收到响应 URL: {}".format(response.url))
 
         # potential 401 retry handling
         if response.status_code == 401 and retry_401 and self.authorizer is not None:
@@ -466,18 +473,18 @@ class BaseClient(object):
             # therefore change the value set by the `set_authorization_header`
             # method
             if self.authorizer.handle_missing_authorization():
-                self.logger.debug("request can be retried")
+                self.logger.debug("HTTP 请求可重新尝试访问")
                 self.authorizer.set_authorization_header(_headers)
                 response = send_request()
 
         if 200 <= response.status_code < 400:
-            self.logger.debug("request completed with response code: {}".format(response.status_code))
+            self.logger.debug("HTTP 请求完成 响应码: {}".format(response.status_code))
             return self.default_response_class(response, client=self) \
                 if response_class is None \
                 else response_class(response, client=self)
 
         self.logger.debug(
-            "request completed with (error) response code: {}".format(response.status_code)
+            "HTTP 请求完成（错误） 响应码: {}".format(response.status_code)
         )
         raise self.error_class(response)
 

@@ -1,7 +1,7 @@
 import logging
 
-from arkid.exceptions import AuthAPIError
-from arkid.base import BaseClient
+from arkid_client.exceptions import AuthAPIError
+from arkid_client.base import BaseClient
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ class AuthClient(BaseClient):
     **Examples**
     初始化 < AuthClient > 客户端，以 Access Token 授权方式向 ArkID 服务端
     请求对调用的用户进行身份验证。
-    >>> from arkid import AuthClient, AccessTokenAuthorizer
+    >>> from arkid_client import AuthClient, AccessTokenAuthorizer
     >>> ac = AuthClient(authorizer=AccessTokenAuthorizer('<token_string>'))
 
     当然，这里可以使用任何其它的符合规则的授权器。
@@ -37,5 +37,5 @@ class AuthClient(BaseClient):
 
         # an AuthClient may contain a ArkIDOIDCFlowManager in order to
         # encapsulate the functionality of various different types of flow managers
-        self.current_oidc_flow_manager = None
-        BaseClient.__init__(self, "auth", authorizer=authorizer, **kwargs)
+        # self.current_oidc_flow_manager = None
+        BaseClient.__init__(self, "ucenter", authorizer=authorizer, **kwargs)

@@ -1,7 +1,7 @@
 import logging
 
-from arkid.authorizers.base import ArkIDAuthorizer
-from arkid.utils.string_hashing import sha256_string
+from arkid_client.authorizers.base import ArkIDAuthorizer
+from arkid_client.utils.string_hashing import sha256_string
 
 logger = logging.getLogger(__name__)
 

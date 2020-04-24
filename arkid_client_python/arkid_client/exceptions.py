@@ -40,8 +40,8 @@ class ArkIDAPIError(ArkIDError):
         ):
             logger.debug(
                 (
-                    "Content-Type on error is application/json. "
-                    "Doing error load from JSON"
+                    "响应对象的 Content-Type 为 `application/json`。 "
+                    "正在以 JSON 格式载入错误信息。"
                 )
             )
             try:
@@ -49,17 +49,17 @@ class ArkIDAPIError(ArkIDError):
             except (KeyError, ValueError):
                 logger.error(
                     (
-                        "Error body could not be JSON decoded! "
-                        "This means the Content-Type is wrong, or the "
-                        "body is malformed!"
+                        "无法对错误信息进行 JSON 格式解析，"
+                        "响应对象的 Content-Type 参数值使用错误，"
+                        "或者响应消息体不符合规范。"
                     )
                 )
                 self._load_from_text(response.text)
         else:
             logger.debug(
                 (
-                    "Content-Type on error is unknown. "
-                    "Failing over to error load as text (default)"
+                    "暂不支持响应对象的 Content-Type 类型， "
+                    "正在以文本格式加载错误信息（默认）。"
                 )
             )
             # fallback to using the entire body as the message for all other types
@@ -68,12 +68,12 @@ class ArkIDAPIError(ArkIDError):
         ArkIDError.__init__(self, *args)
 
     @property
-    def raw_json(self):
+    def raw_json(self) -> dict or None:
         """
-        Get the verbatim error message received from a ArkID API, interpreted
-        as a JSON string and evaluated as a *dict*
+        获取从 ArkID API 接收到的响应信息，尝试以 JSON 格式解析数据，
+        并转化为 dict 。
 
-        If the body cannot be loaded as JSON, this is None
+        如果响应信息无法通过 JSON 格式加载， 则返回 None 。
         """
         response = self._underlying_response
         if "Content-Type" in response.headers and (
@@ -84,9 +84,9 @@ class ArkIDAPIError(ArkIDError):
             except ValueError:
                 logger.error(
                     (
-                        "Error body could not be JSON decoded! "
-                        "This means the Content-Type is wrong, or the "
-                        "body is malformed!"
+                        "无法对错误信息进行 JSON 格式解析，"
+                        "响应对象的 Content-Type 参数值使用错误，"
+                        "或者响应消息体不符合规范。"
                     )
                 )
                 return None
@@ -94,30 +94,33 @@ class ArkIDAPIError(ArkIDError):
             return None
 
     @property
-    def raw_text(self):
+    def raw_text(self) -> str:
         """
-        Get the verbatim error message received from a ArkID API as a *string*
+        以 string 形式获取响应信息。
         """
         return self._underlying_response.text
 
     def _get_args(self):
         """
-        Get arguments to pass to the Exception base class. These args are
-        displayed in stack traces.
+        传入给 < Exception > 对象的参数，显示在堆栈跟踪中。
         """
-        return self.http_status, self.code, self.message
+        return self.http_status, self.message
 
-    def _load_from_json(self, data):
+    def _load_from_json(self, data: dict):
         """
-        Load error data from a JSON document. Must set at least
-        code and message instance variables.
+        从 JSON 格式的信息中加载错误数据。需根据 ArkID 服务端的
+        响应体结构来规划具体实现。
+        # TODO
         """
+        self.message = data
 
-    def _load_from_text(self, text):
+    def _load_from_text(self, text: str):
         """
-        Load error data from a raw text body that is not JSON. Must set at
-        least code and message instance variables.
+        从 text 格式的信息中加载错误数据。需根据 ArkID 服务端的
+        响应体结构来规划具体实现。
+        # TODO
         """
+        self.message = text
 
 
 class UserAPIError(ArkIDAPIError):
@@ -134,7 +137,7 @@ class UserAPIError(ArkIDAPIError):
         ArkIDAPIError.__init__(self, response)
 
     def _get_args(self):
-        return self.http_status, self.code, self.message
+        return self.http_status, self.message
 
 
 class ConfigAPIError(ArkIDAPIError):
@@ -151,7 +154,7 @@ class ConfigAPIError(ArkIDAPIError):
         ArkIDAPIError.__init__(self, response)
 
     def _get_args(self):
-        return self.http_status, self.code, self.message
+        return self.http_status, self.message
 
 
 class AuthAPIError(ArkIDAPIError):
