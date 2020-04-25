@@ -131,6 +131,38 @@ class OrgAPIError(ArkIDAPIError):
         return self.http_status, self.message
 
 
+class NodeAPIError(ArkIDAPIError):
+    """
+    Error class for the Node API client. In addition to the
+    inherited ``message`` instance variables, provides:
+
+    :ivar error_data: Additional object returned in the error response. May be
+                      a dict, list, or None.
+    """
+    def __init__(self, response):
+        self.error_data = None
+        ArkIDAPIError.__init__(self, response)
+
+    def _get_args(self):
+        return self.http_status, self.message
+
+
+class DeptAPIError(ArkIDAPIError):
+    """
+    Error class for the Dept API client. In addition to the
+    inherited ``message`` instance variables, provides:
+
+    :ivar error_data: Additional object returned in the error response. May be
+                      a dict, list, or None.
+    """
+    def __init__(self, response):
+        self.error_data = None
+        ArkIDAPIError.__init__(self, response)
+
+    def _get_args(self):
+        return self.http_status, self.message
+
+
 class AuthAPIError(ArkIDAPIError):
     """
     Error class for the API components of ArkID Auth.

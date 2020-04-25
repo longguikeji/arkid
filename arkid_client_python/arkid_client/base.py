@@ -1,9 +1,10 @@
 """
-Define ClientLogAdapter
-Define BaseClient
+Define ClientLogAdapter & BaseClient
 """
 import json
 import logging
+import os
+
 import requests
 
 from arkid_client import config
@@ -25,7 +26,6 @@ class BaseClient(object):
     简单的基类客户端，可处理 ArkID REST APIs 返回的错误信息。
     封装 < requests.Session > 对象为一个简化的接口，该接口不公开来自请求
     的任何内容。
-
     注意：
         强烈建议您不要尝试直接实例化 < BaseClient >
 
@@ -70,10 +70,8 @@ class BaseClient(object):
                  **kwargs):
         self._init_logger_adapter()
         self.logger.info("正在创建访问 ArkID 官方 {} 服务的{}类型的客户端".format(service, type(self)))
-
         # 校验授权器
         self.check_authorizer(authorizer)
-
         # 若未提供 `environment` 参数值，将在配置文件中查找与 `default` 相关的章节内容
         self.environment = config.get_arkid_environ(input_env=environment)
         self.authorizer = authorizer
@@ -82,19 +80,14 @@ class BaseClient(object):
         self.service = service
         # 封装 < requests.Session > 对象
         self._session = requests.Session()
-
         # 初始化请求头部
         self._headers = {"Accept": "application/json", "User-Agent": self.BASE_USER_AGENT}
-
         # 是否验证 SSL，通常为 True
         self._verify = config.get_ssl_verify(self.environment)
-
         # 初始化 HTTP 连接超时设置
         http_timeout = config.get_http_timeout(self.environment) if http_timeout is None else http_timeout
-
         # 若传入的参数值为 -1 ，将其转换为 None
         self._http_timeout = http_timeout if http_timeout != -1 else None
-
         # 初始化调用 ArkID SDK 的项目的名称
         self.app_name = None
         if app_name is not None:
@@ -153,7 +146,6 @@ class BaseClient(object):
         一些种类的客户端在有些时候调用不同的接口会使用不同的服务根
         地址，虽然这种情况出现的很少，但是仍然需要提供这样一种方式
         来方便开发者更灵活的处理服务根地址不一致的情况。
-
         :param service: 访问 ArkID 服务端的服务名称
         :return:
         """
@@ -449,6 +441,8 @@ def reload_service(service: str):
         def __wrapper(*args, **kwargs):
             instance = args[0]
             _service = instance.service
+            if _service == service:
+                return func(*args, **kwargs)
             instance.reload_service_url(service)
             response = func(*args, **kwargs)
             instance.reload_service_url(_service)

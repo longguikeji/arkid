@@ -57,6 +57,7 @@ class OrgClient(BaseClient):
         :param oid: 组织的唯一标识
         :return: :class: < ArkIDHTTPResponse > object
         """
+        self.logger.info("正在调用 OrgClient.delete_specified_org() 接口与 ArkID 服务端进行交互")
         return self.delete(path='{}/'.format(oid))
 
     def update_specified_org(self, oid: str, json_body: dict):

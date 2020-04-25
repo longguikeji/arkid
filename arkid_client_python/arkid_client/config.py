@@ -3,7 +3,6 @@ Load config files once per interpreter invocation.
 """
 import logging
 import os
-import pkg_resources
 
 from six.moves.configparser import (
     ConfigParser,
@@ -16,25 +15,38 @@ from arkid_client.exceptions import ArkIDError, ArkIDSDKUsageError
 
 LOGGER = logging.getLogger(__name__)
 
-# at import-time, it's None
+# at import-time, they're None
 _PARSER = None
+_CONFIG_PATH = None
+
+# def _get_lib_config_path():
+#     """
+#     获取 ArkID SDk 中默认配置文件的位置
+#     暂时不能处理任何专有状态，只是一个获取文件位置的助手
+#     """
+#     fname = "oneid.cfg"
+#     try:
+#         LOGGER.debug("Attempting pkg_resources load of lib config")
+#         path = pkg_resources.resource_filename("arkid", fname)
+#         LOGGER.debug("pkg_resources load of lib config success")
+#     except ImportError:
+#         print('failed')
+#         LOGGER.debug("pkg_resources load of lib config failed, failing over to path joining")
+#         pkg_path = os.path.dirname(__file__)
+#         path = os.path.join(pkg_path, fname)
+#     return path
 
 
-def _get_lib_config_path():
+def set_config_path(path):
     """
-    获取 ArkID SDk 中默认配置文件的位置
-    暂时不能处理任何专有状态，只是一个获取文件位置的助手
+    设置全局配置文件的路径
+    :param path: 配置文件的绝对路径
+    :return:
     """
-    fname = "oneid.cfg"
-    try:
-        LOGGER.debug("Attempting pkg_resources load of lib config")
-        path = pkg_resources.resource_filename("arkid", fname)
-        LOGGER.debug("pkg_resources load of lib config success")
-    except ImportError:
-        LOGGER.debug("pkg_resources load of lib config failed, failing over to path joining")
-        pkg_path = os.path.dirname(__file__)
-        path = os.path.join(pkg_path, fname)
-    return path
+    global _CONFIG_PATH
+    if not os.path.exists(path):
+        raise FileNotFoundError('无法找到 ArkID SDK 配置文件')
+    _CONFIG_PATH = path
 
 
 class ArkIDConfigParser(object):
@@ -54,8 +66,10 @@ class ArkIDConfigParser(object):
         """
         载入配置文件内容
         """
+        if not _CONFIG_PATH:
+            raise ArkIDSDKUsageError('请先导入 ARKID SDK 所需的配置文件来使其正常工作')
         try:
-            self._parser.read(_get_lib_config_path())
+            self._parser.read(_CONFIG_PATH)
         except MissingSectionHeaderError:
             LOGGER.error((
             # TODO
@@ -75,15 +89,6 @@ class ArkIDConfigParser(object):
     ):
         r"""
         尝试在配置文件中查找一个选项， 若没有找到该选项，则进入 `general` 部分。
-
-
-        Also optionally, check for a relevant environment variable, which is
-        named always as ARKID_SDK_{option.upper()}. Note that 'section'
-        doesn't slot into the naming at all. Otherwise, we'd have to contend
-        with ARKID_SDK_GENERAL_... for almost everything, and
-        ARKID_SDK_ENVIRONMENT\ PROD_... which is awful.
-
-        Returns None for an unfound key, rather than raising a NoOptionError.
         """
         # environment is just a name for sections that start with 'environment '
         if environment:
@@ -114,8 +119,7 @@ class ArkIDConfigParser(object):
 
 def _get_parser():
     """
-    Singleton pattern implemented via a global variable and function.
-    There is only ever one _parser, and it is always returned by this function.
+    获取 config parser 全局唯一
     """
     global _PARSER
     if _PARSER is None:
@@ -125,8 +129,7 @@ def _get_parser():
 
 def get_service_url(environment: str, service: str):
     """
-    :param environment:
-    :param service:
+    获取服务的根 URL
     """
     LOGGER.debug('Service URL Lookup for "{}" under env "{}"'.format(service, environment))
     _parser = _get_parser()
@@ -144,7 +147,7 @@ def get_service_url(environment: str, service: str):
 
 def get_http_timeout(environment: str):
     """
-    :param environment:
+    获取 HTTP 超时设置
     """
     _parser = _get_parser()
     value = _parser.get(
@@ -161,7 +164,7 @@ def get_http_timeout(environment: str):
 
 def get_ssl_verify(environment: str):
     """
-    :param environment:
+    获取 HTTP SSL 设置
     """
     _parser = _get_parser()
     value = _parser.get(
@@ -179,7 +182,7 @@ def get_ssl_verify(environment: str):
 
 def _bool_cast(value: str):
     """
-    :param value:
+    布尔类型转换
     """
     value = value.lower()
     if value in ("1", "yes", "true", "on"):
@@ -193,11 +196,8 @@ def _bool_cast(value: str):
 def get_arkid_environ(input_env=None):
     """
     在配置中查找的 ArkID SDK 所需的运行环境。
-
     通常为 `default` ，但其可被系统环境变量 `ARKID_SDK_ENVIRONMENT` 覆盖。
     在这种情况下，若调用者未显式指定运行环境，将使用 `ARKID_SDK_ENVIRONMENT` 。
-    :param input_env: An environment which was passed.
-                      e.g. to a client instantiation
     """
     if input_env is None:
         env = os.environ.get("ARKID_SDK_ENVIRONMENT", "default")
