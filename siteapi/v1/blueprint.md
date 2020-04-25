@@ -1752,6 +1752,13 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (UserPermDetail)
 
+### 刷新用户权限详情 [PUT]
+
+用于获取实时权限判定结果
+
++ Response 200 (application/json)
+    + Attributes (UserPermDetail)
+
 ## 部门权限 [/perm/dept/{uid}/{?action,action_except,scope}]
 
 + Parameters

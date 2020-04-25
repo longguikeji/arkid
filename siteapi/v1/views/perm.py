@@ -418,9 +418,10 @@ class DeptPermView(
         return Response(self.get_serializer(res_dept_perms, many=True).data)
 
 
-class UserPermDetailView(generics.RetrieveAPIView):
+class UserPermDetailView(generics.RetrieveUpdateAPIView):
     '''
-    获取一个用户对于某权限的详细信息，包括授权来源
+    获取一个用户对于某权限的详细信息，包括授权来源 [GET]
+    即刻计算权限结果 [PUT]
     '''
 
     serializer_class = UserPermDetailSerializer
@@ -435,6 +436,17 @@ class UserPermDetailView(generics.RetrieveAPIView):
             raise NotFound
 
         return user_perm
+
+    def put(self, request, *args, **kwargs):
+        '''
+        即刻更新权限结果
+        '''
+        user_perm = self.get_object()
+        user = user_perm.owner
+        perm = user_perm.perm
+        user_perm = user.process_perm_realtime(perm)
+
+        return Response(self.get_serializer(user_perm).data)
 
 
 class MetaPermAPIView(APIView):
