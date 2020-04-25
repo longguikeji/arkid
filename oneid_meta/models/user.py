@@ -234,15 +234,35 @@ class User(BaseModel, PermOwnerMixin):
             return True
         if self.is_admin:
             return True
-        if UserPerm.valid_objects.filter(owner=self, perm=perm, status=1).exists():
-            return True
-        for dept in self.depts:
-            if DeptPerm.valid_objects.filter(owner=dept, perm=perm, status=1).exists():
-                return True
-        for group in self.groups:
-            if GroupPerm.valid_objects.filter(owner=group, perm=perm, status=1).exists():
-                return True
-        return False
+
+        user_perm = self.process_perm_realtime(perm)
+        return user_perm.value
+
+    def process_perm_realtime(self, perm):
+        '''
+        实时计算权限结果
+        '''
+        user_perm, _ = UserPerm.valid_objects.get_or_create(owner=self, perm=perm)
+
+        dept_ids = [item.id for item in self.depts]
+        user_perm.dept_perm_value = DeptPerm.valid_objects.filter(
+            owner__id__in=dept_ids,
+            perm=perm,
+            status=1,
+        ).exists()
+
+        group_ids = [item.id for item in self.groups]
+        user_perm.group_perm_value = GroupPerm.valid_objects.filter(
+            owner__id__in=group_ids,
+            perm=perm,
+            status=1,
+        ).exists()
+
+        user_perm.save()
+
+        user_perm.update_value()
+
+        return user_perm
 
     def get_perm(self, perm):
         '''

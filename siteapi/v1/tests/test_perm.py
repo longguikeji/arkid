@@ -541,3 +541,45 @@ class PermSourceTestCase(TestCase):
             }]
         }
         self.assertEqual(expect, res.json())
+
+    def test_perm_realtime(self):
+        user = User.objects.create(username='test')
+        self.client.json_post(reverse('siteapi:perm_list'), data={'scope': 'app1', 'name': '登录'})
+        perm_uid = 'app_app1_denglu'
+
+        # 对 user 所在的 dept 授予权限
+        dept = Dept.objects.get(uid='1')
+        DeptMember.objects.create(user=user, owner=dept)
+        self.client.json_patch(reverse('siteapi:perm_owner', args=(perm_uid, )),
+                               data={'node_perm_status': [{
+                                   'uid': 'd_1',
+                                   'status': 1,
+                               }]})
+
+        # 未实时生效
+        url = reverse('siteapi:user_perm_detail', args=('test', perm_uid))
+        res = self.client.get(url)
+        expect = {
+            'dept_perm_value': False,
+            'group_perm_value': False,
+            'status': 0,
+            'value': False,
+            'source': [],
+        }
+        self.assertEqualScoped(res.json(), expect, expect.keys())
+
+        # 手动触发更新，获取实时判定结果
+        res = self.client.json_put(url)
+        expect = {
+            'dept_perm_value': True,
+            'group_perm_value': False,
+            'status': 0,
+            'value': True,
+            'source': [{
+                'name': '1',
+                'uid': '1',
+                'node_uid': 'd_1',
+                'node_subject': 'dept'
+            }],
+        }
+        self.assertEqualScoped(res.json(), expect, expect.keys())
