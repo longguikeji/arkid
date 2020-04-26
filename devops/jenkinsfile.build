@@ -29,6 +29,7 @@ pipeline {
                 withDockerRegistry([credentialsId: "${DOCKER_DEV_REGISTRY_CREDENTIAL}", url: "${DOCKER_DEV_REGISTRY}"]){
                     sh """#!/bin/bash
                     make VERSION=${env.DOCKER_IMAGE_DEV_VERSION} docker-dev
+                    make VERSION="latest" docker-prod
                     """
                 }
             }
