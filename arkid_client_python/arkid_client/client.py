@@ -314,12 +314,20 @@ class ArkIDClient(BaseClient):
         return self.__node_client.create_subnode(node_uid, json_body)
 
     @reload_service('node')
-    def update_subnode(self, node_uid: str, json_body: dict):
+    def add_subnode(self, node_uid: str, node_uids: list):
         """
-        调用底层 < NodeClient > 实例的 update_subnode 方法
+        调用底层 < NodeClient > 实例的 add_subnode 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.update_subnode(node_uid, json_body)
+        return self.__node_client.add_subnode(node_uid, node_uids)
+
+    @reload_service('node')
+    def sort_subnode(self, node_uid: str, node_uids: list):
+        """
+        调用底层 < NodeClient > 实例的 sort_subnode 方法
+        """
+        self.__node_client = self.__init_client(NodeClient)
+        return self.__node_client.sort_subnode(node_uid, node_uids)
 
     @reload_service('node')
     def query_user_under_node(self, node_uid: str, name: str = None,
@@ -337,16 +345,76 @@ class ArkIDClient(BaseClient):
                                                         after_last_active_time=after_last_active_time)
 
     @reload_service('node')
-    def update_user_under_node(self, node_uid: str, json_body: dict, name: str = None,
+    def add_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
+                            username: str = None, mobile: str = None, email: str = None,
+                            before_created: str = None, after_created: str = None,
+                            before_last_active_time: str = None, after_last_active_time: str = None):
+        """
+        调用底层 < NodeClient > 实例的 add_user_under_node 方法
+        """
+        self.__node_client = self.__init_client(NodeClient)
+        return self.__node_client.add_user_under_node(node_uid, user_uids, name=name,
+                                                      username=username, mobile=mobile, email=email,
+                                                      before_created=before_created, after_created=after_created,
+                                                      before_last_active_time=before_last_active_time,
+                                                      after_last_active_time=after_last_active_time)
+
+    @reload_service('node')
+    def delete_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
                                username: str = None, mobile: str = None, email: str = None,
                                before_created: str = None, after_created: str = None,
                                before_last_active_time: str = None, after_last_active_time: str = None):
         """
-        调用底层 < NodeClient > 实例的 update_user_under_node 方法
+        调用底层 < NodeClient > 实例的 delete_user_under_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.update_user_under_node(node_uid, json_body, name=name,
-                                                         username=username,  mobile=mobile, email=email,
+        return self.__node_client.delete_user_under_node(node_uid, user_uids, name=name,
+                                                         username=username, mobile=mobile, email=email,
                                                          before_created=before_created, after_created=after_created,
                                                          before_last_active_time=before_last_active_time,
                                                          after_last_active_time=after_last_active_time)
+
+    @reload_service('node')
+    def sort_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
+                             username: str = None, mobile: str = None, email: str = None,
+                             before_created: str = None, after_created: str = None,
+                             before_last_active_time: str = None, after_last_active_time: str = None):
+        """
+        调用底层 < NodeClient > 实例的 sort_user_under_node 方法
+        """
+        self.__node_client = self.__init_client(NodeClient)
+        return self.__node_client.sort_user_under_node(node_uid, user_uids, name=name,
+                                                       username=username, mobile=mobile, email=email,
+                                                       before_created=before_created, after_created=after_created,
+                                                       before_last_active_time=before_last_active_time,
+                                                       after_last_active_time=after_last_active_time)
+
+    @reload_service('node')
+    def override_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
+                                 username: str = None, mobile: str = None, email: str = None,
+                                 before_created: str = None, after_created: str = None,
+                                 before_last_active_time: str = None, after_last_active_time: str = None):
+        """
+        调用底层 < NodeClient > 实例的 override_user_under_node 方法
+        """
+        self.__node_client = self.__init_client(NodeClient)
+        return self.__node_client.override_user_under_node(node_uid, user_uids, name=name,
+                                                           username=username, mobile=mobile, email=email,
+                                                           before_created=before_created, after_created=after_created,
+                                                           before_last_active_time=before_last_active_time,
+                                                           after_last_active_time=after_last_active_time)
+
+    @reload_service('node')
+    def move_out_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
+                                 username: str = None, mobile: str = None, email: str = None,
+                                 before_created: str = None, after_created: str = None,
+                                 before_last_active_time: str = None, after_last_active_time: str = None):
+        """
+        调用底层 < NodeClient > 实例的 move_out_user_under_node 方法
+        """
+        self.__node_client = self.__init_client(NodeClient)
+        return self.__node_client.move_out_user_under_node(node_uid, user_uids, name=name,
+                                                           username=username, mobile=mobile, email=email,
+                                                           before_created=before_created, after_created=after_created,
+                                                           before_last_active_time=before_last_active_time,
+                                                           after_last_active_time=after_last_active_time)

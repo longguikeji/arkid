@@ -123,14 +123,26 @@ class NodeClient(BaseClient):
         self.logger.info("正在调用 NodeClient.create_subnode() 接口与 ArkID 服务端进行交互")
         return self.post(path='{}/node/'.format(node_uid), json_body=json_body)
 
-    def update_subnode(self, node_uid: str, json_body: dict):
+    def add_subnode(self, node_uid: str, node_uids: list):
         """
-        编辑指定节点的子节点的信息
+        向指定节点添加子节点
         :param node_uid: 节点的唯一标识
-        :param json_body: 节点的元信息, 参数详情请参考接口文档
+        :param node_uids: 节点唯一标识组成的列表
         :return: :class: < ArkIDHTTPResponse > object
         """
-        self.logger.info("正在调用 NodeClient.update_subnode() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 NodeClient.add_subnode() 接口与 ArkID 服务端进行交互")
+        json_body = {'subject': 'add', 'node_uids': node_uids}
+        return self.patch(path='{}/node/'.format(node_uid), json_body=json_body)
+
+    def sort_subnode(self, node_uid: str, node_uids: list):
+        """
+        对指定子节点按指定位置进行排序
+        :param node_uid: 节点的唯一标识
+        :param node_uids: 节点唯一标识组成的列表
+        :return: :class: < ArkIDHTTPResponse > object
+        """
+        self.logger.info("正在调用 NodeClient.sort_subnode() 接口与 ArkID 服务端进行交互")
+        json_body = {'subject': 'sort', 'node_uids': node_uids}
         return self.patch(path='{}/node/'.format(node_uid), json_body=json_body)
 
     def query_user_under_node(self, node_uid: str, **params):
@@ -143,13 +155,62 @@ class NodeClient(BaseClient):
         self.logger.info("正在调用 NodeClient.query_user_under_node() 接口与 ArkID 服务端进行交互")
         return self.get(path='{}/user/'.format(node_uid), params=params)
 
-    def update_user_under_node(self, node_uid: str, json_body: dict, **params):
+    def add_user_under_node(self, node_uid: str, user_uids: list, **params):
         """
-        更新指定节点下的指定直属人员的信息
+        向指定节点添加指定成员
         :param node_uid: 节点的唯一标识
-        :param json_body: 用户的元信息，参数详情请参考接口文档
+        :param user_uids: 用户唯一标识组成的列表
         :param params: 用户的元信息，参数详情请参考接口文档
         :return: :class: < ArkIDHTTPResponse > object
         """
-        self.logger.info("正在调用 NodeClient.update_user_under_node() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 NodeClient.add_user_under_node() 接口与 ArkID 服务端进行交互")
+        json_body = {'user_uids': user_uids, 'subject': 'add'}
+        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
+
+    def delete_user_under_node(self, node_uid: str, user_uids: list, **params):
+        """
+        从指定节点移除指定成员
+        :param node_uid: 节点的唯一标识
+        :param user_uids: 用户唯一标识组成的列表
+        :param params: 用户的元信息，参数详情请参考接口文档
+        :return: :class: < ArkIDHTTPResponse > object
+        """
+        self.logger.info("正在调用 NodeClient.delete_user_under_node() 接口与 ArkID 服务端进行交互")
+        json_body = {'user_uids': user_uids, 'subject': 'delete'}
+        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
+
+    def override_user_under_node(self, node_uid: str, user_uids: list, **params):
+        """
+        重置指定节点的指定用户
+        :param node_uid: 节点的唯一标识
+        :param user_uids: 用户唯一标识组成的列表
+        :param params: 用户的元信息，参数详情请参考接口文档
+        :return: :class: < ArkIDHTTPResponse > object
+        """
+        self.logger.info("正在调用 NodeClient.override_user_under_node() 接口与 ArkID 服务端进行交互")
+        json_body = {'user_uids': user_uids, 'subject': 'override'}
+        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
+
+    def sort_user_under_node(self, node_uid: str, user_uids: list, **params):
+        """
+        对指定人按指定位置进行排序
+        :param node_uid: 节点的唯一标识
+        :param user_uids: 用户唯一标识组成的列表
+        :param params: 用户的元信息，参数详情请参考接口文档
+        :return: :class: < ArkIDHTTPResponse > object
+        """
+        self.logger.info("正在调用 NodeClient.sort_user_under_node() 接口与 ArkID 服务端进行交互")
+        json_body = {'user_uids': user_uids, 'subject': 'sort'}
+        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
+
+    def move_out_user_under_node(self, node_uid: str, user_uids: list, **params):
+        """
+        将这些人从该节点移除，并加到指定节点
+        :param node_uid: 节点的唯一标识
+        :param user_uids: 用户唯一标识组成的列表
+        :param params: 用户的元信息，参数详情请参考接口文档
+        :return: :class: < ArkIDHTTPResponse > object
+        """
+        self.logger.info("正在调用 NodeClient.move_out_user_under_node() 接口与 ArkID 服务端进行交互")
+        json_body = {'user_uids': user_uids, 'subject': 'move_out'}
         return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
