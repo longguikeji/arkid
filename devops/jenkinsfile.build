@@ -16,6 +16,9 @@ pipeline {
         DOCKER_DEV_REGISTRY="https://harbor.longguikeji.com"
         DOCKER_DEV_REGISTRY_CREDENTIAL="devops-longguikeji-harbor"
 
+        DOCKER_PROD_REGISTRY="https://index.docker.io/v1/"
+        DOCKER_PROD_REGISTRY_CREDENTIAL="devops-longguikeji-dockerhub"
+
     }
     stages {
         stage('pre') {
