@@ -59,9 +59,9 @@ class BaseClient(object):
     BASE_USER_AGENT = "ArkID-sdk-py-{0}".format(__version__)
 
     def __init__(self,
+                 base_url: str,
                  service: str,
                  environment: str = None,
-                 base_url: str = None,
                  base_path: str = None,
                  authorizer: object = None,
                  app_name: str = None,
@@ -75,8 +75,12 @@ class BaseClient(object):
         # 若未提供 `environment` 参数值，将在配置文件中查找与 `default` 相关的章节内容
         self.environment = config.get_arkid_environ(input_env=environment)
         self.authorizer = authorizer
-        self.base_url = config.get_service_url(self.environment, service) if base_url is None else base_url
-        self.base_url = slash_join(self.base_url, base_path)
+        # self.base_url = config.get_service_url(self.environment, service) if base_url is None else base_url
+        # ArkID 根服务地址
+        self.base_url = base_url
+        # 目前所加载的 ArkID 服务地址
+        self.service_url = slash_join(slash_join(base_url, config.get_service(self.environment, service)), base_path)
+        # 目前所装载 ArkID 的服务
         self.service = service
         # 封装 < requests.Session > 对象
         self._session = requests.Session()
@@ -150,7 +154,7 @@ class BaseClient(object):
         :return:
         """
         self.logger.info("{}客户端正在加载 {} 服务".format(type(self), service))
-        self.base_url = config.get_service_url(self.environment, service)
+        self.service_url = slash_join(self.base_url, config.get_service(self.environment, service))
 
     def reload_authorizer(self, authorizer):
         """
@@ -369,7 +373,7 @@ class BaseClient(object):
             self.logger.debug("正在装载'{}'类型的授权器".format(type(self.authorizer)))
             self.authorizer.set_authorization_header(_headers)
 
-        url = slash_join(self.base_url, path)
+        url = slash_join(self.service_url, path)
         self.logger.debug("开始访问 URL: {}".format(url))
 
         # because a 401 can trigger retry, we need to wrap the retry-able thing in a method
@@ -423,6 +427,7 @@ def slash_join(base: str, path: str):
     """
     if not path:    # "" or None, don't append a slash
         return base
+    path = path if path.endswith("/") else '{}/'.format(path)
     if base.endswith("/"):
         if path.startswith("/"):
             return base[:-1] + path
@@ -447,9 +452,14 @@ def reload_service(service: str):
             response = func(*args, **kwargs)
             instance.reload_service_url(_service)
             return response
-
+        # 同步底层客户端的 __doc__
+        if service in ['user', 'org', 'node']:
+            _class = getattr(
+                __import__('arkid_client'),
+                '{}Client'.format(service.capitalize())
+            )
+            __wrapper.__doc__ = getattr(_class, func.__name__).__doc__
         return __wrapper
-
     return _wrapper
 
 

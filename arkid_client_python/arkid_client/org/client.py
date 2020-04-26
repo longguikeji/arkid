@@ -16,8 +16,8 @@ class OrgClient(BaseClient):
     error_class = OrgAPIError
     default_response_class = ArkIDHTTPResponse
 
-    def __init__(self, authorizer=None, **kwargs):
-        BaseClient.__init__(self, "org", authorizer=authorizer, **kwargs)
+    def __init__(self, base_url, authorizer=None, **kwargs):
+        BaseClient.__init__(self, base_url, "org", authorizer=authorizer, **kwargs)
 
     def query_own_org(self, **params):
         """
@@ -88,22 +88,26 @@ class OrgClient(BaseClient):
         self.logger.info("正在调用 OrgClient.query_orguser() 接口与 ArkID 服务端进行交互")
         return self.get(path='{}/user/'.format(oid), params=params)
 
-    def update_orguser(self, oid: str, json_body: dict):
+    def add_orguser(self, oid: str, usernames: list):
         """
-        编辑指定组织的成员结构
+        向指定组织中添加成员
         :param oid: 组织的唯一标识
-        :param json_body:
-
-            ``subject`` (*enum* & *str*)
-              1) add: 向组织中增加成员
-              2) delete: 从组织中移除成员
-
-            ``usernames`` (*list[*str*]*)
-              Default: 30
-
+        :param usernames: 用户的唯一标识组成的列表
         :return: :class: < ArkIDHTTPResponse > object
         """
-        self.logger.info("正在调用 OrgClient.update_orguser() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 OrgClient.add_orguser() 接口与 ArkID 服务端进行交互")
+        json_body = {'subject': 'add', 'usernames': usernames}
+        return self.patch(path='{}/user/'.format(oid), json_body=json_body)
+
+    def delete_orguser(self, oid: str, usernames: list):
+        """
+        从指定组织中移除成员
+        :param oid: 组织的唯一标识
+        :param usernames: 用户的唯一标识组成的列表
+        :return: :class: < ArkIDHTTPResponse > object
+        """
+        self.logger.info("正在调用 OrgClient.delete_orguser() 接口与 ArkID 服务端进行交互")
+        json_body = {'subject': 'delete', 'usernames': usernames}
         return self.patch(path='{}/user/'.format(oid), json_body=json_body)
 
     def query_specified_orguser(self, oid: str, username: str):

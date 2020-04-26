@@ -13,15 +13,22 @@
 - 您可以从 arkid_client 导入 ArkID 客户端。例如：
 
 
-    from arkid_client.auth.client import ConfidentialAppAuthClient
-    from arkid_client.authorizers import BasicAuthorizer
+    from arkid_client.auth import ConfidentialAppAuthClient
     from arkid_client.client import ArkIDClient
-    from arkid_client.config import set_config_path
     
-    set_config_path('/usr/home/oneid.cfg')
-    cc = ConfidentialAppAuthClient()
-    ba = BasicAuthorizer(ac.auth_to_get_token('admin', 'admin'))
-    ac = ArkIDClient(authorizer=ba)
+    # 设置 ArkID 服务根地址
+    url = 'https://arkid.longguikeji.com/'
+    
+    # 初始化 ArkID 认证客户端
+    caac = ConfidentialAppAuthClient(base_url=url)
+    
+    # 初始化 ArkID 服务客户端
+    ac = ArkIDClient(
+        authorizer=caac.get_authorizer('admin', 'admin'), 
+        base_url=url
+    )
+    
+    # 查询用户列表
     users = ac.query_user()
 
 ## 链接

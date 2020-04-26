@@ -16,8 +16,8 @@ class NodeClient(BaseClient):
     error_class = NodeAPIError
     default_response_class = ArkIDHTTPResponse
 
-    def __init__(self, authorizer=None, **kwargs):
-        BaseClient.__init__(self, "node", authorizer=authorizer, **kwargs)
+    def __init__(self, base_url, authorizer=None, **kwargs):
+        BaseClient.__init__(self, base_url, "node", authorizer=authorizer, **kwargs)
 
     def query_specified_node(self, node_uid: str):
         """
@@ -61,7 +61,7 @@ class NodeClient(BaseClient):
 
         :return: :class: < ArkIDHTTPResponse > object
         """
-        return self.delete(path='{}/'.format(node_uid))
+        return self.delete(path='{}/'.format(node_uid), params=params)
 
     def get_node_tree_list(self, node_uid: str):
         """

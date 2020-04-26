@@ -16,8 +16,8 @@ class UserClient(BaseClient):
     error_class = UserAPIError
     default_response_class = ArkIDHTTPResponse
 
-    def __init__(self, authorizer=None, **kwargs):
-        BaseClient.__init__(self, "user", authorizer=authorizer, **kwargs)
+    def __init__(self, base_url, authorizer=None, **kwargs):
+        BaseClient.__init__(self, base_url, "user", authorizer=authorizer, **kwargs)
 
     def query_user(self, **params):
         """

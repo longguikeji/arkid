@@ -35,5 +35,5 @@ class AuthClient(BaseClient):
 
     error_class = AuthAPIError
 
-    def __init__(self, service=None, authorizer=None, **kwargs):
-        BaseClient.__init__(self, service or "ucenter", authorizer=authorizer, **kwargs)
+    def __init__(self, base_url, service=None, authorizer=None, **kwargs):
+        BaseClient.__init__(self, base_url, service or "ucenter", authorizer=authorizer, **kwargs)

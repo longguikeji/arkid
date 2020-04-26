@@ -16,8 +16,8 @@ class DeptClient(BaseClient):
     error_class = DeptAPIError
     default_response_class = ArkIDHTTPResponse
 
-    def __init__(self, authorizer=None, **kwargs):
-        BaseClient.__init__(self, "dept", authorizer=authorizer, **kwargs)
+    def __init__(self, base_url, authorizer=None, **kwargs):
+        BaseClient.__init__(self, base_url, "dept", authorizer=authorizer, **kwargs)
 
     def query_dept(self, **params):
         """

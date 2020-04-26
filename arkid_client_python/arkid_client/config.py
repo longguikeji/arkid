@@ -17,7 +17,8 @@ LOGGER = logging.getLogger(__name__)
 
 # at import-time, they're None
 _PARSER = None
-_CONFIG_PATH = None
+_CONFIG_PATH = path = os.path.join(os.path.dirname(__file__), "oneid.cfg")
+
 
 # def _get_lib_config_path():
 #     """
@@ -37,16 +38,16 @@ _CONFIG_PATH = None
 #     return path
 
 
-def set_config_path(path):
-    """
-    设置全局配置文件的路径
-    :param path: 配置文件的绝对路径
-    :return:
-    """
-    global _CONFIG_PATH
-    if not os.path.exists(path):
-        raise FileNotFoundError('无法找到 ArkID SDK 配置文件')
-    _CONFIG_PATH = path
+# def set_config_path(path):
+#     """
+#     设置全局配置文件的路径
+#     :param path: 配置文件的绝对路径
+#     :return:
+#     """
+#     global _CONFIG_PATH
+#     if not os.path.exists(path):
+#         raise FileNotFoundError('无法找到 ArkID SDK 配置文件')
+#     _CONFIG_PATH = path
 
 
 class ArkIDConfigParser(object):
@@ -67,7 +68,9 @@ class ArkIDConfigParser(object):
         载入配置文件内容
         """
         if not _CONFIG_PATH:
-            raise ArkIDSDKUsageError('请先导入 ARKID SDK 所需的配置文件来使其正常工作')
+            raise ArkIDSDKUsageError('由于其所需的配置文件已损坏, '
+                                     'ARKID SDK 目前无法正常工作，'
+                                     '请更新配置文件并重新打包。')
         try:
             self._parser.read(_CONFIG_PATH)
         except MissingSectionHeaderError:
@@ -127,9 +130,9 @@ def _get_parser():
     return _PARSER
 
 
-def get_service_url(environment: str, service: str):
+def get_service(environment: str, service: str):
     """
-    获取服务的根 URL
+    获取服务剩余路径
     """
     LOGGER.debug('Service URL Lookup for "{}" under env "{}"'.format(service, environment))
     _parser = _get_parser()
