@@ -62,6 +62,7 @@ class ConfidentialAppAuthClient(AuthClient):
         self.logger.info("启动 ArkID 官方认证（用户名 + 密码）")
         body = {'username': username, 'password': password}
         self.__certification = self.post(path='login/', json_body=body)
+        return self.__certification
 
     def get_token(self):
         """

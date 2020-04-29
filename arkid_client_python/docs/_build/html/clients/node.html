@@ -304,7 +304,7 @@
 <dt id="arkid_client.node.NodeClient.get_subnode">
 <code class="sig-name descname">get_subnode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.get_subnode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.get_subnode" title="Permalink to this definition">¶</a></dt>
 <dd><p>获取指定节点的子节点信息
-(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/node/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -324,7 +324,7 @@
 <dt id="arkid_client.node.NodeClient.create_subnode">
 <code class="sig-name descname">create_subnode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.create_subnode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.create_subnode" title="Permalink to this definition">¶</a></dt>
 <dd><p>创建指定节点的子节点
-(<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/node/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -352,7 +352,7 @@
 <dt id="arkid_client.node.NodeClient.add_subnode">
 <code class="sig-name descname">add_subnode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">node_uids</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.add_subnode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.add_subnode" title="Permalink to this definition">¶</a></dt>
 <dd><p>向指定节点添加子节点
-(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/node/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -380,7 +380,7 @@
 <dt id="arkid_client.node.NodeClient.sort_subnode">
 <code class="sig-name descname">sort_subnode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">node_uids</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.sort_subnode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.sort_subnode" title="Permalink to this definition">¶</a></dt>
 <dd><p>对指定子节点按指定位置进行排序
-(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/node/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -408,7 +408,7 @@
 <dt id="arkid_client.node.NodeClient.query_user_under_node">
 <code class="sig-name descname">query_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.query_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.query_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>查询指定节点下的直属人员的信息
-(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -434,7 +434,7 @@
 <dt id="arkid_client.node.NodeClient.add_user_under_node">
 <code class="sig-name descname">add_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.add_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.add_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>向指定节点添加指定成员
-(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -467,7 +467,7 @@
 <dt id="arkid_client.node.NodeClient.delete_user_under_node">
 <code class="sig-name descname">delete_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.delete_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.delete_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>从指定节点移除指定成员
-(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -500,7 +500,7 @@
 <dt id="arkid_client.node.NodeClient.override_user_under_node">
 <code class="sig-name descname">override_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.override_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.override_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>重置指定节点的指定用户
-(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -533,7 +533,7 @@
 <dt id="arkid_client.node.NodeClient.sort_user_under_node">
 <code class="sig-name descname">sort_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.sort_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.sort_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>对指定人按指定位置进行排序
-(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -566,7 +566,7 @@
 <dt id="arkid_client.node.NodeClient.move_out_user_under_node">
 <code class="sig-name descname">move_out_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.move_out_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.move_out_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>将这些人从该节点移除，并加到指定节点
-(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">

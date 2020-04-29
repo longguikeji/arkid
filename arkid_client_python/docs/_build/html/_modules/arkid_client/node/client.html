@@ -313,7 +313,7 @@
 <div class="viewcode-block" id="NodeClient.get_subnode"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.get_subnode">[docs]</a>    <span class="k">def</span> <span class="nf">get_subnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        获取指定节点的子节点信息</span>
-<span class="sd">        (``GET /siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/``)</span>
+<span class="sd">        (``GET /siteapi/v1/node/&lt;node_uid&gt;/node/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -332,7 +332,7 @@
 <div class="viewcode-block" id="NodeClient.create_subnode"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.create_subnode">[docs]</a>    <span class="k">def</span> <span class="nf">create_subnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        创建指定节点的子节点</span>
-<span class="sd">        (``POST /siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/``)</span>
+<span class="sd">        (``POST /siteapi/v1/node/&lt;node_uid&gt;/node/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -363,7 +363,7 @@
 <div class="viewcode-block" id="NodeClient.add_subnode"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.add_subnode">[docs]</a>    <span class="k">def</span> <span class="nf">add_subnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        向指定节点添加子节点</span>
-<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/``)</span>
+<span class="sd">        (``PATCH /siteapi/v1/node/&lt;node_uid&gt;/node/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -392,7 +392,7 @@
 <div class="viewcode-block" id="NodeClient.sort_subnode"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.sort_subnode">[docs]</a>    <span class="k">def</span> <span class="nf">sort_subnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        对指定子节点按指定位置进行排序</span>
-<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/``)</span>
+<span class="sd">        (``PATCH /siteapi/v1/node/&lt;node_uid&gt;/node/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -421,7 +421,7 @@
 <div class="viewcode-block" id="NodeClient.query_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.query_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">query_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        查询指定节点下的直属人员的信息</span>
-<span class="sd">        (``GET /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+<span class="sd">        (``GET /siteapi/v1/node/&lt;node_uid&gt;/user/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -450,7 +450,7 @@
 <div class="viewcode-block" id="NodeClient.add_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.add_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">add_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        向指定节点添加指定成员</span>
-<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+<span class="sd">        (``PATCH /siteapi/v1/node/&lt;node_uid&gt;/user/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -488,7 +488,7 @@
 <div class="viewcode-block" id="NodeClient.delete_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.delete_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">delete_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        从指定节点移除指定成员</span>
-<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+<span class="sd">        (``PATCH /siteapi/v1/node/&lt;node_uid&gt;/user/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -526,7 +526,7 @@
 <div class="viewcode-block" id="NodeClient.override_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.override_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">override_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        重置指定节点的指定用户</span>
-<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+<span class="sd">        (``PATCH /siteapi/v1/node/&lt;node_uid&gt;/user/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -564,7 +564,7 @@
 <div class="viewcode-block" id="NodeClient.sort_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.sort_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">sort_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        对指定人按指定位置进行排序</span>
-<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+<span class="sd">        (``PATCH /siteapi/v1/node/&lt;node_uid&gt;/user/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -602,7 +602,7 @@
 <div class="viewcode-block" id="NodeClient.move_out_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.move_out_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">move_out_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        将这些人从该节点移除，并加到指定节点</span>
-<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+<span class="sd">        (``PATCH /siteapi/v1/node/&lt;node_uid&gt;/user/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 

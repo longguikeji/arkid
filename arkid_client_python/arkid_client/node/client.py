@@ -211,7 +211,7 @@ class NodeClient(BaseClient):
     def get_subnode(self, node_uid: str):
         """
         获取指定节点的子节点信息
-        (``GET /siteapi/v1/ucenter/node/<node_uid>/node/``)
+        (``GET /siteapi/v1/node/<node_uid>/node/``)
 
         **Parameters**:
 
@@ -230,7 +230,7 @@ class NodeClient(BaseClient):
     def create_subnode(self, node_uid: str, json_body: dict):
         """
         创建指定节点的子节点
-        (``POST /siteapi/v1/ucenter/node/<node_uid>/node/``)
+        (``POST /siteapi/v1/node/<node_uid>/node/``)
 
         **Parameters**:
 
@@ -261,7 +261,7 @@ class NodeClient(BaseClient):
     def add_subnode(self, node_uid: str, node_uids: list):
         """
         向指定节点添加子节点
-        (``PATCH /siteapi/v1/ucenter/node/<node_uid>/node/``)
+        (``PATCH /siteapi/v1/node/<node_uid>/node/``)
 
         **Parameters**:
 
@@ -290,7 +290,7 @@ class NodeClient(BaseClient):
     def sort_subnode(self, node_uid: str, node_uids: list):
         """
         对指定子节点按指定位置进行排序
-        (``PATCH /siteapi/v1/ucenter/node/<node_uid>/node/``)
+        (``PATCH /siteapi/v1/node/<node_uid>/node/``)
 
         **Parameters**:
 
@@ -319,7 +319,7 @@ class NodeClient(BaseClient):
     def query_user_under_node(self, node_uid: str, **params):
         """
         查询指定节点下的直属人员的信息
-        (``GET /siteapi/v1/ucenter/node/<node_uid>/user/``)
+        (``GET /siteapi/v1/node/<node_uid>/user/``)
 
         **Parameters**:
 
@@ -348,7 +348,7 @@ class NodeClient(BaseClient):
     def add_user_under_node(self, node_uid: str, user_uids: list, **params):
         """
         向指定节点添加指定成员
-        (``PATCH /siteapi/v1/ucenter/node/<node_uid>/user/``)
+        (``PATCH /siteapi/v1/node/<node_uid>/user/``)
 
         **Parameters**:
 
@@ -386,7 +386,7 @@ class NodeClient(BaseClient):
     def delete_user_under_node(self, node_uid: str, user_uids: list, **params):
         """
         从指定节点移除指定成员
-        (``PATCH /siteapi/v1/ucenter/node/<node_uid>/user/``)
+        (``PATCH /siteapi/v1/node/<node_uid>/user/``)
 
         **Parameters**:
 
@@ -424,7 +424,7 @@ class NodeClient(BaseClient):
     def override_user_under_node(self, node_uid: str, user_uids: list, **params):
         """
         重置指定节点的指定用户
-        (``PATCH /siteapi/v1/ucenter/node/<node_uid>/user/``)
+        (``PATCH /siteapi/v1/node/<node_uid>/user/``)
 
         **Parameters**:
 
@@ -462,7 +462,7 @@ class NodeClient(BaseClient):
     def sort_user_under_node(self, node_uid: str, user_uids: list, **params):
         """
         对指定人按指定位置进行排序
-        (``PATCH /siteapi/v1/ucenter/node/<node_uid>/user/``)
+        (``PATCH /siteapi/v1/node/<node_uid>/user/``)
 
         **Parameters**:
 
@@ -500,7 +500,7 @@ class NodeClient(BaseClient):
     def move_out_user_under_node(self, node_uid: str, user_uids: list, **params):
         """
         将这些人从该节点移除，并加到指定节点
-        (``PATCH /siteapi/v1/ucenter/node/<node_uid>/user/``)
+        (``PATCH /siteapi/v1/node/<node_uid>/user/``)
 
         **Parameters**:
 
