@@ -1,0 +1,42 @@
+/* Copied verbatim from docs.globus.org */
+@font-face {
+   font-family: 'museosans';
+   src: url('fonts/221E91_4_0.woff') format('woff');
+   font-weight: 100 ;
+}
+@font-face {
+   font-family: 'museosans';
+   src: url('fonts/221E91_3_0.woff') format('woff');
+   font-weight: 500 ;
+}
+@font-face {
+   font-family: 'museosans';
+   src: url('fonts/221E91_1_0.woff') format('woff');
+   font-weight: 300 ;
+}
+@font-face {
+   font-family: 'museosans';
+   src: url('fonts/221E91_0_0.woff') format('woff');
+   font-weight: 700 ;
+}
+body {
+	font-family: museosans,"Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-weight: 300;
+	font-size: 18px;
+}
+/* Special overrides for sphinx */
+body div.sphinxsidebar {
+    font-weight: 500;
+}
+/* special special overrides for sphinx guzzle-theme */
+.text-logo {
+    /* globus blue */
+    background-color: #27518F;
+}
+
+/* move horizontal rule separating class methods to be above, not below */
+dl.method {
+    border-bottom: none;
+    border-top: 1px solid #ccc;
+    padding-top: 15px;
+}

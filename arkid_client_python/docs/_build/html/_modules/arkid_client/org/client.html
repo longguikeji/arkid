@@ -1,0 +1,579 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="../../../_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="../../../_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>arkid_client.org.client &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<link rel="stylesheet" href="../../../_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    ../../../index.html" class="text-logo"><img src="../../../_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Client 教程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../clients.html">服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="../../../search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="../../../index.html">Docs</a></li>
+              
+                <li><a href="../../index.html">Module code</a></li>
+              
+              <li>arkid_client.org.client</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <h1>Source code for arkid_client.org.client</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Define OrgClient</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">arkid_client.authorizers</span> <span class="kn">import</span> <span class="n">BasicAuthorizer</span>
+<span class="kn">from</span> <span class="nn">arkid_client.base</span> <span class="kn">import</span> <span class="n">BaseClient</span><span class="p">,</span> <span class="n">reload_service</span>
+<span class="kn">from</span> <span class="nn">arkid_client.exceptions</span> <span class="kn">import</span> <span class="n">OrgAPIError</span>
+<span class="kn">from</span> <span class="nn">arkid_client.response</span> <span class="kn">import</span> <span class="n">ArkIDHTTPResponse</span>
+
+
+<div class="viewcode-block" id="OrgClient"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient">[docs]</a><span class="k">class</span> <span class="nc">OrgClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    组织管理客户端，用于与 ArkID 服务端组织管理相关</span>
+<span class="sd">    接口的访问操作。</span>
+
+<span class="sd">    **Methods**</span>
+
+<span class="sd">    *  :py:meth:`.query_own_org`</span>
+<span class="sd">    *  :py:meth:`.query_specified_org`</span>
+<span class="sd">    *  :py:meth:`.create_org`</span>
+<span class="sd">    *  :py:meth:`.delete_specified_org`</span>
+<span class="sd">    *  :py:meth:`.update_specified_org`</span>
+<span class="sd">    *  :py:meth:`.query_orguser`</span>
+<span class="sd">    *  :py:meth:`.add_orguser`</span>
+<span class="sd">    *  :py:meth:`.delete_orguser`</span>
+<span class="sd">    *  :py:meth:`.query_specified_orguser`</span>
+<span class="sd">    *  :py:meth:`.update_specified_orguser`</span>
+<span class="sd">    *  :py:meth:`.get_org_invitation_key`</span>
+<span class="sd">    *  :py:meth:`.refresh_org_invitation_key`</span>
+<span class="sd">    *  :py:meth:`.view_org_by_invitation_key`</span>
+<span class="sd">    *  :py:meth:`.join_org_by_invitation_key`</span>
+<span class="sd">    *  :py:meth:`.get_current_org`</span>
+<span class="sd">    *  :py:meth:`.switch_current_org`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">allowed_authorizer_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">BasicAuthorizer</span><span class="p">]</span>
+    <span class="n">error_class</span> <span class="o">=</span> <span class="n">OrgAPIError</span>
+    <span class="n">default_response_class</span> <span class="o">=</span> <span class="n">ArkIDHTTPResponse</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">BaseClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="s2">&quot;org&quot;</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="n">authorizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OrgClient.query_own_org"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.query_own_org">[docs]</a>    <span class="k">def</span> <span class="nf">query_own_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        查询用户所在的组织</span>
+<span class="sd">        (``GET /siteapi/v1/org/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``role`` (*str*)</span>
+<span class="sd">              在组织内的角色</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; orgs = oc.query_own_org(role=&#39;admin&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; for org in orgs:</span>
+<span class="sd">        &gt;&gt;&gt;     print(org[&#39;oid&#39;], &#39;name: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;           ,org[&#39;name&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.query_own_org() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OrgClient.query_specified_org"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.query_specified_org">[docs]</a>    <span class="k">def</span> <span class="nf">query_specified_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        查看指定组织的信息</span>
+<span class="sd">        (``GET /siteapi/v1/org/&lt;oid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.query_specified_org(oid)</span>
+<span class="sd">        &gt;&gt;&gt; print(org[&#39;oid&#39;], &#39;name: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;       ,org[&#39;name&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.query_specified_org() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="OrgClient.create_org"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.create_org">[docs]</a>    <span class="k">def</span> <span class="nf">create_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        创建组织</span>
+<span class="sd">        (``POST /siteapi/v1/org/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+<span class="sd">              组织的元信息， 参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; org_data = {</span>
+<span class="sd">        &gt;&gt;&gt;   &quot;name&quot;: &quot;example&quot;,</span>
+<span class="sd">        &gt;&gt;&gt; }</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.create_org(org_data)</span>
+<span class="sd">        &gt;&gt;&gt; print(org[&#39;oid&#39;], &#39;name: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;       ,org[&#39;name&#39;])</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `组织的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/org/0/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.create_org() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OrgClient.delete_specified_org"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.delete_specified_org">[docs]</a>    <span class="k">def</span> <span class="nf">delete_specified_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        删除指定组织的信息</span>
+<span class="sd">        (``DELETE /siteapi/v1/org/&lt;oid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; oc.delete_specified_org(oid)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.delete_specified_org() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="OrgClient.update_specified_org"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.update_specified_org">[docs]</a>    <span class="k">def</span> <span class="nf">update_specified_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        修改指定组织的信息</span>
+<span class="sd">        (``PATCH /siteapi/v1/org/&lt;oid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+<span class="sd">              组织的元信息， 参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; org_data = {</span>
+<span class="sd">        &gt;&gt;&gt;   &quot;name&quot;: &quot;example&quot;,</span>
+<span class="sd">        &gt;&gt;&gt; }</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.update_specified_org(oid, org_data)</span>
+<span class="sd">        &gt;&gt;&gt; print(org[&#39;oid&#39;], &#39;name: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;       ,org[&#39;name&#39;])</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `组织的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/org/1/2&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.update_specified_org() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OrgClient.query_orguser"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.query_orguser">[docs]</a>    <span class="k">def</span> <span class="nf">query_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        查看特定组织的成员信息</span>
+<span class="sd">        (``GET /siteapi/v1/org/&lt;oid&gt;/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">            ``page`` (*int*)</span>
+<span class="sd">              用于分页，*Default: 1*</span>
+
+<span class="sd">            ``page_size`` (*int*)</span>
+<span class="sd">              指定分页大小，*Default: 30*</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.query_orguser(oid)</span>
+<span class="sd">        &gt;&gt;&gt; print(org[&#39;oid&#39;], &#39;name: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;       ,org[&#39;name&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.query_orguser() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OrgClient.add_orguser"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.add_orguser">[docs]</a>    <span class="k">def</span> <span class="nf">add_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">usernames</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        向指定组织中添加成员</span>
+<span class="sd">        (``PATCH /siteapi/v1/org/&lt;oid&gt;/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">            ``usernames`` (*list*)</span>
+<span class="sd">              用户的唯一标识组成的列表</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; usernames = [</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;username1&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;username2&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;         ...</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;usernamen&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ]</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.add_orguser(oid, usernames)</span>
+<span class="sd">        &gt;&gt;&gt; print(org[&#39;oid&#39;], &#39;name: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;       ,org[&#39;name&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.add_orguser() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">json_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;add&#39;</span><span class="p">,</span> <span class="s1">&#39;usernames&#39;</span><span class="p">:</span> <span class="n">usernames</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OrgClient.delete_orguser"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.delete_orguser">[docs]</a>    <span class="k">def</span> <span class="nf">delete_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">usernames</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        从指定组织中移除成员</span>
+<span class="sd">        (``PATCH /siteapi/v1/org/&lt;oid&gt;/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">            ``usernames`` (*list*)</span>
+<span class="sd">              用户的唯一标识组成的列表</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; usernames = [</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;username1&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;username2&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;         ...</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;usernamen&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ]</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.delete_orguser(oid, usernames)</span>
+<span class="sd">        &gt;&gt;&gt; print(org[&#39;oid&#39;], &#39;name: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;       ,org[&#39;name&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.delete_orguser() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">json_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="s1">&#39;usernames&#39;</span><span class="p">:</span> <span class="n">usernames</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OrgClient.query_specified_orguser"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.query_specified_orguser">[docs]</a>    <span class="k">def</span> <span class="nf">query_specified_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        查看指定组织的指定成员的信息</span>
+<span class="sd">        (``GET /siteapi/v1/org/&lt;oid&gt;/user/&lt;username&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">            ``username`` (*str*)</span>
+<span class="sd">              用户唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; user = oc.query_specified_orguser(oid, username)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;user is&#39;, user)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.query_specified_orguser() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">username</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="OrgClient.update_specified_orguser"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.update_specified_orguser">[docs]</a>    <span class="k">def</span> <span class="nf">update_specified_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        编辑指定组织的指定成员的信息</span>
+<span class="sd">        (``PATCH /siteapi/v1/org/&lt;oid&gt;/user/&lt;username&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">            ``username`` (*str*)</span>
+<span class="sd">              用户唯一标识</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+
+<span class="sd">                ``email`` (*str*)</span>
+<span class="sd">                  成员邮箱</span>
+
+<span class="sd">                ``employee_number`` (*str*)</span>
+<span class="sd">                  成员工号</span>
+
+<span class="sd">                ``position`` (*str*)</span>
+<span class="sd">                  成员职位</span>
+
+<span class="sd">                ``hiredate`` (*str*)</span>
+<span class="sd">                  成员雇佣日期</span>
+
+<span class="sd">                ``remark`` (*str*)</span>
+<span class="sd">                  成员备注</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; user_data = {</span>
+<span class="sd">        &gt;&gt;&gt;   &quot;email&quot;: &quot;example@org.com&quot;,</span>
+<span class="sd">        &gt;&gt;&gt; }</span>
+<span class="sd">        &gt;&gt;&gt; user = oc.update_specified_orguser(oid, username, user_data)</span>
+<span class="sd">        &gt;&gt;&gt; print(user[&#39;id&#39;], &#39;name: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;       ,user[&#39;name&#39;])</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `成员的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/org/3/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.update_specified_orguser() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">username</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OrgClient.get_org_invitation_key"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.get_org_invitation_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_org_invitation_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取指定组织邀请用的最新的密钥</span>
+<span class="sd">        (``GET /siteapi/v1/org/&lt;oid&gt;/invitation/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; key = oc.get_org_invitation_key(oid)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;key: &#39;, key)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.get_org_invitation_key() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/invitation/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="OrgClient.refresh_org_invitation_key"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.refresh_org_invitation_key">[docs]</a>    <span class="k">def</span> <span class="nf">refresh_org_invitation_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        刷新指定组织邀请用的最新的密钥</span>
+<span class="sd">        (``PUT /siteapi/v1/org/&lt;oid&gt;/invitation/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; key = oc.refresh_org_invitation_key(oid)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;key: &#39;, key)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.get_org_invitation_key() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/invitation/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="OrgClient.view_org_by_invitation_key"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.view_org_by_invitation_key">[docs]</a>    <span class="k">def</span> <span class="nf">view_org_by_invitation_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">invite_link_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        使用邀请密钥查看指定组织的信息</span>
+<span class="sd">        (``GET /siteapi/v1/org/&lt;oid&gt;/invitation/&lt;invite_link_key&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">            ``invite_link_key`` (*str*)</span>
+<span class="sd">              组织邀请密钥</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.view_org_by_invitation_key(oid, invite_link_key)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;org: &#39;, org)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.view_org_by_invitation_key() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/invitation/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">invite_link_key</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="OrgClient.join_org_by_invitation_key"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.join_org_by_invitation_key">[docs]</a>    <span class="k">def</span> <span class="nf">join_org_by_invitation_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">invite_link_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        使用邀请密钥加入指定组织</span>
+<span class="sd">        (``POST /siteapi/v1/org/&lt;oid&gt;/invitation/&lt;invite_link_key&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``oid`` (*str*)</span>
+<span class="sd">              组织的唯一标识</span>
+
+<span class="sd">            ``invite_link_key`` (*str*)</span>
+<span class="sd">              组织邀请密钥</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.join_org_by_invitation_key(oid, invite_link_key)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;org: &#39;, org)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.join_org_by_invitation_key() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/invitation/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">invite_link_key</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="OrgClient.get_current_org"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.get_current_org">[docs]</a>    <span class="k">def</span> <span class="nf">get_current_org</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取用户当前所在组织的信息</span>
+<span class="sd">        (``GET /siteapi/v1/ucenter/org/``)</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.get_current_org()</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;org: &#39;, org)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_service</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reload_service_url</span><span class="p">(</span><span class="s1">&#39;ucenter&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.get_current_org() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;org/&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reload_service_url</span><span class="p">(</span><span class="n">_service</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="OrgClient.switch_current_org"><a class="viewcode-back" href="../../../clients/org.html#arkid_client.org.OrgClient.switch_current_org">[docs]</a>    <span class="k">def</span> <span class="nf">switch_current_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        切换用户当前所在的组织</span>
+<span class="sd">        (``PUT /siteapi/v1/ucenter/org/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+
+<span class="sd">                ``oid`` (*str*)</span>
+<span class="sd">                  组织的唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; oc = arkid_client.OrgClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; org = oc.switch_current_org({&#39;oid&#39;: &#39;example&#39;})</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;org: &#39;, org)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_service</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reload_service_url</span><span class="p">(</span><span class="s1">&#39;ucenter&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 OrgClient.switch_current_org() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;org/&#39;</span><span class="p">,</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reload_service_url</span><span class="p">(</span><span class="n">_service</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div></div>
+</pre></div>
+
+          </div>
+            
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="../../../_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

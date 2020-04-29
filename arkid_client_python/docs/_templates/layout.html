@@ -1,0 +1,8 @@
+{# Taken from the Guzzle documentation's example of layout extension #}
+{% extends "!layout.html" %}
+
+{# add custom CSS to head tag #}
+{%- block extrahead %}
+<link rel="stylesheet" href="{{pathto('_static/arkid-overrides.css', 1)}}" type="text/css"></link>
+{{ super() }}
+{%- endblock %}

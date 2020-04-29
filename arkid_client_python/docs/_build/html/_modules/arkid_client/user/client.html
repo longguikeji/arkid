@@ -1,0 +1,335 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="../../../_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="../../../_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>arkid_client.user.client &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<link rel="stylesheet" href="../../../_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    ../../../index.html" class="text-logo"><img src="../../../_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Client 教程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../clients.html">服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="../../../search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="../../../index.html">Docs</a></li>
+              
+                <li><a href="../../index.html">Module code</a></li>
+              
+              <li>arkid_client.user.client</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <h1>Source code for arkid_client.user.client</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Define UserClient</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">arkid_client.authorizers</span> <span class="kn">import</span> <span class="n">BasicAuthorizer</span>
+<span class="kn">from</span> <span class="nn">arkid_client.base</span> <span class="kn">import</span> <span class="n">BaseClient</span>
+<span class="kn">from</span> <span class="nn">arkid_client.exceptions</span> <span class="kn">import</span> <span class="n">UserAPIError</span>
+<span class="kn">from</span> <span class="nn">arkid_client.response</span> <span class="kn">import</span> <span class="n">ArkIDHTTPResponse</span>
+
+
+<div class="viewcode-block" id="UserClient"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient">[docs]</a><span class="k">class</span> <span class="nc">UserClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    用户管理客户端，</span>
+<span class="sd">    用于与 ArkID 服务端用户管理相关接口的访问操作。</span>
+
+<span class="sd">    **Methods**</span>
+
+<span class="sd">    *  :py:meth:`.query_user`</span>
+<span class="sd">    *  :py:meth:`.query_isolated_user`</span>
+<span class="sd">    *  :py:meth:`.query_specified_user`</span>
+<span class="sd">    *  :py:meth:`.create_user`</span>
+<span class="sd">    *  :py:meth:`.update_specified_user`</span>
+<span class="sd">    *  :py:meth:`.delete_specified_user`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">allowed_authorizer_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">BasicAuthorizer</span><span class="p">]</span>
+    <span class="n">error_class</span> <span class="o">=</span> <span class="n">UserAPIError</span>
+    <span class="n">default_response_class</span> <span class="o">=</span> <span class="n">ArkIDHTTPResponse</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">BaseClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="n">authorizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UserClient.query_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.query_user">[docs]</a>    <span class="k">def</span> <span class="nf">query_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取用户信息列表</span>
+<span class="sd">        (``GET /siteapi/v1/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``keyword`` (*str*)</span>
+<span class="sd">              查询关键字，进行用户名、姓名、邮箱、手机号模糊搜索</span>
+
+<span class="sd">            ``wechat_unionid`` (*str*)</span>
+<span class="sd">              微信客户端 openid</span>
+
+<span class="sd">            ``page`` (*int*)</span>
+<span class="sd">              用于分页，*Default: 1*</span>
+
+<span class="sd">            ``page_size`` (*int*)</span>
+<span class="sd">              指定分页大小，*Default: 30*</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; uc = arkid_client.UserClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; users = uc.query_user(...)</span>
+<span class="sd">        &gt;&gt;&gt; for user in users:</span>
+<span class="sd">        &gt;&gt;&gt;     print(user[&#39;username&#39;], &#39;id: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;           ,user[&#39;id&#39;])</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `用户的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/user/0/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.query_user_list() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UserClient.query_isolated_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.query_isolated_user">[docs]</a>    <span class="k">def</span> <span class="nf">query_isolated_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取所有独立用户</span>
+<span class="sd">        (``GET /siteapi/v1/user/isolated/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``page`` (*int*)</span>
+<span class="sd">              用于分页，*Default: 1*</span>
+
+<span class="sd">            ``page_size`` (*int*)</span>
+<span class="sd">              指定分页大小，*Default: 30*</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; uc = arkid_client.UserClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; users = uc.query_isolated_user(...)</span>
+<span class="sd">        &gt;&gt;&gt; for user in users:</span>
+<span class="sd">        &gt;&gt;&gt;     print(user[&#39;username&#39;], &#39;id: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;           ,user[&#39;id&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.query_isolated_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;isolated/&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UserClient.query_specified_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.query_specified_user">[docs]</a>    <span class="k">def</span> <span class="nf">query_specified_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取指定用户的信息</span>
+<span class="sd">        (``GET /siteapi/v1/user/&lt;username&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``username`` (*str*)</span>
+<span class="sd">              用户唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; uc = arkid_client.UserClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; user = uc.query_isolated_user(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(user[&#39;username&#39;], &#39;id: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;       ,user[&#39;id&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.query_specified_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="UserClient.create_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.create_user">[docs]</a>    <span class="k">def</span> <span class="nf">create_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        创建用户(需要管理员权限)</span>
+<span class="sd">        (``POST /siteapi/v1/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+
+<span class="sd">                ``group_uids`` (*list[str]*)</span>
+<span class="sd">                  用户组 ``uuid`` 的集合</span>
+
+<span class="sd">                ``dept_uids`` (*list[str]*)</span>
+<span class="sd">                  部门 ``uuid`` 的集合</span>
+
+<span class="sd">                ``user`` (*dict*)</span>
+<span class="sd">                  用户的元信息, 参数详情请参考接口文档</span>
+
+<span class="sd">                ``node_uids`` (*list[str]*)</span>
+<span class="sd">                  （可选的）此字段提供时会忽略 ``group_uids``, ``dept_uids``</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; uc = arkid_client.UserClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; user_data = {</span>
+<span class="sd">        &gt;&gt;&gt;   &quot;user&quot;: {</span>
+<span class="sd">        &gt;&gt;&gt;     &quot;password&quot;: &quot;example&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;     &quot;username&quot;: &quot;example&quot;</span>
+<span class="sd">        &gt;&gt;&gt;     }</span>
+<span class="sd">        &gt;&gt;&gt; }</span>
+<span class="sd">        &gt;&gt;&gt; user = uc.create_user(user_data)</span>
+<span class="sd">        &gt;&gt;&gt; print(user[&#39;username&#39;], &#39;id: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;           ,user[&#39;id&#39;])</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `用户的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/user/0/0&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.create_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UserClient.update_specified_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.update_specified_user">[docs]</a>    <span class="k">def</span> <span class="nf">update_specified_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        修改指定用户的信息</span>
+<span class="sd">        (``PATCH /siteapi/v1/user/&lt;username&gt;``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``username`` (*str*)</span>
+<span class="sd">              用户唯一标识</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+<span class="sd">              用户的元信息, 参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; uc = arkid_client.UserClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; query_data = {</span>
+<span class="sd">        &gt;&gt;&gt;   &quot;password&quot;: &quot;example&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;   &quot;private_email&quot;: &quot;example@org.com&quot;</span>
+<span class="sd">        &gt;&gt;&gt; }</span>
+<span class="sd">        &gt;&gt;&gt; user = uc.update_specified_user(username, query_data)</span>
+<span class="sd">        &gt;&gt;&gt; print(user[&#39;username&#39;], &#39;id: &#39;</span>
+<span class="sd">        &gt;&gt;&gt;           ,user[&#39;id&#39;])</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `用户的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/user/2/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.update_specified_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UserClient.delete_specified_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.delete_specified_user">[docs]</a>    <span class="k">def</span> <span class="nf">delete_specified_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        删除指定用户的信息</span>
+<span class="sd">        (``DELETE /siteapi/v1/user/&lt;username&gt;``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``username`` (*str*)</span>
+<span class="sd">              用户唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; uc = arkid_client.UserClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; uc.delete_specified_user(username)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+            
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="../../../_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

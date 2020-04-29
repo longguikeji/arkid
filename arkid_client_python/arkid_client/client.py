@@ -2,21 +2,60 @@
 Define ArkIDClient
 """
 from arkid_client.base import BaseClient, reload_service
-from arkid_client.authorizers import BasicAuthorizer
-from arkid_client.authorizers import NullAuthorizer
+from arkid_client.authorizers import BasicAuthorizer, NullAuthorizer
 from arkid_client.exceptions import ArkIDError
-
 from arkid_client import (UserClient, OrgClient, NodeClient)
 
 
 class ArkIDClient(BaseClient):
     """
-    由各种 ArkID 客户端集成而生，他提供的所有功能
-    都只是各个客户端的简单封装，用来一致对外界用户
-    使用;
-    默认加载的为 user 相关服务接口
-    当然，如果您足够熟悉本项目，您也可以直接实例化
-    您所需要的指定客户端。
+    由各种 ArkID 客户端集成而生，
+    他提供的所有功能都只是各个客户端的简单封装，
+    用来一致对外界用户使用;默认加载的为 user 相关服务接口
+    当然，如果您足够熟悉本项目，
+    您也可以直接实例化所需要的指定客户端。
+
+    **Methods**
+
+    *  :py:meth:`.query_user`
+    *  :py:meth:`.query_isolated_user`
+    *  :py:meth:`.query_specified_user`
+    *  :py:meth:`.create_user`
+    *  :py:meth:`.update_specified_user`
+    *  :py:meth:`.delete_specified_user`
+    *  :py:meth:`.query_own_org`
+    *  :py:meth:`.query_specified_org`
+    *  :py:meth:`.create_org`
+    *  :py:meth:`.delete_specified_org`
+    *  :py:meth:`.update_specified_org`
+    *  :py:meth:`.query_orguser`
+    *  :py:meth:`.add_orguser`
+    *  :py:meth:`.delete_orguser`
+    *  :py:meth:`.query_specified_orguser`
+    *  :py:meth:`.update_specified_orguser`
+    *  :py:meth:`.get_org_invitation_key`
+    *  :py:meth:`.refresh_org_invitation_key`
+    *  :py:meth:`.view_org_by_invitation_key`
+    *  :py:meth:`.join_org_by_invitation_key`
+    *  :py:meth:`.get_current_org`
+    *  :py:meth:`.switch_current_org`
+    *  :py:meth:`.query_specified_node`
+    *  :py:meth:`.view_specified_node`
+    *  :py:meth:`.update_specified_node`
+    *  :py:meth:`.delete_specified_node`
+    *  :py:meth:`.get_node_tree_list`
+    *  :py:meth:`.get_node_tree`
+    *  :py:meth:`.view_node_tree`
+    *  :py:meth:`.get_subnode`
+    *  :py:meth:`.create_subnode`
+    *  :py:meth:`.add_subnode`
+    *  :py:meth:`.sort_subnode`
+    *  :py:meth:`.query_user_under_node`
+    *  :py:meth:`.add_user_under_node`
+    *  :py:meth:`.delete_user_under_node`
+    *  :py:meth:`.override_user_under_node`
+    *  :py:meth:`.sort_user_under_node`
+    *  :py:meth:`.move_out_user_under_node`
     """
     allowed_authorizer_types = [
         BasicAuthorizer,

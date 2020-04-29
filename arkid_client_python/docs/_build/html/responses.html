@@ -1,0 +1,222 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>接口响应 &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="异常处理" href="exceptions.html" />
+    <link rel="prev" title="基类客户端" href="clients/base.html" />
+<link rel="stylesheet" href="_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="异常处理"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="clients/base.html" title="基类客户端"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ArkID Client 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    index.html" class="text-logo"><img src="_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Client 教程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clients.html">服务客户端</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">接口响应</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">泛型响应类</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="index.html">Docs</a></li>
+              
+              <li>接口响应</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <div class="section" id="id1">
+<h1>接口响应<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>如果没有另作说明，ArkID SDk 客户端的所有方法的返回值都是 <code class="docutils literal notranslate"><span class="pre">ArkIDResponse</span></code> 对象。
+一些 <code class="docutils literal notranslate"><span class="pre">ArkIDResponse</span></code> 对象是可迭代的，在这些情况下，
+它们的内容也是 <code class="docutils literal notranslate"><span class="pre">ArkIDResponse</span></code> 对象。</p>
+<p>在调用ArkID 服务的接口时，使用的返回对象为 <code class="docutils literal notranslate"><span class="pre">ArkIDResponse</span></code> 的子类型 <code class="docutils literal notranslate"><span class="pre">ArkIDHTTPResponse</span></code>，
+它丰富了一些自定义数据信息的细节。</p>
+<div class="section" id="id2">
+<h2>泛型响应类<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="arkid_client.response.ArkIDResponse">
+<em class="property">class </em><code class="sig-prename descclassname">arkid_client.response.</code><code class="sig-name descname">ArkIDResponse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">client</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arkid_client/response.html#ArkIDResponse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.response.ArkIDResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>通用响应基类，只有一个简单的 <code class="docutils literal notranslate"><span class="pre">data</span></code> 成员。最常见的响应数据
+是 <code class="docutils literal notranslate"><span class="pre">JSON</span></code> 字典。为了尽可能不去处理这种类型的反应， <code class="docutils literal notranslate"><span class="pre">ArkIDResponse</span></code>
+对象支持通过字典的形式来直接访问响应内容，如果 <code class="docutils literal notranslate"><span class="pre">data</span></code> 不是字典结构，
+将会抛出 <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> 异常。</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&quot;Response ID&quot;: response[&quot;id&quot;]&#39;</span><span class="p">)</span> <span class="c1"># alias for response.data[&quot;id&quot;]</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ArkIDResponse</span></code> 对象封装 HTTP 响应的数据给调用者，
+大多数的操作都是基于与这些数据进行交互。</p>
+<dl class="py method">
+<dt id="arkid_client.response.ArkIDResponse.data">
+<em class="property">property </em><code class="sig-name descname">data</code><a class="headerlink" href="#arkid_client.response.ArkIDResponse.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>以 <code class="docutils literal notranslate"><span class="pre">Python</span></code> 形式的数据结构返回响应数据，通常是一个 <code class="docutils literal notranslate"><span class="pre">dict</span></code> 或者 <code class="docutils literal notranslate"><span class="pre">list</span></code>。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.response.ArkIDResponse.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arkid_client/response.html#ArkIDResponse.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.response.ArkIDResponse.get" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">BaseResponse.get(...)</span></code> 方法是 <code class="docutils literal notranslate"><span class="pre">BaseResponse.data.get(...)</span></code> 方法的别名</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="arkid_client.response.ArkIDHTTPResponse">
+<em class="property">class </em><code class="sig-prename descclassname">arkid_client.response.</code><code class="sig-name descname">ArkIDHTTPResponse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">http_response</span></em>, <em class="sig-param"><span class="n">client</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arkid_client/response.html#ArkIDHTTPResponse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.response.ArkIDHTTPResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#arkid_client.response.ArkIDResponse" title="arkid_client.response.ArkIDResponse"><code class="xref py py-class docutils literal notranslate"><span class="pre">arkid_client.response.ArkIDResponse</span></code></a></p>
+<p>封装底层 HTTP 响应对象。如果响应数据类型是 <code class="docutils literal notranslate"><span class="pre">JSON</span></code>，则解析后的数据将在 <code class="docutils literal notranslate"><span class="pre">data</span></code> 中，
+否则 <code class="docutils literal notranslate"><span class="pre">data</span></code> 将为 <code class="docutils literal notranslate"><span class="pre">None</span></code> ，并且 <code class="docutils literal notranslate"><span class="pre">text</span></code> 将被使用。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>http_status</strong> – ArkID 服务端返回的 HTTP 响应的状态码 (int)</p></li>
+<li><p><strong>content_type</strong> – ArkID 服务端返回的 HTTP 响应的内容类型 (str)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="arkid_client.response.ArkIDHTTPResponse.data">
+<em class="property">property </em><code class="sig-name descname">data</code><a class="headerlink" href="#arkid_client.response.ArkIDHTTPResponse.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>以 <code class="docutils literal notranslate"><span class="pre">Python</span></code> 形式的数据结构返回响应数据，通常是一个 <code class="docutils literal notranslate"><span class="pre">dict</span></code> 或者 <code class="docutils literal notranslate"><span class="pre">list</span></code>。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.response.ArkIDHTTPResponse.text">
+<em class="property">property </em><code class="sig-name descname">text</code><a class="headerlink" href="#arkid_client.response.ArkIDHTTPResponse.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTTP 响应数据的字符串形式</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+            
+  <div class="footer-relations">
+    
+      <div class="pull-left">
+        <a class="btn btn-default" href="clients/base.html" title="previous chapter (use the left arrow)">基类客户端</a>
+      </div>
+    
+      <div class="pull-right">
+        <a class="btn btn-default" href="exceptions.html" title="next chapter (use the right arrow)">异常处理</a>
+      </div>
+    </div>
+    <div class="clearer"></div>
+  
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="异常处理"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="clients/base.html" title="基类客户端"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ArkID Client 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

@@ -1,0 +1,583 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="../_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="../_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="../_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>组织服务客户端 &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="节点服务客户端" href="node.html" />
+    <link rel="prev" title="用户服务客户端" href="user.html" />
+<link rel="stylesheet" href="../_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="node.html" title="节点服务客户端"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="user.html" title="用户服务客户端"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../clients.html" accesskey="U">服务客户端</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    ../index.html" class="text-logo"><img src="../_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Client 教程</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../clients.html">服务客户端</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="auth.html">认证服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user.html">用户服务客户端</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">组织服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="node.html">节点服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arkid.html">ArkID 客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="base.html">基类客户端</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="../search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="../index.html">Docs</a></li>
+              
+                <li><a href="../clients.html">服务客户端</a></li>
+              
+              <li>组织服务客户端</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <span class="target" id="module-arkid_client.org"></span><div class="section" id="id1">
+<h1>组织服务客户端<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="arkid_client.org.OrgClient">
+<em class="property">class </em><code class="sig-prename descclassname">arkid_client.org.</code><code class="sig-name descname">OrgClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_url</span></em>, <em class="sig-param"><span class="n">authorizer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="base.html#arkid_client.base.BaseClient" title="arkid_client.base.BaseClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">arkid_client.base.BaseClient</span></code></a></p>
+<p>组织管理客户端，用于与 ArkID 服务端组织管理相关
+接口的访问操作。</p>
+<p><strong>Methods</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.query_own_org" title="arkid_client.org.OrgClient.query_own_org"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_own_org()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.query_specified_org" title="arkid_client.org.OrgClient.query_specified_org"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_specified_org()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.create_org" title="arkid_client.org.OrgClient.create_org"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_org()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.delete_specified_org" title="arkid_client.org.OrgClient.delete_specified_org"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delete_specified_org()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.update_specified_org" title="arkid_client.org.OrgClient.update_specified_org"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_specified_org()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.query_orguser" title="arkid_client.org.OrgClient.query_orguser"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_orguser()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.add_orguser" title="arkid_client.org.OrgClient.add_orguser"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_orguser()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.delete_orguser" title="arkid_client.org.OrgClient.delete_orguser"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delete_orguser()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.query_specified_orguser" title="arkid_client.org.OrgClient.query_specified_orguser"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_specified_orguser()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.update_specified_orguser" title="arkid_client.org.OrgClient.update_specified_orguser"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_specified_orguser()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.get_org_invitation_key" title="arkid_client.org.OrgClient.get_org_invitation_key"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_org_invitation_key()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.refresh_org_invitation_key" title="arkid_client.org.OrgClient.refresh_org_invitation_key"><code class="xref py py-meth docutils literal notranslate"><span class="pre">refresh_org_invitation_key()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.view_org_by_invitation_key" title="arkid_client.org.OrgClient.view_org_by_invitation_key"><code class="xref py py-meth docutils literal notranslate"><span class="pre">view_org_by_invitation_key()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.join_org_by_invitation_key" title="arkid_client.org.OrgClient.join_org_by_invitation_key"><code class="xref py py-meth docutils literal notranslate"><span class="pre">join_org_by_invitation_key()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.get_current_org" title="arkid_client.org.OrgClient.get_current_org"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_current_org()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.org.OrgClient.switch_current_org" title="arkid_client.org.OrgClient.switch_current_org"><code class="xref py py-meth docutils literal notranslate"><span class="pre">switch_current_org()</span></code></a></p></li>
+</ul>
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.query_own_org">
+<code class="sig-name descname">query_own_org</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.query_own_org"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.query_own_org" title="Permalink to this definition">¶</a></dt>
+<dd><p>查询用户所在的组织
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/org/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">role</span></code> (<em>str</em>)</dt><dd><p>在组织内的角色</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">orgs</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">query_own_org</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">org</span> <span class="ow">in</span> <span class="n">orgs</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;oid&#39;</span><span class="p">],</span> <span class="s1">&#39;name: &#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>          <span class="p">,</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.query_specified_org">
+<code class="sig-name descname">query_specified_org</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.query_specified_org"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.query_specified_org" title="Permalink to this definition">¶</a></dt>
+<dd><p>查看指定组织的信息
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">query_specified_org</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;oid&#39;</span><span class="p">],</span> <span class="s1">&#39;name: &#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="p">,</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.create_org">
+<code class="sig-name descname">create_org</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.create_org"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.create_org" title="Permalink to this definition">¶</a></dt>
+<dd><p>创建组织
+(<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/siteapi/v1/org/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">json_body</span></code> (<em>dict</em>)</dt><dd><p>组织的元信息， 参数详情请参考接口文档</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org_data</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">&gt;&gt;&gt; </span>  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">create_org</span><span class="p">(</span><span class="n">org_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;oid&#39;</span><span class="p">],</span> <span class="s1">&#39;name: &#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="p">,</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>External Documentation</strong></p>
+<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/org/0/1">组织的元数据</a>
+详情请参阅API文档。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.delete_specified_org">
+<code class="sig-name descname">delete_specified_org</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.delete_specified_org"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.delete_specified_org" title="Permalink to this definition">¶</a></dt>
+<dd><p>删除指定组织的信息
+(<code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span><span class="o">.</span><span class="n">delete_specified_org</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.update_specified_org">
+<code class="sig-name descname">update_specified_org</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.update_specified_org"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.update_specified_org" title="Permalink to this definition">¶</a></dt>
+<dd><p>修改指定组织的信息
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">json_body</span></code> (<em>dict</em>)</dt><dd><p>组织的元信息， 参数详情请参考接口文档</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org_data</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">&gt;&gt;&gt; </span>  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">update_specified_org</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">org_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;oid&#39;</span><span class="p">],</span> <span class="s1">&#39;name: &#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="p">,</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>External Documentation</strong></p>
+<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/org/1/2">组织的元数据</a>
+详情请参阅API文档。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.query_orguser">
+<code class="sig-name descname">query_orguser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.query_orguser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.query_orguser" title="Permalink to this definition">¶</a></dt>
+<dd><p>查看特定组织的成员信息
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/user/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">page</span></code> (<em>int</em>)</dt><dd><p>用于分页，<em>Default: 1</em></p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">page_size</span></code> (<em>int</em>)</dt><dd><p>指定分页大小，<em>Default: 30</em></p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">query_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;oid&#39;</span><span class="p">],</span> <span class="s1">&#39;name: &#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="p">,</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.add_orguser">
+<code class="sig-name descname">add_orguser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">usernames</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.add_orguser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.add_orguser" title="Permalink to this definition">¶</a></dt>
+<dd><p>向指定组织中添加成员
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/user/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">usernames</span></code> (<em>list</em>)</dt><dd><p>用户的唯一标识组成的列表</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">usernames</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;username1&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;username2&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;usernamen&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">add_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">usernames</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;oid&#39;</span><span class="p">],</span> <span class="s1">&#39;name: &#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="p">,</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.delete_orguser">
+<code class="sig-name descname">delete_orguser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">usernames</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.delete_orguser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.delete_orguser" title="Permalink to this definition">¶</a></dt>
+<dd><p>从指定组织中移除成员
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/user/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">usernames</span></code> (<em>list</em>)</dt><dd><p>用户的唯一标识组成的列表</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">usernames</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;username1&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;username2&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;usernamen&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">delete_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">usernames</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;oid&#39;</span><span class="p">],</span> <span class="s1">&#39;name: &#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="p">,</span><span class="n">org</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.query_specified_orguser">
+<code class="sig-name descname">query_specified_orguser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.query_specified_orguser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.query_specified_orguser" title="Permalink to this definition">¶</a></dt>
+<dd><p>查看指定组织的指定成员的信息
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/user/&lt;username&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">username</span></code> (<em>str</em>)</dt><dd><p>用户唯一标识</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">query_specified_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;user is&#39;</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.update_specified_orguser">
+<code class="sig-name descname">update_specified_orguser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.update_specified_orguser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.update_specified_orguser" title="Permalink to this definition">¶</a></dt>
+<dd><p>编辑指定组织的指定成员的信息
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/user/&lt;username&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">username</span></code> (<em>str</em>)</dt><dd><p>用户唯一标识</p>
+</dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">json_body</span></code> (<em>dict</em>)</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">email</span></code> (<em>str</em>)</dt><dd><p>成员邮箱</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">employee_number</span></code> (<em>str</em>)</dt><dd><p>成员工号</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">position</span></code> (<em>str</em>)</dt><dd><p>成员职位</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">hiredate</span></code> (<em>str</em>)</dt><dd><p>成员雇佣日期</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">remark</span></code> (<em>str</em>)</dt><dd><p>成员备注</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user_data</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">&gt;&gt;&gt; </span>  <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;example@org.com&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">update_specified_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">user_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span> <span class="s1">&#39;name: &#39;</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="p">,</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>External Documentation</strong></p>
+<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/org/3/1">成员的元数据</a>
+详情请参阅API文档。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.get_org_invitation_key">
+<code class="sig-name descname">get_org_invitation_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.get_org_invitation_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.get_org_invitation_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取指定组织邀请用的最新的密钥
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/invitation/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">get_org_invitation_key</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;key: &#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.refresh_org_invitation_key">
+<code class="sig-name descname">refresh_org_invitation_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.refresh_org_invitation_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.refresh_org_invitation_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>刷新指定组织邀请用的最新的密钥
+(<code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/invitation/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">refresh_org_invitation_key</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;key: &#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.view_org_by_invitation_key">
+<code class="sig-name descname">view_org_by_invitation_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">invite_link_key</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.view_org_by_invitation_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.view_org_by_invitation_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>使用邀请密钥查看指定组织的信息
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/invitation/&lt;invite_link_key&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">invite_link_key</span></code> (<em>str</em>)</dt><dd><p>组织邀请密钥</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">view_org_by_invitation_key</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">invite_link_key</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;org: &#39;</span><span class="p">,</span> <span class="n">org</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.join_org_by_invitation_key">
+<code class="sig-name descname">join_org_by_invitation_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">invite_link_key</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.join_org_by_invitation_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.join_org_by_invitation_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>使用邀请密钥加入指定组织
+(<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/siteapi/v1/org/&lt;oid&gt;/invitation/&lt;invite_link_key&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">invite_link_key</span></code> (<em>str</em>)</dt><dd><p>组织邀请密钥</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">join_org_by_invitation_key</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">invite_link_key</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;org: &#39;</span><span class="p">,</span> <span class="n">org</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.get_current_org">
+<code class="sig-name descname">get_current_org</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.get_current_org"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.get_current_org" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取用户当前所在组织的信息
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/ucenter/org/</span></code>)</p>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">get_current_org</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;org: &#39;</span><span class="p">,</span> <span class="n">org</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.org.OrgClient.switch_current_org">
+<code class="sig-name descname">switch_current_org</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/org/client.html#OrgClient.switch_current_org"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.org.OrgClient.switch_current_org" title="Permalink to this definition">¶</a></dt>
+<dd><p>切换用户当前所在的组织
+(<code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/siteapi/v1/ucenter/org/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">json_body</span></code> (<em>dict</em>)</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oid</span></code> (<em>str</em>)</dt><dd><p>组织的唯一标识</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">OrgClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">org</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">switch_current_org</span><span class="p">({</span><span class="s1">&#39;oid&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;org: &#39;</span><span class="p">,</span> <span class="n">org</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+            
+  <div class="footer-relations">
+    
+      <div class="pull-left">
+        <a class="btn btn-default" href="user.html" title="previous chapter (use the left arrow)">用户服务客户端</a>
+      </div>
+    
+      <div class="pull-right">
+        <a class="btn btn-default" href="node.html" title="next chapter (use the right arrow)">节点服务客户端</a>
+      </div>
+    </div>
+    <div class="clearer"></div>
+  
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="node.html" title="节点服务客户端"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="user.html" title="用户服务客户端"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../clients.html" >服务客户端</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="../_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

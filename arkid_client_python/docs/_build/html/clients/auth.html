@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="../_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="../_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="../_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>认证服务客户端 &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="用户服务客户端" href="user.html" />
+    <link rel="prev" title="服务客户端" href="../clients.html" />
+<link rel="stylesheet" href="../_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="user.html" title="用户服务客户端"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../clients.html" title="服务客户端"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../clients.html" accesskey="U">服务客户端</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    ../index.html" class="text-logo"><img src="../_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Client 教程</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../clients.html">服务客户端</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">认证服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user.html">用户服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="org.html">组织服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="node.html">节点服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arkid.html">ArkID 客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="base.html">基类客户端</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="../search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="../index.html">Docs</a></li>
+              
+                <li><a href="../clients.html">服务客户端</a></li>
+              
+              <li>认证服务客户端</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <span class="target" id="module-arkid_client.auth"></span><div class="section" id="id1">
+<h1>认证服务客户端<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="arkid_client.AuthClient">
+<em class="property">class </em><code class="sig-prename descclassname">arkid_client.</code><code class="sig-name descname">AuthClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_url</span></em>, <em class="sig-param"><span class="n">service</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">authorizer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/auth/client/base.html#AuthClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.AuthClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="base.html#arkid_client.base.BaseClient" title="arkid_client.base.BaseClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">arkid_client.base.BaseClient</span></code></a></p>
+<p>认证客户端，用于向 ArkID 服务端请求授权认证信息，并获取访问令牌。</p>
+<p><strong>Examples</strong></p>
+<p>初始化 &lt; AuthClient &gt; 客户端，以 Access Token 授权方式向 ArkID 服务端
+请求对调用的用户进行身份验证 (TODO)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">arkid_client</span> <span class="kn">import</span> <span class="n">AuthClient</span><span class="p">,</span> <span class="n">AccessTokenAuthorizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ac</span> <span class="o">=</span> <span class="n">AuthClient</span><span class="p">(</span><span class="n">authorizer</span><span class="o">=</span><span class="n">AccessTokenAuthorizer</span><span class="p">(</span><span class="s1">&#39;&lt;token_string&gt;&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>上述使用 oauth2.0 协议来请求授权，虽然 ArkID Client 暂时还不支持这样做。
+但是，这里可以使用任何其它的符合规则的授权器。</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="arkid_client.ConfidentialAppAuthClient">
+<em class="property">class </em><code class="sig-prename descclassname">arkid_client.</code><code class="sig-name descname">ConfidentialAppAuthClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_url</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/auth/client/confidential_client.html#ConfidentialAppAuthClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.ConfidentialAppAuthClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">arkid_client.auth.client.base.AuthClient</span></code></p>
+<p>与 ArkID 认证服务端进行通信的 <code class="docutils literal notranslate"><span class="pre">AuthClient</span></code> 类型的认证客户端。
+此客户端必须是已受到 ArkID 官方高度信任的第三方客户端，可凭借
+<code class="docutils literal notranslate"><span class="pre">username</span></code> 和 <code class="docutils literal notranslate"><span class="pre">password</span></code> 直接向 ArkID 认证端发起授权请求。
+最终，它将得到 ArkID 官方默认的认证凭证 <code class="docutils literal notranslate"><span class="pre">oneid_token</span></code> 。</p>
+<p><strong>Methods</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#arkid_client.ConfidentialAppAuthClient.start_auth" title="arkid_client.ConfidentialAppAuthClient.start_auth"><code class="xref py py-meth docutils literal notranslate"><span class="pre">start_auth()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.ConfidentialAppAuthClient.get_token" title="arkid_client.ConfidentialAppAuthClient.get_token"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_token()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.ConfidentialAppAuthClient.auth_to_get_token" title="arkid_client.ConfidentialAppAuthClient.auth_to_get_token"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auth_to_get_token()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.ConfidentialAppAuthClient.revoke_token" title="arkid_client.ConfidentialAppAuthClient.revoke_token"><code class="xref py py-meth docutils literal notranslate"><span class="pre">revoke_token()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.ConfidentialAppAuthClient.auth_token" title="arkid_client.ConfidentialAppAuthClient.auth_token"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auth_token()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.ConfidentialAppAuthClient.get_authorizer" title="arkid_client.ConfidentialAppAuthClient.get_authorizer"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_authorizer()</span></code></a></p></li>
+</ul>
+<dl class="py method">
+<dt id="arkid_client.ConfidentialAppAuthClient.start_auth">
+<code class="sig-name descname">start_auth</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">password</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/auth/client/confidential_client.html#ConfidentialAppAuthClient.start_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.ConfidentialAppAuthClient.start_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>开始进行身份认证
+(<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/siteapi/v1/ucenter/login/</span></code>)</p>
+<p><strong>Parameters</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">username</span></code> (<em>string</em>)</dt><dd><p>用户唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">password</span></code> (<em>string</em>)</dt><dd><p>密码</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">caac</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">ConfidentialAppAuthClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caac</span><span class="o">.</span><span class="n">start_auth</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.ConfidentialAppAuthClient.get_token">
+<code class="sig-name descname">get_token</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/auth/client/confidential_client.html#ConfidentialAppAuthClient.get_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.ConfidentialAppAuthClient.get_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取 <code class="docutils literal notranslate"><span class="pre">oneid_token</span></code></p>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">caac</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">ConfidentialAppAuthClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caac</span><span class="o">.</span><span class="n">start_auth</span><span class="p">(</span><span class="s1">&#39;&lt;username&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;password&gt;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">token</span> <span class="o">=</span> <span class="n">caac</span><span class="o">.</span><span class="n">get_token</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.ConfidentialAppAuthClient.auth_to_get_token">
+<code class="sig-name descname">auth_to_get_token</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">_password</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/auth/client/confidential_client.html#ConfidentialAppAuthClient.auth_to_get_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.ConfidentialAppAuthClient.auth_to_get_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>简化 <code class="docutils literal notranslate"><span class="pre">oneid_token</span></code> 的获取流程，大多数时候比传统的获取方式更轻松。
+(<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/siteapi/v1/ucenter/login/</span></code>)</p>
+<p><strong>Parameters</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">username</span></code> (<em>string</em>)</dt><dd><p>用户唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">password</span></code> (<em>string</em>)</dt><dd><p>密码</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">caac</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">ConfidentialAppAuthClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">token</span> <span class="o">=</span> <span class="n">caac</span><span class="o">.</span><span class="n">auth_to_get_token</span><span class="p">(</span><span class="n">_username</span><span class="p">,</span> <span class="n">_password</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.ConfidentialAppAuthClient.revoke_token">
+<code class="sig-name descname">revoke_token</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">authorizer</span><span class="p">:</span> <span class="n">arkid_client.authorizers.basic.BasicAuthorizer</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/auth/client/confidential_client.html#ConfidentialAppAuthClient.revoke_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.ConfidentialAppAuthClient.revoke_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>撤销 <code class="docutils literal notranslate"><span class="pre">oneid_token</span></code>
+(<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/siteapi/v1/revoke/token/</span></code>)</p>
+<p><strong>Parameters</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">authorizer</span></code> (<em>BasicAuthorizer</em>)</dt><dd><p>特指 &lt; BasicAuthorizer &gt; 类型的授权器</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">caac</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">ConfidentialAppAuthClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">token</span> <span class="o">=</span> <span class="n">caac</span><span class="o">.</span><span class="n">revoke_token</span><span class="p">(</span><span class="n">authorizer</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.ConfidentialAppAuthClient.auth_token">
+<code class="sig-name descname">auth_token</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">authorizer</span><span class="p">:</span> <span class="n">arkid_client.authorizers.basic.BasicAuthorizer</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/auth/client/confidential_client.html#ConfidentialAppAuthClient.auth_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.ConfidentialAppAuthClient.auth_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>校验 <code class="docutils literal notranslate"><span class="pre">oneid_token</span></code> 所代表的用户是否有某特定权限
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/auth/token/</span></code>)</p>
+<p><strong>Parameters</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">authorizer</span></code> (<em>BasicAuthorizer</em>)</dt><dd><p>特指 &lt; BasicAuthorizer &gt; 类型的授权器</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">caac</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">ConfidentialAppAuthClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">token</span> <span class="o">=</span> <span class="n">caac</span><span class="o">.</span><span class="n">auth_token</span><span class="p">(</span><span class="n">authorizer</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.ConfidentialAppAuthClient.get_authorizer">
+<code class="sig-name descname">get_authorizer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">password</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/auth/client/confidential_client.html#ConfidentialAppAuthClient.get_authorizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.ConfidentialAppAuthClient.get_authorizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>封装 <code class="docutils literal notranslate"><span class="pre">self.auth_to_get_token</span></code> 方法，
+通过认证客户端直接获得有效的授权器。
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/ucenter/login/</span></code>)</p>
+<p><strong>Parameters</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">username</span></code> (<em>string</em>)</dt><dd><p>用户唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">password</span></code> (<em>string</em>)</dt><dd><p>密码</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">caac</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">ConfidentialAppAuthClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">authorizer</span> <span class="o">=</span> <span class="n">caac</span><span class="o">.</span><span class="n">get_authorizer</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+            
+  <div class="footer-relations">
+    
+      <div class="pull-left">
+        <a class="btn btn-default" href="../clients.html" title="previous chapter (use the left arrow)">服务客户端</a>
+      </div>
+    
+      <div class="pull-right">
+        <a class="btn btn-default" href="user.html" title="next chapter (use the right arrow)">用户服务客户端</a>
+      </div>
+    </div>
+    <div class="clearer"></div>
+  
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="user.html" title="用户服务客户端"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../clients.html" title="服务客户端"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../clients.html" >服务客户端</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="../_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

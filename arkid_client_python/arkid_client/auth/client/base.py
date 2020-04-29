@@ -14,23 +14,15 @@ class AuthClient(BaseClient):
     认证客户端，用于向 ArkID 服务端请求授权认证信息，并获取访问令牌。
 
     **Examples**
+
     初始化 < AuthClient > 客户端，以 Access Token 授权方式向 ArkID 服务端
-    请求对调用的用户进行身份验证。
+    请求对调用的用户进行身份验证 (TODO)
+
     >>> from arkid_client import AuthClient, AccessTokenAuthorizer
     >>> ac = AuthClient(authorizer=AccessTokenAuthorizer('<token_string>'))
 
-    当然，这里可以使用任何其它的符合规则的授权器。
-
-    **Methods**
-
-    *  :py:meth:`.oidc_get_authorize_url`
-    *  :py:meth:`.oidc_exchange_code_for_tokens`
-    *  :py:meth:`.AuthClient.oidc_refresh_token`
-    *  :py:meth:`.oidc_validate_token`
-    *  :py:meth:`.oidc_revoke_token`
-    *  :py:meth:`.oidc_token`
-    *  :py:meth:`.oidc_userinfo`
-
+    上述使用 oauth2.0 协议来请求授权，虽然 ArkID Client 暂时还不支持这样做。
+    但是，这里可以使用任何其它的符合规则的授权器。
     """
 
     error_class = AuthAPIError

@@ -4,6 +4,5 @@ from arkid_client.auth.client.confidential_client import ConfidentialAppAuthClie
 
 __all__ = [
     'AuthClient',
-    'ConfidentialAppAuthClient',
-
+    'ConfidentialAppAuthClient'
 ]

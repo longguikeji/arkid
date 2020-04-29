@@ -1,0 +1,320 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="../../_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="../../_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="../../_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../../_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>arkid_client.exceptions &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<link rel="stylesheet" href="../../_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    ../../index.html" class="text-logo"><img src="../../_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Client 教程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../clients.html">服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="../../search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="../../index.html">Docs</a></li>
+              
+                <li><a href="../index.html">Module code</a></li>
+              
+              <li>arkid_client.exceptions</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <h1>Source code for arkid_client.exceptions</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Define ArkIDError &amp; it&#39;s Subclass</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ArkIDError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ArkID Client 错误的基类</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ArkIDSDKUsageError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDSDKUsageError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDSDKUsageError</span><span class="p">(</span><span class="n">ArkIDError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    当 ArkID Client 检测到它被不正确的使用时会抛出 ``ArkIDSDKUsageError`` 异常，</span>
+<span class="sd">    这些错误通常表示某些关于 ArkID Client 使用的规范(例如所需的操作顺序)已被违反。</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ArkIDAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDAPIError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDAPIError</span><span class="p">(</span><span class="n">ArkIDError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    封装 REST API 的响应信息</span>
+
+<span class="sd">    :ivar http_status: HTTP 响应的状态码 (int)</span>
+<span class="sd">    :ivar message: 来自 API 的错误信息。一般来说，其对开发人员是有用的，</span>
+<span class="sd">            但在某些情况下它也许适合显示给终端用户。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_underlying_response</span> <span class="o">=</span> <span class="n">response</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span>
+        <span class="k">if</span> <span class="s2">&quot;Content-Type&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;application/json&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">]):</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;响应对象的 Content-Type 为 `application/json`。 &quot;</span> <span class="s2">&quot;正在以 JSON 格式载入错误信息。&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_from_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;无法对错误信息进行 JSON 格式解析，&quot;</span> <span class="s2">&quot;响应对象的 Content-Type 参数值使用错误，&quot;</span> <span class="s2">&quot;或者响应消息体不符合规范。&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_from_text</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;暂不支持响应对象的 Content-Type 类型， &quot;</span> <span class="s2">&quot;正在以文本格式加载错误信息（默认）。&quot;</span><span class="p">)</span>
+            <span class="c1"># fallback to using the entire body as the message for all other types</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_from_text</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_args</span><span class="p">()</span>
+        <span class="n">ArkIDError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">raw_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取从 ArkID API 接收到的响应信息，尝试以 JSON 格式解析数据，</span>
+<span class="sd">        并转化为 dict 。</span>
+
+<span class="sd">        如果响应信息无法通过 JSON 格式加载， 则返回 None 。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_underlying_response</span>
+        <span class="k">if</span> <span class="s2">&quot;Content-Type&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;application/json&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">]):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;无法对错误信息进行 JSON 格式解析，&quot;</span> <span class="s2">&quot;响应对象的 Content-Type 参数值使用错误，&quot;</span> <span class="s2">&quot;或者响应消息体不符合规范。&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">raw_text</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        以 string 形式获取响应信息。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_underlying_response</span><span class="o">.</span><span class="n">text</span>
+
+    <span class="k">def</span> <span class="nf">_get_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        传入给 &lt; Exception &gt; 对象的参数，显示在堆栈跟踪中。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
+
+    <span class="k">def</span> <span class="nf">_load_from_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        从 JSON 格式的信息中加载错误数据。需根据 ArkID 服务端的</span>
+<span class="sd">        响应体结构来规划具体实现。</span>
+<span class="sd">        # TODO</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">_load_from_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        从 text 格式的信息中加载错误数据。需根据 ArkID 服务端的</span>
+<span class="sd">        响应体结构来规划具体实现。</span>
+<span class="sd">        # TODO</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="UserAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.UserAPIError">[docs]</a><span class="k">class</span> <span class="nc">UserAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    用户服务客户端的错误类型，继承了 ``message`` 变量</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ArkIDAPIError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="OrgAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.OrgAPIError">[docs]</a><span class="k">class</span> <span class="nc">OrgAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    组织服务客户端的错误类型，继承了 ``message`` 变量</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ArkIDAPIError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="NodeAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.NodeAPIError">[docs]</a><span class="k">class</span> <span class="nc">NodeAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    节点服务客户端的错误类型，继承了 ``message`` 变量</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ArkIDAPIError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span></div>
+
+
+<span class="k">class</span> <span class="nc">DeptAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    部门服务客户端的错误类型，继承了 ``message`` 变量</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ArkIDAPIError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
+
+
+<div class="viewcode-block" id="AuthAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.AuthAPIError">[docs]</a><span class="k">class</span> <span class="nc">AuthAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    认证服务客户端的错误类型，继承了 ``message`` 变量</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<span class="c1"># Wrappers around requests exceptions, so the SDK is API independent.</span>
+<div class="viewcode-block" id="NetworkError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.NetworkError">[docs]</a><span class="k">class</span> <span class="nc">NetworkError</span><span class="p">(</span><span class="n">ArkIDError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    当与 ArkID 服务通信发生错误时会抛出 ``NetworkError`` 错误，</span>
+<span class="sd">    其为通信方面出现的错误的基类。</span>
+<span class="sd">    其在保留原始异常数据的基础上，也可以接受其他一些有用的消息，</span>
+<span class="sd">    方便用户明确错误所在。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">exception</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NetworkError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">underlying_exception</span> <span class="o">=</span> <span class="n">exception</span></div>
+
+
+<div class="viewcode-block" id="ArkIDTimeoutError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDTimeoutError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDTimeoutError</span><span class="p">(</span><span class="n">NetworkError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;REST API 请求超时&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ArkIDConnectionTimeoutError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDConnectionTimeoutError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDConnectionTimeoutError</span><span class="p">(</span><span class="n">ArkIDTimeoutError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;请求在连接建立期间超时，这些错误可以进行安全地重试。&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ArkIDConnectionError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDConnectionError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDConnectionError</span><span class="p">(</span><span class="n">NetworkError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;在发出 REST 请求时发生连接错误。&quot;&quot;&quot;</span></div>
+
+
+<span class="k">def</span> <span class="nf">convert_request_exception</span><span class="p">(</span><span class="n">exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;将 ``requests.Exception`` 转化为 ArkID Client 的 ``NetworkError``&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">ConnectTimeout</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ArkIDConnectionTimeoutError</span><span class="p">(</span><span class="s2">&quot;Connection Timeout Error on request&quot;</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Timeout</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ArkIDTimeoutError</span><span class="p">(</span><span class="s2">&quot;Timeout Error on request&quot;</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">ConnectionError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ArkIDConnectionError</span><span class="p">(</span><span class="s2">&quot;Connection Error on request&quot;</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">NetworkError</span><span class="p">(</span><span class="s2">&quot;Network Error on request&quot;</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+            
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="../../_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

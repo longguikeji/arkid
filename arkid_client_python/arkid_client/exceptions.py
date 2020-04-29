@@ -9,30 +9,24 @@ LOGGER = logging.getLogger(__name__)
 
 class ArkIDError(Exception):
     """
-    Root of the ArkID Exception hierarchy.
+    ArkID Client 错误的基类
     """
 
 
 class ArkIDSDKUsageError(ArkIDError, ValueError):
     """
-    A ``ArkIDSDKUsageError`` may be thrown in cases in which the SDK
-    detects that it is being used improperly.
-
-    These errors typically indicate that some contract regarding SDK usage
-    (e.g. required order of operations) has been violated.
+    当 ArkID Client 检测到它被不正确的使用时会抛出 ``ArkIDSDKUsageError`` 异常，
+    这些错误通常表示某些关于 ArkID Client 使用的规范(例如所需的操作顺序)已被违反。
     """
 
 
 class ArkIDAPIError(ArkIDError):
     """
-    Wraps errors returned by a REST API.
+    封装 REST API 的响应信息
 
-    :ivar http_status: HTTP status code (int)
-    :ivar code: Error code from the API (str),
-                or "Error" for unclassified errors
-    :ivar message: Error message from the API. In general, this will be more
-                   useful to developers, but there may be cases where it's
-                   suitable for display to end users.
+    :ivar http_status: HTTP 响应的状态码 (int)
+    :ivar message: 来自 API 的错误信息。一般来说，其对开发人员是有用的，
+            但在某些情况下它也许适合显示给终端用户。
     """
     def __init__(self, response, *args, **kwargs):
         self._underlying_response = response
@@ -101,11 +95,7 @@ class ArkIDAPIError(ArkIDError):
 
 class UserAPIError(ArkIDAPIError):
     """
-    Error class for the User API client. In addition to the
-    inherited ``message`` instance variables, provides:
-
-    :ivar error_data: Additional object returned in the error response. May be
-                      a dict, list, or None.
+    用户服务客户端的错误类型，继承了 ``message`` 变量
     """
     def __init__(self, response):
         self.error_data = None
@@ -117,11 +107,7 @@ class UserAPIError(ArkIDAPIError):
 
 class OrgAPIError(ArkIDAPIError):
     """
-    Error class for the Org API client. In addition to the
-    inherited ``message`` instance variables, provides:
-
-    :ivar error_data: Additional object returned in the error response. May be
-                      a dict, list, or None.
+    组织服务客户端的错误类型，继承了 ``message`` 变量
     """
     def __init__(self, response):
         self.error_data = None
@@ -133,11 +119,7 @@ class OrgAPIError(ArkIDAPIError):
 
 class NodeAPIError(ArkIDAPIError):
     """
-    Error class for the Node API client. In addition to the
-    inherited ``message`` instance variables, provides:
-
-    :ivar error_data: Additional object returned in the error response. May be
-                      a dict, list, or None.
+    节点服务客户端的错误类型，继承了 ``message`` 变量
     """
     def __init__(self, response):
         self.error_data = None
@@ -149,11 +131,7 @@ class NodeAPIError(ArkIDAPIError):
 
 class DeptAPIError(ArkIDAPIError):
     """
-    Error class for the Dept API client. In addition to the
-    inherited ``message`` instance variables, provides:
-
-    :ivar error_data: Additional object returned in the error response. May be
-                      a dict, list, or None.
+    部门服务客户端的错误类型，继承了 ``message`` 变量
     """
     def __init__(self, response):
         self.error_data = None
@@ -165,19 +143,17 @@ class DeptAPIError(ArkIDAPIError):
 
 class AuthAPIError(ArkIDAPIError):
     """
-    Error class for the API components of ArkID Auth.
-
-    Customizes JSON parsing.
+    认证服务客户端的错误类型，继承了 ``message`` 变量
     """
 
 
 # Wrappers around requests exceptions, so the SDK is API independent.
 class NetworkError(ArkIDError):
     """
-    Error communicating with the REST API server.
-
-    Holds onto original exception data, but also takes a message
-    to explain potentially confusing or inconsistent exceptions passed to us
+    当与 ArkID 服务通信发生错误时会抛出 ``NetworkError`` 错误，
+    其为通信方面出现的错误的基类。
+    其在保留原始异常数据的基础上，也可以接受其他一些有用的消息，
+    方便用户明确错误所在。
     """
     def __init__(self, message, exception, *args, **kwargs):
         super(NetworkError, self).__init__(message)
@@ -185,20 +161,19 @@ class NetworkError(ArkIDError):
 
 
 class ArkIDTimeoutError(NetworkError):
-    """The REST request timed out."""
+    """REST API 请求超时"""
 
 
 class ArkIDConnectionTimeoutError(ArkIDTimeoutError):
-    """The request timed out during connection establishment.
-    These errors are safe to retry."""
+    """请求在连接建立期间超时，这些错误可以进行安全地重试。"""
 
 
 class ArkIDConnectionError(NetworkError):
-    """A connection error occurred while making a REST request."""
+    """在发出 REST 请求时发生连接错误。"""
 
 
 def convert_request_exception(exception):
-    """Converts incoming requests.Exception to a ArkID NetworkError"""
+    """将 ``requests.Exception`` 转化为 ArkID Client 的 ``NetworkError``"""
 
     if isinstance(exception, requests.ConnectTimeout):
         return ArkIDConnectionTimeoutError("Connection Timeout Error on request", exception)

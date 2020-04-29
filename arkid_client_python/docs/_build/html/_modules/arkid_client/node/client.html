@@ -1,0 +1,669 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="../../../_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="../../../_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>arkid_client.node.client &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<link rel="stylesheet" href="../../../_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    ../../../index.html" class="text-logo"><img src="../../../_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Client 教程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../clients.html">服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="../../../search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="../../../index.html">Docs</a></li>
+              
+                <li><a href="../../index.html">Module code</a></li>
+              
+              <li>arkid_client.node.client</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <h1>Source code for arkid_client.node.client</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Define NodeClient</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">arkid_client.authorizers</span> <span class="kn">import</span> <span class="n">BasicAuthorizer</span>
+<span class="kn">from</span> <span class="nn">arkid_client.base</span> <span class="kn">import</span> <span class="n">BaseClient</span><span class="p">,</span> <span class="n">reload_service</span>
+<span class="kn">from</span> <span class="nn">arkid_client.exceptions</span> <span class="kn">import</span> <span class="n">NodeAPIError</span>
+<span class="kn">from</span> <span class="nn">arkid_client.response</span> <span class="kn">import</span> <span class="n">ArkIDHTTPResponse</span>
+
+
+<div class="viewcode-block" id="NodeClient"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient">[docs]</a><span class="k">class</span> <span class="nc">NodeClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    节点管理客户端，用于与 ArkID 服务端节点管理相关</span>
+<span class="sd">    接口的访问操作。</span>
+
+<span class="sd">    **Methods**</span>
+
+<span class="sd">    *  :py:meth:`.query_specified_node`</span>
+<span class="sd">    *  :py:meth:`.view_specified_node`</span>
+<span class="sd">    *  :py:meth:`.update_specified_node`</span>
+<span class="sd">    *  :py:meth:`.delete_specified_node`</span>
+<span class="sd">    *  :py:meth:`.get_node_tree_list`</span>
+<span class="sd">    *  :py:meth:`.get_node_tree`</span>
+<span class="sd">    *  :py:meth:`.view_node_tree`</span>
+<span class="sd">    *  :py:meth:`.get_subnode`</span>
+<span class="sd">    *  :py:meth:`.create_subnode`</span>
+<span class="sd">    *  :py:meth:`.add_subnode`</span>
+<span class="sd">    *  :py:meth:`.sort_subnode`</span>
+<span class="sd">    *  :py:meth:`.query_user_under_node`</span>
+<span class="sd">    *  :py:meth:`.add_user_under_node`</span>
+<span class="sd">    *  :py:meth:`.delete_user_under_node`</span>
+<span class="sd">    *  :py:meth:`.override_user_under_node`</span>
+<span class="sd">    *  :py:meth:`.sort_user_under_node`</span>
+<span class="sd">    *  :py:meth:`.move_out_user_under_node`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">allowed_authorizer_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">BasicAuthorizer</span><span class="p">]</span>
+    <span class="n">error_class</span> <span class="o">=</span> <span class="n">NodeAPIError</span>
+    <span class="n">default_response_class</span> <span class="o">=</span> <span class="n">ArkIDHTTPResponse</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">BaseClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="s2">&quot;node&quot;</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="n">authorizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NodeClient.query_specified_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.query_specified_node">[docs]</a>    <span class="k">def</span> <span class="nf">query_specified_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        查询指定节点的信息</span>
+<span class="sd">        (``GET /siteapi/v1/node/&lt;node_uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.query_specified_node(node_uid)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.query_specified_node() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="NodeClient.view_specified_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.view_specified_node">[docs]</a>    <span class="k">def</span> <span class="nf">view_specified_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        用户查询指定节点的信息</span>
+<span class="sd">        (``GET /siteapi/v1/ucenter/node/&lt;node_uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.view_specified_node(node_uid)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_service</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reload_service_url</span><span class="p">(</span><span class="s1">&#39;ucenter&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.view_specified_node() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;node/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reload_service_url</span><span class="p">(</span><span class="n">_service</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="NodeClient.update_specified_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.update_specified_node">[docs]</a>    <span class="k">def</span> <span class="nf">update_specified_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        修改指定节点的信息</span>
+<span class="sd">        (``PATCH /siteapi/v1/node/&lt;node_uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+<span class="sd">              节点的元信息, 参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; node_data = {</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;name&#39;: &#39;example&#39;</span>
+<span class="sd">        &gt;&gt;&gt; }</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.update_specified_node(node_uid, node_data)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `节点的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/node/0/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.update_specified_node() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.delete_specified_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.delete_specified_node">[docs]</a>    <span class="k">def</span> <span class="nf">delete_specified_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        删除指定节点的信息</span>
+<span class="sd">        (``DELETE /siteapi/v1/node/&lt;node_uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``ignore_user`` (*bool*)</span>
+<span class="sd">              用于删除节点，当``true``时，若节点下有人员存在时，</span>
+<span class="sd">              会先将人员从节点内删除，再删除此节点。</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; nc.delete_specified_node(node_uid, ignore_user=True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.get_node_tree_list"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.get_node_tree_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_node_tree_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        需要管理员权限，获取节点及其子孙节点列表，将某节点下</span>
+<span class="sd">        的子树以列表形式返回，包括该节点自身，前序遍历。</span>
+<span class="sd">        (``GET /siteapi/v1/node/&lt;node_uid&gt;/list/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; tree_list = nc.get_node_tree_list(node_uid)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;tree_list is&#39;, tree_list)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.get_node_tree_list() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/list/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="NodeClient.get_node_tree"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.get_node_tree">[docs]</a>    <span class="k">def</span> <span class="nf">get_node_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        需要管理员权限，管理员访问到的数据将由管理范围决定，</span>
+<span class="sd">        数据包括从该节点起始的完整树。</span>
+<span class="sd">        (``GET /siteapi/v1/node/&lt;node_uid&gt;/tree/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``user_required`` (*bool*)</span>
+<span class="sd">              是否需要成员信息</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; tree = nc.get_node_tree(node_uid, user_required=True)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;tree is&#39;, tree)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.get_node_tree() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/tree/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.view_node_tree"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.view_node_tree">[docs]</a>    <span class="k">def</span> <span class="nf">view_node_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        普通用户访问节点下结构，访问到的数据将由节点可见范围决定，</span>
+<span class="sd">        数据包括从该节点起始的完整树。</span>
+<span class="sd">        (``GET /siteapi/v1/ucenter/node/&lt;node_uid&gt;/tree/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``user_required`` (*bool*)</span>
+<span class="sd">              是否需要成员信息</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; tree = nc.view_node_tree(node_uid, user_required=True)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;tree is&#39;, tree)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_service</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reload_service_url</span><span class="p">(</span><span class="s1">&#39;ucenter&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.view_node_tree() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;node/</span><span class="si">{}</span><span class="s1">/tree/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reload_service_url</span><span class="p">(</span><span class="n">_service</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="NodeClient.get_subnode"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.get_subnode">[docs]</a>    <span class="k">def</span> <span class="nf">get_subnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取指定节点的子节点信息</span>
+<span class="sd">        (``GET /siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; subnode = nc.get_subnode(node_uid)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;subnode is&#39;, subnode)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.get_node_tree() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/node/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="NodeClient.create_subnode"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.create_subnode">[docs]</a>    <span class="k">def</span> <span class="nf">create_subnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        创建指定节点的子节点</span>
+<span class="sd">        (``POST /siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+<span class="sd">              节点的元信息, 参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; node_data = {</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;name&#39;: &#39;example&#39;</span>
+<span class="sd">        &gt;&gt;&gt; }</span>
+<span class="sd">        &gt;&gt;&gt; subnode = nc.create_subnode(node_uid, node_data)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;subnode is&#39;, subnode)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `节点的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/node/6/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.create_subnode() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/node/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.add_subnode"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.add_subnode">[docs]</a>    <span class="k">def</span> <span class="nf">add_subnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        向指定节点添加子节点</span>
+<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``node_uids`` (*list*)</span>
+<span class="sd">              节点唯一标识组成的列表</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; node_uids = [</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;node1&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;node2&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;         ...</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;noden&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ]</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.add_subnode(node_uid, node_uids)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.add_subnode() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">json_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;add&#39;</span><span class="p">,</span> <span class="s1">&#39;node_uids&#39;</span><span class="p">:</span> <span class="n">node_uids</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/node/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.sort_subnode"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.sort_subnode">[docs]</a>    <span class="k">def</span> <span class="nf">sort_subnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        对指定子节点按指定位置进行排序</span>
+<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/node/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``node_uids`` (*list*)</span>
+<span class="sd">              节点唯一标识组成的列表</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; node_uids = [</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;node1&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;node2&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;         ...</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;noden&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ]</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.sort_subnode(node_uid, node_uids)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.sort_subnode() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">json_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;sort&#39;</span><span class="p">,</span> <span class="s1">&#39;node_uids&#39;</span><span class="p">:</span> <span class="n">node_uids</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/node/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.query_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.query_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">query_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        查询指定节点下的直属人员的信息</span>
+<span class="sd">        (``GET /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``**params`` (*dict*)</span>
+<span class="sd">              用户的元信息，参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; users = nc.query_user_under_node(node_uid)</span>
+<span class="sd">        &gt;&gt;&gt; for user in users:</span>
+<span class="sd">        &gt;&gt;&gt;     print(&#39;user is&#39;, user)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `节点的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/node/7/0&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.query_user_under_node() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.add_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.add_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">add_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        向指定节点添加指定成员</span>
+<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``user_uids`` (*list*)</span>
+<span class="sd">              用户唯一标识组成的列表</span>
+
+<span class="sd">            ``**params`` (*dict*)</span>
+<span class="sd">              用户的元信息，参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; user_uids = [</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user1&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user2&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;         ...</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;usern&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ]</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.add_user_under_node(node_uid, user_uids)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `节点的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/node/7/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.add_user_under_node() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">json_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user_uids&#39;</span><span class="p">:</span> <span class="n">user_uids</span><span class="p">,</span> <span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;add&#39;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.delete_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.delete_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">delete_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        从指定节点移除指定成员</span>
+<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``user_uids`` (*list*)</span>
+<span class="sd">              用户唯一标识组成的列表</span>
+
+<span class="sd">            ``**params`` (*dict*)</span>
+<span class="sd">              用户的元信息，参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; user_uids = [</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user1&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user2&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;         ...</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;usern&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ]</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.delete_user_under_node(node_uid, user_uids)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `节点的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/node/7/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.delete_user_under_node() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">json_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user_uids&#39;</span><span class="p">:</span> <span class="n">user_uids</span><span class="p">,</span> <span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;delete&#39;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.override_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.override_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">override_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        重置指定节点的指定用户</span>
+<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``user_uids`` (*list*)</span>
+<span class="sd">              用户唯一标识组成的列表</span>
+
+<span class="sd">            ``**params`` (*dict*)</span>
+<span class="sd">              用户的元信息，参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; user_uids = [</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user1&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user2&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;         ...</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;usern&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ]</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.override_user_under_node(node_uid, user_uids)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `节点的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/node/7/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.override_user_under_node() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">json_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user_uids&#39;</span><span class="p">:</span> <span class="n">user_uids</span><span class="p">,</span> <span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;override&#39;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.sort_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.sort_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">sort_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        对指定人按指定位置进行排序</span>
+<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``user_uids`` (*list*)</span>
+<span class="sd">              用户唯一标识组成的列表</span>
+
+<span class="sd">            ``**params`` (*dict*)</span>
+<span class="sd">              用户的元信息，参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; user_uids = [</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user1&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user2&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;         ...</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;usern&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ]</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.sort_user_under_node(node_uid, user_uids)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `节点的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/node/7/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.sort_user_under_node() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">json_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user_uids&#39;</span><span class="p">:</span> <span class="n">user_uids</span><span class="p">,</span> <span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;sort&#39;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NodeClient.move_out_user_under_node"><a class="viewcode-back" href="../../../clients/node.html#arkid_client.node.NodeClient.move_out_user_under_node">[docs]</a>    <span class="k">def</span> <span class="nf">move_out_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        将这些人从该节点移除，并加到指定节点</span>
+<span class="sd">        (``PATCH /siteapi/v1/ucenter/node/&lt;node_uid&gt;/user/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``user_uids`` (*list*)</span>
+<span class="sd">              用户唯一标识组成的列表</span>
+
+<span class="sd">            ``**params`` (*dict*)</span>
+<span class="sd">              用户的元信息，参数详情请参考接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; nc = arkid_client.NodeClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; user_uids = [</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user1&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;user2&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;         ...</span>
+<span class="sd">        &gt;&gt;&gt;     &#39;usern&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ]</span>
+<span class="sd">        &gt;&gt;&gt; node = nc.move_out_user_under_node(node_uid, user_uids)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;node is&#39;, node)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `节点的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/node/7/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 NodeClient.move_out_user_under_node() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="n">json_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user_uids&#39;</span><span class="p">:</span> <span class="n">user_uids</span><span class="p">,</span> <span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;move_out&#39;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/user/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+            
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="../../../_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

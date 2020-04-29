@@ -1,0 +1,105 @@
+.. _tutorial:
+
+Client 教程
+===========
+
+在这里为您提供 ArkID Client的使用教程，它将指引你通过一个简单的流程
+来获取 ArkID 的认证信息，并使用它来访问 ArkID 的服务。
+
+以下是我们将采取的步骤:
+
+#. :ref:`创建认证客户端 <tutorial_step1>`
+#. :ref:`创建认证授权器 <tutorial_step2>`
+#. :ref:`创建服务客户端 <tutorial_step3>`
+#. :ref:`访问 ArkID 服务 <tutorial_step4>`
+
+以上的四个步骤足够让您起手开始将 ArkID Client 应用到您的项目中。
+考虑到安全方面的因素，我们也许会在将来使用 oauth2.0 协议或者 OIDC 协议注入
+到认证客户端中，让用户更加安全的使用 ArkID Client 。
+
+.. _tutorial_step1:
+
+步骤一: 创建认证客户端
+--------------------
+
+为了获得认证信息，您必须通过实例化一个认证客户端来访问 ArkID 服务端的认证服务。
+以下的代码是基于 ArkID 服务端的官方认证来获取访问凭证 ``oneid_token`` 。
+
+.. code-block:: python
+
+    from arkid_client.auth import ConfidentialAppAuthClient
+
+    client = ConfidentialAppAuthClient(base_url='<ARKID_SERVICE_URL>')
+    token = client.auth_to_get_token('<USERNAME>', '<PASSWORD>')
+
+
+上述的 ``ARKID_SERVICE_URL`` 是您将要访问的 ArkID 服务的根地址。
+在获取到有效的 ``token`` 后，您就可以进行下一步操作来获得认证授权器。
+
+.. _tutorial_step2:
+
+步骤二: 创建认证授权器
+--------------------
+
+从上面的示例继续，认证客户端获取到 ``token`` 后，您就可以创建一个认证授权器来为后续的服务客户端所使用：
+
+.. code-block:: python
+
+    from arkid_client.authorizers import BasicAuthorizer
+
+    authorizer = BasicAuthorizer(oneid_token=token)
+
+
+在步骤一中 :ref:`创建认证客户端 <tutorial_step1>` 的流程稍显繁琐，
+如果您不在意认证流程的显式性，您可以直接从认证客户端中获取到所需的 ``authorizer`` ，
+让您的使用体验达到最佳效果：
+
+.. code-block:: python
+
+    from arkid_client.auth import ConfidentialAppAuthClient
+
+    client = ConfidentialAppAuthClient(base_url='<ARKID_SERVICE_URL>')
+    authorizer = client.get_authorizer('<USERNAME>', '<PASSWORD>')
+
+
+注意：虽然可直接从 ``ConfidentialAppAuthClient`` 获取到 ``authorizer`` ，
+但这并不严格符合 ``ArkID Client`` 的认证流程规范，仅仅是为了在某种程度上更加方便用户的使用。
+
+.. _tutorial_step3:
+
+步骤三: 创建服务客户端
+--------------------
+
+从上面的示例继续，创建认证授权器之后，您可以开始初始化一个 ArkIDClient 的实例了。
+
+.. code-block:: python
+
+    from arkid_client import ArkIDClient
+
+    client = ArkIDClient(authorizer='<authorizer>', base_url='<ARKID_SERVICE_URL>')
+
+
+上述的 ``ARKID_SERVICE_URL`` 是您将要访问的 ArkID 服务的根地址。
+当 ``client`` 创建成功之后，您就可以开始访问 ArkID 的服务了。
+
+.. _tutorial_step4:
+
+步骤四: 访问 ArkID 服务
+---------------------
+
+从上面的示例继续，您可以开始访问任何有关 ArkID 服务端的接口，
+比如，您将要获取所有用户的信息：
+
+.. code-block:: python
+
+    from arkid_client import ArkIDClient
+
+    # 上面的示例中初始化的 ArkID Client
+    client = ArkIDClient(authorizer='<authorizer>', base_url='<ARKID_SERVICE_URL>')
+
+    # 访问 ArkID 服务并获取响应
+    users = client.query_user()
+
+
+访问 ArkID 服务后得到的结果是 ``ArkIDHTTPResponse`` 对象，有关它的具体说明请参考
+:ref:`Responses <responses>`

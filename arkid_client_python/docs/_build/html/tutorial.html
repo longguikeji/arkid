@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>Client 教程 &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="服务客户端" href="clients.html" />
+    <link rel="prev" title="安装" href="installation.html" />
+<link rel="stylesheet" href="_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clients.html" title="服务客户端"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="安装"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ArkID Client 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    index.html" class="text-logo"><img src="_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">安装</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Client 教程</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tutorial-step1">步骤一: 创建认证客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tutorial-step2">步骤二: 创建认证授权器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tutorial-step3">步骤三: 创建服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#arkid">步骤四: 访问 ArkID 服务</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="clients.html">服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="index.html">Docs</a></li>
+              
+              <li>Client 教程</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <div class="section" id="client">
+<span id="tutorial"></span><h1>Client 教程<a class="headerlink" href="#client" title="Permalink to this headline">¶</a></h1>
+<p>在这里为您提供 ArkID Client的使用教程，它将指引你通过一个简单的流程
+来获取 ArkID 的认证信息，并使用它来访问 ArkID 的服务。</p>
+<p>以下是我们将采取的步骤:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#tutorial-step1"><span class="std std-ref">创建认证客户端</span></a></p></li>
+<li><p><a class="reference internal" href="#tutorial-step2"><span class="std std-ref">创建认证授权器</span></a></p></li>
+<li><p><a class="reference internal" href="#tutorial-step3"><span class="std std-ref">创建服务客户端</span></a></p></li>
+<li><p><a class="reference internal" href="#tutorial-step4"><span class="std std-ref">访问 ArkID 服务</span></a></p></li>
+</ol>
+<p>以上的四个步骤足够让您起手开始将 ArkID Client 应用到您的项目中。
+考虑到安全方面的因素，我们也许会在将来使用 oauth2.0 协议或者 OIDC 协议注入
+到认证客户端中，让用户更加安全的使用 ArkID Client 。</p>
+<div class="section" id="tutorial-step1">
+<span id="id1"></span><h2>步骤一: 创建认证客户端<a class="headerlink" href="#tutorial-step1" title="Permalink to this headline">¶</a></h2>
+<p>为了获得认证信息，您必须通过实例化一个认证客户端来访问 ArkID 服务端的认证服务。
+以下的代码是基于 ArkID 服务端的官方认证来获取访问凭证 <code class="docutils literal notranslate"><span class="pre">oneid_token</span></code> 。</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arkid_client.auth</span> <span class="kn">import</span> <span class="n">ConfidentialAppAuthClient</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">ConfidentialAppAuthClient</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="s1">&#39;&lt;ARKID_SERVICE_URL&gt;&#39;</span><span class="p">)</span>
+<span class="n">token</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">auth_to_get_token</span><span class="p">(</span><span class="s1">&#39;&lt;USERNAME&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;PASSWORD&gt;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>上述的 <code class="docutils literal notranslate"><span class="pre">ARKID_SERVICE_URL</span></code> 是您将要访问的 ArkID 服务的根地址。
+在获取到有效的 <code class="docutils literal notranslate"><span class="pre">token</span></code> 后，您就可以进行下一步操作来获得认证授权器。</p>
+</div>
+<div class="section" id="tutorial-step2">
+<span id="id2"></span><h2>步骤二: 创建认证授权器<a class="headerlink" href="#tutorial-step2" title="Permalink to this headline">¶</a></h2>
+<p>从上面的示例继续，认证客户端获取到 <code class="docutils literal notranslate"><span class="pre">token</span></code> 后，您就可以创建一个认证授权器来为后续的服务客户端所使用：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arkid_client.authorizers</span> <span class="kn">import</span> <span class="n">BasicAuthorizer</span>
+
+<span class="n">authorizer</span> <span class="o">=</span> <span class="n">BasicAuthorizer</span><span class="p">(</span><span class="n">oneid_token</span><span class="o">=</span><span class="n">token</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>在步骤一中 <a class="reference internal" href="#tutorial-step1"><span class="std std-ref">创建认证客户端</span></a> 的流程稍显繁琐，
+如果您不在意认证流程的显式性，您可以直接从认证客户端中获取到所需的 <code class="docutils literal notranslate"><span class="pre">authorizer</span></code> ，
+让您的使用体验达到最佳效果：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arkid_client.auth</span> <span class="kn">import</span> <span class="n">ConfidentialAppAuthClient</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">ConfidentialAppAuthClient</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="s1">&#39;&lt;ARKID_SERVICE_URL&gt;&#39;</span><span class="p">)</span>
+<span class="n">authorizer</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_authorizer</span><span class="p">(</span><span class="s1">&#39;&lt;USERNAME&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;PASSWORD&gt;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>注意：虽然可直接从 <code class="docutils literal notranslate"><span class="pre">ConfidentialAppAuthClient</span></code> 获取到 <code class="docutils literal notranslate"><span class="pre">authorizer</span></code> ，
+但这并不严格符合 <code class="docutils literal notranslate"><span class="pre">ArkID</span> <span class="pre">Client</span></code> 的认证流程规范，仅仅是为了在某种程度上更加方便用户的使用。</p>
+</div>
+<div class="section" id="tutorial-step3">
+<span id="id3"></span><h2>步骤三: 创建服务客户端<a class="headerlink" href="#tutorial-step3" title="Permalink to this headline">¶</a></h2>
+<p>从上面的示例继续，创建认证授权器之后，您可以开始初始化一个 ArkIDClient 的实例了。</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arkid_client</span> <span class="kn">import</span> <span class="n">ArkIDClient</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">ArkIDClient</span><span class="p">(</span><span class="n">authorizer</span><span class="o">=</span><span class="s1">&#39;&lt;authorizer&gt;&#39;</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="s1">&#39;&lt;ARKID_SERVICE_URL&gt;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>上述的 <code class="docutils literal notranslate"><span class="pre">ARKID_SERVICE_URL</span></code> 是您将要访问的 ArkID 服务的根地址。
+当 <code class="docutils literal notranslate"><span class="pre">client</span></code> 创建成功之后，您就可以开始访问 ArkID 的服务了。</p>
+</div>
+<div class="section" id="arkid">
+<span id="tutorial-step4"></span><h2>步骤四: 访问 ArkID 服务<a class="headerlink" href="#arkid" title="Permalink to this headline">¶</a></h2>
+<p>从上面的示例继续，您可以开始访问任何有关 ArkID 服务端的接口，
+比如，您将要获取所有用户的信息：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arkid_client</span> <span class="kn">import</span> <span class="n">ArkIDClient</span>
+
+<span class="c1"># 上面的示例中初始化的 ArkID Client</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">ArkIDClient</span><span class="p">(</span><span class="n">authorizer</span><span class="o">=</span><span class="s1">&#39;&lt;authorizer&gt;&#39;</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="s1">&#39;&lt;ARKID_SERVICE_URL&gt;&#39;</span><span class="p">)</span>
+
+<span class="c1"># 访问 ArkID 服务并获取响应</span>
+<span class="n">users</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query_user</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>访问 ArkID 服务后得到的结果是 <code class="docutils literal notranslate"><span class="pre">ArkIDHTTPResponse</span></code> 对象，有关它的具体说明请参考
+<span class="xref std std-ref">Responses</span></p>
+</div>
+</div>
+
+
+          </div>
+            
+  <div class="footer-relations">
+    
+      <div class="pull-left">
+        <a class="btn btn-default" href="installation.html" title="previous chapter (use the left arrow)">安装</a>
+      </div>
+    
+      <div class="pull-right">
+        <a class="btn btn-default" href="clients.html" title="next chapter (use the right arrow)">服务客户端</a>
+      </div>
+    </div>
+    <div class="clearer"></div>
+  
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clients.html" title="服务客户端"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="安装"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ArkID Client 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

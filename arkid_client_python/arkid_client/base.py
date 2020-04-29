@@ -4,7 +4,7 @@ Define ClientLogAdapter & BaseClient
 import json
 import logging
 import os
-
+import importlib
 import requests
 
 from arkid_client import config
@@ -24,27 +24,30 @@ class ClientLogAdapter(logging.LoggerAdapter):
 class BaseClient(object):
     """
     简单的基类客户端，可处理 ArkID REST APIs 返回的错误信息。
-    封装 < requests.Session > 对象为一个简化的接口，该接口不公开来自请求
-    的任何内容。
-    注意：
-        强烈建议您不要尝试直接实例化 < BaseClient >
+    封装 ``requests.Session`` 对象为一个简化的接口，
+    该接口不公开来自请求的任何内容。
+    注意：强烈建议您不要尝试直接实例化 ``BaseClient``
 
     **Parameters**
 
-        ``authorizer`` (:class:`< ArkIDAuthorizer >
-          < arkid.authorizers.base.ArkIDAuthorizer >`)
-          A < ArkIDAuthorizer > which will generate Authorization headers
+        ``base_url`` (*str*)
+          ArkID 服务端的根地址，用户无需进行任何有关 ArkID 服务端的地址配置操作，
+          只需在初始化 BaseClient 实例时传入 ``base_url`` 参数即可
+
+        ``authorizer`` (:class:`ArkIDAuthorizer\
+          <arkid.authorizers.base.ArkIDAuthorizer>`)
+
+          ``authorizer`` 认证授权器用于生成 HTTP 请求的头部认证信息
 
         ``app_name`` (*str*)
-          （可选的）用于标识调用方，往往指代正在使用 ArkID SDK 进行开发的项目。
-          此参数与客户端的任何操作无关。仅仅作为请求头部 `User-Agent` 的一部分
-          发送给 ArkID 团队，以方便调试出现的问题。
+          (*可选*)用于标识调用方，往往指代正在使用 ArkID SDK 进行开发的项目。
+          此参数与客户端的任何操作无关。仅仅作为请求头部 ``User-Agent``
+          的一部分发送给 ArkID 团队，以方便调试出现的问题。
 
-       ``http_timeout`` (*float*)
+        ``http_timeout`` (*float*)
           HTTP 连接响应的等待时间（单位：s）。默认 60 。
           如果传入的值为 -1 ，代表请求发送后将无限期挂起。
 
-    All other parameters are for internal use and should be ignored.
     所有其它的初始化参数用于子类内部使用
     """
 
@@ -119,20 +122,15 @@ class BaseClient(object):
         """
         设置一个应用名称（用户代理）并发送给 ArkID 服务端。
 
-        注意：
-            强烈建议应用开发者提供一个应用名称给 ArkID 团队，
-            以便在可能的情况下促进与 ArkID 的交互问题的解决。
-        :param app_name: 第三方调用者的标识名称
-        :return:
+        注意：建议应用开发者提供一个应用名称给 ArkID 团队，以便在可能的情况下促进与 ArkID 的交互问题的解决。
         """
         self.app_name = app_name
         self._headers["User-Agent"] = "{}/{}".format(self.BASE_USER_AGENT, app_name)
 
     def check_authorizer(self, authorizer):
         """
-        若子类重写 `allowed_authorizer_types` 参数值，需检查并确保未违背所提供的约束
-        :param authorizer:
-        :return:
+        若子类重写 `allowed_authorizer_types` 参数值，
+        需检查并确保未违背所提供的约束
         """
         if self.allowed_authorizer_types is not None and (authorizer is not None
                                                           and type(authorizer) not in self.allowed_authorizer_types):
@@ -148,10 +146,8 @@ class BaseClient(object):
     def reload_service_url(self, service: str):
         """
         一些种类的客户端在有些时候调用不同的接口会使用不同的服务根
-        地址，虽然这种情况出现的很少，但是仍然需要提供这样一种方式
+        地址，虽然这种情况出现的很少，但是仍然需要提供这样一种方式，
         来方便开发者更灵活的处理服务根地址不一致的情况。
-        :param service: 访问 ArkID 服务端的服务名称
-        :return:
         """
         self.logger.info("{}客户端正在加载 {} 服务".format(type(self), service))
         self.service_url = slash_join(self.base_url, config.get_service(self.environment, service))
@@ -159,10 +155,8 @@ class BaseClient(object):
     def reload_authorizer(self, authorizer):
         """
         一些种类的客户端在有些时候调用不同的接口会使用不同的授权器，
-        虽然这种情况出现的很少，但是仍然需要提供这样一种方式来方便
+        虽然这种情况出现的很少，但是仍然需要提供这样一种方式，来方便
         开发者更灵活的处理授权器不一致的情况。
-        :param authorizer: 新的授权器
-        :return:
         """
         self.logger.info("{}客户端正在重载加载器{} => {}".format(type(self), type(self.authorizer), type(authorizer)))
         self.check_authorizer(authorizer)
@@ -175,15 +169,29 @@ class BaseClient(object):
             response_class: object = None,
             retry_401: bool = True):
         """
-        Make a GET request to the specified path.
-        :param path: Path for the request, with or without leading slash
-        :param params: Parameters to be encoded as a query string
-        :param headers: HTTP headers to add to the request
-        :param response_class: Class for response object, overrides the
-                client's ``default_response_class``
-        :param retry_401: Retry on 401 responses with fresh Authorization
-                if ``self.authorizer`` supports it
-        :return: :class: < ArkIDHTTPResponse > or it's subclass object
+        以 GET 方式向指定地址发送 HTTP 请求。
+
+        **Parameters**
+
+            ``path`` (*string*)
+              请求的路径，有无正斜杠均可
+
+            ``params`` (*dict*)
+              编码为 Query String 的参数
+
+            ``headers`` (*dict*)
+              添加到请求中的 HTTP 标头
+
+            ``response_class`` (*class*)
+              响应对象的类型，由客户端的 ``default_response_class``
+              重写
+
+            ``retry_401`` (*bool*)
+              如果响应码为 401 并且 ``self.authorizer`` 支持重试，
+              那么会自动进行新的认证。
+
+        :return: :class:`ArkIDHTTPResponse \
+        <arkid_client.response.ArkIDHTTPResponse>` object
         """
         self.logger.debug("GET to {} with params {}".format(self.base_url + path, params))
         return self._request(
@@ -206,19 +214,35 @@ class BaseClient(object):
         retry_401: bool = True,
     ):
         """
-        Make a POST request to the specified path.
-        :param path: Path for the request, with or without leading slash
-        :param json_body: Data which will be JSON encoded as the body of the request
-        :param params: Parameters to be encoded as a query string
-        :param headers: HTTP headers to add to the request
-        :param text_body: Either a raw string that will serve as the request body, or a
-                dict which will be HTTP Form encoded
-        :param response_class: Class for response object, overrides the client's
-                ``default_response_class``
-        :param retry_401: Retry on 401 responses with fresh Authorization if
-                ``self.authorizer`` supports it
+        以 POST 方式向指定地址发送 HTTP 请求。
 
-        :return: :class: < ArkIDHTTPResponse > or it's subclass object
+        **Parameters**
+
+            ``path`` (*string*)
+              请求的路径，有无正斜杠均可
+
+            ``params`` (*dict*)
+              编码为 Query String 的参数
+
+            ``headers`` (*dict*)
+              添加到请求中的 HTTP 标头
+
+            ``json_body`` (*dict*)
+              请求体中通过 JSON 编码的数据
+
+            ``text_body`` (*string or dict*)
+              用作请求主体的原始字符串，或是以 HTTP 形式编码的字典数据
+
+            ``response_class`` (*class*)
+              响应对象的类型，由客户端的 ``default_response_class``
+              重写
+
+            ``retry_401`` (*bool*)
+              如果响应码为 401 并且 ``self.authorizer`` 支持重试，
+              那么会自动进行新的认证。
+
+        :return: :class:`ArkIDHTTPResponse \
+        <arkid_client.response.ArkIDHTTPResponse>` object
         """
         self.logger.debug("POST to {} with params {}".format(self.base_url + path, params))
         return self._request(
@@ -241,15 +265,29 @@ class BaseClient(object):
         retry_401: bool = True,
     ):
         """
-        Make a DELETE request to the specified path.
-        :param path: Path for the request, with or without leading slash
-        :param params: Parameters to be encoded as a query string
-        :param headers: HTTP headers to add to the request
-        :param response_class: Class for response object, overrides the client's
-                ``default_response_class``
-        :param retry_401: Retry on 401 responses with fresh Authorization if
-                ``self.authorizer`` supports it
-        :return: :class: < ArkIDHTTPResponse > or it's subclass object
+        以 DELETE 方式向指定地址发送 HTTP 请求。
+
+        **Parameters**
+
+            ``path`` (*string*)
+              请求的路径，有无正斜杠均可
+
+            ``params`` (*dict*)
+              编码为 Query String 的参数
+
+            ``headers`` (*dict*)
+              添加到请求中的 HTTP 标头
+
+            ``response_class`` (*class*)
+              响应对象的类型，由客户端的 ``default_response_class``
+              重写
+
+            ``retry_401`` (*bool*)
+              如果响应码为 401 并且 ``self.authorizer`` 支持重试，
+              那么会自动进行新的认证。
+
+        :return: :class:`ArkIDHTTPResponse \
+        <arkid_client.response.ArkIDHTTPResponse>` object
         """
         self.logger.debug("DELETE to {} with params {}".format(self.base_url + path, params))
         return self._request(
@@ -272,18 +310,35 @@ class BaseClient(object):
         retry_401: bool = True,
     ):
         """
-        Make a PUT request to the specified path.
-        :param path: Path for the request, with or without leading slash
-        :param json_body: Data which will be JSON encoded as the body of the request
-        :param params: Parameters to be encoded as a query string
-        :param headers: HTTP headers to add to the request
-        :param text_body: Either a raw string that will serve as the request body, or a
-                dict which will be HTTP Form encoded
-        :param response_class: Class for response object, overrides the client's
-                ``default_response_class``
-        :param retry_401: Retry on 401 responses with fresh Authorization if
-                ``self.authorizer`` supports it
-        :return: :class: < ArkIDHTTPResponse > or it's subclass object
+        以 PUT 方式向指定地址发送 HTTP 请求。
+
+        **Parameters**
+
+            ``path`` (*string*)
+              请求的路径，有无正斜杠均可
+
+            ``params`` (*dict*)
+              编码为 Query String 的参数
+
+            ``headers`` (*dict*)
+              添加到请求中的 HTTP 标头
+
+            ``json_body`` (*dict*)
+              请求体中通过 JSON 编码的数据
+
+            ``text_body`` (*string or dict*)
+              用作请求主体的原始字符串，或是以 HTTP 形式编码的字典数据
+
+            ``response_class`` (*class*)
+              响应对象的类型，由客户端的 ``default_response_class``
+              重写
+
+            ``retry_401`` (*bool*)
+              如果响应码为 401 并且 ``self.authorizer`` 支持重试，
+              那么会自动进行新的认证。
+
+        :return: :class:`ArkIDHTTPResponse \
+        <arkid_client.response.ArkIDHTTPResponse>` object
         """
         self.logger.debug("PUT to {} with params {}".format(self.base_url + path, params))
         return self._request(
@@ -308,18 +363,35 @@ class BaseClient(object):
         retry_401: bool = True,
     ):
         """
-        Make a PATCH request to the specified path.
-        :param path: Path for the request, with or without leading slash
-        :param json_body: Data which will be JSON encoded as the body of the request
-        :param params: Parameters to be encoded as a query string
-        :param headers: HTTP headers to add to the request
-        :param text_body: Either a raw string that will serve as the request body, or a
-                dict which will be HTTP Form encoded
-        :param response_class: Class for response object, overrides the client's
-                ``default_response_class``
-        :param retry_401: Retry on 401 responses with fresh Authorization if
-                ``self.authorizer`` supports it
-        :return: :class: < ArkIDHTTPResponse > or it's subclass object
+        以 PATCH 方式向指定地址发送 HTTP 请求。
+
+        **Parameters**
+
+            ``path`` (*string*)
+              请求的路径，有无正斜杠均可
+
+            ``params`` (*dict*)
+              编码为 Query String 的参数
+
+            ``headers`` (*dict*)
+              添加到请求中的 HTTP 标头
+
+            ``json_body`` (*dict*)
+              请求体中通过 JSON 编码的数据
+
+            ``text_body`` (*string or dict*)
+              用作请求主体的原始字符串，或是以 HTTP 形式编码的字典数据
+
+            ``response_class`` (*class*)
+              响应对象的类型，由客户端的 ``default_response_class``
+              重写
+
+            ``retry_401`` (*bool*)
+              如果响应码为 401 并且 ``self.authorizer`` 支持重试，
+              那么会自动进行新的认证。
+
+        :return: :class:`ArkIDHTTPResponse \
+        <arkid_client.response.ArkIDHTTPResponse>` object
         """
         self.logger.debug("PATCH to {} with params {}".format(self.base_url + path, params))
         return self._request(
@@ -346,18 +418,18 @@ class BaseClient(object):
     ):
         """
         封装 requests
-        :param method: HTTP request method, as an all caps string
-        :param path: Path for the request, with or without leading slash
-        :param params: Parameters to be encoded as a query string
-        :param headers: HTTP headers to add to the request
-        :param json_body: Data which will be JSON encoded as the body of the request
-        :param text_body: Either a raw string that will serve as the request body, or
-                a dict which will be HTTP Form encoded
-        :param response_class: Class for response object, overrides the client's
-                ``default_response_class``
-        :param retry_401: Retry on 401 responses with fresh Authorization if
-                ``self.authorizer`` supports it
-        :return: :class: < ArkIDHTTPResponse > or it's subclass object
+        :param method: HTTP 的请求方法，一个全大写字符串
+        :param path: 请求的路径，有无正斜杠均可
+        :param params: 编码为 Query String 的参数
+        :param headers: 添加到请求中的 HTTP 标头
+        :param json_body: 请求体中通过 JSON 编码的数据
+        :param text_body: 用作请求主体的原始字符串，或是以 HTTP 形式编码的字典数据
+        :param response_class: 响应对象的类型，由客户端的 ``default_response_class``
+                重写
+        :param retry_401: 如果响应码为 401 并且 ``self.authorizer`` 支持重试，
+                那么会自动进行新的认证
+        :return: :class:`ArkIDHTTPResponse \
+                <arkid_client.response.ArkIDHTTPResponse>` object
         """
         _headers = dict(self._headers)
 
@@ -474,6 +546,6 @@ def reload_authorizer(func):
         instance.reload_authorizer(args[1])
         response = func(*args, **kwargs)
         instance.reload_authorizer(_authorizer)
+        # _wrapper.__doc__ = func.__doc__
         return response
-
     return _wrapper

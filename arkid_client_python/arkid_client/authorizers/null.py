@@ -14,8 +14,7 @@ class NullAuthorizer(ArkIDAuthorizer):
     """
     def set_authorization_header(self, header_dict):
         """
-        Removes the Authorization header from the given header dict if one was
-        present.
+        如果存在授权头部信息，则从给定头部信息的 ``dict`` 中尝试删除授权标头。
         """
         LOGGER.debug("< NullAuthorizer >: 确保请求头部不存在认证信息。")
         header_dict.pop("Authorization", None)

@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>服务客户端 &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="认证服务客户端" href="clients/auth.html" />
+    <link rel="prev" title="Client 教程" href="tutorial.html" />
+<link rel="stylesheet" href="_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clients/auth.html" title="认证服务客户端"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Client 教程"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ArkID Client 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    index.html" class="text-logo"><img src="_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Client 教程</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">服务客户端</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="clients/auth.html">认证服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients/user.html">用户服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients/org.html">组织服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients/node.html">节点服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients/arkid.html">ArkID 客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients/base.html">基类客户端</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="index.html">Docs</a></li>
+              
+              <li>服务客户端</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <div class="section" id="clients">
+<span id="id1"></span><h1>服务客户端<a class="headerlink" href="#clients" title="Permalink to this headline">¶</a></h1>
+<p>ArkID Client 提供了一个封装了 ArkID 所有的 API 接口的客户端类。您无需进行任何配置，
+只需要在初始化客户端实例的时候，
+向其添加 ArkID 服务的根地址以及必要的认证授权器 <a class="reference internal" href="authorization.html#authorization"><span class="std std-ref">ArkIDAuthorizers</span></a> ；
+在客户端创建成功之后，您就可以使用顶层的接口来调用 ArkID 的各项服务而无需知道
+ArkID 的各端点地址或者详细的参数。</p>
+<p class="rubric">客户端类型</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="clients/auth.html">认证服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clients/user.html">用户服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clients/org.html">组织服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clients/node.html">节点服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clients/arkid.html">ArkID 客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clients/base.html">基类客户端</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+            
+  <div class="footer-relations">
+    
+      <div class="pull-left">
+        <a class="btn btn-default" href="tutorial.html" title="previous chapter (use the left arrow)">Client 教程</a>
+      </div>
+    
+      <div class="pull-right">
+        <a class="btn btn-default" href="clients/auth.html" title="next chapter (use the right arrow)">认证服务客户端</a>
+      </div>
+    </div>
+    <div class="clearer"></div>
+  
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clients/auth.html" title="认证服务客户端"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Client 教程"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ArkID Client 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

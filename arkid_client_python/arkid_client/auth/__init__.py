@@ -3,8 +3,8 @@ from arkid_client.auth.client import (
     ConfidentialAppAuthClient,
 )
 
+
 __all__ = [
     'AuthClient',
     'ConfidentialAppAuthClient',
-
 ]

@@ -1,0 +1,222 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>API 认证 &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="异常处理" href="exceptions.html" />
+<link rel="stylesheet" href="_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="异常处理"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ArkID Client 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    index.html" class="text-logo"><img src="_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Client 教程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clients.html">服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">异常处理</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API 认证</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">授权器基类</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">授权器类型</a></li>
+</ul>
+</li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="index.html">Docs</a></li>
+              
+              <li>API 认证</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <div class="section" id="api">
+<span id="authorization"></span><h1>API 认证<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<p>针对 ArkID Client 的授权操作，目前仅支持 <code class="docutils literal notranslate"><span class="pre">用户名</span></code> + <code class="docutils literal notranslate"><span class="pre">密码</span></code> 的形式，
+但是这样的授权流程对于用户的隐私信息是不安全的，
+所以在后续的 ArkID Client开发中，
+我们也许会引入 oauth2.0 或者 OIDC 相关的授权协议来加固 ArkID Client。</p>
+<div class="section" id="id1">
+<h2>授权器基类<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ArkIDAuthorizer</span></code> 为一个授权器的抽象基类</p>
+<dl class="py class">
+<dt id="arkid_client.authorizers.base.ArkIDAuthorizer">
+<em class="property">class </em><code class="sig-prename descclassname">arkid_client.authorizers.base.</code><code class="sig-name descname">ArkIDAuthorizer</code><a class="reference internal" href="_modules/arkid_client/authorizers/base.html#ArkIDAuthorizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.authorizers.base.ArkIDAuthorizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>授权器基类，用于生成有效的授权头部。
+支持处理无效的的授权头部。</p>
+<dl class="py method">
+<dt id="arkid_client.authorizers.base.ArkIDAuthorizer.set_authorization_header">
+<em class="property">abstract </em><code class="sig-name descname">set_authorization_header</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">header_dict</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arkid_client/authorizers/base.html#ArkIDAuthorizer.set_authorization_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.authorizers.base.ArkIDAuthorizer.set_authorization_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取 HTTP 请求头部的 <code class="docutils literal notranslate"><span class="pre">dict</span></code> 数据，
+并将 <code class="docutils literal notranslate"><span class="pre">{&quot;Authorization&quot;:</span> <span class="pre">&quot;...&quot;}</span></code> 形式的授权信息加入其中。
+注意：若 <code class="docutils literal notranslate"><span class="pre">Authorization</span></code> 授权信息已经设置，则此方法将会覆盖原来的授权信息。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.authorizers.base.ArkIDAuthorizer.handle_missing_authorization">
+<code class="sig-name descname">handle_missing_authorization</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arkid_client/authorizers/base.html#ArkIDAuthorizer.handle_missing_authorization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.authorizers.base.ArkIDAuthorizer.handle_missing_authorization" title="Permalink to this definition">¶</a></dt>
+<dd><p>若 HTTP 请求使用此授权器进行访问时出现 401 （ HTTP 请求未经授权）响应，
+若授权器可以采取某些措施补救这种情况，其将会更新状态并返回 <code class="docutils literal notranslate"><span class="pre">True</span></code>；
+若授权器针对这种情况无能为力，其也许会更新一些操作，但是更重要的是，
+会返回 <code class="docutils literal notranslate"><span class="pre">False</span></code>。</p>
+<p>默认情况下，总是返回 False ，不采取任何操作。</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="id2">
+<h2>授权器类型<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>以下所有类型的授权器均可从 <code class="docutils literal notranslate"><span class="pre">arkid_client.authorizers</span></code> 导入</p>
+<dl class="py class">
+<dt id="arkid_client.NullAuthorizer">
+<em class="property">class </em><code class="sig-prename descclassname">arkid_client.</code><code class="sig-name descname">NullAuthorizer</code><a class="reference internal" href="_modules/arkid_client/authorizers/null.html#NullAuthorizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.NullAuthorizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#arkid_client.authorizers.base.ArkIDAuthorizer" title="arkid_client.authorizers.base.ArkIDAuthorizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">arkid_client.authorizers.base.ArkIDAuthorizer</span></code></a></p>
+<p>该授权器不实现任何身份验证功能，并尝试去掉请求头部的认证信息。</p>
+<dl class="py method">
+<dt id="arkid_client.NullAuthorizer.set_authorization_header">
+<code class="sig-name descname">set_authorization_header</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">header_dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arkid_client/authorizers/null.html#NullAuthorizer.set_authorization_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.NullAuthorizer.set_authorization_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>如果存在授权头部信息，则从给定头部信息的 <code class="docutils literal notranslate"><span class="pre">dict</span></code> 中尝试删除授权标头。</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="arkid_client.BasicAuthorizer">
+<em class="property">class </em><code class="sig-prename descclassname">arkid_client.</code><code class="sig-name descname">BasicAuthorizer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">oneid_token</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arkid_client/authorizers/basic.html#BasicAuthorizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.BasicAuthorizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#arkid_client.authorizers.base.ArkIDAuthorizer" title="arkid_client.authorizers.base.ArkIDAuthorizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">arkid_client.authorizers.base.ArkIDAuthorizer</span></code></a></p>
+<p>使用 ArkID 官方默认的 oneid_token 进行基本认证。
+将在请求头中设置 Token 来向 ArkID 服务端发起请求。
+<strong>Parameters</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">oneid_token</span></code> (<em>str</em>)</dt><dd><p>An basic token for ArkID Auth</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py method">
+<dt id="arkid_client.BasicAuthorizer.set_authorization_header">
+<code class="sig-name descname">set_authorization_header</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">header_dict</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arkid_client/authorizers/basic.html#BasicAuthorizer.set_authorization_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.BasicAuthorizer.set_authorization_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the <cite>Authorization</cite> header to “token &lt;oneid_token&gt;”</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+            
+  <div class="footer-relations">
+    
+      <div class="pull-left">
+        <a class="btn btn-default" href="exceptions.html" title="previous chapter (use the left arrow)">异常处理</a>
+      </div>
+    
+    </div>
+    <div class="clearer"></div>
+  
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="异常处理"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ArkID Client 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>
