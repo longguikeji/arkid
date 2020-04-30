@@ -13,8 +13,17 @@ BASE_DIR = 'arkid'
 STANDARD_EXCLUDE = ["*.pyc", "*.bak", "CHANGELOG.md", "package.json", "package-lock.json", "settings_local.py"]
 
 STANDARD_EXCLUDE_DIRECTORIES = [
-    "CVS", "./build", ".git", ".idea", "node_modules", "EGG-INFO", "dist", "django_arkid.egg-info", "pip-egg-info",
-    "*.egg-info"
+    "CVS",
+    "./build",
+    ".git",
+    ".idea",
+    "node_modules",
+    "EGG-INFO",
+    "dist",
+    "django_arkid.egg-info",
+    "pip-egg-info",
+    "*.egg-info",
+    "arkid_client_python",
 ]
 
 
@@ -101,12 +110,12 @@ METADATA = dict(
     include_package_data=True,
     dependency_links=["https://mirrors.aliyun.com/pypi/simple"],
     classifiers=[
-        'Development Status :: 1 - Production/Stable',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Environment :: Web Environment',
         'Topic :: Internet',
-        'License :: OSI Approved :: GNU License',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',

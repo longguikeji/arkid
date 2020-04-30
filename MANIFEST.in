@@ -28,3 +28,4 @@ exclude */settings_local.py
 recursive-exclude */node_modules *
 recursive-exclude */.git *
 recursive-exclude */.idea *
+recursive-exclude */arkid_client_python *

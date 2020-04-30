@@ -23,7 +23,7 @@
 
 ### 总目录结构编排
 
-- 将 setup.py , setup.cfg , MANIFEST.in , README.md , LICENSE.md 文件移动到与ArkID项目同一个顶层目录下.其目的在于将 ArkID 框架打包为一个整体对外提供服务.
+- 将 setup.py , setup.cfg , MANIFEST.in , LICENSE.md 文件移动到与ArkID项目同一个顶层目录下.其目的在于将 ArkID 框架打包为一个整体对外提供服务.
 
 ### 执行打包命令
 
