@@ -1,15 +1,15 @@
+"""ArkID SDK Setup File"""
 from __future__ import print_function
 import io
 import os
-import sys
 from fnmatch import fnmatchcase
 from setuptools import convert_path, find_packages, setup
 
 # Provided as an attribute, so you can append to these instead
 # of replicating them:
-standard_exclude = ["*.pyc", "*.bak", "CHANGELOG.md", "package.json", "package-lock.json", "settings_local.py"]
+STANDARD_EXCLUDE = ["*.pyc", "*.bak", "CHANGELOG.md", "package.json", "package-lock.json", "settings_local.py"]
 
-standard_exclude_directories = [
+STANDARD_EXCLUDE_DIRECTORIES = [
     "CVS", "./build", ".git", ".idea", "node_modules", "EGG-INFO", "dist", "django_arkid.egg-info", "pip-egg-info",
     "*.egg-info"
 ]
@@ -18,12 +18,7 @@ BASE_DIR = 'arkid_client'
 
 
 # Copied from paste/util/finddata.py
-def find_package_data(where=".",
-                      package="",
-                      exclude=None,
-                      exclude_directories=None,
-                      only_in_packages=True,
-                      show_ignored=True):
+def find_package_data(where=".", package="", exclude=None, exclude_directories=None, only_in_packages=True):
     """
     Return a dictionary suitable for use in ``package_data``
     in a distutils ``setup.py`` file.
@@ -52,33 +47,30 @@ def find_package_data(where=".",
     while stack:
         where, prefix, package, only_in_packages = stack.pop(0)
         for name in os.listdir(where):
-            fn = os.path.join(where, name)
-            if os.path.isdir(fn):
+            file_name = os.path.join(where, name)
+            if os.path.isdir(file_name):
                 bad_name = False
                 for pattern in exclude_directories:
-                    if (fnmatchcase(name, pattern) or fn.lower() == pattern.lower()):
+                    if fnmatchcase(name, pattern) or file_name.lower() == pattern.lower():
                         bad_name = True
                         # if show_ignored:
-                        #     print("Directory %s ignored by pattern %s" % (fn, pattern), file=sys.stderr)
+                        #     print("Directory %s ignored by pattern %s" % (file_name, pattern), file=sys.stderr)
                         break
                 if bad_name:
                     continue
-                if (os.path.isfile(os.path.join(fn, "__init__.py")) and not prefix):
-                    if not package:
-                        new_package = name
-                    else:
-                        new_package = package + "." + name
-                    stack.append((fn, "", new_package, False))
+                if os.path.isfile(os.path.join(file_name, "__init__.py")) and not prefix:
+                    new_package = name if not package else package + "." + name
+                    stack.append((file_name, "", new_package, False))
                 else:
-                    stack.append((fn, prefix + name + "/", package, only_in_packages))
+                    stack.append((file_name, prefix + name + "/", package, only_in_packages))
             elif package or not only_in_packages:
                 # is a file
                 bad_name = False
                 for pattern in exclude:
-                    if (fnmatchcase(name, pattern) or fn.lower() == pattern.lower()):
+                    if fnmatchcase(name, pattern) or file_name.lower() == pattern.lower():
                         bad_name = True
                         # if show_ignored:
-                        #     print("File %s ignored by pattern %s" % (fn, pattern), file=sys.stderr)
+                        #     print("File %s ignored by pattern %s" % (file_name, pattern), file=sys.stderr)
                         break
                 if bad_name:
                     continue
@@ -86,24 +78,24 @@ def find_package_data(where=".",
     return out
 
 
-package_data = find_package_data(exclude_directories=standard_exclude_directories, exclude=standard_exclude)
-long_description = io.open('README.md', encoding='utf-8').read()
+PACKAGE_DATA = find_package_data(exclude_directories=STANDARD_EXCLUDE_DIRECTORIES, exclude=STANDARD_EXCLUDE)
+LONG_DESCRIPTION = io.open('README.md', encoding='utf-8').read()
 
 # Dynamically calculate the version based on allauth.VERSION.
-version = __import__(BASE_DIR).version.__version__
+VERSION = __import__(BASE_DIR).version.__version__
 
 METADATA = dict(
     name='arkid-client',
-    version=version,
+    version=VERSION,
     author='LongGuiKeJi',
     author_email='bd@longguikeji.com',
-    description='',
-    long_description=long_description,
+    description='ArkID SDk For Python',
+    long_description=LONG_DESCRIPTION,
     url='https://github.com/longguikeji/arkid-core',
     download_url='https://github.com/longguikeji/arkid-core',
-    keywords='',
+    keywords='ArkID SDk Client',
     tests_require=[],
-    install_requires=["requests>=2.9.2, <3.0.0", "six>=1.10.0, <2.0.0", "pyjwt[crypto]>=1.5.3, <2.0.0"],
+    install_requires=["requests>=2.9.2, <3.0.0"],
     include_package_data=True,
     dependency_links=["https://mirrors.aliyun.com/pypi/simple"],
     classifiers=[
@@ -111,13 +103,13 @@ METADATA = dict(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Internet :: WWW/HTTP',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: GNU License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
     ],
     packages=find_packages(),
-    package_data=package_data,
+    package_data=PACKAGE_DATA,
     zip_safe=True,
 )
 
