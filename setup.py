@@ -87,15 +87,15 @@ INSTALL_REQUIRES = ['{0}{1}'.format(key, value) if value != '*' else key for key
 METADATA = dict(
     name='django-arkid',
     version=VERSION,
-    author='LongGuiKeJi',
-    author_email='bd@longguikeji.com',
+    author='longguikeji',
+    author_email='rr97390483@dingtalk.com',
     description='ArkID是全新一代企业单点登录解决方案, '
     '彻底告别企业内多系统多账号的烦恼, 节省管理成本, '
     '自带功能全面的WEB管理界面，提升管理效率。',
     long_description=LONG_DESCRIPTION,
     url='https://github.com/longguikeji/arkid-core',
     download_url='https://github.com/longguikeji/arkid-core',
-    keywords='django LDAP OAuth OpenID SAML HTTP API SSO',
+    keywords='django LDAP OAuth OpenID SAML SSO HTTP API',
     tests_require=[],
     install_requires=INSTALL_REQUIRES,
     include_package_data=True,
