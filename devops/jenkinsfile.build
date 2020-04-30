@@ -16,6 +16,9 @@ pipeline {
         DOCKER_DEV_REGISTRY="https://harbor.longguikeji.com"
         DOCKER_DEV_REGISTRY_CREDENTIAL="devops-longguikeji-harbor"
 
+        DOCKER_PROD_REGISTRY="https://index.docker.io/v1/"
+        DOCKER_PROD_REGISTRY_CREDENTIAL="devops-longguikeji-dockerhub"
+
     }
     stages {
         stage('pre') {
@@ -29,6 +32,11 @@ pipeline {
                 withDockerRegistry([credentialsId: "${DOCKER_DEV_REGISTRY_CREDENTIAL}", url: "${DOCKER_DEV_REGISTRY}"]){
                     sh """#!/bin/bash
                     make VERSION=${env.DOCKER_IMAGE_DEV_VERSION} docker-dev
+                    """
+                }
+                withDockerRegistry([credentialsId: "${DOCKER_PROD_REGISTRY_CREDENTIAL}", url: "${DOCKER_PROD_REGISTRY}"]){
+                    sh """#!/bin/bash
+                    make VERSION="latest" docker-prod
                     """
                 }
             }
