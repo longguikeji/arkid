@@ -1,10 +1,10 @@
+"""ArkID Setup File"""
 from __future__ import print_function
 import io
 import os
 from fnmatch import fnmatchcase
 from setuptools import convert_path, find_packages, setup
 import toml
-
 
 BASE_DIR = 'arkid'
 
@@ -17,13 +17,9 @@ STANDARD_EXCLUDE_DIRECTORIES = [
     "*.egg-info"
 ]
 
+
 # Copied from paste/util/finddata.py
-def find_package_data(where=".",
-                      package="",
-                      exclude=None,
-                      exclude_directories=None,
-                      only_in_packages=True,
-                      show_ignored=True):
+def find_package_data(where=".", package="", exclude=None, exclude_directories=None, only_in_packages=True):
     """
     Return a dictionary suitable for use in ``package_data``
     in a distutils ``setup.py`` file.
@@ -48,30 +44,30 @@ def find_package_data(where=".",
     while stack:
         where, prefix, package, only_in_packages = stack.pop(0)
         for name in os.listdir(where):
-            fn = os.path.join(where, name)
-            if os.path.isdir(fn):
+            file_name = os.path.join(where, name)
+            if os.path.isdir(file_name):
                 bad_name = False
                 for pattern in exclude_directories:
-                    if fnmatchcase(name, pattern) or fn.lower() == pattern.lower():
+                    if fnmatchcase(name, pattern) or file_name.lower() == pattern.lower():
                         bad_name = True
                         # if show_ignored:
-                        #     print("Directory %s ignored by pattern %s" % (fn, pattern), file=sys.stderr)
+                        #     print("Directory %s ignored by pattern %s" % (file_name, pattern), file=sys.stderr)
                         break
                 if bad_name:
                     continue
-                if os.path.isfile(os.path.join(fn, "__init__.py")) and not prefix:
+                if os.path.isfile(os.path.join(file_name, "__init__.py")) and not prefix:
                     new_package = name if not package else package + "." + name
-                    stack.append((fn, "", new_package, False))
+                    stack.append((file_name, "", new_package, False))
                 else:
-                    stack.append((fn, prefix + name + "/", package, only_in_packages))
+                    stack.append((file_name, prefix + name + "/", package, only_in_packages))
             elif package or not only_in_packages:
                 # is a file
                 bad_name = False
                 for pattern in exclude:
-                    if fnmatchcase(name, pattern) or fn.lower() == pattern.lower():
+                    if fnmatchcase(name, pattern) or file_name.lower() == pattern.lower():
                         bad_name = True
                         # if show_ignored:
-                        #     print("File %s ignored by pattern %s" % (fn, pattern), file=sys.stderr)
+                        #     print("File %s ignored by pattern %s" % (file_name, pattern), file=sys.stderr)
                         break
                 if bad_name:
                     continue
@@ -93,19 +89,19 @@ METADATA = dict(
     version=VERSION,
     author='LongGuiKeJi',
     author_email='bd@longguikeji.com',
-    description='Integrated set of Django applications addressing'
-    ' authentication, registration, account management as well as'
-    ' 3rd party (social) account authentication.',
+    description='ArkID是全新一代企业单点登录解决方案, '
+    '彻底告别企业内多系统多账号的烦恼, 节省管理成本, '
+    '自带功能全面的WEB管理界面，提升管理效率。',
     long_description=LONG_DESCRIPTION,
     url='https://github.com/longguikeji/arkid-core',
     download_url='https://github.com/longguikeji/arkid-core',
-    keywords='django auth account sso social openid ldap saml oidc dingding wechat qq alipay',
+    keywords='django LDAP OAuth OpenID SAML HTTP API SSO',
     tests_require=[],
     install_requires=INSTALL_REQUIRES,
     include_package_data=True,
     dependency_links=["https://mirrors.aliyun.com/pypi/simple"],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 1 - Beta',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Environment :: Web Environment',
@@ -114,9 +110,7 @@ METADATA = dict(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
-        'Framework :: Django',
         'Framework :: Django :: 2.0',
-        'Framework :: Django :: 2.2.10',
         'Framework :: Django :: 3.0',
     ],
     packages=find_packages(),
