@@ -101,7 +101,7 @@ METADATA = dict(
     include_package_data=True,
     dependency_links=["https://mirrors.aliyun.com/pypi/simple"],
     classifiers=[
-        'Development Status :: 1 - Beta',
+        'Development Status :: 1 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Environment :: Web Environment',
