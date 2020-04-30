@@ -1,17 +1,20 @@
-# 用于 Python 的 ArkID Client
+用于 Python 的 ArkID Client
+===========================
 
 该 SDK 为 ArkID APIs 提供了便捷的 Pythonic 接口 。
 
-## 基本用法
+基本用法
+--------
 
-### 安装 
-
+安装
+~~~~
 - pip install arkid-client
 
-### 基本使用
-
+基本使用
+~~~~~~~~
 - 您可以从 arkid_client 导入 ArkID 客户端。例如：
 
+.. code-block:: python
 
     from arkid_client.auth import ConfidentialAppAuthClient
     from arkid_client.client import ArkIDClient
@@ -31,13 +34,17 @@
     # 查询用户列表
     users = ac.query_user()
 
-## 链接
 
-### 完整文档：
-...
+链接
+------
 
-### 源代码：
+完整文档：
+~~~~~~~~~~
+
+源代码：
+~~~~~~~~~
 https://github.com/longguikeji/arkid-core.git
 
-### API文档：
+API文档：
+~~~~~~~~~~
 https://arkid.docs.apiary.io/

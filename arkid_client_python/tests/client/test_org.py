@@ -30,10 +30,10 @@ class TestOrgClient(unittest.TestCase):
         self.assertEqual(response.text, self.list_body)
 
     @httpretty.activate
-    def test_query_specified_org(self):
+    def test_query_org(self):
         """测试查看指定组织的信息"""
         register_api_route('org', BASE_URL, 'example/', body=self.dict_body)
-        response = self.client.query_specified_org(oid='example')
+        response = self.client.query_org(oid='example')
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
@@ -44,24 +44,24 @@ class TestOrgClient(unittest.TestCase):
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
-    def test_delete_specified_org(self):
+    def test_delete_org(self):
         """测试删除指定组织的信息"""
         register_api_route('org', BASE_URL, 'example/', httpretty.DELETE)
-        response = self.client.delete_specified_org(oid='example')
+        response = self.client.delete_org(oid='example')
         self.assertEqual(response.http_status, 200)
 
     @httpretty.activate
-    def test_update_specified_org(self):
+    def test_update_org(self):
         """测试修改指定组织的信息"""
         register_api_route('org', BASE_URL, 'example/', httpretty.PATCH, body=self.dict_body)
-        response = self.client.update_specified_org(oid='example', json_body={})
+        response = self.client.update_org(oid='example', json_body={})
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
-    def test_query_orguser(self):
+    def test_query_orguser_list(self):
         """测试查看特定组织的成员信息"""
         register_api_route('org', BASE_URL, 'example/user/', body=self.list_body)
-        response = self.client.query_orguser(oid='example')
+        response = self.client.query_orguser_list(oid='example')
         self.assertEqual(response.text, self.list_body)
 
     @httpretty.activate
@@ -79,17 +79,17 @@ class TestOrgClient(unittest.TestCase):
         self.assertEqual(response.http_status, 200)
 
     @httpretty.activate
-    def test_query_specified_orguser(self):
+    def test_query_orguser(self):
         """测试查看指定组织的指定成员的信息"""
         register_api_route('org', BASE_URL, 'example/user/example/', body=self.dict_body)
-        response = self.client.query_specified_orguser(oid='example', username='example')
+        response = self.client.query_orguser(oid='example', username='example')
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
-    def test_update_specified_orguser(self):
+    def test_update_orguser(self):
         """测试编辑指定组织的指定成员的信息"""
         register_api_route('org', BASE_URL, 'example/user/example/', httpretty.PATCH, body=self.dict_body)
-        response = self.client.update_specified_orguser(oid='example', username='example', json_body={})
+        response = self.client.update_orguser(oid='example', username='example', json_body={})
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate

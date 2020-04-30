@@ -23,31 +23,31 @@ class TestNodeClient(unittest.TestCase):
     list_body = '[]'
 
     @httpretty.activate
-    def test_query_specified_node(self):
+    def test_query_node(self):
         """测试查询指定节点的信息"""
         register_api_route('node', BASE_URL, 'example/', body=self.dict_body)
-        response = self.client.query_specified_node(node_uid='example')
+        response = self.client.query_node(node_uid='example')
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
-    def test_view_specified_node(self):
+    def test_view_node(self):
         """测试用户查询指定节点的信息"""
         register_api_route('ucenter', BASE_URL, 'node/example/', body=self.dict_body)
-        response = self.client.view_specified_node(node_uid='example')
+        response = self.client.view_node(node_uid='example')
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
-    def test_update_specified_node(self):
+    def test_update_node(self):
         """测试修改指定节点的信息"""
         register_api_route('node', BASE_URL, 'example/', httpretty.PATCH, body=self.dict_body)
-        response = self.client.update_specified_node(node_uid='example', json_body={})
+        response = self.client.update_node(node_uid='example', json_body={})
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
-    def test_delete_specified_node(self):
+    def test_delete_node(self):
         """测试删除指定节点的信息"""
         register_api_route('node', BASE_URL, 'example/', httpretty.DELETE)
-        response = self.client.delete_specified_node(node_uid='example')
+        response = self.client.delete_node(node_uid='example')
         self.assertEqual(response.http_status, 200)
 
     @httpretty.activate

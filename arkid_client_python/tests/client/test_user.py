@@ -22,10 +22,10 @@ class TestUserClient(unittest.TestCase):
     list_body = '[]'
 
     @httpretty.activate
-    def test_query_user(self):
+    def test_query_user_list(self):
         """测试查询用户列表"""
         register_api_route('user', BASE_URL, '', body=self.list_body)
-        response = self.client.query_user()
+        response = self.client.query_user_list()
         self.assertEqual(response.text, self.list_body)
 
     @httpretty.activate
@@ -36,10 +36,10 @@ class TestUserClient(unittest.TestCase):
         self.assertEqual(response.text, self.list_body)
 
     @httpretty.activate
-    def test_query_specified_user(self):
+    def test_query_user(self):
         """测试查询指定用户"""
         register_api_route('user', BASE_URL, 'example/', body=self.dict_body)
-        response = self.client.query_specified_user(username='example')
+        response = self.client.query_user(username='example')
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
@@ -50,15 +50,15 @@ class TestUserClient(unittest.TestCase):
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
-    def test_update_specified_user(self):
+    def test_update_user(self):
         """测试修改指定用户的信息"""
         register_api_route('user', BASE_URL, 'example/', httpretty.PATCH, body=self.dict_body)
-        response = self.client.update_specified_user(username='example', json_body={})
+        response = self.client.update_user(username='example', json_body={})
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
-    def test_delete_specified_user(self):
+    def test_delete_user(self):
         """测试删除指定用户的信息"""
         register_api_route('user', BASE_URL, 'example/', httpretty.DELETE)
-        response = self.client.delete_specified_user(username='example')
+        response = self.client.delete_user(username='example')
         self.assertEqual(response.http_status, 200)

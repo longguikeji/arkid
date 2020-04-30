@@ -40,7 +40,7 @@ class NodeClient(BaseClient):
     def __init__(self, base_url, authorizer=None, **kwargs):
         BaseClient.__init__(self, base_url, "node", authorizer=authorizer, **kwargs)
 
-    def query_specified_node(self, node_uid: str):
+    def query_node(self, node_uid: str):
         """
         查询指定节点的信息
         (``GET /siteapi/v1/node/<node_uid>/``)
@@ -53,13 +53,13 @@ class NodeClient(BaseClient):
         **Examples**
 
         >>> nc = arkid_client.NodeClient(...)
-        >>> node = nc.query_specified_node(node_uid)
+        >>> node = nc.query_node(node_uid)
         >>> print('node is', node)
         """
-        self.logger.info("正在调用 NodeClient.query_specified_node() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 NodeClient.query_node() 接口与 ArkID 服务端进行交互")
         return self.get(path='{}/'.format(node_uid))
 
-    def view_specified_node(self, node_uid: str):
+    def view_node(self, node_uid: str):
         """
         用户查询指定节点的信息
         (``GET /siteapi/v1/ucenter/node/<node_uid>/``)
@@ -72,19 +72,19 @@ class NodeClient(BaseClient):
         **Examples**
 
         >>> nc = arkid_client.NodeClient(...)
-        >>> node = nc.view_specified_node(node_uid)
+        >>> node = nc.view_node(node_uid)
         >>> print('node is', node)
         """
         _service = self.service
         self.reload_service_url('ucenter')
 
-        self.logger.info("正在调用 NodeClient.view_specified_node() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 NodeClient.view_node() 接口与 ArkID 服务端进行交互")
         response = self.get(path='node/{}/'.format(node_uid))
 
         self.reload_service_url(_service)
         return response
 
-    def update_specified_node(self, node_uid: str, json_body: dict):
+    def update_node(self, node_uid: str, json_body: dict):
         """
         修改指定节点的信息
         (``PATCH /siteapi/v1/node/<node_uid>/``)
@@ -103,7 +103,7 @@ class NodeClient(BaseClient):
         >>> node_data = {
         >>>     'name': 'example'
         >>> }
-        >>> node = nc.update_specified_node(node_uid, node_data)
+        >>> node = nc.update_node(node_uid, node_data)
         >>> print('node is', node)
 
         **External Documentation**
@@ -112,10 +112,10 @@ class NodeClient(BaseClient):
         <https://arkid.docs.apiary.io/#reference/node/0/1>`_
         详情请参阅API文档。
         """
-        self.logger.info("正在调用 NodeClient.update_specified_node() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 NodeClient.update_node() 接口与 ArkID 服务端进行交互")
         return self.patch(path='{}/'.format(node_uid), json_body=json_body)
 
-    def delete_specified_node(self, node_uid: str, **params):
+    def delete_node(self, node_uid: str, **params):
         """
         删除指定节点的信息
         (``DELETE /siteapi/v1/node/<node_uid>/``)
@@ -130,10 +130,11 @@ class NodeClient(BaseClient):
               会先将人员从节点内删除，再删除此节点。
 
         **Examples**
-
+        self.logger.info("正在调用 NodeClient.delete_node() 接口与 ArkID 服务端进行交互")
         >>> nc = arkid_client.NodeClient(...)
-        >>> nc.delete_specified_node(node_uid, ignore_user=True)
+        >>> nc.delete_node(node_uid, ignore_user=True)
         """
+
         return self.delete(path='{}/'.format(node_uid), params=params)
 
     def get_node_tree_list(self, node_uid: str):
@@ -345,7 +346,7 @@ class NodeClient(BaseClient):
         self.logger.info("正在调用 NodeClient.query_user_under_node() 接口与 ArkID 服务端进行交互")
         return self.get(path='{}/user/'.format(node_uid), params=params)
 
-    def add_user_under_node(self, node_uid: str, user_uids: list, **params):
+    def add_user_under_node(self, node_uid: str, user_uids: list):
         """
         向指定节点添加指定成员
         (``PATCH /siteapi/v1/node/<node_uid>/user/``)
@@ -358,9 +359,6 @@ class NodeClient(BaseClient):
             ``user_uids`` (*list*)
               用户唯一标识组成的列表
 
-            ``**params`` (*dict*)
-              用户的元信息，参数详情请参考接口文档
-
         **Examples**
 
         >>> nc = arkid_client.NodeClient(...)
@@ -372,18 +370,12 @@ class NodeClient(BaseClient):
         >>> ]
         >>> node = nc.add_user_under_node(node_uid, user_uids)
         >>> print('node is', node)
-
-        **External Documentation**
-
-        关于 `节点的元数据 \
-        <https://arkid.docs.apiary.io/#reference/node/7/1>`_
-        详情请参阅API文档。
         """
         self.logger.info("正在调用 NodeClient.add_user_under_node() 接口与 ArkID 服务端进行交互")
         json_body = {'user_uids': user_uids, 'subject': 'add'}
-        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
+        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body)
 
-    def delete_user_under_node(self, node_uid: str, user_uids: list, **params):
+    def delete_user_under_node(self, node_uid: str, user_uids: list):
         """
         从指定节点移除指定成员
         (``PATCH /siteapi/v1/node/<node_uid>/user/``)
@@ -396,9 +388,6 @@ class NodeClient(BaseClient):
             ``user_uids`` (*list*)
               用户唯一标识组成的列表
 
-            ``**params`` (*dict*)
-              用户的元信息，参数详情请参考接口文档
-
         **Examples**
 
         >>> nc = arkid_client.NodeClient(...)
@@ -410,18 +399,12 @@ class NodeClient(BaseClient):
         >>> ]
         >>> node = nc.delete_user_under_node(node_uid, user_uids)
         >>> print('node is', node)
-
-        **External Documentation**
-
-        关于 `节点的元数据 \
-        <https://arkid.docs.apiary.io/#reference/node/7/1>`_
-        详情请参阅API文档。
         """
         self.logger.info("正在调用 NodeClient.delete_user_under_node() 接口与 ArkID 服务端进行交互")
         json_body = {'user_uids': user_uids, 'subject': 'delete'}
-        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
+        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body)
 
-    def override_user_under_node(self, node_uid: str, user_uids: list, **params):
+    def override_user_under_node(self, node_uid: str, user_uids: list):
         """
         重置指定节点的指定用户
         (``PATCH /siteapi/v1/node/<node_uid>/user/``)
@@ -434,9 +417,6 @@ class NodeClient(BaseClient):
             ``user_uids`` (*list*)
               用户唯一标识组成的列表
 
-            ``**params`` (*dict*)
-              用户的元信息，参数详情请参考接口文档
-
         **Examples**
 
         >>> nc = arkid_client.NodeClient(...)
@@ -448,18 +428,12 @@ class NodeClient(BaseClient):
         >>> ]
         >>> node = nc.override_user_under_node(node_uid, user_uids)
         >>> print('node is', node)
-
-        **External Documentation**
-
-        关于 `节点的元数据 \
-        <https://arkid.docs.apiary.io/#reference/node/7/1>`_
-        详情请参阅API文档。
         """
         self.logger.info("正在调用 NodeClient.override_user_under_node() 接口与 ArkID 服务端进行交互")
         json_body = {'user_uids': user_uids, 'subject': 'override'}
-        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
+        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body)
 
-    def sort_user_under_node(self, node_uid: str, user_uids: list, **params):
+    def sort_user_under_node(self, node_uid: str, user_uids: list):
         """
         对指定人按指定位置进行排序
         (``PATCH /siteapi/v1/node/<node_uid>/user/``)
@@ -472,9 +446,6 @@ class NodeClient(BaseClient):
             ``user_uids`` (*list*)
               用户唯一标识组成的列表
 
-            ``**params`` (*dict*)
-              用户的元信息，参数详情请参考接口文档
-
         **Examples**
 
         >>> nc = arkid_client.NodeClient(...)
@@ -486,18 +457,12 @@ class NodeClient(BaseClient):
         >>> ]
         >>> node = nc.sort_user_under_node(node_uid, user_uids)
         >>> print('node is', node)
-
-        **External Documentation**
-
-        关于 `节点的元数据 \
-        <https://arkid.docs.apiary.io/#reference/node/7/1>`_
-        详情请参阅API文档。
         """
         self.logger.info("正在调用 NodeClient.sort_user_under_node() 接口与 ArkID 服务端进行交互")
         json_body = {'user_uids': user_uids, 'subject': 'sort'}
-        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
+        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body)
 
-    def move_out_user_under_node(self, node_uid: str, user_uids: list, **params):
+    def move_out_user_under_node(self, node_uid: str, user_uids: list):
         """
         将这些人从该节点移除，并加到指定节点
         (``PATCH /siteapi/v1/node/<node_uid>/user/``)
@@ -510,9 +475,6 @@ class NodeClient(BaseClient):
             ``user_uids`` (*list*)
               用户唯一标识组成的列表
 
-            ``**params`` (*dict*)
-              用户的元信息，参数详情请参考接口文档
-
         **Examples**
 
         >>> nc = arkid_client.NodeClient(...)
@@ -524,13 +486,7 @@ class NodeClient(BaseClient):
         >>> ]
         >>> node = nc.move_out_user_under_node(node_uid, user_uids)
         >>> print('node is', node)
-
-        **External Documentation**
-
-        关于 `节点的元数据 \
-        <https://arkid.docs.apiary.io/#reference/node/7/1>`_
-        详情请参阅API文档。
         """
         self.logger.info("正在调用 NodeClient.move_out_user_under_node() 接口与 ArkID 服务端进行交互")
         json_body = {'user_uids': user_uids, 'subject': 'move_out'}
-        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body, params=params)
+        return self.patch(path='{}/user/'.format(node_uid), json_body=json_body)

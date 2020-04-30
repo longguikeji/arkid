@@ -79,7 +79,6 @@ def find_package_data(where=".", package="", exclude=None, exclude_directories=N
 
 
 PACKAGE_DATA = find_package_data(exclude_directories=STANDARD_EXCLUDE_DIRECTORIES, exclude=STANDARD_EXCLUDE)
-LONG_DESCRIPTION = io.open('README.md', encoding='utf-8').read()
 
 # Dynamically calculate the version based on allauth.VERSION.
 VERSION = __import__(BASE_DIR).version.__version__
@@ -90,7 +89,7 @@ METADATA = dict(
     author='longguikeji',
     author_email='rr97390483@dingtalk.com',
     description='ArkID SDk For Python',
-    long_description=LONG_DESCRIPTION,
+    long_description=open("README.rst", encoding='utf-8').read(),
     url='https://github.com/longguikeji/arkid-core',
     download_url='https://github.com/longguikeji/arkid-core',
     keywords='ArkID SDk Client',
@@ -99,11 +98,11 @@ METADATA = dict(
     include_package_data=True,
     dependency_links=["https://mirrors.aliyun.com/pypi/simple"],
     classifiers=[
-        'Development Status :: 1 - Production/Stable',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Internet :: WWW/HTTP',
-        'License :: OSI Approved :: GNU License',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',

@@ -85,24 +85,18 @@ class ArkIDClient(BaseClient):
         return _client
 
     @reload_service('user')
-    def query_user(self,
-                   keyword: str = None,
-                   wechat_unionid: str = None,
-                   page: int = 1,
-                   page_size: int = 30):
+    def query_user_list(self, keyword: str = None, wechat_unionid: str = None, page: int = 1, page_size: int = 30):
         """
-        调用底层 < UserClient > 实例的 query_user 方法
+        调用底层 < UserClient > 实例的 query_user_list 方法
         """
         self.__user_client = self.__init_client(UserClient)
-        return self.__user_client.query_user(keyword=keyword,
-                                             wechat_unionid=wechat_unionid,
-                                             page=page,
-                                             page_size=page_size)
+        return self.__user_client.query_user_list(keyword=keyword,
+                                                  wechat_unionid=wechat_unionid,
+                                                  page=page,
+                                                  page_size=page_size)
 
     @reload_service('user')
-    def query_isolated_user(self,
-                            page: int = 1,
-                            page_size: int = 30):
+    def query_isolated_user(self, page: int = 1, page_size: int = 30):
         """
         调用底层 < UserClient > 实例的 query_isolated_user 方法
         """
@@ -110,12 +104,12 @@ class ArkIDClient(BaseClient):
         return self.__user_client.query_isolated_user(page=page, page_size=page_size)
 
     @reload_service('user')
-    def query_specified_user(self, username: str):
+    def query_user(self, username: str):
         """
-        调用底层 < UserClient > 实例的 query_specified_user 方法
+        调用底层 < UserClient > 实例的 query_user 方法
         """
         self.__user_client = self.__init_client(UserClient)
-        return self.__user_client.query_specified_user(username)
+        return self.__user_client.query_user(username)
 
     @reload_service('user')
     def create_user(self, json_body: dict):
@@ -126,25 +120,23 @@ class ArkIDClient(BaseClient):
         return self.__user_client.create_user(json_body)
 
     @reload_service('user')
-    def update_specified_user(self, username: str, json_body: dict):
+    def update_user(self, username: str, json_body: dict):
         """
-        调用底层 < UserClient > 实例的 update_specified_user 方法
+        调用底层 < UserClient > 实例的 update_user 方法
         """
         self.__user_client = self.__init_client(UserClient)
-        return self.__user_client.update_specified_user(username, json_body)
+        return self.__user_client.update_user(username, json_body)
 
     @reload_service('user')
-    def delete_specified_user(self, username: str):
+    def delete_user(self, username: str):
         """
-        调用底层 < UserClient > 实例的 delete_specified_user 方法
+        调用底层 < UserClient > 实例的 delete_user 方法
         """
         self.__user_client = self.__init_client(UserClient)
-        return self.__user_client.delete_specified_user(username)
+        return self.__user_client.delete_user(username)
 
     @reload_service('org')
-    def query_own_org(self,
-                      page: int = 1,
-                      page_size: int = 30):
+    def query_own_org(self, page: int = 1, page_size: int = 30):
         """
         调用底层 < OrgClient > 实例的 query_own_org 方法
         """
@@ -152,12 +144,12 @@ class ArkIDClient(BaseClient):
         return self.__org_client.query_own_org(page=page, page_size=page_size)
 
     @reload_service('org')
-    def query_specified_org(self, oid: str):
+    def query_org(self, oid: str):
         """
-        调用底层 < OrgClient > 实例的 query_specified_org 方法
+        调用底层 < OrgClient > 实例的 query_org 方法
         """
         self.__org_client = self.__init_client(OrgClient)
-        return self.__org_client.query_specified_org(oid)
+        return self.__org_client.query_org(oid)
 
     @reload_service('org')
     def create_org(self, json_body: dict):
@@ -168,31 +160,28 @@ class ArkIDClient(BaseClient):
         return self.__org_client.create_org(json_body)
 
     @reload_service('org')
-    def delete_specified_org(self, oid: str):
+    def delete_org(self, oid: str):
         """
-        调用底层 < OrgClient > 实例的 delete_specified_org 方法
+        调用底层 < OrgClient > 实例的 delete_org 方法
         """
         self.__org_client = self.__init_client(OrgClient)
-        return self.__org_client.delete_specified_org(oid)
+        return self.__org_client.delete_org(oid)
 
     @reload_service('org')
-    def update_specified_org(self, oid: str, json_body: dict):
+    def update_org(self, oid: str, json_body: dict):
         """
-        调用底层 < OrgClient > 实例的 update_specified_org 方法
+        调用底层 < OrgClient > 实例的 update_org 方法
         """
         self.__org_client = self.__init_client(OrgClient)
-        return self.__org_client.update_specified_org(oid, json_body)
+        return self.__org_client.update_org(oid, json_body)
 
     @reload_service('org')
-    def query_orguser(self,
-                      oid: str,
-                      page: int = 1,
-                      page_size: int = 30):
+    def query_orguser_list(self, oid: str, page: int = 1, page_size: int = 30):
         """
-        调用底层 < OrgClient > 实例的 query_orguser 方法
+        调用底层 < OrgClient > 实例的 query_orguser_list 方法
         """
         self.__org_client = self.__init_client(OrgClient)
-        return self.__org_client.query_orguser(oid, page=page, page_size=page_size)
+        return self.__org_client.query_orguser_list(oid, page=page, page_size=page_size)
 
     @reload_service('org')
     def add_orguser(self, oid: str, usernames: list):
@@ -211,20 +200,20 @@ class ArkIDClient(BaseClient):
         return self.__org_client.delete_orguser(oid, usernames)
 
     @reload_service('org')
-    def query_specified_orguser(self, oid: str, username: str):
+    def query_orguser(self, oid: str, username: str):
         """
-        调用底层 < OrgClient > 实例的 query_specified_orguser 方法
+        调用底层 < OrgClient > 实例的 query_orguser 方法
         """
         self.__org_client = self.__init_client(OrgClient)
-        return self.__org_client.query_specified_orguser(oid, username)
+        return self.__org_client.query_orguser(oid, username)
 
     @reload_service('org')
-    def update_specified_orguser(self, oid: str, username: str, json_body: dict):
+    def update_orguser(self, oid: str, username: str, json_body: dict):
         """
-        调用底层 < OrgClient > 实例的 update_specified_orguser 方法
+        调用底层 < OrgClient > 实例的 update_orguser 方法
         """
         self.__org_client = self.__init_client(OrgClient)
-        return self.__org_client.update_specified_orguser(oid, username, json_body)
+        return self.__org_client.update_orguser(oid, username, json_body)
 
     @reload_service('org')
     def get_org_invitation_key(self, oid: str):
@@ -275,38 +264,36 @@ class ArkIDClient(BaseClient):
         return self.__org_client.switch_current_org(json_body)
 
     @reload_service('node')
-    def query_specified_node(self, node_uid: str):
+    def query_node(self, node_uid: str):
         """
-        调用底层 < NodeClient > 实例的 query_specified_node 方法
+        调用底层 < NodeClient > 实例的 query_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.query_specified_node(node_uid)
+        return self.__node_client.query_node(node_uid)
 
     @reload_service('node')
-    def view_specified_node(self, node_uid: str):
+    def view_node(self, node_uid: str):
         """
-        调用底层 < NodeClient > 实例的 view_specified_node 方法
+        调用底层 < NodeClient > 实例的 view_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.view_specified_node(node_uid)
+        return self.__node_client.view_node(node_uid)
 
     @reload_service('node')
-    def update_specified_node(self, node_uid: str, json_body: dict):
+    def update_node(self, node_uid: str, json_body: dict):
         """
-        调用底层 < NodeClient > 实例的 update_specified_node 方法
+        调用底层 < NodeClient > 实例的 update_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.update_specified_node(node_uid, json_body)
+        return self.__node_client.update_node(node_uid, json_body)
 
     @reload_service('node')
-    def delete_specified_node(self,
-                              node_uid: str,
-                              ignore_user: bool = True):
+    def delete_node(self, node_uid: str, ignore_user: bool = True):
         """
-        调用底层 < NodeClient > 实例的 delete_specified_node 方法
+        调用底层 < NodeClient > 实例的 delete_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.delete_specified_node(node_uid, ignore_user=ignore_user)
+        return self.__node_client.delete_node(node_uid, ignore_user=ignore_user)
 
     @reload_service('node')
     def get_node_tree_list(self, node_uid: str):
@@ -317,9 +304,7 @@ class ArkIDClient(BaseClient):
         return self.__node_client.get_node_tree_list(node_uid)
 
     @reload_service('node')
-    def get_node_tree(self,
-                      node_uid: str,
-                      user_required: bool = False):
+    def get_node_tree(self, node_uid: str, user_required: bool = False):
         """
         调用底层 < NodeClient > 实例的 get_node_tree 方法
         """
@@ -327,9 +312,7 @@ class ArkIDClient(BaseClient):
         return self.__node_client.get_node_tree(node_uid, user_required=user_required)
 
     @reload_service('node')
-    def view_node_tree(self,
-                       node_uid: str,
-                       user_required: bool = False):
+    def view_node_tree(self, node_uid: str, user_required: bool = False):
         """
         调用底层 < NodeClient > 实例的 view_node_tree 方法
         """
@@ -369,91 +352,66 @@ class ArkIDClient(BaseClient):
         return self.__node_client.sort_subnode(node_uid, node_uids)
 
     @reload_service('node')
-    def query_user_under_node(self, node_uid: str, name: str = None,
-                              username: str = None, mobile: str = None, email: str = None,
-                              before_created: str = None, after_created: str = None,
-                              before_last_active_time: str = None, after_last_active_time: str = None):
+    def query_user_under_node(self,
+                              node_uid: str,
+                              name: str = None,
+                              username: str = None,
+                              mobile: str = None,
+                              email: str = None,
+                              before_created: str = None,
+                              after_created: str = None,
+                              before_last_active_time: str = None,
+                              after_last_active_time: str = None):
         """
         调用底层 < NodeClient > 实例的 query_user_under_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.query_user_under_node(node_uid, name=name,
-                                                        username=username, mobile=mobile, email=email,
-                                                        before_created=before_created, after_created=after_created,
+        return self.__node_client.query_user_under_node(node_uid,
+                                                        name=name,
+                                                        username=username,
+                                                        mobile=mobile,
+                                                        email=email,
+                                                        before_created=before_created,
+                                                        after_created=after_created,
                                                         before_last_active_time=before_last_active_time,
                                                         after_last_active_time=after_last_active_time)
 
     @reload_service('node')
-    def add_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
-                            username: str = None, mobile: str = None, email: str = None,
-                            before_created: str = None, after_created: str = None,
-                            before_last_active_time: str = None, after_last_active_time: str = None):
+    def add_user_under_node(self, node_uid: str, user_uids: list):
         """
         调用底层 < NodeClient > 实例的 add_user_under_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.add_user_under_node(node_uid, user_uids, name=name,
-                                                      username=username, mobile=mobile, email=email,
-                                                      before_created=before_created, after_created=after_created,
-                                                      before_last_active_time=before_last_active_time,
-                                                      after_last_active_time=after_last_active_time)
+        return self.__node_client.add_user_under_node(node_uid, user_uids)
 
     @reload_service('node')
-    def delete_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
-                               username: str = None, mobile: str = None, email: str = None,
-                               before_created: str = None, after_created: str = None,
-                               before_last_active_time: str = None, after_last_active_time: str = None):
+    def delete_user_under_node(self, node_uid: str, user_uids: list):
         """
         调用底层 < NodeClient > 实例的 delete_user_under_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.delete_user_under_node(node_uid, user_uids, name=name,
-                                                         username=username, mobile=mobile, email=email,
-                                                         before_created=before_created, after_created=after_created,
-                                                         before_last_active_time=before_last_active_time,
-                                                         after_last_active_time=after_last_active_time)
+        return self.__node_client.delete_user_under_node(node_uid, user_uids)
 
     @reload_service('node')
-    def sort_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
-                             username: str = None, mobile: str = None, email: str = None,
-                             before_created: str = None, after_created: str = None,
-                             before_last_active_time: str = None, after_last_active_time: str = None):
+    def sort_user_under_node(self, node_uid: str, user_uids: list):
         """
         调用底层 < NodeClient > 实例的 sort_user_under_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.sort_user_under_node(node_uid, user_uids, name=name,
-                                                       username=username, mobile=mobile, email=email,
-                                                       before_created=before_created, after_created=after_created,
-                                                       before_last_active_time=before_last_active_time,
-                                                       after_last_active_time=after_last_active_time)
+        return self.__node_client.sort_user_under_node(node_uid, user_uids)
 
     @reload_service('node')
-    def override_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
-                                 username: str = None, mobile: str = None, email: str = None,
-                                 before_created: str = None, after_created: str = None,
-                                 before_last_active_time: str = None, after_last_active_time: str = None):
+    def override_user_under_node(self, node_uid: str, user_uids: list):
         """
         调用底层 < NodeClient > 实例的 override_user_under_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.override_user_under_node(node_uid, user_uids, name=name,
-                                                           username=username, mobile=mobile, email=email,
-                                                           before_created=before_created, after_created=after_created,
-                                                           before_last_active_time=before_last_active_time,
-                                                           after_last_active_time=after_last_active_time)
+        return self.__node_client.override_user_under_node(node_uid, user_uids)
 
     @reload_service('node')
-    def move_out_user_under_node(self, node_uid: str, user_uids: list, name: str = None,
-                                 username: str = None, mobile: str = None, email: str = None,
-                                 before_created: str = None, after_created: str = None,
-                                 before_last_active_time: str = None, after_last_active_time: str = None):
+    def move_out_user_under_node(self, node_uid: str, user_uids: list):
         """
         调用底层 < NodeClient > 实例的 move_out_user_under_node 方法
         """
         self.__node_client = self.__init_client(NodeClient)
-        return self.__node_client.move_out_user_under_node(node_uid, user_uids, name=name,
-                                                           username=username, mobile=mobile, email=email,
-                                                           before_created=before_created, after_created=after_created,
-                                                           before_last_active_time=before_last_active_time,
-                                                           after_last_active_time=after_last_active_time)
+        return self.__node_client.move_out_user_under_node(node_uid, user_uids)

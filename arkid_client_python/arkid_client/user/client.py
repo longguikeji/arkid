@@ -28,7 +28,7 @@ class UserClient(BaseClient):
     def __init__(self, base_url, authorizer=None, **kwargs):
         BaseClient.__init__(self, base_url, "user", authorizer=authorizer, **kwargs)
 
-    def query_user(self, **params):
+    def query_user_list(self, **params):
         """
         获取用户信息列表
         (``GET /siteapi/v1/user/``)
@@ -88,7 +88,7 @@ class UserClient(BaseClient):
         self.logger.info("正在调用 UserClient.query_isolated_user() 接口与 ArkID 服务端进行交互")
         return self.get(path='isolated/', params=params)
 
-    def query_specified_user(self, username: str):
+    def query_user(self, username: str):
         """
         获取指定用户的信息
         (``GET /siteapi/v1/user/<username>/``)
@@ -101,11 +101,11 @@ class UserClient(BaseClient):
         **Examples**
 
         >>> uc = arkid_client.UserClient(...)
-        >>> user = uc.query_isolated_user(...)
+        >>> user = uc.query_user(...)
         >>> print(user['username'], 'id: '
         >>>       ,user['id'])
         """
-        self.logger.info("正在调用 UserClient.query_specified_user() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 UserClient.query_user() 接口与 ArkID 服务端进行交互")
         return self.get(path='{}/'.format(username))
 
     def create_user(self, json_body: dict):
@@ -151,7 +151,7 @@ class UserClient(BaseClient):
         self.logger.info("正在调用 UserClient.create_user() 接口与 ArkID 服务端进行交互")
         return self.post(path='', json_body=json_body)
 
-    def update_specified_user(self, username: str, json_body: dict):
+    def update_user(self, username: str, json_body: dict):
         """
         修改指定用户的信息
         (``PATCH /siteapi/v1/user/<username>``)
@@ -171,7 +171,7 @@ class UserClient(BaseClient):
         >>>   "password": "example",
         >>>   "private_email": "example@org.com"
         >>> }
-        >>> user = uc.update_specified_user(username, query_data)
+        >>> user = uc.update_user(username, query_data)
         >>> print(user['username'], 'id: '
         >>>           ,user['id'])
 
@@ -181,10 +181,10 @@ class UserClient(BaseClient):
         <https://arkid.docs.apiary.io/#reference/user/2/1>`_
         详情请参阅API文档。
         """
-        self.logger.info("正在调用 UserClient.update_specified_user() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 UserClient.update_user() 接口与 ArkID 服务端进行交互")
         return self.patch(path='{}/'.format(username), json_body=json_body)
 
-    def delete_specified_user(self, username: str):
+    def delete_user(self, username: str):
         """
         删除指定用户的信息
         (``DELETE /siteapi/v1/user/<username>``)
@@ -197,6 +197,7 @@ class UserClient(BaseClient):
         **Examples**
 
         >>> uc = arkid_client.UserClient(...)
-        >>> uc.delete_specified_user(username)
+        >>> uc.delete_user(username)
         """
+        self.logger.info("正在调用 UserClient.delete_user() 接口与 ArkID 服务端进行交互")
         return self.delete(path='{}/'.format(username))

@@ -60,7 +60,7 @@ class OrgClient(BaseClient):
         self.logger.info("正在调用 OrgClient.query_own_org() 接口与 ArkID 服务端进行交互")
         return self.get(path='', params=params)
 
-    def query_specified_org(self, oid: str):
+    def query_org(self, oid: str):
         """
         查看指定组织的信息
         (``GET /siteapi/v1/org/<oid>/``)
@@ -73,11 +73,11 @@ class OrgClient(BaseClient):
         **Examples**
 
         >>> oc = arkid_client.OrgClient(...)
-        >>> org = oc.query_specified_org(oid)
+        >>> org = oc.query_org(oid)
         >>> print(org['oid'], 'name: '
         >>>       ,org['name'])
         """
-        self.logger.info("正在调用 OrgClient.query_specified_org() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 OrgClient.query_org() 接口与 ArkID 服务端进行交互")
         return self.get(path='{}/'.format(oid))
 
     def create_org(self, json_body: dict):
@@ -109,7 +109,7 @@ class OrgClient(BaseClient):
         self.logger.info("正在调用 OrgClient.create_org() 接口与 ArkID 服务端进行交互")
         return self.post(path='', json_body=json_body)
 
-    def delete_specified_org(self, oid: str):
+    def delete_org(self, oid: str):
         """
         删除指定组织的信息
         (``DELETE /siteapi/v1/org/<oid>/``)
@@ -122,12 +122,12 @@ class OrgClient(BaseClient):
         **Examples**
 
         >>> oc = arkid_client.OrgClient(...)
-        >>> oc.delete_specified_org(oid)
+        >>> oc.delete_org(oid)
         """
-        self.logger.info("正在调用 OrgClient.delete_specified_org() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 OrgClient.delete_org() 接口与 ArkID 服务端进行交互")
         return self.delete(path='{}/'.format(oid))
 
-    def update_specified_org(self, oid: str, json_body: dict):
+    def update_org(self, oid: str, json_body: dict):
         """
         修改指定组织的信息
         (``PATCH /siteapi/v1/org/<oid>/``)
@@ -146,7 +146,7 @@ class OrgClient(BaseClient):
         >>> org_data = {
         >>>   "name": "example",
         >>> }
-        >>> org = oc.update_specified_org(oid, org_data)
+        >>> org = oc.update_org(oid, org_data)
         >>> print(org['oid'], 'name: '
         >>>       ,org['name'])
 
@@ -156,10 +156,10 @@ class OrgClient(BaseClient):
         <https://arkid.docs.apiary.io/#reference/org/1/2>`_
         详情请参阅API文档。
         """
-        self.logger.info("正在调用 OrgClient.update_specified_org() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 OrgClient.update_org() 接口与 ArkID 服务端进行交互")
         return self.patch(path='{}/'.format(oid), json_body=json_body)
 
-    def query_orguser(self, oid: str, **params):
+    def query_orguser_list(self, oid: str, **params):
         """
         查看特定组织的成员信息
         (``GET /siteapi/v1/org/<oid>/user/``)
@@ -178,11 +178,11 @@ class OrgClient(BaseClient):
         **Examples**
 
         >>> oc = arkid_client.OrgClient(...)
-        >>> org = oc.query_orguser(oid)
+        >>> org = oc.query_orguser_list(oid)
         >>> print(org['oid'], 'name: '
         >>>       ,org['name'])
         """
-        self.logger.info("正在调用 OrgClient.query_orguser() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 OrgClient.query_orguser_list() 接口与 ArkID 服务端进行交互")
         return self.get(path='{}/user/'.format(oid), params=params)
 
     def add_orguser(self, oid: str, usernames: list):
@@ -245,7 +245,7 @@ class OrgClient(BaseClient):
         json_body = {'subject': 'delete', 'usernames': usernames}
         return self.patch(path='{}/user/'.format(oid), json_body=json_body)
 
-    def query_specified_orguser(self, oid: str, username: str):
+    def query_orguser(self, oid: str, username: str):
         """
         查看指定组织的指定成员的信息
         (``GET /siteapi/v1/org/<oid>/user/<username>/``)
@@ -261,13 +261,13 @@ class OrgClient(BaseClient):
         **Examples**
 
         >>> oc = arkid_client.OrgClient(...)
-        >>> user = oc.query_specified_orguser(oid, username)
+        >>> user = oc.query_orguser(oid, username)
         >>> print('user is', user)
         """
-        self.logger.info("正在调用 OrgClient.query_specified_orguser() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 OrgClient.query_orguser() 接口与 ArkID 服务端进行交互")
         return self.get(path='{}/user/{}/'.format(oid, username))
 
-    def update_specified_orguser(self, oid: str, username: str, json_body: dict):
+    def update_orguser(self, oid: str, username: str, json_body: dict):
         """
         编辑指定组织的指定成员的信息
         (``PATCH /siteapi/v1/org/<oid>/user/<username>/``)
@@ -303,7 +303,7 @@ class OrgClient(BaseClient):
         >>> user_data = {
         >>>   "email": "example@org.com",
         >>> }
-        >>> user = oc.update_specified_orguser(oid, username, user_data)
+        >>> user = oc.update_orguser(oid, username, user_data)
         >>> print(user['id'], 'name: '
         >>>       ,user['name'])
 
@@ -313,7 +313,7 @@ class OrgClient(BaseClient):
         <https://arkid.docs.apiary.io/#reference/org/3/1>`_
         详情请参阅API文档。
         """
-        self.logger.info("正在调用 OrgClient.update_specified_orguser() 接口与 ArkID 服务端进行交互")
+        self.logger.info("正在调用 OrgClient.update_orguser() 接口与 ArkID 服务端进行交互")
         return self.patch(path='{}/user/{}/'.format(oid, username), json_body=json_body)
 
     def get_org_invitation_key(self, oid: str):
