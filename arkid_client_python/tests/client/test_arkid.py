@@ -64,6 +64,13 @@ class TestArkIDClient(unittest.TestCase):
         self.assertEqual(response.http_status, 200)
 
     @httpretty.activate
+    def test_query_specified_perm(self):
+        """测试获取用户权限详情"""
+        register_api_route('user', BASE_URL, 'example/perm/example/', httpretty.GET, body=self.dict_body)
+        response = self.client.query_specified_perm(username='example', uid='example')
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
     def test_query_own_org(self):
         """测试查询用户所在的组织"""
         register_api_route('org', BASE_URL, '', body=self.list_body)
@@ -159,20 +166,6 @@ class TestArkIDClient(unittest.TestCase):
         """测试使用邀请密钥加入指定组织"""
         register_api_route('org', BASE_URL, 'example/invitation/example/', httpretty.POST, body=self.dict_body)
         response = self.client.join_org_by_invitation_key(oid='example', invite_link_key='example')
-        self.assertEqual(response.text, self.dict_body)
-
-    @httpretty.activate
-    def test_get_current_org(self):
-        """测试获取用户当前所在组织的信息"""
-        register_api_route('ucenter', BASE_URL, 'org/', body=self.dict_body)
-        response = self.client.get_current_org()
-        self.assertEqual(response.text, self.dict_body)
-
-    @httpretty.activate
-    def test_switch_current_org(self):
-        """测试切换用户当前所在的组织"""
-        register_api_route('ucenter', BASE_URL, 'org/', httpretty.PUT, body=self.dict_body)
-        response = self.client.switch_current_org(json_body={})
         self.assertEqual(response.text, self.dict_body)
 
     @httpretty.activate
@@ -286,3 +279,214 @@ class TestArkIDClient(unittest.TestCase):
         register_api_route('node', BASE_URL, 'example/user/', httpretty.PATCH, body=self.dict_body)
         response = self.client.move_out_user_under_node(node_uid='example', user_uids=[])
         self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_view_perm(self):
+        """测试获取用户权限"""
+        register_api_route('ucenter', BASE_URL, 'perm/', body=self.list_body)
+        response = self.client.view_perm()
+        self.assertEqual(response.text, self.list_body)
+
+    @httpretty.activate
+    def test_view_profile(self):
+        """测试获取用户自身信息"""
+        register_api_route('ucenter', BASE_URL, 'profile/', body=self.dict_body)
+        response = self.client.view_profile()
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_view_current_org(self):
+        """测试获取用户当前所在组织的信息"""
+        register_api_route('ucenter', BASE_URL, 'org/', body=self.dict_body)
+        response = self.client.view_current_org()
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_switch_current_org(self):
+        """测试切换用户当前所在的组织"""
+        register_api_route('ucenter', BASE_URL, 'org/', httpretty.PUT, body=self.dict_body)
+        response = self.client.switch_current_org(json_body={})
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_query_apps(self):
+        """测试普通用户获取可见应用列表"""
+        register_api_route('ucenter', BASE_URL, 'apps/', body=self.list_body)
+        response = self.client.query_apps()
+        self.assertEqual(response.text, self.list_body)
+
+    @httpretty.activate
+    def test_get_sms_captcha(self):
+        """测试获取短信验证码"""
+        actions_map = {
+            'register': 'sms/register/',
+            'login': 'sms/login/',
+            'reset_password': 'sms/reset_password/',
+            'activate_user': 'sms/activate_user/',
+            'update_mobile': 'sms/update_mobile/',
+            'general': 'sms/',
+        }
+        for key, value in actions_map.items():
+            register_api_route('infrastructure', BASE_URL, value, httpretty.POST)
+            response = self.client.get_sms_captcha(key, 'example')
+            self.assertEqual(response.http_status, 200)
+
+    @httpretty.activate
+    def test_verify_sms_captcha(self):
+        """测试验证短信验证码"""
+        actions_map = {
+            'register': 'sms/register/',
+            'login': 'sms/login/',
+            'reset_password': 'sms/reset_password/',
+            'activate_user': 'sms/activate_user/',
+            'update_mobile': 'sms/update_mobile/',
+            'general': 'sms/',
+        }
+        for key, value in actions_map.items():
+            register_api_route('infrastructure', BASE_URL, value)
+            response = self.client.verify_sms_captcha(key, 'example', 'example')
+            self.assertEqual(response.http_status, 200)
+
+    @httpretty.activate
+    def test_query_all_perm(self):
+        """测试获取所有权限"""
+        register_api_route('perm', BASE_URL, '', body=self.list_body)
+        response = self.client.query_all_perm()
+        self.assertEqual(response.text, self.list_body)
+
+    @httpretty.activate
+    def test_create_perm(self):
+        """测试创建权限"""
+        register_api_route('perm', BASE_URL, '', httpretty.POST, body=self.dict_body)
+        response = self.client.create_perm(json_body={})
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_query_perm(self):
+        """测试查询指定权限"""
+        register_api_route('perm', BASE_URL, 'example/', body=self.dict_body)
+        response = self.client.query_perm(uid='example')
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_update_perm(self):
+        """测试更新指定权限"""
+        register_api_route('perm', BASE_URL, 'example/', httpretty.PATCH, body=self.dict_body)
+        response = self.client.update_perm(uid='example', json_body={})
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_query_perm_owner(self):
+        """测试获取某权限指定类型的所有者"""
+        register_api_route('perm', BASE_URL, 'example/owner/', body=self.dict_body)
+        response = self.client.query_perm_owner(uid='example')
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_update_perm_owner(self):
+        """测试获取某权限指定类型的所有者"""
+        register_api_route('perm', BASE_URL, 'example/owner/', httpretty.PATCH, body=self.dict_body)
+        response = self.client.update_perm_owner(uid='example')
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_query_specified_user_perm(self):
+        """测试获取用户所有权限"""
+        register_api_route('perm', BASE_URL, 'user/example/', body=self.list_body)
+        response = self.client.query_specified_user_perm('example')
+        self.assertEqual(response.text, self.list_body)
+
+    @httpretty.activate
+    def update_specified_user_perm(self):
+        """测试更新用户所有权限"""
+        register_api_route('perm', BASE_URL, 'user/example/', httpretty.PATCH, body=self.dict_body)
+        response = self.client.update_specified_user_perm('example', json_body={})
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_query_dept_perm(self):
+        """测试获取部门所有权限"""
+        register_api_route('perm', BASE_URL, 'dept/example/', body=self.list_body)
+        response = self.client.query_dept_perm('example')
+        self.assertEqual(response.text, self.list_body)
+
+    @httpretty.activate
+    def test_update_dept_perm(self):
+        """测试更新部门权限"""
+        register_api_route('perm', BASE_URL, 'dept/example/', httpretty.PATCH, body=self.dict_body)
+        response = self.client.update_dept_perm('example', json_body={})
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_query_group_perm(self):
+        """测试获取组所有权限"""
+        register_api_route('perm', BASE_URL, 'group/example/', body=self.list_body)
+        response = self.client.query_group_perm('example')
+        self.assertEqual(response.text, self.list_body)
+
+    @httpretty.activate
+    def test_update_group_perm(self):
+        """测试获更新组权限"""
+        register_api_route('perm', BASE_URL, 'group/example/', httpretty.PATCH, body=self.dict_body)
+        response = self.client.update_group_perm('example', json_body={})
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_query_node_perm(self):
+        """测试获取节点所有权限"""
+        register_api_route('perm', BASE_URL, 'node/example/', body=self.list_body)
+        response = self.client.query_node_perm('example')
+        self.assertEqual(response.text, self.list_body)
+
+    @httpretty.activate
+    def test_update_node_perm(self):
+        """测试更新节点所有权限"""
+        register_api_route('perm', BASE_URL, 'node/example/', httpretty.PATCH, body=self.dict_body)
+        response = self.client.update_node_perm('example', json_body={})
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_query_app_list(self):
+        """测试获取应用信息列表"""
+        register_api_route('org', BASE_URL, 'example/app', body=self.list_body)
+        response = self.client.query_app_list('example')
+        self.assertEqual(response.text, self.list_body)
+
+    @httpretty.activate
+    def test_create_app(self):
+        """测试创建应用"""
+        register_api_route('org', BASE_URL, 'example/app', httpretty.POST, body=self.dict_body)
+        response = self.client.create_app('example', json_body={})
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_query_app(self):
+        """测试获取特定应用"""
+        register_api_route('org', BASE_URL, 'example/app/example/', body=self.dict_body)
+        response = self.client.query_app('example', 'example')
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_update_app(self):
+        """测试更新特定应用"""
+        register_api_route('org', BASE_URL, 'example/app/example/', httpretty.PATCH, body=self.dict_body)
+        response = self.client.update_app('example', 'example', json_body={})
+        self.assertEqual(response.text, self.dict_body)
+
+    @httpretty.activate
+    def test_delete_app(self):
+        """测试删除特定应用"""
+        register_api_route('org', BASE_URL, 'example/app/example/', httpretty.DELETE)
+        response = self.client.delete_app('example', 'example')
+        self.assertEqual(response.http_status, 200)
+
+    @httpretty.activate
+    def test_register_app(self):
+        """测试注册应用"""
+        protocols_map = {
+            'oauth': 'oauth/',
+        }
+        for key, value in protocols_map.items():
+            register_api_route('org', BASE_URL, 'example/app/example/{}/'.format(value), httpretty.POST, body=self.dict_body)
+            response = self.client.register_app('example', 'example', key, json_body={})
+            self.assertEqual(response.text, self.dict_body)

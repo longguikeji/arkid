@@ -1,0 +1,555 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="../_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="../_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="../_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>权限服务客户端 &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="基础设施服务客户端" href="infrastructure.html" />
+    <link rel="prev" title="用户中心服务客户端" href="ucenter.html" />
+<link rel="stylesheet" href="../_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="infrastructure.html" title="基础设施服务客户端"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ucenter.html" title="用户中心服务客户端"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../clients.html" accesskey="U">服务客户端</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    ../index.html" class="text-logo"><img src="../_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Client 教程</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../clients.html">服务客户端</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="auth.html">认证服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user.html">用户服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="org.html">组织服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="node.html">节点服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ucenter.html">用户中心服务客户端</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">权限服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="infrastructure.html">基础设施服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app.html">应用服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arkid.html">ArkID 客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="base.html">基类客户端</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="../search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="../index.html">Docs</a></li>
+              
+                <li><a href="../clients.html">服务客户端</a></li>
+              
+              <li>权限服务客户端</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <span class="target" id="module-arkid_client.perm"></span><div class="section" id="id1">
+<h1>权限服务客户端<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="arkid_client.perm.PermClient">
+<em class="property">class </em><code class="sig-prename descclassname">arkid_client.perm.</code><code class="sig-name descname">PermClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_url</span></em>, <em class="sig-param"><span class="n">authorizer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="base.html#arkid_client.base.BaseClient" title="arkid_client.base.BaseClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">arkid_client.base.BaseClient</span></code></a></p>
+<p>权限管理客户端，
+用于与 ArkID 服务端权限管理相关接口的访问操作。</p>
+<p><strong>Methods</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.query_all_perm" title="arkid_client.perm.PermClient.query_all_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_all_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.create_perm" title="arkid_client.perm.PermClient.create_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.query_perm" title="arkid_client.perm.PermClient.query_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.update_perm" title="arkid_client.perm.PermClient.update_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.query_perm_owner" title="arkid_client.perm.PermClient.query_perm_owner"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_perm_owner()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.update_perm_owner" title="arkid_client.perm.PermClient.update_perm_owner"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_perm_owner()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.query_specified_user_perm" title="arkid_client.perm.PermClient.query_specified_user_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_specified_user_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.update_specified_user_perm" title="arkid_client.perm.PermClient.update_specified_user_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_specified_user_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.query_dept_perm" title="arkid_client.perm.PermClient.query_dept_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_dept_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.update_dept_perm" title="arkid_client.perm.PermClient.update_dept_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_dept_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.query_group_perm" title="arkid_client.perm.PermClient.query_group_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_group_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.update_group_perm" title="arkid_client.perm.PermClient.update_group_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_group_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.query_node_perm" title="arkid_client.perm.PermClient.query_node_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_node_perm()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.perm.PermClient.update_node_perm" title="arkid_client.perm.PermClient.update_node_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_node_perm()</span></code></a></p></li>
+</ul>
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.query_all_perm">
+<code class="sig-name descname">query_all_perm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.query_all_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.query_all_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取所有权限
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/perm/</span></code>)</p>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">query_perm</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.create_perm">
+<code class="sig-name descname">create_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.create_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.create_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>创建权限
+(<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/siteapi/v1/perm/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">json_body</span></code> (<em>dict</em>)</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">scope</span></code> (<em>str</em>)</dt><dd><p>应用 <code class="docutils literal notranslate"><span class="pre">uid</span></code></p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">name</span></code> (<em>str</em>)</dt><dd><p>应用名称</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">create_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.query_perm">
+<code class="sig-name descname">query_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.query_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.query_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取指定权限
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/perm/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uid</span></code> (<em>str</em>)</dt><dd><p>权限唯一标识</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">query_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.update_perm">
+<code class="sig-name descname">update_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.update_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.update_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>更新指定权限
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/perm/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uid</span></code> (<em>str</em>)</dt><dd><p>权限唯一标识</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">update_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.query_perm_owner">
+<code class="sig-name descname">query_perm_owner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.query_perm_owner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.query_perm_owner" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取某权限指定类型的所有者
+该接口内的 <code class="docutils literal notranslate"><span class="pre">uid</span></code> ，对于 <code class="docutils literal notranslate"><span class="pre">user</span></code> 为 <code class="docutils literal notranslate"><span class="pre">username</span></code>，对于 <code class="docutils literal notranslate"><span class="pre">node</span></code> 为 <code class="docutils literal notranslate"><span class="pre">node_uid</span></code>
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/perm/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uid</span></code> (<em>str</em>)</dt><dd><p>权限唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">owner_subject</span></code> (<em>str</em>)</dt><dd><p>权限所有者类型</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">value</span></code> (<em>bool</em>)</dt><dd><p>最终判定结果</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">status</span></code> (<em>int</em>)</dt><dd><p>授权状态</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">query_perm_owner</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>External Documentation</strong></p>
+<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/perm/1/0">params 参数</a>
+详情请参阅API文档。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.update_perm_owner">
+<code class="sig-name descname">update_perm_owner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.update_perm_owner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.update_perm_owner" title="Permalink to this definition">¶</a></dt>
+<dd><p>更新某权限指定类型的所有者，仅按提供的数据做局部修改
+该接口内的 <code class="docutils literal notranslate"><span class="pre">uid</span></code> ，对于 <code class="docutils literal notranslate"><span class="pre">user</span></code> 为 <code class="docutils literal notranslate"><span class="pre">username</span></code>，对于 <code class="docutils literal notranslate"><span class="pre">node</span></code> 为 <code class="docutils literal notranslate"><span class="pre">node_uid</span></code>
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/perm/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uid</span></code> (<em>str</em>)</dt><dd><p>权限唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">owner_subject</span></code> (<em>str</em>)</dt><dd><p>权限所有者类型</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">value</span></code> (<em>bool</em>)</dt><dd><p>最终判定结果</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">status</span></code> (<em>int</em>)</dt><dd><p>授权状态</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">update_perm_owner</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>External Documentation</strong></p>
+<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/perm/1/0">params 参数</a>
+详情请参阅API文档。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.query_specified_user_perm">
+<code class="sig-name descname">query_specified_user_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.query_specified_user_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.query_specified_user_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取用户所有权限,包括所有授权、未授权的权限
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/perm/user/&lt;username&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">username</span></code> (<em>str</em>)</dt><dd><p>用户唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action</span></code> (<em>str</em>)</dt><dd><p>特定操作</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action_except</span></code> (<em>bool</em>)</dt><dd><p>排除某操作，惯用``action_except=access``获取应用内权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">scope</span></code> (<em>int</em>)</dt><dd><p>与应用``uid``对应，惯用该字段获取某应用下权限</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">query_specified_user_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.update_specified_user_perm">
+<code class="sig-name descname">update_specified_user_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.update_specified_user_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.update_specified_user_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>更新用户权限
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/perm/user/&lt;username&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">username</span></code> (<em>str</em>)</dt><dd><p>用户唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action</span></code> (<em>str</em>)</dt><dd><p>特定操作</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action_except</span></code> (<em>bool</em>)</dt><dd><p>排除某操作，惯用``action_except=access``获取应用内权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">scope</span></code> (<em>int</em>)</dt><dd><p>与应用``uid``对应，惯用该字段获取某应用下权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">json_body</span></code> (<em>int</em>)</dt><dd><p>权限的部分元信息，详见接口文档</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">update_specified_user_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>External Documentation</strong></p>
+<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/perm/3/1">权限的元数据</a>
+详情请参阅API文档。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.query_dept_perm">
+<code class="sig-name descname">query_dept_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.query_dept_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.query_dept_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取部门所有权限,包括所有授权、未授权的权限
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/perm/dept/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uid</span></code> (<em>str</em>)</dt><dd><p>部门唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action</span></code> (<em>str</em>)</dt><dd><p>特定操作</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action_except</span></code> (<em>bool</em>)</dt><dd><p>排除某操作，惯用``action_except=access``获取应用内权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">scope</span></code> (<em>int</em>)</dt><dd><p>与应用``uid``对应，惯用该字段获取某应用下权限</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">query_dept_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.update_dept_perm">
+<code class="sig-name descname">update_dept_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.update_dept_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.update_dept_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取部门所有权限,包括所有授权、未授权的权限
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/perm/dept/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uid</span></code> (<em>str</em>)</dt><dd><p>部门唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action</span></code> (<em>str</em>)</dt><dd><p>特定操作</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action_except</span></code> (<em>bool</em>)</dt><dd><p>排除某操作，惯用``action_except=access``获取应用内权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">scope</span></code> (<em>int</em>)</dt><dd><p>与应用``uid``对应，惯用该字段获取某应用下权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">json_body</span></code> (<em>dict</em>)</dt><dd><p>权限的元信息,详情参见接口文档</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">update_dept_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.query_group_perm">
+<code class="sig-name descname">query_group_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.query_group_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.query_group_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取组所有权限,包括所有授权、未授权的权限
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/perm/group/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uid</span></code> (<em>str</em>)</dt><dd><p>组的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action</span></code> (<em>str</em>)</dt><dd><p>特定操作</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action_except</span></code> (<em>bool</em>)</dt><dd><p>排除某操作，惯用``action_except=access``获取应用内权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">scope</span></code> (<em>int</em>)</dt><dd><p>与应用``uid``对应，惯用该字段获取某应用下权限</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">query_group_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.update_group_perm">
+<code class="sig-name descname">update_group_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.update_group_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.update_group_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取组所有权限,包括所有授权、未授权的权限
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/perm/group/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">uid</span></code> (<em>str</em>)</dt><dd><p>组唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action</span></code> (<em>str</em>)</dt><dd><p>特定操作</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action_except</span></code> (<em>bool</em>)</dt><dd><p>排除某操作，惯用``action_except=access``获取应用内权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">scope</span></code> (<em>int</em>)</dt><dd><p>与应用``uid``对应，惯用该字段获取某应用下权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">json_body</span></code> (<em>dict</em>)</dt><dd><p>权限的元信息,详情参见接口文档</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">update_group_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.query_node_perm">
+<code class="sig-name descname">query_node_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.query_node_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.query_node_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取节点所有权限,包括所有授权、未授权的权限
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/perm/node/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">node_uid</span></code> (<em>str</em>)</dt><dd><p>节点的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action</span></code> (<em>str</em>)</dt><dd><p>特定操作</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action_except</span></code> (<em>bool</em>)</dt><dd><p>排除某操作，惯用``action_except=access``获取应用内权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">scope</span></code> (<em>int</em>)</dt><dd><p>与应用``uid``对应，惯用该字段获取某应用下权限</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">query_node_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.perm.PermClient.update_node_perm">
+<code class="sig-name descname">update_node_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/perm/client.html#PermClient.update_node_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.perm.PermClient.update_node_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取组所有权限,包括所有授权、未授权的权限
+(<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/perm/node/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">node_uid</span></code> (<em>str</em>)</dt><dd><p>节点的唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action</span></code> (<em>str</em>)</dt><dd><p>特定操作</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">action_except</span></code> (<em>bool</em>)</dt><dd><p>排除某操作，惯用``action_except=access``获取应用内权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">scope</span></code> (<em>int</em>)</dt><dd><p>与应用``uid``对应，惯用该字段获取某应用下权限</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">json_body</span></code> (<em>dict</em>)</dt><dd><p>权限的元信息,详情参见接口文档</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">PermClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">update_node_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+            
+  <div class="footer-relations">
+    
+      <div class="pull-left">
+        <a class="btn btn-default" href="ucenter.html" title="previous chapter (use the left arrow)">用户中心服务客户端</a>
+      </div>
+    
+      <div class="pull-right">
+        <a class="btn btn-default" href="infrastructure.html" title="next chapter (use the right arrow)">基础设施服务客户端</a>
+      </div>
+    </div>
+    <div class="clearer"></div>
+  
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="infrastructure.html" title="基础设施服务客户端"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ucenter.html" title="用户中心服务客户端"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../clients.html" >服务客户端</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="../_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

@@ -16,10 +16,11 @@ class UserClient(BaseClient):
 
     *  :py:meth:`.query_user`
     *  :py:meth:`.query_isolated_user`
-    *  :py:meth:`.query_specified_user`
+    *  :py:meth:`.query_user`
     *  :py:meth:`.create_user`
-    *  :py:meth:`.update_specified_user`
-    *  :py:meth:`.delete_specified_user`
+    *  :py:meth:`.update_user`
+    *  :py:meth:`.delete_user`
+    *  :py:meth:`.query_specified_perm`
     """
     allowed_authorizer_types = [BasicAuthorizer]
     error_class = UserAPIError
@@ -187,7 +188,7 @@ class UserClient(BaseClient):
     def delete_user(self, username: str):
         """
         删除指定用户的信息
-        (``DELETE /siteapi/v1/user/<username>``)
+        (``DELETE /siteapi/v1/user/<username>/``)
 
         **Parameters**:
 
@@ -201,3 +202,25 @@ class UserClient(BaseClient):
         """
         self.logger.info("正在调用 UserClient.delete_user() 接口与 ArkID 服务端进行交互")
         return self.delete(path='{}/'.format(username))
+
+    def query_specified_perm(self, username: str, uid: str):
+        """
+        获取用户权限详情，包括权限来源
+        (``GET /siteapi/v1/user/<username>/perm/<uid>/``)
+
+        **Parameters**:
+
+            ``username`` (*str*)
+              用户唯一标识
+
+            ``uid`` (*str*)
+              权限唯一标识
+
+        **Examples**
+
+        >>> pc = arkid_client.UserClient(...)
+        >>> perm = pc.query_specified_perm(...)
+        >>> print('perm is', perm)
+        """
+        self.logger.info("正在调用 UserClient.query_specified_perm() 接口与 ArkID 服务端进行交互")
+        return self.get(path='{}/perm/{}/'.format(username, uid))

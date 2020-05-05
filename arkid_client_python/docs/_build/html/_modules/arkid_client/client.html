@@ -106,7 +106,15 @@
 <span class="kn">from</span> <span class="nn">arkid_client.base</span> <span class="kn">import</span> <span class="n">BaseClient</span><span class="p">,</span> <span class="n">reload_service</span>
 <span class="kn">from</span> <span class="nn">arkid_client.authorizers</span> <span class="kn">import</span> <span class="n">BasicAuthorizer</span><span class="p">,</span> <span class="n">NullAuthorizer</span>
 <span class="kn">from</span> <span class="nn">arkid_client.exceptions</span> <span class="kn">import</span> <span class="n">ArkIDError</span>
-<span class="kn">from</span> <span class="nn">arkid_client</span> <span class="kn">import</span> <span class="p">(</span><span class="n">UserClient</span><span class="p">,</span> <span class="n">OrgClient</span><span class="p">,</span> <span class="n">NodeClient</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">arkid_client</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UserClient</span><span class="p">,</span>
+    <span class="n">OrgClient</span><span class="p">,</span>
+    <span class="n">NodeClient</span><span class="p">,</span>
+    <span class="n">UcenterClient</span><span class="p">,</span>
+    <span class="n">PermClient</span><span class="p">,</span>
+    <span class="n">AppClient</span><span class="p">,</span>
+    <span class="n">InfrastructureClient</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="ArkIDClient"><a class="viewcode-back" href="../../clients/arkid.html#arkid_client.client.ArkIDClient">[docs]</a><span class="k">class</span> <span class="nc">ArkIDClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">):</span>
@@ -121,30 +129,29 @@
 
 <span class="sd">    *  :py:meth:`.query_user`</span>
 <span class="sd">    *  :py:meth:`.query_isolated_user`</span>
-<span class="sd">    *  :py:meth:`.query_specified_user`</span>
+<span class="sd">    *  :py:meth:`.query_user`</span>
 <span class="sd">    *  :py:meth:`.create_user`</span>
-<span class="sd">    *  :py:meth:`.update_specified_user`</span>
-<span class="sd">    *  :py:meth:`.delete_specified_user`</span>
+<span class="sd">    *  :py:meth:`.update_user`</span>
+<span class="sd">    *  :py:meth:`.delete_user`</span>
+<span class="sd">    *  :py:meth:`.query_specified_perm`</span>
 <span class="sd">    *  :py:meth:`.query_own_org`</span>
-<span class="sd">    *  :py:meth:`.query_specified_org`</span>
+<span class="sd">    *  :py:meth:`.query_org`</span>
 <span class="sd">    *  :py:meth:`.create_org`</span>
-<span class="sd">    *  :py:meth:`.delete_specified_org`</span>
-<span class="sd">    *  :py:meth:`.update_specified_org`</span>
+<span class="sd">    *  :py:meth:`.delete_org`</span>
+<span class="sd">    *  :py:meth:`.update_org`</span>
 <span class="sd">    *  :py:meth:`.query_orguser`</span>
 <span class="sd">    *  :py:meth:`.add_orguser`</span>
 <span class="sd">    *  :py:meth:`.delete_orguser`</span>
-<span class="sd">    *  :py:meth:`.query_specified_orguser`</span>
-<span class="sd">    *  :py:meth:`.update_specified_orguser`</span>
+<span class="sd">    *  :py:meth:`.query_orguser`</span>
+<span class="sd">    *  :py:meth:`.update_orguser`</span>
 <span class="sd">    *  :py:meth:`.get_org_invitation_key`</span>
 <span class="sd">    *  :py:meth:`.refresh_org_invitation_key`</span>
 <span class="sd">    *  :py:meth:`.view_org_by_invitation_key`</span>
 <span class="sd">    *  :py:meth:`.join_org_by_invitation_key`</span>
-<span class="sd">    *  :py:meth:`.get_current_org`</span>
-<span class="sd">    *  :py:meth:`.switch_current_org`</span>
-<span class="sd">    *  :py:meth:`.query_specified_node`</span>
-<span class="sd">    *  :py:meth:`.view_specified_node`</span>
-<span class="sd">    *  :py:meth:`.update_specified_node`</span>
-<span class="sd">    *  :py:meth:`.delete_specified_node`</span>
+<span class="sd">    *  :py:meth:`.query_node`</span>
+<span class="sd">    *  :py:meth:`.view_node`</span>
+<span class="sd">    *  :py:meth:`.update_node`</span>
+<span class="sd">    *  :py:meth:`.delete_node`</span>
 <span class="sd">    *  :py:meth:`.get_node_tree_list`</span>
 <span class="sd">    *  :py:meth:`.get_node_tree`</span>
 <span class="sd">    *  :py:meth:`.view_node_tree`</span>
@@ -158,6 +165,33 @@
 <span class="sd">    *  :py:meth:`.override_user_under_node`</span>
 <span class="sd">    *  :py:meth:`.sort_user_under_node`</span>
 <span class="sd">    *  :py:meth:`.move_out_user_under_node`</span>
+<span class="sd">    *  :py:meth:`.view_perm`</span>
+<span class="sd">    *  :py:meth:`.view_profile`</span>
+<span class="sd">    *  :py:meth:`.view_current_org`</span>
+<span class="sd">    *  :py:meth:`.switch_current_org`</span>
+<span class="sd">    *  :py:meth:`.query_apps`</span>
+<span class="sd">    *  :py:meth:`.get_sms_captcha`</span>
+<span class="sd">    *  :py:meth:`.verify_sms_captcha`</span>
+<span class="sd">    *  :py:meth:`.query_all_perm`</span>
+<span class="sd">    *  :py:meth:`.create_perm`</span>
+<span class="sd">    *  :py:meth:`.query_perm`</span>
+<span class="sd">    *  :py:meth:`.update_perm`</span>
+<span class="sd">    *  :py:meth:`.query_perm_owner`</span>
+<span class="sd">    *  :py:meth:`.update_perm_owner`</span>
+<span class="sd">    *  :py:meth:`.query_specified_user_perm`</span>
+<span class="sd">    *  :py:meth:`.update_specified_user_perm`</span>
+<span class="sd">    *  :py:meth:`.query_dept_perm`</span>
+<span class="sd">    *  :py:meth:`.update_dept_perm`</span>
+<span class="sd">    *  :py:meth:`.query_group_perm`</span>
+<span class="sd">    *  :py:meth:`.update_group_perm`</span>
+<span class="sd">    *  :py:meth:`.query_node_perm`</span>
+<span class="sd">    *  :py:meth:`.update_node_perm`</span>
+<span class="sd">    *  :py:meth:`.query_app_list`</span>
+<span class="sd">    *  :py:meth:`.create_app`</span>
+<span class="sd">    *  :py:meth:`.query_app`</span>
+<span class="sd">    *  :py:meth:`.update_app`</span>
+<span class="sd">    *  :py:meth:`.delete_app`</span>
+<span class="sd">    *  :py:meth:`.register_app`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">allowed_authorizer_types</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">BasicAuthorizer</span><span class="p">,</span>
@@ -168,6 +202,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__infrastructure_client</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">BaseClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="n">authorizer</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__init_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_class</span><span class="p">):</span>
@@ -187,24 +225,18 @@
         <span class="k">return</span> <span class="n">_client</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">query_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                   <span class="n">keyword</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                   <span class="n">wechat_unionid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                   <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-                   <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">query_user_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wechat_unionid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; UserClient &gt; 实例的 query_user 方法</span>
+<span class="sd">        调用底层 &lt; UserClient &gt; 实例的 query_user_list 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UserClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">query_user</span><span class="p">(</span><span class="n">keyword</span><span class="o">=</span><span class="n">keyword</span><span class="p">,</span>
-                                             <span class="n">wechat_unionid</span><span class="o">=</span><span class="n">wechat_unionid</span><span class="p">,</span>
-                                             <span class="n">page</span><span class="o">=</span><span class="n">page</span><span class="p">,</span>
-                                             <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">query_user_list</span><span class="p">(</span><span class="n">keyword</span><span class="o">=</span><span class="n">keyword</span><span class="p">,</span>
+                                                  <span class="n">wechat_unionid</span><span class="o">=</span><span class="n">wechat_unionid</span><span class="p">,</span>
+                                                  <span class="n">page</span><span class="o">=</span><span class="n">page</span><span class="p">,</span>
+                                                  <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">query_isolated_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                            <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-                            <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">query_isolated_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; UserClient &gt; 实例的 query_isolated_user 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -212,12 +244,12 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">query_isolated_user</span><span class="p">(</span><span class="n">page</span><span class="o">=</span><span class="n">page</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">query_specified_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">query_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; UserClient &gt; 实例的 query_specified_user 方法</span>
+<span class="sd">        调用底层 &lt; UserClient &gt; 实例的 query_user 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UserClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">query_specified_user</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">query_user</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">create_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
@@ -228,25 +260,31 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span><span class="n">json_body</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">update_specified_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; UserClient &gt; 实例的 update_specified_user 方法</span>
+<span class="sd">        调用底层 &lt; UserClient &gt; 实例的 update_user 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UserClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">update_specified_user</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">update_user</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">delete_specified_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">delete_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; UserClient &gt; 实例的 delete_specified_user 方法</span>
+<span class="sd">        调用底层 &lt; UserClient &gt; 实例的 delete_user 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UserClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">delete_specified_user</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">delete_user</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_specified_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; UserClient &gt; 实例的 query_specified_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UserClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user_client</span><span class="o">.</span><span class="n">query_specified_perm</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">uid</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">query_own_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                      <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-                      <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">query_own_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 query_own_org 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -254,12 +292,12 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">query_own_org</span><span class="p">(</span><span class="n">page</span><span class="o">=</span><span class="n">page</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">query_specified_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">query_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 query_specified_org 方法</span>
+<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 query_org 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">OrgClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">query_specified_org</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">query_org</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">create_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
@@ -270,31 +308,28 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">create_org</span><span class="p">(</span><span class="n">json_body</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">delete_specified_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">delete_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 delete_specified_org 方法</span>
+<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 delete_org 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">OrgClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">delete_specified_org</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">delete_org</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">update_specified_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 update_specified_org 方法</span>
+<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 update_org 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">OrgClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">update_specified_org</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">update_org</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">query_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                      <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                      <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-                      <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">query_orguser_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 query_orguser 方法</span>
+<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 query_orguser_list 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">OrgClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">query_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">page</span><span class="o">=</span><span class="n">page</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">query_orguser_list</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">page</span><span class="o">=</span><span class="n">page</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">add_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">usernames</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
@@ -313,20 +348,20 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">delete_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">usernames</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">query_specified_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">query_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 query_specified_orguser 方法</span>
+<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 query_orguser 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">OrgClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">query_specified_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">query_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">update_specified_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_orguser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 update_specified_orguser 方法</span>
+<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 update_orguser 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">OrgClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">update_specified_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">update_orguser</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_org_invitation_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -360,55 +395,37 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">OrgClient</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">join_org_by_invitation_key</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">invite_link_key</span><span class="p">)</span>
 
-    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_current_org</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 get_current_org 方法</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">OrgClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">get_current_org</span><span class="p">()</span>
-
-    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;org&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">switch_current_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; OrgClient &gt; 实例的 switch_current_org 方法</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">OrgClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__org_client</span><span class="o">.</span><span class="n">switch_current_org</span><span class="p">(</span><span class="n">json_body</span><span class="p">)</span>
-
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">query_specified_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">query_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 query_specified_node 方法</span>
+<span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 query_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">query_specified_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">query_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">view_specified_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">view_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 view_specified_node 方法</span>
+<span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 view_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">view_specified_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">view_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">update_specified_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 update_specified_node 方法</span>
+<span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 update_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">update_specified_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">update_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">delete_specified_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                              <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                              <span class="n">ignore_user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">delete_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ignore_user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 delete_specified_node 方法</span>
+<span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 delete_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">delete_specified_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">ignore_user</span><span class="o">=</span><span class="n">ignore_user</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">delete_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">ignore_user</span><span class="o">=</span><span class="n">ignore_user</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_node_tree_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -419,9 +436,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">get_node_tree_list</span><span class="p">(</span><span class="n">node_uid</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_node_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                      <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                      <span class="n">user_required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_node_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 get_node_tree 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -429,9 +444,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">get_node_tree</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_required</span><span class="o">=</span><span class="n">user_required</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">view_node_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                       <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                       <span class="n">user_required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">view_node_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 view_node_tree 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -471,94 +484,337 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">sort_subnode</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">node_uids</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">query_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mobile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">before_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">before_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">query_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                              <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                              <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">mobile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">before_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">after_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">before_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">after_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 query_user_under_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">query_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                                                        <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">mobile</span><span class="o">=</span><span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
-                                                        <span class="n">before_created</span><span class="o">=</span><span class="n">before_created</span><span class="p">,</span> <span class="n">after_created</span><span class="o">=</span><span class="n">after_created</span><span class="p">,</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">query_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span>
+                                                        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                        <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span>
+                                                        <span class="n">mobile</span><span class="o">=</span><span class="n">mobile</span><span class="p">,</span>
+                                                        <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
+                                                        <span class="n">before_created</span><span class="o">=</span><span class="n">before_created</span><span class="p">,</span>
+                                                        <span class="n">after_created</span><span class="o">=</span><span class="n">after_created</span><span class="p">,</span>
                                                         <span class="n">before_last_active_time</span><span class="o">=</span><span class="n">before_last_active_time</span><span class="p">,</span>
                                                         <span class="n">after_last_active_time</span><span class="o">=</span><span class="n">after_last_active_time</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">add_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                            <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mobile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                            <span class="n">before_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                            <span class="n">before_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 add_user_under_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">add_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                                                      <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">mobile</span><span class="o">=</span><span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
-                                                      <span class="n">before_created</span><span class="o">=</span><span class="n">before_created</span><span class="p">,</span> <span class="n">after_created</span><span class="o">=</span><span class="n">after_created</span><span class="p">,</span>
-                                                      <span class="n">before_last_active_time</span><span class="o">=</span><span class="n">before_last_active_time</span><span class="p">,</span>
-                                                      <span class="n">after_last_active_time</span><span class="o">=</span><span class="n">after_last_active_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">add_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">delete_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                               <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mobile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                               <span class="n">before_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                               <span class="n">before_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">delete_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 delete_user_under_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">delete_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                                                         <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">mobile</span><span class="o">=</span><span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
-                                                         <span class="n">before_created</span><span class="o">=</span><span class="n">before_created</span><span class="p">,</span> <span class="n">after_created</span><span class="o">=</span><span class="n">after_created</span><span class="p">,</span>
-                                                         <span class="n">before_last_active_time</span><span class="o">=</span><span class="n">before_last_active_time</span><span class="p">,</span>
-                                                         <span class="n">after_last_active_time</span><span class="o">=</span><span class="n">after_last_active_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">delete_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">sort_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                             <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mobile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                             <span class="n">before_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                             <span class="n">before_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">sort_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 sort_user_under_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">sort_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                                                       <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">mobile</span><span class="o">=</span><span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
-                                                       <span class="n">before_created</span><span class="o">=</span><span class="n">before_created</span><span class="p">,</span> <span class="n">after_created</span><span class="o">=</span><span class="n">after_created</span><span class="p">,</span>
-                                                       <span class="n">before_last_active_time</span><span class="o">=</span><span class="n">before_last_active_time</span><span class="p">,</span>
-                                                       <span class="n">after_last_active_time</span><span class="o">=</span><span class="n">after_last_active_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">sort_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">override_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mobile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">before_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">before_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">override_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 override_user_under_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">override_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                                                           <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">mobile</span><span class="o">=</span><span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
-                                                           <span class="n">before_created</span><span class="o">=</span><span class="n">before_created</span><span class="p">,</span> <span class="n">after_created</span><span class="o">=</span><span class="n">after_created</span><span class="p">,</span>
-                                                           <span class="n">before_last_active_time</span><span class="o">=</span><span class="n">before_last_active_time</span><span class="p">,</span>
-                                                           <span class="n">after_last_active_time</span><span class="o">=</span><span class="n">after_last_active_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">override_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">)</span>
 
     <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;node&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">move_out_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mobile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">before_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">before_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">after_last_active_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">move_out_user_under_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        调用底层 &lt; NodeClient &gt; 实例的 move_out_user_under_node 方法</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">NodeClient</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">move_out_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                                                           <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">mobile</span><span class="o">=</span><span class="n">mobile</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
-                                                           <span class="n">before_created</span><span class="o">=</span><span class="n">before_created</span><span class="p">,</span> <span class="n">after_created</span><span class="o">=</span><span class="n">after_created</span><span class="p">,</span>
-                                                           <span class="n">before_last_active_time</span><span class="o">=</span><span class="n">before_last_active_time</span><span class="p">,</span>
-                                                           <span class="n">after_last_active_time</span><span class="o">=</span><span class="n">after_last_active_time</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_client</span><span class="o">.</span><span class="n">move_out_user_under_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">user_uids</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;ucenter&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">view_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; UcenterClient &gt; 实例的 view_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UcenterClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span><span class="o">.</span><span class="n">view_perm</span><span class="p">()</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;ucenter&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">view_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; UcenterClient &gt; 实例的 view_profile 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UcenterClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span><span class="o">.</span><span class="n">view_profile</span><span class="p">()</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;ucenter&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">view_current_org</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; UcenterClient &gt; 实例的 view_current_org 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UcenterClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span><span class="o">.</span><span class="n">view_current_org</span><span class="p">()</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;ucenter&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">switch_current_org</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; UcenterClient &gt; 实例的 switch_current_org 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UcenterClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span><span class="o">.</span><span class="n">switch_current_org</span><span class="p">(</span><span class="n">json_body</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;ucenter&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_apps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; UcenterClient &gt; 实例的 ucenter 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">UcenterClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ucenter_client</span><span class="o">.</span><span class="n">query_apps</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;infrastructure&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_sms_captcha</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mobile</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; InfrastructureClient &gt; 实例的 get_current_org 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__infrastructure_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">InfrastructureClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__infrastructure_client</span><span class="o">.</span><span class="n">get_sms_captcha</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;infrastructure&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">verify_sms_captcha</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mobile</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; InfrastructureClient &gt; 实例的 verify_sms_captcha 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__infrastructure_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">InfrastructureClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__infrastructure_client</span><span class="o">.</span><span class="n">verify_sms_captcha</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">mobile</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_all_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 query_all_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">query_all_perm</span><span class="p">()</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">create_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 create_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">create_perm</span><span class="p">(</span><span class="n">json_body</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 query_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">query_perm</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 update_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">update_perm</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_perm_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                         <span class="n">owner_subject</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                         <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 query_perm_owner 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">query_perm_owner</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span>
+                                                   <span class="n">owner_subject</span><span class="o">=</span><span class="n">owner_subject</span><span class="p">,</span>
+                                                   <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+                                                   <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_perm_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                          <span class="n">owner_subject</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                          <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 update_perm_owner 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">update_perm_owner</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span>
+                                                    <span class="n">owner_subject</span><span class="o">=</span><span class="n">owner_subject</span><span class="p">,</span>
+                                                    <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+                                                    <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_specified_user_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                  <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                  <span class="n">action</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">action_except</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 query_user_all_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">query_specified_user_perm</span><span class="p">(</span><span class="n">username</span><span class="p">,</span>
+                                                            <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span>
+                                                            <span class="n">action_except</span><span class="o">=</span><span class="n">action_except</span><span class="p">,</span>
+                                                            <span class="n">scope</span><span class="o">=</span><span class="n">scope</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_specified_user_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                   <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                   <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 update_specified_user_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">update_specified_user_perm</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_dept_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                        <span class="n">action</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">action_except</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 query_dept_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">query_dept_perm</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span>
+                                                  <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span>
+                                                  <span class="n">action_except</span><span class="o">=</span><span class="n">action_except</span><span class="p">,</span>
+                                                  <span class="n">scope</span><span class="o">=</span><span class="n">scope</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_dept_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                         <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 update_dept_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">update_dept_perm</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_group_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                         <span class="n">action</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">action_except</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 query_group_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">query_group_perm</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span>
+                                                   <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span>
+                                                   <span class="n">action_except</span><span class="o">=</span><span class="n">action_except</span><span class="p">,</span>
+                                                   <span class="n">scope</span><span class="o">=</span><span class="n">scope</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_group_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 update_group_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">update_group_perm</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_node_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                        <span class="n">action</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">action_except</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 query_node_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">query_node_perm</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span>
+                                                  <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span>
+                                                  <span class="n">action_except</span><span class="o">=</span><span class="n">action_except</span><span class="p">,</span>
+                                                  <span class="n">scope</span><span class="o">=</span><span class="n">action_except</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;perm&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_node_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; PermClient &gt; 实例的 update_node_perm 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">PermClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__perm_client</span><span class="o">.</span><span class="n">update_node_perm</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_app_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                       <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">user_uid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">owner_access</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; AppClient &gt; 实例的 query_app_list 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">AppClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span><span class="o">.</span><span class="n">query_app_list</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                <span class="n">node_uid</span><span class="o">=</span><span class="n">node_uid</span><span class="p">,</span>
+                                                <span class="n">user_uid</span><span class="o">=</span><span class="n">user_uid</span><span class="p">,</span>
+                                                <span class="n">owner_access</span><span class="o">=</span><span class="n">owner_access</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; AppClient &gt; 实例的 create_app 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">AppClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span><span class="o">.</span><span class="n">create_app</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; AppClient &gt; 实例的 query_app 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">AppClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span><span class="o">.</span><span class="n">query_app</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">uid</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; AppClient &gt; 实例的 update_app 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">AppClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span><span class="o">.</span><span class="n">update_app</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">delete_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; AppClient &gt; 实例的 delete_app 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">AppClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span><span class="o">.</span><span class="n">delete_app</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">uid</span><span class="p">)</span>
+
+    <span class="nd">@reload_service</span><span class="p">(</span><span class="s1">&#39;app&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">register_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">protocol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        调用底层 &lt; AppClient &gt; 实例的 register_app 方法</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_client</span><span class="p">(</span><span class="n">AppClient</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_client</span><span class="o">.</span><span class="n">register_app</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">protocol</span><span class="p">,</span> <span class="n">json_body</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

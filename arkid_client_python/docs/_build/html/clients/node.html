@@ -24,7 +24,7 @@
     <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ArkID 客户端" href="arkid.html" />
+    <link rel="next" title="用户中心服务客户端" href="ucenter.html" />
     <link rel="prev" title="组织服务客户端" href="org.html" />
 <link rel="stylesheet" href="../_static/arkid-overrides.css" type="text/css"></link>
 
@@ -42,7 +42,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="arkid.html" title="ArkID 客户端"
+          <a href="ucenter.html" title="用户中心服务客户端"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="org.html" title="组织服务客户端"
@@ -73,6 +73,10 @@
 <li class="toctree-l2"><a class="reference internal" href="user.html">用户服务客户端</a></li>
 <li class="toctree-l2"><a class="reference internal" href="org.html">组织服务客户端</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">节点服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ucenter.html">用户中心服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perm.html">权限服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="infrastructure.html">基础设施服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app.html">应用服务客户端</a></li>
 <li class="toctree-l2"><a class="reference internal" href="arkid.html">ArkID 客户端</a></li>
 <li class="toctree-l2"><a class="reference internal" href="base.html">基类客户端</a></li>
 </ul>
@@ -125,10 +129,10 @@
 接口的访问操作。</p>
 <p><strong>Methods</strong></p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#arkid_client.node.NodeClient.query_specified_node" title="arkid_client.node.NodeClient.query_specified_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_specified_node()</span></code></a></p></li>
-<li><p><a class="reference internal" href="#arkid_client.node.NodeClient.view_specified_node" title="arkid_client.node.NodeClient.view_specified_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">view_specified_node()</span></code></a></p></li>
-<li><p><a class="reference internal" href="#arkid_client.node.NodeClient.update_specified_node" title="arkid_client.node.NodeClient.update_specified_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_specified_node()</span></code></a></p></li>
-<li><p><a class="reference internal" href="#arkid_client.node.NodeClient.delete_specified_node" title="arkid_client.node.NodeClient.delete_specified_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delete_specified_node()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.node.NodeClient.query_node" title="arkid_client.node.NodeClient.query_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_node()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.node.NodeClient.view_node" title="arkid_client.node.NodeClient.view_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">view_node()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.node.NodeClient.update_node" title="arkid_client.node.NodeClient.update_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_node()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.node.NodeClient.delete_node" title="arkid_client.node.NodeClient.delete_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delete_node()</span></code></a></p></li>
 <li><p><a class="reference internal" href="#arkid_client.node.NodeClient.get_node_tree_list" title="arkid_client.node.NodeClient.get_node_tree_list"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_node_tree_list()</span></code></a></p></li>
 <li><p><a class="reference internal" href="#arkid_client.node.NodeClient.get_node_tree" title="arkid_client.node.NodeClient.get_node_tree"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_node_tree()</span></code></a></p></li>
 <li><p><a class="reference internal" href="#arkid_client.node.NodeClient.view_node_tree" title="arkid_client.node.NodeClient.view_node_tree"><code class="xref py py-meth docutils literal notranslate"><span class="pre">view_node_tree()</span></code></a></p></li>
@@ -144,8 +148,8 @@
 <li><p><a class="reference internal" href="#arkid_client.node.NodeClient.move_out_user_under_node" title="arkid_client.node.NodeClient.move_out_user_under_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">move_out_user_under_node()</span></code></a></p></li>
 </ul>
 <dl class="py method">
-<dt id="arkid_client.node.NodeClient.query_specified_node">
-<code class="sig-name descname">query_specified_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.query_specified_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.query_specified_node" title="Permalink to this definition">¶</a></dt>
+<dt id="arkid_client.node.NodeClient.query_node">
+<code class="sig-name descname">query_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.query_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.query_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>查询指定节点的信息
 (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -157,15 +161,15 @@
 </div></blockquote>
 <p><strong>Examples</strong></p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">NodeClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">query_specified_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">query_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;node is&#39;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkid_client.node.NodeClient.view_specified_node">
-<code class="sig-name descname">view_specified_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.view_specified_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.view_specified_node" title="Permalink to this definition">¶</a></dt>
+<dt id="arkid_client.node.NodeClient.view_node">
+<code class="sig-name descname">view_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.view_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.view_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>用户查询指定节点的信息
 (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/ucenter/node/&lt;node_uid&gt;/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -177,15 +181,15 @@
 </div></blockquote>
 <p><strong>Examples</strong></p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">NodeClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">view_specified_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">view_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;node is&#39;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkid_client.node.NodeClient.update_specified_node">
-<code class="sig-name descname">update_specified_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.update_specified_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.update_specified_node" title="Permalink to this definition">¶</a></dt>
+<dt id="arkid_client.node.NodeClient.update_node">
+<code class="sig-name descname">update_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.update_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.update_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>修改指定节点的信息
 (<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -202,7 +206,7 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">node_data</span> <span class="o">=</span> <span class="p">{</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">update_specified_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">node_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">update_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">node_data</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;node is&#39;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -212,8 +216,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkid_client.node.NodeClient.delete_specified_node">
-<code class="sig-name descname">delete_specified_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.delete_specified_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.delete_specified_node" title="Permalink to this definition">¶</a></dt>
+<dt id="arkid_client.node.NodeClient.delete_node">
+<code class="sig-name descname">delete_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.delete_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.delete_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>删除指定节点的信息
 (<code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -226,11 +230,10 @@
 </dd>
 </dl>
 </div></blockquote>
-<p><strong>Examples</strong></p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">NodeClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">nc</span><span class="o">.</span><span class="n">delete_specified_node</span><span class="p">(</span><span class="n">node_uid</span><span class="p">,</span> <span class="n">ignore_user</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
+<p><strong>Examples</strong>
+self.logger.info(“正在调用 NodeClient.delete_node() 接口与 ArkID 服务端进行交互”)
+&gt;&gt;&gt; nc = arkid_client.NodeClient(…)
+&gt;&gt;&gt; nc.delete_node(node_uid, ignore_user=True)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -432,7 +435,7 @@
 
 <dl class="py method">
 <dt id="arkid_client.node.NodeClient.add_user_under_node">
-<code class="sig-name descname">add_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.add_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.add_user_under_node" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.add_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.add_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>向指定节点添加指定成员
 (<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -441,8 +444,6 @@
 <dt><code class="docutils literal notranslate"><span class="pre">node_uid</span></code> (<em>str</em>)</dt><dd><p>节点的唯一标识</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">user_uids</span></code> (<em>list</em>)</dt><dd><p>用户唯一标识组成的列表</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">**params</span></code> (<em>dict</em>)</dt><dd><p>用户的元信息，参数详情请参考接口文档</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -458,14 +459,11 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;node is&#39;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>External Documentation</strong></p>
-<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/node/7/1">节点的元数据</a>
-详情请参阅API文档。</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arkid_client.node.NodeClient.delete_user_under_node">
-<code class="sig-name descname">delete_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.delete_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.delete_user_under_node" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">delete_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.delete_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.delete_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>从指定节点移除指定成员
 (<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -474,8 +472,6 @@
 <dt><code class="docutils literal notranslate"><span class="pre">node_uid</span></code> (<em>str</em>)</dt><dd><p>节点的唯一标识</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">user_uids</span></code> (<em>list</em>)</dt><dd><p>用户唯一标识组成的列表</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">**params</span></code> (<em>dict</em>)</dt><dd><p>用户的元信息，参数详情请参考接口文档</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -491,14 +487,11 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;node is&#39;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>External Documentation</strong></p>
-<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/node/7/1">节点的元数据</a>
-详情请参阅API文档。</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arkid_client.node.NodeClient.override_user_under_node">
-<code class="sig-name descname">override_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.override_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.override_user_under_node" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">override_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.override_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.override_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>重置指定节点的指定用户
 (<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -507,8 +500,6 @@
 <dt><code class="docutils literal notranslate"><span class="pre">node_uid</span></code> (<em>str</em>)</dt><dd><p>节点的唯一标识</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">user_uids</span></code> (<em>list</em>)</dt><dd><p>用户唯一标识组成的列表</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">**params</span></code> (<em>dict</em>)</dt><dd><p>用户的元信息，参数详情请参考接口文档</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -524,14 +515,11 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;node is&#39;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>External Documentation</strong></p>
-<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/node/7/1">节点的元数据</a>
-详情请参阅API文档。</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arkid_client.node.NodeClient.sort_user_under_node">
-<code class="sig-name descname">sort_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.sort_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.sort_user_under_node" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sort_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.sort_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.sort_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>对指定人按指定位置进行排序
 (<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -540,8 +528,6 @@
 <dt><code class="docutils literal notranslate"><span class="pre">node_uid</span></code> (<em>str</em>)</dt><dd><p>节点的唯一标识</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">user_uids</span></code> (<em>list</em>)</dt><dd><p>用户唯一标识组成的列表</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">**params</span></code> (<em>dict</em>)</dt><dd><p>用户的元信息，参数详情请参考接口文档</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -557,14 +543,11 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;node is&#39;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>External Documentation</strong></p>
-<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/node/7/1">节点的元数据</a>
-详情请参阅API文档。</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arkid_client.node.NodeClient.move_out_user_under_node">
-<code class="sig-name descname">move_out_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.move_out_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.move_out_user_under_node" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">move_out_user_under_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_uid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">user_uids</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/node/client.html#NodeClient.move_out_user_under_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.node.NodeClient.move_out_user_under_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>将这些人从该节点移除，并加到指定节点
 (<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/node/&lt;node_uid&gt;/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -573,8 +556,6 @@
 <dt><code class="docutils literal notranslate"><span class="pre">node_uid</span></code> (<em>str</em>)</dt><dd><p>节点的唯一标识</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">user_uids</span></code> (<em>list</em>)</dt><dd><p>用户唯一标识组成的列表</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">**params</span></code> (<em>dict</em>)</dt><dd><p>用户的元信息，参数详情请参考接口文档</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -590,9 +571,6 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;node is&#39;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>External Documentation</strong></p>
-<p>关于 <a class="reference external" href="https://arkid.docs.apiary.io/#reference/node/7/1">节点的元数据</a>
-详情请参阅API文档。</p>
 </dd></dl>
 
 </dd></dl>
@@ -609,7 +587,7 @@
       </div>
     
       <div class="pull-right">
-        <a class="btn btn-default" href="arkid.html" title="next chapter (use the right arrow)">ArkID 客户端</a>
+        <a class="btn btn-default" href="ucenter.html" title="next chapter (use the right arrow)">用户中心服务客户端</a>
       </div>
     </div>
     <div class="clearer"></div>
@@ -627,7 +605,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="arkid.html" title="ArkID 客户端"
+          <a href="ucenter.html" title="用户中心服务客户端"
              >next</a> |</li>
         <li class="right" >
           <a href="org.html" title="组织服务客户端"

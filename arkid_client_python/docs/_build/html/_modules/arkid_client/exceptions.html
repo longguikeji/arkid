@@ -109,20 +109,20 @@
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ArkIDError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="ArkIDError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.ArkIDError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ArkID Client 错误的基类</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="ArkIDSDKUsageError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDSDKUsageError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDSDKUsageError</span><span class="p">(</span><span class="n">ArkIDError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+<div class="viewcode-block" id="ArkIDSDKUsageError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.ArkIDSDKUsageError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDSDKUsageError</span><span class="p">(</span><span class="n">ArkIDError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    当 ArkID Client 检测到它被不正确的使用时会抛出 ``ArkIDSDKUsageError`` 异常，</span>
 <span class="sd">    这些错误通常表示某些关于 ArkID Client 使用的规范(例如所需的操作顺序)已被违反。</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="ArkIDAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDAPIError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDAPIError</span><span class="p">(</span><span class="n">ArkIDError</span><span class="p">):</span>
+<div class="viewcode-block" id="ArkIDAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.ArkIDAPIError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDAPIError</span><span class="p">(</span><span class="n">ArkIDError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    封装 REST API 的响应信息</span>
 
@@ -195,7 +195,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">text</span></div>
 
 
-<div class="viewcode-block" id="UserAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.UserAPIError">[docs]</a><span class="k">class</span> <span class="nc">UserAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+<div class="viewcode-block" id="UserAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.UserAPIError">[docs]</a><span class="k">class</span> <span class="nc">UserAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    用户服务客户端的错误类型，继承了 ``message`` 变量</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -207,7 +207,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span></div>
 
 
-<div class="viewcode-block" id="OrgAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.OrgAPIError">[docs]</a><span class="k">class</span> <span class="nc">OrgAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+<div class="viewcode-block" id="OrgAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.OrgAPIError">[docs]</a><span class="k">class</span> <span class="nc">OrgAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    组织服务客户端的错误类型，继承了 ``message`` 变量</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -219,7 +219,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span></div>
 
 
-<div class="viewcode-block" id="NodeAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.NodeAPIError">[docs]</a><span class="k">class</span> <span class="nc">NodeAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+<div class="viewcode-block" id="NodeAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.NodeAPIError">[docs]</a><span class="k">class</span> <span class="nc">NodeAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    节点服务客户端的错误类型，继承了 ``message`` 变量</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -231,9 +231,9 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span></div>
 
 
-<span class="k">class</span> <span class="nc">DeptAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">InfrastructureAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    部门服务客户端的错误类型，继承了 ``message`` 变量</span>
+<span class="sd">    基础设施服务客户端的错误类型，继承了 ``message`` 变量</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">error_data</span> <span class="o">=</span> <span class="kc">None</span>
@@ -243,14 +243,26 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
 
 
-<div class="viewcode-block" id="AuthAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.AuthAPIError">[docs]</a><span class="k">class</span> <span class="nc">AuthAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">UsercenterAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    个人中心服务客户端的错误类型，继承了 ``message`` 变量</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ArkIDAPIError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
+
+
+<div class="viewcode-block" id="AuthAPIError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.AuthAPIError">[docs]</a><span class="k">class</span> <span class="nc">AuthAPIError</span><span class="p">(</span><span class="n">ArkIDAPIError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    认证服务客户端的错误类型，继承了 ``message`` 变量</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
 <span class="c1"># Wrappers around requests exceptions, so the SDK is API independent.</span>
-<div class="viewcode-block" id="NetworkError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.NetworkError">[docs]</a><span class="k">class</span> <span class="nc">NetworkError</span><span class="p">(</span><span class="n">ArkIDError</span><span class="p">):</span>
+<div class="viewcode-block" id="NetworkError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.NetworkError">[docs]</a><span class="k">class</span> <span class="nc">NetworkError</span><span class="p">(</span><span class="n">ArkIDError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    当与 ArkID 服务通信发生错误时会抛出 ``NetworkError`` 错误，</span>
 <span class="sd">    其为通信方面出现的错误的基类。</span>
@@ -262,15 +274,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">underlying_exception</span> <span class="o">=</span> <span class="n">exception</span></div>
 
 
-<div class="viewcode-block" id="ArkIDTimeoutError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDTimeoutError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDTimeoutError</span><span class="p">(</span><span class="n">NetworkError</span><span class="p">):</span>
+<div class="viewcode-block" id="ArkIDTimeoutError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.ArkIDTimeoutError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDTimeoutError</span><span class="p">(</span><span class="n">NetworkError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;REST API 请求超时&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="ArkIDConnectionTimeoutError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDConnectionTimeoutError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDConnectionTimeoutError</span><span class="p">(</span><span class="n">ArkIDTimeoutError</span><span class="p">):</span>
+<div class="viewcode-block" id="ArkIDConnectionTimeoutError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.ArkIDConnectionTimeoutError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDConnectionTimeoutError</span><span class="p">(</span><span class="n">ArkIDTimeoutError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;请求在连接建立期间超时，这些错误可以进行安全地重试。&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="ArkIDConnectionError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.node.ArkIDConnectionError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDConnectionError</span><span class="p">(</span><span class="n">NetworkError</span><span class="p">):</span>
+<div class="viewcode-block" id="ArkIDConnectionError"><a class="viewcode-back" href="../../exceptions.html#arkid_client.ArkIDConnectionError">[docs]</a><span class="k">class</span> <span class="nc">ArkIDConnectionError</span><span class="p">(</span><span class="n">NetworkError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;在发出 REST 请求时发生连接错误。&quot;&quot;&quot;</span></div>
 
 

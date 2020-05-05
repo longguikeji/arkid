@@ -2,7 +2,7 @@
 Define NodeClient
 """
 from arkid_client.authorizers import BasicAuthorizer
-from arkid_client.base import BaseClient, reload_service
+from arkid_client.base import BaseClient
 from arkid_client.exceptions import NodeAPIError
 from arkid_client.response import ArkIDHTTPResponse
 
@@ -14,10 +14,10 @@ class NodeClient(BaseClient):
 
     **Methods**
 
-    *  :py:meth:`.query_specified_node`
-    *  :py:meth:`.view_specified_node`
-    *  :py:meth:`.update_specified_node`
-    *  :py:meth:`.delete_specified_node`
+    *  :py:meth:`.query_node`
+    *  :py:meth:`.view_node`
+    *  :py:meth:`.update_node`
+    *  :py:meth:`.delete_node`
     *  :py:meth:`.get_node_tree_list`
     *  :py:meth:`.get_node_tree`
     *  :py:meth:`.view_node_tree`

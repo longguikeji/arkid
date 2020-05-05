@@ -2,7 +2,7 @@
 Define OrgClient
 """
 from arkid_client.authorizers import BasicAuthorizer
-from arkid_client.base import BaseClient, reload_service
+from arkid_client.base import BaseClient
 from arkid_client.exceptions import OrgAPIError
 from arkid_client.response import ArkIDHTTPResponse
 
@@ -15,22 +15,19 @@ class OrgClient(BaseClient):
     **Methods**
 
     *  :py:meth:`.query_own_org`
-    *  :py:meth:`.query_specified_org`
+    *  :py:meth:`.query_org`
     *  :py:meth:`.create_org`
-    *  :py:meth:`.delete_specified_org`
-    *  :py:meth:`.update_specified_org`
+    *  :py:meth:`.delete_org`
+    *  :py:meth:`.update_org`
     *  :py:meth:`.query_orguser`
     *  :py:meth:`.add_orguser`
     *  :py:meth:`.delete_orguser`
-    *  :py:meth:`.query_specified_orguser`
-    *  :py:meth:`.update_specified_orguser`
+    *  :py:meth:`.query_orguser`
+    *  :py:meth:`.update_orguser`
     *  :py:meth:`.get_org_invitation_key`
     *  :py:meth:`.refresh_org_invitation_key`
     *  :py:meth:`.view_org_by_invitation_key`
     *  :py:meth:`.join_org_by_invitation_key`
-    *  :py:meth:`.get_current_org`
-    *  :py:meth:`.switch_current_org`
-
     """
     allowed_authorizer_types = [BasicAuthorizer]
     error_class = OrgAPIError
@@ -397,50 +394,3 @@ class OrgClient(BaseClient):
         """
         self.logger.info("正在调用 OrgClient.join_org_by_invitation_key() 接口与 ArkID 服务端进行交互")
         return self.post(path='{}/invitation/{}/'.format(oid, invite_link_key))
-
-    def get_current_org(self):
-        """
-        获取用户当前所在组织的信息
-        (``GET /siteapi/v1/ucenter/org/``)
-
-        **Examples**
-
-        >>> oc = arkid_client.OrgClient(...)
-        >>> org = oc.get_current_org()
-        >>> print('org: ', org)
-        """
-        _service = self.service
-        self.reload_service_url('ucenter')
-
-        self.logger.info("正在调用 OrgClient.get_current_org() 接口与 ArkID 服务端进行交互")
-        response = self.get(path='org/')
-
-        self.reload_service_url(_service)
-        return response
-
-    def switch_current_org(self, json_body: dict):
-        """
-        切换用户当前所在的组织
-        (``PUT /siteapi/v1/ucenter/org/``)
-
-        **Parameters**:
-
-            ``json_body`` (*dict*)
-
-                ``oid`` (*str*)
-                  组织的唯一标识
-
-        **Examples**
-
-        >>> oc = arkid_client.OrgClient(...)
-        >>> org = oc.switch_current_org({'oid': 'example'})
-        >>> print('org: ', org)
-        """
-        _service = self.service
-        self.reload_service_url('ucenter')
-
-        self.logger.info("正在调用 OrgClient.switch_current_org() 接口与 ArkID 服务端进行交互")
-        response = self.put(path='org/', json_body=json_body)
-
-        self.reload_service_url(_service)
-        return response

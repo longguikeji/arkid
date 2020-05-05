@@ -21,6 +21,10 @@ from arkid_client.authorizers import (
 from arkid_client.user import UserClient
 from arkid_client.org import OrgClient
 from arkid_client.node import NodeClient
+from arkid_client.infrastructure import InfrastructureClient
+from arkid_client.ucenter import UcenterClient
+from arkid_client.app import AppClient
+from arkid_client.perm import PermClient
 
 from arkid_client.exceptions import (
     AuthAPIError,
@@ -57,6 +61,11 @@ __all__ = (
     'UserClient',
     'OrgClient',
     'NodeClient',
+    'InfrastructureClient',
+    'UcenterClient',
+    'AppClient',
+    'PermClient',
+
     'ArkIDError',
     'ArkIDAPIError',
     'ArkIDSDKUsageError',

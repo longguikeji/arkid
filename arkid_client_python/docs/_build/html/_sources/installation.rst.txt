@@ -1,5 +1,5 @@
 安装
-====
+========
 
 ArkID Client 需要 `Python <https://www.python.org/>`_ 2.7 +
 或者 3.4 + 版本的支持。如果您的系统还未安装支持的 Python 版本，请参见

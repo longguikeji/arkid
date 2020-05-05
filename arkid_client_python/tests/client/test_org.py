@@ -119,17 +119,3 @@ class TestOrgClient(unittest.TestCase):
         register_api_route('org', BASE_URL, 'example/invitation/example/', httpretty.POST, body=self.dict_body)
         response = self.client.join_org_by_invitation_key(oid='example', invite_link_key='example')
         self.assertEqual(response.text, self.dict_body)
-
-    @httpretty.activate
-    def test_get_current_org(self):
-        """测试获取用户当前所在组织的信息"""
-        register_api_route('ucenter', BASE_URL, 'org/', body=self.dict_body)
-        response = self.client.get_current_org()
-        self.assertEqual(response.text, self.dict_body)
-
-    @httpretty.activate
-    def test_switch_current_org(self):
-        """测试切换用户当前所在的组织"""
-        register_api_route('ucenter', BASE_URL, 'org/', httpretty.PUT, body=self.dict_body)
-        response = self.client.switch_current_org(json_body={})
-        self.assertEqual(response.text, self.dict_body)

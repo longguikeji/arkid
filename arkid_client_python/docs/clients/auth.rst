@@ -1,7 +1,7 @@
 .. module:: arkid_client.auth
 
 认证服务客户端
-============
+================
 
 .. autoclass:: arkid_client.AuthClient
    :members:

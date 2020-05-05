@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 ArkID Client for Python
-=======================
+==========================
 
 ArkID Client 为 ArkID REST API 提供了便捷的 Pythonic 接口，其中包括了
 UserClient、OrgClient、NodeClient等客户端。您可以直接实例化 ArkIDClient
@@ -12,7 +12,7 @@ UserClient、OrgClient、NodeClient等客户端。您可以直接实例化 ArkID
 https://docs.arkid.longguikeji.com/ 。
 
 目 录
-=====
+========
 
 .. toctree::
    :maxdepth: 3

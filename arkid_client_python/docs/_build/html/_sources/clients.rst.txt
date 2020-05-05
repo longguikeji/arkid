@@ -1,7 +1,7 @@
 .. _clients:
 
 服务客户端
-=========
+=============
 
 ArkID Client 提供了一个封装了 ArkID 所有的 API 接口的客户端类。您无需进行任何配置，
 只需要在初始化客户端实例的时候，
@@ -16,6 +16,10 @@ ArkID 的各端点地址或者详细的参数。
    clients/user
    clients/org
    clients/node
+   clients/ucenter
+   clients/perm
+   clients/infrastructure
+   clients/app
    clients/arkid
    clients/base
 

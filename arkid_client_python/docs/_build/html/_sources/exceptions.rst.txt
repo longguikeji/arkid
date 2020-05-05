@@ -1,5 +1,5 @@
 异常处理
-=======
+==========
 
 所有的 ARKID Client 错误都继承自 ``ArkIDError``，
 所有 SDK 错误类型均可从 ``arkid_client`` 导入。
@@ -57,7 +57,7 @@
 
 
 错误类型
--------
+-----------
 
 .. autoclass:: arkid_client.ArkIDError
    :members:

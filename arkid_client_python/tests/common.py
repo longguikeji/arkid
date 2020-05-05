@@ -21,6 +21,9 @@ def register_api_route(service, base_url, path, method=httpretty.GET, adding_hea
         'user': 'user',
         'org': 'org',
         'node': 'node',
+        'perm': 'perm',
+        'app': 'app',
+        'infrastructure': 'service',
     }
     assert service in service_map
     base_url = slash_join(base_url, service_map.get(service))

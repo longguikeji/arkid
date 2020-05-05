@@ -1,7 +1,7 @@
 .. module:: arkid_client.base
 
 基类客户端
-=========
+============
 
 所有类型的服务客户端均支持由 ``BaseClient`` 提供的底层 API 。
 

@@ -73,6 +73,10 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">用户服务客户端</a></li>
 <li class="toctree-l2"><a class="reference internal" href="org.html">组织服务客户端</a></li>
 <li class="toctree-l2"><a class="reference internal" href="node.html">节点服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ucenter.html">用户中心服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perm.html">权限服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="infrastructure.html">基础设施服务客户端</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app.html">应用服务客户端</a></li>
 <li class="toctree-l2"><a class="reference internal" href="arkid.html">ArkID 客户端</a></li>
 <li class="toctree-l2"><a class="reference internal" href="base.html">基类客户端</a></li>
 </ul>
@@ -127,14 +131,15 @@
 <ul class="simple">
 <li><p><a class="reference internal" href="#arkid_client.user.UserClient.query_user" title="arkid_client.user.UserClient.query_user"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_user()</span></code></a></p></li>
 <li><p><a class="reference internal" href="#arkid_client.user.UserClient.query_isolated_user" title="arkid_client.user.UserClient.query_isolated_user"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_isolated_user()</span></code></a></p></li>
-<li><p><a class="reference internal" href="#arkid_client.user.UserClient.query_specified_user" title="arkid_client.user.UserClient.query_specified_user"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_specified_user()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.user.UserClient.query_user" title="arkid_client.user.UserClient.query_user"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_user()</span></code></a></p></li>
 <li><p><a class="reference internal" href="#arkid_client.user.UserClient.create_user" title="arkid_client.user.UserClient.create_user"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_user()</span></code></a></p></li>
-<li><p><a class="reference internal" href="#arkid_client.user.UserClient.update_specified_user" title="arkid_client.user.UserClient.update_specified_user"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_specified_user()</span></code></a></p></li>
-<li><p><a class="reference internal" href="#arkid_client.user.UserClient.delete_specified_user" title="arkid_client.user.UserClient.delete_specified_user"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delete_specified_user()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.user.UserClient.update_user" title="arkid_client.user.UserClient.update_user"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_user()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.user.UserClient.delete_user" title="arkid_client.user.UserClient.delete_user"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delete_user()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#arkid_client.user.UserClient.query_specified_perm" title="arkid_client.user.UserClient.query_specified_perm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_specified_perm()</span></code></a></p></li>
 </ul>
 <dl class="py method">
-<dt id="arkid_client.user.UserClient.query_user">
-<code class="sig-name descname">query_user</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/user/client.html#UserClient.query_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.user.UserClient.query_user" title="Permalink to this definition">¶</a></dt>
+<dt id="arkid_client.user.UserClient.query_user_list">
+<code class="sig-name descname">query_user_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/user/client.html#UserClient.query_user_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.user.UserClient.query_user_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>获取用户信息列表
 (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/user/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -188,8 +193,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkid_client.user.UserClient.query_specified_user">
-<code class="sig-name descname">query_specified_user</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/user/client.html#UserClient.query_specified_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.user.UserClient.query_specified_user" title="Permalink to this definition">¶</a></dt>
+<dt id="arkid_client.user.UserClient.query_user">
+<code class="sig-name descname">query_user</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/user/client.html#UserClient.query_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.user.UserClient.query_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>获取指定用户的信息
 (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/user/&lt;username&gt;/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -201,7 +206,7 @@
 </div></blockquote>
 <p><strong>Examples</strong></p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">uc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">UserClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">query_isolated_user</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">query_user</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">],</span> <span class="s1">&#39;id: &#39;</span>
 <span class="gp">&gt;&gt;&gt; </span>      <span class="p">,</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
 </pre></div>
@@ -248,8 +253,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkid_client.user.UserClient.update_specified_user">
-<code class="sig-name descname">update_specified_user</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/user/client.html#UserClient.update_specified_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.user.UserClient.update_specified_user" title="Permalink to this definition">¶</a></dt>
+<dt id="arkid_client.user.UserClient.update_user">
+<code class="sig-name descname">update_user</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">json_body</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/user/client.html#UserClient.update_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.user.UserClient.update_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>修改指定用户的信息
 (<code class="docutils literal notranslate"><span class="pre">PATCH</span> <span class="pre">/siteapi/v1/user/&lt;username&gt;</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
@@ -267,7 +272,7 @@
 <span class="gp">&gt;&gt;&gt; </span>  <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>  <span class="s2">&quot;private_email&quot;</span><span class="p">:</span> <span class="s2">&quot;example@org.com&quot;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">update_specified_user</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">query_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">update_user</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">query_data</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">],</span> <span class="s1">&#39;id: &#39;</span>
 <span class="gp">&gt;&gt;&gt; </span>          <span class="p">,</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
 </pre></div>
@@ -278,10 +283,10 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkid_client.user.UserClient.delete_specified_user">
-<code class="sig-name descname">delete_specified_user</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/user/client.html#UserClient.delete_specified_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.user.UserClient.delete_specified_user" title="Permalink to this definition">¶</a></dt>
+<dt id="arkid_client.user.UserClient.delete_user">
+<code class="sig-name descname">delete_user</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/user/client.html#UserClient.delete_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.user.UserClient.delete_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>删除指定用户的信息
-(<code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/siteapi/v1/user/&lt;username&gt;</span></code>)</p>
+(<code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/siteapi/v1/user/&lt;username&gt;/</span></code>)</p>
 <p><strong>Parameters</strong>:</p>
 <blockquote>
 <div><dl class="simple">
@@ -291,7 +296,29 @@
 </div></blockquote>
 <p><strong>Examples</strong></p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">uc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">UserClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">uc</span><span class="o">.</span><span class="n">delete_specified_user</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">uc</span><span class="o">.</span><span class="n">delete_user</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arkid_client.user.UserClient.query_specified_perm">
+<code class="sig-name descname">query_specified_perm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">uid</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arkid_client/user/client.html#UserClient.query_specified_perm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arkid_client.user.UserClient.query_specified_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>获取用户权限详情，包括权限来源
+(<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/siteapi/v1/user/&lt;username&gt;/perm/&lt;uid&gt;/</span></code>)</p>
+<p><strong>Parameters</strong>:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">username</span></code> (<em>str</em>)</dt><dd><p>用户唯一标识</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">uid</span></code> (<em>str</em>)</dt><dd><p>权限唯一标识</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">arkid_client</span><span class="o">.</span><span class="n">UserClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">query_specified_perm</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;perm is&#39;</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

@@ -1,0 +1,558 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+  
+  <!-- Licensed under the Apache 2.0 License -->
+  <link rel="stylesheet" type="text/css" href="../../../_static/fonts/open-sans/stylesheet.css" />
+  <!-- Licensed under the SIL Open Font License -->
+  <link rel="stylesheet" type="text/css" href="../../../_static/fonts/source-serif-pro/source-serif-pro.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../../../_static/css/bootstrap-theme.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>arkid_client.perm.client &#8212; ArkID Client 1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/guzzle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<link rel="stylesheet" href="../../../_static/arkid-overrides.css" type="text/css"></link>
+
+  
+   
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="container-wrapper">
+
+      <div id="mobile-toggle">
+        <a href="#"><span class="glyphicon glyphicon-align-justify" aria-hidden="true"></span></a>
+      </div>
+  <div id="left-column">
+    <div class="sphinxsidebar"><a href="
+    ../../../index.html" class="text-logo"><img src="../../../_static/logo.png"/><br/>ArkID Client 1.0 documentation</a><div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <h2>目 录</h2>
+  </div>
+  <div class="sidebar-toc">
+    
+    
+      <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Client 教程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../clients.html">服务客户端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../responses.html">接口响应</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../exceptions.html">异常处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authorization.html">API 认证</a></li>
+</ul>
+
+    
+  </div>
+</div>
+<div class="sidebar-block">
+  <div class="sidebar-wrapper">
+    <div id="main-search">
+      <form class="form-inline" action="../../../search.html" method="GET" role="form">
+        <div class="input-group">
+          <input name="q" type="text" class="form-control" placeholder="Search...">
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+        <div id="right-column">
+          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+            <ol class="breadcrumb">
+              <li><a href="../../../index.html">Docs</a></li>
+              
+                <li><a href="../../index.html">Module code</a></li>
+              
+              <li>arkid_client.perm.client</li>
+            </ol>
+          </div>
+          
+          <div class="document clearer body">
+            
+  <h1>Source code for arkid_client.perm.client</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Define PermClient</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">arkid_client.authorizers</span> <span class="kn">import</span> <span class="n">BasicAuthorizer</span>
+<span class="kn">from</span> <span class="nn">arkid_client.base</span> <span class="kn">import</span> <span class="n">BaseClient</span>
+<span class="kn">from</span> <span class="nn">arkid_client.exceptions</span> <span class="kn">import</span> <span class="n">UsercenterAPIError</span>
+<span class="kn">from</span> <span class="nn">arkid_client.response</span> <span class="kn">import</span> <span class="n">ArkIDHTTPResponse</span>
+
+
+<div class="viewcode-block" id="PermClient"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient">[docs]</a><span class="k">class</span> <span class="nc">PermClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    权限管理客户端，</span>
+<span class="sd">    用于与 ArkID 服务端权限管理相关接口的访问操作。</span>
+
+<span class="sd">    **Methods**</span>
+
+<span class="sd">    *  :py:meth:`.query_all_perm`</span>
+<span class="sd">    *  :py:meth:`.create_perm`</span>
+<span class="sd">    *  :py:meth:`.query_perm`</span>
+<span class="sd">    *  :py:meth:`.update_perm`</span>
+<span class="sd">    *  :py:meth:`.query_perm_owner`</span>
+<span class="sd">    *  :py:meth:`.update_perm_owner`</span>
+<span class="sd">    *  :py:meth:`.query_specified_user_perm`</span>
+<span class="sd">    *  :py:meth:`.update_specified_user_perm`</span>
+<span class="sd">    *  :py:meth:`.query_dept_perm`</span>
+<span class="sd">    *  :py:meth:`.update_dept_perm`</span>
+<span class="sd">    *  :py:meth:`.query_group_perm`</span>
+<span class="sd">    *  :py:meth:`.update_group_perm`</span>
+<span class="sd">    *  :py:meth:`.query_node_perm`</span>
+<span class="sd">    *  :py:meth:`.update_node_perm`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">allowed_authorizer_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">BasicAuthorizer</span><span class="p">]</span>
+    <span class="n">error_class</span> <span class="o">=</span> <span class="n">UsercenterAPIError</span>
+    <span class="n">default_response_class</span> <span class="o">=</span> <span class="n">ArkIDHTTPResponse</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">BaseClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="s2">&quot;perm&quot;</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="n">authorizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PermClient.query_all_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.query_all_perm">[docs]</a>    <span class="k">def</span> <span class="nf">query_all_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取所有权限</span>
+<span class="sd">        (``GET /siteapi/v1/perm/``)</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.query_perm()</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.query_all_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.create_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.create_perm">[docs]</a>    <span class="k">def</span> <span class="nf">create_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        创建权限</span>
+<span class="sd">        (``POST /siteapi/v1/perm/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+
+<span class="sd">                ``scope`` (*str*)</span>
+<span class="sd">                  应用 ``uid``</span>
+
+<span class="sd">                ``name`` (*str*)</span>
+<span class="sd">                  应用名称</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = uc.create_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.create_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.query_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.query_perm">[docs]</a>    <span class="k">def</span> <span class="nf">query_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取指定权限</span>
+<span class="sd">        (``GET /siteapi/v1/perm/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``uid`` (*str*)</span>
+<span class="sd">              权限唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.query_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.query_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uid</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PermClient.update_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.update_perm">[docs]</a>    <span class="k">def</span> <span class="nf">update_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        更新指定权限</span>
+<span class="sd">        (``PATCH /siteapi/v1/perm/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``uid`` (*str*)</span>
+<span class="sd">              权限唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.update_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.update_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.query_perm_owner"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.query_perm_owner">[docs]</a>    <span class="k">def</span> <span class="nf">query_perm_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取某权限指定类型的所有者</span>
+<span class="sd">        该接口内的 ``uid`` ，对于 ``user`` 为 ``username``，对于 ``node`` 为 ``node_uid``</span>
+<span class="sd">        (``GET /siteapi/v1/perm/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``uid`` (*str*)</span>
+<span class="sd">              权限唯一标识</span>
+
+<span class="sd">            ``owner_subject`` (*str*)</span>
+<span class="sd">              权限所有者类型</span>
+
+<span class="sd">            ``value`` (*bool*)</span>
+<span class="sd">              最终判定结果</span>
+
+<span class="sd">            ``status`` (*int*)</span>
+<span class="sd">              授权状态</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.query_perm_owner(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `params 参数\</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/perm/1/0&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.query_perm_owner() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/owner/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.update_perm_owner"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.update_perm_owner">[docs]</a>    <span class="k">def</span> <span class="nf">update_perm_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        更新某权限指定类型的所有者，仅按提供的数据做局部修改</span>
+<span class="sd">        该接口内的 ``uid`` ，对于 ``user`` 为 ``username``，对于 ``node`` 为 ``node_uid``</span>
+<span class="sd">        (``PATCH /siteapi/v1/perm/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``uid`` (*str*)</span>
+<span class="sd">              权限唯一标识</span>
+
+<span class="sd">            ``owner_subject`` (*str*)</span>
+<span class="sd">              权限所有者类型</span>
+
+<span class="sd">            ``value`` (*bool*)</span>
+<span class="sd">              最终判定结果</span>
+
+<span class="sd">            ``status`` (*int*)</span>
+<span class="sd">              授权状态</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.update_perm_owner(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `params 参数\</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/perm/1/0&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.update_perm_owner() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/owner/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.query_specified_user_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.query_specified_user_perm">[docs]</a>    <span class="k">def</span> <span class="nf">query_specified_user_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取用户所有权限,包括所有授权、未授权的权限</span>
+<span class="sd">        (``GET /siteapi/v1/perm/user/&lt;username&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``username`` (*str*)</span>
+<span class="sd">              用户唯一标识</span>
+
+<span class="sd">            ``action`` (*str*)</span>
+<span class="sd">              特定操作</span>
+
+<span class="sd">            ``action_except`` (*bool*)</span>
+<span class="sd">              排除某操作，惯用``action_except=access``获取应用内权限</span>
+
+<span class="sd">            ``scope`` (*int*)</span>
+<span class="sd">              与应用``uid``对应，惯用该字段获取某应用下权限</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.query_specified_user_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.query_specified_user_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;user/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.update_specified_user_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.update_specified_user_perm">[docs]</a>    <span class="k">def</span> <span class="nf">update_specified_user_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        更新用户权限</span>
+<span class="sd">        (``PATCH /siteapi/v1/perm/user/&lt;username&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``username`` (*str*)</span>
+<span class="sd">              用户唯一标识</span>
+
+<span class="sd">            ``action`` (*str*)</span>
+<span class="sd">              特定操作</span>
+
+<span class="sd">            ``action_except`` (*bool*)</span>
+<span class="sd">              排除某操作，惯用``action_except=access``获取应用内权限</span>
+
+<span class="sd">            ``scope`` (*int*)</span>
+<span class="sd">              与应用``uid``对应，惯用该字段获取某应用下权限</span>
+
+<span class="sd">            ``json_body`` (*int*)</span>
+<span class="sd">              权限的部分元信息，详见接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.update_specified_user_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+
+<span class="sd">        **External Documentation**</span>
+
+<span class="sd">        关于 `权限的元数据 \</span>
+<span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/perm/3/1&gt;`_</span>
+<span class="sd">        详情请参阅API文档。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.update_specified_user_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;user/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.query_dept_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.query_dept_perm">[docs]</a>    <span class="k">def</span> <span class="nf">query_dept_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取部门所有权限,包括所有授权、未授权的权限</span>
+<span class="sd">        (``GET /siteapi/v1/perm/dept/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``uid`` (*str*)</span>
+<span class="sd">              部门唯一标识</span>
+
+<span class="sd">            ``action`` (*str*)</span>
+<span class="sd">              特定操作</span>
+
+<span class="sd">            ``action_except`` (*bool*)</span>
+<span class="sd">              排除某操作，惯用``action_except=access``获取应用内权限</span>
+
+<span class="sd">            ``scope`` (*int*)</span>
+<span class="sd">              与应用``uid``对应，惯用该字段获取某应用下权限</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.query_dept_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.query_dept_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;dept/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.update_dept_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.update_dept_perm">[docs]</a>    <span class="k">def</span> <span class="nf">update_dept_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取部门所有权限,包括所有授权、未授权的权限</span>
+<span class="sd">        (``PATCH /siteapi/v1/perm/dept/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``uid`` (*str*)</span>
+<span class="sd">              部门唯一标识</span>
+
+<span class="sd">            ``action`` (*str*)</span>
+<span class="sd">              特定操作</span>
+
+<span class="sd">            ``action_except`` (*bool*)</span>
+<span class="sd">              排除某操作，惯用``action_except=access``获取应用内权限</span>
+
+<span class="sd">            ``scope`` (*int*)</span>
+<span class="sd">              与应用``uid``对应，惯用该字段获取某应用下权限</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+<span class="sd">              权限的元信息,详情参见接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.update_dept_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.update_dept_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;dept/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.query_group_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.query_group_perm">[docs]</a>    <span class="k">def</span> <span class="nf">query_group_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取组所有权限,包括所有授权、未授权的权限</span>
+<span class="sd">        (``GET /siteapi/v1/perm/group/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``uid`` (*str*)</span>
+<span class="sd">              组的唯一标识</span>
+
+<span class="sd">            ``action`` (*str*)</span>
+<span class="sd">              特定操作</span>
+
+<span class="sd">            ``action_except`` (*bool*)</span>
+<span class="sd">              排除某操作，惯用``action_except=access``获取应用内权限</span>
+
+<span class="sd">            ``scope`` (*int*)</span>
+<span class="sd">              与应用``uid``对应，惯用该字段获取某应用下权限</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.query_group_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.query_group_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;group/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.update_group_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.update_group_perm">[docs]</a>    <span class="k">def</span> <span class="nf">update_group_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取组所有权限,包括所有授权、未授权的权限</span>
+<span class="sd">        (``PATCH /siteapi/v1/perm/group/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``uid`` (*str*)</span>
+<span class="sd">              组唯一标识</span>
+
+<span class="sd">            ``action`` (*str*)</span>
+<span class="sd">              特定操作</span>
+
+<span class="sd">            ``action_except`` (*bool*)</span>
+<span class="sd">              排除某操作，惯用``action_except=access``获取应用内权限</span>
+
+<span class="sd">            ``scope`` (*int*)</span>
+<span class="sd">              与应用``uid``对应，惯用该字段获取某应用下权限</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+<span class="sd">              权限的元信息,详情参见接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.update_group_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.update_group_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;group/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.query_node_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.query_node_perm">[docs]</a>    <span class="k">def</span> <span class="nf">query_node_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取节点所有权限,包括所有授权、未授权的权限</span>
+<span class="sd">        (``GET /siteapi/v1/perm/node/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``action`` (*str*)</span>
+<span class="sd">              特定操作</span>
+
+<span class="sd">            ``action_except`` (*bool*)</span>
+<span class="sd">              排除某操作，惯用``action_except=access``获取应用内权限</span>
+
+<span class="sd">            ``scope`` (*int*)</span>
+<span class="sd">              与应用``uid``对应，惯用该字段获取某应用下权限</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.query_node_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.query_node_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;node/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PermClient.update_node_perm"><a class="viewcode-back" href="../../../clients/perm.html#arkid_client.perm.PermClient.update_node_perm">[docs]</a>    <span class="k">def</span> <span class="nf">update_node_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取组所有权限,包括所有授权、未授权的权限</span>
+<span class="sd">        (``PATCH /siteapi/v1/perm/node/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``node_uid`` (*str*)</span>
+<span class="sd">              节点的唯一标识</span>
+
+<span class="sd">            ``action`` (*str*)</span>
+<span class="sd">              特定操作</span>
+
+<span class="sd">            ``action_except`` (*bool*)</span>
+<span class="sd">              排除某操作，惯用``action_except=access``获取应用内权限</span>
+
+<span class="sd">            ``scope`` (*int*)</span>
+<span class="sd">              与应用``uid``对应，惯用该字段获取某应用下权限</span>
+
+<span class="sd">            ``json_body`` (*dict*)</span>
+<span class="sd">              权限的元信息,详情参见接口文档</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.PermClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.update_node_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 PermClient.update_node_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;node/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_uid</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+            
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ArkID Client 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+<script type="text/javascript">
+  $("#mobile-toggle a").click(function () {
+    $("#left-column").toggle();
+  });
+</script>
+<script type="text/javascript" src="../../../_static/js/bootstrap.js"></script>
+  <div class="footer">
+    &copy; Copyright 2020, LongGuiKeJi. Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+  </div>
+  </body>
+</html>

@@ -118,10 +118,11 @@
 
 <span class="sd">    *  :py:meth:`.query_user`</span>
 <span class="sd">    *  :py:meth:`.query_isolated_user`</span>
-<span class="sd">    *  :py:meth:`.query_specified_user`</span>
+<span class="sd">    *  :py:meth:`.query_user`</span>
 <span class="sd">    *  :py:meth:`.create_user`</span>
-<span class="sd">    *  :py:meth:`.update_specified_user`</span>
-<span class="sd">    *  :py:meth:`.delete_specified_user`</span>
+<span class="sd">    *  :py:meth:`.update_user`</span>
+<span class="sd">    *  :py:meth:`.delete_user`</span>
+<span class="sd">    *  :py:meth:`.query_specified_perm`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">allowed_authorizer_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">BasicAuthorizer</span><span class="p">]</span>
     <span class="n">error_class</span> <span class="o">=</span> <span class="n">UserAPIError</span>
@@ -130,7 +131,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">BaseClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="n">authorizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="UserClient.query_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.query_user">[docs]</a>    <span class="k">def</span> <span class="nf">query_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+<div class="viewcode-block" id="UserClient.query_user_list"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.query_user_list">[docs]</a>    <span class="k">def</span> <span class="nf">query_user_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        获取用户信息列表</span>
 <span class="sd">        (``GET /siteapi/v1/user/``)</span>
@@ -190,7 +191,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.query_isolated_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;isolated/&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="UserClient.query_specified_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.query_specified_user">[docs]</a>    <span class="k">def</span> <span class="nf">query_specified_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="UserClient.query_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.query_user">[docs]</a>    <span class="k">def</span> <span class="nf">query_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        获取指定用户的信息</span>
 <span class="sd">        (``GET /siteapi/v1/user/&lt;username&gt;/``)</span>
@@ -203,11 +204,11 @@
 <span class="sd">        **Examples**</span>
 
 <span class="sd">        &gt;&gt;&gt; uc = arkid_client.UserClient(...)</span>
-<span class="sd">        &gt;&gt;&gt; user = uc.query_isolated_user(...)</span>
+<span class="sd">        &gt;&gt;&gt; user = uc.query_user(...)</span>
 <span class="sd">        &gt;&gt;&gt; print(user[&#39;username&#39;], &#39;id: &#39;</span>
 <span class="sd">        &gt;&gt;&gt;       ,user[&#39;id&#39;])</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.query_specified_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.query_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="UserClient.create_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.create_user">[docs]</a>    <span class="k">def</span> <span class="nf">create_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
@@ -253,7 +254,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.create_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="UserClient.update_specified_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.update_specified_user">[docs]</a>    <span class="k">def</span> <span class="nf">update_specified_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<div class="viewcode-block" id="UserClient.update_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.update_user">[docs]</a>    <span class="k">def</span> <span class="nf">update_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        修改指定用户的信息</span>
 <span class="sd">        (``PATCH /siteapi/v1/user/&lt;username&gt;``)</span>
@@ -273,7 +274,7 @@
 <span class="sd">        &gt;&gt;&gt;   &quot;password&quot;: &quot;example&quot;,</span>
 <span class="sd">        &gt;&gt;&gt;   &quot;private_email&quot;: &quot;example@org.com&quot;</span>
 <span class="sd">        &gt;&gt;&gt; }</span>
-<span class="sd">        &gt;&gt;&gt; user = uc.update_specified_user(username, query_data)</span>
+<span class="sd">        &gt;&gt;&gt; user = uc.update_user(username, query_data)</span>
 <span class="sd">        &gt;&gt;&gt; print(user[&#39;username&#39;], &#39;id: &#39;</span>
 <span class="sd">        &gt;&gt;&gt;           ,user[&#39;id&#39;])</span>
 
@@ -283,13 +284,13 @@
 <span class="sd">        &lt;https://arkid.docs.apiary.io/#reference/user/2/1&gt;`_</span>
 <span class="sd">        详情请参阅API文档。</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.update_specified_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.update_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">),</span> <span class="n">json_body</span><span class="o">=</span><span class="n">json_body</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="UserClient.delete_specified_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.delete_specified_user">[docs]</a>    <span class="k">def</span> <span class="nf">delete_specified_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="UserClient.delete_user"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.delete_user">[docs]</a>    <span class="k">def</span> <span class="nf">delete_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        删除指定用户的信息</span>
-<span class="sd">        (``DELETE /siteapi/v1/user/&lt;username&gt;``)</span>
+<span class="sd">        (``DELETE /siteapi/v1/user/&lt;username&gt;/``)</span>
 
 <span class="sd">        **Parameters**:</span>
 
@@ -299,9 +300,32 @@
 <span class="sd">        **Examples**</span>
 
 <span class="sd">        &gt;&gt;&gt; uc = arkid_client.UserClient(...)</span>
-<span class="sd">        &gt;&gt;&gt; uc.delete_specified_user(username)</span>
+<span class="sd">        &gt;&gt;&gt; uc.delete_user(username)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">))</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.delete_user() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="UserClient.query_specified_perm"><a class="viewcode-back" href="../../../clients/user.html#arkid_client.user.UserClient.query_specified_perm">[docs]</a>    <span class="k">def</span> <span class="nf">query_specified_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取用户权限详情，包括权限来源</span>
+<span class="sd">        (``GET /siteapi/v1/user/&lt;username&gt;/perm/&lt;uid&gt;/``)</span>
+
+<span class="sd">        **Parameters**:</span>
+
+<span class="sd">            ``username`` (*str*)</span>
+<span class="sd">              用户唯一标识</span>
+
+<span class="sd">            ``uid`` (*str*)</span>
+<span class="sd">              权限唯一标识</span>
+
+<span class="sd">        **Examples**</span>
+
+<span class="sd">        &gt;&gt;&gt; pc = arkid_client.UserClient(...)</span>
+<span class="sd">        &gt;&gt;&gt; perm = pc.query_specified_perm(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(&#39;perm is&#39;, perm)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;正在调用 UserClient.query_specified_perm() 接口与 ArkID 服务端进行交互&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/perm/</span><span class="si">{}</span><span class="s1">/&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">uid</span><span class="p">))</span></div></div>
 </pre></div>
 
           </div>

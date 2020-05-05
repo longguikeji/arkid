@@ -129,9 +129,21 @@ class NodeAPIError(ArkIDAPIError):
         return self.http_status, self.message
 
 
-class DeptAPIError(ArkIDAPIError):
+class InfrastructureAPIError(ArkIDAPIError):
     """
-    部门服务客户端的错误类型，继承了 ``message`` 变量
+    基础设施服务客户端的错误类型，继承了 ``message`` 变量
+    """
+    def __init__(self, response):
+        self.error_data = None
+        ArkIDAPIError.__init__(self, response)
+
+    def _get_args(self):
+        return self.http_status, self.message
+
+
+class UsercenterAPIError(ArkIDAPIError):
+    """
+    个人中心服务客户端的错误类型，继承了 ``message`` 变量
     """
     def __init__(self, response):
         self.error_data = None

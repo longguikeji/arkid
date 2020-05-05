@@ -5,7 +5,6 @@ from arkid_client.auth.client.base import AuthClient
 from arkid_client.authorizers import NullAuthorizer
 from arkid_client.authorizers import BasicAuthorizer
 from arkid_client.exceptions import ArkIDSDKUsageError
-from arkid_client.base import reload_service, reload_authorizer
 
 
 class ConfidentialAppAuthClient(AuthClient):
