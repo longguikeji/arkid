@@ -1,2 +1,2 @@
 
-guzzle_sphinx_theme==*
+guzzle_sphinx_theme==0.7.11
