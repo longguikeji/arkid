@@ -3,8 +3,6 @@ Define ClientLogAdapter & BaseClient
 """
 import json
 import logging
-import os
-import importlib
 import requests
 
 from arkid_client import config
@@ -21,7 +19,7 @@ class ClientLogAdapter(logging.LoggerAdapter):
         return "[instance:{0}] {1}".format(id(self.extra["client"]), msg), kwargs
 
 
-class BaseClient(object):
+class BaseClient:
     """
     简单的基类客户端，可处理 ArkID REST APIs 返回的错误信息。
     封装 ``requests.Session`` 对象为一个简化的接口，
@@ -68,9 +66,7 @@ class BaseClient(object):
                  base_path: str = None,
                  authorizer: object = None,
                  app_name: str = None,
-                 http_timeout: float = None,
-                 *args,
-                 **kwargs):
+                 http_timeout: float = None):
         self._init_logger_adapter()
         self.logger.info("正在创建访问 ArkID 官方 {} 服务的{}类型的客户端".format(service, type(self)))
         # 校验授权器
@@ -546,6 +542,5 @@ def reload_authorizer(func):
         instance.reload_authorizer(args[1])
         response = func(*args, **kwargs)
         instance.reload_authorizer(_authorizer)
-        # _wrapper.__doc__ = func.__doc__
         return response
     return _wrapper

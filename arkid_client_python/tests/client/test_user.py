@@ -69,4 +69,3 @@ class TestUserClient(unittest.TestCase):
         register_api_route('user', BASE_URL, 'example/perm/example/', httpretty.GET, body=self.dict_body)
         response = self.client.query_specified_perm(username='example', uid='example')
         self.assertEqual(response.text, self.dict_body)
-

@@ -1,6 +1,5 @@
 """ArkID SDK Setup File"""
 from __future__ import print_function
-import io
 import os
 from fnmatch import fnmatchcase
 from setuptools import convert_path, find_packages, setup

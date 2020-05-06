@@ -648,7 +648,7 @@ class ArkIDClient(BaseClient):
         return self.__perm_client.query_node_perm(node_uid,
                                                   action=action,
                                                   action_except=action_except,
-                                                  scope=action_except)
+                                                  scope=scope)
 
     @reload_service('perm')
     def update_node_perm(self, node_uid: str, json_body: dict):

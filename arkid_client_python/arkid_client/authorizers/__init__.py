@@ -1,3 +1,6 @@
+"""
+包含相关授权器的类对象
+"""
 from arkid_client.authorizers.access_token import AccessTokenAuthorizer
 from arkid_client.authorizers.base import ArkIDAuthorizer
 from arkid_client.authorizers.basic import BasicAuthorizer

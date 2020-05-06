@@ -28,7 +28,7 @@ class ArkIDAPIError(ArkIDError):
     :ivar message: 来自 API 的错误信息。一般来说，其对开发人员是有用的，
             但在某些情况下它也许适合显示给终端用户。
     """
-    def __init__(self, response, *args, **kwargs):
+    def __init__(self, response, *args):
         self._underlying_response = response
         self.http_status = response.status_code
         if "Content-Type" in response.headers and ("application/json" in response.headers["Content-Type"]):
@@ -167,7 +167,7 @@ class NetworkError(ArkIDError):
     其在保留原始异常数据的基础上，也可以接受其他一些有用的消息，
     方便用户明确错误所在。
     """
-    def __init__(self, message, exception, *args, **kwargs):
+    def __init__(self, message, exception):
         super(NetworkError, self).__init__(message)
         self.underlying_exception = exception
 

@@ -146,7 +146,7 @@ class AppClient(BaseClient):
         self.logger.info("正在调用 AppClient.delete_app() 接口与 ArkID 服务端进行交互")
         return self.delete(path='{}/app/{}/'.format(oid, uid))
 
-    def register_app(self, oid: str, uid: str,  protocol: str, json_body: dict):
+    def register_app(self, oid: str, uid: str, protocol: str, json_body: dict):
         """
         注册应用
         (``PATCH /siteapi/v1/org/<oid>/app/<uid>/*/``)
@@ -179,4 +179,3 @@ class AppClient(BaseClient):
             raise ArkIDSDKUsageError('无法注册应用，暂不支持的操作类型(invalid protocol)')
         self.logger.info("正在调用 AppClient.register_app() 接口与 ArkID 服务端进行交互")
         return self.post(path='{}/app/{}/{}/'.format(oid, uid, protocols_map[protocol]), json_body=json_body)
-

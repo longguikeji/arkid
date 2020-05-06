@@ -6,7 +6,7 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 
-class ArkIDResponse(object):
+class ArkIDResponse:
     """
     通用响应基类，只有一个简单的 ``data`` 成员。最常见的响应数据
     是 ``JSON`` 字典。为了尽可能不去处理这种类型的反应， ``ArkIDResponse``

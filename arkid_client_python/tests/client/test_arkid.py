@@ -487,6 +487,7 @@ class TestArkIDClient(unittest.TestCase):
             'oauth': 'oauth/',
         }
         for key, value in protocols_map.items():
-            register_api_route('org', BASE_URL, 'example/app/example/{}/'.format(value), httpretty.POST, body=self.dict_body)
+            path = 'example/app/example/{}/'.format(value)
+            register_api_route('org', BASE_URL, path, httpretty.POST, body=self.dict_body)
             response = self.client.register_app('example', 'example', key, json_body={})
             self.assertEqual(response.text, self.dict_body)

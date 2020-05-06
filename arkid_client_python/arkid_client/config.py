@@ -17,40 +17,10 @@ LOGGER = logging.getLogger(__name__)
 
 # at import-time, they're None
 _PARSER = None
-_CONFIG_PATH = path = os.path.join(os.path.dirname(__file__), "oneid.cfg")
+_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "oneid.cfg")
 
 
-# def _get_lib_config_path():
-#     """
-#     获取 ArkID SDk 中默认配置文件的位置
-#     暂时不能处理任何专有状态，只是一个获取文件位置的助手
-#     """
-#     fname = "oneid.cfg"
-#     try:
-#         LOGGER.debug("Attempting pkg_resources load of lib config")
-#         path = pkg_resources.resource_filename("arkid", fname)
-#         LOGGER.debug("pkg_resources load of lib config success")
-#     except ImportError:
-#         print('failed')
-#         LOGGER.debug("pkg_resources load of lib config failed, failing over to path joining")
-#         pkg_path = os.path.dirname(__file__)
-#         path = os.path.join(pkg_path, fname)
-#     return path
-
-
-# def set_config_path(path):
-#     """
-#     设置全局配置文件的路径
-#     :param path: 配置文件的绝对路径
-#     :return:
-#     """
-#     global _CONFIG_PATH
-#     if not os.path.exists(path):
-#         raise FileNotFoundError('无法找到 ArkID SDK 配置文件')
-#     _CONFIG_PATH = path
-
-
-class ArkIDConfigParser(object):
+class ArkIDConfigParser:
     """
     对 < ConfigParser > 对象进行封装，以修改 get() 和 配置文件的载入。
     """
@@ -75,20 +45,20 @@ class ArkIDConfigParser(object):
             self._parser.read(_CONFIG_PATH)
         except MissingSectionHeaderError:
             LOGGER.error((
-            # TODO
+                # TODO
             ))
             raise ArkIDError(
-            # TODO
+                # TODO
             )
 
     def get(
-        self,
-        option,
-        section=None,
-        environment=None,
-        failover_to_general=False,
-        check_env=False,
-        type_cast=None,
+            self,
+            option,
+            section=None,
+            environment=None,
+            failover_to_general=False,
+            check_env=False,
+            type_cast=None,
     ):
         r"""
         尝试在配置文件中查找一个选项， 若没有找到该选项，则进入 `general` 部分。
@@ -105,8 +75,8 @@ class ArkIDConfigParser(object):
         env_option_name = "ARKID_SDK_{}".format(option.upper())
         value = None
         if check_env and env_option_name in os.environ:
-            LOGGER.debug("载入来自{}={}环境的配置".format(env_option_name, value))
             value = os.environ[env_option_name]
+            LOGGER.debug("载入来自{}={}环境的配置".format(env_option_name, value))
         else:
             try:
                 value = self._parser.get(section, option)
@@ -143,7 +113,7 @@ def get_service(environment: str, service: str):
         raise ArkIDSDKUsageError(
             ('Failed to find a url for service "{}" in environment "{}". '
              'Please double-check that ARKID_SDK_ENVIRONMENT is set correctly, or not set at all').format(
-                 service, environment))
+                service, environment))
     LOGGER.debug('Service URL Lookup Result: "{}" is at "{}"'.format(service, url))
     return url
 
