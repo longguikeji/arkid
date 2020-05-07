@@ -8,7 +8,7 @@ from celery import Celery
 from django.conf import settings
 
 # 此时显式声明，从当前目录导入；否则会从三方库中导入
-import oauth2_provider    # pylint: disable=unused-import
+from . import oauth2_provider    # pylint: disable=unused-import
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oneid.settings')
 app = Celery(    # pylint: disable=invalid-name
