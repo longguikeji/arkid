@@ -66,7 +66,15 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         wechat_unionid = self.request.query_params.get('wechat_unionid', '')
         queryset = User.valid_objects.all()
         if wechat_unionid != '':
-            queryset = User.valid_objects.filter(wechat_user__unionid=wechat_unionid)
+            queryset = queryset.filter(wechat_user__unionid=wechat_unionid)
+
+        name = self.request.query_params.get('name', '')
+        if name != '':
+            queryset = queryset.filter(name=name)
+
+        username = self.request.query_params.get('username', '')
+        if username != '':
+            queryset = queryset.filter(username=username)
 
         keyword = self.request.query_params.get('keyword', '')
         if keyword != '':
