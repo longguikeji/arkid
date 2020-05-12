@@ -78,7 +78,7 @@ describe('一账通-测试设置子管理员', () => {
 
 })
 
-describe('一账通-测试设置子管理员a', () => {
+describe('一账通-测试设置子管理员a', () => {//管理范围所在分组及下级分组，创建用户
     let page : Page;
     
     beforeEach( async () => {
@@ -130,7 +130,7 @@ describe('一账通-测试设置子管理员a', () => {
         await page.close();
     });
 
-    test('TEST_001:验证设置子管理员添加的账号能否登录' , async() => {
+    test('TEST_002:验证设置子管理员添加的账号能否登录' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'mei111add', 'mei111add');
 
@@ -328,7 +328,7 @@ describe('一账通-测试设置子管理员d', () => {
 
     });
 
-    test('TEST_001:验证设置子管理员应用权限' , async() => {
+    test('TEST_002:验证设置子管理员应用权限-修改应用信息' , async() => {
 
         let useraction = new UserAction();
         await useraction.login(page, 'axiangmuzuuser', 'axiangmuzuuser');
@@ -367,6 +367,38 @@ describe('一账通-测试设置子管理员d', () => {
             return elem.innerHTML;
         });
         await expect(appName2).toEqual('百度111');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+
+    });
+
+    test('TEST_003:验证设置子管理员应用权限-编辑应用权限' , async() => {
+
+        let useraction = new UserAction();
+        await useraction.login(page, 'axiangmuzuuser', 'axiangmuzuuser');
+
+        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
+        await manageBtn.click();
+
+        await page.waitFor(2000);
+
+        const appSetBtn = await page.waitForSelector('.header-middle a[href="#/admin/app"]');
+        await appSetBtn.click();
+
+        await page.waitFor(3000);
+
+        const powerBtn = await page.waitForSelector('.ivu-table-row .flex-row>span:nth-child(3)');
+        await powerBtn.click();
+
+        await page.waitFor(2000);
+
+        const editBtnText = await page.$eval('div.ivu-table-body.ivu-table-overflowX > table > tbody > tr > td:nth-child(3) > div > div > span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(editBtnText).toEqual('编辑');
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -462,3 +494,143 @@ describe('一账通-测试删除子管理员', () => {
     });
 
 })
+
+describe('一账通-测试设置子管理员e', () => {//管理范围所在分组及下级分组，创建大类
+    let page : Page;
+    
+    beforeEach( async () => {
+        page = await global.browser.newPage()
+        await page.goto(config.url);
+
+    })
+    afterAll ( async () => {
+        //await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员是否生效' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+
+        let managersettingaction = new managerSettingAction();
+        await managersettingaction.managerSettinge(page);
+
+        await page.waitFor(3000);
+
+        const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(managerName).toEqual('bumen3user');
+   
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+        
+    });
+
+    test('TEST_001:验证设置子管理员创建大类是否生效' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'bumen3user', 'bumen3user');
+
+        let groupaction = new groupAction();
+        await groupaction.groupAddress(page);
+        await groupaction.addPersonalGroup(page, "bumen3useradd");
+        
+        const classifyName = await page.$eval('.custom-list>li:last-child span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(classifyName).toEqual('bumen3useradd');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+    });
+
+    test('TEST_002:验证设置子管理员创建的大类在通讯录是否生效' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+
+        await page.waitFor(2000);
+
+        const orgnizationBtn = await page.waitForSelector('body > div.lg-layout > header > div.header-middle > ul > a:nth-child(2)');
+        await orgnizationBtn.click();
+        
+        const classifyName = await page.$eval('.ui-contact-page--side>li:last-child', elem => {
+            return elem.innerHTML;
+        });
+        await expect(classifyName).toEqual('bumen3useradd');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+    });
+
+})
+
+describe('一账通-测试设置子管理员f', () => {//管理范围所在分组及下级分组，应用百度的权限
+    let page : Page;
+    
+    beforeEach( async () => {
+        page = await global.browser.newPage()
+        await page.goto(config.url);
+
+    })
+    afterAll ( async () => {
+        //await page.close();
+    })
+
+    test('TEST_001:验证设置子管理员是否生效' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'admin', 'admin');
+
+        let managersettingaction = new managerSettingAction();
+        await managersettingaction.managerSettinge(page);
+
+        await page.waitFor(3000);
+
+        const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
+            return elem.innerHTML;
+        });
+        await expect(managerName).toEqual('bumen3user');
+   
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+        
+    });
+
+    test('TEST_001:设置子管理员应用的权限-部门' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'bumen3user', 'bumen3user');
+ 
+        let appsmanageaction = new appsManageAction();
+        await appsmanageaction.departmentPower(page, "部门三");
+        
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+    });
+
+    test('TEST_002:验证设置子管理员应用的权限-部门是否生效' , async() => {
+        let useraction = new UserAction();
+        await useraction.login(page, 'bumen3user', 'bumen3user');
+
+        await page.waitFor(3000);
+        
+        const appName = await page.$eval('.name-intro.flex-col.flex-auto .name', elem => {
+            return elem.innerHTML;
+        });
+        await expect(appName).toEqual('百度');
+
+        await page.evaluate(() => {
+            localStorage.setItem('oneid', '');
+        });
+        await page.close();
+    });
+
+})
+
