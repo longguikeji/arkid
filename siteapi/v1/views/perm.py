@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 """
 views about perm
 - PermList
@@ -87,7 +88,6 @@ class PermListCreateAPIView(generics.ListCreateAPIView):
         if not user.is_admin:
             app = APP.valid_objects.filter(uid=app_uid).first()
             if not (app and app.under_manage(user)):
-                print("app", app)
                 raise PermissionDenied
 
         self.perform_create(serializer)
@@ -118,6 +118,7 @@ class PermDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     特定权限信息 [GET], [PATCH], [DELETE]
     """
     serializer_class = PermSerializer
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_object(self):
         """
@@ -126,6 +127,11 @@ class PermDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         perm = Perm.valid_objects.get_queryset().filter(uid=self.kwargs['uid']).first()
         if not perm:
             raise NotFound
+        user = self.request.user
+        app = APP.valid_objects.filter(uid=perm.scope).first()
+        if not user.is_admin:
+            if not (app and app.under_manage(user)):
+                raise PermissionDenied
         return perm
 
     def retrieve(self, request, *args, **kwargs):
