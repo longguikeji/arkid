@@ -1,6 +1,7 @@
 '''
 serializers for group
 '''
+from django.urls import resolve
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from common.django.drf.serializer import (
@@ -25,7 +26,6 @@ class DingGroupSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for DingGroup
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = DingGroup
         fields = (
@@ -40,7 +40,6 @@ class ManagerGroupSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for ManagerGroup
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = ManagerGroup
         fields = (
@@ -177,7 +176,7 @@ class VerboseManagerGroupSerializer(DynamicFieldsModelSerializer):
         '''
         更新有效管理范围
         '''
-        res= super().to_representation(instance)
+        res = super().to_representation(instance)
 
         if instance.scope_subject == 2:
             res['nodes'] = list(res['nodes'])
@@ -228,7 +227,6 @@ class GroupDetailSerializer(GroupSerializer):
     '''
     group info with parent_uid
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = Group
 
@@ -310,6 +308,11 @@ class GroupDetailSerializer(GroupSerializer):
         uid = validated_data.pop('uid', '')
         if uid and uid != group.uid:
             raise ValidationError({'uid': ['this field is immutable']})
+
+        visibility = validated_data.get('visibility', None)
+        if visibility != 4:    # 除 指定人、节点外的其他情况
+            validated_data['user_scope'] = []
+            validated_data['node_scope'] = []
 
         group.__dict__.update(validated_data)
         group.save(update_fields=validated_data.keys())
@@ -430,7 +433,6 @@ class GroupTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
 
         url_name = self.context.get('url_name', '')
         if not url_name:
-            from django.urls import resolve
             url_name = resolve(self.context['request'].path_info).url_name
         if 'group' in url_name:
             self.children_name = 'groups'

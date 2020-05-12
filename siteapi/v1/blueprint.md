@@ -997,7 +997,7 @@ TODO: 校对
     + keyword (string, optional) - 查询关键字，进行用户名、姓名、邮箱、手机号模糊搜索
     + wechat_unionid (string, optional)
     + name (string, optional) - 姓名精准搜索
-    + username (string, optioanl) - 用户名精准搜索
+    + username (string, optional) - 用户名精准搜索
     + page (number, optional)
         + default: 1
     + page_size (number, optional)
