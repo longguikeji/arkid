@@ -172,6 +172,7 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
 
     serializer_class = OwnerSerializer
     pagination_class = DefaultListPaginator
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_object(self):
         '''
@@ -180,6 +181,11 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
         perm = Perm.valid_objects.filter(uid=self.kwargs['uid']).first()
         if not perm:
             raise NotFound
+        user = self.request.user
+        app = APP.valid_objects.filter(uid=perm.scope).first()
+        if not user.is_admin:
+            if not (app and app.under_manage(user)):
+                raise PermissionDenied
         return perm
 
     def get_queryset(self):
@@ -229,15 +235,26 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
         user_perm_status = self.request.data.get('user_perm_status', [])
         for ups in user_perm_status:
             user = User.valid_objects.filter(username=ups['uid']).first()
-            if user:
-                owner_perm = UserPerm.get(user, perm)
-                owner_perm.update_status(ups['status'])
+            # TODO: 目前对每个对象都逐一检验 under_manage，开销大; 且对于没有权限的，只是静默跳过，没有提示。需改进。
+            if not (user and user.under_manage(request.user)):
+                raise ValidationError({'user_perm_status': [f'invlid uid: `{ups["uid"]}`']})
+            ups['instance'] = user
+
         node_perm_status = self.request.data.get('node_perm_status', [])
         for nps in node_perm_status:
             node, _ = Dept.retrieve_node(nps['uid'])
-            if node:
-                node_perm = node.owner_perm_cls.get(node, perm)
-                node_perm.update_status(nps['status'])
+            if not (node and node.under_manage(request.user)):
+                raise ValidationError({'node_perm_status': [f'invlid uid: `{nps["uid"]}`']})
+            nps['instance'] = node
+
+        for ups in user_perm_status:
+            instance = ups.pop('instance')
+            owner_perm = UserPerm.get(instance, perm)
+            owner_perm.update_status(ups['status'])
+        for nps in node_perm_status:
+            instance = nps.pop('instance')
+            owner_perm = instance.owner_perm_cls.get(instance, perm)
+            owner_perm.update_status(nps['status'])
 
         cli = LOG_CLI()
         cli.assign_perm_owners(perm)
