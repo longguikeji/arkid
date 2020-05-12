@@ -7,13 +7,13 @@ import json
 
 from rest_framework import generics, status, mixins
 from rest_framework.views import APIView
-from rest_framework.exceptions import ValidationError, NotFound, MethodNotAllowed
+from rest_framework.exceptions import ValidationError, NotFound, MethodNotAllowed, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
-from oneid_meta.models import (Perm, UserPerm, DeptPerm, GroupPerm, User, Dept, Group)
+from oneid_meta.models import (Perm, UserPerm, DeptPerm, GroupPerm, User, Dept, Group, APP)
 from siteapi.v1.serializers.perm import (
     PermSerializer,
     PermWithOwnerSerializer,
@@ -24,7 +24,7 @@ from siteapi.v1.serializers.perm import (
 )
 from common.django.drf.paginator import DefaultListPaginator
 from common.django.drf.views import catch_json_load_error
-from oneid.permissions import IsAdminUser
+from oneid.permissions import IsAdminUser, IsManagerUser
 from executer.log.rdb import LOG_CLI
 
 
@@ -33,6 +33,7 @@ class PermListCreateAPIView(generics.ListCreateAPIView):
     权限列表 [GET],[POST]
     """
     pagination_class = DefaultListPaginator
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -80,6 +81,15 @@ class PermListCreateAPIView(generics.ListCreateAPIView):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # 超管可以任意创建权限，子管理员只能为自己管理范围内的应用创建权限
+        app_uid = serializer.validated_data.get('scope')
+        user = request.user
+        if not user.is_admin:
+            app = APP.valid_objects.filter(uid=app_uid).first()
+            if not (app and app.under_manage(user)):
+                print("app", app)
+                raise PermissionDenied
+
         self.perform_create(serializer)
         perm = serializer.instance
 
