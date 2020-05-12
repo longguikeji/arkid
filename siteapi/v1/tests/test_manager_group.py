@@ -158,23 +158,35 @@ class ManagerGroupTestCase(TestCase):
         GroupMember.valid_objects.get_or_create(owner=manager_group, user=user)
 
         client = self.login_as(user)
-        # 子管理为管理范围内的应用创建权限
-        res = client.json_post(reverse('siteapi:perm_list'), data={
-            'name': 'p1',
-            'scope': 'app1',
-        })
+        # 子管理为管理范围内的应用创建权限，并编辑
+        res = client.json_post(reverse('siteapi:perm_list'), data={'name': 'p1', 'scope': 'app1', 'uid': 'app_app1_p1'})
         self.assertEqual(res.status_code, 201)
 
-        # 应用不在子管理员权限范围内
-        res = client.json_post(reverse('siteapi:perm_list'), data={
-            'name': 'p1',
-            'scope': 'app2',
+        res = client.json_patch(reverse('siteapi:perm_detail', args=('app_app1_p1', )), data={
+            'name': 'p2',
         })
+        self.assertEqual(res.status_code, 200)
+
+        # 应用不在子管理员权限范围内，无法创建
+        res = client.json_post(reverse('siteapi:perm_list'),
+                               data={
+                                   'name': 'p1',
+                                   'scope': 'app2',
+                                   'uid': 'app_app2_p1',
+                               })
         self.assertEqual(res.status_code, 403)
 
         # 超管可以任意创建
-        res = self.client.json_post(reverse('siteapi:perm_list'), data={
-            'name': 'p1',
-            'scope': 'app2',
-        })
+        res = self.client.json_post(reverse('siteapi:perm_list'),
+                                    data={
+                                        'name': 'p1',
+                                        'scope': 'app2',
+                                        'uid': 'app_app2_p1',
+                                    })
         self.assertEqual(res.status_code, 201)
+
+        # 应用权限不在子管理员权限范围内，无法编辑
+        res = client.json_patch(reverse('siteapi:perm_detail', args=('app_app2_p1', )), data={
+            'name': 'p2',
+        })
+        self.assertEqual(res.status_code, 403)
