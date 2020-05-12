@@ -278,6 +278,15 @@ class GroupTestCase(TestCase):
             'visibility': 4,
         }
         self.assertEqual(res.json(), expect)
+
+        res = self.client.json_patch(reverse('siteapi:group_detail', args=('root', )), data={'visibility': 1})
+        expect = {
+            'node_scope': [],
+            'user_scope': [],
+            'visibility': 1,
+        }
+        self.assertEqualScoped(res.json(), expect, ['node_scope', 'user_scope', 'visibility'])
+
         res = self.client.json_patch(
             reverse('siteapi:group_detail', args=('root', )),
             data={'node_scope': {
