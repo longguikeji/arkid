@@ -196,7 +196,7 @@ export class managerSettingAction{
 
     }
 
-    public async editManager(page:Page){//编辑管理员bumen2user的权限
+    public async editManager(page:Page){//编辑管理员bumen2user的权限，添加查看日志权限
         const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
         await manageBtn.click();
 
