@@ -52,7 +52,7 @@ services:
       - "--collation-server=utf8mb4_unicode_ci"
 
   ldap:
-    image: longguikeji/ark-sql-ldap:1.2.0
+    image: longguikeji/ark-sql-ldap:1.3.0
     container_name: ${INSTANCE}-ldap
     restart: always
     networks:
@@ -69,6 +69,7 @@ services:
       - LDAP_PASSWORD=${LDAP_PASSWORD}
       - SQL_DB=arkid
       - BACKEND=sql
+      - SLAPD_NOFILE_SOFT=10000
 
   redis:
     image: redis:5.0.3
