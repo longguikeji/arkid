@@ -10,8 +10,6 @@ from oneid_meta.models import (
     User,
     DingUser,
     PosixUser,
-    Dept,
-    Group,
     UserPerm,
     CustomUser,
     NativeField,
@@ -183,7 +181,6 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     wechat_user = WechatUserSerializer(many=False, required=False, allow_null=True)
     custom_user = AdvanceCustomUserSerializer(many=False, required=False, allow_null=True)
     user_id = serializers.IntegerField(source='id', read_only=True)
-    nodes = serializers.SerializerMethodField()
 
     class Meta:    # pylint: disable=missing-docstring
 
@@ -201,7 +198,6 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'private_email',
             'position',
             'ding_user',
-        # 'posix_user',
             'custom_user',
             'wechat_user',
             'is_settled',
@@ -210,7 +206,6 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'origin_verbose',
             'hiredate',
             'remark',
-            'nodes',
             'created',
             'last_active_time',
             'is_extern_user',
@@ -326,18 +321,6 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             raise ValidationError(['existed'])
         return value
 
-    def get_nodes(self, obj):    # pylint: disable=no-self-use
-        '''
-        groups + nodes
-        '''
-        return self.get_groups(obj) + DeptSerializer(obj.depts, many=True).data
-
-    def get_groups(self, obj):    # pylint: disable=no-self-use
-        '''
-        出于业务需要，extern 不予展示
-        '''
-        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
-
 
 class UserWithPermSerializer(UserSerializer):
     '''
@@ -421,47 +404,52 @@ class UserListSerializer(DynamicFieldsModelSerializer):
         fields = ('users', )
 
 
-class EmployeeSerializer(DynamicFieldsModelSerializer):
+class EmployeeSerializer(UserSerializer):
     '''
-    Serializer for employee with user info, groups basic info, depts basic info
+    Serializer for User with Nodes
     '''
 
-    user = UserSerializer(source='*')
-
-    group_uids = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(),
-                                                    many=True,
-                                                    pk_field='uid',
-                                                    write_only=True,
-                                                    required=False)
-    dept_uids = serializers.PrimaryKeyRelatedField(queryset=Dept.objects.all(),
-                                                   many=True,
-                                                   pk_field='uid',
-                                                   write_only=True,
-                                                   required=False)
-
-    node_uids = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(),
-                                                   many=True,
-                                                   pk_field='uid',
-                                                   write_only=True,
-                                                   required=False)
+    nodes = serializers.SerializerMethodField()
 
     class Meta:    # pylint: disable=missing-docstring
+
         model = User
 
         fields = (
-            'group_uids',
-            'dept_uids',
-            'node_uids',
-            'user',
+            'user_id',
+            'username',
+            'name',
+            'email',
+            'mobile',
+            'employee_number',
+            'gender',
+            'avatar',
+            'private_email',
+            'position',
+            'ding_user',
+            'custom_user',
+            'wechat_user',
+            'is_settled',
+            'is_manager',
+            'is_admin',
+            'origin_verbose',
+            'hiredate',
+            'remark',
+            'nodes',
+            'created',
+            'last_active_time',
+            'is_extern_user',
+            'require_reset_password',
+            'has_password',
         )
 
-    def to_representation(self, instance):
+    def get_nodes(self, obj):    # pylint: disable=no-self-use
         '''
-        copy nodes from .user.nodes
+        groups + nodes
+        出于业务需要，extern 不予展示
         '''
-        res = super().to_representation(instance)
-        res['nodes'] = res['user']['nodes']
-        return res
+        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'],
+                               many=True).data + DeptSerializer(obj.depts, many=True).data
 
 
 class SubAccountSerializer(DynamicFieldsModelSerializer):
