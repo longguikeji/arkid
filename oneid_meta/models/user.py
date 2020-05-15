@@ -168,6 +168,13 @@ class User(BaseModel, PermOwnerMixin):
         return [item.owner for item in GroupMember.valid_objects.filter(user=self)]
 
     @property
+    def group_ids(self):
+        '''
+        用户直属组id
+        '''
+        return [item['owner_id'] for item in GroupMember.valid_objects.filter(user=self).values('owner_id')]
+
+    @property
     def ding_depts(self):
         '''
         用户所在部门中与钉钉同步的部分
@@ -200,6 +207,13 @@ class User(BaseModel, PermOwnerMixin):
         :rtype: list of Dept
         '''
         return [item.owner for item in DeptMember.valid_objects.filter(user=self)]
+
+    @property
+    def dept_ids(self):
+        '''
+        用户直属部门id
+        '''
+        return [item['owner_id'] for item in DeptMember.valid_objects.filter(user=self).values('owner_id')]
 
     @property
     def nodes(self):
