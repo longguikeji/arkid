@@ -2,6 +2,7 @@
 '''
 serializers for user
 '''
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -178,7 +179,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     '''
 
     ding_user = DingUserSerializer(many=False, required=False, allow_null=True)
-    posix_user = PosixUserSerializer(many=False, required=False, allow_null=True)
+    # posix_user = PosixUserSerializer(many=False, required=False, allow_null=True)
     wechat_user = WechatUserSerializer(many=False, required=False, allow_null=True)
     custom_user = AdvanceCustomUserSerializer(many=False, required=False, allow_null=True)
     user_id = serializers.IntegerField(source='id', read_only=True)
@@ -200,7 +201,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'private_email',
             'position',
             'ding_user',
-            'posix_user',
+        # 'posix_user',
             'custom_user',
             'wechat_user',
             'is_settled',
@@ -329,11 +330,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         '''
         groups + nodes
         '''
-        for item in self.get_groups(obj):
-            yield item
-
-        for item in DeptSerializer(obj.depts, many=True).data:
-            yield item
+        return self.get_groups(obj) + DeptSerializer(obj.depts, many=True).data
 
     def get_groups(self, obj):    # pylint: disable=no-self-use
         '''
@@ -430,10 +427,6 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
     '''
 
     user = UserSerializer(source='*')
-    groups = GroupSerializer(many=True, read_only=True)
-    depts = DeptSerializer(many=True, read_only=True)
-
-    nodes = serializers.SerializerMethodField()
 
     group_uids = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(),
                                                     many=True,
@@ -460,26 +453,15 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
             'dept_uids',
             'node_uids',
             'user',
-            'groups',
-            'depts',
-            'nodes',
         )
 
-    def get_nodes(self, obj):    # pylint: disable=no-self-use
+    def to_representation(self, instance):
         '''
-        groups + nodes
+        copy nodes from .user.nodes
         '''
-        for item in self.get_groups(obj):
-            yield item
-
-        for item in DeptSerializer(obj.depts, many=True).data:
-            yield item
-
-    def get_groups(self, obj):    # pylint: disable=no-self-use
-        '''
-        出于业务需要，extern 不予展示
-        '''
-        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
+        res = super().to_representation(instance)
+        res['nodes'] = res['user']['nodes']
+        return res
 
 
 class SubAccountSerializer(DynamicFieldsModelSerializer):
