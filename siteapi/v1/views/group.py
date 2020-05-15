@@ -28,7 +28,7 @@ from oneid.permissions import (
     NodeManagerReadable,
     CustomPerm,
 )
-from siteapi.v1.serializers.user import UserListSerializer, UserSerializer    # EmployeeSerializer
+from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
 from siteapi.v1.serializers.group import (
     GroupSerializer,
     GroupTreeSerializer,

@@ -213,13 +213,6 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             raise NotFound
         return user
 
-    def retrieve(self, request, *args, **kwargs):
-        '''
-        return user detail [GET]
-        '''
-        user = self.get_object()
-        return Response(EmployeeSerializer(user).data)
-
     def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''
         update user detail [PATCH]
@@ -227,8 +220,7 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         user = self.get_object()
         data = request.data
         user = CLI().update_user(user, data)
-        user_serializer = EmployeeSerializer(user)
-        return Response(user_serializer.data)
+        return Response(UserSerializer(user).data)
 
     def delete(self, request, *args, **kwargs):
         '''

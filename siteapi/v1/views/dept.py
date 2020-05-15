@@ -292,7 +292,6 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
 
     仅拥有此管理范围的管理员可见可编辑
     '''
-    # serializer_class = EmployeeSerializer
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
