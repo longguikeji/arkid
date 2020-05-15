@@ -223,6 +223,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         ding_user_data = validated_data.pop('ding_user', None)
         posix_user_data = validated_data.pop('posix_user', None)
         custom_user_data = validated_data.pop('custom_user', None)
+        wechat_user_data = validated_data.pop('wechat_user', None)
 
         user = User.objects.create(**validated_data)
 
@@ -240,6 +241,11 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             custom_user_serializer = CustomUserSerailizer(data=custom_user_data)
             custom_user_serializer.is_valid(raise_exception=True)
             custom_user_serializer.save(user=user)
+
+        if wechat_user_data:
+            wechat_user_serializer = WechatUserSerializer(data=wechat_user_data)
+            wechat_user_serializer.is_valid(raise_exception=True)
+            wechat_user_serializer.save(user=user)
 
         return user
 
