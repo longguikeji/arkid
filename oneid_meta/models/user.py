@@ -168,7 +168,7 @@ class User(BaseModel, PermOwnerMixin):
         用户直属组
         :rtype: list of Group
         '''
-        return [item.owner for item in GroupMember.valid_objects.filter(user=self)]
+        return (item.owner for item in GroupMember.valid_objects.filter(user=self).select_related('owner'))
 
     @property
     def group_ids(self):
@@ -209,7 +209,7 @@ class User(BaseModel, PermOwnerMixin):
         用户直属部门
         :rtype: list of Dept
         '''
-        return [item.owner for item in DeptMember.valid_objects.filter(user=self)]
+        return (item.owner for item in DeptMember.valid_objects.filter(user=self).select_related('owner'))
 
     @property
     def dept_ids(self):
@@ -662,8 +662,11 @@ class WechatUser(BaseModel):
     '''
     微信用户
     '''
+    class Meta:    # pylint: disable=missing-class-docstring
+        indexes = [models.Index(fields=['unionid'], name='wechatunionid_index')]
+
     user = models.OneToOneField(User, verbose_name='用户', related_name='wechat_user', on_delete=models.PROTECT)
-    unionid = models.TextField(max_length=255, blank=True, verbose_name='用户OPENID')
+    unionid = models.CharField(max_length=255, blank=True, verbose_name='用户OPENID')
 
 
 class QQUser(BaseModel):

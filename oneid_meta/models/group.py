@@ -54,7 +54,8 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         '''
         下属成员
         '''
-        return [item.user for item in GroupMember.valid_objects.filter(owner=self).order_by('order_no')]
+        return (item.user
+                for item in GroupMember.valid_objects.filter(owner=self).order_by('order_no').select_related('user'))
 
     @property
     def groups(self):
