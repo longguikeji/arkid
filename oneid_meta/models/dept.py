@@ -61,7 +61,8 @@ class Dept(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         '''
         下属成员
         '''
-        return [item.user for item in DeptMember.valid_objects.filter(owner=self).order_by('order_no')]
+        return (item.user
+                for item in DeptMember.valid_objects.filter(owner=self).order_by('order_no').select_related('user'))
 
     @property
     def perms(self):
