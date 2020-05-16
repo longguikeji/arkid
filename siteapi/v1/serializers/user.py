@@ -18,8 +18,8 @@ from oneid_meta.models import (
 )
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from common.django.drf.serializer import IgnoreNoneMix
-from siteapi.v1.serializers.dept import DeptSerializer
-from siteapi.v1.serializers.group import GroupSerializer
+from siteapi.v1.serializers.dept import DeptLiteSerializer
+from siteapi.v1.serializers.group import GroupLiteSerializer
 from siteapi.v1.serializers.utils import username_valid
 
 
@@ -454,8 +454,8 @@ class EmployeeSerializer(UserSerializer):
         groups + nodes
         出于业务需要，extern 不予展示
         '''
-        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'],
-                               many=True).data + DeptSerializer(obj.depts, many=True).data
+        return GroupLiteSerializer([group for group in obj.groups if group.uid != 'extern'],
+                                   many=True).data + DeptLiteSerializer(obj.depts, many=True).data
 
 
 class SubAccountSerializer(DynamicFieldsModelSerializer):

@@ -1,6 +1,8 @@
+# pylint: disable=too-many-lines
 '''
 serializers for group
 '''
+from django.urls import resolve
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from common.django.drf.serializer import (
@@ -25,7 +27,6 @@ class DingGroupSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for DingGroup
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = DingGroup
         fields = (
@@ -40,7 +41,6 @@ class ManagerGroupSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for ManagerGroup
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = ManagerGroup
         fields = (
@@ -177,7 +177,7 @@ class VerboseManagerGroupSerializer(DynamicFieldsModelSerializer):
         '''
         更新有效管理范围
         '''
-        res= super().to_representation(instance)
+        res = super().to_representation(instance)
 
         if instance.scope_subject == 2:
             res['nodes'] = list(res['nodes'])
@@ -197,9 +197,31 @@ class VerboseManagerGroupSerializer(DynamicFieldsModelSerializer):
         return res
 
 
-class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
+class GroupLiteSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     '''
     Serializer for Group with basic info
+    '''
+    group_id = serializers.IntegerField(source='id', read_only=True)
+    node_uid = serializers.CharField(read_only=True)
+    node_subject = serializers.CharField(read_only=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = Group
+
+        fields = (
+            'group_id',
+            'node_uid',
+            'node_subject',
+            'uid',
+            'name',
+            'remark',
+            'accept_user',
+        )
+
+
+class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
+    '''
+    Serializer for Group with basic info & *_group
     '''
 
     group_id = serializers.IntegerField(source='id', read_only=True)
@@ -228,7 +250,6 @@ class GroupDetailSerializer(GroupSerializer):
     '''
     group info with parent_uid
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = Group
 
@@ -430,7 +451,6 @@ class GroupTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
 
         url_name = self.context.get('url_name', '')
         if not url_name:
-            from django.urls import resolve
             url_name = resolve(self.context['request'].path_info).url_name
         if 'group' in url_name:
             self.children_name = 'groups'
