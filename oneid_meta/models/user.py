@@ -5,12 +5,11 @@ schema of Users
 
 # pylint: disable=too-many-lines
 from itertools import chain
+
 from django.core.cache import cache
 from django.db import models
-from django.contrib.auth.models import User as DjangoUser
 from django.conf import settings
 from django.utils import timezone
-# from django.db.utils import IntegrityError
 import jsonfield
 from rest_framework.exceptions import ValidationError
 from common.django.model import BaseModel, IgnoreDeletedManager
@@ -35,6 +34,12 @@ class User(BaseModel, PermOwnerMixin):
     '''
     OneID 用户
     '''
+
+    uuid = None
+
+    class Meta:    # pylint: disable=missing-class-docstring
+        indexes = [models.Index(fields=['username'], name='username_index')]
+
     GENDER_CHOICES = (
         (0, '未知'),
         (1, '男'),
@@ -47,8 +52,6 @@ class User(BaseModel, PermOwnerMixin):
         (3, '手机注册'),
         (4, '邮箱注册'),
     )
-    django_user = models.ForeignKey(DjangoUser, null=True, on_delete=models.PROTECT)
-    # 之后开发中尽量不用DjangoUser，若最后确实可以不用，则删除
     username = models.CharField(max_length=255, blank=False, verbose_name='唯一标识')
     password = models.CharField(max_length=1024, blank=False, verbose_name='密码')
     name = models.CharField(max_length=255, blank=True, default='', verbose_name='姓名')

@@ -20,6 +20,9 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
 
     NODE_PREFIX = 'g_'
 
+    class Meta:    # pylint: disable=missing-class-docstring
+        indexes = [models.Index(fields=['uid'], name='group_uid_index')]
+
     uid = models.CharField(max_length=255, blank=False, verbose_name='唯一标识')
     remark = models.TextField(default='', blank=True, verbose_name='选项介绍')
     name = models.CharField(max_length=255, blank=False, verbose_name='组名称')
