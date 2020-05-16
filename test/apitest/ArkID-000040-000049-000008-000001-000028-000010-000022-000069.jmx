@@ -345,14 +345,14 @@
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="添加账号" enabled="false">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="添加账号" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">150</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">60</stringProp>
+        <stringProp name="ThreadGroup.num_threads">100</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">20</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
@@ -368,7 +368,7 @@
           </collectionProp>
         </HeaderManager>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="账号管理-账号信息" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="账号管理-账号信息" enabled="false">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
@@ -406,31 +406,30 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="添加账号" enabled="false">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="添加账号" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{&quot;node_uids&quot;:[&quot;d_bumensan11&quot;],&#xd;
-&quot;0&quot;: &quot;d_bumensan11&quot;,&#xd;
+                <stringProp name="Argument.value">{&quot;node_uids&quot;:[&quot;d_yanfabubxiangmu2&quot;,&quot;d_axiangmuqianduan3&quot;],&#xd;
 &quot;user&quot;:{&#xd;
 &quot;avatar&quot;: &quot;&quot;,&#xd;
 &quot;depts&quot;: null,&#xd;
-&quot;email&quot;: &quot;&quot;,&#xd;
+&quot;email&quot;: &quot;${__Random(000,999,)}${__Random(000,999,)}${__Random(000,999,)}@qq.com&quot;,&#xd;
 &quot;employee_number&quot;: &quot;&quot;,&#xd;
 &quot;gender&quot;: 0,&#xd;
 &quot;has_password&quot;: true,&#xd;
 &quot;is_settled&quot;: false,&#xd;
 &quot;mobile&quot;: &quot;&quot;,&#xd;
 &quot;name&quot;: &quot;${__RandomString(1,abcdefg,)}${__Random(000,999,)}${__RandomString(2,klmnopqrstuvm,)}&quot;,&#xd;
-&quot;nodes&quot;: [{&quot;node_uid&quot;: &quot;d_bumensan11&quot;, &quot;name&quot;: &quot;部门一&quot;, &quot;node_scope&quot;: [], &quot;user_scope&quot;: [], &quot;users&quot;: []}],&#xd;
-&quot;password&quot;: &quot;123412&quot;,&#xd;
+&quot;nodes&quot;:&quot;&quot;,&#xd;
+&quot;password&quot;: &quot;111111&quot;,&#xd;
 &quot;position&quot;: &quot;&quot;,&#xd;
 &quot;private_email&quot;: &quot;&quot;,&#xd;
 &quot;require_reset_password&quot;: false,&#xd;
 &quot;roles&quot;: null,&#xd;
-&quot;username&quot;: &quot;${__RandomString(1,aabuvwxyz,)}${__Random(000,999,)}${__RandomString(2,4567881qrstuvm,)}&quot;&#xd;
+&quot;username&quot;: &quot;${__RandomString(1,aabuvefgwxyz,)}${__Random(000,999,)}${__RandomString(2,4567881qrstuvm,)}&quot;&#xd;
  }}&#xd;
  </stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
@@ -1024,7 +1023,7 @@
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="空白接口-性能极值" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="空白接口-性能极值" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
