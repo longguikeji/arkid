@@ -14,6 +14,8 @@ class Dept(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
     '''
     OneID 部门
     '''
+    class Meta:    # pylint: disable=missing-class-docstring
+        indexes = [models.Index(fields=['uid'], name='dept_uid_index')]
 
     NODE_PREFIX = 'd_'
 
