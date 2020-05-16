@@ -17,7 +17,6 @@ class DingDeptSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for DingDept
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = DingDept
 
@@ -27,9 +26,30 @@ class DingDeptSerializer(DynamicFieldsModelSerializer):
         )
 
 
-class DeptSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
+class DeptLiteSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     '''
     Serializer for Dept with basic info
+    '''
+    dept_id = serializers.IntegerField(source='id', read_only=True)
+    node_uid = serializers.CharField(read_only=True)
+    node_subject = serializers.CharField(read_only=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = Dept
+
+        fields = (
+            'dept_id',
+            'node_uid',
+            'node_subject',
+            'uid',
+            'name',
+            'remark',
+        )
+
+
+class DeptSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
+    '''
+    Serializer for Dept with basic info & *_dept
     '''
 
     dept_id = serializers.IntegerField(source='id', read_only=True)
@@ -55,7 +75,6 @@ class DeptDetailSerializer(DeptSerializer):
     '''
     dept info with parent_uid
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = Dept
 

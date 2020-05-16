@@ -86,11 +86,11 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
 
         user = self.request.user
         if user.is_admin:
-            return queryset
+            return queryset.select_related('wechat_user', 'custom_user', 'ding_user')
 
         under_manage_user_ids = set()
 
-        for item in queryset:
+        for item in queryset:    # 这种遍历不能接受
             if item.is_visible_to_manager(user):
                 under_manage_user_ids.add(item.username)
 
