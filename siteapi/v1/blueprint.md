@@ -885,9 +885,12 @@ https://open-doc.dingtalk.com/microapp/serverapi2/clotub
 + Response 200 (application/json)
     + Attributes (UserProfile)
 
-## 用户在当前组织内的信息 [/ucenter/org/profile/]
+## 用户在指定组织内的信息 [/ucenter/org/{oid}/profile/]
 
-### 获取用户在当前组织内的信息 [GET]
+ + Parameters
+    + oid (string) - 组织唯一标识
+
+### 获取用户在组织内的信息 [GET]
 + Response 200 (application/json)
     + Attributes
         + employee_number - 工号
