@@ -57,10 +57,14 @@ def select_uids():      #随机选择分组
     c32 = random.sample(uidlabel2,3)
     d32 = random.sample(uidlabel2,4)
 
-    #aa1 = a321.append(a31)
-    #aa2 = b32.append(a31)
-    #aa3 = c32.append(a31)
-    #aa4 = d32.append(a31)
+    aa1 = a321.copy()
+    aa1.insert(0,a31)
+    aa2 = b32.copy()
+    aa2.insert(0,a31)
+    aa3 = c32.copy()
+    aa3.insert(0,a31)
+    aa4 = d32.copy()
+    aa4.insert(0,a31)
 
     uidxingbie = ["g_nan","g_nv"]
     a4 = random.choice(uidxingbie)
@@ -76,8 +80,7 @@ def select_uids():      #随机选择分组
     uid3 = random.sample(uid, 4)
     uid4 = random.sample(uid,5)
 
-    #uids = [a11,b1,c1,a22,a311,a321,b32,c32,d32,aa1,aa2,aa3,aa4,a44,a55,uid,uid1,uid2,uid3,uid4]
-    uids = [a11,b1,c1,a22,a311,a321,b32,c32,d32,a44,a55,uid,uid1,uid2,uid3,uid4]
+    uids = [a11,b1,c1,a22,a311,a321,b32,c32,d32,aa1,aa2,aa3,aa4,a44,a55,uid,uid1,uid2,uid3,uid4]
     node_uids = random.choice(uids)
 
     return node_uids
