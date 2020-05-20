@@ -1,5 +1,26 @@
 import requests,urllib,demjson
 import random,string
+import json
+
+localhost = '192.168.200.115:8989'
+
+def login():         #提取登录后的token
+    url = 'http://'+ localhost + '/siteapi/oneid/ucenter/login/'
+
+    headers = {
+        'Content-Type': 'application/json;charset=UTF-8'
+    }
+    payload = {
+        "password": "admin",
+        "username": "admin"
+    }
+
+    data=json.dumps(payload)
+
+    response = requests.post(url, data=data, headers=headers)
+    # 返回JSON中data数据的token
+    token = response.json()['token']
+    return token
 
 def create_email(randomlength=10):
     #生成邮箱
@@ -34,58 +55,153 @@ def create_username(randomlength=6):
     username = ''.join(str_list)        #生成列表
     return username
 
+def getd_root():
+
+    token = login()
+    url = 'http://'+ localhost + '/siteapi/oneid/node/d_root/list/'
+
+    headers = {
+        'Authorization': "token " + token,
+    }
+
+    r = requests.get(url = url,headers = headers)
+    a = r.json()
+    root = []
+    for i in range(1,len(a)): 
+        root.append(a[i]["node_uid"])
+    return root
+
+def getg_role():
+    token = login()
+    url = 'http://'+ localhost + '/siteapi/oneid/node/g_role/list/'
+
+    headers = {
+        'Authorization': "token " + token,
+    }
+
+    r = requests.get(url = url,headers = headers)
+    a = r.json()
+    role = []
+    for i in range(1,len(a)): 
+        role.append(a[i]["node_uid"])
+    
+    return role
+
+def getg_label():
+    token = login()
+    url = 'http://'+ localhost + '/siteapi/oneid/node/g_label/list/'
+
+    headers = {
+        'Authorization': "token " + token,
+    }
+
+    r = requests.get(url = url,headers = headers)
+    a = r.json()
+    label = []
+    for i in range(1,len(a)): 
+        label.append(a[i]["node_uid"])
+    
+    return label
+
+def getg_personal():
+    token = login()
+    url = 'http://'+ localhost + '/siteapi/oneid/meta/node/'
+
+    headers = {
+        'Authorization': "token " + token,
+    }
+
+    r = requests.get(url = url,headers = headers)
+    a = r.json()
+    b = a[1]["nodes"]
+
+    zidingyi = []
+    for i in range(0,len(b)):
+        zidingyi.append(b[i]["node_uid"])
+    return zidingyi
+
+node = getg_personal()
+
+def getPergroup(node, x):
+    token = login()
+    url = 'http://'+ localhost + '/siteapi/oneid/node/'+node[x]+'/list/'
+
+    headers = {
+        'Authorization': "token " + token,
+    }
+
+    r = requests.get(url = url,headers = headers)
+    a = r.json()
+    
+    b = []
+
+    for i in range(1,len(a)): 
+        b.append(a[i]["node_uid"])
+
+    return b
+
+pergroup = []
+for x in range(0,len(node)):
+    pergroup += getPergroup(node, x)
+
 def select_uids():      #随机选择分组
 
-    uidroot = ["d_longguikkeji","d_axiangmuqianduan3","d_fuwuqi","d_zhongjianjian4","d_diyixiaozu5","d_dierxiaozu2","d_yanfabubxiangmu2","d_achanpinzhenglixuqiu3","d_achanpinuisheji","d_bchanpin2","d_yizu4","d_erzu4","d_xingnengceshi","d_shouhoujishuzhichi2","d_xiaoshoubu","d_caiwubu","d_renliziyuanbu"]
-    a1 = random.choice(uidroot)
+    root = getd_root()
+    role = getg_role()
+    label = getg_label()
+
+    uidroot = root
+    #a1 = random.choice(uidroot)
     a11 = random.sample(uidroot, 1)
     b1 = random.sample(uidroot, 2)
     c1 = random.sample(uidroot, 3)
+    d1 = [a11,b1,c1]
+    d11 = random.choice(d1)
+        #部门分类组合
 
-    uidrole = ["g_gm","g_chanpinjingli","g_jishuzongjian"]
+    uidrole = role          #角色分类
     a2 = random.choice(uidrole)
     a22 = random.sample(uidrole,1)
 
-    uidlabel1 = ["g_shixi","g_yinianyinei","g_yidaosannian","g_sannianyishang"]
-    uidlabel2 = ["g_c","g_c1","g_java","g_php","g_django","g_python"]
-    a31 = random.choice(uidlabel1)
-    a311 = random.sample(uidlabel1,1)
+    uidlabel = label       #标签分类
+    a3 = random.choice(uidlabel)
+    a31 = random.sample(uidlabel,1)
+    b3 = random.sample(uidlabel,2)
+    c3 = random.sample(uidlabel,3)
+    d3 = random.sample(uidlabel,4)
+    e3 = random.sample(uidlabel,5)
 
-    a32 = random.choice(uidlabel2)
-    a321 = random.sample(uidlabel2,1)
-    b32 = random.sample(uidlabel2,2)
-    c32 = random.sample(uidlabel2,3)
-    d32 = random.sample(uidlabel2,4)
+    uidpergroup = pergroup                 #自定义分类
+    z = len(uidpergroup)
 
-    aa1 = a321.copy()
-    aa1.insert(0,a31)
-    aa2 = b32.copy()
-    aa2.insert(0,a31)
-    aa3 = c32.copy()
-    aa3.insert(0,a31)
-    aa4 = d32.copy()
-    aa4.insert(0,a31)
+    if z == 1:
+        a4 = random.sample(uidpergroup, 1)
+        b4 = []
+        c4 = []
+    elif 1 < z <= 3:
+        a4 = random.sample(uidpergroup, 1)
+        b4 = random.sample(uidpergroup, 2)
+        c4 = []
+    elif z >  3:
+        a4 = random.sample(uidpergroup, 1)
+        b4 = random.sample(uidpergroup, 2)
+        c4 = random.sample(uidpergroup, 3)
+    else :
+        a4 = []
 
-    uidxingbie = ["g_nan","g_nv"]
-    a4 = random.choice(uidxingbie)
-    a44 = random.sample(uidxingbie, 1)
+        
+    uid = [a2,a3]
+    uid1 = random.sample(uid,1)
+    uid2 = random.sample(uid, 2)
 
-    uidzhengzhimianmao = ["g_tuanyuan","g_dangyuan","g_qunzhong"]
-    a5 = random.choice(uidzhengzhimianmao)
-    a55 = random.sample(uidzhengzhimianmao,1)
-
-    uid = [a1,a2,a31,a32,a4,a5]
-    uid1 = random.sample(uid, 2)
-    uid2 = random.sample(uid, 3)
-    uid3 = random.sample(uid, 4)
-    uid4 = random.sample(uid,5)
-
-    uids = [a11,b1,c1,a22,a311,a321,b32,c32,d32,aa1,aa2,aa3,aa4,a44,a55,uid,uid1,uid2,uid3,uid4]
-    node_uids = random.choice(uids)
+    uids = [a22,a31,a31,b3,c3,d3,e3,a4,b4,c4,uid,uid1,uid2]
+    node_uids = random.choice(uids) + d11
 
     return node_uids
 
 def addAccounts():
+
+    token = login()
 
     email = create_email()
 
@@ -95,12 +211,11 @@ def addAccounts():
 
     node_uids = select_uids()
 
-    url = 'http://192.168.200.115:8989/siteapi/oneid/user/'
+    url = 'http://' + localhost + '/siteapi/oneid/user/'
 
     headers = {
-        'Authorization': 'token b149e74b33056bb7ffcd834e87fbe66dded240d8',
+        'Authorization': "token " + token,
         'Content-Type': 'application/json;charset=UTF-8',
-        'Cookie': 'csrftoken=W4hnIQKJaAQOfjcm12ycnxWUJWAP567UpHiPPLTWsAwAU6NDu4i8hSDF5jHSC0JI; spauthn=b149e74b33056bb7ffcd834e87fbe66dded240d8',
     }
 
     params = {
@@ -130,6 +245,5 @@ def addAccounts():
     r = requests.post(url = url,data = data,headers = headers)
     return r
     
-for i in range(1,3):      #循环调用函数，添加账号
+for i in range(0,3):      #循环调用函数，添加账号,添加的账号数为range函数的第二个参数值
     addAccounts()
-
