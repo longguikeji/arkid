@@ -9,12 +9,9 @@
 ```
 localhost = '192.168.200.115:8989'
 ```  
-3. 修改 `login` 函数中 `payload` 两个键 `password` 和 `username` 对应的值             
+3. 修改第25行调用 `login` 函数的参数，第一个参数为密码，第二个参数为用户名                    
 ```
-payload = {
-        "password": "admin",
-        "username": "admin"
-    }
+token = login("admin","admin")
 ```
 4. 修改文件最后的 `range` 函数的第二个参数值为想要添加的账号个数    
 ```
