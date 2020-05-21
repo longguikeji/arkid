@@ -4,15 +4,15 @@ import json
 
 localhost = '192.168.200.115:8989'
 
-def login():         #提取登录后的token
+def login(password,username):         #提取登录后的token
     url = 'http://'+ localhost + '/siteapi/oneid/ucenter/login/'
 
     headers = {
         'Content-Type': 'application/json;charset=UTF-8'
     }
     payload = {
-        "password": "admin",
-        "username": "admin"
+        "password": password,
+        "username": username
     }
 
     data=json.dumps(payload)
@@ -21,6 +21,8 @@ def login():         #提取登录后的token
     # 返回JSON中data数据的token
     token = response.json()['token']
     return token
+
+token = login("admin","admin")
 
 def create_email(randomlength=10):
     #生成邮箱
@@ -57,7 +59,6 @@ def create_username(randomlength=6):
 
 def getd_root():
 
-    token = login()
     url = 'http://'+ localhost + '/siteapi/oneid/node/d_root/list/'
 
     headers = {
@@ -72,7 +73,7 @@ def getd_root():
     return root
 
 def getg_role():
-    token = login()
+
     url = 'http://'+ localhost + '/siteapi/oneid/node/g_role/list/'
 
     headers = {
@@ -88,7 +89,7 @@ def getg_role():
     return role
 
 def getg_label():
-    token = login()
+
     url = 'http://'+ localhost + '/siteapi/oneid/node/g_label/list/'
 
     headers = {
@@ -104,7 +105,7 @@ def getg_label():
     return label
 
 def getg_personal():
-    token = login()
+
     url = 'http://'+ localhost + '/siteapi/oneid/meta/node/'
 
     headers = {
@@ -123,7 +124,7 @@ def getg_personal():
 node = getg_personal()
 
 def getPergroup(node, x):
-    token = login()
+
     url = 'http://'+ localhost + '/siteapi/oneid/node/'+node[x]+'/list/'
 
     headers = {
@@ -203,8 +204,6 @@ def select_uids():      #随机选择分组
     return node_uids
 
 def addAccounts():
-
-    token = login()
 
     email = create_email()
 
