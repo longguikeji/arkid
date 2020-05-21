@@ -151,7 +151,7 @@ def select_uids():      #随机选择分组
     label = getg_label()
 
     uidroot = root
-    #a1 = random.choice(uidroot)
+    a1 = uidroot[0]
     a11 = random.sample(uidroot, 1)
     b1 = random.sample(uidroot, 2)
     c1 = random.sample(uidroot, 3)
@@ -174,27 +174,30 @@ def select_uids():      #随机选择分组
     uidpergroup = pergroup                 #自定义分类
     z = len(uidpergroup)
 
-    if z == 1:
+    if 1<= z <=3:
         a4 = random.sample(uidpergroup, 1)
         b4 = []
         c4 = []
-    elif 1 < z <= 3:
+    elif 3 < z <= 6:
         a4 = random.sample(uidpergroup, 1)
         b4 = random.sample(uidpergroup, 2)
         c4 = []
-    elif z >  3:
+    elif z >  6:
         a4 = random.sample(uidpergroup, 1)
         b4 = random.sample(uidpergroup, 2)
         c4 = random.sample(uidpergroup, 3)
     else :
         a4 = []
+        b4 = []
+        c4 = []
 
         
-    uid = [a2,a3]
+    uid = [a1,a2,a3]
     uid1 = random.sample(uid,1)
     uid2 = random.sample(uid, 2)
+    uid3 = random.sample(uid,3)
 
-    uids = [a22,a31,a31,b3,c3,d3,e3,a4,b4,c4,uid,uid1,uid2]
+    uids = [a22,a31,a31,b3,c3,d3,e3,a4,b4,c4,uid,uid1,uid2,uid3]
     node_uids = random.choice(uids) + d11
 
     return node_uids
@@ -245,5 +248,5 @@ def addAccounts():
     r = requests.post(url = url,data = data,headers = headers)
     return r
     
-for i in range(0,3):      #循环调用函数，添加账号,添加的账号数为range函数的第二个参数值
+for i in range(0,2000):      #循环调用函数，添加账号,添加的账号数为range函数的第二个参数值
     addAccounts()
