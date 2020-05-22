@@ -32,8 +32,8 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <stringProp name="ThreadGroup.num_threads">650</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
@@ -131,7 +131,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">450</stringProp>
+        <stringProp name="ThreadGroup.num_threads">500</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -192,7 +192,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">750</stringProp>
+        <stringProp name="ThreadGroup.num_threads">100</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -257,7 +257,7 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="角色分类数据" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="角色分类数据" enabled="false">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
@@ -284,6 +284,25 @@
           </BeanShellPostProcessor>
           <hashTree/>
         </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="性别分类数据" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/siteapi/oneid/ucenter/node/g_xingbie/tree/?user_required=true</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="编辑个人资料" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
@@ -345,14 +364,14 @@
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="添加账号" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="添加账号" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">100</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">20</stringProp>
+        <stringProp name="ThreadGroup.num_threads">80</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
@@ -368,7 +387,7 @@
           </collectionProp>
         </HeaderManager>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="账号管理-账号信息" enabled="false">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="账号管理-账号信息" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
@@ -406,13 +425,13 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="添加账号" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="添加账号" enabled="false">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{&quot;node_uids&quot;:[&quot;d_yanfabubxiangmu2&quot;,&quot;d_axiangmuqianduan3&quot;],&#xd;
+                <stringProp name="Argument.value">{&quot;node_uids&quot;:[&quot;${node_uids}&quot;],&#xd;
 &quot;user&quot;:{&#xd;
 &quot;avatar&quot;: &quot;&quot;,&#xd;
 &quot;depts&quot;: null,&#xd;
@@ -451,13 +470,6 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell 后置处理程序" enabled="true">
-            <boolProp name="resetInterpreter">false</boolProp>
-            <stringProp name="parameters"></stringProp>
-            <stringProp name="filename"></stringProp>
-            <stringProp name="script">prev.setDataEncoding(&quot;UTF-8&quot;);</stringProp>
-          </BeanShellPostProcessor>
-          <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
@@ -467,7 +479,82 @@
             </collectionProp>
           </HeaderManager>
           <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell 预处理程序" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">String[] uidroot = new String[]{&quot;d_longguikkeji&quot;,&quot;d_axiangmuqianduan3&quot;,&quot;d_fuwuqi&quot;,&quot;d_zhongjianjian4&quot;,&quot;d_diyixiaozu5&quot;,&quot;d_dierxiaozu2&quot;,&quot;d_yanfabubxiangmu2&quot;,&quot;d_achanpinzhenglixuqiu3&quot;,&quot;d_achanpinuisheji&quot;,&quot;d_bchanpin2&quot;,&quot;d_yizu4&quot;,&quot;d_erzu4&quot;,&quot;d_xingnengceshi&quot;,&quot;d_shouhoujishuzhichi2&quot;,&quot;d_xiaoshoubu&quot;,&quot;d_caiwubu&quot;,&quot;d_renliziyuanbu&quot;};
+Random random1 = new Random();
+int a = random1.nextInt(uidroot.length);
+
+String[] uidrole = new String[]{&quot;g_gm&quot;,&quot;g_chanpinjingli&quot;,&quot;g_jishuzongjian&quot;};
+Random random2 = new Random();
+int b = random2.nextInt(uidrole.length);
+
+String[] uidlabel = new String[]{&quot;g_shixi&quot;,&quot;g_yinianyinei&quot;,&quot;g_yidaosannian&quot;,&quot;g_sannianyishang&quot;,&quot;g_c&quot;,&quot;g_c1&quot;,&quot;g_java&quot;,&quot;g_php&quot;,&quot;g_django&quot;,&quot;g_python&quot;};
+Random random3 = new Random();
+int c = random3.nextInt(uidlabel.length);
+
+String[] uidxingbie = new String[]{&quot;g_nan&quot;,&quot;g_nv&quot;};
+Random random4 = new Random();
+int d = random4.nextInt(uidxingbie.length);
+
+String[] uidzhengzhimianmao = new String[]{&quot;g_tuanyuan&quot;,&quot;g_dangyuan&quot;,&quot;g_qunzhong&quot;};
+Random random5 = new Random();
+int e = random5.nextInt(uidzhengzhimianmao.length);
+
+String[] aa = new String[]{uidzhengzhimianmao[e],uidxingbie[d]};
+Random random6 = new Random();
+int f = random6.nextInt(aa.length);
+
+String uids1 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidrole[b] ;
+
+String uids2 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidlabel[c] ;
+
+String uids3 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidxingbie[d] ;
+
+String uids4 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidzhengzhimianmao[e] ;
+
+String uids5 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidrole[b] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidlabel[c] ;
+
+String uids6 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidrole[b] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidxingbie[d] ;
+
+String uids7 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidrole[b] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidzhengzhimianmao[e] ;
+
+String uids8 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidxingbie[d] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidzhengzhimianmao[e] ;
+
+String uids9 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidxingbie[d] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidlabel[c] ;
+
+String uids10 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidzhengzhimianmao[e] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidlabel[c] ;
+
+String uids11 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidrole[b] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidlabel[c] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidxingbie[d];
+
+String uids12 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidrole[b] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidlabel[c] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidzhengzhimianmao[e];
+
+String uids13 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidxingbie[d] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidlabel[c] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidzhengzhimianmao[e];
+
+String uids14 =uidroot[a] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidxingbie[d] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidlabel[c] +&apos;&quot;&apos; + &quot;,&quot; + &apos;&quot;&apos; + uidzhengzhimianmao[e] + &apos;&quot;&apos; +&quot;,&quot; + &apos;&quot;&apos; + uidrole[b];
+
+String[] node_uids = new String[]{uidroot[a],uidrole[b],uidlabel[c],uidxingbie[d],uidzhengzhimianmao[e],uids1,uids2,uids3,uids4,uids5,uids6,uids7,uids8,uids9,uids10,uids11,uids12,uids13,uids14};
+Random random = new Random();
+int z = random.nextInt(node_uids.length);
+vars.put(&quot;node_uids&quot;,node_uids[z]);</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell 后置处理程序" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="script">prev.setDataEncoding(&quot;UTF-8&quot;);</stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
         </hashTree>
+        <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="调试取样器" enabled="false">
+          <boolProp name="displayJMeterProperties">false</boolProp>
+          <boolProp name="displayJMeterVariables">true</boolProp>
+          <boolProp name="displaySystemProperties">false</boolProp>
+        </DebugSampler>
+        <hashTree/>
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="编辑账号" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
@@ -666,7 +753,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.num_threads">2</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -709,7 +796,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">150</stringProp>
+        <stringProp name="ThreadGroup.num_threads">250</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -752,7 +839,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">650</stringProp>
+        <stringProp name="ThreadGroup.num_threads">700</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -799,7 +886,7 @@
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">{&#xd;
-&quot;company_config&quot;:{&quot;name_cn&quot;: &quot;123&quot;, &quot;icon&quot;: &quot;&quot;, &quot;color&quot;: &quot;F48FB1&quot;}&#xd;
+&quot;company_config&quot;:{&quot;name_cn&quot;: &quot;北京龙归科技&quot;, &quot;icon&quot;: &quot;&quot;, &quot;color&quot;: &quot;F48FB1&quot;}&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -827,7 +914,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">150</stringProp>
+        <stringProp name="ThreadGroup.num_threads">200</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -874,7 +961,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">600</stringProp>
+        <stringProp name="ThreadGroup.num_threads">650</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -921,7 +1008,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">250</stringProp>
+        <stringProp name="ThreadGroup.num_threads">300</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -986,7 +1073,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1700</stringProp>
+        <stringProp name="ThreadGroup.num_threads">1900</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -1023,13 +1110,13 @@
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="空白接口-性能极值" enabled="false">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="空白接口-性能极值" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">7200</stringProp>
+        <stringProp name="ThreadGroup.num_threads">7100</stringProp>
         <stringProp name="ThreadGroup.ramp_time">60</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -1066,7 +1153,7 @@
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="RespTimeGraphVisualizer" testclass="ResultCollector" testname="响应时间图" enabled="true">
+      <ResultCollector guiclass="RespTimeGraphVisualizer" testclass="ResultCollector" testname="响应时间图" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
