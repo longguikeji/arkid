@@ -18,6 +18,8 @@ services:
   be:
     image: longguikeji/arkid:1.3.0
     container_name: ${INSTANCE}-be
+    sysctls:
+      - net.core.somaxconn=65535
     restart: always
     networks:
       - arkid

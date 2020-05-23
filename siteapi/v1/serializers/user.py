@@ -2,6 +2,7 @@
 '''
 serializers for user
 '''
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -9,8 +10,6 @@ from oneid_meta.models import (
     User,
     DingUser,
     PosixUser,
-    Dept,
-    Group,
     UserPerm,
     CustomUser,
     NativeField,
@@ -19,8 +18,8 @@ from oneid_meta.models import (
 )
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from common.django.drf.serializer import IgnoreNoneMix
-from siteapi.v1.serializers.dept import DeptSerializer
-from siteapi.v1.serializers.group import GroupSerializer
+from siteapi.v1.serializers.dept import DeptLiteSerializer
+from siteapi.v1.serializers.group import GroupLiteSerializer
 from siteapi.v1.serializers.utils import username_valid
 
 
@@ -178,11 +177,10 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     '''
 
     ding_user = DingUserSerializer(many=False, required=False, allow_null=True)
-    posix_user = PosixUserSerializer(many=False, required=False, allow_null=True)
+    # posix_user = PosixUserSerializer(many=False, required=False, allow_null=True)
     wechat_user = WechatUserSerializer(many=False, required=False, allow_null=True)
     custom_user = AdvanceCustomUserSerializer(many=False, required=False, allow_null=True)
     user_id = serializers.IntegerField(source='id', read_only=True)
-    nodes = serializers.SerializerMethodField()
 
     class Meta:    # pylint: disable=missing-docstring
 
@@ -200,7 +198,6 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'private_email',
             'position',
             'ding_user',
-            'posix_user',
             'custom_user',
             'wechat_user',
             'is_settled',
@@ -209,7 +206,6 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'origin_verbose',
             'hiredate',
             'remark',
-            'nodes',
             'created',
             'last_active_time',
             'is_extern_user',
@@ -227,6 +223,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         ding_user_data = validated_data.pop('ding_user', None)
         posix_user_data = validated_data.pop('posix_user', None)
         custom_user_data = validated_data.pop('custom_user', None)
+        wechat_user_data = validated_data.pop('wechat_user', None)
 
         user = User.objects.create(**validated_data)
 
@@ -244,6 +241,11 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             custom_user_serializer = CustomUserSerailizer(data=custom_user_data)
             custom_user_serializer.is_valid(raise_exception=True)
             custom_user_serializer.save(user=user)
+
+        if wechat_user_data:
+            wechat_user_serializer = WechatUserSerializer(data=wechat_user_data)
+            wechat_user_serializer.is_valid(raise_exception=True)
+            wechat_user_serializer.save(user=user)
 
         return user
 
@@ -325,22 +327,6 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             raise ValidationError(['existed'])
         return value
 
-    def get_nodes(self, obj):    # pylint: disable=no-self-use
-        '''
-        groups + nodes
-        '''
-        for item in self.get_groups(obj):
-            yield item
-
-        for item in DeptSerializer(obj.depts, many=True).data:
-            yield item
-
-    def get_groups(self, obj):    # pylint: disable=no-self-use
-        '''
-        出于业务需要，extern 不予展示
-        '''
-        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
-
 
 class UserWithPermSerializer(UserSerializer):
     '''
@@ -348,14 +334,12 @@ class UserWithPermSerializer(UserSerializer):
     '''
     perms = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
-    uuid = serializers.UUIDField(format='hex')
 
     class Meta:    # pylint: disable=missing-docstring
 
         model = User
 
         fields = (
-            'uuid',
             'user_id',
             'username',
             'name',
@@ -364,7 +348,6 @@ class UserWithPermSerializer(UserSerializer):
             'employee_number',
             'gender',
             'ding_user',
-            'posix_user',
             'perms',
             'avatar',
             'roles',
@@ -424,62 +407,52 @@ class UserListSerializer(DynamicFieldsModelSerializer):
         fields = ('users', )
 
 
-class EmployeeSerializer(DynamicFieldsModelSerializer):
+class EmployeeSerializer(UserSerializer):
     '''
-    Serializer for employee with user info, groups basic info, depts basic info
+    Serializer for User with Nodes
     '''
-
-    user = UserSerializer(source='*')
-    groups = GroupSerializer(many=True, read_only=True)
-    depts = DeptSerializer(many=True, read_only=True)
 
     nodes = serializers.SerializerMethodField()
 
-    group_uids = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(),
-                                                    many=True,
-                                                    pk_field='uid',
-                                                    write_only=True,
-                                                    required=False)
-    dept_uids = serializers.PrimaryKeyRelatedField(queryset=Dept.objects.all(),
-                                                   many=True,
-                                                   pk_field='uid',
-                                                   write_only=True,
-                                                   required=False)
-
-    node_uids = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(),
-                                                   many=True,
-                                                   pk_field='uid',
-                                                   write_only=True,
-                                                   required=False)
-
     class Meta:    # pylint: disable=missing-docstring
+
         model = User
 
         fields = (
-            'group_uids',
-            'dept_uids',
-            'node_uids',
-            'user',
-            'groups',
-            'depts',
+            'user_id',
+            'username',
+            'name',
+            'email',
+            'mobile',
+            'employee_number',
+            'gender',
+            'avatar',
+            'private_email',
+            'position',
+            'ding_user',
+            'custom_user',
+            'wechat_user',
+            'is_settled',
+            'is_manager',
+            'is_admin',
+            'origin_verbose',
+            'hiredate',
+            'remark',
             'nodes',
+            'created',
+            'last_active_time',
+            'is_extern_user',
+            'require_reset_password',
+            'has_password',
         )
 
     def get_nodes(self, obj):    # pylint: disable=no-self-use
         '''
         groups + nodes
-        '''
-        for item in self.get_groups(obj):
-            yield item
-
-        for item in DeptSerializer(obj.depts, many=True).data:
-            yield item
-
-    def get_groups(self, obj):    # pylint: disable=no-self-use
-        '''
         出于业务需要，extern 不予展示
         '''
-        return GroupSerializer([group for group in obj.groups if group.uid != 'extern'], many=True).data
+        return GroupLiteSerializer([group for group in obj.groups if group.uid != 'extern'],
+                                   many=True).data + DeptLiteSerializer(obj.depts, many=True).data
 
 
 class SubAccountSerializer(DynamicFieldsModelSerializer):

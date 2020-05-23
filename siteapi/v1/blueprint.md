@@ -101,10 +101,7 @@ FORMAT: 1A
 ## UserWithPermWithToken(UserWithPerm)
 + token (string)
 
-## Employee(object)
-+ user (User)
-+ groups (array[Group])
-+ depts (array[Dept])
+## Employee(User)
 + nodes (array[Node])
 
 ## SubAccount(object)
