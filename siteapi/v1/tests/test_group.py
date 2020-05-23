@@ -12,9 +12,6 @@ from oneid_meta.models import (
     GroupMember,
     Perm,
     UserPerm,
-    GroupPerm,
-    ManagerGroup,
-    APP,
 )
 
 
@@ -278,6 +275,15 @@ class GroupTestCase(TestCase):
             'visibility': 4,
         }
         self.assertEqual(res.json(), expect)
+
+        res = self.client.json_patch(reverse('siteapi:group_detail', args=('root', )), data={'visibility': 1})
+        expect = {
+            'node_scope': [],
+            'user_scope': [],
+            'visibility': 1,
+        }
+        self.assertEqualScoped(res.json(), expect, ['node_scope', 'user_scope', 'visibility'])
+
         res = self.client.json_patch(
             reverse('siteapi:group_detail', args=('root', )),
             data={'node_scope': {
@@ -522,113 +528,6 @@ class GroupTestCase(TestCase):
 
         expect = ['employee_3', 'employee_2', 'employee']
         self.assertEqual([user['username'] for user in res.json()['users']], expect)
-
-    def test_manager_group(self):
-        Group.objects.create(uid='manager', parent=self.root)
-        Group.objects.create(uid='n1', parent=self.root)
-        Group.objects.create(uid='n2', parent=self.root)
-        perm1 = Perm.objects.create(subject='system', scope='demo', action='access')
-        perm2 = Perm.objects.create(subject='system', scope='demo', action='admin')
-        res = self.client.json_post(reverse('siteapi:group_child_group', args=('manager', )),
-                                    data={
-                                        'manager_group': {
-                                            'nodes': ['g_n1'],
-                                            'users': ['u1'],
-                                            'apps': ['app1'],
-                                            'perms': ['system_demo_access'],
-                                            'scope_subject': 2,
-                                        }
-                                    })
-        uid = res.json()['uid']
-        self.assertTrue(GroupPerm.valid_objects.get(perm=perm1, owner__uid=uid).value)
-        self.assertFalse(GroupPerm.valid_objects.get(perm=perm2, owner__uid=uid).value)
-
-        expect = {
-            'nodes': ['g_n1'],
-            'users': ['u1'],
-            'apps': ['app1'],
-            'perms': ['system_demo_access'],
-            'scope_subject': 2
-        }
-        self.assertEqual(expect, res.json()['manager_group'])
-
-        res = self.client.json_patch(reverse('siteapi:group_detail', args=(uid, )),
-                                     data={'manager_group': {
-                                         'nodes': ['g_n2'],
-                                         'perms': ['system_demo_admin'],
-                                     }})
-        expect = {
-            'nodes': ['g_n2'],
-            'users': ['u1'],
-            'apps': ['app1'],
-            'perms': ['system_demo_admin'],
-            'scope_subject': 2,
-        }
-        self.assertEqual(expect, res.json()['manager_group'])
-        self.assertEqual(GroupPerm.valid_objects.get(perm=perm1, owner__uid=uid).status, 0)
-        self.assertTrue(GroupPerm.valid_objects.get(perm=perm2, owner__uid=uid).value)
-
-        manager_group = ManagerGroup.objects.get(group__uid=uid)
-        self.assertEqual(manager_group.nodes, ['g_n2'])
-        node_2 = Group.objects.get(uid='n2')
-        node_2.delete()
-        res = self.client.get(reverse('siteapi:group_child_group', args=('manager', )))
-        manager_group.refresh_from_db()
-        self.assertEqual(manager_group.nodes, [])
-
-    def test_manager_group_list(self):
-        APP.objects.create(uid='demo', name='test')
-        Perm.objects.create(subject='app', scope='demo', action='access')
-        parent = Group.objects.create(uid='manager')
-
-        group = Group.objects.create(uid='manager_group_1', parent=parent)
-        GroupMember.objects.create(owner=group, user=User.objects.get(username='employee'))
-        ManagerGroup.objects.create(group=group,
-                                    scope_subject=2,
-                                    users=['employee'],
-                                    perms=['app_demo_access'],
-                                    nodes=['root'],
-                                    apps=['demo'])
-        res = self.client.get(reverse('siteapi:node_child_node', args=('g_manager', )))
-        expect = {
-            'nodes': [{
-                'parent_uid': 'manager',
-                'parent_node_uid': 'g_manager',
-                'parent_name': '',
-                'group_id': 6,
-                'node_uid': 'g_manager_group_1',
-                'node_subject': 'root',
-                'uid': 'manager_group_1',
-                'name': '',
-                'remark': '',
-                'accept_user': True,
-                'manager_group': {
-                    'nodes': [],
-                    'users': [{
-                        'name': '',
-                        'username': 'employee'
-                    }],
-                    'apps': [{
-                        'uid': 'demo',
-                        'name': 'test'
-                    }],
-                    'perms': [{
-                        'uid': 'app_demo_access',
-                        'name': ''
-                    }],
-                    'scope_subject': 2
-                },
-                'visibility': 1,
-                'node_scope': [],
-                'user_scope': [],
-                'users': [{
-                    'user_id': 2,
-                    'username': 'employee',
-                    'name': ''
-                }]
-            }]
-        }
-        self.assertEqual(expect, res.json())
 
     def test_get_scope_list(self):
         res = self.client.get(reverse('siteapi:group_scope_list', args=('root', )))

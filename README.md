@@ -51,14 +51,6 @@ https://arkid.demo.longguikeji.com
 密码: longguikeji
 ```
 
-## Screenshots 
-
-![image](https://raw.githubusercontent.com/skoogi/charts/assets/assets/login.png)
-
-![image](https://raw.githubusercontent.com/skoogi/charts/assets/assets/ucenter.png)
-
-![image](https://raw.githubusercontent.com/skoogi/charts/assets/assets/admin.png)
-
 ## 文档
 
 - [完整文档](https://docs.arkid.longguikeji.com)
