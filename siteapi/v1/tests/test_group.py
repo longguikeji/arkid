@@ -453,57 +453,27 @@ class GroupTestCase(TestCase):
             'previous':
             None,
             'results': [{
-                'user_id':
-                2,
-                'hiredate':
-                None,
-                'last_active_time':
-                None,
-                'created':
-                self.now_str,
-                'remark':
-                '',
-                'avatar':
-                '',
-                'username':
-                'employee',
-                'is_settled':
-                False,
-                'has_password':
-                True,
-                'is_manager':
-                False,
-                'is_admin':
-                False,
-                'is_extern_user':
-                False,
-                'origin_verbose':
-                '脚本添加',
-                'name':
-                '',
-                'email':
-                '',
-                'position':
-                '',
-                'private_email':
-                '',
-                'mobile':
-                '',
-                'employee_number':
-                '',
-                'gender':
-                0,
-                'require_reset_password':
-                False,
-                'nodes': [{
-                    'accept_user': True,
-                    'group_id': 3,
-                    'name': 'role_1',
-                    'node_subject': 'root',
-                    'node_uid': 'g_role_1',
-                    'remark': '',
-                    'uid': 'role_1'
-                }],
+                'user_id': 2,
+                'hiredate': None,
+                'last_active_time': None,
+                'created': self.now_str,
+                'remark': '',
+                'avatar': '',
+                'username': 'employee',
+                'is_settled': False,
+                'has_password': True,
+                'is_manager': False,
+                'is_admin': False,
+                'is_extern_user': False,
+                'origin_verbose': '脚本添加',
+                'name': '',
+                'email': '',
+                'position': '',
+                'private_email': '',
+                'mobile': '',
+                'employee_number': '',
+                'gender': 0,
+                'require_reset_password': False,
             }]
         }
         self.assertEqual(res.json(), expect)

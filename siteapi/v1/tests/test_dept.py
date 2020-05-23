@@ -388,56 +388,27 @@ class DeptTestCase(TestCase):
             'previous':
             None,
             'results': [{
-                'user_id':
-                2,
-                'created':
-                self.now_str,
-                'last_active_time':
-                None,
-                'hiredate':
-                None,
-                'remark':
-                '',
-                'username':
-                'employee',
-                'name':
-                '',
-                'email':
-                '',
-                'is_settled':
-                False,
-                'is_manager':
-                False,
-                'is_admin':
-                False,
-                'is_extern_user':
-                False,
-                'origin_verbose':
-                '脚本添加',
-                'mobile':
-                '',
-                'position':
-                '',
-                'private_email':
-                '',
-                'employee_number':
-                '',
-                'gender':
-                0,
-                'avatar':
-                '',
-                'has_password':
-                True,
-                'require_reset_password':
-                False,
-                'nodes': [{
-                    'dept_id': 1,
-                    'name': 'root',
-                    'node_subject': 'dept',
-                    'node_uid': 'd_root',
-                    'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
-                    'uid': 'root'
-                }],
+                'user_id': 2,
+                'created': self.now_str,
+                'last_active_time': None,
+                'hiredate': None,
+                'remark': '',
+                'username': 'employee',
+                'name': '',
+                'email': '',
+                'is_settled': False,
+                'is_manager': False,
+                'is_admin': False,
+                'is_extern_user': False,
+                'origin_verbose': '脚本添加',
+                'mobile': '',
+                'position': '',
+                'private_email': '',
+                'employee_number': '',
+                'gender': 0,
+                'avatar': '',
+                'has_password': True,
+                'require_reset_password': False,
             }]
         }
         self.assertEqual(res.json(), expect)

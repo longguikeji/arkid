@@ -86,11 +86,11 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
 
         user = self.request.user
         if user.is_admin:
-            return queryset
+            return queryset.select_related('wechat_user', 'custom_user', 'ding_user')
 
         under_manage_user_ids = set()
 
-        for item in queryset:
+        for item in queryset:    # 这种遍历不能接受
             if item.is_visible_to_manager(user):
                 under_manage_user_ids.add(item.username)
 
@@ -213,13 +213,6 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             raise NotFound
         return user
 
-    def retrieve(self, request, *args, **kwargs):
-        '''
-        return user detail [GET]
-        '''
-        user = self.get_object()
-        return Response(EmployeeSerializer(user).data)
-
     def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''
         update user detail [PATCH]
@@ -227,8 +220,7 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         user = self.get_object()
         data = request.data
         user = CLI().update_user(user, data)
-        user_serializer = EmployeeSerializer(user)
-        return Response(user_serializer.data)
+        return Response(UserSerializer(user).data)
 
     def delete(self, request, *args, **kwargs):
         '''

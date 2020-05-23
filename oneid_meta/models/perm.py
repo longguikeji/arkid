@@ -110,6 +110,9 @@ class OwnerPerm(BaseModel):
     '''
     某类对象和具体权限的关系
     '''
+
+    uuid = None
+
     class Meta:    # pylint: disable=missing-docstring
         abstract = True
         unique_together = ("owner", "perm")

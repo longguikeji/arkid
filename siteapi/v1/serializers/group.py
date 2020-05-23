@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 '''
 serializers for group
 '''
@@ -196,9 +197,31 @@ class VerboseManagerGroupSerializer(DynamicFieldsModelSerializer):
         return res
 
 
-class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
+class GroupLiteSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     '''
     Serializer for Group with basic info
+    '''
+    group_id = serializers.IntegerField(source='id', read_only=True)
+    node_uid = serializers.CharField(read_only=True)
+    node_subject = serializers.CharField(read_only=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = Group
+
+        fields = (
+            'group_id',
+            'node_uid',
+            'node_subject',
+            'uid',
+            'name',
+            'remark',
+            'accept_user',
+        )
+
+
+class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
+    '''
+    Serializer for Group with basic info & *_group
     '''
 
     group_id = serializers.IntegerField(source='id', read_only=True)
