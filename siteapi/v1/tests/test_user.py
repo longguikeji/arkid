@@ -21,54 +21,120 @@ from oneid_meta.models import (
     WechatUser,
 )
 
+# EMPLOYEE = {
+#     'user': {
+#         'user_id': 2,
+#         'avatar': '',
+#         'username': 'employee1',
+#         'name': 'employee1',
+#         'email': 'email',
+#         'mobile': '18812345678',
+#         'employee_number': '',
+#         'gender': 2,
+#         'private_email': '',
+#         'is_settled': False,
+#         'is_manager': False,
+#         'is_admin': False,
+#         'is_extern_user': False,
+#         'origin_verbose': '管理员添加',
+#         'position': '',
+#         'hiredate': None,
+#         'remark': '',
+#         'last_active_time': None,
+#         'created': TestCase.now_str,
+#         'require_reset_password': False,
+#         'has_password': False,
+#         'ding_user': {
+#             'uid': 'ding_employee2',
+#             'account': '18812345678',
+#             'data': '{"key": "val"}'
+#         },
+#     },
+#     'depts': [
+#         {
+#             'dept_id': 1,
+#             'name': 'root',
+#             'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
+#             'uid': 'root',
+#             'node_uid': 'd_root',
+#             'node_subject': 'dept'
+#         },
+#     ],
+#     'groups': [{
+#         'accept_user': False,
+#         'group_id': 1,
+#         'name': 'root',
+#         'remark': '所有顶级的组的父级，可视为整个公司。请勿修改',
+#         'uid': 'root',
+#         'node_uid': 'g_root',
+#         'node_subject': 'root',
+#     }],
+#     'nodes': [{
+#         'accept_user': False,
+#         'group_id': 1,
+#         'name': 'root',
+#         'remark': '所有顶级的组的父级，可视为整个公司。请勿修改',
+#         'uid': 'root',
+#         'node_uid': 'g_root',
+#         'node_subject': 'root',
+#     }, {
+#         'dept_id': 1,
+#         'name': 'root',
+#         'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
+#         'uid': 'root',
+#         'node_uid': 'd_root',
+#         'node_subject': 'dept'
+#     }]
+# }
+
 EMPLOYEE = {
-    'user': {
-        'user_id': 2,
-        'avatar': '',
-        'username': 'employee1',
-        'name': 'employee1',
-        'email': 'email',
-        'mobile': '18812345678',
-        'employee_number': '',
-        'gender': 2,
-        'private_email': '',
-        'is_settled': False,
-        'is_manager': False,
-        'is_admin': False,
-        'is_extern_user': False,
-        'origin_verbose': '管理员添加',
-        'position': '',
-        'hiredate': None,
-        'remark': '',
-        'last_active_time': None,
-        'created': TestCase.now_str,
-        'require_reset_password': False,
-        'has_password': False,
-        'ding_user': {
-            'uid': 'ding_employee2',
-            'account': '18812345678',
-            'data': '{"key": "val"}'
-        },
+    'user_id':
+    2,
+    'avatar':
+    '',
+    'username':
+    'employee1',
+    'name':
+    'employee1',
+    'email':
+    'email',
+    'mobile':
+    '18812345678',
+    'employee_number':
+    '',
+    'gender':
+    2,
+    'private_email':
+    '',
+    'is_settled':
+    False,
+    'is_manager':
+    False,
+    'is_admin':
+    False,
+    'is_extern_user':
+    False,
+    'origin_verbose':
+    '管理员添加',
+    'position':
+    '',
+    'hiredate':
+    None,
+    'remark':
+    '',
+    'last_active_time':
+    None,
+    'created':
+    TestCase.now_str,
+    'require_reset_password':
+    False,
+    'has_password':
+    False,
+    'ding_user': {
+        'uid': 'ding_employee2',
+        'account': '18812345678',
+        'data': '{"key": "val"}'
     },
-    'depts': [
-        {
-            'dept_id': 1,
-            'name': 'root',
-            'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
-            'uid': 'root',
-            'node_uid': 'd_root',
-            'node_subject': 'dept'
-        },
-    ],
-    'groups': [{
-        'accept_user': False,
-        'group_id': 1,
-        'name': 'root',
-        'remark': '所有顶级的组的父级，可视为整个公司。请勿修改',
-        'uid': 'root',
-        'node_uid': 'g_root',
-        'node_subject': 'root',
-    }],
     'nodes': [{
         'accept_user': False,
         'group_id': 1,
@@ -226,33 +292,28 @@ class UserTestCase(TestCase):
             'previous':
             None,
             'results': [{
-                'user': {
-                    'user_id': 2,
-                    'created': self.now_str,
-                    'username': 'employee',
-                    'name': '',
-                    'email': '',
-                    'mobile': '',
-                    'employee_number': '',
-                    'last_active_time': None,
-                    'gender': 0,
-                    'avatar': '',
-                    'private_email': '',
-                    'nodes': [],
-                    'position': '',
-                    'is_settled': False,
-                    'is_manager': False,
-                    'is_admin': False,
-                    'is_extern_user': False,
-                    'origin_verbose': '脚本添加',
-                    'hiredate': None,
-                    'remark': '',
-                    'require_reset_password': False,
-                    'has_password': False,
-                },
-                'groups': [],
-                'depts': [],
-                'nodes': []
+                'user_id': 2,
+                'created': self.now_str,
+                'username': 'employee',
+                'name': '',
+                'email': '',
+                'mobile': '',
+                'employee_number': '',
+                'last_active_time': None,
+                'gender': 0,
+                'avatar': '',
+                'private_email': '',
+                'nodes': [],
+                'position': '',
+                'is_settled': False,
+                'is_manager': False,
+                'is_admin': False,
+                'is_extern_user': False,
+                'origin_verbose': '脚本添加',
+                'hiredate': None,
+                'remark': '',
+                'require_reset_password': False,
+                'has_password': False,
             }]
         }
         self.assertEqual(res.json(), expect)
@@ -261,7 +322,6 @@ class UserTestCase(TestCase):
         res = self.create_user()
         self.assertEqual(res.status_code, 201)
         res = res.json()
-        res['user'].pop('nodes')
 
         self.assertEqual(res, EMPLOYEE)
 
@@ -304,7 +364,6 @@ class UserTestCase(TestCase):
     def test_get_user(self):
         self.create_user()
         res = self.client.get(reverse('siteapi:user_detail', args=('employee1', ))).json()
-        res['user'].pop('nodes')
         self.assertEqual(res, EMPLOYEE)
 
     def test_delete_user(self):
@@ -371,12 +430,12 @@ class UserTestCase(TestCase):
                 'account': '18812345678',
                 'data': '{"key": "new_val"}'
             },
-            'posix_user': {
-                'uid': 500,
-                'gid': 500,
-                'pub_key': '',
-                'home': ''
-            },
+        # 'posix_user': {
+        #     'uid': 500,
+        #     'gid': 500,
+        #     'pub_key': '',
+        #     'home': ''
+        # },
             'custom_user': {
                 'data': {
                     cf.uuid.hex: '无'
@@ -391,8 +450,7 @@ class UserTestCase(TestCase):
             'require_reset_password': False,
             'has_password': False,
         }
-        res['user'].pop('nodes')
-        self.assertEqual(expect, res['user'])
+        self.assertEqual(expect, res)
 
     def test_wechat_user(self):
         self.create_user()
@@ -401,13 +459,13 @@ class UserTestCase(TestCase):
         # bound
         patch_data = {'wechat_user': {'unionid': 'unionid-1'}}
         res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
-        self.assertEqual("unionid-1", res.json()['user']['wechat_user']['unionid'])
+        self.assertEqual("unionid-1", res.json()['wechat_user']['unionid'])
         self.assertEqual(1, WechatUser.objects.filter(user=user).count())
 
         # update
         patch_data = {'wechat_user': {'unionid': 'unionid-2'}}
         res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
-        self.assertEqual("unionid-2", res.json()['user']['wechat_user']['unionid'])
+        self.assertEqual("unionid-2", res.json()['wechat_user']['unionid'])
 
         # unbound
         patch_data = {
@@ -415,7 +473,7 @@ class UserTestCase(TestCase):
         }
         res = self.client.json_patch(reverse('siteapi:user_detail', args=('employee1', )), patch_data)
         self.assertEqual(0, WechatUser.objects.filter(user=user).count())
-        self.assertNotIn("wechat_user", res.json()['user'])
+        self.assertNotIn("wechat_user", res.json())
 
         patch_data = {
             'wechat_user': None,
@@ -556,7 +614,7 @@ class UserTestCase(TestCase):
         res = self.create_user()
         self.assertEqual(res.status_code, 201)
         res = res.json()
-        res['user'].pop('nodes')
+        res.pop('nodes')
 
         User.valid_objects.get(username=USER_DATA['username']).delete()
         res = self.client.json_post(reverse('siteapi:user_list'),
