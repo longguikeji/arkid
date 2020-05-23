@@ -112,5 +112,13 @@ if [ ! ${LDAP_DEBUG} ]; then
     LDAP_DEBUG=256
 fi
 
+# Adjust the soft nofile limit downwards to restrict slapd's memory usage.
+ULIMIT_NOFILE_SYS=$(ulimit -Sn)
+ULIMIT_NOFILE_SET=${SLAPD_NOFILE_SOFT:-16384}
+ULIMIT_NOFILE=$(( $ULIMIT_NOFILE_SYS < $ULIMIT_NOFILE_SET ? $ULIMIT_NOFILE_SYS : $ULIMIT_NOFILE_SET ))
+
+set -x
+ulimit -Sn "$ULIMIT_NOFILE"
+
 echo "Starting OpenLDAP"
 exec slapd -h 'ldaps:/// ldap:/// ldapi:///' -d -${LDAP_DEBUG} -f ${CONFD}/slapd.conf -u ${USER} -g ${GROUP} 
