@@ -885,9 +885,12 @@ https://open-doc.dingtalk.com/microapp/serverapi2/clotub
 + Response 200 (application/json)
     + Attributes (UserProfile)
 
-## 用户在当前组织内的信息 [/ucenter/org/profile/]
+## 用户在指定组织内的信息 [/ucenter/org/{oid}/profile/]
 
-### 获取用户在当前组织内的信息 [GET]
+ + Parameters
+    + oid (string) - 组织唯一标识
+
+### 获取用户在组织内的信息 [GET]
 + Response 200 (application/json)
     + Attributes
         + employee_number - 工号
@@ -987,17 +990,6 @@ deprecated
 ### 退出用户当前登录组织 [DELETE]
 + Response 204
 
-## 用户所属组织 [/ucenter/orgs/]
-### 获取用户所属组织 [GET]
-+ Response 200 (application/json)
-    + Attributes
-      orgs (array[orgrole]) - 用户加入的所有组织
-
-## 用户创建组织 [/ucenter/orgs/owned]
-### 获取用户创建组织 [GET]
-+ Response 200 (application/json)
-    + Attributes
-      orgs (array[org]) - 用户创建的所有组织
 
 # Group Auth
 以下部分均只对管理员开放
@@ -1680,15 +1672,17 @@ TODO: 可见权限的处理
 ## 自己所在组织 [/org/{?role}]
 
 ### 查看自己所在组织 [GET]
-
 + Parameters
-    + role (在该组织内的角色)
+    + role (enum[string]) - 在组织内的角色
+        + member
+        + manager
+        + owner)
 
 + Response 200 (application/json)
     + Attributes (array)
         + (Organization)
-### 创建组织 [POST]
 
+### 创建组织 [POST]
 + Request (application/json)
   + Attributes
     + name (string) - 组织名
