@@ -139,7 +139,7 @@ class UCenterTestCase(TestCase):
         }
         res = client.json_patch(reverse('siteapi:user_detail', args=('username', )), patch_data)
         self.assertEqual(res.status_code, 200)
-        res = res.json()['user']
+        res = res.json()
         self.assertIn('new_name', res['name'])
 
     def test_ding_qr_register_forbidden(self):

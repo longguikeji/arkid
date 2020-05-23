@@ -334,14 +334,12 @@ class UserWithPermSerializer(UserSerializer):
     '''
     perms = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
-    uuid = serializers.UUIDField(format='hex')
 
     class Meta:    # pylint: disable=missing-docstring
 
         model = User
 
         fields = (
-            'uuid',
             'user_id',
             'username',
             'name',
@@ -350,7 +348,6 @@ class UserWithPermSerializer(UserSerializer):
             'employee_number',
             'gender',
             'ding_user',
-            'posix_user',
             'perms',
             'avatar',
             'roles',

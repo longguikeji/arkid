@@ -153,6 +153,7 @@ def flush_user_perm(users=None, perms=None):
                                                                             value=True).exists()
                 user_perm.dept_perm_value = DeptPerm.valid_objects.filter(owner__id__in=dept_ids, perm=perm,
                                                                           value=True).exists()
+                user_perm.save(update_fields=['group_perm_value', 'dept_perm_value'])
 
     UserPerm.valid_objects.filter(status=1).update(value=True)
     UserPerm.valid_objects.filter(status=-1).update(value=False)

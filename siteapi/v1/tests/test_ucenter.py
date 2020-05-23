@@ -151,7 +151,6 @@ class UCenterTestCase(TestCase):
 
     def test_token_perm_auth(self):
         res = self.client.get(reverse('siteapi:token_perm_auth'), data={'perm_uid': 'system_oneid_all'}).json()
-        self.assertIsNotNone(res.pop('uuid', None))
         expect = {
             'user_id': 1,
             'username': 'admin',
