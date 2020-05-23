@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 """
 views about perm
 - PermList
@@ -7,13 +8,13 @@ import json
 
 from rest_framework import generics, status, mixins
 from rest_framework.views import APIView
-from rest_framework.exceptions import ValidationError, NotFound, MethodNotAllowed
+from rest_framework.exceptions import ValidationError, NotFound, MethodNotAllowed, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
-from oneid_meta.models import (Perm, UserPerm, DeptPerm, GroupPerm, User, Dept, Group)
+from oneid_meta.models import (Perm, UserPerm, DeptPerm, GroupPerm, User, Dept, Group, APP)
 from siteapi.v1.serializers.perm import (
     PermSerializer,
     PermWithOwnerSerializer,
@@ -24,7 +25,7 @@ from siteapi.v1.serializers.perm import (
 )
 from common.django.drf.paginator import DefaultListPaginator
 from common.django.drf.views import catch_json_load_error
-from oneid.permissions import IsAdminUser
+from oneid.permissions import IsAdminUser, IsManagerUser
 from executer.log.rdb import LOG_CLI
 
 
@@ -33,6 +34,7 @@ class PermListCreateAPIView(generics.ListCreateAPIView):
     权限列表 [GET],[POST]
     """
     pagination_class = DefaultListPaginator
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -80,6 +82,14 @@ class PermListCreateAPIView(generics.ListCreateAPIView):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # 超管可以任意创建权限，子管理员只能为自己管理范围内的应用创建权限
+        app_uid = serializer.validated_data.get('scope')
+        user = request.user
+        if not user.is_admin:
+            app = APP.valid_objects.filter(uid=app_uid).first()
+            if not (app and app.under_manage(user)):
+                raise PermissionDenied
+
         self.perform_create(serializer)
         perm = serializer.instance
 
@@ -108,6 +118,7 @@ class PermDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     特定权限信息 [GET], [PATCH], [DELETE]
     """
     serializer_class = PermSerializer
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_object(self):
         """
@@ -116,6 +127,8 @@ class PermDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         perm = Perm.valid_objects.get_queryset().filter(uid=self.kwargs['uid']).first()
         if not perm:
             raise NotFound
+        if not perm.under_manage(self.request.user):
+            raise PermissionDenied
         return perm
 
     def retrieve(self, request, *args, **kwargs):
@@ -156,6 +169,7 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
 
     serializer_class = OwnerSerializer
     pagination_class = DefaultListPaginator
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_object(self):
         '''
@@ -164,6 +178,8 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
         perm = Perm.valid_objects.filter(uid=self.kwargs['uid']).first()
         if not perm:
             raise NotFound
+        if not perm.under_manage(self.request.user):
+            raise PermissionDenied
         return perm
 
     def get_queryset(self):
@@ -213,15 +229,26 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
         user_perm_status = self.request.data.get('user_perm_status', [])
         for ups in user_perm_status:
             user = User.valid_objects.filter(username=ups['uid']).first()
-            if user:
-                owner_perm = UserPerm.get(user, perm)
-                owner_perm.update_status(ups['status'])
+            # TODO: 目前对每个对象都逐一检验 under_manage，开销大; 且对于没有权限的，只是静默跳过，没有提示。需改进。
+            if not (user and user.under_manage(request.user)):
+                raise ValidationError({'user_perm_status': [f'invlid uid: `{ups["uid"]}`']})
+            ups['instance'] = user
+
         node_perm_status = self.request.data.get('node_perm_status', [])
         for nps in node_perm_status:
             node, _ = Dept.retrieve_node(nps['uid'])
-            if node:
-                node_perm = node.owner_perm_cls.get(node, perm)
-                node_perm.update_status(nps['status'])
+            if not (node and node.under_manage(request.user)):
+                raise ValidationError({'node_perm_status': [f'invlid uid: `{nps["uid"]}`']})
+            nps['instance'] = node
+
+        for ups in user_perm_status:
+            instance = ups.pop('instance')
+            owner_perm = UserPerm.get(instance, perm)
+            owner_perm.update_status(ups['status'])
+        for nps in node_perm_status:
+            instance = nps.pop('instance')
+            owner_perm = instance.owner_perm_cls.get(instance, perm)
+            owner_perm.update_status(nps['status'])
 
         cli = LOG_CLI()
         cli.assign_perm_owners(perm)
@@ -270,6 +297,7 @@ class UserPermView(
     """
     serializer_class = UserPermResultSerializer
     pagination_class = DefaultListPaginator
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_object(self):
         """
@@ -278,6 +306,8 @@ class UserPermView(
         user = User.valid_objects.get_queryset().filter(username=self.kwargs['username']).first()
         if not user:
             raise NotFound
+        if not user.under_manage(self.request.user):
+            raise PermissionDenied
         return user
 
     def get_queryset(self):
@@ -296,6 +326,8 @@ class UserPermView(
                 perm = Perm.valid_objects.get_queryset().get(uid=perm_status['uid'])
             except ObjectDoesNotExist:
                 raise ValidationError({'perm_statuses': ['perm:{} does not exist'.format(perm_status['uid'])]})
+            if not perm.under_manage(self.request.user):
+                raise ValidationError({'perm_statuses': ['perm:{} out of scope'.format(perm_status['uid'])]})
             user_perm = UserPerm.valid_objects.get_queryset().get(owner=user, perm=perm)
 
             user_perm.update_status(perm_status['status'])
@@ -335,6 +367,7 @@ class GroupPermView(
     """
     serializer_class = PermResultSerializer
     pagination_class = DefaultListPaginator
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_object(self):
         """
@@ -343,6 +376,8 @@ class GroupPermView(
         group = Group.valid_objects.get_queryset().filter(uid=self.kwargs['uid']).first()
         if not group:
             raise NotFound
+        if not group.under_manage(self.request.user):
+            raise PermissionDenied
         return group
 
     def get_queryset(self):
@@ -362,6 +397,8 @@ class GroupPermView(
                 perm = Perm.valid_objects.get_queryset().get(uid=perm_status['uid'])
             except ObjectDoesNotExist:
                 raise ValidationError({'perm_statuses': ['perm:{} does not exist'.format(perm_status['uid'])]})
+            if not perm.under_manage(request.user):
+                raise ValidationError({'perm_statuses': ['perm:{} out of scope'.format(perm_status['uid'])]})
             group_perm = GroupPerm.valid_objects.get_queryset().get(owner=group, perm=perm)
             group_perm.update_status(perm_status['status'])
 
@@ -382,6 +419,7 @@ class DeptPermView(
     """
     serializer_class = PermResultSerializer
     pagination_class = DefaultListPaginator
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_object(self):
         """
@@ -390,6 +428,8 @@ class DeptPermView(
         dept = Dept.valid_objects.get_queryset().filter(uid=self.kwargs['uid']).first()
         if not dept:
             raise NotFound
+        if not dept.under_manage(self.request.user):
+            raise PermissionDenied
         return dept
 
     def get_queryset(self):
@@ -408,6 +448,8 @@ class DeptPermView(
                 perm = Perm.valid_objects.get_queryset().get(uid=perm_status['uid'])
             except ObjectDoesNotExist:
                 raise ValidationError({'perm_statuses': ['perm:{} does not exist'.format(perm_status['uid'])]})
+            if not perm.under_manage(request.user):
+                raise ValidationError({'perm_statuses': ['perm:{} out of scope'.format(perm_status['uid'])]})
             dept_perm = DeptPerm.valid_objects.get_queryset().get(owner=dept, perm=perm)
             dept_perm = dept_perm.update_status(perm_status['status'])
 
@@ -425,6 +467,7 @@ class UserPermDetailView(generics.RetrieveUpdateAPIView):
     '''
 
     serializer_class = UserPermDetailSerializer
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_object(self):
         user_perm = UserPerm.valid_objects.filter(
@@ -434,6 +477,12 @@ class UserPermDetailView(generics.RetrieveUpdateAPIView):
 
         if not user_perm:
             raise NotFound
+
+        if not user_perm.owner.under_manage(self.request.user):
+            raise PermissionDenied
+
+        if not user_perm.perm.under_manage(self.request.user):
+            raise PermissionDenied
 
         return user_perm
 
