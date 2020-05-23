@@ -252,6 +252,14 @@ class DeptTestCase(TestCase):
         }
         self.assertEqual(res.json(), expect)
 
+        res = self.client.json_patch(reverse('siteapi:dept_detail', args=('level_1', )), data={'visibility': 1})
+        expect = {
+            'node_scope': [],
+            'user_scope': [],
+            'visibility': 1,
+        }
+        self.assertEqualScoped(res.json(), expect, ['node_scope', 'user_scope', 'visibility'])
+
         res = self.client.json_patch(
             reverse('siteapi:dept_detail', args=('level_1', )),
             data={'node_scope': {
