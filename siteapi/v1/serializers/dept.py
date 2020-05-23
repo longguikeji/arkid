@@ -17,7 +17,6 @@ class DingDeptSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for DingDept
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = DingDept
 
@@ -55,7 +54,6 @@ class DeptDetailSerializer(DeptSerializer):
     '''
     dept info with parent_uid
     '''
-
     class Meta:    # pylint: disable=missing-docstring
         model = Dept
 
@@ -113,6 +111,11 @@ class DeptDetailSerializer(DeptSerializer):
         uid = validated_data.pop('uid', '')
         if uid and uid != dept.uid:
             raise ValidationError({'uid': ['this field is immutable']})
+
+        visibility = validated_data.get('visibility', None)
+        if visibility != 4:    # 除 指定人、节点外的其他情况
+            validated_data['user_scope'] = []
+            validated_data['node_scope'] = []
 
         dept.__dict__.update(validated_data)
         dept.save(update_fields=validated_data.keys())
