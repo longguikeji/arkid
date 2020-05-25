@@ -34,7 +34,7 @@ Jmeter、截图工具
 :-----|:-----|:-----|:-----|:-----
 登录（http://localhost:8989/siteapi/oneid/ucenter/login/)|650|60|10.833|2.346
 获取应用信息（http://localhost:8989/siteapi/oneid/ucenter/apps/)|450|60|7.500|15.484
-获取部门分类（http://localhost:8989/siteapi/oneid/meta/node/d_root/tree/?user_required=true)|2|60|0.033|52.408
+获取部门分类（http://localhost:8989/siteapi/oneid/meta/node/d_root/tree/?user_required=true)|2|60|0.033|52.408    
 获取角色分类（http://localhost:8989/siteapi/oneid/meta/node/d_role/tree/?user_required=true)|25|60|0.417|29.791      
 获取性别分类（http://localhost:8989/siteapi/oneid/meta/node/g_xingbie/tree/?user_required=true)|60|60|1.000|20.172     
 个人资料页面修改信息（http://localhost:8989/siteapi/oneid/ucenter/profile/)|1100|60|18.333|4.962
