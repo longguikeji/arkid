@@ -81,6 +81,18 @@ class Perm(BaseModel):
         if self.subject == 'app':
             return APP.valid_objects.filter(uid=self.scope).first()
 
+    def under_manage(self, user):
+        '''
+        是否在某人的管理之下
+        '''
+        if user.is_admin:
+            return True
+        if not user.is_manager:
+            return False
+        if self.app:
+            return self.app.under_manage(user)
+        return False
+
 
 class PermOwnerMixin():
     '''
@@ -98,6 +110,9 @@ class OwnerPerm(BaseModel):
     '''
     某类对象和具体权限的关系
     '''
+
+    uuid = None
+
     class Meta:    # pylint: disable=missing-docstring
         abstract = True
         unique_together = ("owner", "perm")

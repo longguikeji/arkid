@@ -14,6 +14,8 @@ class Dept(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
     '''
     OneID 部门
     '''
+    class Meta:    # pylint: disable=missing-class-docstring
+        indexes = [models.Index(fields=['uid'], name='dept_uid_index')]
 
     NODE_PREFIX = 'd_'
 
@@ -59,7 +61,10 @@ class Dept(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         '''
         下属成员
         '''
-        return [item.user for item in DeptMember.valid_objects.filter(owner=self).order_by('order_no')]
+        return [
+            item.user
+            for item in DeptMember.valid_objects.filter(owner=self).order_by('order_no').select_related('user')
+        ]
 
     @property
     def perms(self):
