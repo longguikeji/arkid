@@ -62,7 +62,6 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
 
     custom_user = CustomUserSerailizer(many=False, required=False)
     visible_fields = serializers.SerializerMethodField()
-    depts = serializers.SerializerMethodField()
 
     class Meta:    # pylint: disable=missing-docstring
 
@@ -75,13 +74,12 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'mobile',
             'gender',
             'avatar',
-            'depts',
             'custom_user',
             'visible_fields',    # 按需使用，不在该列表中不意味着不展示，反例如`avatar`
             'private_email',
         )
 
-        read_only_fields = ('user_id', 'username', 'mobile', 'depts', 'visible_fields')
+        read_only_fields = ('user_id', 'username', 'mobile', 'visible_fields')
 
     @staticmethod
     def get_visible_fields(instance):    # pylint: disable=unused-argument
@@ -92,14 +90,6 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             return [field.key for field in NativeField.valid_objects.filter(subject='user', is_visible=True)]
 
         return [field.key for field in NativeField.valid_objects.filter(subject='extern_user', is_visible=True)]
-
-    @staticmethod
-    def get_depts(instance):
-        '''
-        所属部门列表，用于展示
-        '''
-        for dept in instance.depts:
-            yield {'uid': dept.uid, 'name': dept.name}
 
     def update(self, instance, validated_data):
         user = instance
@@ -122,6 +112,8 @@ class UserOrgProfileSerializer(DynamicFieldsModelSerializer):
     '''
     user org profile
     '''
+    nodes = serializers.SerializerMethodField()
+
     class Meta:    # pylint: disable=missing-docstring
 
         model = OrgMember
@@ -132,7 +124,30 @@ class UserOrgProfileSerializer(DynamicFieldsModelSerializer):
             'hiredate',
             'remark',
             'email',
+            'nodes',
         )
+
+    def get_nodes(self, obj):    # pylint: disable=no-self-use
+        '''
+        groups + nodes
+        '''
+        for item in self.get_groups(obj):
+            yield item
+
+        for item in self.get_depts(obj):
+            yield item
+
+    def get_depts(self, obj):
+        '''
+        get depts
+        '''
+        return DeptSerializer(obj.depts, many=True).data
+
+    def get_groups(self, obj):    # pylint: disable=no-self-use
+        '''
+        出于业务需要，extern 不予展示
+        '''
+        return GroupSerializer(obj.groups, many=True).data
 
 
 class DingUserSerializer(DynamicFieldsModelSerializer):

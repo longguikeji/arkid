@@ -241,6 +241,7 @@ class TreeNode():
     def org(self):
         '''
         所属组织
+        TODO: 优化
         '''
         from oneid_meta.models import Org
         if self.is_root:

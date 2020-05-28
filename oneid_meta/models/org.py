@@ -223,3 +223,30 @@ class OrgMember(BaseOrderedModel):
 
     def __str__(self):
         return f'OrgMember: {self.user} -> {self.owner}'
+    
+    @property
+    def nodes(self):
+        '''
+        此人在此组织所处node
+        '''
+        yield from self.depts
+        yield from self.groups
+
+    @property
+    def depts(self):
+        '''
+        此人在此组织所处部门
+        '''
+        for item in self.user.depts:
+            if item.org == self.owner:
+                yield item
+
+    @property
+    def groups(self):
+        '''
+        此人在此组织所处组
+        '''
+        for item in self.user.groups:
+            if item.org == self.owner:
+                yield item
+
