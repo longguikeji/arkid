@@ -100,8 +100,9 @@ class OAuthLibCore(object):
             path = urlparse(kwargs['uri']).path
             queryset = parse_qs(urlparse(kwargs['uri']).query, keep_blank_values=True, strict_parsing=True)
 
-            if 'openid' not in queryset['scope'][0]:
-                return kwargs['uri']
+            if 'openid' not in queryset.get('scope', []):
+                return kwargs['uri'],queryset.get('nonce', ''),\
+                   queryset.get('code_challenge', ''), queryset.get('code_challenge_method', '')
 
             queryset['response_type'] = oauth2_settings.UP_COMPATIBLE_OIDC_RESPONSE_TYPE.get(
                 queryset['response_type'][0], None).split()
