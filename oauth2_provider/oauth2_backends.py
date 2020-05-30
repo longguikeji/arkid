@@ -87,8 +87,8 @@ class OAuthLibCore(object):
             scopes, credentials = self.server.validate_authorization_request(
                 uri, http_method=http_method, body=body, headers=headers)  # oauthlib.oauth2.rfc6749.endpoints.pre_configured.Server -> oauthlib.oauth2.rfc6749.endpoints.authorization.AuthorizationEndpoint -> oauthlib.oauth2.rfc6749.grant_types.authorization_code.AuthorizationCodeGrant
             credentials = self.additional_authorization_for_oidc('credentials', scopes=scopes, credentials=credentials,
-                                                                 nonce=nonce[0], code_challenge=code_challenge[0],
-                                                                 code_challenge_method=code_challenge_method[0])
+                                                                 nonce=nonce, code_challenge=code_challenge,
+                                                                 code_challenge_method=code_challenge_method)
             return scopes, credentials
         except oauth2.FatalClientError as error:
             raise FatalClientError(error=error)
@@ -100,8 +100,9 @@ class OAuthLibCore(object):
             path = urlparse(kwargs['uri']).path
             queryset = parse_qs(urlparse(kwargs['uri']).query, keep_blank_values=True, strict_parsing=True)
 
-            if 'openid' not in queryset['scope'][0]:
-                return kwargs['uri']
+            if 'openid' not in queryset.get('scope', []):
+                return kwargs['uri'], queryset.get('nonce', [''])[0],\
+                   queryset.get('code_challenge', [''])[0], queryset.get('code_challenge_method', [''])[0]
 
             queryset['response_type'] = oauth2_settings.UP_COMPATIBLE_OIDC_RESPONSE_TYPE.get(
                 queryset['response_type'][0], None).split()
@@ -110,14 +111,14 @@ class OAuthLibCore(object):
             for key, value in queryset.items():
                 uri += key + '=' + value[0] + '&'
             uri = quote(uri[:-1], safe='=&')
-            return "{0}?{1}".format(path, uri), queryset.get('nonce', ''),\
-                   queryset.get('code_challenge', ''), queryset.get('code_challenge_method', '')
+            return "{0}?{1}".format(path, uri), queryset.get('nonce', [''])[0],\
+                   queryset.get('code_challenge', [''])[0], queryset.get('code_challenge_method', [''])[0]
 
         if option == 'credentials' and 'openid' in kwargs['scopes']:
             kwargs['credentials'].update(nonce=kwargs['nonce'])
             kwargs['credentials'].update(code_challenge=kwargs['code_challenge'])
             kwargs['credentials'].update(code_challenge_method=kwargs['code_challenge_method'])
-            return kwargs['credentials']
+        return kwargs['credentials']
 
     def create_authorization_response(self, request, scopes, credentials, allow):
         """
