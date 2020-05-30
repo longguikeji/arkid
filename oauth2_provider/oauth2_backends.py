@@ -118,7 +118,7 @@ class OAuthLibCore(object):
             kwargs['credentials'].update(nonce=kwargs['nonce'])
             kwargs['credentials'].update(code_challenge=kwargs['code_challenge'])
             kwargs['credentials'].update(code_challenge_method=kwargs['code_challenge_method'])
-            return kwargs['credentials']
+        return kwargs['credentials']
 
     def create_authorization_response(self, request, scopes, credentials, allow):
         """
