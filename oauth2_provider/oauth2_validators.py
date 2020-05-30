@@ -438,7 +438,7 @@ class OAuth2Validator(RequestValidator):
         try:
             grant = Grant.objects.get(code=code, application=request.client) if isinstance(request.client, Application) \
                 else OidcGrant.objects.get(code=code, application=request.client)
-            return grant.code_challenge
+            return getattr(grant, "code_challenge", None)
 
         except (Grant.DoesNotExist, OidcGrant.DoesNotExist):
             return None
@@ -447,7 +447,7 @@ class OAuth2Validator(RequestValidator):
         try:
             grant = Grant.objects.get(code=code, application=request.client) if isinstance(request.client, Application) \
                 else OidcGrant.objects.get(code=code, application=request.client)
-            return grant.code_challenge_method
+            return getattr(grant, "code_challenge_method", None)
 
         except (Grant.DoesNotExist, OidcGrant.DoesNotExist):
             return None

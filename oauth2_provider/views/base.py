@@ -228,6 +228,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "code_challenge": form.cleaned_data.get("code_challenge", None),
             "code_challenge_method": form.cleaned_data.get("code_challenge_method", None),
         }
+        for key in [
+            "code_challenge",
+            "code_challenge_method",
+        ]:
+            if credentials[key] == "":
+                credentials[key] = None
         scopes = form.cleaned_data.get("scope")
         next_path = form.cleaned_data.get("next_path")
         allow = form.cleaned_data.get("allow")
