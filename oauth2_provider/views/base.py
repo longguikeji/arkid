@@ -98,7 +98,7 @@ class TokenRequiredMixin(AccessMixin):
         # scheme='', netloc='', path='/_/', params='', query='', fragment='/oneid/login'
         # -> 
         # scheme='', netloc='', path='/_/#/oneid/login', params='', query='', fragment=''
-        login_url_parts[2] += '{}'.format(login_url_parts[5])
+        login_url_parts[2] += '#{}'.format(login_url_parts[5])
         login_url_parts[5] = ''
         if redirect_field_name:
             querystring = QueryDict(login_url_parts[4], mutable=True)
