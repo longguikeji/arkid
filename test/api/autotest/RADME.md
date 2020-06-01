@@ -51,7 +51,7 @@ password = "admin"
 |assert|断言|列表类型，可添加多个|
 
 4、运行生成 `xml` 测试报告      
-在 `autotest` 目录下运行 `start.py` 文件。运行完成后，会在当前目录生成名为 `junit` 的目录，在 `junit` 目录下 有 `xml` 格式的测试报告。也可自定义测试报告的存储路径和文件名，在 `junit.py` 中进行设置。
+在 `autotest` 目录下运行 `start.py` 文件。运行完成后，会在当前目录生成名为 `junit` 的目录，在 `junit` 目录下 有 `xml` 格式的测试报告。也可自定义测试报告的存储路径和文件名，在 `junit.py` 中进行设置
 ```
     def write_toxml(self):
         # 计算执行的时间， 用当前时间-开始时间 是总耗时
