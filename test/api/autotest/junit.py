@@ -20,11 +20,10 @@ class Junit:
 
     # 测试用例套件
     def suite(self, tests):
-        # 项目的名称
-        self.testsuite.setAttribute('hostname', 'exhibit')
+
         # 用例数量
         self.testsuite.setAttribute('tests', str(tests))
-        # 项目类型
+        # 项目名称
         self.testsuite.setAttribute('name', '一账通接口测试')
         # 时间
         self.testsuite.setAttribute('timestamp', str(datetime.isoformat(self.pstarttime)))
@@ -71,7 +70,7 @@ class Junit:
             (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6)) / 10 ** 6
         self.testsuite.setAttribute('time', '%s' % td_time)
         self.testsuites.appendChild(self.testsuite)
-        file = Path('junit') / ('API' + '-' + 'ReportJunit@' + self.nowtime + '.xml')
+        file = Path('junit') / ('API' + '-' + 'ReportJunit@' + self.nowtime + '.xml')   #xml文件名
         f = open(file, 'w')
         self.doc.writexml(f, indent='\t', newl='\n', addindent='\t', encoding='gbk')
         f.close()

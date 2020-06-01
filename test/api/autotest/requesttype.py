@@ -3,9 +3,12 @@ import time
 import json
 
 
-# 简单封装get请求
-def get(data={}):
 
+# 简单封装get请求
+def get(data = None):
+    if data is None:
+        data = {}
+    
     # 发送请求
     r = requests.get(url = data['url'],headers = data['headers'])
     # 简单的判断接口的code码 等于200进行断言
@@ -26,8 +29,10 @@ def get(data={}):
     # 返回字典用于记录测试报告
     return data
 
-def post(data={}):
-
+def post(data = None):
+    
+    if data is None:
+        data = {}
     # 发送post请求
     r = requests.post(url = data['url'], data = json.dumps(data['payload']),headers = data['headers'])
     # 简单的判断接口的code码 等于200就让它通过
@@ -47,4 +52,3 @@ def post(data={}):
         data['isok'] = r.status_code
     # 返回字典用于记录测试报告
     return data
-

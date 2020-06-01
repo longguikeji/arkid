@@ -19,7 +19,7 @@ username = "admin"
 password = "admin"
 ```       
 3、添加接口测试用例       
-`httpurl_data` 为存放测试用例的列表，列表每一个类型为字典的值表示一条测试用例，添加测试用例只需要按照模板添加字典类型的数据即可    
+打开文件`testcase.py` 。`httpurl_data` 为存放测试用例的列表，列表每一个类型为字典的值表示一条测试用例，添加测试用例只需要按照模板添加字典类型的数据即可    
 ```
     # 1.登录接口 第一条用例
     {'title': '登录接口',  # 用例的名称
@@ -29,15 +29,27 @@ password = "admin"
          'Content-Type': 'application/json;charset=UTF-8'    
      },       #请求头信息
      'payload': {
-         'password': password,
-         'username': username
+         'password': 'admin',
+         'username': 'admin'
      },     #参数
      'type': 'post',  # 请求的类型 get 或者post，这条是 post 类型
      'isok': '',  # 用例是否通过，通过是ok 不通过则为失败原因
      'time': '1' , # 用例等待的时间 秒 1就是等待1秒后执行
-     'assert':['admin']     #断言，列表类型，可添加多个判断条件，与接口返回值进行
+     'assert':['admin']     #断言，列表类型，可添加多个判断条件，与接口返回值进行比对
      }
 ``` 
+|用例属性|意义|备注|
+|-----|-----------|----|
+|title|测试用例标题|url|
+|condition|前置条件|skip为跳过，其他为正常执行|
+|url|接口地址||
+|headers|接口请求头信息||
+|payload|接口携带参数|post类型请求正常填写，get类型将payload键值对删掉|
+|type|请求类型|post或者get|
+|isok|用例是否通过|空|
+|time|执行用例前等待的时间|单位为秒|
+|assert|断言|列表类型，可添加多个|
+
 4、运行生成 `xml` 测试报告      
 在 `autotest` 目录下运行 `start.py` 文件。运行完成后，会在当前目录生成名为 `junit` 的目录，在 `junit` 目录下 有 `xml` 格式的测试报告。也可自定义测试报告的存储路径和文件名，在 `junit.py` 中进行设置。
 ```
@@ -54,4 +66,4 @@ password = "admin"
         f.close()
 ```
 5、生成 `Allure` 格式的测试报告       
-若安装 `Allure` 并配置好了环境变量，可在生成 `xml` 测试报告后，使用命令 `allure serve junit` 生成 `Allure` 格式的测试报告。命令中的 `junit` 为 `xml` 测试报告的路径，若在 `junit.py` 进行了修改，这里也需要做相应改变。
+若安装 `Allure` 并配置好了环境变量，可在生成 `xml` 测试报告后，使用命令 `allure serve junit` 生成 `Allure` 格式的测试报告。命令中的 `junit` 为 `xml` 测试报告的路径，若在 `junit.py` 进行了修改，这里也需要做相应改变
