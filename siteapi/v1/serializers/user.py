@@ -77,9 +77,10 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'custom_user',
             'visible_fields',    # 按需使用，不在该列表中不意味着不展示，反例如`avatar`
             'private_email',
+            'origin_verbose',
         )
 
-        read_only_fields = ('user_id', 'username', 'mobile', 'visible_fields')
+        read_only_fields = ('user_id', 'username', 'mobile', 'visible_fields', 'origin_verbose')
 
     @staticmethod
     def get_visible_fields(instance):    # pylint: disable=unused-argument
@@ -125,6 +126,7 @@ class UserOrgProfileSerializer(DynamicFieldsModelSerializer):
             'remark',
             'email',
             'nodes',
+            'is_manager',
         )
 
     def get_nodes(self, obj):    # pylint: disable=no-self-use

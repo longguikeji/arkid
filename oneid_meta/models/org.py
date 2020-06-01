@@ -223,7 +223,7 @@ class OrgMember(BaseOrderedModel):
 
     def __str__(self):
         return f'OrgMember: {self.user} -> {self.owner}'
-    
+
     @property
     def nodes(self):
         '''
@@ -250,3 +250,10 @@ class OrgMember(BaseOrderedModel):
             if item.org == self.owner:
                 yield item
 
+    @property
+    def is_manager(self):
+        '''
+        此人在此组织是否为子管理员
+        '''
+        from oneid_meta.models import GroupMember
+        return GroupMember.valid_objects.filter(user=self.user, owner__parent=self.owner.manager).exists()
