@@ -217,6 +217,8 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     user_id = serializers.IntegerField(source='id', read_only=True)
     nodes = serializers.SerializerMethodField()
 
+    org_user = serializers.SerializerMethodField()
+
     class Meta:    # pylint: disable=missing-docstring
 
         model = User
@@ -243,6 +245,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'is_extern_user',
             'require_reset_password',
             'has_password',
+            'org_user',
         )
 
     def create(self, validated_data):
@@ -369,7 +372,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         '''
         ds = obj.depts
         depts = []
-        orgs = self.context.get('org', None)
+        orgs = self.context.get('orgs', None)
         if orgs:
             for org in orgs:
                 for d in ds:
@@ -387,7 +390,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         '''
         gs = [group for group in obj.groups if group.uid != 'extern']
         groups = []
-        orgs = self.context.get('org', None)
+        orgs = self.context.get('orgs', None)
         if orgs:
             for org in orgs:
                 for g in gs:
@@ -399,6 +402,45 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
 
         return GroupSerializer(groups, many=True).data
 
+    def get_org_user(self, obj):
+        '''
+        user info in org
+        '''
+        org = self.context.get('org', None)
+        if not org:
+            return None
+        org_user = OrgMember.valid_objects.filter(user=obj, owner=org).first()
+        if not org_user:
+            return None
+        return OrgUserLiteSerializer(org_user).data
+
+    def to_representation(self, instance):
+        '''
+        ...org_user
+        '''
+        res = super().to_representation(instance)
+        org_user = res.pop('org_user', None)
+        if not org_user:
+            return res
+        res.update(org_user)
+        return res
+
+
+class OrgUserLiteSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
+    '''
+    Serializer for OrgUser without userinfo 
+    '''
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = OrgMember
+
+        fields = (
+            'email',
+            'employee_number',
+            'position',
+            'hiredate',
+            'remark',
+        )
 
 class OrgUserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     '''
@@ -590,7 +632,7 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
         '''
         ds = obj.depts
         depts = []
-        orgs = self.context.get('org', None)
+        orgs = self.context.get('orgs', None)
         if orgs:
             for org in orgs:
                 for d in ds:
@@ -608,7 +650,7 @@ class EmployeeSerializer(DynamicFieldsModelSerializer):
         '''
         gs = [group for group in obj.groups if group.uid != 'extern']
         groups = []
-        orgs = self.context.get('org', None)
+        orgs = self.context.get('orgs', None)
         if orgs:
             for org in orgs:
                 for g in gs:

@@ -344,6 +344,14 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    def get_serializer_context(self):
+        '''
+        add org to serializer context
+        '''
+        context = super().get_serializer_context()
+        context['org'] = self.get_object().org
+        return context
+
     @catch_json_load_error
     def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''

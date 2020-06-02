@@ -195,7 +195,7 @@ urlpatterns = [
 
     # migrate
     url(r'^migration/user/csv/export/$', migrate_views.UserCSVExportView.as_view(), name='export_user'),
-    url(r'^migration/user/csv/import/$', migrate_views.UserCSVImportView.as_view(), name='import_user'),
+    # url(r'^migration/user/csv/import/$', migrate_views.UserCSVImportView.as_view(), name='import_user'),
 
     # events
     url(r'^invitation/user/(?P<username>[\w]+)/$', event_views.InviteUserCreateAPIView.as_view(), name='invite_user'),
