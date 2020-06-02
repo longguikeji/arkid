@@ -450,10 +450,18 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         queryset = queryset.filter(**filters).order_by('id')
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.serializer_class(page, many=True)
+            serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    def get_serializer_context(self):
+        '''
+        add org to serializer context
+        '''
+        context = super().get_serializer_context()
+        context['org'] = self.get_object().org
+        return context
 
     @catch_json_load_error
     def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument

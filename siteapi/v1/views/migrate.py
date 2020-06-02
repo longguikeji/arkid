@@ -39,6 +39,14 @@ class UserCSVExportView(APIView):
                 raise NotFound
             yield user
 
+    def get_serializer_context(self):
+        '''
+        add org to serializer context
+        '''
+        context = super().get_serializer_context()
+        context['org'] = self.request.user.current_organization
+        return context
+
     def get_data(self):
         '''
         return users data
@@ -65,6 +73,7 @@ class UserCSVExportView(APIView):
 class UserCSVImportView(APIView):
     '''
     从csv导入用户至指定部门或组 [POST]
+    # deprecated
     '''
 
     permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]

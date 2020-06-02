@@ -34,10 +34,10 @@ build: docker-dev-build
 docker-dev: docker-dev-build docker-dev-push
 
 docker-dev-build:
-	docker build -t harbor.longguikeji.com/ark-releases/arkid:$(VERSION) .
+	docker build -t harbor.longguikeji.com/ark-releases/arkid-saas:$(VERSION) .
 
 docker-dev-push:
-	docker push harbor.longguikeji.com/ark-releases/arkid:$(VERSION)
+	docker push harbor.longguikeji.com/ark-releases/arkid-saas:$(VERSION)
 
 docker-prod: docker-prod-build docker-prod-push
 

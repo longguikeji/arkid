@@ -898,6 +898,7 @@ https://open-doc.dingtalk.com/microapp/serverapi2/clotub
         + hiredate - 入职时间
         + remark - 备注
         + email - 企业内部邮箱
+        + nodes (array[NodeDetail]) - 在该组织内的节点
 
 ## 用户手机 [/ucenter/mobile/]
 deprecated

@@ -221,7 +221,8 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                 if user_all_node_uids & request.user.node_uids:
                     orgs.append(mg.group.org)
 
-        return Response(EmployeeSerializer(user, context={'org': orgs}).data)
+        # TODO: 看懂这里
+        return Response(EmployeeSerializer(user, context={'orgs': orgs}).data)
 
     def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''

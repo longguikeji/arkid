@@ -31,6 +31,17 @@ pipeline {
                     make VERSION=${env.DOCKER_IMAGE_DEV_VERSION} docker-dev
                     """
                 }
+
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: "devops-longguikeji-ssh",
+                    keyFileVariable: "SSH_KEY",
+                    usernameVariable: "SSH_USER",
+                )]) {
+                    sh """
+                    ssh -o "StrictHostKeyChecking=no" ${SSH_USER}@${env.DEV_HOST_IP} -p${env.DEV_HOST_PORT} -i ${SSH_KEY} \
+                        'make BE_VERSION=${env.DOCKER_IMAGE_DEV_VERSION} update-arkid-saas'
+                    """
+                }
             }
         }
     }

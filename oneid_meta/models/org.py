@@ -190,11 +190,13 @@ class Org(BaseModel):
         '''
         if user == self.owner:
             return 'owner'
-        if 1 == 2:    # @TODO
-            return 'manager'
-        if OrgMember.valid_objects.filter(user=user, owner=self).exists():
-            return 'member'
-        return ''
+
+        org_member = OrgMember.valid_objects.filter(user=user, owner=self).first()
+        if not org_member:
+            return ""
+        if org_member.is_manager:
+            return "manager"
+        return "member"
 
     def has_user(self, user):
         '''
@@ -223,3 +225,37 @@ class OrgMember(BaseOrderedModel):
 
     def __str__(self):
         return f'OrgMember: {self.user} -> {self.owner}'
+
+    @property
+    def nodes(self):
+        '''
+        此人在此组织所处node
+        '''
+        yield from self.depts
+        yield from self.groups
+
+    @property
+    def depts(self):
+        '''
+        此人在此组织所处部门
+        '''
+        for item in self.user.depts:
+            if item.org == self.owner:
+                yield item
+
+    @property
+    def groups(self):
+        '''
+        此人在此组织所处组
+        '''
+        for item in self.user.groups:
+            if item.org == self.owner:
+                yield item
+
+    @property
+    def is_manager(self):
+        '''
+        此人在此组织是否为子管理员
+        '''
+        from oneid_meta.models import GroupMember
+        return GroupMember.valid_objects.filter(user=self.user, owner__parent=self.owner.manager).exists()
