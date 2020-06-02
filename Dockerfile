@@ -9,17 +9,17 @@ ADD devops/pip.conf /etc/pip.conf
 ADD requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-FROM build_deps as run_lint
-ADD requirements-dev.txt ./
-RUN pip install --no-cache-dir -r requirements-dev.txt
-ADD . .
-ARG base_commit_id=""
-RUN pre-commit install \
-    && make BASE_COMMIT_ID=${base_commit_id} lint
+# FROM build_deps as run_lint
+# ADD requirements-dev.txt ./
+# RUN pip install --no-cache-dir -r requirements-dev.txt
+# ADD . .
+# ARG base_commit_id=""
+# RUN pre-commit install \
+#     && make BASE_COMMIT_ID=${base_commit_id} lint
 
-FROM build_deps as run_test
-ADD . .
-RUN make test
+# FROM build_deps as run_test
+# ADD . .
+# RUN make test
 
 FROM build_deps as build
 RUN pip install uwsgi mysqlclient==1.4.6
