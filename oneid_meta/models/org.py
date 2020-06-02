@@ -190,11 +190,13 @@ class Org(BaseModel):
         '''
         if user == self.owner:
             return 'owner'
-        if 1 == 2:    # @TODO
-            return 'manager'
-        if OrgMember.valid_objects.filter(user=user, owner=self).exists():
-            return 'member'
-        return ''
+
+        org_member = OrgMember.valid_objects.filter(user=user, owner=self).first()
+        if not org_member:
+            return ""
+        if org_member.is_manager:
+            return "manager"
+        return "member"
 
     def has_user(self, user):
         '''
