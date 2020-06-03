@@ -19,10 +19,10 @@ username = "admin"
 password = "admin"
 ```       
 3、添加接口测试用例       
-打开文件`testcase.py` 。`httpurl_data` 为存放测试用例的列表，列表每一个类型为字典的值表示一条测试用例，添加测试用例只需要按照模板添加字典类型的数据即可    
+打开文件`apidata.py` 。`httpurl_data` 为存放测试用例的列表，列表每一个类型为字典的值表示一条测试用例，添加测试用例只需要按照模板添加字典类型的数据即可    
 ```
     # 1.登录接口 第一条用例
-    {'title': '登录接口',  # 用例的名称
+    {'tittle': '登录接口',  # 用例的名称
      'condition': '',  # 前置条件 写skip 跳过这个用例，不写则正常执行
      'url': '{}siteapi/oneid/ucenter/login/'.format(base_url),
      'headers':{
@@ -40,14 +40,13 @@ password = "admin"
 ``` 
 |用例属性|意义|备注|
 |-----|-----------|----|
-|title|测试用例标题|url|
+|tittle|测试用例标题|可以不存在|
 |condition|前置条件|skip为跳过，其他为正常执行|
-|url|接口地址||
-|headers|接口请求头信息||
-|payload|接口携带参数|post类型请求正常填写，get类型将payload键值对删掉|
-|type|请求类型|post或者get|
-|isok|用例是否通过|空|
-|time|执行用例前等待的时间|单位为秒|
+|url|接口地址|不存在时报错|
+|headers|接口请求头信息|可以不存在|
+|payload|接口携带参数|可以不存在|
+|type|请求类型|post或者get，不存在时报错|    
+|time|执行用例前等待的时间|单位为秒,不存在时为 0|
 |assert|断言|列表类型，可添加多个|
 
 4、运行生成 `xml` 测试报告      
