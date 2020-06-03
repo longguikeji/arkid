@@ -45,4 +45,12 @@ Jmeter、截图工具
 查看操作日志（http://localhost:8989/siteapi/oneid/log/?page=1&page_size=10)|1000|60|16.667|27.223
 绑定微信（http://localhost:8989/siteapi/v1/user/admin/)|1200|60|20.000|12.081
 根据微信查询用户（http://localhost:8989/siteapi/v1/user/admin/)|2100|60|35.000|0.903
-空白接口-性能极值（http://localhost:8989/siteapi/v1/user/admin/)|7000|60|116.667|0.210
+空白接口-性能极值（http://localhost:8989/siteapi/v1/user/admin/)|7000|60|116.667|0.210        
+获取用户信息（http://localhost:8989/siteapi/oneid/user/{username}/)|1300|60|21.667|7.805         
+通过用户名搜索用户（http://localhost:8989/siteapi/oneid/user/?username={username})|1350|60|22.500|13.572      
+通过手机号搜索用户（http://localhost:8989/siteapi/oneid/user/?keyword={phonenumber})|1350|60|22.500|19.173              
+调整分组（http://localhost:8989/siteapi/oneid/node/d_beijinglongguikeji/user/)|5|60|0.083|22.938               
+获取用户权限详情（http://localhost:8989/siteapi/v1/user/i3vwxz/perm/system_user_create)|1600|60|26.667|10.906              
+
+
+
