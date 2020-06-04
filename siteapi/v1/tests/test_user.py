@@ -21,72 +21,6 @@ from oneid_meta.models import (
     WechatUser,
 )
 
-# EMPLOYEE = {
-#     'user': {
-#         'user_id': 2,
-#         'avatar': '',
-#         'username': 'employee1',
-#         'name': 'employee1',
-#         'email': 'email',
-#         'mobile': '18812345678',
-#         'employee_number': '',
-#         'gender': 2,
-#         'private_email': '',
-#         'is_settled': False,
-#         'is_manager': False,
-#         'is_admin': False,
-#         'is_extern_user': False,
-#         'origin_verbose': '管理员添加',
-#         'position': '',
-#         'hiredate': None,
-#         'remark': '',
-#         'last_active_time': None,
-#         'created': TestCase.now_str,
-#         'require_reset_password': False,
-#         'has_password': False,
-#         'ding_user': {
-#             'uid': 'ding_employee2',
-#             'account': '18812345678',
-#             'data': '{"key": "val"}'
-#         },
-#     },
-#     'depts': [
-#         {
-#             'dept_id': 1,
-#             'name': 'root',
-#             'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
-#             'uid': 'root',
-#             'node_uid': 'd_root',
-#             'node_subject': 'dept'
-#         },
-#     ],
-#     'groups': [{
-#         'accept_user': False,
-#         'group_id': 1,
-#         'name': 'root',
-#         'remark': '所有顶级的组的父级，可视为整个公司。请勿修改',
-#         'uid': 'root',
-#         'node_uid': 'g_root',
-#         'node_subject': 'root',
-#     }],
-#     'nodes': [{
-#         'accept_user': False,
-#         'group_id': 1,
-#         'name': 'root',
-#         'remark': '所有顶级的组的父级，可视为整个公司。请勿修改',
-#         'uid': 'root',
-#         'node_uid': 'g_root',
-#         'node_subject': 'root',
-#     }, {
-#         'dept_id': 1,
-#         'name': 'root',
-#         'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
-#         'uid': 'root',
-#         'node_uid': 'd_root',
-#         'node_subject': 'dept'
-#     }]
-# }
-
 EMPLOYEE = {
     'user_id':
     2,
@@ -210,6 +144,19 @@ class UserTestCase(TestCase):
         self.assertEqual(1, len(res.json()['results']))
         res = client.get(reverse('siteapi:user_list'), data={'name': 'employee'})
         self.assertEqual(0, len(res.json()['results']))
+
+        res = client.get(reverse('siteapi:user_list'),
+                         data={
+                             'name__icontains': 'ployee1',
+                             'created__lte': '1800-01-01T08:00:00+08:00'
+                         })
+        self.assertEqual(0, len(res.json()['results']))
+        res = client.get(reverse('siteapi:user_list'),
+                         data={
+                             'name__icontains': 'ployee1',
+                             'created__gte': '1800-01-01T08:00:00+08:00'
+                         })
+        self.assertEqual(1, len(res.json()['results']))
 
         res = client.get(reverse('siteapi:user_list'), data={'keyword': '189'})
         user_list = res.json()['results']
