@@ -19,6 +19,7 @@ def login():            #login函数用来提取登录后的token，用于后续
 
     r = requests.post(url = url, data = data, headers = headers)
 
-    token = r.json()['token']                     
+    assert r.status_code == 200
 
+    token = r.json()['token']
     return token

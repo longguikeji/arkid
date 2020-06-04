@@ -29,17 +29,23 @@ class Junit:
         self.testsuite.setAttribute('timestamp', str(datetime.isoformat(self.pstarttime)))
 
     # 每条用例是一个case
-    def case(self, title, time):
+    def case(self, tittle, time):
         # 创建case标签
         self.testcase = self.doc.createElement('testcase')
         # 用例的名称
-        self.testcase.setAttribute('name', str(title))
+        self.testcase.setAttribute('name', str(tittle))
         self.case_timer = time
     # 跳过用例的case
     def skip_case(self, message):
         skip = self.doc.createElement('skipped')
         skip.setAttribute('message', message)
         self.testcase.appendChild(skip)
+    #接口数据错误
+    def error_data(self,message):
+        errordata = self.doc.createElement('skipped')
+        errordata.setAttribute('message', message)
+        errordata.setAttribute('type', 'errordata')
+        self.testcase.appendChild(errordata)
     # 设置时间
     def settime(self):
         endtime = datetime.now()

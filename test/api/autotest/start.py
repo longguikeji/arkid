@@ -28,6 +28,16 @@ def createxml():
     # 开始执行用例
     for data in httpurl_data:
         testcase = TestCase(data)
+
+        try:
+            testcase.InputsError()
+        except Exception as ex:
+            print(ex)
+            junit.case(testcase.tittle, datetime.now())
+            junit.error_data(str(ex))
+            junit.settime()
+            continue
+
         # 判断需要跳过的用例
         if testcase.condition == 'skip':
             # 写入跳过用例标题名
@@ -51,18 +61,33 @@ def createxml():
             time.sleep(float(sltime))
 
         # 使用getattr函数进行反射调用接口 参数1：请求的对象，参数2：请求类型 get post 后面的小括号是进行传参
-        getattr(http_client, testcase.type)(testcase)
-        #接口是否为通过
-        is_pass = testcase.isok
+        #getattr(http_client, 'http_client')(testcase)
+        http_client.request(testcase)
         # 用例通过
-        if is_pass == 'ok':
+        reason = ''       #失败用例失败原因
+        result = ''       #测试结果
+        if testcase.codenum == 200:
+
+            for asserts in testcase.asserts:
+                # 每个字段和去接口的返回值去对比
+                if asserts in str(testcase.text):
+                    pass
+                else:
+                    result = 'failed'
+                    reason = asserts + '断言失败'
+        else:
+            result = 'failed'
+            reason = '状态码为 ' + str(testcase.codenum)
+
+        # 用例通过
+        if result != 'failed':
             # 写入xml测试报告
             junit.case(testcase.tittle, case_time)
             junit.settime()
         # 用例不通过
         else:
             junit.case(testcase.tittle, case_time)
-            junit.failure('标题：' + testcase.tittle + '  请求类型：' + testcase.type +'   失败原因：' + str(is_pass))
+            junit.failure('标题：' + testcase.tittle + '  请求类型：' + testcase.type +'   失败原因：' + reason)
             junit.settime()
 
     # 生成xml数据源 提供给allure
