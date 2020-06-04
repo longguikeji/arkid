@@ -14,7 +14,7 @@
 ## middleware
 插件必须是 function 的形式，且名称以 `_plugin` 结尾。
 
-具体实现，参考文档 https://docs.djangoproject.com/en/2.2/topics/http/middleware/#writing-your-own-middleware
+具体实现，参考[文档](https://docs.djangoproject.com/en/2.2/topics/http/middleware/#writing-your-own-middleware)。
 
 对插件做修改后需要重启 web server。
 
