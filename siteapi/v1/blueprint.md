@@ -2351,7 +2351,7 @@ Content-Disposition: form-data; name='node_uid'
 + Response 200 (application/json)
     + Attributes (Log)
 
-# Group advanced
+# Group Advanced
 
 ## crontab 插件 [/plugin/crontab/]
 
@@ -2369,10 +2369,11 @@ Content-Disposition: form-data; name='node_uid'
 
 ### 修改指定 crontab 插件 [PATCH]
 + Requests JSON Message
-    + name
-    + detail
-    + schedule
-    + is_active (boolean)
+    + Attributes
+        + name
+        + detail
+        + schedule (string) - 形如 `* * * * *`
+        + is_active (boolean)
 
 + Response 200 (application/json)
     + Attributes (CrontabPlugin)
@@ -2393,10 +2394,11 @@ Content-Disposition: form-data; name='node_uid'
 
 ### 修改指定 middleware 插件 [PATCH]
 + Requests JSON Message
-    + name
-    + detail
-    + order_no (number)
-    + is_active (boolean)
+    + Attributes
+        + name
+        + detail
+        + order_no (number)
+        + is_active (boolean)
 
 + Response 200 (application/json)
     + Attributes (MiddlewarePlugin)
