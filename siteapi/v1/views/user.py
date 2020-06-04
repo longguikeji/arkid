@@ -63,18 +63,7 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         '''
         return queryset for list [GET]
         '''
-        wechat_unionid = self.request.query_params.get('wechat_unionid', '')
         queryset = User.valid_objects.all()
-        if wechat_unionid != '':
-            queryset = queryset.filter(wechat_user__unionid=wechat_unionid)
-
-        name = self.request.query_params.get('name', '')
-        if name != '':
-            queryset = queryset.filter(name=name)
-
-        username = self.request.query_params.get('username', '')
-        if username != '':
-            queryset = queryset.filter(username=username)
 
         keyword = self.request.query_params.get('keyword', '')
         if keyword != '':
@@ -83,6 +72,36 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
                     exclude(is_boss=True).exclude(username='admin').order_by('id')
         else:
             queryset = queryset.exclude(is_boss=True).exclude(username='admin').order_by('id')
+
+        filter_params = (
+            'wechat_unionid',
+            'name',
+            'name__icontains',
+            'username',
+            'username__icontains',
+            'email',
+            'email__icontains',
+            'private_email',
+            'private_email__icontains',
+            'mobile',
+            'mobile__icontains',
+            'gender',
+            'remark',
+            'remark__icontains',
+            'created__lte',
+            'created__gte',
+            'last_active_time__lte',
+            'last_active_time__gte',
+        )
+        mapper = {
+            'wechat_unionid': 'wechat_user__unionid',
+        }
+
+        for param in filter_params:
+            value = self.request.query_params.get(param, None)
+            if value is not None:
+                param = mapper.get(param, param)
+                queryset = queryset.filter(**{param: value})
 
         user = self.request.user
         if user.is_admin:
