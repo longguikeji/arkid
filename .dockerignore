@@ -1,3 +1,4 @@
 settings_local.py
 db.sqlite3
 db/db.sqlite3
+docker-compose

@@ -89,7 +89,36 @@ def _flush_node_perm(node_cls, start_node=None, perms=None):
             node_perm.update_value()
 
 
-def flush_user_perm(users=None, perms=None):
+def _update_user_node_perm(user):
+    '''
+    刷新指定用户对所有权限的 group_perm_value, dept_perm_value
+    '''
+    dept_perm_ids = [item['perm_id'] for item in \
+        DeptPerm.valid_objects.filter(owner__id__in=user.dept_ids, value=True).values('perm_id').distinct()
+    ]
+    UserPerm.valid_objects.filter(owner=user).update(dept_perm_value=False)
+    UserPerm.valid_objects.filter(owner=user, perm__id__in=dept_perm_ids).update(dept_perm_value=True)
+
+    group_perm_ids = [item['perm_id'] for item in \
+        GroupPerm.valid_objects.filter(owner__id__in=user.group_ids, value=True).values('perm_id').distinct()
+    ]
+    UserPerm.valid_objects.filter(owner=user).update(group_perm_value=False)
+    UserPerm.valid_objects.filter(owner=user, perm__id__in=group_perm_ids).update(group_perm_value=True)
+
+
+def update_user_perm(user):
+    '''
+    刷新指定用户所有权限
+    基于现有部门、组权限的分配结果进行计算，不包括部门、组权限的刷新
+    '''
+    _update_user_node_perm(user)
+    UserPerm.valid_objects.filter(Q(dept_perm_value=True) | Q(group_perm_value=True), status=0,
+                                  owner=user).update(value=True)
+    UserPerm.valid_objects.filter(Q(dept_perm_value=False) & Q(group_perm_value=False), status=0,
+                                  owner=user).update(value=False)
+
+
+def flush_user_perm():
     # pylint: disable=protected-access, no-member
     '''
     刷新用户权限，需要周期性执行
@@ -139,21 +168,8 @@ def flush_user_perm(users=None, perms=None):
                 np.value = true
         ''')
     else:
-        users = User.valid_objects.all()
-        perms = Perm.valid_objects.all()
-
-        for user in users:
-            dept_ids = user.dept_ids
-            group_ids = user.group_ids
-
-            for perm in perms:
-                user_perm = user.get_perm(perm)
-                user_perm.group_perm_value = GroupPerm.valid_objects.filter(owner__id__in=group_ids,
-                                                                            perm=perm,
-                                                                            value=True).exists()
-                user_perm.dept_perm_value = DeptPerm.valid_objects.filter(owner__id__in=dept_ids, perm=perm,
-                                                                          value=True).exists()
-                user_perm.save(update_fields=['group_perm_value', 'dept_perm_value'])
+        for user in User.valid_objects.all():
+            _update_user_node_perm(user)
 
     UserPerm.valid_objects.filter(status=1).update(value=True)
     UserPerm.valid_objects.filter(status=-1).update(value=False)
