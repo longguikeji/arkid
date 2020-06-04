@@ -1755,6 +1755,16 @@ TODO: 可见权限的处理
     + Attributes (array[UserPerm]) - 修改的用户权限
 
 
+## 用户权限列表 [/user/{username}/perm/]
+
+### 刷新用户权限 [PUT]
+用于获取实时权限判定结果
+
++ Response 200 (application/json)
+    + Attributes
+        + task_id
+        + task_msg
+
 ## 用户权限详情 [/user/{username}/perm/{uid}/]
 + Parameters
     + username (string) - 用户名
@@ -1772,6 +1782,7 @@ TODO: 可见权限的处理
 
 + Response 200 (application/json)
     + Attributes (UserPermDetail)
+
 
 ## 部门权限 [/perm/dept/{uid}/{?action,action_except,scope}]
 

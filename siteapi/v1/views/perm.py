@@ -27,6 +27,7 @@ from common.django.drf.paginator import DefaultListPaginator
 from common.django.drf.views import catch_json_load_error
 from oneid.permissions import IsAdminUser, IsManagerUser
 from executer.log.rdb import LOG_CLI
+from tasksapp.tasks import update_user_perm_in_db
 
 
 class PermListCreateAPIView(generics.ListCreateAPIView):
@@ -460,6 +461,25 @@ class DeptPermView(
         return Response(self.get_serializer(res_dept_perms, many=True).data)
 
 
+class UserPermListView(generics.GenericAPIView):
+    '''
+    即刻计算一个用户的权限结果 [PUT]
+    '''
+    def get_object(self):
+        user = User.valid_objects.filter(username=self.kwargs['username']).first()
+        if not user:
+            raise NotFound
+        return user
+
+    def put(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+        '''
+        即刻更新权限结果
+        '''
+        user = self.get_object()
+        task = update_user_perm_in_db.delay(user.id)
+        return Response({'task_id': task.task_id, 'task_msg': f'update user:[{user.username}] perms'})
+
+
 class UserPermDetailView(generics.RetrieveUpdateAPIView):
     '''
     获取一个用户对于某权限的详细信息，包括授权来源 [GET]
@@ -486,7 +506,7 @@ class UserPermDetailView(generics.RetrieveUpdateAPIView):
 
         return user_perm
 
-    def put(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''
         即刻更新权限结果
         '''
