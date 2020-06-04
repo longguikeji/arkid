@@ -47,6 +47,17 @@ def flush_user_perm_in_db():
 
 
 @shared_task
+def update_user_perm_in_db(userid):
+    '''
+    刷新指定用户的所有权限。
+    不包括
+    '''
+    user = User.valid_objects.filter(id=userid).first()
+    if user:
+        flush_perm.update_user_perm(user)
+
+
+@shared_task
 def flush_user_perm_in_ldap():
     '''
     刷新LDAP中用户的权限

@@ -56,6 +56,7 @@ urlpatterns = [
     url(r'^user/(?P<username>[\w]+)/dept/$', user_views.UserDeptView.as_view(), name='user_dept'),
     url(r'^user/(?P<username>[\w]+)/group/$', user_views.UserGroupView.as_view(), name='user_group'),
     url(r'^user/(?P<username>[\w]+)/node/$', user_views.UserNodeView.as_view(), name='user_node'),
+    url(r'^user/(?P<username>[\w]+)/perm/$', perm_views.UserPermListView.as_view(), name='user_perm_list'),
     url(r'^user/(?P<username>[\w]+)/perm/(?P<perm_uid>[\w|-]+)/$',
         perm_views.UserPermDetailView.as_view(),
         name='user_perm_detail'),

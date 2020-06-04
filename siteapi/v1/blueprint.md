@@ -914,7 +914,7 @@ deprecated
     + Attributes
         + perm_uid (string, optional)
         + app_uid (string, optional) - 限定返回的权限。此时返回的 perm_uid 不带前缀，形如 `manage`
-        + oauth_client_id (string, optioanl) - 作用同 app_uid
+        + oauth_client_id (string, optional) - 作用同 app_uid
 
 + Response 200 (application/json)  
     拥有该权限
@@ -948,7 +948,7 @@ TODO: 校对
         + password (string, optional) - 若提供密码则对密码进行检查。
         + group (string, optional) - 用户处于子组中，也认为有权限
         + dept (string, optional) - 用户处于子部门中，也认为有权限
-        + perm (string, optioanl) - 检查用户是否有特定权限
+        + perm (string, optional) - 检查用户是否有特定权限
 
 + Response 200 (application/json)
     + Attributes
@@ -976,7 +976,7 @@ TODO: 校对
 # Group User
 用户管理
 
-## 所有用户 [/user/{?keyword,wechat_unionid,page,page_size}]
+## 所有用户 [/user/{?keyword,wechat_unionid,name,name__icontains,username,username__icontains,email,email__icontains,private_email,private_email__icontains,mobile,mobile__icontains,gender,remark,remark__icontains,created__lte,created__gte,last_active_time__lte,last_active_time__gtepage,page_size}]
 
 ### 创建用户 [POST]
 + Request JSON Message
@@ -994,7 +994,22 @@ TODO: 校对
     + keyword (string, optional) - 查询关键字，进行用户名、姓名、邮箱、手机号模糊搜索
     + wechat_unionid (string, optional)
     + name (string, optional) - 姓名精准搜索
+    + name__icontains (string, optional) - 姓名模糊搜索
     + username (string, optional) - 用户名精准搜索
+    + username__icontains (string, optional) - 用户名模糊搜索
+    + email (string, optional)
+    + email__icontains (string, optional)
+    + private_email (string, optional)
+    + private_email__icontains (string, optional)
+    + mobile (string, optional)
+    + mobile__icontains (string, optional)
+    + gender (number, optional)
+    + remark (string, optional)
+    + remark__icontains (string, optional)
+    + created__lte (string, optional)
+    + created__gte (string, optional)
+    + last_active_time__lte (string, optional)
+    + last_active_time__gte (string, optional)
     + page (number, optional)
         + default: 1
     + page_size (number, optional)
@@ -1740,6 +1755,16 @@ TODO: 可见权限的处理
     + Attributes (array[UserPerm]) - 修改的用户权限
 
 
+## 用户权限列表 [/user/{username}/perm/]
+
+### 刷新用户权限 [PUT]
+用于获取实时权限判定结果
+
++ Response 200 (application/json)
+    + Attributes
+        + task_id
+        + task_msg
+
 ## 用户权限详情 [/user/{username}/perm/{uid}/]
 + Parameters
     + username (string) - 用户名
@@ -1757,6 +1782,7 @@ TODO: 可见权限的处理
 
 + Response 200 (application/json)
     + Attributes (UserPermDetail)
+
 
 ## 部门权限 [/perm/dept/{uid}/{?action,action_except,scope}]
 
@@ -2336,7 +2362,7 @@ Content-Disposition: form-data; name='node_uid'
 + Response 200 (application/json)
     + Attributes (Log)
 
-# Group advanced
+# Group Advanced
 
 ## crontab 插件 [/plugin/crontab/]
 
@@ -2354,10 +2380,11 @@ Content-Disposition: form-data; name='node_uid'
 
 ### 修改指定 crontab 插件 [PATCH]
 + Requests JSON Message
-    + name
-    + detail
-    + schedule
-    + is_active (boolean)
+    + Attributes
+        + name
+        + detail
+        + schedule (string) - 形如 `* * * * *`
+        + is_active (boolean)
 
 + Response 200 (application/json)
     + Attributes (CrontabPlugin)
@@ -2378,10 +2405,11 @@ Content-Disposition: form-data; name='node_uid'
 
 ### 修改指定 middleware 插件 [PATCH]
 + Requests JSON Message
-    + name
-    + detail
-    + order_no (number)
-    + is_active (boolean)
+    + Attributes
+        + name
+        + detail
+        + order_no (number)
+        + is_active (boolean)
 
 + Response 200 (application/json)
     + Attributes (MiddlewarePlugin)
