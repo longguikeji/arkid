@@ -6,10 +6,6 @@ import json
 def request(testcase):
     if testcase.type == 'get':      #get请求
         r = requests.get(url = testcase.url,headers = testcase.headers)
-    else:                            #post请求
-        r = requests.post(url = testcase.url, data = testcase.payload,headers = testcase.headers)
-
-    testcase.codenum = r.status_code
-    testcase.text = r.text
-
-    return testcase.codenum,testcase.text
+    elif testcase.type == 'post':                            #post请求
+        r = requests.post(url = testcase.url, json = testcase.payload, headers = testcase.headers)
+    return r

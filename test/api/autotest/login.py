@@ -15,9 +15,7 @@ def login():            #login函数用来提取登录后的token，用于后续
         "username": config.username
     }
 
-    data = json.dumps(payload)
-
-    r = requests.post(url = url, data = data, headers = headers)
+    r = requests.post(url = url, json = payload, headers = headers)
 
     assert r.status_code == 200
 

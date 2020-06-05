@@ -27,10 +27,9 @@ def createxml():
 
     # 开始执行用例
     for data in httpurl_data:
-        testcase = TestCase(data)
-
+        #testcase = TestCase(data)
         try:
-            testcase.InputsError()
+            testcase = TestCase(data)
         except Exception as ex:
             print(ex)
             junit.case(testcase.tittle, datetime.now())
@@ -55,6 +54,10 @@ def createxml():
 
         # 获取等待时间
         sltime = testcase.time
+        if sltime.isdigit():
+            sltime = sltime
+        else:
+            sltime = 0
         # 判断时间有值在进行等待
         if sltime:
             # 使用sleep进行等待
@@ -62,22 +65,29 @@ def createxml():
 
         # 使用getattr函数进行反射调用接口 参数1：请求的对象，参数2：请求类型 get post 后面的小括号是进行传参
         #getattr(http_client, 'http_client')(testcase)
-        http_client.request(testcase)
+        try:
+            r = http_client.request(testcase)
+        except:
+            junit.case(testcase.tittle, datetime.now())
+            junit.error_data('接口数据填写错误')
+            junit.settime()
+            continue
+
         # 用例通过
         reason = ''       #失败用例失败原因
         result = ''       #测试结果
-        if testcase.codenum == 200:
+        if r.status_code == 200:
 
             for asserts in testcase.asserts:
                 # 每个字段和去接口的返回值去对比
-                if asserts in str(testcase.text):
+                if asserts in str(r.text):
                     pass
                 else:
                     result = 'failed'
                     reason = asserts + '断言失败'
         else:
             result = 'failed'
-            reason = '状态码为 ' + str(testcase.codenum)
+            reason = '状态码为 ' + str(r.status_code)
 
         # 用例通过
         if result != 'failed':
