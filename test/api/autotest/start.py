@@ -2,7 +2,7 @@ import json
 # 引入testcase里面的用例
 from apidata import httpurl_data
 # 引入请求
-import http_client
+#import http_client
 # time在这里的作用主要是等待的操作
 import time
 from datetime import datetime
@@ -10,13 +10,14 @@ from datetime import datetime
 from junit import Junit
 from pathlib import Path
 from testcase import TestCase
+import requests
 
 def createdir():
     files = ('junit',)
     # 创建文件夹
     for k in files:
         path = Path(k)
-        # 如果文件不存在 则创建
+        # 检查path是否是一个目录，不是则创建目录
         if not path.is_dir():
             path.mkdir()
 
@@ -38,7 +39,7 @@ def createxml():
             continue
 
         # 判断需要跳过的用例
-        if testcase.condition == 'skip':
+        if testcase.notSkip == False:
             # 写入跳过用例标题名
             junit.case(testcase.tittle, datetime.now())
             # 跳过用例的信息
@@ -54,24 +55,14 @@ def createxml():
 
         # 获取等待时间
         sltime = testcase.time
-        if sltime.isdigit():
-            sltime = sltime
-        else:
-            sltime = 0
         # 判断时间有值在进行等待
         if sltime:
             # 使用sleep进行等待
-            time.sleep(float(sltime))
+            time.sleep(sltime)
 
         # 使用getattr函数进行反射调用接口 参数1：请求的对象，参数2：请求类型 get post 后面的小括号是进行传参
         #getattr(http_client, 'http_client')(testcase)
-        try:
-            r = http_client.request(testcase)
-        except:
-            junit.case(testcase.tittle, datetime.now())
-            junit.error_data('接口数据填写错误')
-            junit.settime()
-            continue
+        r = requests.request(testcase.type, url = testcase.url, json = testcase.payload, headers = testcase.headers)
 
         # 用例通过
         reason = ''       #失败用例失败原因
