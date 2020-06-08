@@ -23,30 +23,29 @@ password = "admin"
 ```
     # 1.登录接口 第一条用例
     {'tittle': '登录接口',  # 用例的名称
-     'condition': '',  # 前置条件 写skip 跳过这个用例，不写则正常执行
+     'skip': False,  # 跳过用例，bool类型，False，空，0，不存在skip为不跳过，其余均为跳过
      'url': '{}siteapi/oneid/ucenter/login/'.format(base_url),
      'headers':{
          'Content-Type': 'application/json;charset=UTF-8'    
-     },       #请求头信息
+     },
      'payload': {
          'password': 'admin',
          'username': 'admin'
-     },     #参数
-     'type': 'post',  # 请求的类型 get 或者post，这条是 post 类型
-     'isok': '',  # 用例是否通过，通过是ok 不通过则为失败原因
-     'time': '1' , # 用例等待的时间 秒 1就是等待1秒后执行
-     'assert':['admin']     #断言，列表类型，可添加多个判断条件，与接口返回值进行比对
+     },
+     'type': 'post',  # 请求的类型，支持 get,post,options,head,delete,put,connect，不区分大小写，这条是 post 类型
+     'time': 1 , # 用例等待的时间 int 类型 秒 1就是等待1秒后执行
+     'assert':['admin']     #断言，列表类型，可添加多个判断条件，与接口返回值对比
      }
 ``` 
 |用例属性|意义|备注|
 |-----|-----------|----|
 |tittle|测试用例标题|可以不存在|
-|condition|前置条件|skip为跳过，其他为正常执行|
-|url|接口地址|不存在时跳过用例|
+|skip|跳过用例|bool类型，True为跳过，False不跳过，正常执行|
+|url|接口地址|不存在时抛出异常|
 |headers|接口请求头信息|可以不存在|
 |payload|接口携带参数|可以不存在|
-|type|请求类型|post或者get，不存在时跳过用例|    
-|time|执行用例前等待的时间|单位为秒,不存在时为 0|
+|type|请求类型|支持 get,post,options,head,delete,put,connect，不区分大小写，不存在时抛出异常|    
+|time|执行用例前等待的时间|单位为秒,int类型|
 |assert|断言|列表类型，可添加多个|
 
 4、运行生成 `xml` 测试报告      

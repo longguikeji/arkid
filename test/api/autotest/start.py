@@ -11,6 +11,7 @@ from junit import Junit
 from pathlib import Path
 from testcase import TestCase
 import requests
+from inputs_error import InputsError
 
 def createdir():
     files = ('junit',)
@@ -31,15 +32,15 @@ def createxml():
         #testcase = TestCase(data)
         try:
             testcase = TestCase(data)
-        except Exception as ex:
+        except InputsError as ex:
             print(ex)
-            junit.case(testcase.tittle, datetime.now())
+            junit.case(data.get('tittle','没有标题'), datetime.now())
             junit.error_data(str(ex))
             junit.settime()
             continue
 
         # 判断需要跳过的用例
-        if testcase.notSkip == False:
+        if testcase.skip:
             # 写入跳过用例标题名
             junit.case(testcase.tittle, datetime.now())
             # 跳过用例的信息
@@ -50,8 +51,6 @@ def createxml():
 
         # 这条用例开始执行的时间
         case_time = datetime.now()
-
-        # 首先判断此用例是否需要执行
 
         # 获取等待时间
         sltime = testcase.time
@@ -66,22 +65,20 @@ def createxml():
 
         # 用例通过
         reason = ''       #失败用例失败原因
-        result = ''       #测试结果
+        result = True       #测试结果
         if r.status_code == 200:
 
             for asserts in testcase.asserts:
                 # 每个字段和去接口的返回值去对比
-                if asserts in str(r.text):
-                    pass
-                else:
-                    result = 'failed'
+                if asserts not in str(r.text):
+                    result = False
                     reason = asserts + '断言失败'
         else:
-            result = 'failed'
+            result = False
             reason = '状态码为 ' + str(r.status_code)
 
         # 用例通过
-        if result != 'failed':
+        if result:
             # 写入xml测试报告
             junit.case(testcase.tittle, case_time)
             junit.settime()
