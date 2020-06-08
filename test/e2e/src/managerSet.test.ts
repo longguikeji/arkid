@@ -48,7 +48,7 @@ describe('一账通-测试设置子管理员', () => {
         
     });
 
-    test('TEST_002:验证设置子管理员是否生效' , async() => {//所在分组及下级分组，未分配权限
+    test('TEST_002:验证设置子管理员是否生效' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
 
@@ -63,12 +63,12 @@ describe('一账通-测试设置子管理员', () => {
         await page.waitFor(3000);
         
         let managersettingaction = new managerSettingAction();
-        await managersettingaction.managerSetting(page);//添加子管理员
+        await managersettingaction.managerSetting(page);
         
         const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(managerName).toEqual('mei111');//是否成功添加到子管理员列表
+        await expect(managerName).toEqual('mei111');
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -78,7 +78,7 @@ describe('一账通-测试设置子管理员', () => {
 
 })
 
-describe('一账通-测试设置子管理员a', () => {//管理范围所在分组及下级分组，创建用户
+describe('一账通-测试设置子管理员a', () => {
     let page : Page;
     
     beforeEach( async () => {
@@ -95,14 +95,14 @@ describe('一账通-测试设置子管理员a', () => {//管理范围所在分�
         await useraction.login(page, 'admin', 'admin');
 
         let managersettingaction = new managerSettingAction();
-        await managersettingaction.managerSettinga(page);//添加子管理员
+        await managersettingaction.managerSettinga(page);
 
         await page.waitFor(3000);
 
         const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(managerName).toEqual('bumen3user');//是否成功添加到子管理员列表
+        await expect(managerName).toEqual('bumen3user');
    
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -117,12 +117,12 @@ describe('一账通-测试设置子管理员a', () => {//管理范围所在分�
 
         let groupaction = new groupAction();
         await groupaction.groupAddress(page);
-        await groupaction.addUser(page, "mei111add", "mei111add", "mei111add", "mei111add");//子管理员添加账号
+        await groupaction.addUser(page, "mei111add", "mei111add", "mei111add", "mei111add");
         
         const userName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2)>div>span', elem => {
             return elem.innerHTML;
         });
-        await expect(userName).toEqual('mei111add');//是否添加成功
+        await expect(userName).toEqual('mei111add');
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -130,9 +130,9 @@ describe('一账通-测试设置子管理员a', () => {//管理范围所在分�
         await page.close();
     });
 
-    test('TEST_002:验证设置子管理员添加的账号能否登录' , async() => {
+    test('TEST_001:验证设置子管理员添加的账号能否登录' , async() => {
         let useraction = new UserAction();
-        await useraction.login(page, 'mei111add', 'mei111add');//子管理员添加账号是否能登录
+        await useraction.login(page, 'mei111add', 'mei111add');
 
         await page.waitFor(2000);
         
@@ -147,7 +147,7 @@ describe('一账通-测试设置子管理员a', () => {//管理范围所在分�
 
 })
 
-describe('一账通-测试设置子管理员b', () => {//所在分组及下级分组，创建应用，查看日志
+describe('一账通-测试设置子管理员b', () => {
     let page : Page;
     
     beforeEach( async () => {
@@ -164,14 +164,14 @@ describe('一账通-测试设置子管理员b', () => {//所在分组及下级�
         await useraction.login(page, 'admin', 'admin');
 
         let managersettingaction = new managerSettingAction();
-        await managersettingaction.managerSettingb(page);//添加子管理员
+        await managersettingaction.managerSettingb(page);
 
         await page.waitFor(3000);
 
         const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(managerName).toEqual('mei222');//是否成功添加到子管理员列表
+        await expect(managerName).toEqual('mei222');
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -184,19 +184,19 @@ describe('一账通-测试设置子管理员b', () => {//所在分组及下级�
         await useraction.login(page, 'mei222', 'mei222');
 
         let appsmanageaction = new appsManageAction();
-        await appsmanageaction.addApps(page, "测试应用", "", "ceshiyingyong");//创建应用
+        await appsmanageaction.addApps(page, "测试应用", "", "ceshiyingyong");
 
         await page.waitFor(3000);
 
         const appName = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(2) .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(appName).toEqual('测试应用');//是否成功添加应用到应用列表
+        await expect(appName).toEqual('测试应用');
 
         const remarks = await page.$eval('.ivu-table-tbody>tr:last-child>td:nth-child(3) .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(remarks).toEqual('ceshiyingyong');//应用备注
+        await expect(remarks).toEqual('ceshiyingyong');
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -205,7 +205,7 @@ describe('一账通-测试设置子管理员b', () => {//所在分组及下级�
     });
 
 
-    test('TEST_003:验证设置子管理员查看日志' , async() => {//查看日志
+    test('TEST_003:验证设置子管理员查看日志' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'mei222', 'mei222');
 
@@ -232,7 +232,7 @@ describe('一账通-测试设置子管理员b', () => {//所在分组及下级�
 
 })
 
-describe('一账通-测试设置子管理员c', () => {//所在分组及下级分组公司基础信息配置
+describe('一账通-测试设置子管理员c', () => {
     let page : Page;
     
     beforeEach( async () => {
@@ -249,14 +249,14 @@ describe('一账通-测试设置子管理员c', () => {//所在分组及下级�
         await useraction.login(page, 'admin', 'admin');
        
         let managersettingaction  = new managerSettingAction();
-        await managersettingaction.managerSettingc(page);//添加子管理员
+        await managersettingaction.managerSettingc(page);
 
         await page.waitFor(3000);
 
         const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
         });
-        await expect(managerName).toEqual('mei333');//是否添加到子管理员列表
+        await expect(managerName).toEqual('mei333');
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -270,7 +270,7 @@ describe('一账通-测试设置子管理员c', () => {//所在分组及下级�
         await useraction.login(page, 'mei333', 'mei333');
  
         let configmanageaction = new configManageAction();
-        await configmanageaction.loginSetting(page, "111");//修改公司配置信息
+        await configmanageaction.loginSetting(page, "111");
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -286,7 +286,7 @@ describe('一账通-测试设置子管理员c', () => {//所在分组及下级�
         const companyName = await page.$eval('.org-name', elem => {
             return elem.innerHTML;
         });
-        await expect(companyName).toEqual('111');//是否修改成功
+        await expect(companyName).toEqual('111');
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -296,7 +296,7 @@ describe('一账通-测试设置子管理员c', () => {//所在分组及下级�
 
 })
 
-describe('一账通-测试设置子管理员d', () => {//所在分组及下级分组应用百度应用权限
+describe('一账通-测试设置子管理员d', () => {
     let page : Page;
     
     beforeEach( async () => {
@@ -308,7 +308,7 @@ describe('一账通-测试设置子管理员d', () => {//所在分组及下级�
         //await page.close();
     })
 
-    test('TEST_001:验证设置子管理员应用权限' , async() => {//成功添加子管理员
+    test('TEST_001:验证设置子管理员应用权限' , async() => {
         let useraction = new UserAction();
         await useraction.login(page, 'admin', 'admin');
         let managersettingaction = new managerSettingAction();
@@ -328,7 +328,7 @@ describe('一账通-测试设置子管理员d', () => {//所在分组及下级�
 
     });
 
-    test('TEST_002:验证设置子管理员应用权限-修改应用信息' , async() => {//修改应用信息
+    test('TEST_001:验证设置子管理员应用权限' , async() => {
 
         let useraction = new UserAction();
         await useraction.login(page, 'axiangmuzuuser', 'axiangmuzuuser');
@@ -375,117 +375,9 @@ describe('一账通-测试设置子管理员d', () => {//所在分组及下级�
 
     });
 
-    test('TEST_003:验证设置子管理员应用权限-编辑应用权限-只显示可管理账号' , async() => {
-
-        let useraction = new UserAction();
-        await useraction.login(page, 'axiangmuzuuser', 'axiangmuzuuser');
-
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        await page.waitFor(2000);
-
-        const appSetBtn = await page.waitForSelector('.header-middle a[href="#/admin/app"]');
-        await appSetBtn.click();
-
-        await page.waitFor(3000);
-
-        const powerBtn = await page.waitForSelector('.ivu-table-row .flex-row>span:nth-child(3)');
-        await powerBtn.click();
-
-        await page.waitFor(2000);
-
-        const editBtn = await page.waitForSelector('div.ivu-table-body.ivu-table-overflowX > table > tbody > tr > td:nth-child(3) > div > div > span');
-        await editBtn.click();
-
-        await page.waitFor(3000);
-
-        const userName1 = await page.$eval('.ivu-cell-group>div .ivu-cell-title span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(userName1).toEqual('axiangmuzuuser');//可添加到白名单的账号列表只有有权管理的账号
-
-        const userName2 = await page.$eval('.ivu-cell-group>div:last-child .ivu-cell-title span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(userName2).toEqual('axiangmuzuuser');
-
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-
-    });
-
-    test('TEST_004:验证设置子管理员应用权限-编辑应用权限-添加账号到白名单' , async() => {
-
-        let useraction = new UserAction();
-        await useraction.login(page, 'axiangmuzuuser', 'axiangmuzuuser');
-
-        const manageBtn = await page.waitForSelector('.workspace-btn.ivu-btn.ivu-btn-default');
-        await manageBtn.click();
-
-        await page.waitFor(2000);
-
-        const appSetBtn = await page.waitForSelector('.header-middle a[href="#/admin/app"]');
-        await appSetBtn.click();
-
-        await page.waitFor(3000);
-
-        const powerBtn = await page.waitForSelector('.ivu-table-row .flex-row>span:nth-child(3)');
-        await powerBtn.click();
-
-        await page.waitFor(2000);
-
-        const editBtn = await page.waitForSelector('div.ivu-table-body.ivu-table-overflowX > table > tbody > tr > td:nth-child(3) > div > div > span');
-        await editBtn.click();
-
-        await page.waitFor(3000);
-
-        const userCheckbox = await page.waitForSelector('div.ivu-checkbox-group.ivu-checkbox-default > div > div> div > div > div.ivu-cell-main > div.ivu-cell-title > label > span.ivu-checkbox > input');
-        await userCheckbox.click();
-
-        await page.waitFor(1000);
-
-        const keepBtn = await page.waitForSelector('div.ivu-modal-footer > button.ivu-btn.ivu-btn-primary.ivu-btn-large');
-        await keepBtn.clcik();
-
-        await page.waitFor(2000);
-
-        const userName = await page.$eval('div.ivu-table-body.ivu-table-overflowX > table > tbody > tr > td:nth-child(3) > div > div > div > div > span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(userName).toEqual('axiangmuzuuser');//成功添加账号到白名单
-
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-
-    });
-
-    test('TEST_005:验证设置子管理员应用权限-编辑应用权限-账号是否生效' , async() => {
-
-        let useraction = new UserAction();
-        await useraction.login(page, 'axiangmuzuuser', 'axiangmuzuuser');//白名单的账号登录查看权限是否生效
-
-        await page.waitFor(2000);
-
-        const appName = await page.$eval('.name-intro.flex-col.flex-auto .name', elem => {
-            return elem.innerHTML;
-        });
-        await expect(appName).toEqual('百度');
-
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-
-    });
-
 })
 
-describe('一账通-测试编辑子管理员', () => {//编辑子管理员axiangmuzuuser
+describe('一账通-测试编辑子管理员', () => {
     let page : Page;
     
     beforeEach( async () => {
@@ -496,7 +388,7 @@ describe('一账通-测试编辑子管理员', () => {//编辑子管理员axiang
         await useraction.login(page, 'admin', 'admin');
 
         let managersettingaction = new managerSettingAction();
-        await managersettingaction.editManager(page);//调用编辑函数，添加查看日志权限
+        await managersettingaction.editManager(page);
 
         await page.evaluate(() => {
             localStorage.setItem('oneid', '');
@@ -508,7 +400,7 @@ describe('一账通-测试编辑子管理员', () => {//编辑子管理员axiang
         //await page.close();
     })
 
-    test('TEST_001:验证编辑子管理员权限' , async() => {//验证添加查看日志权限是否生效
+    test('TEST_001:验证编辑子管理员权限' , async() => {
         page = await global.browser.newPage()
         await page.goto(config.url);
 
@@ -537,7 +429,7 @@ describe('一账通-测试编辑子管理员', () => {//编辑子管理员axiang
 
 })
 
-describe('一账通-测试删除子管理员', () => {//删除子管理员axiangmuzuuser
+describe('一账通-测试删除子管理员', () => {
     let page : Page;
     
     beforeEach( async () => {
@@ -555,7 +447,7 @@ describe('一账通-测试删除子管理员', () => {//删除子管理员axiang
         //await page.close();
     })
 
-    test('TEST_001:验证删除子管理员' , async() => {//验证删除是否生效
+    test('TEST_001:验证删除子管理员' , async() => {
 
         const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
             return elem.innerHTML;
@@ -570,208 +462,3 @@ describe('一账通-测试删除子管理员', () => {//删除子管理员axiang
     });
 
 })
-
-describe('一账通-测试设置子管理员e', () => {//管理范围所在分组及下级分组，创建大类
-    let page : Page;
-    
-    beforeEach( async () => {
-        page = await global.browser.newPage()
-        await page.goto(config.url);
-
-    })
-    afterAll ( async () => {
-        //await page.close();
-    })
-
-    test('TEST_001:验证设置子管理员是否生效' , async() => {
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
-
-        let managersettingaction = new managerSettingAction();
-        await managersettingaction.managerSettinge(page);
-
-        await page.waitFor(3000);
-
-        const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(managerName).toEqual('bumen3user');//添加子管理员到列表
-   
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-        
-    });
-
-    test('TEST_001:验证设置子管理员创建大类是否生效' , async() => {
-        let useraction = new UserAction();
-        await useraction.login(page, 'bumen3user', 'bumen3user');
-
-        let groupaction = new groupAction();
-        await groupaction.groupAddress(page);
-        await groupaction.addPersonalGroup(page, "bumen3useradd");
-        
-        const classifyName = await page.$eval('.custom-list>li:last-child span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(classifyName).toEqual('bumen3useradd');//子管理员创建大类在分组管理是否生效
-
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-    });
-
-    test('TEST_002:验证设置子管理员创建的大类在通讯录是否生效' , async() => {
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
-
-        await page.waitFor(2000);
-
-        const orgnizationBtn = await page.waitForSelector('body > div.lg-layout > header > div.header-middle > ul > a:nth-child(2)');
-        await orgnizationBtn.click();
-        
-        const classifyName = await page.$eval('.ui-contact-page--side>li:last-child', elem => {
-            return elem.innerHTML;
-        });
-        await expect(classifyName).toEqual('bumen3useradd');//子管理员创建大类在通讯录是否生效
-
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-    });
-
-})
-
-describe('一账通-测试设置子管理员f', () => {//管理范围所在分组及下级分组，应用百度的权限
-    let page : Page;
-    
-    beforeEach( async () => {
-        page = await global.browser.newPage()
-        await page.goto(config.url);
-
-    })
-    afterAll ( async () => {
-        //await page.close();
-    })
-
-    test('TEST_001:验证设置子管理员是否生效' , async() => {
-        let useraction = new UserAction();
-        await useraction.login(page, 'admin', 'admin');
-
-        let managersettingaction = new managerSettingAction();
-        await managersettingaction.managerSettinge(page);
-
-        await page.waitFor(3000);
-
-        const managerName = await page.$eval('.ivu-table-tbody>tr:last-child .ivu-table-cell span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(managerName).toEqual('bumen3user');
-   
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-        
-    });
-
-    test('TEST_001:设置子管理员应用的权限-部门' , async() => {
-        let useraction = new UserAction();
-        await useraction.login(page, 'bumen3user', 'bumen3user');
- 
-        let appsmanageaction = new appsManageAction();
-        await appsmanageaction.departmentPower(page, "部门三");
-        
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-    });
-
-    test('TEST_002:验证设置子管理员应用的权限-部门是否生效' , async() => {
-        let useraction = new UserAction();
-        await useraction.login(page, 'bumen3user', 'bumen3user');
-
-        await page.waitFor(3000);
-        
-        const appName = await page.$eval('.name-intro.flex-col.flex-auto .name', elem => {
-            return elem.innerHTML;
-        });
-        await expect(appName).toEqual('百度');
-
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-    });
-    
-    test('TEST_003:验证设置子管理员分组管理权限只显示可管理的应用' , async() => {//子管理员查看可管理分组的权限
-        let useraction = new UserAction();
-        await useraction.login(page, 'bumen3user', 'bumen3user');
-
-        let groupaction = new groupAction();
-        await groupaction.groupAddress(page); 
-        
-        await page.waitFor(2000);
-        
-        const powerBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
-        await powerBtn.click();
-
-        await page.waitFor(2000);
-
-        const appName1 = await page.$eval('.result-list>li span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(appName1).toEqual('百度');//应用列表第一个应用的名称
-
-        const appName2 = await page.$eval('.result-list>li:last-child span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(appName2).toEqual('百度');//应用列表最后一个应用的名称
-
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-    });
-
-    test('TEST_003:验证设置子管理员编辑分组管理权限' , async() => {//子管理员编辑分组对应用的权限
-        let useraction = new UserAction();
-        await useraction.login(page, 'bumen3user', 'bumen3user');
-
-        let groupaction = new groupAction();
-        await groupaction.groupAddress(page); 
-        
-        await page.waitFor(2000);
-        
-        const powerBtn = await page.waitForSelector('.ivu-btn.ivu-btn-primary');
-        await powerBtn.click();
-
-        await page.waitFor(2000);
-
-        const editPowerBtn = await page.waitForSelector('div.ivu-table-body > table > tbody > tr > td:nth-child(3) > div > div > div > div');
-        await editPowerBtn.click();
-
-        await page.waitFor(1000);
-
-        const falseBtn = await page.waitForSelector('div.ivu-select-dropdown.ivu-dropdown-transfer > ul > li:nth-child(2)');//将分组对百度应用的权限设置为否
-        await falseBtn.click();
-
-        await page.waitFor(2000);
-
-        const powerResult = await page.$eval('div.ivu-table-body > table > tbody > tr > td:nth-child(4) > div > span', elem => {
-            return elem.innerHTML;
-        });
-        await expect(powerResult).toEqual('否');//权限结果变为否
-
-        await page.evaluate(() => {
-            localStorage.setItem('oneid', '');
-        });
-        await page.close();
-    });
-
-})
-

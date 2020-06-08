@@ -79,8 +79,6 @@ export class groupAction{
         const addUserBtn = await page.waitForSelector('.ui-user-list .flex-row.flex-auto .ivu-btn.ivu-btn-primary');
         await addUserBtn.click();
 
-        await page.waitFor(2000);
-
         const usernameInput = await page.waitForSelector('input[placeholder="请输入 用户名"]');
         await usernameInput.type(username);
 
