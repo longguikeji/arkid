@@ -76,14 +76,20 @@ class Junit:
         self.testsuite.setAttribute('time', '%s' % td_time)
         self.testsuites.appendChild(self.testsuite)
 
-        files = ('junit','junit2',)
-        # 创建文件夹
+        files = ('junit',)
+    # 创建文件夹
         for k in files:
             path = Path(k)
-            # 判断junit文件或目录是否存在
-            if not path.is_file():
-                if not path.is_dir():
-                    path.mkdir()
+            index = '(0)'
+            if index:
+                    index = '('+str(int(index[1:-1])+1)+')'
+            if path.is_file():
+                path = Path(k+index)
+            else:
+                path = Path(k)
+
+            if not path.is_dir():
+                path.mkdir()
 
         file = path / ('API' + '-' + 'ReportJunit@' + self.nowtime + '.xml')   #xml文件名
         f = open(file, 'w')

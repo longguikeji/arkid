@@ -64,4 +64,4 @@ password = "admin"
         f.close()
 ```
 5、生成 `Allure` 格式的测试报告       
-若安装 `Allure` 并配置好了环境变量，可在生成 `xml` 测试报告后，使用命令 `allure serve junit` 生成 `Allure` 格式的测试报告。命令中的 `junit` 为 `xml` 测试报告的路径，若在 `junit.py` 进行了修改，这里也需要做相应改变
+若安装 `Allure` 并配置好了环境变量，可在生成 `xml` 测试报告后，使用命令 `allure serve junit` 生成 `Allure` 格式的测试报告。命令中的 `junit` 为 `xml` 测试报告的路径，存在同名文件时目录名称会发生变化，具体要以实际生成的目录名为准。若在 `junit.py` 进行了修改，这里也需要做相应改变
