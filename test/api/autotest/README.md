@@ -49,16 +49,24 @@ password = "admin"
 |assert|断言|列表类型，可添加多个|
 
 4、运行生成 `xml` 测试报告      
-在 `autotest` 目录下运行 `start.py` 文件。运行完成后，会在当前目录生成名为 `junit` 的目录，在 `junit` 目录下 有 `xml` 格式的测试报告。也可自定义测试报告的存储路径和文件名，在 `junit.py` 中进行设置。
+在 `autotest` 目录下运行 `start.py` 文件。运行完成后，会在当前目录生成名为 `junit` 的目录，在 `junit` 目录下 有 `xml` 格式的测试报告。若存在同名文件时，生成的目录名称会发生改变。也可自定义测试报告的存储路径和文件名，在 `junit.py` 中进行设置。
 ```
-    def write_toxml(self):
-        # 计算执行的时间， 用当前时间-开始时间 是总耗时
-        td = datetime.now() - self.pstarttime
-        td_time = float(
-            (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6)) / 10 ** 6
-        self.testsuite.setAttribute('time', '%s' % td_time)
-        self.testsuites.appendChild(self.testsuite)
-        file = Path('junit') / ('API' + '-' + 'ReportJunit@' + self.nowtime + '.xml')   #xml测试报告路径
+    files = ('junit',)
+    # 创建文件夹
+    for k in files:
+        path = Path(k)
+        index = '(0)'
+        if index:
+            index = '('+str(int(index[1:-1])+1)+')'
+        if path.is_file():
+            path = Path(k+index)
+        else:
+            path = Path(k)
+
+        if not path.is_dir():
+            path.mkdir()
+
+        file = path / ('API' + '-' + 'ReportJunit@' + self.nowtime + '.xml')   #xml文件名
         f = open(file, 'w')
         self.doc.writexml(f, indent='\t', newl='\n', addindent='\t', encoding='gbk')
         f.close()

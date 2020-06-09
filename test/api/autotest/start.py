@@ -1,4 +1,3 @@
-import json
 # 引入testcase里面的用例
 from apidata import httpurl_data
 # 引入请求
@@ -8,7 +7,6 @@ import time
 from datetime import datetime
 # 引入junt
 from junit import Junit
-from pathlib import Path
 from testcase import TestCase
 import requests
 from inputs_error import InputsError
