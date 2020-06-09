@@ -80,16 +80,15 @@ class Junit:
     # 创建文件夹
         for k in files:
             path = Path(k)
-#            if index:
             index = '(0)'
             
             if path.is_file():
                 for i in range(1,10):
-                    index = '('+str(int(index[1:-1])+i)+')'
-                    path = Path(k+index)
-                    if not path.is_dir:
+                    if path.is_file():
+                        index = '('+str(i)+')'
                         path = Path(k+index)
-                    break
+                    else:
+                        break
             else:
                     path = Path(k)
 
