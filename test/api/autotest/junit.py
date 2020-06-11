@@ -1,4 +1,3 @@
-import timeit
 from xml.dom.minidom import Document
 from pathlib import Path
 import time

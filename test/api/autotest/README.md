@@ -44,32 +44,36 @@ password = "admin"
 |url|接口地址|不存在时抛出异常|
 |headers|接口请求头信息|可以不存在|
 |payload|接口携带参数|可以不存在|
-|type|请求类型|支持 get,post,options,head,delete,put,connect，不区分大小写，不存在时抛出异常|    
+|type|请求类型|支持 get,post,options,head,delete,put,connect,不区分大小写，不存在时抛出异常|    
 |time|执行用例前等待的时间|单位为秒,int类型|
 |assert|断言|列表类型，可添加多个|
 
 4、运行生成 `xml` 测试报告      
 在 `autotest` 目录下运行 `start.py` 文件。运行完成后，会在当前目录生成名为 `junit` 的目录，在 `junit` 目录下 有 `xml` 格式的测试报告。若存在同名文件时，生成的目录名称会发生改变。也可自定义测试报告的存储路径和文件名，在 `junit.py` 中进行设置。
 ```
-    files = ('junit',)
-    # 创建文件夹
-    for k in files:
-        path = Path(k)
-        index = '(0)'
-        if index:
-            index = '('+str(int(index[1:-1])+1)+')'
-        if path.is_file():
-            path = Path(k+index)
-        else:
+        files = ('junit',)
+        # 创建文件夹
+        for k in files:
             path = Path(k)
+            index = '(0)'
+            
+            if path.is_file():
+                for i in range(1,10):
+                    if path.is_file():
+                        index = '('+str(i)+')'
+                        path = Path(k+index)
+                    else:
+                        break
+            else:
+                    path = Path(k)
 
-        if not path.is_dir():
-            path.mkdir()
+            if not path.is_dir():
+                path.mkdir()
 
         file = path / ('API' + '-' + 'ReportJunit@' + self.nowtime + '.xml')   #xml文件名
         f = open(file, 'w')
         self.doc.writexml(f, indent='\t', newl='\n', addindent='\t', encoding='gbk')
-        f.close()
+        f.close())
 ```
 5、生成 `Allure` 格式的测试报告       
 若安装 `Allure` 并配置好了环境变量，可在生成 `xml` 测试报告后，使用命令 `allure serve junit` 生成 `Allure` 格式的测试报告。命令中的 `junit` 为 `xml` 测试报告的路径，存在同名文件时目录名称会发生变化，具体要以实际生成的目录名为准。若在 `junit.py` 进行了修改，这里也需要做相应改变

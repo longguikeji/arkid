@@ -11,7 +11,6 @@ from testcase import TestCase
 import requests
 from inputs_error import InputsError
 
-
 def createxml():
 
     # 获得junit实例

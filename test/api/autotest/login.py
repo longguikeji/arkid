@@ -1,4 +1,4 @@
-import requests,json
+import requests
 import config
 
 base_url = config.base_url
@@ -17,7 +17,7 @@ def login():            #login函数用来提取登录后的token，用于后续
 
     r = requests.post(url = url, json = payload, headers = headers)
 
-    assert r.status_code == 200
+    assert r.status_code == 200 ,'登录失败'
 
     token = r.json()['token']
     return token

@@ -26,7 +26,7 @@ httpurl_data = [                   #存放所有测试用例的列表，每一�
          'Content-Type': 'application/json',
          'Authorization': 'token ' + token
      },
-     'type': 'get',  # 请求的类型，支持 get,post,options,head,delete,put,connect，不区分大小写，这条是 post 类型
+     'type': 'get',  # 请求的类型，支持 get,post,options,head,delete,put,connect，不区分大小写，这条是 get 类型
      'time': 1 , # 用例等待的时间 秒 1就是等待1秒后执行
      'assert':['百度']   #断言内容，与接口返回值对比
      },
