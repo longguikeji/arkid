@@ -10,7 +10,6 @@ from django.core.cache import cache
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-import jsonfield
 from rest_framework.exceptions import ValidationError
 from common.django.model import BaseModel, IgnoreDeletedManager
 from oneid_meta.models.config import CustomField
@@ -20,6 +19,10 @@ from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
 from infrastructure.utils.sms import is_mobile, is_native_mobile, is_i18n_mobile, is_cn_mobile, CN_MOBILE_PREFIX
+if settings.TESTING:
+    from jsonfield import JSONField    # 测试环境（避免影响其他unit test）
+else:
+    from django_mysql.models import JSONField    # 生产、开发环境
 
 
 class IsolatedManager(IgnoreDeletedManager):
@@ -579,7 +582,7 @@ class CustomUser(BaseModel):
     DEFAULT_VALUE = ""
 
     user = models.OneToOneField(User, verbose_name='用户', related_name='custom_user', on_delete=models.CASCADE)
-    data = jsonfield.JSONField(default={}, verbose_name='信息内容')
+    data = JSONField(verbose_name='信息内容')
 
     def update(self, **kwargs):
         '''
