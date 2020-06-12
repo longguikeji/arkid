@@ -104,7 +104,7 @@ USER_DATA = {
     },
 }
 
-SKIP_GET_USER_LIST__CUSTOM = False
+SKIP_GET_USER_LIST__CUSTOM = True
 
 
 class UserTestCase(TestCase):
