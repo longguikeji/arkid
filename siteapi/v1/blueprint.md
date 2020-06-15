@@ -1782,6 +1782,15 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (UserPermDetail)
 
+## 用户权限结果 [/user/{username}/perm/{uid}/result/]
++ Parameters
+    + username (string) - 用户名
+    + uid (string) - 权限唯一标识
+
+### 获取用户权限结果 [GET]
++ Response 200 (application/json)
+    + Attributes (UserPerm)
+
 
 ## 部门权限 [/perm/dept/{uid}/{?action,action_except,scope}]
 
