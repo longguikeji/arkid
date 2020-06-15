@@ -4,6 +4,7 @@ tests for api about user
 # pylint: disable=missing-docstring, too-many-lines
 
 import json
+import unittest
 
 from django.urls import reverse
 
@@ -103,9 +104,10 @@ USER_DATA = {
     },
 }
 
+SKIP_GET_USER_LIST__CUSTOM = True
+
 
 class UserTestCase(TestCase):
-
     mock_now = True
 
     def setUp(self):
@@ -126,8 +128,7 @@ class UserTestCase(TestCase):
         return res
 
     def test_query_userlist(self):
-        '''搜索用户列表
-        '''
+        '''搜索用户列表'''
         self.create_user()
         client = self.client
         res = client.get(reverse('siteapi:user_list'), data={'keyword': '188'})
@@ -264,6 +265,69 @@ class UserTestCase(TestCase):
             }]
         }
         self.assertEqual(res.json(), expect)
+
+    @unittest.skipIf(SKIP_GET_USER_LIST__CUSTOM, '使用mysql对接测试')
+    def test_get_user_list__custom(self):
+        """测试用户自定义字段检索"""
+        user1_data = {
+            'username': 'employee1',
+            'name': 'employee1',
+            'avatar': '',
+            'email': 'email1',
+            'mobile': '18812345678',
+            'private_email': '',
+            'position': '',
+            'gender': 2,
+            'custom_user': {
+                'data': {
+                    'age': '18',
+                    'is_person': 'true',
+                    'sex': 'male'
+                }
+            }
+        }
+        self.client.json_post(reverse('siteapi:user_list'),
+                              data={
+                                  'group_uids': ['root'],
+                                  'dept_uids': ['root'],
+                                  'user': user1_data,
+                              }).json()
+        user2_data = {
+            'username': 'employee2',
+            'name': 'employee2',
+            'avatar': '',
+            'email': 'email2',
+            'mobile': '18812345670',
+            'private_email': '',
+            'position': '',
+            'gender': 2,
+            'custom_user': {
+                'data': {
+                    'age': '19',
+                    'is_person': 'true',
+                    'sex': 'female'
+                }
+            }
+        }
+        self.client.json_post(reverse('siteapi:user_list'),
+                              data={
+                                  'group_uids': ['root'],
+                                  'dept_uids': ['root'],
+                                  'user': user2_data,
+                              }).json()
+
+        # 测试精确查找（equal）
+        res = self.client.get(reverse('siteapi:user_list'), {'sex__custom': 'male'})
+        self.assertEqual(res.json()['count'], 1)
+        # 测试范围搜索（lte, gte, lt, gt)
+        res = self.client.get(reverse('siteapi:user_list'), {'age__lte__custom': "18"})
+        self.assertEqual(res.json()['count'], 1)
+        res = self.client.get(reverse('siteapi:user_list'), {'age__gte__custom': 19})
+        self.assertEqual(res.json()['count'], 1)
+        res = self.client.get(reverse('siteapi:user_list'), {'age__gt__custom': 18})
+        self.assertEqual(res.json()['count'], 1)
+        res = self.client.get(reverse('siteapi:user_list'), {'age__lt__custom': 19})
+        self.assertEqual(res.json()['count'], 1)
 
     def test_create_user(self):
         res = self.create_user()
