@@ -15,8 +15,10 @@ ci:
 
 test:
 	python manage.py migrate && python manage.py test siteapi.v1.tests infrastructure.tests.test_file infrastructure.tests.test_sms --settings=oneid.settings_test
+	# 需单独采用mysql对接测试, 并将 test_user.SKIP_GET_USER_LIST__CUSTOM 置为 False 后执行此命令
+# 	python manage.py test siteapi.v1.tests.test_user.UserTestCase.test_get_user_list__custom --settings=settings_local
 
-lint: 
+lint:
 	@if [ ${BASE_COMMIT_ID}x != ""x ]; \
 	then \
 		git reset ${BASE_COMMIT_ID}; \

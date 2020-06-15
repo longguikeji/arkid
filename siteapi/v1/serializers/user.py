@@ -23,7 +23,7 @@ from siteapi.v1.serializers.group import GroupLiteSerializer
 from siteapi.v1.serializers.utils import username_valid
 
 
-class CustomUserSerailizer(DynamicFieldsModelSerializer):
+class CustomUserSerializer(DynamicFieldsModelSerializer):
     '''
     custom user info
     '''
@@ -44,7 +44,7 @@ class CustomUserSerailizer(DynamicFieldsModelSerializer):
         return instance.pretty(visible_only=True)
 
 
-class AdvanceCustomUserSerializer(CustomUserSerailizer):
+class AdvanceCustomUserSerializer(CustomUserSerializer):
     '''
     custom user info include all fields
     '''
@@ -57,7 +57,7 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     user profile
     '''
 
-    custom_user = CustomUserSerailizer(many=False, required=False)
+    custom_user = CustomUserSerializer(many=False, required=False)
     visible_fields = serializers.SerializerMethodField()
     depts = serializers.SerializerMethodField()
 
@@ -106,13 +106,13 @@ class UserProfileSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         custom_user_data = validated_data.pop('custom_user', None)
         if custom_user_data:
             if hasattr(user, 'custom_user'):
-                custom_user_serailizer = CustomUserSerailizer(user.custom_user, data=custom_user_data, partial=True)
-                custom_user_serailizer.is_valid(raise_exception=True)
-                custom_user_serailizer.save()
+                custom_user_serializer = CustomUserSerializer(user.custom_user, data=custom_user_data, partial=True)
+                custom_user_serializer.is_valid(raise_exception=True)
+                custom_user_serializer.save()
             else:
-                custom_user_serailizer = CustomUserSerailizer(data=custom_user_data)
-                custom_user_serailizer.is_valid(raise_exception=True)
-                custom_user_serailizer.save(user=user)
+                custom_user_serializer = CustomUserSerializer(data=custom_user_data)
+                custom_user_serializer.is_valid(raise_exception=True)
+                custom_user_serializer.save(user=user)
         user.__dict__.update(validated_data)
         user.save()
         return user
@@ -238,7 +238,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             posix_user_serializer.save(user=user)
 
         if custom_user_data:
-            custom_user_serializer = CustomUserSerailizer(data=custom_user_data)
+            custom_user_serializer = CustomUserSerializer(data=custom_user_data)
             custom_user_serializer.is_valid(raise_exception=True)
             custom_user_serializer.save(user=user)
 
@@ -283,13 +283,13 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         if 'custom_user' in validated_data:
             custom_user_data = validated_data.pop('custom_user')
             if hasattr(user, 'custom_user'):
-                custom_user_serailizer = CustomUserSerailizer(user.custom_user, data=custom_user_data, partial=True)
-                custom_user_serailizer.is_valid(raise_exception=True)
-                custom_user_serailizer.save()
+                custom_user_serializer = CustomUserSerializer(user.custom_user, data=custom_user_data, partial=True)
+                custom_user_serializer.is_valid(raise_exception=True)
+                custom_user_serializer.save()
             else:
-                custom_user_serailizer = CustomUserSerailizer(data=custom_user_data)
-                custom_user_serailizer.is_valid(raise_exception=True)
-                custom_user_serailizer.save(user=user)
+                custom_user_serializer = CustomUserSerializer(data=custom_user_data)
+                custom_user_serializer.is_valid(raise_exception=True)
+                custom_user_serializer.save(user=user)
 
         if 'wechat_user' in validated_data:
             wechat_user_data = validated_data.pop('wechat_user')
