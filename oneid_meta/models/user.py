@@ -78,7 +78,7 @@ class User(BaseModel, PermOwnerMixin):
 
     isolated_objects = IsolatedManager()
 
-    def save(self, *args, **kwargs):    # pylint: disable=arguments-differ
+    def save(self, *args, **kwargs):    # pylint: disable=arguments-differ,signature-differs
         for unique_feilds in [
                 'username',
                 'email',
@@ -331,8 +331,7 @@ class User(BaseModel, PermOwnerMixin):
         是否是主管理员
         TODO: -> attr
         '''
-        return self.username == 'admin' or self.is_boss or \
-            UserPerm.valid_objects.filter(owner=self, perm__uid='system_oneid_all', value=True).exists()
+        return self.username == 'admin' or self.is_boss
 
     @property
     def is_manager(self):
