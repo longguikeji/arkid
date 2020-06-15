@@ -542,6 +542,25 @@ class PermSourceTestCase(TestCase):
         }
         self.assertEqual(expect, res.json())
 
+        res = self.client.get(reverse('siteapi:user_perm_result', args=('test', perm_uid)))
+        expect = {
+            'perm': {
+                'perm_id': 3,
+                'uid': 'app_app1_denglu',
+                'name': '登录',
+                'remark': '',
+                'scope': 'app1',
+                'action': 'denglu',
+                'subject': 'app',
+            },
+            'status': 0,
+            'dept_perm_value': True,
+            'group_perm_value': True,
+            'node_perm_value': True,
+            'value': True,
+        }
+        self.assertEqual(res.json(), expect)
+
     def test_perm_realtime(self):
         user = User.objects.create(username='test')
         self.client.json_post(reverse('siteapi:perm_list'), data={'scope': 'app1', 'name': '登录'})
