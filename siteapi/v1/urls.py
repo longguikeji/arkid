@@ -60,6 +60,9 @@ urlpatterns = [
     url(r'^user/(?P<username>[\w]+)/perm/(?P<perm_uid>[\w|-]+)/$',
         perm_views.UserPermDetailView.as_view(),
         name='user_perm_detail'),
+    url(r'^user/(?P<username>[\w]+)/perm/(?P<perm_uid>[\w|-]+)/result/$',
+        perm_views.UserPermResultView.as_view(),
+        name='user_perm_result'),
     # node
     url(r'^node/(?P<uid>[\w|-]+)/list/$', node_views.NodeListAPIView.as_view(), name='node_list'),
     url(r'^node/(?P<uid>[\w|-]+)/$', node_views.NodeDetailAPIView.as_view(), name='node_detail'),
