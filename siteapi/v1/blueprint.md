@@ -317,7 +317,6 @@ FORMAT: 1A
         + node_uid (string)
         + node_subject (string)
 
-
 ## PublicAPP(object)
 + uid (string)
 + name (string)
