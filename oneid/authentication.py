@@ -42,7 +42,7 @@ class BaseExpiringTokenAuthentication(ExpiringTokenAuthentication):
         在校验 token 基础上记录活跃程度
         '''
         user, token = super().authenticate_credentials(key)
-        if not settings.TESTING:
+        if not settings.TESTING and not user.is_admin:
             UserStatistics.set_active_count(user)
             user.update_last_active_time()
         return user, token
