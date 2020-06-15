@@ -67,9 +67,10 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
 
         keyword = self.request.query_params.get('keyword', '')
         if keyword != '':
-            queryset = queryset.filter(Q(username__icontains=keyword)|Q(email__icontains=keyword)|\
-                Q(private_email__icontains=keyword)|Q(mobile__icontains=keyword)|Q(name__icontains=keyword)).\
-                    exclude(is_boss=True).exclude(username='admin').order_by('id')
+            queryset = queryset.filter(Q(username__icontains=keyword) | Q(email__icontains=keyword) | \
+                                       Q(private_email__icontains=keyword) | Q(mobile__icontains=keyword) | Q(
+                name__icontains=keyword)). \
+                exclude(is_boss=True).exclude(username='admin').order_by('id')
         else:
             queryset = queryset.exclude(is_boss=True).exclude(username='admin').order_by('id')
 
@@ -102,6 +103,13 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             if value is not None:
                 param = mapper.get(param, param)
                 queryset = queryset.filter(**{param: value})
+
+        # 获取 query string 中自定义字段（*__custom）
+        # 支持 *__(lte, gte, lt, gt 等)__custom 形式,需进行范围搜索的字段在存储时保证传入的为string
+        suffix = '__custom'
+        for key, value in self.request.query_params.items():
+            if key.endswith(suffix):
+                queryset = queryset.filter(**{'custom_user__data__' + key[:-1 * len(suffix)]: value})
 
         user = self.request.user
         if user.is_admin:
@@ -421,7 +429,7 @@ class UserNodeView(generics.RetrieveUpdateAPIView):
     def get(self, request, *args, **kwargs):
         user = self.get_object()
         data = DeptSerializer(user.depts, many=True).data + \
-            GroupSerializer(user.groups, many=True).data
+               GroupSerializer(user.groups, many=True).data
         return Response({'nodes': data})
 
     @transaction.atomic()
