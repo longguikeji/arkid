@@ -6,6 +6,7 @@ schema of Users
 # pylint: disable=too-many-lines
 from itertools import chain
 
+import django
 from django.core.cache import cache
 from django.db import models
 from django.conf import settings
@@ -19,7 +20,7 @@ from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
 from infrastructure.utils.sms import is_mobile, is_native_mobile, is_i18n_mobile, is_cn_mobile, CN_MOBILE_PREFIX
-if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+if django.db.connection.vendor == "sqlite":
     from jsonfield import JSONField    # 测试环境（避免影响其他unit test）
 else:
     from django_mysql.models import JSONField    # 生产、开发环境

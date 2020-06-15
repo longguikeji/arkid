@@ -266,7 +266,7 @@ class UserTestCase(TestCase):
         }
         self.assertEqual(res.json(), expect)
 
-    @unittest.skipIf(SKIP_GET_USER_LIST__CUSTOM, u'使用mysql对接测试')
+    @unittest.skipIf(SKIP_GET_USER_LIST__CUSTOM, '使用mysql对接测试')
     def test_get_user_list__custom(self):
         """测试用户自定义字段检索"""
         user1_data = {
