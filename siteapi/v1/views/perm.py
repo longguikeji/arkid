@@ -521,7 +521,7 @@ class UserPermDetailView(generics.RetrieveUpdateAPIView):
 class UserPermResultView(generics.RetrieveAPIView):
     '''
     获取一个用户对于某权限的判定结果，不包括授权来源 [GET]
-    适用于只关心 某人有无某权限的场景
+    适用于 只关心某人有无某权限 的场景
     '''
     serializer_class = UserPermResultSerializer
     permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
