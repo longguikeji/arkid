@@ -8,11 +8,9 @@ from django.utils import timezone
 
 from siteapi.v1.tests import TestCase
 from drf_expiring_authtoken.settings import token_settings
-from oneid_meta.models import UserPerm, User
 
 
 class AdminTestCase(TestCase):
-
     def test_access_admin_reject(self):
         res = self.anonymous.get(reverse('siteapi:dept_tree', args=('root', )))
         self.assertEqual(res.status_code, 401)
@@ -41,11 +39,7 @@ class AdminTestCase(TestCase):
         self.user.save()
 
         res = self.client.get(reverse('siteapi:dept_tree', args=('root', )))
-        self.assertEqual(res.status_code, 200)
-
-        admin_access = UserPerm.valid_objects.get(owner=self.user, perm__uid='system_oneid_all')
-        admin_access.value = False
-        admin_access.save()
+        self.assertEqual(res.status_code, 403)
 
         res = self.client.get(reverse('siteapi:config'))
         self.assertEqual(res.status_code, 403)
