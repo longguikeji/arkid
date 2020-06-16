@@ -518,6 +518,32 @@ class UserPermDetailView(generics.RetrieveUpdateAPIView):
         return Response(self.get_serializer(user_perm).data)
 
 
+class UserPermResultView(generics.RetrieveAPIView):
+    '''
+    获取一个用户对于某权限的判定结果，不包括授权来源 [GET]
+    适用于 只关心某人有无某权限 的场景
+    '''
+    serializer_class = UserPermResultSerializer
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
+
+    def get_object(self):
+        user_perm = UserPerm.valid_objects.filter(
+            owner__username=self.kwargs['username'],
+            perm__uid=self.kwargs['perm_uid'],
+        ).first()
+
+        if not user_perm:
+            raise NotFound
+
+        if not user_perm.owner.under_manage(self.request.user):
+            raise PermissionDenied
+
+        if not user_perm.perm.under_manage(self.request.user):
+            raise PermissionDenied
+
+        return user_perm
+
+
 class MetaPermAPIView(APIView):
     '''
     获取内置权限基本信息
