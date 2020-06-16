@@ -43,6 +43,7 @@ pyjwkest = "*"
 # 当使用 MySQL 作为数据库时:
 croniter = "*"
 # mysqlclient = "1.4.6"
+django-mysql = "==3.6.0"
 
 [dev-packages]
 ipython = "*"
