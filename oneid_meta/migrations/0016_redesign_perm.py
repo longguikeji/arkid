@@ -20,7 +20,7 @@ def reset_default_perms(apps, schema_editor):
     '''
     Perm = apps.get_model('oneid_meta', 'Perm')
     for perm_uid in [
-        'system_oneid_all',
+        'system_oneid_all',  # deprecated
         'system_ark-meta-server_all',
     ]:
         perm = Perm.objects.filter(uid=perm_uid).first()
