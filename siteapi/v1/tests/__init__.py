@@ -1,7 +1,7 @@
 '''
 tests for siteapi
 只测试API请求顺畅、数据格式无误。
-更复杂的逻辑测试由executer复杂
+更复杂的逻辑测试由executer负责
 '''
 from unittest import mock
 import datetime

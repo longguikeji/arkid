@@ -13,8 +13,10 @@ from rest_framework.exceptions import ValidationError
 from django.core import exceptions as django_exceptions
 
 from oneid.utils import redis_conn
-from oneid.permissions import IsAdminUser, IsAuthenticated, IsOrgOwnerOf, IsOrgMember, UserManagerReadable
+from oneid.permissions import IsAdminUser, IsAuthenticated, IsOrgOwnerOf, IsOrgMember, UserManagerReadable, IsManagerOf
 from oneid_meta.models import Org, User, OrgMember
+from siteapi.v1.serializers.dept import DeptSerializer
+from siteapi.v1.serializers.group import GroupSerializer
 from siteapi.v1.serializers.user import OrgUserSerializer, OrgUserDeserializer
 from siteapi.v1.serializers.org import OrgSerializer, OrgDeserializer
 from siteapi.v1.views.utils import Secret
@@ -378,3 +380,38 @@ def validity_check(oid):
         raise NotFound
     except django_exceptions.ValidationError as exc:
         raise ParseError(exc.messages)
+
+
+class OrgUserNodeListUpdateAPIView(generics.RetrieveUpdateAPIView):
+    """
+    组织管理者，包括组织拥有者和子管理员
+        对指定组织内的指定成员的节点信息进行操作
+    1）查询成员所属节点的所有信息 - GET
+    2）编辑成员所属节点的信息 - PATCH TODO
+    """
+    def __init__(self, **kwargs):
+        super(OrgUserNodeListUpdateAPIView, self).__init__(**kwargs)
+        self.org = None
+
+    def get_permissions(self):
+        """set permissions"""
+        self.org = validity_check(self.kwargs['oid'])
+        permission_classes = [IsAuthenticated & (IsManagerOf(self.org) | IsOrgOwnerOf(self.org))]
+        return [perm() for perm in permission_classes]
+
+    def get_object(self):
+        """get specified user"""
+        user = User.valid_objects.filter(username=self.kwargs['username']).first()
+        if not user:
+            raise NotFound
+        try:
+            self.check_object_permissions(self.request, user)
+        except PermissionDenied:
+            raise NotFound
+        return user
+
+    def get(self, request, *args, **kwargs):
+        """get node list"""
+        user = self.get_object()
+        data = DeptSerializer(user.depts, many=True).data + GroupSerializer(user.groups, many=True).data
+        return Response({'nodes': data})

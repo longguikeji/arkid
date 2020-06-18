@@ -4,6 +4,7 @@ urls of apis
 # pylint: disable=invalid-name,line-too-long
 
 from django.conf.urls import url, include
+from django.urls import path
 
 from siteapi.v1.views.task import (
     ImportDingAPIView,
@@ -86,6 +87,7 @@ urlpatterns = [
     url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailAPIView.as_view(), name='org_detail'),
     url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListUpdateAPIView.as_view(), name='org_user_list'),
     url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'),
+    path('org/<uuid:oid>/user/<str:username>/node/', org_views.OrgUserNodeListUpdateAPIView.as_view(), name='org_user_node_detail'),
     # perm
     url(r'^perm/$', perm_views.PermListCreateAPIView.as_view(), name='perm_list'),
     url(r'^perm/(?P<uid>[\w|-]+)/$', perm_views.PermDetailAPIView.as_view(), name='perm_detail'),
