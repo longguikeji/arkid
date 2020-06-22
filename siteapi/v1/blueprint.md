@@ -975,7 +975,7 @@ TODO: 校对
 # Group User
 用户管理
 
-## 所有用户 [/user/{?keyword,wechat_unionid,name,name__icontains,username,username__icontains,email,email__icontains,private_email,private_email__icontains,mobile,mobile__icontains,gender,remark,remark__icontains,created__lte,created__gte,last_active_time__lte,last_active_time__gtepage,page_size}]
+## 所有用户 [/user/{?keyword,wechat_unionid,name,name__icontains,username,username__icontains,email,email__icontains,private_email,private_email__icontains,mobile,mobile__icontains,gender,remark,remark__icontains,created__lte,created__gte,last_active_time__lte,last_active_time__gtepage,%2A__custom,%2A__lt__custom,%2A__lte__custom,%2A__gt__custom,%2A__gte__custom,page_size}]
 
 ### 创建用户 [POST]
 + Request JSON Message
@@ -1009,6 +1009,11 @@ TODO: 校对
     + created__gte (string, optional)
     + last_active_time__lte (string, optional)
     + last_active_time__gte (string, optional)
+    + %2A__custom (string, optional) - 自定义字段搜索,(`*`为自定义字段)
+    + %2A__lt__custom (string, optional) - 自定义字段范围搜索,(`*`为自定义字段);注意:目标字段在初始化时,字段值需为string类型,否则将导致搜索失败
+    + %2A__gt__custom (string, optional) - 自定义字段范围搜索,(`*`为自定义字段);注意:目标字段在初始化时,字段值需为string类型,否则将导致搜索失败
+    + %2A__lte__custom (string, optional) - 自定义字段范围搜索,(`*`为自定义字段);注意:目标字段在初始化时,字段值需为string类型,否则将导致搜索失败
+    + %2A__gte__custom (string, optional) - 自定义字段范围搜索,(`*`为自定义字段);注意:目标字段在初始化时,字段值需为string类型,否则将导致搜索失败
     + page (number, optional)
         + default: 1
     + page_size (number, optional)
