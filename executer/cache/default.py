@@ -81,6 +81,24 @@ class CacheExecuter(Executer):
         key = f'oneid:node:{group.node_uid}:upstream'
         cache.delete(key)
 
+    def create_app_group(self, app_group_info, org):
+        """
+        目前不影响缓存
+        """
+
+    def update_app_group(self, app_group, app_group_info):
+        """
+        目前不影响缓存
+        """
+
+    def delete_app_group(self, app_group):
+        """
+        删除应用分组
+        删除缓存
+        """
+        key = f'oneid:node:{app_group.node_uid}:upstream'
+        cache.delete(key)
+
     def add_users_to_dept(self, users, dept):
         '''
         更新用户缓存
@@ -167,6 +185,35 @@ class CacheExecuter(Executer):
         '''
         self._move_node_to_node(group, parent_group)
 
+    def add_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        更新下属所有子孙组及其成员
+        """
+        # TODO
+        # nodes = list(app_group.downstream)
+        # update_nodes_cache.delay([node.node_uid for node in nodes])
+        #
+        # user_uids = [item['user__username'] for item in \
+        #              app_group.member_cls.valid_objects.filter(owner__in=nodes).values('app__')]
+        # update_users_cache.delay(user_uids)
+
+    def move_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        更新下属所有子孙组及其成员
+        """
+        # TODO
+        # nodes = list(app_group.downstream)
+        # update_nodes_cache.delay([node.node_uid for node in nodes])
+        #
+        # user_uids = [item['user__username'] for item in \
+        #              app_group.member_cls.valid_objects.filter(owner__in=nodes).values('user__username')]
+        # update_users_cache.delay(user_uids)
+
+    def sort_appgroups_in_appgroup(self, app_groups, parent_app_group):
+        """
+        目前不影响缓存
+        """
+
     def move_dept_to_dept(self, dept, parent_dept):
         '''
         更新下属所有子孙部门及其成员
@@ -182,5 +229,23 @@ class CacheExecuter(Executer):
         update_nodes_cache.delay([node.node_uid for node in nodes])
 
         user_uids = [item['user__username'] for item in \
-            node.member_cls.valid_objects.filter(owner__in=nodes).values('user__username')]
+                     node.member_cls.valid_objects.filter(owner__in=nodes).values('user__username')]
         update_users_cache.delay(user_uids)
+
+    def add_apps_to_appgroup(self, apps, app_group):
+        """
+        将一批应用添加至一个应用分组
+        目前不影响缓存
+        """
+
+    def sort_apps_in_appgroup(self, apps, app_group):
+        """
+        调整一批应用在应用分组中的排序
+        目前不影响缓存
+        """
+
+    def delete_apps_from_appgroup(self, apps, app_group):
+        """
+        从应用分组中删除一批应用
+        目前不影响缓存
+        """

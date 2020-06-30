@@ -270,6 +270,32 @@ class GroupPerm(OwnerPerm):
         return Group
 
 
+class AppGroupPerm(OwnerPerm):
+    """
+    应用分组和权限的关系 TODO 未来可考虑兼容oauth（细粒度应用权限）
+    只能随上级决定或显式授权
+    无法显式拒绝
+    """
+
+    owner = models.ForeignKey('oneid_meta.AppGroup', on_delete=models.CASCADE)
+
+    @property
+    def owner_subject(self):
+        return self.owner.node_subject    # pylint: disable=no-member
+
+    @property
+    def owner_uid(self):
+        return self.owner.node_uid    # pylint: disable=no-member
+
+    @property
+    def owner_cls(self):
+        """
+        所有者类型 class
+        """
+        from oneid_meta.models import AppGroup    # pylint: disable=import-outside-toplevel
+        return AppGroup
+
+
 class DeptPerm(OwnerPerm):
     '''
     组和权限的关系

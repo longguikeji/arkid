@@ -362,7 +362,7 @@ class APPTestCase(TestCase):
                 'authorization_grant_type': 'authorization-code',
                 'more_detail': [],
             },
-            'oidc_app': None,
+        # 'oidc_app': None,
             'http_app': None,
             'saml_app': None,
             'auth_protocols': ['OAuth 2.0', 'LDAP'],
@@ -520,12 +520,19 @@ class APPTestCase(TestCase):
         global case
         case.reset_state()
         uid = case.get_output('app1')['uid']
-
+        # 将employee加入组织
+        self.client.json_patch(reverse('siteapi:org_user_list', args=(self.org.oid, )),
+                               data={
+                                   'usernames': ['employee'],
+                                   "subject": "add"
+                               })
+        # 创建app
         self.client.json_post(reverse('siteapi:app_list', args=(self.org.oid, )),
                               data=case.get_input_with_update('app1'))
-
+        # 应用未授权时，应用列表为空
         res = self.employee.get(reverse('siteapi:ucenter_app_list'))
         self.assertEqual(res.json()['count'], 0)
+        # 应用授权后，应用列表显示此应用
         perm = Perm.objects.get(uid=f'app_{uid}_access')
         user_perm = UserPerm.get(User.objects.get(username='employee'), perm)
         user_perm.permit()

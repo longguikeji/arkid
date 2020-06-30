@@ -17,7 +17,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ValidationError
 from pypinyin import lazy_pinyin as pinyin
 
-from oneid_meta.models import Group, Dept, User
+from oneid_meta.models import Group, Dept, User, AppGroup, APP
 from executer.core import CLI
 from executer.utils import operation
 
@@ -78,6 +78,19 @@ def get_users_from_uids(user_uids):
     return users
 
 
+def get_apps_from_ids(app_ids):
+    """
+    根据app id按顺序返回app list
+    :param list app_ids:
+    """
+    try:
+        apps = APP.get_from_pks(pks=app_ids, pk_name='id', raise_exception=True, is_del=False)
+    except ObjectDoesNotExist as error:
+        bad_uid = error.args[0]
+        raise ValidationError({'user_uids': ['app:{} does not exist'.format(bad_uid)]})
+    return apps
+
+
 def get_depts_from_uids(dept_uids):
     '''
     根据dept uid按顺序返回dept list
@@ -100,6 +113,18 @@ def get_groups_from_uids(group_uids):
         bad_uid = error.args[0]
         raise ValidationError({'group_uids': ['group:{} does not exist'.format(bad_uid)]})
     return groups
+
+
+def get_app_groups_from_uids(app_group_uids):
+    """
+    根据 app group uid 按顺序返回 app group list
+    """
+    try:
+        app_groups = AppGroup.get_from_pks(pks=app_group_uids, pk_name='uid', raise_exception=True, is_del=False)
+    except ObjectDoesNotExist as error:
+        bad_uid = error.args[0]
+        raise ValidationError({'app_group_uids': ['app_group:{} does not exist'.format(bad_uid)]})
+    return app_groups
 
 
 def update_users_of_owner(owner, users, subject):
@@ -133,6 +158,37 @@ def update_users_of_owner(owner, users, subject):
         add_func(add_users, owner)
         delete_func(delete_users, owner)
         sort_func(users, owner)
+
+
+def update_apps_of_owner(owner, apps, subject):
+    """
+    更新下属应用成员组成
+    """
+    if isinstance(owner, AppGroup):
+        owner_type = 'appgroup'
+
+    cli = CLI()
+    add_func = getattr(cli, 'add_apps_to_{}'.format(owner_type))
+    delete_func = getattr(cli, 'delete_apps_from_{}'.format(owner_type))
+    sort_func = getattr(cli, 'sort_apps_in_{}'.format(owner_type))
+
+    if subject == 'add':
+        add_func(apps, owner)
+    elif subject == 'delete':
+        delete_func(apps, owner)
+    elif subject == 'sort':
+        for app in apps:
+            check_func = getattr(app, 'if_belong_to_{}'.format(owner_type))
+            if not check_func(owner, recursive=False):
+                raise ValidationError({'app_uids': ['{} does not belong to this {}'.format(app, owner_type)]})
+        sort_func(apps, owner)
+    elif subject == 'override':
+        diff = operation.list_diff(apps, owner.apps)
+        add_apps = diff['>']
+        delete_apps = diff['<']
+        add_func(add_apps, owner)
+        delete_func(delete_apps, owner)
+        sort_func(apps, owner)
 
 
 class Secret():

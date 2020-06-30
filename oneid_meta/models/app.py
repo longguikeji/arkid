@@ -13,6 +13,7 @@ from oauth2_provider.models import OidcApplication
 
 from common.django.model import BaseModel
 from oneid_meta.models import Perm
+from oneid_meta.models.appgroup import AppGroupMember
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -24,7 +25,7 @@ class APP(BaseModel):
     '''
 
     uid = models.CharField(max_length=255, blank=False, verbose_name='APP唯一标识')
-    name = models.CharField(max_length=255, blank=False, default='', verbose_name='权限名称')
+    name = models.CharField(max_length=255, blank=False, default='', verbose_name='APP名称')
     remark = models.TextField(blank=True, default='', verbose_name='详细介绍')
     editable = models.BooleanField(default=True, verbose_name='是否可编辑、删除')
     allow_any_user = models.BooleanField(default=False, verbose_name='任何OneID用户都可以访问')    # 不包括匿名用户
@@ -145,6 +146,15 @@ class APP(BaseModel):
         对管理员是否可见
         '''
         return self.under_manage(user)
+
+    def if_belong_to_appgroup(self, app_group, recursive):
+        """
+        判断是否属于某个应用分组
+        :param bool recursive: ”属于该应用分组的子孙分组“是否算“属于该组”
+        """
+        if recursive:
+            raise NotImplementedError
+        return AppGroupMember.valid_objects.filter(app=self, owner=app_group).exists()
 
 
 class OAuthAPP(OAuthApplication):

@@ -21,6 +21,7 @@ from kubernetes import (
     config as k8s_config,
 )
 
+from oneid_meta.models.appgroup import AppGroupMember
 from siteapi.v1.serializers.app import (
     APPSerializer,
     APPWithAccessOwnerSerializer,
@@ -30,7 +31,7 @@ from siteapi.v1.serializers.app import (
 from siteapi.v1.views.utils import gen_uid
 from siteapi.v1.views.org import validity_check
 from common.django.drf.paginator import DefaultListPaginator
-from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
+from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP    # pylint: disable=ungrouped-imports
 from oneid.permissions import (IsAPPManager, IsAdminUser, IsManagerOf, IsOrgOwnerOf, CustomPerm)
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
@@ -134,6 +135,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         app = serializer.instance
         app.owner = self.org
         app.save()
+        self._auto_add_default_appgroup(app)
         self._auto_create_access_perm(app)
         self._auto_create_manager_group(request, app)
         if data.get("secret_required", False):
@@ -173,6 +175,14 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         当创建应用时，自动创建访问权限
         '''
         Perm.valid_objects.create(name=f'访问{app.name}', subject='app', scope=app.uid, action='access')
+
+    def _auto_add_default_appgroup(self, app):
+        """
+        创建应用时，自动加入默认应用分组
+        """
+        app_group_member = AppGroupMember.valid_objects.create(app=app, owner=self.org.default_app_group)
+        app_group_member.order_no = app_group_member.get_max_order_no(owner=self.org.default_app_group)
+        app_group_member.save()
 
 
 class UcenterAPPListAPIView(generics.ListAPIView):

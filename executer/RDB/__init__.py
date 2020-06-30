@@ -1,5 +1,5 @@
 '''
-RDB数据操作
+RDB 数据操作
 '''
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
@@ -15,11 +15,15 @@ from oneid_meta.models import (
     GroupPerm,
     UserPerm,
     Perm,
+    AppGroup,
 )
+from oneid_meta.models.appgroup import AppGroupMember
+from oneid_meta.models.perm import AppGroupPerm
+from siteapi.v1.serializers.appgroup import AppGroupDetailSerializer
 from siteapi.v1.serializers.user import (
     UserSerializer,
-    DingUserSerializer,
-    PosixUserSerializer,
+    # DingUserSerializer,
+    # PosixUserSerializer,
 )
 from siteapi.v1.serializers.dept import (
     DeptDetailSerializer, )
@@ -102,6 +106,19 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
                 GroupMember.valid_objects.create(user=user, owner=group, order_no=order_no)
                 if group.org and not OrgMember.valid_objects.filter(user=user, owner=group.org).exists():
                     OrgMember.valid_objects.create(user=user, owner=group.org)
+
+    def add_apps_to_appgroup(self, apps, app_group):
+        """
+        将一批应用添加至一个应用分组
+        :param list apps:
+        :param oneid_meta.models.AppGroup app_group:
+        """
+        max_order_no = AppGroupMember.get_max_order_no(owner=app_group)
+        order_no = max_order_no
+        for app in apps:
+            if not AppGroupMember.valid_objects.filter(app=app, owner=app_group).exists():
+                order_no += 1
+                AppGroupMember.valid_objects.create(app=app, owner=app_group, order_no=order_no)
 
     def add_user_to_depts(self, user, depts):
         '''
@@ -197,10 +214,23 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             GroupPerm.valid_objects.get_or_create(owner=serializer.instance, perm=perm)
         return serializer.instance
 
+    def create_app_group(self, app_group_info, org):
+        """
+        创建应用分组
+        """
+        serializer = AppGroupDetailSerializer(data=app_group_info)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        app_group = serializer.instance
+
+        app_group.order_no = AppGroup.get_max_order_no(parent=app_group.parent) + 1
+        app_group.save()
+        return serializer.instance
+
     def add_group_to_group(self, group, parent_group):
-        '''
+        """
         将一个新组加入另一个组作为后者子组
-        '''
+        """
         if group == parent_group or parent_group.if_belong_to_group(group, recursive=True):
             raise ValidationError({'node': ['deadlock']})
         group.parent = parent_group
@@ -210,6 +240,29 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             group.top = parent_group.top
         group.order_no = Group.get_max_order_no(parent=parent_group) + 1
         group.save(update_fields=['order_no', 'parent', 'top'])
+
+    def add_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        将一个新应用分组加入到另一个应用分组作为后者的子应用分组
+        """
+        if app_group == parent_app_group or parent_app_group.if_belong_to_group(app_group, recursive=True):
+            raise ValidationError({'node': ['deadlock']})
+        app_group.parent = parent_app_group
+        if parent_app_group.is_org:
+            app_group.top = app_group.uid
+        else:
+            app_group.top = parent_app_group.top
+        app_group.order_no = AppGroup.get_max_order_no(parent=parent_app_group) + 1
+        app_group.save(update_fields=['order_no', 'parent', 'top'])
+
+    def sort_appgroups_in_appgroup(self, app_groups, parent_app_group):
+        """
+        调整一批组在父组中的排序
+        """
+        for app_group in app_groups:
+            if app_group.parent != parent_app_group:
+                raise ValidationError({'node': ['unrelated']})
+        AppGroup.sort_as(app_groups)
 
     def sort_users_in_dept(self, users, dept):
         '''
@@ -235,13 +288,20 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         Dept.sort_as(depts)
 
     def sort_groups_in_group(self, groups, parent_group):
-        '''
+        """
         调整一批组在父组中的排序
-        '''
+        """
         for group in groups:
             if group.parent != parent_group:
                 raise ValidationError({'node': ['unrelated']})
         Group.sort_as(groups)
+
+    def sort_apps_in_appgroup(self, apps, app_group):
+        """
+        调整一批应用在应用分组中的排序
+        """
+        app_group_members = [AppGroupMember.valid_objects.get(app=app, owner=app_group) for app in apps]
+        AppGroupMember.sort_as(app_group_members)
 
     def delete_users_from_dept(self, users, dept):
         '''
@@ -258,6 +318,15 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         '''
         for user in users:
             target = GroupMember.valid_objects.filter(owner=group, user=user).first()
+            if target:
+                target.kill()
+
+    def delete_apps_from_appgroup(self, apps, app_group):
+        """
+        将一批应用从应用分组中删除
+        """
+        for app in apps:
+            target = AppGroupMember.valid_objects.filter(owner=app_group, app=app).first()
             if target:
                 target.kill()
 
@@ -279,6 +348,15 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         serializer.save()
         return serializer.instance
 
+    def update_app_group(self, app_group, app_group_info):
+        """
+        更新应用分组信息
+        """
+        serializer = AppGroupDetailSerializer(app_group, data=app_group_info, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return serializer.instance
+
     def delete_group(self, group):
         '''
         删除组
@@ -292,6 +370,20 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             group_perm.kill()
 
         group.delete()
+
+    def delete_app_group(self, app_group):
+        """
+        删除应用分组
+        """
+        if app_group.app_groups:
+            raise ValidationError({'node': ['protected_by_child_node']})
+        if app_group.apps:
+            raise ValidationError({'node': ['protected_by_child_app']})
+
+        for app_group_perm in AppGroupPerm.valid_objects.filter(owner=app_group):
+            app_group_perm.kill()
+
+        app_group.delete()
 
     def delete_dept(self, dept):
         '''
@@ -328,3 +420,16 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         group.order_no = Group.get_max_order_no(parent=parent_group) + 1
         group.parent = parent_group
         group.save(update_fields=['order_no', 'parent'])
+
+    def move_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        将一个已有应用分组移至另一应用分组下
+        """
+        if app_group == parent_app_group or parent_app_group.if_belong_to_group(app_group, recursive=True):
+            raise ValidationError({'node': ['deadlock']})
+        # 解决跨域问题 只允许同一层的节点之间进行移动操作
+        if parent_app_group.top != 'root' and app_group.top != parent_app_group.top:
+            raise ValidationError({'node': ["across_scope"]})
+        app_group.order_no = AppGroup.get_max_order_no(parent=parent_app_group) + 1
+        app_group.parent = parent_app_group
+        app_group.save(update_fields=['order_no', 'parent'])

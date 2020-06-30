@@ -33,6 +33,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                 'user_id',
                 'dept_id',
                 'group_id',
+                'app_group_id',
                 'perm_id',
             ])
             for pk_field in pk_fields:

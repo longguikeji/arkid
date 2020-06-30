@@ -40,6 +40,9 @@ from oneid_meta.models.app import (
     HTTPAPP,
 )
 
+from oneid_meta.models.appgroup import (
+    AppGroup, )
+
 from oneid_meta.models.config import (CompanyConfig, AccountConfig, SMSConfig, DingConfig, CustomField, NativeField,
                                       EmailConfig, AlipayConfig, WorkWechatConfig, WechatConfig, QQConfig,
                                       StorageConfig, MinioConfig)

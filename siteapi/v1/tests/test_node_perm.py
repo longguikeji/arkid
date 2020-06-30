@@ -17,6 +17,7 @@ from oneid_meta.models import (
     Group,
     GroupMember,
     ManagerGroup,
+    OrgMember,
 )
 
 
@@ -47,7 +48,8 @@ class DeptPermTestCase(TestCase):
         self.assertEqual(res.status_code, 401)
         res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=('d_l11', )))
         self.assertEqual(res.status_code, 404)
-        GroupMember.valid_objects.create(user=User.valid_objects.get(username='employee'), owner=self.org.direct)
+        # GroupMember.valid_objects.create(user=User.valid_objects.get(username='employee'), owner=self.org.direct)
+        OrgMember.valid_objects.create(user=User.valid_objects.get(username='employee'), owner=self.org)
         res = self.employee.get(reverse('siteapi:ucenter_node_detail', args=('d_l11', )))
         self.assertEqual(res.status_code, 200)
 

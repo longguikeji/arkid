@@ -20,6 +20,7 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
     Dept = apps.get_model('oneid_meta', 'Dept')
     Perm = apps.get_model('oneid_meta', 'Perm')
     Group = apps.get_model('oneid_meta', 'Group')
+    AppGroup = apps.get_model('oneid_meta', 'AppGroup')
     UserPerm = apps.get_model('oneid_meta', 'UserPerm')
     OrgMember = apps.get_model('oneid_meta', 'OrgMember')
     GroupMember = apps.get_model('oneid_meta', 'GroupMember')
@@ -40,16 +41,23 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
 
     dept_root = Dept.objects.filter(uid='root').first()
     group_root = Group.objects.filter(uid='root').first()
+    app_group_root = AppGroup.objects.filter(uid='root').first()
 
     dept = Dept.objects.create(uid=str(uuid4()), name=f'{name}-部门', parent=dept_root)
     group = Group.objects.create(uid=str(uuid4()), name=f'{name}-分组', parent=group_root)
+    app_group = AppGroup.objects.create(uid=str(uuid4()), name=f'{name}-应用分组', parent=app_group_root)
     direct = Group.objects.create(uid=str(uuid4()), name=f'{name}-直属成员', parent=group)
     manager = Group.objects.create(uid=str(uuid4()), name=f'{name}-管理员', parent=group)
+    default_app_group = AppGroup.objects.create(uid=str(uuid4()), name=f'{name}-默认应用', parent=app_group)
     role = Group.objects.create(uid=str(uuid4()), name=f'{name}-角色', parent=group)
     label = Group.objects.create(uid=str(uuid4()), name=f'{name}-标签', parent=group)
 
     group.top = group.uid
     group.save()
+    app_group.top = app_group.uid
+    app_group.save()
+    default_app_group.top = default_app_group.uid
+    default_app_group.save()
     direct.top = direct.uid
     direct.save()
     manager.top = manager.uid
@@ -67,6 +75,8 @@ def migrate(apps, schema_editor):   # pylint: disable=unused-argument,too-many-b
         'group': group,
         'direct': direct,
         'manager': manager,
+        'app_group': app_group,
+        'default_app_group': default_app_group,
         'role': role,
         'label': label,
     }
@@ -133,6 +143,7 @@ def go(*args):
 class Migration(migrations.Migration):
     dependencies = [
         ('oneid_meta', '0069_auto_20200208_1834'),
+        ('oneid_meta', '0074_default_appgroup'),
     ]
 
     operations = [

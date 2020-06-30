@@ -74,14 +74,14 @@ class BaseOrderedModel(BaseModel):
 
     @staticmethod
     def sort_as(objs):
-        '''
+        """
         给定一批对象，按给定顺序，对该批对象进行重排。范围外对象不受影响
         [a.1, b.2, c.3, d.4, e.5]
         objs = [d, b]
         -> [a.1, d.2, c.3, b.4, e.5]
         return [d.2, b.4]
         :param list objs:
-        '''
+        """
         order_numbers = sorted([obj.order_no for obj in objs])
         for order_number, obj in zip(order_numbers, objs):
             obj.order_no = order_number
@@ -90,9 +90,9 @@ class BaseOrderedModel(BaseModel):
 
     @classmethod
     def get_max_order_no(cls, **filters):
-        '''
+        """
         返回最大order_no
-        '''
+        """
         res = cls.valid_objects.filter(**filters).aggregate(models.Max('order_no'))
         if res['order_no__max'] is not None:
             return res['order_no__max']

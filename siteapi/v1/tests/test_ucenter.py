@@ -285,7 +285,8 @@ class UCenterTestCase(TestCase):
             'gender': 0,
             'avatar': '',
             'visible_fields': VISIABLE_FIELDS,
-            'depts': [],
+            'origin_verbose': '脚本添加',
+        # 'depts': [],
         }
         self.assertEqual(res.json(), expect)
 
@@ -298,7 +299,8 @@ class UCenterTestCase(TestCase):
             'private_email': '',
             'avatar': 'avatar_key',
             'visible_fields': VISIABLE_FIELDS,
-            'depts': [],
+            'origin_verbose': '脚本添加',
+        # 'depts': [],
         }
         self.assertEqual(res.json(), expect)
 
@@ -441,5 +443,26 @@ class UcenterCustomProfileTestCase(TestCase):
 class UcenterOrgProfileTesCase(TestCase):
     def test_get_org_profile(self):
         res = self.client.get(reverse('siteapi:ucenter_org_profile', args=(self.user.current_organization.uuid.hex, )))
-        expect = {'employee_number': '', 'position': '', 'hiredate': None, 'remark': '', 'email': ''}
+        expect = {
+            'employee_number':
+            '',
+            'position':
+            '',
+            'hiredate':
+            None,
+            'remark':
+            '',
+            'email':
+            '',
+            'is_manager':
+            False,
+            'nodes': [{
+                'accept_user': True,
+                'name': '一账通-直属成员',
+                'node_subject': 'direct',
+                'node_uid': 'g_' + self.user.current_organization.direct.uid,
+                'remark': '',
+                'uid': self.user.current_organization.direct.uid
+            }],
+        }
         self.assertEqual(res.json(), expect)

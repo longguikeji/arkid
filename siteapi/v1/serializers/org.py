@@ -34,6 +34,8 @@ class OrgSerializer(DynamicFieldsModelSerializer):
     group_uid = serializers.CharField(source='group.uid')
     direct_uid = serializers.CharField(source='direct.uid')
     manager_uid = serializers.CharField(source='manager.uid')
+    app_group_uid = serializers.CharField(source='app_group.uid')
+    default_app_group_uid = serializers.CharField(source='default_app_group.uid')
     role_uid = serializers.CharField(source='role.uid')
     label_uid = serializers.CharField(source='label.uid')
     role = serializers.SerializerMethodField()
@@ -48,6 +50,8 @@ class OrgSerializer(DynamicFieldsModelSerializer):
             'group_uid',
             'direct_uid',
             'manager_uid',
+            'app_group_uid',
+            'default_app_group_uid',
             'role_uid',
             'label_uid',
             'role',

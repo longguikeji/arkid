@@ -20,6 +20,9 @@ from oneid_meta.models import (
 
 
 class GroupTestCase(TestCase):
+    """
+    组管理测试
+    """
     mock_now = True
 
     def setUp(self):
@@ -456,7 +459,7 @@ class GroupTestCase(TestCase):
                                         }
                                     })
         self.assertEqual(res.status_code, 400)
-        self.assertEqual(res.json(), {'uid': ['this value has be used']})
+        self.assertEqual(res.json(), {'uid': ['this value has been used']})
 
     def test_ignore_manager_group(self):
         res = self.client.json_post(reverse('siteapi:group_child_group', args=('role_group_1', )),

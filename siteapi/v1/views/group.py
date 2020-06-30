@@ -1,9 +1,9 @@
-'''
+"""
 views about group
 - GroupTree
 - GroupChildGroup
 - GroupChildUser
-'''
+"""
 # pylint: disable=attribute-defined-outside-init
 import json
 import random
@@ -184,9 +184,9 @@ class UcenterGroupTreeAPIView(APIView):
 
 
 def get_patch_scope(request):
-    '''
+    """
     操作范围
-    '''
+    """
     data = request.data
     group_uids = []
     node_uids = data.get('node_uids', [])
@@ -270,7 +270,6 @@ class GroupChildGroupAPIView(
         '''
         parent_group = self.get_object()
         group_data = request.data
-        uid = group_data.get('uid', '')
         if 'manager_group' in group_data:
             if parent_group.is_org_manager:
                 if not group_data.get('name', ''):
@@ -278,7 +277,7 @@ class GroupChildGroupAPIView(
                     group_data.update(name=name)
             else:
                 group_data.pop('manager_group')
-        if not uid:
+        if not group_data.get('uid', ''):
             name = group_data.get('name')
             if not name:
                 raise ValidationError({'name': ['this field is required']})

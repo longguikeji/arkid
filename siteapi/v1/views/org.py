@@ -174,9 +174,8 @@ class OrgUserListUpdateAPIView(mixins.UpdateModelMixin, generics.ListAPIView):
         set permissions
         '''
         self.org = validity_check(self.kwargs['oid'])
-
-        IsOrgOwner = IsOrgOwnerOf(self.org)
-        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwner)]    # TODO@saas: OrgMgr?
+        # TODO@saas: OrgMgr?
+        permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsManagerOf(self.org))]
         return [perm() for perm in permission_classes]
 
 

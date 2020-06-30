@@ -7,6 +7,7 @@ from executer.core import Executer, single_cli_factory
 from oneid_meta.models import Log, RequestAccessLog, RequestDataClientLog
 
 # TODO@saas: 1. add switch org log, 3. add system org change log
+# pylint: disable=too-many-lines
 
 
 class RDBLogExecuter(Executer):
@@ -173,6 +174,38 @@ class RDBLogExecuter(Executer):
         summary = f"{self.cli.user.log_name}删除组({group.name})"
         return self.log(subject, summary, org=group.org)
 
+    def create_app_group(self, app_group_info, org):
+        """
+        :param dict app_group_info:
+            + app_group_id (number)
+            + parent_uid (string) - 尽量不用
+            + uid (string)
+            + name (string)
+            + remark (string)
+        :rtype: oneid_meta.models.AppGroup
+        """
+        subject = 'app_group_create'
+        summary = f"{self.cli.user.log_name}创建应用分组({app_group_info['name']})"
+        return self.log(subject, summary, org=org)
+
+    def update_app_group(self, app_group, app_group_info):
+        """
+        :param oneid_meta.models.AppGroup app_group:
+        :param dict app_group_info:
+        :rtype: oneid_meta.models.AppGroup
+        """
+        subject = 'app_group_update'
+        summary = f"{self.cli.user.log_name}编辑应用分组({app_group.name})信息"
+        return self.log(subject, summary, org=app_group.org)
+
+    def delete_app_group(self, app_group):
+        """
+        :param oneid_meta.models.AppGroup app_group:
+        """
+        subject = 'app_group_delete'
+        summary = f"{self.cli.user.log_name}删除应用分组({app_group.name})"
+        return self.log(subject, summary, org=app_group.org)
+
     def add_users_to_dept(self, users, dept):
         '''
         :param list users:
@@ -329,10 +362,39 @@ class RDBLogExecuter(Executer):
         :param list groups:
         :param oneid_meta.models.Group parent_group:
         '''
-        subject = 'group_move'
+        subject = 'group_sort'
         node_names = ','.join([node.name for node in groups])
         summary = f"{self.cli.user.log_name}调整组({node_names})在组({parent_group.name})中的排序"
         return self.log(subject, summary, org=parent_group.org)
+
+    def add_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        将一个新应用分组加入到另一个应用分组作为其子应用分组
+        :param oneid_meta.models.AppGroup app_group:
+        :param oneid_meta.models.AppGroup parent_app_group:
+        """
+        subject = 'app_group_move'
+        summary = f"{self.cli.user.log_name}将新应用分组({app_group.name})加入到应用分组({parent_app_group.name})下"
+        return self.log(subject, summary, org=parent_app_group.org)
+
+    def move_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        :param oneid_meta.models.AppGroup app_group:
+        :param oneid_meta.models.AppGroup parent_app_group:
+        """
+        subject = 'app_group_move'
+        summary = f"{self.cli.user.log_name}将应用分组({app_group.name})移到应用分组({parent_app_group.name})下"
+        return self.log(subject, summary, org=parent_app_group.org)
+
+    def sort_appgroups_in_appgroup(self, app_groups, parent_app_group):
+        """
+        :param list app_groups:
+        :param oneid_meta.models.AppGroup parent_app_group:
+        """
+        subject = 'app_group_sort'
+        node_names = ','.join([node.name for node in app_groups])
+        summary = f"{self.cli.user.log_name}调整应用分组({node_names})在应用分组({parent_app_group.name})中的排序"
+        return self.log(subject, summary, org=parent_app_group.org)
 
     # --- non-standard interface ---
 
@@ -447,6 +509,37 @@ class RDBLogExecuter(Executer):
         subject = 'org_config'
         summary = f'{self.cli.user.log_name}更新组织配置'
         return self.log(subject, summary, org)
+
+    def add_apps_to_appgroup(self, apps, app_group):
+        """
+        将一批应用添加至一个应用分组
+        :param list apps:
+        :param oneid_meta.models.AppGroup app_group:
+        """
+        subject = 'app_group_member'
+        app_names = ','.join([app.name for app in apps])
+        summary = f"{self.cli.user.log_name}添加一批应用[{app_names}]至组({app_group.name})"
+        return self.log(subject, summary, org=app_group.org)
+
+    def sort_apps_in_appgroup(self, apps, app_group):
+        """
+        :param list apps:
+        :param oneid_meta.models.AppGroup app_group:
+        """
+        subject = 'app_group_member'
+        app_names = ','.join([app.name for app in apps])
+        summary = f"{self.cli.user.log_name}调整一批应用[{app_names}]在组({app_group.name})中的顺序"
+        return self.log(subject, summary, org=app_group.org)
+
+    def delete_apps_from_appgroup(self, apps, app_group):
+        """
+        :param list apps:
+        :param oneid_meta.models.AppGroup app_group:
+        """
+        subject = 'app_group_member'
+        app_names = ','.join([app.name for app in apps])
+        summary = f"{self.cli.user.log_name}将一批应用[{app_names}]从组({app_group.name})删除"
+        return self.log(subject, summary, org=app_group.org)
 
 
 LOG_CLI = single_cli_factory('executer.log.rdb.RDBLogExecuter')    # pylint: disable=invalid-name

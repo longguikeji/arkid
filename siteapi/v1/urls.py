@@ -40,6 +40,7 @@ from siteapi.v1.views import (
     perm as perm_views,
     ucenter as ucenter_views,
     qr as qr_views,
+    appgroup as app_group_views,
 )
 
 from siteapi.v1.views.statistics import UserStatisticView
@@ -74,6 +75,15 @@ urlpatterns = [
     url(r'^group/(?P<uid>[\w|-]+)/tree/$', group_views.ManagerGroupTreeAPIView.as_view(), name='group_tree'),
     url(r'^group/(?P<uid>[\w|-]+)/group/$', group_views.GroupChildGroupAPIView.as_view(), name='group_child_group'),
     url(r'^group/(?P<uid>[\w|-]+)/user/$', group_views.GroupChildUserAPIView.as_view(), name='group_child_user'),
+    # app group
+    # url(r'^app-group/(?P<uid>[\w|-]+)/app-group/$', app_group_views.AppGroupChildAppGroupAPIView.as_view(), name='app_group_child_app_group'),
+    path('app-group/<str:uid>/', app_group_views.AppGroupDetailAPIView.as_view(), name='appgroup_detail'),
+    path('app-group/<str:uid>/app-group/',
+         app_group_views.AppGroupChildAppGroupAPIView.as_view(),
+         name='appgroup_child_appgroup'),
+    path('app-group/<str:uid>/app/', app_group_views.AppGroupChildAppAPIView.as_view(), name='appgroup_child_app'),
+    path('app-group/<str:uid>/tree/', app_group_views.ManagerAppGroupTreeAPIView.as_view(), name='appgroup_tree'),
+
     # dept
     # url(r'^dept/$', dept_views.DeptListAPIView.as_view(), name='dept_list'), TODO@saas
     url(r'^dept/(?P<uid>[\w|-]+)/$', dept_views.DeptDetailAPIView.as_view(), name='dept_detail'),
@@ -86,8 +96,12 @@ urlpatterns = [
     url(r'^org/$', org_views.OrgListCreateAPIView.as_view(), name='org_list'),
     url(r'^org/(?P<oid>[\w|-]+)/$', org_views.OrgDetailAPIView.as_view(), name='org_detail'),
     url(r'^org/(?P<oid>[\w|-]+)/user/$', org_views.OrgUserListUpdateAPIView.as_view(), name='org_user_list'),
-    url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$', org_views.OrgUserDetailAPIView.as_view(), name='org_user_detail'),
-    path('org/<uuid:oid>/user/<str:username>/node/', org_views.OrgUserNodeListUpdateAPIView.as_view(), name='org_user_node_detail'),
+    url(r'^org/(?P<oid>[\w|-]+)/user/(?P<username>[\w]+)/$',
+        org_views.OrgUserDetailAPIView.as_view(),
+        name='org_user_detail'),
+    path('org/<uuid:oid>/user/<str:username>/node/',
+         org_views.OrgUserNodeListUpdateAPIView.as_view(),
+         name='org_user_node_detail'),
     # perm
     url(r'^perm/$', perm_views.PermListCreateAPIView.as_view(), name='perm_list'),
     url(r'^perm/(?P<uid>[\w|-]+)/$', perm_views.PermDetailAPIView.as_view(), name='perm_detail'),
@@ -121,19 +135,18 @@ urlpatterns = [
     # work_wechat
     url(r'^work_wechat/qr/callback/$', qr_views.WorkWechatQrCallbackView.as_view(), name='work_wechat_qr_callback'),
     url(r'^work_wechat/bind/$', qr_views.WorkWechatBindAPIView.as_view(), name='work_wechat_bind'),
-    url(r'^work_wechat/register/bind/$', qr_views.WorkWechatRegisterAndBindView.as_view(),\
+    url(r'^work_wechat/register/bind/$',
+        qr_views.WorkWechatRegisterAndBindView.as_view(),
         name='work_wechat_register_bind'),
     # wechat
     url(r'^wechat/qr/callback/$', qr_views.WechatQrCallbackView.as_view(), name='wechat_qr_callback'),
     url(r'^wechat/bind/$', qr_views.WechatBindAPIView.as_view(), name='wechat_bind'),
-    url(r'^wechat/register/bind/$', qr_views.WechatRegisterAndBindView.as_view(),\
-        name='wechat_register_bind'),
+    url(r'^wechat/register/bind/$', qr_views.WechatRegisterAndBindView.as_view(), name='wechat_register_bind'),
     # shortcut
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
     url(r'^slice/delete/$', shortcut_views.ObjSliceDeleteAPIView.as_view(), name='shortcut_slice_delete'),
     # ucenter
-    url(r'^ucenter/sub_account/$', ucenter_views.UcenterSubAccountListView.as_view(),
-        name='ucenter_sub_account_list'),
+    url(r'^ucenter/sub_account/$', ucenter_views.UcenterSubAccountListView.as_view(), name='ucenter_sub_account_list'),
     url(r'^ucenter/password/$', ucenter_views.SetPasswordAPIView.as_view(), name='ucenter_password'),
     url(r'^ucenter/contact/$', ucenter_views.UserContactAPIView.as_view(), name='update_user_contact'),
     url(r'^ucenter/perm/$', perm_views.UserSelfPermView.as_view(), name='user_self_perm'),
@@ -141,7 +154,9 @@ urlpatterns = [
     url(r'^ucenter/register/$', ucenter_views.UserRegisterAPIView.as_view(), name='user_register'),
     url(r'^ucenter/ding/login/$', ucenter_views.DingLoginAPIView.as_view(), name='ding_login'),
     url(r'^ucenter/profile/$', ucenter_views.UcenterProfileAPIView.as_view(), name='ucenter_profile'),
-    url(r'^ucenter/org/(?P<oid>[\w|-]+)/profile/$', ucenter_views.UcenterOrgProfileAPIView.as_view(), name='ucenter_org_profile'),
+    url(r'^ucenter/org/(?P<oid>[\w|-]+)/profile/$',
+        ucenter_views.UcenterOrgProfileAPIView.as_view(),
+        name='ucenter_org_profile'),
     url(r'^ucenter/mobile/$', ucenter_views.UcenterMobileAPIView.as_view(), name='ucenter_mobile'),
     url(r'^ucenter/profile/invited/$',
         ucenter_views.UcenterProfileInvitedAPIView.as_view(),
@@ -193,7 +208,9 @@ urlpatterns = [
     # app
     url(r'^org/(?P<oid>[\w|-]+)/app/$', app_views.APPListCreateAPIView.as_view(), name='app_list'),
     url(r'^org/(?P<oid>[\w|-]+)/app/(?P<uid>[\w|-]+)/$', app_views.APPDetailAPIView.as_view(), name='app_detail'),
-    url(r'^org/(?P<oid>[\w|-]+)/app/(?P<uid>[\w|-]+)/oauth/$', app_views.APPOAuthRegisterAPIView.as_view(), name='app_register_oauth'),
+    url(r'^org/(?P<oid>[\w|-]+)/app/(?P<uid>[\w|-]+)/oauth/$',
+        app_views.APPOAuthRegisterAPIView.as_view(),
+        name='app_register_oauth'),
 
     # migrate
     url(r'^migration/user/csv/export/$', migrate_views.UserCSVExportView.as_view(), name='export_user'),
@@ -202,7 +219,9 @@ urlpatterns = [
     # events
     url(r'^invitation/user/(?P<username>[\w]+)/$', event_views.InviteUserCreateAPIView.as_view(), name='invite_user'),
     url(r'^org/(?P<oid>[\w|-]+)/invitation/$', org_views.OrgInvitationLinkAPIView.as_view(), name='org_invite_link'),
-    url(r'^org/(?P<oid>[\w|-]+)/invitation/(?P<key>[\w|-]+)/$', org_views.OrgInvitationLinkDetailAPIView.as_view(), name='org_invite_link_detail'),
+    url(r'^org/(?P<oid>[\w|-]+)/invitation/(?P<key>[\w|-]+)/$',
+        org_views.OrgInvitationLinkDetailAPIView.as_view(),
+        name='org_invite_link_detail'),
     # statistics
     url(r'^statistics/user_statistic/$', UserStatisticView.as_view(), name='user_statistic'),
 ]

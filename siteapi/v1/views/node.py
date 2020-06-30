@@ -11,8 +11,9 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
 from django.conf import settings
 from django.urls import resolve
-from oneid_meta.models import Dept, Group
+from oneid_meta.models import Dept, Group, AppGroup
 from oneid_meta.models.mixin import TreeNode as Node
+from siteapi.v1.serializers.appgroup import AppGroupTreeSerializer
 from siteapi.v1.views import (
     dept as dept_view,
     group as group_view,
@@ -72,6 +73,14 @@ class MetaNodeAPIView(APIView):
                         'name': '管理员',
                         'node_uid': self.org.manager.node_uid,
                         'node_subject': 'manager',
+                    }, {
+                        'name': '应用分组',
+                        'node_uid': self.org.app_group.node_uid,
+                        'node_subject': 'app_group',
+                    }, {
+                        'name': '默认应用分组',
+                        'node_uid': self.org.default_app_group.node_uid,
+                        'node_subject': 'default_app_group',
                     }]
                 },
                 {
@@ -219,23 +228,26 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
     user_identity = 'employee'
 
     def get_object(self):
-        '''
+        """
         find node
-        '''
+        """
         node, _ = Node.retrieve_node(self.kwargs['uid'])
         if node is None:
             raise NotFound
 
         if node.__class__ == Dept:
             self.serializer_class = DeptTreeSerializer
-        else:
+        elif node.__class__ == Group:
             self.serializer_class = GroupTreeSerializer
+        elif node.__class__ == AppGroup:
+            self.serializer_class = AppGroupTreeSerializer
         return node
 
     def get_serializer_context(self):
-        '''
+        """
         - user_required: 是否返回用户数据
-        '''
+        - app_required: 是否返回应用数据 TODO
+        """
         context = super().get_serializer_context()
         self.user_required = self.request.query_params.get('user_required', False) not in (False, 'false', 'False')
         context['user_required'] = self.user_required

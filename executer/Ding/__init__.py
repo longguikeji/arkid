@@ -235,6 +235,21 @@ class DingExecuter(Executer):
         if group.ding_group:
             self.role_manager.delete_role(group.ding_group.uid)
 
+    def create_app_group(self, app_group_info, org):
+        """
+        暂时无需与钉钉对接
+        """
+
+    def update_app_group(self, app_group, app_group_info):
+        """
+        暂时无需与钉钉对接
+        """
+
+    def delete_app_group(self, app_group):
+        """
+        暂时无需与钉钉对接
+        """
+
     def add_users_to_group(self, users, group):
         """
         批量员工增加角色
@@ -298,6 +313,21 @@ class DingExecuter(Executer):
         钉钉的角色没有顺序
         """
 
+    def add_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        暂时无需与钉钉对接
+        """
+
+    def move_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        暂时无需与钉钉对接
+        """
+
+    def sort_appgroups_in_appgroup(self, app_groups, parent_app_group):
+        """
+        暂时无需与钉钉对接
+        """
+
     def sort_users_in_group(self, users, group):
         """
         钉钉的角色没有顺序
@@ -306,4 +336,22 @@ class DingExecuter(Executer):
     def set_user_password(self, user, plaintext):
         """
         钉钉没有用户名密码
+        """
+
+    def add_apps_to_appgroup(self, apps, app_group):
+        """
+        将一批应用添加至一个应用分组
+        Ding Ding中无需维护
+        """
+
+    def sort_apps_in_appgroup(self, apps, app_group):
+        """
+        调整一批应用在应用分组中的排序
+        Ding Ding中无需维护
+        """
+
+    def delete_apps_from_appgroup(self, apps, app_group):
+        """
+        从应用分组中删除一批应用
+        Ding Ding中无需维护
         """

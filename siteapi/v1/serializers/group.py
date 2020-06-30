@@ -320,7 +320,7 @@ class GroupDetailSerializer(GroupSerializer):
         '''
         exclude = {'pk': self.instance.pk} if self.instance else {}
         if self.Meta.model.valid_objects.filter(uid=value).exclude(**exclude).exists():
-            raise ValidationError('this value has be used')
+            raise ValidationError('this value has been used')
         return value
 
     def validate_node_scope(self, value):    # pylint: disable=no-self-use

@@ -98,6 +98,11 @@ class AdminSubAccountPermTestCase(TestCase):
         res = client.get(reverse('siteapi:ucenter_app_list'))
         self.assertEqual(res.json()['count'], 0)
 
+        self.client.json_patch(reverse('siteapi:org_user_list', args=(self.org.oid, )),
+                               data={
+                                   'usernames': ['employee'],
+                                   "subject": "add"
+                               })
         UserPerm.objects.create(owner=employee, perm=perm).permit()
         res = client.get(reverse('siteapi:ucenter_sub_account_list'))
         self.assertEqual(res.json()['count'], 1)

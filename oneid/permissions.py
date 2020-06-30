@@ -58,13 +58,13 @@ class IsNotSettledinUser(IsAuthenticated):
 
 
 class IsNodeManager(BasePermission):
-    '''
+    """
     校验有无管理某节点的权限
-    '''
+    """
     def has_object_permission(self, request, view, obj):
-        '''
+        """
         对节点是否有管理权限
-        '''
+        """
         assert isinstance(obj, Node)
         return obj.under_manage(request.user)
 
@@ -91,12 +91,12 @@ class NodeEmployeeReadable(BasePermission):
 
 
 class NodeManagerReadable(BasePermission):
-    '''
+    """
     校验管理员是否可见某节点
     包括：
     - 在管理范围内可见
     - 因下级节点可见而被迫可见
-    '''
+    """
     def has_object_permission(self, request, view, obj):
         assert isinstance(obj, Node)
         org = obj.org

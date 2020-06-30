@@ -114,6 +114,32 @@ class Executer():
         '''
         raise NotImplementedError
 
+    def create_app_group(self, app_group_info, org):
+        """
+        :param dict app_group_info:
+            + app_group_id (number)
+            + parent_uid (string) - 尽量不用
+            + uid (string)
+            + name (string)
+            + remark (string)
+        :rtype: oneid_meta.models.AppGroup
+        """
+        raise NotImplementedError
+
+    def update_app_group(self, app_group, app_group_info):
+        """
+        :param oneid_meta.models.AppGroup app_group:
+        :param dict app_group_info:
+        :rtype: oneid_meta.models.AppGroup
+        """
+        raise NotImplementedError
+
+    def delete_app_group(self, app_group):
+        """
+        :param oneid_meta.models.AppGroup app_group:
+        """
+        raise NotImplementedError
+
     def add_users_to_dept(self, users, dept):
         '''
         :param list users:
@@ -228,6 +254,49 @@ class Executer():
         '''
         raise NotImplementedError
 
+    def add_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        将一个新应用分组加入到另一个应用分组作为其子应用分组
+        :param oneid_meta.models.AppGroup app_group:
+        :param oneid_meta.models.AppGroup parent_app_group:
+        """
+        raise NotImplementedError
+
+    def move_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        :param oneid_meta.models.AppGroup app_group:
+        :param oneid_meta.models.AppGroup parent_app_group:
+        """
+        raise NotImplementedError
+
+    def sort_appgroups_in_appgroup(self, app_groups, parent_app_group):
+        """
+        :param list app_groups:
+        :param oneid_meta.models.AppGroup parent_app_group:
+        """
+        raise NotImplementedError
+
+    def add_apps_to_appgroup(self, apps, app_group):
+        """
+        :param list apps:
+        :param oneid_meta.models.AppGroup app_group:
+        """
+        raise NotImplementedError
+
+    def delete_apps_from_appgroup(self, apps, app_group):
+        """
+        :param list apps:
+        :param oneid_meta.models.AppGroup app_group:
+        """
+        raise NotImplementedError
+
+    def sort_apps_in_appgroup(self, apps, app_group):
+        """
+        :param list apps:
+        :param oneid_meta.models.AppGroup app_group:
+        """
+        raise NotImplementedError
+
 
 FUNC_NAMES = [
     'create_user',
@@ -240,6 +309,9 @@ FUNC_NAMES = [
     'create_group',
     'update_group',
     'delete_group',
+    'create_app_group',
+    'update_app_group',
+    'delete_app_group',
     'add_users_to_dept',
     'sort_users_in_dept',
     'add_user_to_depts',
@@ -256,6 +328,12 @@ FUNC_NAMES = [
     'add_group_to_group',
     'move_group_to_group',
     'sort_groups_in_group',
+    'add_appgroup_to_appgroup',
+    'move_appgroup_to_appgroup',
+    'sort_appgroups_in_appgroup',
+    'add_apps_to_appgroup',
+    'delete_apps_from_appgroup',
+    'sort_apps_in_appgroup',
 ]
 
 # 注册时，只有操作完成后才知道操作者身份

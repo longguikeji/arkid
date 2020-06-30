@@ -30,6 +30,7 @@ from oneid_meta.models import (
 )
 from siteapi.v1.views.utils import gen_uid
 from siteapi.v1.serializers.perm import PermWithOwnerSerializer
+# pylint: disable=too-many-lines
 
 if get_xmlsec_binary:
     xmlsec_path = get_xmlsec_binary(["/opt/local/bin", "/usr/local/bin"])    # pylint: disable=invalid-name
@@ -497,3 +498,15 @@ class APPWithAccessOwnerSerializer(APPWithAccessSerializer):
             'user_uid': user_uid,
             'value': owner.owner_perm_cls.get(perm=instance.access_perm, owner=owner).value if owner else False,
         }
+
+
+class APPListSerializer(DynamicFieldsModelSerializer):
+    """
+    Serializer for APPs
+    """
+    apps = APPSerializer(many=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = APP
+
+        fields = ('apps', )

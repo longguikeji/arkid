@@ -289,6 +289,21 @@ class LDAPExecuter(Executer):
                 raise LDAPNotAllowedOnNotLeafResult
             self.conn.delete(entry.entry_dn)
 
+    def create_app_group(self, app_group_info, org):
+        """
+        暂时无需与LDAP对接
+        """
+
+    def update_app_group(self, app_group, app_group_info):
+        """
+        暂时无需与LDAP对接
+        """
+
+    def delete_app_group(self, app_group):
+        """
+        暂时无需与LDAP对接
+        """
+
     def add_users_to_dept(self, users, dept):
         '''
         将一批用户添加到一个部门
@@ -342,6 +357,21 @@ class LDAPExecuter(Executer):
         parent_group_dn = parent_group.dn
         self.conn.modify_dn(group_dn, 'cn={}'.format(group.uid), new_superior=parent_group_dn)
         return 'cn={},{}'.format(group.uid, parent_group_dn)
+
+    def add_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        暂时无需与钉钉对接
+        """
+
+    def move_appgroup_to_appgroup(self, app_group, parent_app_group):
+        """
+        暂时无需与钉钉对接
+        """
+
+    def sort_appgroups_in_appgroup(self, app_groups, parent_app_group):
+        """
+        暂时无需与钉钉对接
+        """
 
     def add_users_to_group(self, users, group):
         '''
@@ -407,3 +437,21 @@ class LDAPExecuter(Executer):
         调整一批人在组中的排序
         LDAP中无需维护
         '''
+
+    def add_apps_to_appgroup(self, apps, app_group):
+        """
+        将一批应用添加至一个应用分组
+        LDAP中无需维护
+        """
+
+    def sort_apps_in_appgroup(self, apps, app_group):
+        """
+        调整一批应用在应用分组中的排序
+        LDAP中无需维护
+        """
+
+    def delete_apps_from_appgroup(self, apps, app_group):
+        """
+        从应用分组中删除一批应用
+        LDAP中无需维护
+        """

@@ -332,17 +332,17 @@ class TreeNode():
 
     @property
     def downstream(self):
-        '''
+        """
         节点以及其子孙节点，以object形式返回
-        '''
+        """
         yield self
         for node in self.children:
             yield from node.downstream
 
     def update_cache(self):
-        '''
+        """
         更新缓存
-        '''
+        """
         cache.delete(f'oneid:node:{self.node_uid}:upstream')
         _ = self.upstream_uids
 
@@ -351,13 +351,16 @@ class TreeNode():
         '''
         通过node_uid 获取node及该节点类型
         '''
-        from oneid_meta.models import Dept, Group    # pylint: disable=import-outside-toplevel
+        from oneid_meta.models import Dept, Group, AppGroup    # pylint: disable=import-outside-toplevel
         if node_uid.startswith(Dept.NODE_PREFIX):
             uid = node_uid.replace(Dept.NODE_PREFIX, '', 1)
             return Dept.valid_objects.filter(uid=uid).first(), 'dept'
         if node_uid.startswith(Group.NODE_PREFIX):
             uid = node_uid.replace(Group.NODE_PREFIX, '', 1)
             return Group.valid_objects.filter(uid=uid).first(), 'group'
+        if node_uid.startswith(AppGroup.NODE_PREFIX):
+            uid = node_uid.replace(AppGroup.NODE_PREFIX, '', 1)
+            return AppGroup.valid_objects.filter(uid=uid).first(), 'app_group'
         return None, ''
 
     @staticmethod

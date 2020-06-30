@@ -211,10 +211,10 @@ class ManagerGroup(BaseModel):
 
 
 class GroupMember(BaseOrderedModel):
-    '''
+    """
     组与用户的从属关系
     这里组只收录末端组
-    '''
+    """
 
     user = models.ForeignKey('oneid_meta.User', on_delete=models.PROTECT)
     owner = models.ForeignKey('oneid_meta.Group', verbose_name='所属组', on_delete=models.PROTECT)
@@ -223,4 +223,4 @@ class GroupMember(BaseOrderedModel):
         unique_together = ('user', 'owner')
 
     def __str__(self):
-        return f'DeptMember: {self.user} -> {self.owner}'
+        return f'GroupMember: {self.user} -> {self.owner}'

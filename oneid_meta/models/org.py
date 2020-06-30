@@ -2,6 +2,8 @@
 schema of Orgs
 '''
 # pylint: disable=invalid-name
+# pylint: disable=line-too-long
+# pylint: disable=no-member
 from uuid import uuid4
 from django.db import models
 from django.utils import timezone
@@ -29,6 +31,11 @@ class Org(BaseModel):
                                 on_delete=models.CASCADE,
                                 verbose_name='管理员节点',
                                 related_name='manager')
+    app_group = models.ForeignKey('oneid_meta.AppGroup', on_delete=models.CASCADE, verbose_name='App分组节点')
+    default_app_group = models.ForeignKey('oneid_meta.AppGroup',
+                                          on_delete=models.CASCADE,
+                                          verbose_name='App分组默认节点',
+                                          related_name='default_app')
     role = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='角色节点', related_name='role')
     label = models.ForeignKey('oneid_meta.Group', on_delete=models.CASCADE, verbose_name='标签节点', related_name='label')
 
@@ -61,6 +68,8 @@ class Org(BaseModel):
         self.group.delete()
         self.direct.delete()
         self.manager.delete()
+        self.app_group.delete()
+        self.default_app_group.delete()
         self.role.delete()
         self.label.delete()
         for om in OrgMember.valid_objects.filter(owner=self):
@@ -73,27 +82,34 @@ class Org(BaseModel):
         create org
         '''
         # pylint: disable=too-many-locals,import-outside-toplevel
-        from oneid_meta.models import Perm, Dept, Group, GroupMember, CompanyConfig
+        from oneid_meta.models import Perm, Dept, Group, GroupMember, CompanyConfig, AppGroup
 
         dept_root = Dept.valid_objects.filter(uid='root').first()
         group_root = Group.valid_objects.filter(uid='root').first()
+        app_group_root = AppGroup.valid_objects.filter(uid='root').first()
 
         dept = Dept.valid_objects.create(uid=str(uuid4()), name=name, parent=dept_root)
         group = Group.valid_objects.create(uid=str(uuid4()), name=name, parent=group_root)
+        app_group = AppGroup.valid_objects.create(uid=str(uuid4()), name=f'{name}-应用', parent=app_group_root)
         direct = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-直属成员', parent=group)
         manager = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-管理员', parent=group)
+        default_app_group = AppGroup.valid_objects.create(uid=str(uuid4()), name=f'{name}-默认应用', parent=app_group)
         role = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-角色', parent=group)
         label = Group.valid_objects.create(uid=str(uuid4()), name=f'{name}-标签', parent=group)
 
         group.top = group.uid
         direct.top = direct.uid
         manager.top = manager.uid
+        app_group.top = app_group.uid
+        default_app_group.top = default_app_group.uid
         role.top = role.uid
         label.top = label.uid
 
         group.save()
         direct.save()
         manager.save()
+        app_group.save()
+        default_app_group.save()
         role.save()
         label.save()
 
@@ -106,6 +122,8 @@ class Org(BaseModel):
             'group': group,
             'direct': direct,
             'manager': manager,
+            'app_group': app_group,
+            'default_app_group': default_app_group,
             'role': role,
             'label': label
         }
@@ -257,5 +275,5 @@ class OrgMember(BaseOrderedModel):
         '''
         此人在此组织是否为子管理员
         '''
-        from oneid_meta.models import GroupMember
+        from oneid_meta.models import GroupMember    # pylint: disable=import-outside-toplevel
         return GroupMember.valid_objects.filter(user=self.user, owner__parent=self.owner.manager).exists()
