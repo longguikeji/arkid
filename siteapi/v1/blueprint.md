@@ -274,6 +274,8 @@ FORMAT: 1A
 + manager_uid (string)
 + role_uid (string)
 + label_uid (string)
++ app_group_uid (string)
++ default_app_group_uid (string) - 默认应用分组的uid
 + role (enum[string], readonly) - 当前用户在改组织内的身份
     - owner - 创建者，主管理员
     - manager - 子管理员
@@ -416,6 +418,45 @@ FORMAT: 1A
 + sls (string) - SP单点登出uri
 + cert (string) - SP公钥证书
 + xmldata (string) - SP方xml元数据文件
+
+## AppGroup
++ app_group_id (number)
++ uid (string)
++ node_uid (string)
++ name (string)
++ remark (string)
+
+## AppGroupWithParent (AppGroup)
++ parent_uid (string)
++ parent_name (string)
++ parent_node_uid (string)
+
+## AppGroupDetail (AppGroupWithParent)
++ visibility (enum[number]) - 可见范围类型
+    + 1 - 所有人可见
+    + 2 - 节点成员可见
+    + 3 - 节点成员及其下属节点均可见
+    + 4 - 只对指定人、节点可见
+    + 5 - 所有人不可见
++ node_scope (array[string]) - 特定可见节点范围，仅当 visibility=4 时生效，下同
++ user_scope (array[string]) - 特定可见用户范围
+
+## AppLite (object)
++ app_id (number)
++ node_uid (string)
++ name (string)
++ uid (string)
++ remark (string)
+
+## AppGroupTree (object)
++ info (AppGroup)
++ apps (array[AppLite])
++ app_groups (array[AppGroupTree]) - self
++ headcount (number) - 该应用分组及其子孙分组应用数之和
+
+## AppGroupOnlyTree (object)
++ info (AppGroup)
++ app_groups (array[AppGroupOnlyTree]) - self
 
 ## CompanyConfig (object)
 + name_cn (string)
@@ -1414,7 +1455,6 @@ TODO: 校对
 + Response 200 (application/json)
     + Attributes (GroupTree) - GroupOnlyTree if not user_required
 
-
 ## 组子组 [/group/{uid}/group/]
 数据仅限于子一级
 + Parameters
@@ -1443,7 +1483,6 @@ TODO: 校对
 + Response 204
     + Attributes
         + groups (array[Group]) - 操作后该组中有哪些子组
-
 
 ## 组人员 [/group/{uid}/user/]
 数据仅限于子一级
@@ -1477,7 +1516,6 @@ TODO: 校对
 + Response 204 (application/json)
     + Attributes
         + users (array[User]) - 操作后该组中有哪些人
-
 
 # Group Node
 
@@ -2232,7 +2270,109 @@ TODO: 可见权限的处理
         + active (boolean)
         + scope (string)
         + exp (timestamp)
+        
+        
+# Group App Group
 
+## 分组信息 [/app-group/{uid}/]
+
++ Parameters
+    + uid (string) - 应用分组唯一标识。root特指最顶级组。
+
+### 获取分组信息 [GET]
++ Response 200 (application/json)
+    + Attributes (AppGroupDetail)
+
+### 修改分组信息 [PATCH]
++ Request JSON Message
+    + Attributes (AppGroupDetail)
++ Response 200 (application/json)
+    + Attributes (AppGroupDetail)
+
+### 删除分组 [DELETE]
+需先清空子节点
++ Response 204 
+
+## 分组结构 [/app-group/{uid}/tree/]
+
+数据包括从该节点起始的完整树
++ Parameters
+    + uid (string) - 应用分组唯一标识。root特指最顶级组。
+
+### 获取完整分组结构 [GET]
+
++ Request JSON Message
+    + Attributes
+        + `app_required` (boolean) - 是否需要应用成员信息
+            - default: false
+
++ Response 200 (application/json)
+    + Attributes (AppGroupTree) - AppGroupOnlyTree if not app_required
+    
+
+## 分组子分组 [/app-group/{uid}/app-group/]
+数据仅限于子一级
++ Parameters
+    + uid (string) - 应用分组唯一标识。root特指最顶级组。
+
+### 获取子分组 [GET]
+
++ Response 200 (application/json)
+    + Attributes
+        + app_groups (array[AppGroup])
+
+### 创建子分组 [POST]
++ Request JSON Message
+    + Attributes (AppGroup)
++ Response 201 (application/json)
+    + Attributes (AppGroup)
+
+### 调整子分组 [PATCH]
++ Request (application/json)
+    + Attributes
+        + `app_group_uids` (array[string]) - array of uid
+        + subject (enum[string]) - 操作类型
+            + add - 添加这些应用分组至该应用分组
+            + sort - 对指定子应用分组按指定位置进行排序
+
++ Response 204
+    + Attributes
+        + app_groups (array[AppGroup]) - 操作后该组中有哪些子应用分组
+        
+
+## 分组应用 [/app-group/{uid}/app/]
+数据仅限于子一级
++ Parameters
+    + uid (string) - 应用分组唯一标识。root特指最顶级组。
+
+### 获取分组应用 [GET]
++ Request
+    + Attributes
+        + uids (string) - 附加查询组，取结果交集。格式上以|分隔，形如 app_group_1|app_group_2
+
++ Response 200 (application/json)
+    + Attributes
+        + count (number)
+        + previous
+        + next
+        + results (array[APP])
+
+### 调整分组应用 [PATCH]
++ Request (application/json)
+    + Attributes
+        + `app_ids` (array[number]) - array of id
+        + `app_group_uids` (array[string]) - array of app_group.uid，仅当`move_out`时用到
+        + subject (enum[string]) - 操作类型
+            + add - 添加这些应用至该应用分组
+            + delete - 将这些应用从该应用分组移除
+            + override - 重置分组中应用，慎用
+            + sort - 对指定应用按指定位置进行排序
+            + move_out - 将这些应用从该应用分组移除，并加到指定应用分组
+
++ Response 204 (application/json)
+    + Attributes
+        + apps (array[APP]) - 操作后该组中有哪些应用
+        
 # Group Shortcut
 
 ## 指定对象信息 [/slice/{?node_uids,user_uids,app_uids}]

@@ -132,14 +132,6 @@ class MetaTestCase(TestCase):
                 'name': '管理员',
                 'node_uid': org.manager.node_uid,
                 'node_subject': 'manager',
-            }, {
-                'name': '应用分组',
-                'node_subject': 'app_group',
-                'node_uid': org.app_group.node_uid,
-            }, {
-                'name': '默认应用分组',
-                'node_subject': 'default_app_group',
-                'node_uid': org.default_app_group.node_uid,
             }]
         }, {
             'name': '自定义分类',
