@@ -1935,12 +1935,13 @@ TODO: 可见权限的处理
                 + uid (string) - node_uid
                 + status (number) - -1,0,1
 
-## 用户权限 [/perm/user/{username}/{?action,action_except,scope}]
+## 用户权限 [/perm/user/{username}/{?action,action_except,scope,oid}]
 + Parameters
     + username (string) - 用户唯一标识
     + action (string) - 特定操作
     + `action_except` (string) - 排除某操作，惯用`action_except=access`获取应用内权限
     + scope (string) - 与应用uid对应，惯用该字段获取某应用下权限
+    + oid (string) - 组织唯一标识，表示组织拥有者正在尝试获取组织成员的权限信息
 
 ### 获取用户所有权限 [GET]
 包括所有授权、未授权的权限

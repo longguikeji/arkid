@@ -154,6 +154,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         '''
         当创建应用时，自动创建子管理员组
         成员只有创建者一人，节点管理范围为空，人员管理范围仅自己，应用管理范围仅此一个应用
+        TODO 创建者此时没有获得应用访问权限，可考虑同时获得访问权限
         '''
         cli = CLI()
         data = {

@@ -105,40 +105,45 @@ class MetaTestCase(TestCase):
     def test_meta_node(self):
         org = Org.create('org1', User.valid_objects.get(username='admin'))
         res = self.client.get(reverse('siteapi:meta_node', args=(org.oid, )))
-        expect = [{
-            'name':
-            '默认分类',
-            'slug':
-            'default',
-            'node_uid':
-            None,
-            'nodes': [{
-                'name': '部门',
-                'node_uid': org.dept.node_uid,
-                'node_subject': 'dept',
-            }, {
-                'name': '直属成员',
-                'node_uid': org.direct.node_uid,
-                'node_subject': 'direct',
-            }, {
-                'name': '角色',
-                'node_uid': org.role.node_uid,
-                'node_subject': 'role',
-            }, {
-                'name': '标签',
-                'node_uid': org.label.node_uid,
-                'node_subject': 'label',
-            }, {
-                'name': '管理员',
-                'node_uid': org.manager.node_uid,
-                'node_subject': 'manager',
-            }]
-        }, {
-            'name': '自定义分类',
-            'slug': 'custom',
-            'node_uid': org.group.node_uid,
-            'nodes': []
-        }]
+        expect = [
+            {
+                'name':
+                '默认分类',
+                'slug':
+                'default',
+                'node_uid':
+                None,
+                'nodes': [{
+                    'name': '部门',
+                    'node_uid': org.dept.node_uid,
+                    'node_subject': 'dept',
+                }, {
+                    'name': '直属成员',
+                    'node_uid': org.direct.node_uid,
+                    'node_subject': 'direct',
+                }, {
+                    'name': '角色',
+                    'node_uid': org.role.node_uid,
+                    'node_subject': 'role',
+                }, {
+                    'name': '标签',
+                    'node_uid': org.label.node_uid,
+                    'node_subject': 'label',
+                }
+        #     , {
+        #     'name': '管理员',
+        #     'node_uid': org.manager.node_uid,
+        #     'node_subject': 'manager',
+        # }
+                          ]
+            },
+            {
+                'name': '自定义分类',
+                'slug': 'custom',
+                'node_uid': org.group.node_uid,
+                'nodes': []
+            }
+        ]
         self.assertEqual(expect, res.json())
 
     def test_meta_perm(self):

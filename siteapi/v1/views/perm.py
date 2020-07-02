@@ -10,11 +10,11 @@ from rest_framework import generics, status, mixins
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError, NotFound, MethodNotAllowed
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
-from oneid_meta.models import (Perm, UserPerm, DeptPerm, GroupPerm, User, Dept, Group)
+from oneid_meta.models import (Perm, UserPerm, DeptPerm, GroupPerm, User, Dept, Group, Org)
 from siteapi.v1.serializers.perm import (
     PermSerializer,
     PermWithOwnerSerializer,
@@ -25,7 +25,7 @@ from siteapi.v1.serializers.perm import (
 )
 from common.django.drf.paginator import DefaultListPaginator
 from common.django.drf.views import catch_json_load_error
-from oneid.permissions import IsAdminUser, IsOrgOwnerOf
+from oneid.permissions import IsAdminUser, IsOrgOwnerOf, IsNodeManager, NodeManagerReadable
 from executer.log.rdb import LOG_CLI
 
 
@@ -272,16 +272,38 @@ class UserPermView(
     serializer_class = UserPermResultSerializer
     pagination_class = DefaultListPaginator
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.org = None
+
+    def get_permissions(self):
+        """
+        根据query string中是否带有org_uid来获取权限
+        """
+        # self.request.query_params()
+        oid = self.request.query_params.get('oid', '')
+        if not oid:
+            return super(UserPermView, self).get_permissions()
+        self.org = Org.valid_objects.filter(uuid=oid).first()
+        if not self.org:
+            raise NotFound
+        read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | NodeManagerReadable)]
+        write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsNodeManager)]
+        permissions = read_permission_classes if self.request.method in SAFE_METHODS else write_permission_classes
+        return [perm() for perm in permissions]
+
     def get_object(self):
         """
         find user
         """
+        self.check_object_permissions(self.request, self.org)
         user = User.valid_objects.get_queryset().filter(username=self.kwargs['username']).first()
-        if not user:
+        if not user or (self.org and not self.org.has_user(user)):
             raise NotFound
         return user
 
     def get_queryset(self):
+        self.get_object()
         return filter_owner_perms(self, owner_key='username', cls=UserPerm)
 
     def patch(self, request, username):    # pylint: disable=unused-argument
