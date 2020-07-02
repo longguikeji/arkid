@@ -278,7 +278,7 @@ class UserPermView(
 
     def get_permissions(self):
         """
-        根据query string中是否带有org_uid来获取权限
+        根据query string中是否带有org.uuid(oid)来获取权限
         """
         # self.request.query_params()
         oid = self.request.query_params.get('oid', '')
@@ -287,6 +287,7 @@ class UserPermView(
         self.org = Org.valid_objects.filter(uuid=oid).first()
         if not self.org:
             raise NotFound
+        #  TODO 权限校验需深入（NodeManagerReadable、IsNodeManager暂时无效,仅组织拥有者有效）
         read_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | NodeManagerReadable)]
         write_permission_classes = [IsAuthenticated & (IsAdminUser | IsOrgOwnerOf(self.org) | IsNodeManager)]
         permissions = read_permission_classes if self.request.method in SAFE_METHODS else write_permission_classes
