@@ -8,7 +8,7 @@ from socket import gethostname
 from OpenSSL import crypto
 
 from django.conf import settings
-from django.shortcuts import redirect, reverse
+from django.shortcuts import reverse
 from django.contrib.auth import logout, REDIRECT_FIELD_NAME
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.http import (HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
@@ -76,7 +76,6 @@ def sso_entry(request):
         binding = BINDING_HTTP_REDIRECT
 
     request.session['Binding'] = binding
-
     try:
         request.session['SAMLRequest'] = passed_data['SAMLRequest']
     except (KeyError, MultiValueDictKeyError) as e:    # pylint: disable=invalid-name
@@ -90,7 +89,8 @@ def sso_entry(request):
 
 
 class AccessMixin:
-    """Abstract CBV mixin that gives access mixins the same customizable
+    """
+    Abstract CBV mixin that gives access mixins the same customizable
     functionality.
     """
     login_url = None
@@ -99,9 +99,10 @@ class AccessMixin:
     redirect_field_name = REDIRECT_FIELD_NAME
 
     def get_login_url(self):
-        """Override this method to override the login_url attribute.
         """
-        login_url = self.login_url or settings.LOGIN_URL
+        Override this method to override the login_url attribute.
+        """
+        login_url = self.login_url or settings.SAML_LOGIN_URL
         if not login_url:
             raise ImproperlyConfigured(
                 '{0} is missing the login_url attribute. Define {0}.login_url, settings.LOGIN_URL, or override '
@@ -109,21 +110,24 @@ class AccessMixin:
         return str(login_url)
 
     def get_permission_denied_message(self):
-        """Override this method to override the permission_denied_message attribute.
+        """
+        Override this method to override the permission_denied_message attribute.
         """
         return self.permission_denied_message
 
     def get_redirect_field_name(self):
-        """Override this method to override the redirect_field_name attribute.
+        """
+        Override this method to override the redirect_field_name attribute.
         """
         return self.redirect_field_name
 
-    def handle_no_permission(self):
-        '''未登录用户跳转登录页面
+    def handle_no_permission(self, request_data):
+        '''
+        未登录用户跳转登录页面
         '''
         if self.raise_exception:
             raise PermissionDenied(self.get_permission_denied_message())
-        return redirect(settings.LOGIN_URL)
+        return HttpResponseRedirect(settings.SAML_LOGIN_URL + '?SAMLRequest={}'.format(request_data))
 
 
 class LoginRequiredMixin(AccessMixin):
@@ -138,7 +142,7 @@ class LoginRequiredMixin(AccessMixin):
             if not exp:
                 return super().dispatch(request, *args, **kwargs)
         except Exception:    # pylint: disable=broad-except
-            return self.handle_no_permission()
+            return self.handle_no_permission(request.session['SAMLRequest'])
 
 
 class IdPHandlerViewMixin:
@@ -151,45 +155,47 @@ class IdPHandlerViewMixin:
         return self.error_view.as_view()(request, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
-        """ Construct IDP server with config from settings dict
+        """
+        Construct IDP server with config from settings dict
         """
         conf = IdPConfig()
         try:
-            SAML_IDP_CONFIG = {     # pylint: disable=invalid-name
-            'debug' : settings.DEBUG,
-            'xmlsec_binary': get_xmlsec_binary(['/opt/local/bin', '/usr/bin/xmlsec1']),
-            'entityid': '%s/saml/metadata' % settings.BASE_URL,
-            'description': 'longguikeji IdP setup',
+            SAML_IDP_CONFIG = {  # pylint: disable=invalid-name
+                'debug': settings.DEBUG,
+                'xmlsec_binary': get_xmlsec_binary(['/opt/local/bin', '/usr/bin/xmlsec1']),
+                'entityid': '%s/saml/metadata' % settings.BASE_URL,
+                'description': 'longguikeji IdP setup',
 
-            'service': {
-                'idp': {
-                    'name': 'Django localhost IdP',
-                    'endpoints': {
-                        'single_sign_on_service': [
-                            ('%s/saml/sso/post' % settings.BASE_URL, BINDING_HTTP_POST),
-                            ('%s/saml/sso/redirect' % settings.BASE_URL, BINDING_HTTP_REDIRECT),
-                        ],
+                'service': {
+                    'idp': {
+                        'name': 'Django localhost IdP',
+                        'endpoints': {
+                            'single_sign_on_service': [
+                                ('%s/saml/sso/post' % settings.BASE_URL, BINDING_HTTP_POST),
+                                ('%s/saml/sso/redirect' % settings.BASE_URL, BINDING_HTTP_REDIRECT),
+                            ],
+                        },
+                        'name_id_format': [NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED],
+                        'sign_response': True,
+                        'sign_assertion': True,
                     },
-                    'name_id_format': [NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED],
-                    'sign_response': False,
-                    'sign_assertion': False,
                 },
-            },
 
-            'metadata': {
-                'local': [os.path.join(os.path.join(os.path.join(BASEDIR, 'djangosaml2idp'),\
-                    'saml2_config'), f) for f in os.listdir(BASEDIR+'/djangosaml2idp/saml2_config/')\
-                        if f.split('.')[-1] == 'xml'],
-            },
-            # Signing
-            'key_file': BASEDIR + '/djangosaml2idp/certificates/mykey.pem',
-            'cert_file': BASEDIR + '/djangosaml2idp/certificates/mycert.pem',
-            # Encryption
-            'encryption_keypairs': [{
+                'metadata': {
+                    'local': [os.path.join(os.path.join(os.path.join(BASEDIR, 'djangosaml2idp'), \
+                                                        'saml2_config'), f) for f in
+                              os.listdir(BASEDIR + '/djangosaml2idp/saml2_config/') \
+                              if f.split('.')[-1] == 'xml'],
+                },
+                # Signing
                 'key_file': BASEDIR + '/djangosaml2idp/certificates/mykey.pem',
                 'cert_file': BASEDIR + '/djangosaml2idp/certificates/mycert.pem',
-            }],
-            'valid_for': 365 * 24,
+                # Encryption
+                'encryption_keypairs': [{
+                    'key_file': BASEDIR + '/djangosaml2idp/certificates/mykey.pem',
+                    'cert_file': BASEDIR + '/djangosaml2idp/certificates/mycert.pem',
+                }],
+                'valid_for': 365 * 24,
             }
 
             conf.load(copy.copy(SAML_IDP_CONFIG))
@@ -199,8 +205,9 @@ class IdPHandlerViewMixin:
         return super(IdPHandlerViewMixin, self).dispatch(request, *args, **kwargs)
 
     def get_processor(self, entity_id, sp_config):    # pylint: disable=no-self-use
-        """ Instantiate user-specified processor or default to an all-access base processor.
-            Raises an exception if the configured processor class can not be found or initialized.
+        """
+        Instantiate user-specified processor or default to an all-access base processor.
+        Raises an exception if the configured processor class can not be found or initialized.
         """
         processor_string = sp_config.get('processor', None)
         if processor_string:
@@ -212,7 +219,8 @@ class IdPHandlerViewMixin:
         return BaseProcessor(entity_id)
 
     def get_identity(self, processor, user, sp_config):    # pylint: disable=no-self-use
-        """ Create Identity dict (using SP-specific mapping)
+        """
+        Create Identity dict (using SP-specific mapping)
         """
         sp_mapping = sp_config.get('attribute_mapping', {'username': 'username'})
         ret = processor.create_identity(user, sp_mapping, **sp_config.get('extra_config', {}))
@@ -221,8 +229,9 @@ class IdPHandlerViewMixin:
 
 @method_decorator(never_cache, name='dispatch')
 class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
-    """ View which processes the actual SAML request and returns a self-submitting form with the SAML response.
-        The login_required decorator ensures the user authenticates first on the IdP using 'normal' ways.
+    """
+    View which processes the actual SAML request and returns a self-submitting form with the SAML response.
+    The login_required decorator ensures the user authenticates first on the IdP using 'normal' ways.
     """
     def cookie_user(self, request):    # pylint: disable=no-self-use
         '''返回cookie对应的用户
@@ -236,7 +245,6 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
 
     def get(self, request, *args, **kwargs):    # pylint: disable=missing-function-docstring, unused-argument, too-many-locals
         binding = request.session.get('Binding', BINDING_HTTP_POST)
-
         # Parse incoming request
         try:
             req_info = self.IDP.parse_authn_request(request.session['SAMLRequest'], binding)
@@ -254,13 +262,12 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
                 pass
             if not verified_ok:
                 return self.handle_error(request, extra_message="Message signature verification failure", status=400)
-
         # Gather response arguments
         try:
             resp_args = self.IDP.response_args(req_info.message)
         except (UnknownPrincipal, UnsupportedBinding) as excp:
             return self.handle_error(request, exception=excp, status=400)
-
+        print('resp_args is', resp_args)
         try:
             # sp_config = SAML_IDP_SPCONFIG[resp_args['sp_entity_id']]
             sp_config = {
@@ -280,7 +287,6 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
                                      exception=ImproperlyConfigured("No config for SP %s defined in SAML_IDP_SPCONFIG" %
                                                                     resp_args['sp_entity_id']),
                                      status=400)
-
         processor = self.get_processor(resp_args['sp_entity_id'], sp_config)
 
         # Check if user has access to the service of this SP
@@ -290,29 +296,34 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
                                      status=403)
         cookie_user = self.cookie_user(request)
         identity = self.get_identity(processor, cookie_user, sp_config)
-
         req_authn_context = req_info.message.requested_authn_context or PASSWORD
+        print('cookie_user is', cookie_user)
+        print('identity is', identity)
+        print('req_authn_context is', req_authn_context)
         AUTHN_BROKER = AuthnBroker()    # pylint: disable=invalid-name
         AUTHN_BROKER.add(authn_context_class_ref(req_authn_context), "")
-
         user_id = processor.get_user_id(cookie_user)
-
         # Construct SamlResponse message
         try:
-            authn_resp = self.IDP.create_authn_response(identity=identity,
-                                                        userid=user_id,
-                                                        name_id=NameID(format=resp_args['name_id_policy'].format,
-                                                                       sp_name_qualifier=resp_args['sp_entity_id'],
-                                                                       text=user_id),
-                                                        authn=AUTHN_BROKER.get_authn_by_accr(req_authn_context),
-                                                        sign_response=self.IDP.config.getattr("sign_response", "idp")
-                                                        or False,
-                                                        sign_assertion=self.IDP.config.getattr("sign_assertion", "idp")
-                                                        or False,
-                                                        **resp_args)
+            print('self.IDP.config.getattr("sign_response", "idp") is', self.IDP.config.getattr("sign_response", "idp"))
+            print('self.IDP.config.getattr("sign_assertion", "idp") is',
+                  self.IDP.config.getattr("sign_assertion", "idp"))
+            authn_resp = self.IDP.create_authn_response(
+                identity=identity,
+                userid=user_id,
+            # name_id=NameID(format=resp_args['name_id_policy'].format,
+            #                sp_name_qualifier=resp_args['sp_entity_id'],
+            #                text=user_id),
+                name_id=NameID(format=resp_args['name_id_policy'],
+                               sp_name_qualifier=resp_args['sp_entity_id'],
+                               text=user_id),
+                authn=AUTHN_BROKER.get_authn_by_accr(req_authn_context),
+                sign_response=self.IDP.config.getattr("sign_response", "idp") or False,
+                sign_assertion=self.IDP.config.getattr("sign_assertion", "idp") or False,
+                **resp_args)
         except Exception as excp:    # pylint: disable=broad-except
             return self.handle_error(request, exception=excp, status=500)
-
+        print('authn_resp is', authn_resp)
         http_args = self.IDP.apply_binding(binding=resp_args['binding'],
                                            msg_str="%s" % authn_resp,
                                            destination=resp_args['destination'],
@@ -320,11 +331,11 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
                                            response=True)
 
         logger.debug('http args are: %s' % http_args)    # pylint: disable=logging-not-lazy
-
         return self.render_response(request, processor, http_args)
 
     def render_response(self, request, processor, http_args):    # pylint: disable=no-self-use
-        """ Return either as redirect to MultiFactorView or as html with self-submitting form.
+        """
+        Return either as redirect to MultiFactorView or as html with self-submitting form.
         """
         if processor.enable_multifactor(self.cookie_user(request)):
             # Store http_args in session for after multi factor is complete
@@ -332,6 +343,7 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
             logger.debug("Redirecting to process_multi_factor")
             return HttpResponseRedirect(reverse('saml_multi_factor'))
         logger.debug("Performing SAML redirect")
+        # return HttpResponseRedirect(http_args['headers'][0][1])
         return HttpResponse(http_args['data'])
 
 
@@ -417,8 +429,9 @@ class SSOInitView(LoginRequiredMixin, IdPHandlerViewMixin, View):
 
 @method_decorator(never_cache, name='dispatch')
 class ProcessMultiFactorView(LoginRequiredMixin, View):
-    """ This view is used in an optional step is to perform 'other' user validation, for example 2nd factor checks.
-        Override this view per the documentation if using this functionality to plug in your custom validation logic.
+    """
+    This view is used in an optional step is to perform 'other' user validation, for example 2nd factor checks.
+    Override this view per the documentation if using this functionality to plug in your custom validation logic.
     """
     def multifactor_is_valid(self, request):    # pylint: disable=no-self-use, unused-argument
         """ The code here can do whatever it needs to validate your user (via request.user or elsewise).
@@ -438,8 +451,9 @@ class ProcessMultiFactorView(LoginRequiredMixin, View):
 
 @never_cache
 def metadata(request):    # pylint: disable=unused-argument
-    """ Returns an XML with the SAML 2.0 metadata for this Idp.
-        The metadata is constructed on-the-fly based on the config dict in the django settings.
+    """
+    Returns an XML with the SAML 2.0 metadata for this Idp.
+    The metadata is constructed on-the-fly based on the config dict in the django settings.
     """
     conf = IdPConfig()
     conf.load(idpsettings.SAML_IDP_CONFIG)
@@ -449,8 +463,9 @@ def metadata(request):    # pylint: disable=unused-argument
 
 @never_cache
 def download_metadata(request):    # pylint: disable=unused-argument
-    """ Returns an XML with the SAML 2.0 metadata for this Idp.
-        The metadata is constructed on-the-fly based on the config dict in the django settings.
+    """
+    Returns an XML with the SAML 2.0 metadata for this Idp.
+    The metadata is constructed on-the-fly based on the config dict in the django settings.
     """
     res = metadata(request)
     res['Content-Type'] = 'application/octet-stream'
