@@ -93,13 +93,36 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             'created__gte',
             'last_active_time__lte',
             'last_active_time__gte',
+            'unbound_wechat',
+            'unbound_ding',
+            'unbound_alipay',
+            'unbound_qq',
         )
         mapper = {
             'wechat_unionid': 'wechat_user__unionid',
+            'unbound_wechat': 'wechat_user__isnull',
+            'unbound_ding': 'ding_user__isnull',
+            'unbound_alipay': 'alipay_user__isnull',
+            'unbound_qq': 'qq_user__isnull',
+        }
+        boolean_params = (
+            'unbound_wechat',
+            'unbound_ding',
+            'unbound_alipay',
+            'unbound_qq',
+        )
+        _boolean_map = {
+            'true': True,
+            'false': False,
         }
 
         for param in filter_params:
             value = self.request.query_params.get(param, None)
+            # 用户关联账号相关搜索
+            if value is not None and param in boolean_params and value.lower() in _boolean_map.keys():
+                param = mapper.get(param)
+                queryset = queryset.filter(**{param: _boolean_map.get(value.lower())})
+                continue
             if value is not None:
                 param = mapper.get(param, param)
                 queryset = queryset.filter(**{param: value})
