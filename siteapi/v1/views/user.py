@@ -17,7 +17,7 @@ from rest_framework.exceptions import (
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
 from django.db.models import Q
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
 from oneid_meta.models import User, Group, Dept
 from oneid.permissions import (
     IsAdminUser,
@@ -59,7 +59,7 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             return [perm() for perm in self.read_permission_classes]
         return [perm() for perm in self.write_permission_classes]
 
-    def get_queryset(self):
+    def get_queryset(self):    # pylint: disable=too-many-locals
         '''
         return queryset for list [GET]
         '''
@@ -133,6 +133,21 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         for key, value in self.request.query_params.items():
             if key.endswith(suffix):
                 queryset = queryset.filter(**{'custom_user__data__' + key[:-1 * len(suffix)]: value})
+
+        # 支持自定义排序
+        # QueryString 中格式为 '&sort=field1 ... fieldn'
+        _sort = self.request.query_params.get('sort')
+        _sort = _sort.split(' ') if _sort else []
+        # 校验排序字段合法性
+        for field_name in _sort:
+            field_name = field_name[1:] if field_name.startswith('-') else field_name
+            try:
+                # pylint: disable=no-member
+                # pylint: disable=protected-access
+                _ = User._meta.get_field(field_name)
+            except FieldDoesNotExist:
+                raise ValidationError({'sort': f"Invalid order_by argument: '{field_name}'"})
+        queryset = queryset.order_by(*_sort)
 
         user = self.request.user
         if user.is_admin:
