@@ -59,12 +59,13 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             return [perm() for perm in self.read_permission_classes]
         return [perm() for perm in self.write_permission_classes]
 
-    def get_queryset(self):    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-branches
+    def get_queryset(self):
         '''
         return queryset for list [GET]
         '''
         queryset = User.valid_objects.all()
-
         keyword = self.request.query_params.get('keyword', '')
         if keyword != '':
             queryset = queryset.filter(Q(username__icontains=keyword) | Q(email__icontains=keyword) | \
@@ -73,6 +74,11 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
                 exclude(is_boss=True).exclude(username='admin').order_by('id')
         else:
             queryset = queryset.exclude(is_boss=True).exclude(username='admin').order_by('id')
+        # 支持通过一组 user_id 搜索
+        user_ids = self.request.query_params.get('user_ids', '')
+        if user_ids != '':
+            user_ids = user_ids.split(' ') if user_ids else []
+            queryset = queryset.filter(pk__in=user_ids)
 
         filter_params = (
             'wechat_unionid',
