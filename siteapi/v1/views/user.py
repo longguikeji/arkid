@@ -18,7 +18,7 @@ from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
-from oneid_meta.models import User, Group, Dept
+from oneid_meta.models import User, Group, Dept, GroupMember, UserPerm
 from oneid.permissions import (
     IsAdminUser,
     IsManagerUser,
@@ -74,11 +74,31 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
                 exclude(is_boss=True).exclude(username='admin').order_by('id')
         else:
             queryset = queryset.exclude(is_boss=True).exclude(username='admin').order_by('id')
-        # 支持通过一组 user_id 搜索
-        user_ids = self.request.query_params.get('user_ids', '')
-        if user_ids != '':
-            user_ids = user_ids.split(' ') if user_ids else []
-            queryset = queryset.filter(pk__in=user_ids)
+
+        # 支持通过 user_id 搜索
+        # QueryString 中格式为 '&user_ids=id1 ... idn'
+        user_ids = self._get_user_ids(self.request.query_params.get('user_ids', ''), 'user')
+        queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+
+        # 支持通过 group_uid 搜索 (保留属于group_uids[]的用户)
+        # QueryString 中格式为 '&group_uids=uid1 ... uidn'
+        user_ids = self._get_user_ids(self.request.query_params.get('group_uids', ''), 'group')
+        queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+
+        # 支持通过 -group_uid 搜索 (保留不属于group_uids[]的用户)
+        # QueryString 中格式为 '&group_uids=uid1 ... uidn'
+        user_ids = self._get_user_ids(self.request.query_params.get('-group_uids', ''), 'group')
+        queryset = queryset.exclude(pk__in=user_ids) if user_ids is not None else queryset
+
+        # 支持通过 perm_uid 搜索 (保留拥有perm_uids[]的用户)
+        # QueryString 中格式为 '&perm_uids=uid1 ... uidn'
+        user_ids = self._get_user_ids(self.request.query_params.get('perm_uids', ''), 'perm')
+        queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+
+        # 支持通过 -perm_uid 搜索 (保留未拥有perm_uids[]的用户)
+        # QueryString 中格式为 '&perm_uids=uid1 ... uidn'
+        user_ids = self._get_user_ids(self.request.query_params.get('-perm_uids', ''), 'perm')
+        queryset = queryset.exclude(pk__in=user_ids) if user_ids is not None else queryset
 
         filter_params = (
             'wechat_unionid',
@@ -236,6 +256,31 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         cli = CLI()
         cli.add_user_to_depts(user, depts)
         cli.add_user_to_groups(user, groups)
+
+    def _get_user_ids(self, uids, subject):
+        """
+        获取即将过滤的 user_ids 列表
+        :param uids: 通过 QueryString 获取的 uids
+        :param subject: 搜索的标签类型
+        """
+        if uids == '':
+            return None
+        user_ids = None
+        uids = uids.split(' ')
+        if subject == 'group':
+            user_ids = GroupMember.valid_objects. \
+                filter(owner__uid__in=uids). \
+                values('user__id'). \
+                distinct()
+        if subject == 'perm':
+            user_perms = UserPerm.valid_objects.filter(perm__uid__in=uids)
+            for user_perm in user_perms:    # 校验权限是否在管辖范围之内
+                if not user_perm.owner.under_manage(self.request.user):
+                    raise PermissionDenied({'perm_uids': f"Invalid perm_uids argument: '{user_perm.perm.uid}'"})
+            user_ids = user_perms.filter(value=True).values('owner__id').distinct()
+        if subject == 'user':
+            user_ids = uids
+        return user_ids
 
 
 class UserIsolatedAPIView(generics.ListAPIView):
