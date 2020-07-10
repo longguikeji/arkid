@@ -61,6 +61,7 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
 
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
     def get_queryset(self):
         '''
         return queryset for list [GET]
@@ -162,11 +163,14 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
 
         # 获取 query string 中自定义字段（*__custom）
         # 支持 *__(lte, gte, lt, gt 等)__custom 形式,需进行范围搜索的字段在存储时保证传入的为string
-        suffix = '__custom'
+        suffixes = ['__lte__custom', '__lt__custom', '__gte__custom', '__gt__custom', '__custom']
         for key, value in self.request.query_params.items():
-            if key.endswith(suffix):
-                queryset = queryset.filter(**{'custom_user__data__' + key[:-1 * len(suffix)]: value})
-
+            for suffix in suffixes:
+                if key.endswith(suffix):
+                    _key = 'custom_user__data__"{custom_field}"{suffix}'.format(custom_field=key[:-1 * len(suffix)],
+                                                                                suffix=suffix[:-8])
+                    queryset = queryset.filter(**{_key: value})
+                    break
         # 支持自定义排序
         # QueryString 中格式为 '&sort=field1 ... fieldn'
         _sort = self.request.query_params.get('sort')
