@@ -80,6 +80,13 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         user_ids = self._get_user_ids(self.request.query_params.get('user_ids', ''), 'user')
         queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
 
+        # 支持通过 usernames 搜索
+        # QueryString 中格式为 '&usernames=username1 ... usernamen'
+        usernames = self.request.query_params.get('usernames', '')
+        if usernames != '':
+            usernames = usernames.split(' ')
+            queryset = queryset.filter(username__in=usernames)
+
         # 支持通过 group_uid 搜索 (保留属于group_uids[]的用户)
         # QueryString 中格式为 '&group_uids=uid1 ... uidn'
         user_ids = self._get_user_ids(self.request.query_params.get('group_uids', ''), 'group')
