@@ -975,7 +975,7 @@ TODO: 校对
 # Group User
 用户管理
 
-## 所有用户 [/user/{?keyword,wechat_unionid,name,name__icontains,username,username__icontains,email,email__icontains,private_email,private_email__icontains,mobile,mobile__icontains,gender,remark,remark__icontains,created__lte,created__gte,last_active_time__lte,last_active_time__gte,unbound_wechat,unbound_ding,unbound_qq,unbound_alipay,user_ids,group_uids,%2Dgroup_uids,perm_uids,%2Dperm_uids,sort,%2A__custom,%2A__lt__custom,%2A__lte__custom,%2A__gt__custom,%2A__gte__custom,page,page_size}]
+## 所有用户 [/user/{?keyword,wechat_unionid,name,name__icontains,username,username__icontains,email,email__icontains,private_email,private_email__icontains,mobile,mobile__icontains,gender,remark,remark__icontains,created__lte,created__gte,last_active_time__lte,last_active_time__gte,unbound_wechat,unbound_ding,unbound_qq,unbound_alipay,user_ids,usernames,group_uids,%2Dgroup_uids,perm_uids,%2Dperm_uids,sort,%2A__custom,%2A__lt__custom,%2A__lte__custom,%2A__gt__custom,%2A__gte__custom,page,page_size}]
 
 ### 创建用户 [POST]
 + Request JSON Message
@@ -1014,6 +1014,7 @@ TODO: 校对
     + unbound_qq (boolean, optional) - 未关联QQ搜索;'true'表示搜索未关联QQ的用户,'false'表示搜索关联QQ的用户
     + unbound_alipay (boolean, optional) - 未关联支付宝搜索;'true'表示搜索未关联支付宝的用户,'false'表示搜索关联支付宝的用户
     + user_ids (string, optional) - 指定用户id的搜索;形如'&=id1 id2 ... id3',参数间用空格分隔
+    + usernames (string, optional) - 指定用户名的搜索;形如'&=username1 username2 ... username3',参数间用空格分隔
     + group_uids (string, optional) - 指定属于一些组的搜索;形如'&=group1 group2 ... group3',参数间用空格分隔
     + %2Dgroup_uids (string, optional) - 指定不属于一些组的搜索;形如'&=group1 group2 ... group3',参数间用空格分隔
     + perm_uids (string, optional) - 指定拥有一些权限的搜索;形如'&=perm1 perm2 ... perm3',参数间用空格分隔
