@@ -463,6 +463,12 @@ class UserTestCase(TestCase):
         res = self.client.get(reverse('siteapi:user_list'), {'-perm_uids': 'system_oneid_all'})
         self.assertEqual(res.json()['count'], 1)
         self.assertNotIn(res.json()['results'][0]['username'], _random_users)
+        # 测试通过 usernames 搜索
+        _random_users = random.sample(['employee1', 'employee2', 'employee3'], 2)
+        res = self.client.get(reverse('siteapi:user_list'), {'usernames': ' '.join(_random_users)})
+        self.assertEqual(res.json()['count'], 2)
+        for user in res.json()['results']:
+            self.assertIn(str(user['username']), _random_users)
         # 测试通过 sort 获取指定排序搜索
         _random_users = ['employee1', 'employee2', 'employee3']
         random.shuffle(_random_users)
