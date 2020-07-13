@@ -1,11 +1,11 @@
 """
-自定义规则校验集合
+自定义密码复杂度校验集合
 """
 import re
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
+from rest_framework.exceptions import ValidationError
 
 PASSWORD_COMPLEXITY = getattr(settings, "PASSWORD_COMPLEXITY", None)
 
@@ -13,8 +13,8 @@ PASSWORD_COMPLEXITY = getattr(settings, "PASSWORD_COMPLEXITY", None)
 # pylint: disable=useless-object-inheritance
 # pylint: disable=too-many-branches
 class _ComplexityValidator(object):
-    """自定义密码强度校验规则"""
-    message = _("必须更加复杂 (%s)")
+    """自定义密码复杂度校验规则"""
+    message = _("密码必须更加复杂 (%s)")
     code = "password_complexity"
 
     def __init__(self, complexities):
@@ -55,22 +55,23 @@ class _ComplexityValidator(object):
             errors.append(_("%(SPECIAL)s 个及以上的特殊字符") % self.complexities)
         if len(words) < self.complexities.get("WORDS", 0):
             errors.append(_("%(WORDS)s 个及以上不同的单词") % self.complexities)
-
+        if len(value) < self.complexities.get("LENGTH", 0):
+            errors.append(_("%(LENGTH)s 长度及以上的密码") % self.complexities)
         if errors:
             raise ValidationError(self.message % (_(u'必须包含 ') + u', '.join(errors), ), code=self.code)
 
 
-_complexity = _ComplexityValidator(PASSWORD_COMPLEXITY)
+_COMPLEXITY = _ComplexityValidator(PASSWORD_COMPLEXITY)
 
 
 # pylint: disable=missing-function-docstring
-class ComplexityValidator(object):
+class ComplexityValidator:
     """
     Wrapper for validators.ComplexityValidator which is compatible
     with the Django 1.9+ password validation API
     """
     def __init__(self):
-        self.validator = _complexity
+        self.validator = _COMPLEXITY
 
     # pylint: disable=no-self-use
     def get_help_text(self):

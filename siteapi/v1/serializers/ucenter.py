@@ -1,6 +1,7 @@
 '''
 serializers for ucenter
 '''
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from common.django.drf.serializer import DynamicFieldsModelSerializer
@@ -104,6 +105,12 @@ class SetPasswordSerializer(serializers.Serializer):    # pylint: disable=abstra
         user.save(update_fields=['require_reset_password'])
         return user
 
+    @staticmethod
+    def validate_new_password(value):
+        """密码复杂度检验"""
+        validate_password(value)
+        return value
+
 
 class UserRegisterSerializer(DynamicFieldsModelSerializer):
     '''
@@ -169,6 +176,12 @@ class UserRegisterSerializer(DynamicFieldsModelSerializer):
         user.save()
         cli.set_user_password(user, password)
         return user
+
+    @staticmethod
+    def validate_password(value):
+        """密码复杂度检验"""
+        validate_password(value)
+        return value
 
 
 class UserAlterMobileSerializer(serializers.Serializer):    # pylint: disable=abstract-method
