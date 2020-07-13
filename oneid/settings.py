@@ -313,6 +313,16 @@ SMS_LIFESPAN = datetime.timedelta(seconds=120)
 ACTIVE_USER_DATA_LIFEDAY = 30
 ACTIVE_USER_REDIS_KEY_PREFIX = 'active-'
 
+# 密码复杂度规则
+# 值表示至少需包含的相应元素的个数，默认全部为0
+PASSWORD_COMPLEXITY = {
+    "UPPER": 1,        # 包含大写字母的个数
+    "LOWER": 1,        # 包含小写字母的个数
+    "LETTERS": 1,      # 包含大写和小写字母的个数
+    "DIGITS": 1,       # 包含数字的个数
+    "SPECIAL": 1,      # 包含特殊字符的个数 (不是字母数字、空格或标点字符)
+    "WORDS": 1,        # 包含单词的个数 (由空格或标点分隔的字母数字序列)
+}
 
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
