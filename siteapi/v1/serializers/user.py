@@ -2,7 +2,7 @@
 '''
 serializers for user
 '''
-
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -498,3 +498,9 @@ class ResetUserPasswordSerializer(DynamicFieldsModelSerializer):
         instance.require_reset_password = require_reset_password
         instance.save(update_fields=['require_reset_password'])
         return instance
+
+    @staticmethod
+    def validate_password(value):
+        """密码复杂度检验"""
+        validate_password(value)
+        return value
