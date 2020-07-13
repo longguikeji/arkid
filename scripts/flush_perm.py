@@ -147,7 +147,7 @@ def flush_user_perm():
             SET
                 up.group_perm_value = true
             WHERE
-                np.value = true
+                np.value = true and up.perm_id = np.perm_id
         ''')
 
         cursor.execute(f'''
@@ -165,7 +165,7 @@ def flush_user_perm():
             SET
                 up.dept_perm_value = true
             WHERE
-                np.value = true
+                np.value = true and up.perm_id = np.perm_id
         ''')
     else:
         for user in User.valid_objects.all():
