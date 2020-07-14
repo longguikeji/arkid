@@ -6,7 +6,6 @@ views about user
 - UserDept
 '''
 # pylint: disable=too-many-lines
-
 from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework.exceptions import (
@@ -17,6 +16,7 @@ from rest_framework.exceptions import (
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
 from django.db.models import Q
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
 from oneid_meta.models import User, Group, Dept, GroupMember, UserPerm
 from oneid.permissions import (
@@ -228,6 +228,7 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         password = user_info.pop('password', None)
         user = cli.create_user(user_info)
         if password:
+            validate_password(password)
             cli.set_user_password(user, password)
         user.origin = 1    # 管理员添加
         user.save()
