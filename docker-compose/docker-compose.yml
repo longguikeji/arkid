@@ -31,7 +31,7 @@ services:
       - ${WORKSPACE}/be/plugins:/var/oneid/plugins
 
   fe:
-    image: longguikeji/arkid-fe:1.3.1
+    image: longguikeji/arkid-fe:1.3.2
     container_name: ${INSTANCE}-fe
     restart: always
     networks:
