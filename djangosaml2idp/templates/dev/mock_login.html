@@ -6,9 +6,9 @@ SAML 2.0 Login Success as admin
     password<input name="password">
     <button type='button' id='submit'>submit</button>
 </form>
-<script src="https://code.jquery.com/jquery-latest.js"></script>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
-    const oneid_base_url = 'http://192.168.31.62:8000'
+    const oneid_base_url = 'http://localhost:8000'
     const urlParams = new URLSearchParams(window.location.search);
     const SAMLRequest = urlParams.get('SAMLRequest');
     let next = oneid_base_url + '/saml/login/process/'+'?SAMLRequest='+SAMLRequest;
