@@ -325,10 +325,10 @@ PASSWORD_COMPLEXITY = {
     "LENGTH": 0,       # 密码的长度
     "UPPER": 0,        # 包含大写字母的个数
     "LOWER": 0,        # 包含小写字母的个数
-    "LETTERS": 0,      # 包含大写和小写字母的个数
-    "DIGITS": 0,       # 包含数字的个数
+    "LETTER": 0,      # 包含大写和小写字母的个数
+    "DIGIT": 0,       # 包含数字的个数
     "SPECIAL": 0,      # 包含特殊字符的个数 (不是字母数字、空格或标点字符)
-    "WORDS": 0,        # 包含单词的个数 (由空格或标点分隔的字母数字序列)
+    "WORD": 0,        # 包含单词的个数 (由空格或标点分隔的字母数字序列)
 }
 
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
