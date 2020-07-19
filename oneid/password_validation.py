@@ -1,13 +1,12 @@
 """
-自定义密码复杂度校验集合
+自定义密码复杂度校验
 """
 import re
 
-from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.exceptions import ValidationError
 
-PASSWORD_COMPLEXITY = getattr(settings, "PASSWORD_COMPLEXITY", None)
+from oneid_meta.models import PasswordComplexityConfig
 
 
 # pylint: disable=useless-object-inheritance
@@ -17,11 +16,13 @@ class _ComplexityValidator(object):
     message = _("密码必须更加复杂 (%s)")
     code = "password_complexity"
 
-    def __init__(self, complexities):
-        self.complexities = complexities
+    def __init__(self):
+        self.pwd_config = PasswordComplexityConfig.get_current()
 
     def __call__(self, value):
-        if self.complexities is None:
+        self.__init__()
+        # 未开启密码复杂度校验
+        if not self.pwd_config.is_active:
             return
         uppercase, lowercase, letters, digits, special = set(), set(), set(), set(), set()
         errors = []
@@ -43,25 +44,32 @@ class _ComplexityValidator(object):
 
         words = set(re.findall(r'\b\w+', value, re.UNICODE))
 
-        if len(uppercase) < self.complexities.get("UPPER", 0):
-            errors.append(_("%(UPPER)s 个及以上不同的大写字母") % self.complexities)
-        if len(lowercase) < self.complexities.get("LOWER", 0):
-            errors.append(_("%(LOWER)s 个及以上不同的小写字母") % self.complexities)
-        if len(letters) < self.complexities.get("LETTERS", 0):
-            errors.append(_("%(LETTERS)s 个及以上不同的大小写字母") % self.complexities)
-        if len(digits) < self.complexities.get("DIGITS", 0):
-            errors.append(_("%(DIGITS)s 个及以上不同的数字") % self.complexities)
-        if len(special) < self.complexities.get("SPECIAL", 0):
-            errors.append(_("%(SPECIAL)s 个及以上的特殊字符") % self.complexities)
-        if len(words) < self.complexities.get("WORDS", 0):
-            errors.append(_("%(WORDS)s 个及以上不同的单词") % self.complexities)
-        if len(value) < self.complexities.get("LENGTH", 0):
-            errors.append(_("%(LENGTH)s 长度及以上的密码") % self.complexities)
+        if len(uppercase) < self.pwd_config.min_upper:
+            errors.append(_(f"{self.pwd_config.min_upper} 个及以上不同的大写字母").__str__())
+
+        if len(lowercase) < self.pwd_config.min_lower:
+            errors.append(_(f"{self.pwd_config.min_lower} 个及以上不同的小写字母").__str__())
+
+        if len(letters) < self.pwd_config.min_letter:
+            errors.append(_(f"{self.pwd_config.min_letter} 个及以上不同的大小写字母").__str__())
+
+        if len(digits) < self.pwd_config.min_digit:
+            errors.append(_(f"{self.pwd_config.min_digit} 个及以上不同的数字").__str__())
+
+        if len(special) < self.pwd_config.min_special:
+            errors.append(_(f"{self.pwd_config.min_special} 个及以上的特殊字符").__str__())
+
+        if len(words) < self.pwd_config.min_word:
+            errors.append(_(f"{self.pwd_config.min_word} 个及以上不同的单词").__str__())
+
+        if len(value) < self.pwd_config.min_length:
+            errors.append(_(f"{self.pwd_config.min_length} 长度及以上的密码").__str__())
+
         if errors:
             raise ValidationError(self.message % (_(u'必须包含 ') + u', '.join(errors), ), code=self.code)
 
 
-_COMPLEXITY = _ComplexityValidator(PASSWORD_COMPLEXITY)
+# _COMPLEXITY = _ComplexityValidator(PasswordComplexityConfig.get_current())
 
 
 # pylint: disable=missing-function-docstring
@@ -71,7 +79,7 @@ class ComplexityValidator:
     with the Django 1.9+ password validation API
     """
     def __init__(self):
-        self.validator = _COMPLEXITY
+        self.validator = _ComplexityValidator()
 
     # pylint: disable=no-self-use
     def get_help_text(self):

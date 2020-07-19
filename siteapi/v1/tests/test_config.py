@@ -8,6 +8,7 @@ from siteapi.v1.tests import TestCase
 from oneid_meta.models import User, CustomField, SMSConfig, EmailConfig
 
 
+# pylint: disable=too-many-lines
 class ConfigTestCase(TestCase):
     def test_get_config(self):
         res = self.client.get(reverse('siteapi:config'))
@@ -70,6 +71,16 @@ class ConfigTestCase(TestCase):
             'qq_config': None,
             'work_wechat_config': None,
             'wechat_config': None,
+            'password_config': {
+                'is_active': True,
+                'min_digit': 0,
+                'min_length': 0,
+                'min_letter': 0,
+                'min_lower': 0,
+                'min_special': 0,
+                'min_upper': 0,
+                'min_word': 0
+            },
         }
         self.assertEqual(res.json(), expect)
 
@@ -188,6 +199,16 @@ class ConfigTestCase(TestCase):
                                              'host': '12.12.12.12',
                                              'access_secret': 'pwd',
                                          },
+                                         'password_config': {
+                                             'is_active': True,
+                                             'min_digit': 1,
+                                             'min_length': 1,
+                                             'min_letter': 1,
+                                             'min_lower': 1,
+                                             'min_special': 1,
+                                             'min_upper': 1,
+                                             'min_word': 1
+                                         },
                                      })
 
         expect = {
@@ -249,6 +270,16 @@ class ConfigTestCase(TestCase):
             'work_wechat_config': None,
             'wechat_config': None,
             'qq_config': None,
+            'password_config': {
+                'is_active': True,
+                'min_digit': 1,
+                'min_length': 1,
+                'min_letter': 1,
+                'min_lower': 1,
+                'min_special': 1,
+                'min_upper': 1,
+                'min_word': 1
+            },
         }
 
         self.assertEqual(res.json(), expect)

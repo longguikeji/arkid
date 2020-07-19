@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
                                AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QQConfig,
-                               StorageConfig, MinioConfig)
+                               StorageConfig, MinioConfig, PasswordComplexityConfig)
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from infrastructure.serializers.sms import SMSClaimSerializer
 from siteapi.v1.views.utils import gen_uid
@@ -18,6 +18,7 @@ from siteapi.v1.serializers.qr_app_config import PublicAlipayConfigSerializer, P
 from executer.core import CLI
 
 
+# pylint: disable=too-many-lines
 class CompanyConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for CompanyConfig
@@ -200,6 +201,26 @@ class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
         )
 
 
+class PasswordConfigSerializer(DynamicFieldsModelSerializer):
+    """serializer for password complexity config"""
+
+    # is_valid = serializers.BooleanField(read_only=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = PasswordComplexityConfig
+
+        fields = (
+            'min_length',
+            'min_upper',
+            'min_lower',
+            'min_letter',
+            'min_digit',
+            'min_special',
+            'min_word',
+            'is_active',
+        )
+
+
 class ConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for configs
@@ -214,13 +235,14 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
     qq_config = QQConfigSerializer(many=False, required=False)
     work_wechat_config = WorkWechatConfigSerializer(many=False, required=False)
     wechat_config = WechatConfigSerializer(many=False, required=False)
+    password_config = PasswordConfigSerializer(many=False, required=False)
 
     class Meta:    # pylint: disable=missing-docstring
 
         model = Site
 
         fields = ('company_config', 'ding_config', 'account_config', 'sms_config',\
-            'email_config', 'alipay_config', 'work_wechat_config', 'wechat_config', 'qq_config')
+            'email_config', 'alipay_config', 'work_wechat_config', 'wechat_config', 'qq_config', 'password_config')
 
     @transaction.atomic()
     def update(self, instance, validated_data):    # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -313,6 +335,14 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
                 wechat_config_data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+
+        password_config_data = validated_data.pop('password_config', None)
+        if password_config_data:
+            config = PasswordComplexityConfig.get_current()
+            serializer = PasswordConfigSerializer(config, password_config_data, partial=True)
+            serializer.is_valid(raise_exception=True)    # pylint: disable=not-callable
+            config.__dict__.update(serializer.validated_data)
+            config.save()
 
         instance.refresh_from_db()
 
