@@ -446,6 +446,16 @@ FORMAT: 1A
 + alipay_public_key (string) - 支付宝生成的公钥
 + qr_app_valid (boolean, readonly) - qr配置是否有效
 
+## PasswordComplexityConfig (object)
++ min_length (number) - 最小长度
++ min_upper (number) - 大写字母限制
++ min_lower (number) - 小写字母限制
++ min_letter (number) - 字母限制
++ min_digit (number) - 数字限制
++ min_special (number) - 特殊字符限制
++ min_word (number) - 单词限制
++ is_active (boolean) - 配置是否启用
+
 ## Config (object)
 + company_config (CompanyConfig)
 + ding_config (DingConfig)
@@ -453,6 +463,7 @@ FORMAT: 1A
 + sms_config (SMSConfig)
 + email_config (EmailConfig)
 + alipay_config (AlipayConfig)
++ password_config (PasswordComplexityConfig)
 
 ## CustomField (object)
 + uuid (string)
