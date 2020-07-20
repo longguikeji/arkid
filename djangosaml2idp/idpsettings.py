@@ -16,7 +16,7 @@ SAML_IDP_CONFIG = {
     'xmlsec_binary':
     get_xmlsec_binary(['/opt/local/bin', '/usr/bin/xmlsec1']),
     'entityid':
-    '%s/saml/metadata' % settings.BASE_URL,
+    '%s/saml/metadata/' % settings.BASE_URL,
     'description':
     'longguikeji IdP setup',
     'service': {
@@ -24,8 +24,8 @@ SAML_IDP_CONFIG = {
             'name': 'Django localhost IdP',
             'endpoints': {
                 'single_sign_on_service': [
-                    ('%s/saml/sso/post' % settings.BASE_URL, BINDING_HTTP_POST),
-                    ('%s/saml/sso/redirect' % settings.BASE_URL, BINDING_HTTP_REDIRECT),
+                    ('%s/saml/sso/post/' % settings.BASE_URL, BINDING_HTTP_POST),
+                    ('%s/saml/sso/redirect/' % settings.BASE_URL, BINDING_HTTP_REDIRECT),
                 ],
             },
             'name_id_format': [NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED],
