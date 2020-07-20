@@ -511,3 +511,16 @@ class MinioConfig(BaseModel, SingletonConfigMixin):
 
     def __str__(self):
         return f'Minio[{self.id}]: {self.display_name}'    # pylint: disable=no-member
+
+
+class PasswordComplexityConfig(BaseModel, SingletonConfigMixin):
+    """认证密码复杂度配置信息"""
+    site = models.OneToOneField(Site, related_name='password_config', on_delete=models.CASCADE)
+
+    min_length = models.IntegerField(default=0, blank=True, verbose_name="最小长度")
+    min_upper = models.IntegerField(default=0, blank=True, verbose_name="大写字母限制")
+    min_lower = models.IntegerField(default=0, blank=True, verbose_name="小写字母限制")
+    min_letter = models.IntegerField(default=0, blank=True, verbose_name="字母限制")
+    min_digit = models.IntegerField(default=0, blank=True, verbose_name="数字限制")
+    min_special = models.IntegerField(default=0, blank=True, verbose_name="特殊字符限制")
+    min_word = models.IntegerField(default=0, blank=True, verbose_name="单词限制")
