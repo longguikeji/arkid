@@ -4,6 +4,7 @@ schema of Users
 '''
 
 # pylint: disable=too-many-lines
+# pylint: disable=import-error
 from itertools import chain
 
 import django
@@ -480,6 +481,8 @@ class User(BaseModel, PermOwnerMixin):
             if self.username in manager_group.users:
                 return True
             if self_all_node_uids & set(manager_group.nodes):
+                return True
+            if manager_group.scope_subject == 1 and (user.all_manage_node_uids & self_all_node_uids):
                 return True
         return False
 
