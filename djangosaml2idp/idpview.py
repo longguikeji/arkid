@@ -30,9 +30,11 @@ from saml2.ident import NameID
 from saml2.metadata import entity_descriptor
 from saml2.s_utils import UnknownPrincipal, UnsupportedBinding
 from saml2.server import Server
+from saml2.md import entity_descriptor_from_string
 from drf_expiring_authtoken.models import ExpiringToken
 from djangosaml2idp.processors import BaseProcessor
 from djangosaml2idp import idpsettings
+from oneid_meta.models import SAMLAPP
 
 logger = logging.getLogger(__name__)    # pylint: disable=invalid-name
 
@@ -305,9 +307,8 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
         user_id = processor.get_user_id(cookie_user)
         # Construct SamlResponse message
         try:
-            print('self.IDP.config.getattr("sign_response", "idp") is', self.IDP.config.getattr("sign_response", "idp"))
-            print('self.IDP.config.getattr("sign_assertion", "idp") is',
-                  self.IDP.config.getattr("sign_assertion", "idp"))
+            app = SAMLAPP.valid_objects.get(entity_id=resp_args['sp_entity_id'])
+            _spsso_descriptor = entity_descriptor_from_string(app.xmldata).spsso_descriptor.pop()    # pylint: disable=no-member
             authn_resp = self.IDP.create_authn_response(
                 identity=identity,
                 userid=user_id,
@@ -318,8 +319,8 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
                                sp_name_qualifier=resp_args['sp_entity_id'],
                                text=user_id),
                 authn=AUTHN_BROKER.get_authn_by_accr(req_authn_context),
-                sign_response=self.IDP.config.getattr("sign_response", "idp") or False,
-                sign_assertion=self.IDP.config.getattr("sign_assertion", "idp") or False,
+                sign_response=getattr(_spsso_descriptor, 'want_response_signed', '') == 'true',
+                sign_assertion=getattr(_spsso_descriptor, 'want_assertions_signed', '') == 'true',
                 **resp_args)
         except Exception as excp:    # pylint: disable=broad-except
             return self.handle_error(request, exception=excp, status=500)
