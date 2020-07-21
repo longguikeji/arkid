@@ -42,7 +42,7 @@ class CrontabPluginSerializer(DynamicFieldsModelSerializer):
 
         instance.save()
 
-        task, _ = PeriodicTask.objects.get_or_create(task=instance.import_path)
+        task, _ = PeriodicTask.objects.get_or_create(task=instance.import_path, name=instance.import_path)
 
         minute, hour, day_of_week, day_of_month, month_of_year = instance.schedule.split(' ')
         crontab_schedule, _ = CrontabSchedule.objects.get_or_create(    # pylint: disable=no-member
