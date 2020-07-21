@@ -10,8 +10,8 @@ ArkID是全新一代企业单点登录解决方案, 彻底告别企业内多系�
 
 1. LDAP
 2. OAuth
-3. OpenID(即将开放)
-4. SAML(即将开放)
+3. OpenID
+4. SAML
 5. HTTP API
 
 ### 丰富的账号与分组管理
