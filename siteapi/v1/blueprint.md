@@ -559,6 +559,14 @@ FORMAT: 1A
 + is_active (boolean)
 + order_no (number)
 
+## I18NMobileConfig (object)
++ uuid (string) - 唯一标识
++ state (string) - 所属地区
++ state_code (string) - 区号
++ number_length (number) - 固定号码长度
++ start_digit (array[number]) - 首位数字限制集
++ is_active (boolean) - 是否启用
+
 # Group Infrastructure
 基础设施
 
@@ -2249,6 +2257,36 @@ TODO: 可见权限的处理
     + Attributes (StorageConfig)
 + Response 200 (application/json)
     + Attributes (StorageConfig)
+
+## 国际手机接入 [/config/i18n_mobile/]
+
+### 添加接入配置 [POST]
+
++ request JSON Message
+    + Attributes (I18NMobileConfig)
+
++ Response 200 (application/json)
+    + Attributes (I18NMobileConfig)
+
+### 获取接入配置 [GET]
++ Response 200 (application/json)
+    + Attributes (array[I18NMobileConfig])
+
+## 指定国际手机接入 [/config/i18n_mobile/{uuid}/]
+
++ Parameters
+    + uuid (string) - 接入配置的唯一标识
+
+### 修改接入配置 [PATCH]
+
++ request JSON Message
+    + Attributes (I18NMobileConfig)
+
++ Response 200 (application/json)
+    + Attributes (I18NMobileConfig)
+
+### 删除接入配置 [DELETE]
++ Response 204
 
 # Group Meta
 
