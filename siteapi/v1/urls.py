@@ -4,6 +4,7 @@ urls of apis
 # pylint: disable=invalid-name
 
 from django.conf.urls import url, include
+from django.urls import path
 
 from siteapi.v1.views.task import (
     ImportDingAPIView,
@@ -21,6 +22,8 @@ from siteapi.v1.views.config import (
     NativeFieldListAPIView,
     NativeFieldDetailAPIView,
     StorageConfigAPIView,
+    I18NMobileListCreateAPIView,
+    I18NMobileDetailAPIView,
 )
 
 from siteapi.v1.views import (
@@ -168,6 +171,9 @@ urlpatterns = [
     url(r'^config/native/field/(?P<field_subject>[a-z_]+)/(?P<uuid>[\w]+)/$',
         NativeFieldDetailAPIView.as_view(),
         name='native_field_detail'),
+    path('config/i18n_mobile/', I18NMobileListCreateAPIView.as_view(), name='i18n_mobile_config_list'),
+    path('config/i18n_mobile/<uuid>/', I18NMobileDetailAPIView.as_view(), name='i18n_mobile_config_detail'),
+
     # log
     url(r'^log/$', log_views.LogListAPIView.as_view(), name='log_list'),
     url(r'^log/(?P<uuid>[\w|-]+)', log_views.LogDetailAPIView.as_view(), name='log_detail'),
