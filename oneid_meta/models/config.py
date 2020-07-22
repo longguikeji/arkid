@@ -524,3 +524,13 @@ class PasswordComplexityConfig(BaseModel, SingletonConfigMixin):
     min_digit = models.IntegerField(default=0, blank=True, verbose_name="数字限制")
     min_special = models.IntegerField(default=0, blank=True, verbose_name="特殊字符限制")
     min_word = models.IntegerField(default=0, blank=True, verbose_name="单词限制")
+
+
+class I18NMobileConfig(BaseModel):
+    """
+    国际手机号码接入配置
+    """
+    state = models.CharField(max_length=128, unique=True, verbose_name='号码归属区域')
+    state_code = models.CharField(max_length=32, blank=False, null=False, unique=True, verbose_name='国家区号')
+    number_length = models.IntegerField(null=True, default=None, verbose_name='号码固定长度')
+    start_digital = jsonfield.JSONField(default=[], blank=True, verbose_name='首位数字限制集')
