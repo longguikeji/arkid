@@ -5,7 +5,7 @@ from unittest import mock
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import User, CustomField, SMSConfig, EmailConfig
+from oneid_meta.models import User, CustomField, SMSConfig, EmailConfig, I18NMobileConfig
 
 
 # pylint: disable=too-many-lines
@@ -518,3 +518,65 @@ class ConfigStorageTestCase(TestCase):
             }
         }
         self.assertEqual(res.json(), expect)
+
+
+class ConfigI18NMobileTestCase(TestCase):
+    """测试国际手机号接入配置"""
+    def test_get_i18n_mobile_config(self):
+        """测试查询国际手机号接入配置"""
+        config = {
+            'uuid': None,
+            'state': 'China',
+            'state_code': '86',
+            'number_length': 11,
+            'start_digital': [1],
+            'is_active': True
+        }
+        res = self.client.get(reverse("siteapi:i18n_mobile_config_list")).json()
+        self.assertEqual(1, len(res))
+        config.update(uuid=res[0]['uuid'])
+        self.assertEqual(config, res[0])
+
+    def test_create_i18n_mobile_config(self):
+        """测试创建国际手机号接入配置"""
+        config = {
+            'state': 'HongKong',
+            'state_code': '852',
+            'number_length': 8,
+            'start_digital': [5, 6, 9],
+        }
+        expect = {
+            'uuid': None,
+            'state': 'HongKong',
+            'state_code': '852',
+            'number_length': 8,
+            'start_digital': [5, 6, 9],
+            'is_active': True
+        }
+        res = self.client.json_post(reverse("siteapi:i18n_mobile_config_list"), data=config).json()
+        expect.update(uuid=res['uuid'])
+        self.assertEqual(expect, res)
+
+    def test_delete_i18n_mobile_config(self):
+        """测试删除国际手机号接入配置"""
+        config = I18NMobileConfig.objects.create(state='HongKong', state_code='852', number_length=8)
+        res = self.client.delete(reverse("siteapi:i18n_mobile_config_detail", args=(config.uuid, )))
+        self.assertEqual(204, res.status_code)
+
+    def test_update_i18n_mobile_config(self):
+        """测试更新国际手机号接入配置"""
+        config = I18NMobileConfig.objects.create(state='HongKong', state_code='852', number_length=8)
+        expect = {
+            'uuid': config.uuid.hex,
+            'state': 'HongKong',
+            'state_code': '852',
+            'number_length': 8,
+            'start_digital': [],
+            'is_active': False
+        }
+        # pylint: disable=line-too-long
+        res = self.client.json_patch(reverse("siteapi:i18n_mobile_config_detail", args=(config.uuid, )),
+                                     data={
+                                         'is_active': False
+                                     }).json()
+        self.assertEqual(expect, res)

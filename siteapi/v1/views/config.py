@@ -14,11 +14,12 @@ from siteapi.v1.serializers.config import (
     CustomFieldSerailizer,
     NativeFieldSerializer,
     StorageConfigSerializer,
+    I18NMobileSerializer,
 )
 from siteapi.v1.serializers.user import UserSerializer
 
 from oneid.permissions import IsAdminUser, CustomPerm
-from oneid_meta.models import User, CustomField, NativeField
+from oneid_meta.models import User, CustomField, NativeField, I18NMobileConfig
 
 from executer.log.rdb import LOG_CLI
 
@@ -215,3 +216,69 @@ class StorageConfigAPIView(generics.RetrieveUpdateAPIView):
         """
         site = Site.objects.get_current()
         return site
+
+
+class I18NMobileListCreateAPIView(generics.ListCreateAPIView):
+    """国际手机号码接入，不分页"""
+    serializer_class = I18NMobileSerializer
+
+    def get_permissions(self):
+        """readonly for employee"""
+        if self.request.method == 'GET':
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [IsAdminUser]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        """filter the i18n mobile config"""
+        return I18NMobileConfig.valid_objects.all()
+
+    def perform_create(self, serializer):
+        """save with i18n mobile config"""
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        cli = LOG_CLI()
+        cli.create_i18n_mobile_config(serializer.instance)
+
+
+class I18NMobileDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    指定国际手机接入配置
+    """
+    serializer_class = I18NMobileSerializer
+
+    def get_permissions(self):
+        """
+        readonly for employee
+        """
+        if self.request.method == 'GET':
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [IsAdminUser]
+        return super().get_permissions()
+
+    def get_object(self):
+        """
+        filter the i18n mobile config
+        """
+        config = I18NMobileConfig.valid_objects.filter(uuid=self.kwargs['uuid']).first()
+        if not config:
+            raise NotFound
+        return config
+
+    def perform_update(self, serializer):
+        """
+        update config detail
+        """
+        super().perform_update(serializer)    # pylint: disable=no-member
+        cli = LOG_CLI()
+        cli.update_i18n_mobile_config(serializer.instance)
+
+    def perform_destroy(self, instance):
+        """
+        delete config
+        """
+        cli = LOG_CLI()
+        cli.delete_i18n_mobile_config(instance)
+        instance.kill()
