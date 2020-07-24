@@ -6,7 +6,6 @@ views about user
 - UserDept
 '''
 # pylint: disable=too-many-lines
-
 from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework.exceptions import (
@@ -17,8 +16,9 @@ from rest_framework.exceptions import (
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.db import transaction
 from django.db.models import Q
-from django.core.exceptions import ObjectDoesNotExist
-from oneid_meta.models import User, Group, Dept
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
+from oneid_meta.models import User, Group, Dept, GroupMember, UserPerm
 from oneid.permissions import (
     IsAdminUser,
     IsManagerUser,
@@ -59,12 +59,14 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             return [perm() for perm in self.read_permission_classes]
         return [perm() for perm in self.write_permission_classes]
 
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
     def get_queryset(self):
         '''
         return queryset for list [GET]
         '''
         queryset = User.valid_objects.all()
-
         keyword = self.request.query_params.get('keyword', '')
         if keyword != '':
             queryset = queryset.filter(Q(username__icontains=keyword) | Q(email__icontains=keyword) | \
@@ -73,6 +75,38 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
                 exclude(is_boss=True).exclude(username='admin').order_by('id')
         else:
             queryset = queryset.exclude(is_boss=True).exclude(username='admin').order_by('id')
+
+        # 支持通过 user_id 搜索
+        # QueryString 中格式为 '&user_ids=id1 ... idn'
+        user_ids = self._get_user_ids(self.request.query_params.get('user_ids', ''), 'user')
+        queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+
+        # 支持通过 usernames 搜索
+        # QueryString 中格式为 '&usernames=username1 ... usernamen'
+        usernames = self.request.query_params.get('usernames', '')
+        if usernames != '':
+            usernames = usernames.split(' ')
+            queryset = queryset.filter(username__in=usernames)
+
+        # 支持通过 group_uid 搜索 (保留属于group_uids[]的用户)
+        # QueryString 中格式为 '&group_uids=uid1 ... uidn'
+        user_ids = self._get_user_ids(self.request.query_params.get('group_uids', ''), 'group')
+        queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+
+        # 支持通过 -group_uid 搜索 (保留不属于group_uids[]的用户)
+        # QueryString 中格式为 '&group_uids=uid1 ... uidn'
+        user_ids = self._get_user_ids(self.request.query_params.get('-group_uids', ''), 'group')
+        queryset = queryset.exclude(pk__in=user_ids) if user_ids is not None else queryset
+
+        # 支持通过 perm_uid 搜索 (保留拥有perm_uids[]的用户)
+        # QueryString 中格式为 '&perm_uids=uid1 ... uidn'
+        user_ids = self._get_user_ids(self.request.query_params.get('perm_uids', ''), 'perm')
+        queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+
+        # 支持通过 -perm_uid 搜索 (保留未拥有perm_uids[]的用户)
+        # QueryString 中格式为 '&perm_uids=uid1 ... uidn'
+        user_ids = self._get_user_ids(self.request.query_params.get('-perm_uids', ''), 'perm')
+        queryset = queryset.exclude(pk__in=user_ids) if user_ids is not None else queryset
 
         filter_params = (
             'wechat_unionid',
@@ -93,23 +127,64 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             'created__gte',
             'last_active_time__lte',
             'last_active_time__gte',
+            'unbound_wechat',
+            'unbound_ding',
+            'unbound_alipay',
+            'unbound_qq',
         )
         mapper = {
             'wechat_unionid': 'wechat_user__unionid',
+            'unbound_wechat': 'wechat_user__isnull',
+            'unbound_ding': 'ding_user__isnull',
+            'unbound_alipay': 'alipay_user__isnull',
+            'unbound_qq': 'qq_user__isnull',
+        }
+        boolean_params = (
+            'unbound_wechat',
+            'unbound_ding',
+            'unbound_alipay',
+            'unbound_qq',
+        )
+        _boolean_map = {
+            'true': True,
+            'false': False,
         }
 
         for param in filter_params:
             value = self.request.query_params.get(param, None)
+            # 用户关联账号相关搜索
+            if value is not None and param in boolean_params and value.lower() in _boolean_map.keys():
+                param = mapper.get(param)
+                queryset = queryset.filter(**{param: _boolean_map.get(value.lower())})
+                continue
             if value is not None:
                 param = mapper.get(param, param)
                 queryset = queryset.filter(**{param: value})
 
         # 获取 query string 中自定义字段（*__custom）
         # 支持 *__(lte, gte, lt, gt 等)__custom 形式,需进行范围搜索的字段在存储时保证传入的为string
-        suffix = '__custom'
+        suffixes = ['__lte__custom', '__lt__custom', '__gte__custom', '__gt__custom', '__custom']
         for key, value in self.request.query_params.items():
-            if key.endswith(suffix):
-                queryset = queryset.filter(**{'custom_user__data__' + key[:-1 * len(suffix)]: value})
+            for suffix in suffixes:
+                if key.endswith(suffix):
+                    _key = 'custom_user__data__"{custom_field}"{suffix}'.format(custom_field=key[:-1 * len(suffix)],
+                                                                                suffix=suffix[:-8])
+                    queryset = queryset.filter(**{_key: value})
+                    break
+        # 支持自定义排序
+        # QueryString 中格式为 '&sort=field1 ... fieldn'
+        _sort = self.request.query_params.get('sort')
+        _sort = _sort.split(' ') if _sort else []
+        # 校验排序字段合法性
+        for field_name in _sort:
+            field_name = field_name[1:] if field_name.startswith('-') else field_name
+            try:
+                # pylint: disable=no-member
+                # pylint: disable=protected-access
+                _ = User._meta.get_field(field_name)
+            except FieldDoesNotExist:
+                raise ValidationError({'sort': f"Invalid order_by argument: '{field_name}'"})
+        queryset = queryset.order_by(*_sort)
 
         user = self.request.user
         if user.is_admin:
@@ -153,6 +228,7 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         password = user_info.pop('password', None)
         user = cli.create_user(user_info)
         if password:
+            validate_password(password)
             cli.set_user_password(user, password)
         user.origin = 1    # 管理员添加
         user.save()
@@ -192,6 +268,31 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         cli = CLI()
         cli.add_user_to_depts(user, depts)
         cli.add_user_to_groups(user, groups)
+
+    def _get_user_ids(self, uids, subject):
+        """
+        获取即将过滤的 user_ids 列表
+        :param uids: 通过 QueryString 获取的 uids
+        :param subject: 搜索的标签类型
+        """
+        if uids == '':
+            return None
+        user_ids = None
+        uids = uids.split(' ')
+        if subject == 'group':
+            user_ids = GroupMember.valid_objects. \
+                filter(owner__uid__in=uids). \
+                values('user__id'). \
+                distinct()
+        if subject == 'perm':
+            user_perms = UserPerm.valid_objects.filter(perm__uid__in=uids)
+            for user_perm in user_perms:    # 校验权限是否在管辖范围之内
+                if not user_perm.owner.under_manage(self.request.user):
+                    raise PermissionDenied({'perm_uids': f"Invalid perm_uids argument: '{user_perm.perm.uid}'"})
+            user_ids = user_perms.filter(value=True).values('owner__id').distinct()
+        if subject == 'user':
+            user_ids = uids
+        return user_ids
 
 
 class UserIsolatedAPIView(generics.ListAPIView):

@@ -3,6 +3,7 @@ Import Dingding datasource to oneID
 """
 
 import json
+from infrastructure.utils.sms import is_cn_mobile
 from thirdparty_data_sdk.dingding.dingsdk.department_manager import DepartmentManager
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.user_manager import UserManager
@@ -32,12 +33,18 @@ def create_user_meta(db_executer, user):
     :param user:一条dinguser数据
     :return:
     """
+    # 手机号码校验
+    #  手机号存在且非中国号码时,需将区号
+    #  以 `+852 98765432` 的形式附上
+    mobile = user.get('mobile', '')
+    mobile = f"+{user.get('stateCode', '')} {mobile}" if mobile and not is_cn_mobile(mobile) else mobile
+
     user_info = {
         'password': '',
         'name': user.get('name'),
         'private_email': user.get('email', ''),
         'email': user.get('orgEmail', ''),
-        'mobile': user.get('mobile', ''),
+        'mobile': mobile,
         'employee_number': user.get('jobnumber', ''),
         'gender': UNKNOWN_GENDER,
         'ding_user': {
@@ -67,7 +74,7 @@ def create_user_meta(db_executer, user):
         return db_executer.update_user(exist_ding_user.user, user_info)
 
     # 通过手机号匹配
-    exist_mobile_user = User.valid_objects.filter(mobile=user.get('mobile')).first()
+    exist_mobile_user = User.valid_objects.filter(mobile=mobile).first()
     if exist_mobile_user:
         return db_executer.update_user(exist_mobile_user, user_info)
 

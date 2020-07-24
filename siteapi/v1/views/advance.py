@@ -58,9 +58,11 @@ class CrontabPluginListAPIView(generics.ListAPIView):
 
         for plugin in CrontabPlugin.objects.all():
             if plugin.import_path not in plugin_paths:
+                # 清理DB中已删除的插件记录
                 plugin.delete()
             else:
-                plugin_paths.pop()
+                # 过滤已存在的插件记录
+                plugin_paths.remove(plugin.import_path)
 
         for plugin_path in plugin_paths:
             CrontabPlugin.valid_objects.create(

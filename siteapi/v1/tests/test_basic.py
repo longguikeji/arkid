@@ -13,6 +13,7 @@ from oneid_meta.models import (
     Dept,
     DeptMember,
     Perm,
+    I18NMobileConfig,
 )
 
 from siteapi.v1.tests import TestCase
@@ -50,6 +51,7 @@ class ModelTestCase(TestCase):
         user = User.objects.create(username='u1', mobile='18812340001')
         with self.assertRaises(ValidationError):
             User.objects.create(username='u2', mobile='+86 18812340001')
+        I18NMobileConfig.objects.create(state='test', state_code='1')
         User.objects.create(username='u2', mobile='+1 18812340001')
 
         user.mobile = '+86 18812340001'
