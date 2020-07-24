@@ -17,10 +17,12 @@ base_urlpatterns = [
     # path('login/process_multi_factor/', idpview.ProcessMultiFactorView.as_view(), name='saml_multi_factor'),
     path('metadata/', idpview.metadata, name='saml2_idp_metadata'),
     path('download/metadata/', idpview.download_metadata, name='saml2_idp_download_metadata'),
+    path('aliyun/sso-role/login/', idpview.AliyunRoleSSOView.as_view(), name='aliyun_role_sso_login'),
 ]
 
 fe_urlpatterns = [
     path('fe/login/', dev_views.LoginView.as_view(), name='fe_login'),
+    path('aliyun/sso-role/fe/login/', dev_views.AliyunRoleSSOLoginView.as_view(), name='aliyun_role_sso_fe_login'),
 ]
 
 urlpatterns = base_urlpatterns + fe_urlpatterns
