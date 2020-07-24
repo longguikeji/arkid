@@ -283,6 +283,7 @@ BASE_URL = 'http://localhost'
 
 FE_TOKEN_URL = '/oauth/fe/token/'
 SAML_LOGIN_URL = '/saml/fe/login/'
+ALIYUN_ROLE_SSO_LOGIN_URL = '/saml/aliyun/sso-role/fe/login/'
 
 # TODO
 FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'    # 邮件注册页面
