@@ -434,5 +434,29 @@ class RDBLogExecuter(Executer):
         summary = f'{self.cli.user.log_name}更新系统配置'
         return self.log(subject, summary)
 
+    def create_i18n_mobile_config(self, config):
+        """
+        创建国际手机接入配置
+        """
+        subject = 'i18n_mobile_config'
+        summary = f'{self.cli.user.log_name}创建国际手机接入配置({config.state}(+{config.state_code}))'
+        return self.log(subject, summary)
+
+    def delete_i18n_mobile_config(self, config):
+        """
+        删除国际手机接入配置
+        """
+        subject = 'i18n_mobile_config'
+        summary = f'{self.cli.user.log_name}删除国际手机接入配置({config.state}(+{config.state_code}))'
+        return self.log(subject, summary)
+
+    def update_i18n_mobile_config(self, config):
+        """
+        更新国际手机接入配置
+        """
+        subject = 'i18n_mobile_config'
+        summary = f'{self.cli.user.log_name}更新国际手机接入配置({config.state}(+{config.state_code}))'
+        return self.log(subject, summary)
+
 
 LOG_CLI = single_cli_factory('executer.log.rdb.RDBLogExecuter')    # pylint: disable=invalid-name

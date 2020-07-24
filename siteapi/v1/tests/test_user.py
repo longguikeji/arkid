@@ -2,25 +2,15 @@
 tests for api about user
 '''
 # pylint: disable=missing-docstring, too-many-lines
-
 import json
+import time
 import unittest
-
+import random
 from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
-from oneid_meta.models import (
-    DingUser,
-    PosixUser,
-    Group,
-    Dept,
-    User,
-    CustomField,
-    DeptMember,
-    Perm,
-    UserPerm,
-    WechatUser,
-)
+from oneid_meta.models import (DingUser, PosixUser, Group, Dept, User, CustomField, DeptMember, Perm, UserPerm,
+                               WechatUser, QQUser, AlipayUser)
 
 EMPLOYEE = {
     'user_id':
@@ -328,6 +318,177 @@ class UserTestCase(TestCase):
         self.assertEqual(res.json()['count'], 1)
         res = self.client.get(reverse('siteapi:user_list'), {'age__lt__custom': 19})
         self.assertEqual(res.json()['count'], 1)
+
+    # pylint:disable=too-many-locals
+    # pylint:disable=invalid-name
+    # pylint:disable=too-many-statements
+    def test_advanced_search_user(self):    # pylint:disable=too-many-locals
+        """测试获取用户列表的高级搜索形式"""
+        # 创建测试用户对象
+        u1_data = {
+            'username': 'employee1',
+            'name': 'employee1',
+            'avatar': '',
+            'email': 'email1',
+            'mobile': '18612345678',
+            'private_email': '',
+            'position': '',
+            'gender': 2,
+        }
+        u2_data = {
+            'username': 'employee2',
+            'name': 'employee2',
+            'avatar': '',
+            'email': 'email2',
+            'mobile': '18712345678',
+            'private_email': '',
+            'position': '',
+            'gender': 2,
+        }
+        u3_data = {
+            'username': 'employee3',
+            'name': 'employee3',
+            'avatar': '',
+            'email': 'email3',
+            'mobile': '18812345678',
+            'private_email': '',
+            'position': '',
+            'gender': 2,
+        }
+        u1 = self.client.json_post(reverse('siteapi:user_list'),
+                                   data={
+                                       'group_uids': ['root'],
+                                       'dept_uids': ['root'],
+                                       'user': u1_data,
+                                   }).json()
+        u2 = self.client.json_post(reverse('siteapi:user_list'),
+                                   data={
+                                       'group_uids': ['root'],
+                                       'dept_uids': ['root'],
+                                       'user': u2_data,
+                                   }).json()
+        u3 = self.client.json_post(reverse('siteapi:user_list'),
+                                   data={
+                                       'group_uids': ['root'],
+                                       'dept_uids': ['root'],
+                                       'user': u3_data,
+                                   }).json()
+        # 测试通过关联账号搜索
+        #  1）测试是否关联微信搜索
+        _random_user = random.choice(['employee1', 'employee2', 'employee3'])
+        _ = WechatUser.objects.create(unionid='unionid', user=User.valid_objects.get(username=_random_user))
+        res = self.client.get(reverse('siteapi:user_list'), {'unbound_wechat': 'false'})    # 测试已绑定微信的用户
+        self.assertEqual(res.json()['count'], 1)
+        self.assertEqual(res.json()['results'][0]['username'], _random_user)
+        res = self.client.get(reverse('siteapi:user_list'), {'unbound_wechat': 'true'})    # 测试未绑定微信的用户
+        self.assertEqual(res.json()['count'], 2)
+        for user in res.json()['results']:
+            self.assertNotEqual(user['username'], _random_user)
+        #  2）测试是否关联钉钉搜索
+        _random_user = random.choice(['employee1', 'employee2', 'employee3'])
+        _ = DingUser.objects.create(account='',
+                                    uid='',
+                                    data='',
+                                    ding_id='',
+                                    open_id='',
+                                    union_id='',
+                                    user=User.valid_objects.get(username=_random_user))
+        res = self.client.get(reverse('siteapi:user_list'), {'unbound_ding': 'false'})    # 测试已绑定钉钉的用户
+        self.assertEqual(res.json()['count'], 1)
+        self.assertEqual(res.json()['results'][0]['username'], _random_user)
+        res = self.client.get(reverse('siteapi:user_list'), {'unbound_ding': 'true'})    # 测试未绑定钉钉的用户
+        self.assertEqual(res.json()['count'], 2)
+        for user in res.json()['results']:
+            self.assertNotEqual(user['username'], _random_user)
+        #  3）测试是否关联支付宝搜索
+        _random_user = random.choice(['employee1', 'employee2', 'employee3'])
+        _ = AlipayUser.objects.create(alipay_user_id='', user=User.valid_objects.get(username=_random_user))
+        res = self.client.get(reverse('siteapi:user_list'), {'unbound_alipay': 'false'})    # 测试已绑定支付宝的用户
+        self.assertEqual(res.json()['count'], 1)
+        self.assertEqual(res.json()['results'][0]['username'], _random_user)
+        res = self.client.get(reverse('siteapi:user_list'), {'unbound_alipay': 'true'})    # 测试未绑定支付宝的用户
+        self.assertEqual(res.json()['count'], 2)
+        for user in res.json()['results']:
+            self.assertNotEqual(user['username'], _random_user)
+        #  4）测试是否关联QQ搜索
+        _random_user = random.choice(['employee1', 'employee2', 'employee3'])
+        _ = QQUser.objects.create(open_id='', user=User.valid_objects.get(username=_random_user))
+        res = self.client.get(reverse('siteapi:user_list'), {'unbound_qq': 'false'})    # 测试已绑定QQ的用户
+        self.assertEqual(res.json()['count'], 1)
+        self.assertEqual(res.json()['results'][0]['username'], _random_user)
+        res = self.client.get(reverse('siteapi:user_list'), {'unbound_qq': 'true'})    # 测试未绑定QQ的用户
+        self.assertEqual(res.json()['count'], 2)
+        for user in res.json()['results']:
+            self.assertNotEqual(user['username'], _random_user)
+        # 测试通过 user ids 搜索
+        _random_users = random.sample([str(u1['user_id']), str(u2['user_id']), str(u3['user_id'])], 2)
+        res = self.client.get(reverse('siteapi:user_list'), {'user_ids': ' '.join(_random_users)})
+        self.assertEqual(res.json()['count'], 2)
+        for user in res.json()['results']:
+            self.assertIn(str(user['user_id']), _random_users)
+        # 测试通过 group uids 搜索
+        _random_users = random.sample(['employee1', 'employee2', 'employee3'], 2)
+        self.client.json_post(reverse('siteapi:group_child_group', args=('root', )),
+                              data={
+                                  'uid': 'group-test',
+                                  'name': 'group-test'
+                              })
+        self.client.json_patch(reverse('siteapi:group_child_user', args=('group-test', )),
+                               data={
+                                   'user_uids': _random_users,
+                                   'subject': 'add'
+                               })
+        # 1) 测试属于组的用户搜索
+        res = self.client.get(reverse('siteapi:user_list'), {'group_uids': 'group-test'})
+        self.assertEqual(res.json()['count'], 2)
+        for user in res.json()['results']:
+            self.assertIn(user['username'], _random_users)
+        # 2) 测试不属于组的用户搜索
+        res = self.client.get(reverse('siteapi:user_list'), {'-group_uids': 'group-test'})
+        self.assertEqual(res.json()['count'], 1)
+        self.assertNotIn(res.json()['results'][0]['username'], _random_users)
+        # 测试通过 perm uids 搜索
+        _random_users = random.sample(['employee1', 'employee2', 'employee3'], 2)
+        for username in _random_users:
+            _user_perm = UserPerm.objects.get(perm=Perm.valid_objects.get(uid='system_oneid_all'),
+                                              owner=User.valid_objects.get(username=username))
+            _user_perm.value = True
+            _user_perm.save()
+        # 1) 测试拥有权限的用户搜索
+        res = self.client.get(reverse('siteapi:user_list'), {'perm_uids': 'system_oneid_all'})
+        self.assertEqual(res.json()['count'], 2)
+        for user in res.json()['results']:
+            self.assertIn(user['username'], _random_users)
+        # 2) 测试未拥有权限的用户搜索
+        res = self.client.get(reverse('siteapi:user_list'), {'-perm_uids': 'system_oneid_all'})
+        self.assertEqual(res.json()['count'], 1)
+        self.assertNotIn(res.json()['results'][0]['username'], _random_users)
+        # 测试通过 usernames 搜索
+        _random_users = random.sample(['employee1', 'employee2', 'employee3'], 2)
+        res = self.client.get(reverse('siteapi:user_list'), {'usernames': ' '.join(_random_users)})
+        self.assertEqual(res.json()['count'], 2)
+        for user in res.json()['results']:
+            self.assertIn(str(user['username']), _random_users)
+        # 测试通过 sort 获取指定排序搜索
+        _random_users = ['employee1', 'employee2', 'employee3']
+        random.shuffle(_random_users)
+        _random_times = []
+        for username in _random_users:
+            user = User.valid_objects.get(username=username)
+            user.created = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            user.save()
+            timestamp = int(time.mktime(time.strptime(user.created, "%Y-%m-%d %H:%M:%S")))
+            _random_times.append(timestamp)
+            time.sleep(1)
+        # 1) 测试按照注册时间排序搜索
+        res = self.client.get(reverse('siteapi:user_list'), {'sort': 'created'})
+        for i in range(0, len(res.json()['results'])):
+            timestamp = int(time.mktime(time.strptime(res.json()['results'][i]['created'], "%Y-%m-%dT%H:%M:%S+08:00")))
+            self.assertEqual(timestamp, _random_times[i])
+        # 2) 测试按照user id逆序搜索
+        res = self.client.get(reverse('siteapi:user_list'), {'sort': '-id'})
+        for i in range(0, 3):
+            self.assertEqual(res.json()['results'][i]['user_id'], 4 - i)
 
     def test_create_user(self):
         res = self.create_user()
