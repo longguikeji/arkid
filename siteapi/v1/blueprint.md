@@ -446,6 +446,16 @@ FORMAT: 1A
 + alipay_public_key (string) - 支付宝生成的公钥
 + qr_app_valid (boolean, readonly) - qr配置是否有效
 
+## PasswordComplexityConfig (object)
++ min_length (number) - 最小长度
++ min_upper (number) - 大写字母限制
++ min_lower (number) - 小写字母限制
++ min_letter (number) - 字母限制
++ min_digit (number) - 数字限制
++ min_special (number) - 特殊字符限制
++ min_word (number) - 单词限制
++ is_active (boolean) - 配置是否启用
+
 ## Config (object)
 + company_config (CompanyConfig)
 + ding_config (DingConfig)
@@ -453,6 +463,7 @@ FORMAT: 1A
 + sms_config (SMSConfig)
 + email_config (EmailConfig)
 + alipay_config (AlipayConfig)
++ password_config (PasswordComplexityConfig)
 
 ## CustomField (object)
 + uuid (string)
@@ -547,6 +558,19 @@ FORMAT: 1A
 + import_path
 + is_active (boolean)
 + order_no (number)
+
+## I18NMobileConfig (object)
++ uuid (string) - 唯一标识
++ state (string) - 所属地区
++ state_code (string) - 区号
++ number_length (number) - 固定号码长度
++ start_digit (array[number]) - 首位数字限制集
++ is_active (boolean) - 是否启用
+
+## AliyunSSORole (object)
++ user_id (number) - 用户id
++ role (array[string]) - 阿里云角色信息
++ session_duration (number) - 阿里云SSO会话时间
 
 # Group Infrastructure
 基础设施
@@ -975,7 +999,7 @@ TODO: 校对
 # Group User
 用户管理
 
-## 所有用户 [/user/{?keyword,wechat_unionid,name,name__icontains,username,username__icontains,email,email__icontains,private_email,private_email__icontains,mobile,mobile__icontains,gender,remark,remark__icontains,created__lte,created__gte,last_active_time__lte,last_active_time__gtepage,%2A__custom,%2A__lt__custom,%2A__lte__custom,%2A__gt__custom,%2A__gte__custom,page_size}]
+## 所有用户 [/user/{?keyword,wechat_unionid,name,name__icontains,username,username__icontains,email,email__icontains,private_email,private_email__icontains,mobile,mobile__icontains,gender,remark,remark__icontains,created__lte,created__gte,last_active_time__lte,last_active_time__gte,unbound_wechat,unbound_ding,unbound_qq,unbound_alipay,user_ids,usernames,group_uids,%2Dgroup_uids,perm_uids,%2Dperm_uids,sort,%2A__custom,%2A__lt__custom,%2A__lte__custom,%2A__gt__custom,%2A__gte__custom,page,page_size}]
 
 ### 创建用户 [POST]
 + Request JSON Message
@@ -1009,6 +1033,17 @@ TODO: 校对
     + created__gte (string, optional)
     + last_active_time__lte (string, optional)
     + last_active_time__gte (string, optional)
+    + unbound_wechat (boolean, optional) - 未关联微信搜索;'true'表示搜索未关联微信的用户,'false'表示搜索关联微信的用户
+    + unbound_ding (boolean, optional) - 未关联钉钉搜索;'true'表示搜索未关联钉钉的用户,'false'表示搜索关联钉钉的用户
+    + unbound_qq (boolean, optional) - 未关联QQ搜索;'true'表示搜索未关联QQ的用户,'false'表示搜索关联QQ的用户
+    + unbound_alipay (boolean, optional) - 未关联支付宝搜索;'true'表示搜索未关联支付宝的用户,'false'表示搜索关联支付宝的用户
+    + user_ids (string, optional) - 指定用户id的搜索;形如'&=id1 id2 ... id3',参数间用空格分隔
+    + usernames (string, optional) - 指定用户名的搜索;形如'&=username1 username2 ... username3',参数间用空格分隔
+    + group_uids (string, optional) - 指定属于一些组的搜索;形如'&=group1 group2 ... group3',参数间用空格分隔
+    + %2Dgroup_uids (string, optional) - 指定不属于一些组的搜索;形如'&=group1 group2 ... group3',参数间用空格分隔
+    + perm_uids (string, optional) - 指定拥有一些权限的搜索;形如'&=perm1 perm2 ... perm3',参数间用空格分隔
+    + %2Dperm_uids (string, optional) - 指定未拥有一些权限的搜索;形如'&=perm1 perm2 ... perm3',参数间用空格分隔
+    + sort (string, optional) - 指定搜索结果按某字段顺序(逆序)输出;形如'&=condition1 -condition2 ... condition3',参数间用空格分隔,其中'-condition2'表示按照'condition2'字段逆序排序
     + %2A__custom (string, optional) - 自定义字段搜索,(`*`为自定义字段)
     + %2A__lt__custom (string, optional) - 自定义字段范围搜索,(`*`为自定义字段);注意:目标字段在初始化时,字段值需为string类型,否则将导致搜索失败
     + %2A__gt__custom (string, optional) - 自定义字段范围搜索,(`*`为自定义字段);注意:目标字段在初始化时,字段值需为string类型,否则将导致搜索失败
@@ -2228,6 +2263,36 @@ TODO: 可见权限的处理
 + Response 200 (application/json)
     + Attributes (StorageConfig)
 
+## 国际手机接入 [/config/i18n_mobile/]
+
+### 添加接入配置 [POST]
+
++ request JSON Message
+    + Attributes (I18NMobileConfig)
+
++ Response 200 (application/json)
+    + Attributes (I18NMobileConfig)
+
+### 获取接入配置 [GET]
++ Response 200 (application/json)
+    + Attributes (array[I18NMobileConfig])
+
+## 指定国际手机接入 [/config/i18n_mobile/{uuid}/]
+
++ Parameters
+    + uuid (string) - 接入配置的唯一标识
+
+### 修改接入配置 [PATCH]
+
++ request JSON Message
+    + Attributes (I18NMobileConfig)
+
++ Response 200 (application/json)
+    + Attributes (I18NMobileConfig)
+
+### 删除接入配置 [DELETE]
++ Response 204
+
 # Group Meta
 
 ## 基本信息 [/meta/]
@@ -2742,21 +2807,18 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'work_qq qr not allowed'
 
-# SAML2 APP配置接口
+# Group SAML 2.0
 
-## APP单点登录配置 [/saml/sso/redirect]
+## APP请求认证-1 [/saml/sso/redirect/]
+APP在发送认证请求时，需将SAMLRequest放置于QueryString中，具体参数参考saml2.0协议指南
 
-+ Request 302 Redirect
+### APP请求认证 [GET]
++ Request JSON Message
     + Attributes
-        + SAMLRequest (string) - SP方SAML重定向请求
 
-+ Response 302
++ Response 302 (application/json)
     + Attributes
-        + next (string) - 重定向未登录用户到oneid登录页
-
-+ Response 302
-    + Attributes
-        + SAMLResponse (base64/string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
+        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
             + Issuer - (string) IdP方处理元数据请求uri
             + Audience - (string) SP方监听SMALResponse的uri
             + entity - (string) IdP方获取元数据地址
@@ -2765,25 +2827,81 @@ Content-Disposition: form-data; name='node_uid'
             + email - (string) IdP用户邮箱
             + private_email - (string) IdP用户私人邮箱
             + token - （string）IdP用户token
+            
+## APP请求认证-2 [/saml/sso/post/]
+APP在发送认证请求时，需将SAMLRequest放置于表单中，具体参数参考saml2.0协议指南
 
-## SP获取元数据接口 [/saml/metadata/]
+### APP请求认证 [POST]
++ Request JSON Message
+    + Attributes
 
-### 获取xml [GET]
++ Response 302 (application/json)
+    + Attributes
+        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
+            + Issuer - (string) IdP方处理元数据请求uri
+            + Audience - (string) SP方监听SMALResponse的uri
+            + entity - (string) IdP方获取元数据地址
+            + status_code - (string) 登录状态
+            + username - (string) IdP用户名
+            + email - (string) IdP用户邮箱
+            + private_email - (string) IdP用户私人邮箱
+            + token - （string）IdP用户token
+            
+## 元数据信息 [/saml/metadata/]
 
+### SP获取元数据信息 [GET]
 + Request JSON Message
     + Attributes
 
 + Response 200 (application/json)
     + Attributes
-        + metadata (string) - SAML2元数据显示在网页，用于SP方获取   FIXME: content-type
+        + metadata (string) - SAML2元数据显示在网页，用于SP方获取
 
-## 下载元数据文件 [/saml/download/metadata/]
+## 元数据文件 [/saml/download/metadata/]
 
-### 下载 [GET]
-
+### 下载元数据文件 [GET]
 + Request JSON Message
     + Attributes
 
 + Response 200 (application/json)
+
+## 阿里云角色SSO [/saml/aliyun/sso-role/]
+
+### 获取所有用户角色SSO信息 [GET]
++ Request JSON Message
     + Attributes
-        + metadata.xml (string) - IdP方新建时生成的元数据文件，用于在SP方配置时上传.  FIXME: content-type
+        
++ Response 200 (application/json)
+    + Attributes (array[AliyunSSORole])
+    
+### 创建用户角色SSO [POST]
++ Request JSON Message
+    + Attributes
+        + user_ids (array[number]) - 用户id列表
+        + role (array[string]) 
+        + session_duration (number)
+        
++ Response 200 (application/json)
+    + Attributes (array[AliyunSSORole])
+
+## 指定阿里云角色SSO [/saml/aliyun/sso-role/{?username}/]
+
++ Parameters
+    + username (string) - 用户唯一标识
+
+### 修改指定用户角色SSO信息 [PATCH]
++ Request JSON Message
+    + Attributes(AliyunSSORole)
+        
++ Response 200 (application/json)
+    + Attributes (AliyunSSORole)
+
+## 阿里云角色SSO登录 [/saml/aliyun/sso-role/login/]
+
+### 登录 [GET]
++ Request JSON Message
+    + Attributes
+        
++ Response 302 (application/json)
+    + Attributes
+        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
