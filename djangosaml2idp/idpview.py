@@ -8,6 +8,7 @@ from socket import gethostname
 from OpenSSL import crypto
 
 from django.conf import settings
+from django.db import transaction
 from django.shortcuts import reverse
 from django.contrib.auth import logout, REDIRECT_FIELD_NAME
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
@@ -19,6 +20,10 @@ from django.views import View
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from rest_framework import generics, status
+from rest_framework.exceptions import NotFound
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from six import text_type
 from saml2.saml import NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED
@@ -31,10 +36,13 @@ from saml2.metadata import entity_descriptor
 from saml2.s_utils import UnknownPrincipal, UnsupportedBinding
 from saml2.server import Server
 from saml2.md import entity_descriptor_from_string
-from drf_expiring_authtoken.models import ExpiringToken
+
+from djangosaml2idp.serializers.aliyun import AliyunSSORoleSerializer
 from djangosaml2idp.processors import BaseProcessor
 from djangosaml2idp import idpsettings
-from oneid_meta.models import SAMLAPP
+from oneid.permissions import IsAdminUser, IsUserManager
+from oneid_meta.models import SAMLAPP, AliyunSSORole
+from drf_expiring_authtoken.models import ExpiringToken
 
 logger = logging.getLogger(__name__)    # pylint: disable=invalid-name
 
@@ -509,7 +517,7 @@ class AliyunRoleSSOAccessMixin(AccessMixin):
 
 
 @method_decorator(never_cache, name='dispatch')
-class AliyunRoleSSOView(AliyunRoleSSOAccessMixin, IdPHandlerViewMixin, View):
+class AliyunSSORoleView(AliyunRoleSSOAccessMixin, IdPHandlerViewMixin, View):
     """
     阿里云角色SSO登录
     """
@@ -590,3 +598,66 @@ class AliyunRoleSSOView(AliyunRoleSSOAccessMixin, IdPHandlerViewMixin, View):
                                            destination=resp_args['destination'],
                                            response=True)
         return HttpResponse(http_args['data'])
+
+
+class AliyunSSORoleListCreateAPIView(generics.ListCreateAPIView):
+    """用户关联阿里云SSO关联信息"""
+    serializer_class = AliyunSSORoleSerializer
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsUserManager)]
+
+    def get_queryset(self):
+        """return queryset for list [GET]"""
+        queryset = AliyunSSORole.valid_objects.all()
+        return queryset
+
+    @transaction.atomic()
+    def create(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+        """
+        create aliyun sso role [POST]
+        """
+        data = request.data
+        user_ids = data.get('user_ids', [])
+        role_info = {
+            'role': data.get('role', []),
+            'session_duration': data.get('session_duration', 900),
+            'user_id': None
+        }
+        for user_id in user_ids:
+            role_info.update(user_id=user_id)
+            serializer = AliyunSSORoleSerializer(data=role_info)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        queryset = AliyunSSORole.valid_objects.filter(user_id__in=user_ids)
+        serializer = AliyunSSORoleSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AliyunSSORoleDetailCreateAPIView(generics.RetrieveUpdateAPIView):
+    """特定阿里云角色SSO信息 [GET],[PATCH]"""
+    serializer_class = AliyunSSORoleSerializer
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsUserManager)]
+
+    def get_object(self):
+        """
+        find aliyun role sso
+        :rtype: oneid_meta.models.AliyunSSORole
+        """
+        role = AliyunSSORole.valid_objects.filter(user__username=self.kwargs['username']).first()
+        if not role:
+            raise NotFound
+        # try:
+        #     self.check_object_permissions(self.request, user)
+        # except PermissionDenied:
+        #     raise NotFound
+        return role
+
+    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+        """
+        update aliyun role sso detail [PATCH]
+        """
+        role = self.get_object()
+        data = request.data
+        serializer = AliyunSSORoleSerializer(role, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
