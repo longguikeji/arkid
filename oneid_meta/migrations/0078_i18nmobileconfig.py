@@ -14,7 +14,7 @@ def init_i18n_mobile_config(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('oneid_meta', '0076_pwdconfig'),
+        ('oneid_meta', '0077_pwdconfig'),
     ]
 
     operations = [
