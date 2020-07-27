@@ -528,10 +528,14 @@ class User(BaseModel, PermOwnerMixin):
         '''
         所有可管理的节点（包含直接管理的节点，及其下属节点）
         '''
-
         res = set()
         for node_uid in self.manage_node_uids:
             res.update(Node.get_downstream_uids(node_uid))
+
+        # 过滤根节点管理权限
+        discard_node = {'g_root', 'g_manager', 'g_extern', 'g_intra'}
+        for node in discard_node:
+            res.discard(node)
         return res
 
     def check_password(self, password):
