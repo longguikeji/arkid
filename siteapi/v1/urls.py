@@ -26,21 +26,10 @@ from siteapi.v1.views.config import (
     I18NMobileDetailAPIView,
 )
 
-from siteapi.v1.views import (
-    event as event_views,
-    node as node_views,
-    migrate as migrate_views,
-    log as log_views,
-    group as group_views,
-    dept as dept_views,
-    user as user_views,
-    app as app_views,
-    shortcut as shortcut_views,
-    perm as perm_views,
-    ucenter as ucenter_views,
-    qr as qr_views,
-    advance as advance_views,
-)
+from siteapi.v1.views import (event as event_views, node as node_views, migrate as migrate_views, log as log_views,
+                              group as group_views, dept as dept_views, user as user_views, app as app_views, shortcut
+                              as shortcut_views, perm as perm_views, ucenter as ucenter_views, qr as qr_views, advance
+                              as advance_views, third_party as third_party_views)
 
 from siteapi.v1.views.statistics import UserStatisticView
 
@@ -126,6 +115,10 @@ urlpatterns = [
     url(r'^wechat/bind/$', qr_views.WechatBindAPIView.as_view(), name='wechat_bind'),
     url(r'^wechat/register/bind/$', qr_views.WechatRegisterAndBindView.as_view(),\
         name='wechat_register_bind'),
+    # github
+    path('github/callback/', third_party_views.GithubCallbackView.as_view(), name='github_callback'),
+    path('github/bind/', third_party_views.GithubBindAPIView.as_view(), name='github_bind'),
+    path('github/register/bind/', third_party_views.GithubRegisterAndBindView.as_view(), name='github_register_bind'),
     # shortcut
     url(r'^slice/$', shortcut_views.ObjSliceAPIView.as_view(), name='shortcut_slice'),
     url(r'^slice/delete/$', shortcut_views.ObjSliceDeleteAPIView.as_view(), name='shortcut_slice_delete'),
