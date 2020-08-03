@@ -3,7 +3,7 @@ schema of Users,Departmments,Groups,Perms
 '''
 
 from oneid_meta.models.user import (User, PosixUser, CustomUser, DingUser, AlipayUser,\
-    WorkWechatUser, WechatUser, QQUser, SubAccount)
+    WorkWechatUser, WechatUser, QQUser, SubAccount, GithubUser)
 
 from oneid_meta.models.dept import (
     Dept,
@@ -34,9 +34,11 @@ from oneid_meta.models.app import (
     HTTPAPP,
 )
 
+# pylint: disable=line-too-long
 from oneid_meta.models.config import (CompanyConfig, AccountConfig, SMSConfig, DingConfig, CustomField, NativeField,
                                       EmailConfig, AlipayConfig, WorkWechatConfig, WechatConfig, QQConfig,
-                                      StorageConfig, MinioConfig, PasswordComplexityConfig, I18NMobileConfig)
+                                      StorageConfig, MinioConfig, PasswordComplexityConfig, I18NMobileConfig,
+                                      GithubConfig)
 
 from oneid_meta.models.event import (
     Invitation, )
