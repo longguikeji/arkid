@@ -73,7 +73,6 @@ class GithubCallbackView(APIView):
         处理github用户登录之后重定向页面
         """
         code = request.GET['code']
-        print('code is', code)
         client_id = GithubConfig.get_current().client_id
         client_secret = GithubConfig.get_current().client_secret
         if code:
