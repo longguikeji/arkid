@@ -3,7 +3,7 @@ from inputs_error import InputsError
 
 class TestCase:
     def __init__(self,data):
-        self.tittle = data.get('tittle','没有标题')
+        self.title = data.get('title','没有标题')
         self.skip = data.get('skip')
         self.url = data.get('url')
         self.headers = data.get('headers')

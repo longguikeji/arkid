@@ -23,7 +23,7 @@ def createxml():
             testcase = TestCase(data)
         except InputsError as ex:
             print(ex)
-            junit.case(data.get('tittle','没有标题'), datetime.now())
+            junit.case(data.get('title','没有标题'), datetime.now())
             junit.error_data(str(ex))
             junit.settime()
             continue
@@ -31,7 +31,7 @@ def createxml():
         # 判断需要跳过的用例
         if testcase.skip:
             # 写入跳过用例标题名
-            junit.case(testcase.tittle, datetime.now())
+            junit.case(testcase.title, datetime.now())
             # 跳过用例的信息
             junit.skip_case('This testcase is skipped')
             junit.settime()
@@ -69,12 +69,12 @@ def createxml():
         # 用例通过
         if result:
             # 写入xml测试报告
-            junit.case(testcase.tittle, case_time)
+            junit.case(testcase.title, case_time)
             junit.settime()
         # 用例不通过
         else:
-            junit.case(testcase.tittle, case_time)
-            junit.failure('标题：' + testcase.tittle + '  请求类型：' + testcase.type +'   失败原因：' + reason)
+            junit.case(testcase.title, case_time)
+            junit.failure('标题：' + testcase.title + '  请求类型：' + testcase.type +'   失败原因：' + reason)
             junit.settime()
 
     # 生成xml数据源 提供给allure

@@ -22,7 +22,7 @@ password = "admin"
 打开文件`apidata.py` 。`httpurl_data` 为存放测试用例的列表，列表每一个类型为字典的值表示一条测试用例，添加测试用例只需要按照模板添加字典类型的数据即可    
 ```
     # 1.登录接口 第一条用例
-    {'tittle': '登录接口',  # 用例的名称
+    {'title': '登录接口',  # 用例的名称
      'skip': False,  # 跳过用例，bool类型，False，空，0，不存在skip为不跳过，其余均为跳过
      'url': '{}siteapi/oneid/ucenter/login/'.format(base_url),
      'headers':{
@@ -39,7 +39,7 @@ password = "admin"
 ``` 
 |用例属性|意义|备注|
 |-----|-----------|----|
-|tittle|测试用例标题|可以不存在|
+|title|测试用例标题|可以不存在|
 |skip|跳过用例|bool类型，True为跳过，False不跳过，正常执行|
 |url|接口地址|不存在时抛出异常|
 |headers|接口请求头信息|可以不存在|
