@@ -197,7 +197,8 @@ class UserAlterMobileSerializer(serializers.Serializer):    # pylint: disable=ab
     def validate(self, attrs):
         validated_data = super().validate(attrs)
         old_mobile = SMSClaimSerializer.check_sms_token(validated_data.get('old_mobile_sms_token'))['mobile']
-        new_mobile = SMSClaimSerializer.check_sms_token(validated_data.get('new_mobile_sms_token'))['mobile']
+        new_mobile = UpdateMobileSMSClaimSerializer.check_sms_token(
+            validated_data.get('new_mobile_sms_token'))['mobile']    # pylint: disable=line-too-long
 
         request = self.context.get("request")
         user = request.user
