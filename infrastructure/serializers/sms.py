@@ -342,7 +342,7 @@ class UpdateMobileSMSClaimSerializer(SMSClaimSerializer):
     '''
 
     mobile = serializers.CharField(required=True)
-    password = serializers.CharField(required=True)
+    password = serializers.CharField(required=False)
 
     def get_template_id(self):
         '''
