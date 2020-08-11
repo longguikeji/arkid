@@ -690,7 +690,8 @@ FORMAT: 1A
 + Request JSON Message
     + Attributes
         + mobile (string, required) - 重置后的手机号
-        + password (string, required)
+        + password (string)
+
 ### 验证短信验证码 [GET]
 + Parameters
     + mobile (string) - 支持国际手机号，形如 `+86 18812341234`
