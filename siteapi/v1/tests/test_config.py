@@ -40,6 +40,7 @@ class ConfigTestCase(TestCase):
                 'allow_qq_qr': False,
                 'allow_work_wechat_qr': False,
                 'allow_wechat_qr': False,
+                'allow_github': False,
             },
             'sms_config': {
                 'access_key': '',
@@ -80,6 +81,10 @@ class ConfigTestCase(TestCase):
                 'min_special': 0,
                 'min_upper': 0,
                 'min_word': 0
+            },
+            'github_config': {
+                'client_id': '',
+                'client_valid': False
             },
         }
         self.assertEqual(res.json(), expect)
@@ -239,6 +244,7 @@ class ConfigTestCase(TestCase):
                 'allow_qq_qr': True,
                 'allow_work_wechat_qr': True,
                 'allow_wechat_qr': False,
+                'allow_github': False,
             },
             'sms_config': {
                 'access_key': 'access_key',
@@ -280,6 +286,10 @@ class ConfigTestCase(TestCase):
                 'min_upper': 1,
                 'min_word': 1
             },
+            'github_config': {
+                'client_id': '',
+                'client_valid': False
+            }
         }
 
         self.assertEqual(res.json(), expect)

@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
                                AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QQConfig,
-                               StorageConfig, MinioConfig, PasswordComplexityConfig, I18NMobileConfig)
+                               StorageConfig, MinioConfig, PasswordComplexityConfig, I18NMobileConfig, GithubConfig)
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from infrastructure.serializers.sms import SMSClaimSerializer
 from siteapi.v1.views.utils import gen_uid
@@ -52,16 +52,8 @@ class AccountConfigSerializer(DynamicFieldsModelSerializer):
     class Meta:    # pylint: disable=missing-docstring
         model = AccountConfig
 
-        fields = (
-            'allow_register',
-            'allow_mobile',
-            'allow_email',
-            'allow_ding_qr',
-            'allow_alipay_qr',
-            'allow_qq_qr',
-            'allow_work_wechat_qr',
-            'allow_wechat_qr',
-        )
+        fields = ('allow_register', 'allow_mobile', 'allow_email', 'allow_ding_qr', 'allow_alipay_qr', 'allow_qq_qr',
+                  'allow_work_wechat_qr', 'allow_wechat_qr', 'allow_github')
 
 
 class SMSConfigSerializer(DynamicFieldsModelSerializer):    # pylint: disable=missing-docstring
@@ -228,6 +220,46 @@ class PasswordConfigSerializer(DynamicFieldsModelSerializer):
         )
 
 
+class GithubConfigSerializer(DynamicFieldsModelSerializer):
+    """
+    serializer for Github Config
+    """
+    client_secret = serializers.CharField(write_only=True)
+
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = GithubConfig
+
+        fields = (
+            'client_id',
+            'client_secret',
+            'client_valid',
+        )
+
+        read_only_fields = ('client_valid', )
+
+    def update(self, instance, validated_data):
+        """
+        - update data
+        - validated updated data
+        """
+        instance.__dict__.update(validated_data)
+        instance.client_valid = self.validate_client_config(instance)
+        update_fields = ['client_valid']
+        update_fields += ['client_id', 'client_secret'] if instance.client_valid else []
+        instance.save(update_fields=update_fields)
+        instance.refresh_from_db()
+        return instance
+
+    @staticmethod
+    def validate_client_config(instance):
+        """
+        validate client_id, client_secret
+        """
+        is_valid = instance.check_valid()
+        return is_valid
+
+
 class ConfigSerializer(DynamicFieldsModelSerializer):
     '''
     serializer for configs
@@ -243,13 +275,14 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
     work_wechat_config = WorkWechatConfigSerializer(many=False, required=False)
     wechat_config = WechatConfigSerializer(many=False, required=False)
     password_config = PasswordConfigSerializer(many=False, required=False)
+    github_config = GithubConfigSerializer(many=False, required=False)
 
     class Meta:    # pylint: disable=missing-docstring
 
         model = Site
 
-        fields = ('company_config', 'ding_config', 'account_config', 'sms_config',\
-            'email_config', 'alipay_config', 'work_wechat_config', 'wechat_config', 'qq_config', 'password_config')
+        fields = ('company_config', 'ding_config', 'account_config', 'sms_config', 'email_config', 'alipay_config',
+                  'work_wechat_config', 'wechat_config', 'qq_config', 'password_config', 'github_config')
 
     @transaction.atomic()
     def update(self, instance, validated_data):    # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -350,6 +383,13 @@ class ConfigSerializer(DynamicFieldsModelSerializer):
             serializer.is_valid(raise_exception=True)    # pylint: disable=not-callable
             config.__dict__.update(serializer.validated_data)
             config.save()
+
+        github_config = validated_data.pop('github_config', None)
+        if github_config:
+            config = GithubConfig.get_current()
+            serializer = GithubConfigSerializer(config, github_config, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
         instance.refresh_from_db()
 

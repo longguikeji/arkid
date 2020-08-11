@@ -15,6 +15,7 @@ from oneid_meta.models import (
     NativeField,
     SubAccount,
     WechatUser,
+    GithubUser,
 )
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from common.django.drf.serializer import IgnoreNoneMix
@@ -157,6 +158,16 @@ class WechatUserSerializer(DynamicFieldsModelSerializer):
         fields = ('unionid', )
 
 
+class GithubUserSerializer(DynamicFieldsModelSerializer):
+    """
+    Serializer for Github User
+    """
+    class Meta:    # pylint: disable=missing-docstring
+        model = GithubUser
+
+        fields = ('github_user_id', )
+
+
 class UserLiteSerializer(DynamicFieldsModelSerializer):
     '''
     lite Serializer for User
@@ -179,6 +190,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     ding_user = DingUserSerializer(many=False, required=False, allow_null=True)
     # posix_user = PosixUserSerializer(many=False, required=False, allow_null=True)
     wechat_user = WechatUserSerializer(many=False, required=False, allow_null=True)
+    github_user = GithubUserSerializer(many=False, required=False, allow_null=True)
     custom_user = AdvanceCustomUserSerializer(many=False, required=False, allow_null=True)
     user_id = serializers.IntegerField(source='id', read_only=True)
 
@@ -200,6 +212,7 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'ding_user',
             'custom_user',
             'wechat_user',
+            'github_user',
             'is_settled',
             'is_manager',
             'is_admin',
@@ -432,6 +445,7 @@ class EmployeeSerializer(UserSerializer):
             'ding_user',
             'custom_user',
             'wechat_user',
+            'github_user',
             'is_settled',
             'is_manager',
             'is_admin',
