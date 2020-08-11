@@ -15,6 +15,7 @@ from common.Email.email_manager import EmailManager
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from thirdparty_data_sdk.dingding.dingsdk.constants import TOKEN_FROM_APPID_QR_APP_SECRET
 from thirdparty_data_sdk.alipay_api.alipay_oauth_manager import AlipayOauthManager
+from thirdparty_data_sdk.github_sdk.userinfo_manager import GithubUserInfoManager
 from thirdparty_data_sdk.qq_sdk.qq_openid_sdk import QQInfoManager
 from thirdparty_data_sdk.wechat_sdk.wechat_user_info_manager import WechatUserInfoManager
 from thirdparty_data_sdk.work_wechat_sdk.user_info_manager import WorkWechatManager
@@ -122,6 +123,7 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
     allow_work_wechat_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放企业微信扫码登录')
     allow_wechat_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放微信扫码登录')
     allow_qq_qr = models.BooleanField(default=False, blank=True, verbose_name='是否开放qq扫码登录')
+    allow_github = models.BooleanField(default=False, blank=True, verbose_name='是否开放github账号登录')
 
     def __str__(self):
         return f'AccountConfig[{self.id}]'    # pylint: disable=no-member
@@ -223,6 +225,20 @@ class AccountConfig(BaseModel, SingletonConfigMixin):
         是否支持微信扫码注册
         '''
         return self.allow_register and self.support_wechat_qr
+
+    @property
+    def support_github(self):
+        """
+        是否支持github账户登录
+        """
+        return self.allow_github and GithubConfig.get_current().client_valid
+
+    @property
+    def support_github_register(self):
+        """
+        是否支持github账户注册
+        """
+        return self.allow_register and self.support_github
 
 
 class SMSConfig(BaseModel, SingletonConfigMixin):
@@ -534,3 +550,24 @@ class I18NMobileConfig(BaseModel):
     state_code = models.CharField(max_length=32, blank=False, null=False, unique=True, verbose_name='国家区号')
     number_length = models.IntegerField(null=True, default=None, verbose_name='号码固定长度')
     start_digital = jsonfield.JSONField(default=[], blank=True, verbose_name='首位数字限制集')
+
+
+class GithubConfig(BaseModel, SingletonConfigMixin):
+    """
+    Github 配置信息
+    """
+    site = models.OneToOneField(Site, related_name='github_config', on_delete=models.CASCADE)
+
+    client_id = models.CharField(max_length=255, blank=True, default="", verbose_name="Client ID")
+    client_secret = models.CharField(max_length=255, blank=True, default="", verbose_name="Client Secret")
+    client_valid = models.BooleanField(default=False, verbose_name='Client 配置是否正确')
+
+    def check_valid(self):
+        """
+        检查配置是否有效
+        """
+        is_valid = GithubUserInfoManager(client_id=self.client_id, client_secret=self.client_secret).check_valid()
+        return is_valid
+
+    def __str__(self):
+        return f'GithubConfig[{self.id}]'    # pylint: disable=no-member

@@ -689,6 +689,17 @@ class QQUser(BaseModel):
     open_id = models.TextField(max_length=255, blank=True, verbose_name='qq平台openid')
 
 
+class GithubUser(BaseModel):
+    """
+    github用户
+    """
+    class Meta:    # pylint: disable=missing-class-docstring
+        indexes = [models.Index(fields=['github_user_id'], name='githubuserid_index')]
+
+    user = models.OneToOneField(User, verbose_name='用户', related_name='github_user', on_delete=models.PROTECT)
+    github_user_id = models.CharField(max_length=255, blank=True, verbose_name='Github ID')
+
+
 class SubAccount(BaseModel):
     '''
     子账号
