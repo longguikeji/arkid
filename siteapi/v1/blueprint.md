@@ -24,6 +24,9 @@ FORMAT: 1A
 ## WechatUser (object)
 + unionid (string)
 
+## GithubUser (object)
++ github_user_id (string)
+
 ## UserProfile (object)
 + username (string)
 + name (string)
@@ -88,6 +91,7 @@ FORMAT: 1A
     + pub_key
 + custom_user (CustomUser) - May Null-> 无该键
 + wechat_user (WechatUser)
++ github_user (GithubUser) - github关联用户
 + require_reset_password(boolean) - 是否需要重置密码
 + has_password (boolean) - 是否有密码，目前仅用于邀请链接的页面
 
@@ -397,10 +401,11 @@ FORMAT: 1A
 
 
 ## AccountConfig (object)
-+ allow_register (boolean)
-+ allow_mobile (boolean)
-+ allow_email (boolean)
-+ allow_ding_qr (boolean)
++ allow_register (boolean) - 是否允许账号注册
++ allow_mobile (boolean) - 是否允许手机号登录
++ allow_email (boolean) - 是否允许邮箱登录
++ allow_ding_qr (boolean) - 是否允许钉钉扫码登录
++ allow_github (boolean) - 是否允许github账号登录
 
 ## SMSConfig (object)
 + vendor (string)
@@ -456,6 +461,11 @@ FORMAT: 1A
 + min_word (number) - 单词限制
 + is_active (boolean) - 配置是否启用
 
+## GithubConfig (object)
++ client_id (string) - github侧oauth应用唯一标识
++ client_secret (string) - github侧oauth应用秘钥
++ client_valid (boolean) - github侧oauth应用配置是否有效
+
 ## Config (object)
 + company_config (CompanyConfig)
 + ding_config (DingConfig)
@@ -464,6 +474,7 @@ FORMAT: 1A
 + email_config (EmailConfig)
 + alipay_config (AlipayConfig)
 + password_config (PasswordComplexityConfig)
++ github_config (GithubConfig) - github侧oauth配置
 
 ## CustomField (object)
 + uuid (string)
@@ -684,7 +695,8 @@ FORMAT: 1A
 + Request JSON Message
     + Attributes
         + mobile (string, required) - 重置后的手机号
-        + password (string, required)
+        + password (string)
+
 ### 验证短信验证码 [GET]
 + Parameters
     + mobile (string) - 支持国际手机号，形如 `+86 18812341234`
@@ -2492,9 +2504,9 @@ Content-Disposition: form-data; name='node_uid'
 + Response 200 (application/json)
     + Attributes (MiddlewarePlugin)
 
-# 钉钉扫码登录
+# Group ThirdParty
 
-## 扫码回调函数 [/ding/qr/callback/{?code,state}]
+## 钉钉扫码回调 [/ding/qr/callback/{?code,state}]
 + Parameters
     + code (string) - 钉钉扫码返回一次性查询码tmp_code
     + state (string) - 钉钉回调URL描述参数，一般固定为'STATE'
@@ -2523,10 +2535,9 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'get tmp code error'
 
+## 查询用户 [/ding/query/user/]
 
-## 查询未绑定用户是否注册 [/ding/query/user/]
-
-### 查询用户 [POST]
+### 查询未关联钉钉用户是否注册 [POST]
 + Requests JSON Message
     + Attributes
         + sms_token (string) - 通过返回的sms_token查询手机号，到用户表中查询对应的用户
@@ -2539,12 +2550,12 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'ding qr not allowed'
 
-## 钉钉用户绑定 [/ding/bind/]
+## 关联钉钉 [/ding/bind/]
 
-### 绑定用户 [POST]
+### 绑定钉钉账号 [POST]
 + Request JSON Message
     + Attributes
-        + ding_id (string) - 钉钉用户扫码时查询返回的ding_id
+        + user_id (string) - 钉钉用户扫码时查询返回的ding_id
         + sms_token (string) - 用户手机发短信后返回的sms_token
 
 + Response 201 (application/json)
@@ -2554,9 +2565,9 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'ding qr not allowed'
 
-## 钉钉用户注册加绑定 [/ding/register/bind/]
+## 通过钉钉账号注册 [/ding/register/bind/]
 
-### 注册加绑定 [POST]
+### 钉钉用户注册+关联 [POST]
 + Request JSON Message
     + Attributes
         + username (string)
@@ -2571,10 +2582,7 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'ding qr not allowed'
 
-
-# 支付宝扫码登录
-
-## 扫码回调函数 [/alipay/qr/callback/{?auth_code}]
+## 支付宝扫码回调 [/alipay/qr/callback/{?auth_code}]
 + Parameters
     + auth_code (string) - 支付宝扫码返回一次性查询码auth_code
 
@@ -2598,12 +2606,12 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'alipay qr not allowed'
 
-## 支付宝用户绑定 [/alipay/bind/]
+## 关联支付宝 [/alipay/bind/]
 
-### 绑定用户 [POST]
+### 绑定支付宝账号 [POST]
 + Request JSON Message
     + Attributes
-        + alipay_user_id (string) - 支付宝用户扫码时查询返回的alipay_user_id
+        + user_id (string) - 支付宝用户扫码时查询返回的alipay_user_id
         + sms_token (string) - 用户手机发短信后返回的sms_token
 
 + Response 201 (application/json)
@@ -2613,9 +2621,9 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'alipay qr not allowed'
 
-## 支付宝用户注册加绑定 [/alipay/register/bind/]
+## 通过支付宝账号注册 [/alipay/register/bind/]
 
-### 注册加绑定 [POST]
+### 支付宝用户注册+关联 [POST]
 + Request JSON Message
     + Attributes
         + username (string)
@@ -2630,10 +2638,7 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'alipay qr not allowed'
 
-
-# 企业微信扫码登录
-
-## 扫码回调函数 [/work_wechat/qr/callback/{?code}]
+## 企业微信扫码回调 [/work_wechat/qr/callback/{?code}]
 + Parameters
     + code (string) - 企业微信扫码返回一次性查询码code
 
@@ -2657,12 +2662,12 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'work_wechat qr not allowed'
 
-## 企业微信用户绑定 [/work_wechat/bind/]
+## 关联企业微信 [/work_wechat/bind/]
 
-### 绑定用户 [POST]
+### 绑定企业微信 [POST]
 + Request JSON Message
     + Attributes
-        + work_wechat_user_id (string) - 企业微信用户扫码时查询返回的work_wechat_user_id
+        + user_id (string) - 企业微信用户扫码时查询返回的work_wechat_user_id
         + sms_token (string) - 用户手机发短信后返回的sms_token
 
 + Response 201 (application/json)
@@ -2672,9 +2677,9 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'work_wechat qr not allowed'
 
-## 企业微信用户注册加绑定 [/work_wechat/register/bind/]
+## 通过企业微信注册 [/work_wechat/register/bind/]
 
-### 注册加绑定 [POST]
+### 企业微信用户注册+关联 [POST]
 + Request JSON Message
     + Attributes
         + username (string)
@@ -2689,10 +2694,7 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'work_wechat qr not allowed'
 
-
-# 微信扫码登录
-
-## 扫码回调函数 [/wechat/qr/callback/{?code}]
+## 微信扫码回调 [/wechat/qr/callback/{?code}]
 + Parameters
     + code (string) - 微信扫码返回一次性查询码code
 
@@ -2716,12 +2718,12 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'wechat qr not allowed' 
 
-## 微信用户绑定 [/wechat/bind/]
+## 关联微信 [/wechat/bind/]
 
-### 绑定用户 [POST]
+### 绑定微信账号 [POST]
 + Request JSON Message
     + Attributes
-        + wechat_user_id (string) - 微信用户扫码时查询返回的unionid
+        + user_id (string) - 微信用户扫码时查询返回的unionid
         + sms_token (string) - 用户手机发短信后返回的sms_token
 
 + Response 201 (application/json)
@@ -2731,9 +2733,9 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'wechat qr not allowed'
 
-## 微信用户注册加绑定 [/wechat/register/bind/]
+## 通过微信注册 [/wechat/register/bind/]
 
-### 注册加绑定 [POST]
+### 微信用户注册+关联 [POST]
 + Request JSON Message
     + Attributes
         + username (string)
@@ -2746,12 +2748,9 @@ Content-Disposition: form-data; name='node_uid'
 
 + Response 403 (application/json)
     + Attributes
-        + err_msg (string) - 'work_wechat qr not allowed'
+        + err_msg (string) - 'wechat qr not allowed'
 
-
-# qq扫码登录
-
-## 扫码回调函数 [/qq/qr/callback/{?code}]
+## QQ扫码回调 [/qq/qr/callback/{?code}]
 + Parameters
     + code (string) - qq扫码返回一次性查询码code
 
@@ -2775,9 +2774,9 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'qq qr not allowed' 
 
-## qq用户绑定 [/qq/bind/]
+## 关联QQ [/qq/bind/]
 
-### 绑定用户 [POST]
+### 绑定QQ账号 [POST]
 + Request JSON Message
     + Attributes
         + user_id (string) - qq用户扫码时查询返回的openid
@@ -2790,9 +2789,9 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'qq qr not allowed'
 
-## qq用户注册加绑定 [/qq/register/bind/]
+## 通过QQ注册 [/qq/register/bind/]
 
-### 注册加绑定 [POST]
+### QQ用户注册+关联 [POST]
 + Request JSON Message
     + Attributes
         + username (string)
@@ -2806,6 +2805,62 @@ Content-Disposition: form-data; name='node_uid'
 + Response 403 (application/json)
     + Attributes
         + err_msg (string) - 'work_qq qr not allowed'
+
+## Github账号登录回调 [/github/callback/{?code}]
++ Parameters
+    + code (string) - github登录返回一次性查询码code
+
+### 获取权限 [POST]
++ Requests JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 200 (application/json)
+    + Attributes
+        + token （string) - 未匹配用户，返回空字段token
+        + third_party_id (string) - 返回github_user_id，用于下一步提交绑定
+
++ Response 400 (application/json)
+    + Attributes
+        + err_msg (string) - 'get github id error'
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'github not allowed' 
+
+## 关联Github [/github/bind/]
+
+### 绑定Github账号 [POST]
++ Request JSON Message
+    + Attributes
+        + user_id (string) - github用户登录时查询返回的id
+        + sms_token (string) - 用户手机发短信后返回的sms_token
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'github not allowed'
+
+## 通过Github账号注册 [/github/register/bind/]
+
+### Github用户注册+关联 [POST]
++ Request JSON Message
+    + Attributes
+        + username (string)
+        + password (string) 
+        + sms_token (string) - 绑定页面验证用户手机的sms_token
+        + user_id (string) - 从github查询的用户的id
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'github not allowed'
 
 # Group SAML 2.0
 
@@ -2884,7 +2939,7 @@ APP在发送认证请求时，需将SAMLRequest放置于表单中，具体参数
 + Response 200 (application/json)
     + Attributes (array[AliyunSSORole])
 
-## 指定阿里云角色SSO [/saml/aliyun/sso-role/{?username}/]
+## 指定阿里云角色SSO [/saml/aliyun/sso-role/{?username}]
 
 + Parameters
     + username (string) - 用户唯一标识
