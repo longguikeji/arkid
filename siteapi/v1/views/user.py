@@ -33,6 +33,7 @@ from siteapi.v1.serializers.dept import DeptListSerializer, DeptSerializer
 from common.django.drf.paginator import DefaultListPaginator
 from executer.core import CLI
 from executer.utils import operation
+from tasksapp.tasks import update_users_cache
 
 
 class UserListCreateAPIView(generics.ListCreateAPIView):
@@ -533,7 +534,6 @@ class UserNodeView(generics.RetrieveUpdateAPIView):
                GroupSerializer(user.groups, many=True).data
         return Response({'nodes': data})
 
-    @transaction.atomic()
     def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         user = self.get_object()
         node_uids = request.data.get('node_uids', [])
@@ -545,8 +545,11 @@ class UserNodeView(generics.RetrieveUpdateAPIView):
                 group_uids.append(node_uid.replace(Group.NODE_PREFIX, '', 1))
             elif node_uid.startswith(Dept.NODE_PREFIX):
                 dept_uids.append(node_uid.replace(Dept.NODE_PREFIX, '', 1))
-        update_user_nodes(user, nodes=[], uids=group_uids, node_type='group', action_subject=subject)
-        update_user_nodes(user, nodes=[], uids=dept_uids, node_type='dept', action_subject=subject)
+        with transaction.atomic():
+            update_user_nodes(user, nodes=[], uids=group_uids, node_type='group', action_subject=subject)
+            update_user_nodes(user, nodes=[], uids=dept_uids, node_type='dept', action_subject=subject)
+            # 可重复读事务提交后，更新缓存数据至最新版本
+            transaction.on_commit(lambda: update_users_cache.delay([user.username]))
         return self.get(request)
 
 
