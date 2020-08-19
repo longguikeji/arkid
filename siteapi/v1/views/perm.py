@@ -226,20 +226,25 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
             UserPerm.valid_objects.filter(perm=perm).update(status='0')
             DeptPerm.valid_objects.filter(perm=perm).update(status='0')
             GroupPerm.valid_objects.filter(perm=perm).update(status='0')
-
         user_perm_status = self.request.data.get('user_perm_status', [])
+        node_perm_status = self.request.data.get('node_perm_status', [])
+
+        if not isinstance(user_perm_status, list):
+            raise ValidationError({'user_perm_status': ['must be a list']})
+        if not isinstance(node_perm_status, list):
+            raise ValidationError({'node_perm_status': ['must be a list']})
+
         for ups in user_perm_status:
             user = User.valid_objects.filter(username=ups['uid']).first()
             # TODO: 目前对每个对象都逐一检验 under_manage，开销大; 且对于没有权限的，只是静默跳过，没有提示。需改进。
             if not (user and user.under_manage(request.user)):
-                raise ValidationError({'user_perm_status': [f'invlid uid: `{ups["uid"]}`']})
+                raise ValidationError({'user_perm_status': [f'invalid uid: `{ups["uid"]}`']})
             ups['instance'] = user
 
-        node_perm_status = self.request.data.get('node_perm_status', [])
         for nps in node_perm_status:
             node, _ = Dept.retrieve_node(nps['uid'])
             if not (node and node.under_manage(request.user)):
-                raise ValidationError({'node_perm_status': [f'invlid uid: `{nps["uid"]}`']})
+                raise ValidationError({'node_perm_status': [f'invalid uid: `{nps["uid"]}`']})
             nps['instance'] = node
 
         for ups in user_perm_status:
