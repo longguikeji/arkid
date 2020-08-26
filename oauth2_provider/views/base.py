@@ -10,6 +10,7 @@ from Cryptodome.PublicKey import RSA
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from jwkest import long_to_base64
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
@@ -423,6 +424,7 @@ class RevokeTokenView(OAuthLibMixin, View):
 
 class UserInfoOauthView(APIView):
     authentication_classes = [OAuth2Backend]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
@@ -444,6 +446,7 @@ class UserInfoOauthView(APIView):
 
 class UserInfoOidcView(APIView):
     authentication_classes = [OAuth2Backend]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user

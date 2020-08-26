@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('sites', '0002_alter_domain_unique'),
-        ('oneid_meta', '0077_i18nmobileconfig'),
+        ('oneid_meta', '0078_i18nmobileconfig'),
     ]
 
     operations = [
