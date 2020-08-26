@@ -12,7 +12,7 @@ from oauth2_provider.models import Application as OAuthApplication
 from oauth2_provider.models import OidcApplication
 
 from common.django.model import BaseModel
-from oneid_meta.models import Perm
+from oneid_meta.models.perm import Perm
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -35,7 +35,9 @@ class APP(BaseModel):
     def __str__(self):
         return f'APP: {self.uid}({self.name})'
 
-    def save(self, *args, **kwargs):    # pylint: disable=arguments-differ
+    # pylint: disable=arguments-differ
+    # pylint: disable=signature-differs
+    def save(self, *args, **kwargs):
         if APP.valid_objects.filter(uid=self.uid).exclude(pk=self.pk).exists():
             msg = "UNIQUE constraint failed: " \
                 "oneid_meta.APP UniqueConstraint(fields=['uid'], condition=Q(is_del='False')"
@@ -322,11 +324,11 @@ class SAMLAPP(BaseModel):
             {
                 'name': 'IdP方元数据接口',
                 'key': 'entity_id',
-                'value': settings.BASE_URL + '/saml/metadata',
+                'value': settings.BASE_URL + '/saml/metadata/',
             },
             {
                 'name': 'IdP单点登录SSO接口',
                 'key': 'sso',
-                'value': settings.BASE_URL + '/saml/sso/redirect' + ';' + settings.BASE_URL + '/saml/sso/post'
+                'value': settings.BASE_URL + '/saml/sso/redirect/' + ';' + settings.BASE_URL + '/saml/sso/post/'
             },
         ]
