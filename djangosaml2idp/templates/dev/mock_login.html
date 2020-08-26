@@ -1,0 +1,29 @@
+{#oneid_base_url需要更改为本地开发环境IP:port#}
+
+SAML 2.0 Login Success as admin
+<form class='form' method="POST">
+    username<input name="username">
+    password<input name="password">
+    <button type='button' id='submit'>submit</button>
+</form>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript">
+    const oneid_base_url = 'http://localhost:8000'
+    const urlParams = new URLSearchParams(window.location.search);
+    const SAMLRequest = urlParams.get('SAMLRequest');
+    let next = oneid_base_url + '/saml/login/process/'+'?SAMLRequest='+SAMLRequest;
+
+    $('#submit').click(function(){
+        const username = $('input[name=username]').val();
+        const password = $('input[name=password]').val();
+        $.ajax({
+            method: 'POST',
+            url: '{{token_url}}',
+            data: {'username': username, 'password': password},
+            success: function(){
+                window.location.href = next;
+            }
+        })
+        return false;
+    })
+</script>

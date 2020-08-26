@@ -8,6 +8,7 @@ schema of Users
 from itertools import chain
 
 import django
+import jsonfield
 from django.core.cache import cache
 from django.db import models
 from django.conf import settings
@@ -570,6 +571,18 @@ class User(BaseModel, PermOwnerMixin):
             self.last_active_time = now
             self.save(update_fields=['last_active_time'])
 
+    @property
+    def aliyun_sso_roles(self):
+        """与阿里云角色sso相关联信息"""
+        # pylint: disable=no-member
+        return self.aliyun_sso_role.role if self.aliyun_sso_role.is_active else []
+
+    @property
+    def aliyun_sso_session_duration(self):
+        """与阿里云角色sso相关联信息"""
+        # pylint: disable=no-member
+        return str(self.aliyun_sso_role.session_duration)
+
 
 class PosixUser(BaseModel):
     '''
@@ -707,3 +720,12 @@ class SubAccount(BaseModel):
     domain = models.CharField(max_length=255, verbose_name='登录域名')
     username = models.CharField(max_length=255, default="", null=True, verbose_name='用户名')
     password = models.CharField(max_length=512, verbose_name='密码、token')
+
+
+class AliyunSSORole(BaseModel):
+    """
+    阿里云角色SSO与user对接信息
+    """
+    user = models.OneToOneField(User, verbose_name='用户', related_name='aliyun_sso_role', on_delete=models.CASCADE)
+    role = jsonfield.JSONField(default=[], blank=True, verbose_name='阿里云SSO角色分配')
+    session_duration = models.IntegerField(blank=True, default=900)

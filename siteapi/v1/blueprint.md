@@ -578,6 +578,11 @@ FORMAT: 1A
 + start_digit (array[number]) - 首位数字限制集
 + is_active (boolean) - 是否启用
 
+## AliyunSSORole (object)
++ user_id (number) - 用户id
++ role (array[string]) - 阿里云角色信息
++ session_duration (number) - 阿里云SSO会话时间
+
 # Group Infrastructure
 基础设施
 
@@ -2499,52 +2504,6 @@ Content-Disposition: form-data; name='node_uid'
 + Response 200 (application/json)
     + Attributes (MiddlewarePlugin)
 
-# SAML2 APP配置接口
-
-## APP单点登录配置 [/saml/sso/redirect]
-
-+ Request 302 Redirect
-    + Attributes
-        + SAMLRequest (string) - SP方SAML重定向请求
-
-+ Response 302
-    + Attributes
-        + next (string) - 重定向未登录用户到oneid登录页
-
-+ Response 302
-    + Attributes
-        + SAMLResponse (base64/string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
-            + Issuer - (string) IdP方处理元数据请求uri
-            + Audience - (string) SP方监听SMALResponse的uri
-            + entity - (string) IdP方获取元数据地址
-            + status_code - (string) 登录状态
-            + username - (string) IdP用户名
-            + email - (string) IdP用户邮箱
-            + private_email - (string) IdP用户私人邮箱
-            + token - （string）IdP用户token
-
-## SP获取元数据接口 [/saml/metadata/]
-
-### 获取xml [GET]
-
-+ Request JSON Message
-    + Attributes
-
-+ Response 200 (application/json)
-    + Attributes
-        + metadata (string) - SAML2元数据显示在网页，用于SP方获取   FIXME: content-type
-
-## 下载元数据文件 [/saml/download/metadata/]
-
-### 下载 [GET]
-
-+ Request JSON Message
-    + Attributes
-
-+ Response 200 (application/json)
-    + Attributes
-        + metadata.xml (string) - IdP方新建时生成的元数据文件，用于在SP方配置时上传.  FIXME: content-type
-
 # Group ThirdParty
 
 ## 钉钉扫码回调 [/ding/qr/callback/{?code,state}]
@@ -2902,3 +2861,102 @@ Content-Disposition: form-data; name='node_uid'
 + Response 403 (application/json)
     + Attributes
         + err_msg (string) - 'github not allowed'
+
+# Group SAML 2.0
+
+## APP请求认证-1 [/saml/sso/redirect/]
+APP在发送认证请求时，需将SAMLRequest放置于QueryString中，具体参数参考saml2.0协议指南
+
+### APP请求认证 [GET]
++ Request JSON Message
+    + Attributes
+
++ Response 302 (application/json)
+    + Attributes
+        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
+            + Issuer - (string) IdP方处理元数据请求uri
+            + Audience - (string) SP方监听SMALResponse的uri
+            + entity - (string) IdP方获取元数据地址
+            + status_code - (string) 登录状态
+            + username - (string) IdP用户名
+            + email - (string) IdP用户邮箱
+            + private_email - (string) IdP用户私人邮箱
+            + token - （string）IdP用户token
+            
+## APP请求认证-2 [/saml/sso/post/]
+APP在发送认证请求时，需将SAMLRequest放置于表单中，具体参数参考saml2.0协议指南
+
+### APP请求认证 [POST]
++ Request JSON Message
+    + Attributes
+
++ Response 302 (application/json)
+    + Attributes
+        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
+            + Issuer - (string) IdP方处理元数据请求uri
+            + Audience - (string) SP方监听SMALResponse的uri
+            + entity - (string) IdP方获取元数据地址
+            + status_code - (string) 登录状态
+            + username - (string) IdP用户名
+            + email - (string) IdP用户邮箱
+            + private_email - (string) IdP用户私人邮箱
+            + token - （string）IdP用户token
+            
+## 元数据信息 [/saml/metadata/]
+
+### SP获取元数据信息 [GET]
++ Request JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes
+        + metadata (string) - SAML2元数据显示在网页，用于SP方获取
+
+## 元数据文件 [/saml/download/metadata/]
+
+### 下载元数据文件 [GET]
++ Request JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+
+## 阿里云角色SSO [/saml/aliyun/sso-role/]
+
+### 获取所有用户角色SSO信息 [GET]
++ Request JSON Message
+    + Attributes
+        
++ Response 200 (application/json)
+    + Attributes (array[AliyunSSORole])
+    
+### 创建用户角色SSO [POST]
++ Request JSON Message
+    + Attributes
+        + user_ids (array[number]) - 用户id列表
+        + role (array[string]) 
+        + session_duration (number)
+        
++ Response 200 (application/json)
+    + Attributes (array[AliyunSSORole])
+
+## 指定阿里云角色SSO [/saml/aliyun/sso-role/{?username}]
+
++ Parameters
+    + username (string) - 用户唯一标识
+
+### 修改指定用户角色SSO信息 [PATCH]
++ Request JSON Message
+    + Attributes(AliyunSSORole)
+        
++ Response 200 (application/json)
+    + Attributes (AliyunSSORole)
+
+## 阿里云角色SSO登录 [/saml/aliyun/sso-role/login/]
+
+### 登录 [GET]
++ Request JSON Message
+    + Attributes
+        
++ Response 302 (application/json)
+    + Attributes
+        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
