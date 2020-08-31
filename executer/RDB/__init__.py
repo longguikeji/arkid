@@ -156,9 +156,17 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         dept.order_no = Dept.get_max_order_no(parent=dept.parent) + 1
         dept.save()
 
-        for perm in Perm.valid_objects.all():
-            DeptPerm.valid_objects.create(owner=serializer.instance, perm=perm)
-        return dept
+        # 批量创建组权限
+        #  1) 去重
+        perm_ids = Perm.valid_objects.values_list('pk', flat=True)
+        exist_perm_ids = DeptPerm.valid_objects.filter(owner=serializer.instance).values_list('perm_id', flat=True)
+        for item in exist_perm_ids:
+            perm_ids.remove(item)
+        #  2) 批量创建
+        dept_perms = [DeptPerm(owner=serializer.instance, perm_id=x) for x in perm_ids]
+        DeptPerm.objects.bulk_create(dept_perms)
+
+        return serializer.instance
 
     def add_dept_to_dept(self, dept, parent_dept):
         '''
@@ -181,10 +189,15 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
 
         group.order_no = Group.get_max_order_no(parent=group.parent) + 1
         group.save()
+
         # 批量创建组权限
+        #  1) 去重
         perm_ids = Perm.valid_objects.values_list('pk', flat=True)
-        group_perm_ids = GroupPerm.valid_objects.filter(owner=serializer.instance).values_list('perm_id', flat=True)
-        group_perms = [GroupPerm(owner=serializer.instance, perm_id=x) for x in perm_ids if x not in group_perm_ids]
+        exist_perm_ids = GroupPerm.valid_objects.filter(owner=serializer.instance).values_list('perm_id', flat=True)
+        for item in exist_perm_ids:
+            perm_ids.remove(item)
+        #  2) 批量创建
+        group_perms = [GroupPerm(owner=serializer.instance, perm_id=x) for x in perm_ids]
         GroupPerm.objects.bulk_create(group_perms)
 
         return serializer.instance
