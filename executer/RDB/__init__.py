@@ -160,8 +160,7 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         #  1) 去重
         perm_ids = Perm.valid_objects.values_list('pk', flat=True)
         exist_perm_ids = DeptPerm.valid_objects.filter(owner=serializer.instance).values_list('perm_id', flat=True)
-        for item in exist_perm_ids:
-            perm_ids.remove(item)
+        perm_ids = set(perm_ids).difference(exist_perm_ids)
         #  2) 批量创建
         dept_perms = [DeptPerm(owner=serializer.instance, perm_id=x) for x in perm_ids]
         DeptPerm.objects.bulk_create(dept_perms)
@@ -194,8 +193,7 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         #  1) 去重
         perm_ids = Perm.valid_objects.values_list('pk', flat=True)
         exist_perm_ids = GroupPerm.valid_objects.filter(owner=serializer.instance).values_list('perm_id', flat=True)
-        for item in exist_perm_ids:
-            perm_ids.remove(item)
+        perm_ids = set(perm_ids).difference(exist_perm_ids)
         #  2) 批量创建
         group_perms = [GroupPerm(owner=serializer.instance, perm_id=x) for x in perm_ids]
         GroupPerm.objects.bulk_create(group_perms)
