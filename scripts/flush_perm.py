@@ -30,7 +30,7 @@ def check_perm_exists():
     groups = Group.valid_objects.all()
     depts = Dept.valid_objects.all()
 
-    if not user_perms.count() == perms.count() * users.count():
+    if user_perms.count() != perms.count() * users.count():
         for perm in perms:
             for user in users:
                 if not user_perms.filter(Q(owner=user) | Q(perm=perm)).exists():
@@ -43,7 +43,7 @@ def check_perm_exists():
                         value=perm.default_value,
                     )
 
-    if not group_perms.count() == perms.count() * groups.count():
+    if group_perms.count() != perms.count() * groups.count():
         for perm in perms:
             for group in groups:
                 if not group_perms.filter(Q(owner=group) | Q(perm=perm)).exists():
@@ -54,7 +54,7 @@ def check_perm_exists():
                         value=perm.default_value,
                     )
 
-    if not dept_perms.count() == perms.count() * depts.count():
+    if dept_perms.count() != perms.count() * depts.count():
         for perm in perms:
             for dept in depts:
                 if not dept_perms.filter(Q(owner=dept) | Q(perm=perm)).exists():
@@ -120,15 +120,14 @@ def _flush_node_perm(node_cls, start_node=None, perms=None, node_perms=None, per
     if not perms:
         perms = Perm.valid_objects.all()
     if perm_cls and node_perms:
-        if node_perms.count() == node_cls.valid_objects.all().count() * perms.count():
-            return
-        for node in start_node.tree_front_walker():
-            for perm in perms:
-                # TODO 批量创建
-                node_perm = node.get_perm(perm, node_perms)
+        if node_perms.count() != node_cls.valid_objects.all().count() * perms.count():
+            for node in start_node.tree_front_walker():
+                for perm in perms:
+                    # TODO 批量创建
+                    node_perm = node.get_perm(perm, node_perms)
 
-                # TODO 批量更新
-                node_perm.update_value()
+                    # TODO 批量更新
+                    node_perm.update_value()
 
 
 def _update_user_node_perm(user):
