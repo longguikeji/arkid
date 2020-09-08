@@ -101,17 +101,17 @@ def flush_group_perm(group=None, perms=None, group_perms=None):
     '''
     从上往下刷新组权限
     '''
-    return _flush_node_perm(node_cls=Group, start_node=group, perms=perms, node_perms=group_perms, perm_cls=GroupPerm)
+    return _flush_node_perm(node_cls=Group, start_node=group, perms=perms, node_perms=group_perms)
 
 
 def flush_dept_perm(dept=None, perms=None, dept_perms=None):
     '''
     从上往下刷新部门权限
     '''
-    return _flush_node_perm(node_cls=Dept, start_node=dept, perms=perms, node_perms=dept_perms, perm_cls=DeptPerm)
+    return _flush_node_perm(node_cls=Dept, start_node=dept, perms=perms, node_perms=dept_perms)
 
 
-def _flush_node_perm(node_cls, start_node=None, perms=None, node_perms=None, perm_cls=None):
+def _flush_node_perm(node_cls, start_node=None, perms=None, node_perms=None):
     '''
     从上往下刷新节点权限
     '''
@@ -119,15 +119,21 @@ def _flush_node_perm(node_cls, start_node=None, perms=None, node_perms=None, per
         start_node = node_cls.get_root()
     if not perms:
         perms = Perm.valid_objects.all()
-    if perm_cls and node_perms:
-        if node_perms.count() != node_cls.valid_objects.all().count() * perms.count():
-            for node in start_node.tree_front_walker():
-                for perm in perms:
-                    # TODO 批量创建
-                    node_perm = node.get_perm(perm, node_perms)
 
-                    # TODO 批量更新
-                    node_perm.update_value()
+    def _exec_flush():
+        for node in start_node.tree_front_walker():
+            for perm in perms:
+                # TODO 批量创建
+                node_perm = node.get_perm(perm, node_perms)
+
+                # TODO 批量更新
+                node_perm.update_value()
+
+    if not node_perms:
+        _exec_flush()
+        return
+    if node_perms.count() != node_cls.valid_objects.all().count() * perms.count():
+        _exec_flush()
 
 
 def _update_user_node_perm(user):
