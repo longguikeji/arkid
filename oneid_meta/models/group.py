@@ -34,7 +34,7 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
     def __str__(self):
         return f'Group: {self.uid}({self.name})'
 
-    def save(self, *args, **kwargs):    # pylint: disable=arguments-differ
+    def save(self, *args, **kwargs):    # pylint: disable=arguments-differ, signature-differs
         if Group.valid_objects.filter(uid=self.uid).exclude(pk=self.pk).exists():
             msg = "UNIQUE constraint failed: " \
                 "oneid_meta.Group UniqueConstraint(fields=['uid'], condition=Q(is_del='False')"
@@ -113,11 +113,14 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         '''
         return self.get_perm(perm).value
 
-    def get_perm(self, perm):
+    def get_perm(self, perm, group_perms=None):
         '''
         返回权限结果
         '''
-        perm_result, _ = GroupPerm.valid_objects.get_or_create(owner=self, perm=perm)
+        if group_perms:
+            perm_result, _ = group_perms.get_or_create(owner=self, perm=perm)
+        else:
+            perm_result, _ = GroupPerm.valid_objects.get_or_create(owner=self, perm=perm)
         return perm_result
 
     @property
