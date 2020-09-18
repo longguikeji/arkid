@@ -1,6 +1,9 @@
 """
 第三方账号登录视图
 """
+from urllib.parse import urlencode
+
+from django.http import HttpResponseRedirect
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
@@ -73,6 +76,7 @@ class GithubCallbackView(APIView):
         处理github用户登录之后重定向页面
         """
         code = request.GET['code']
+        redirect_url = request.GET.get('redirect_url', None)
         client_id = GithubConfig.get_current().client_id
         client_secret = GithubConfig.get_current().client_secret
         if code:
@@ -82,7 +86,11 @@ class GithubCallbackView(APIView):
                 raise ValidationError({'code': ['invalid']})
         else:
             raise ValidationError({'code': ['required']})
+
         context = self.get_token(user_id)
+        if redirect_url:
+            query_string = urlencode(context)
+            return HttpResponseRedirect(f'{redirect_url}?{query_string}')
         return Response(context, HTTP_200_OK)
 
     def get_token(self, user_id):    # pylint: disable=no-self-use

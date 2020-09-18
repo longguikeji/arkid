@@ -2,6 +2,9 @@
 扫码登录视图
 '''
 # pylint: disable=too-many-lines
+from urllib.parse import urlencode
+
+from django.http import HttpResponseRedirect
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from rest_framework import generics, status
@@ -459,6 +462,7 @@ class WechatQrCallbackView(APIView):
         处理微信用户扫码之后重定向页面
         '''
         code = request.data.get('code')
+        redirect_url = request.GET.get('redirect_url', None)
         appid = WechatConfig.get_current().appid
         secret = WechatConfig.get_current().secret
         if code:
@@ -468,7 +472,11 @@ class WechatQrCallbackView(APIView):
                 raise ValidationError({'code': ['invalid']})
         else:
             raise ValidationError({'code': ['required']})
+
         context = self.get_token(unionid)
+        if redirect_url:
+            query_string = urlencode(context)
+            return HttpResponseRedirect(f'{redirect_url}?{query_string}')
         return Response(context, HTTP_200_OK)
 
     def get_token(self, unionid):    # pylint: disable=no-self-use
