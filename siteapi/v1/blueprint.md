@@ -2697,6 +2697,7 @@ Content-Disposition: form-data; name='node_uid'
 ## 微信扫码回调 [/wechat/qr/callback/{?code}]
 + Parameters
     + code (string) - 微信扫码返回一次性查询码code
+    + redirect_url (string) - 代理模式，再次重定向至此URL，并以QueryString的方式携带`token`和`third_party_id`参数
 
 ### 获取权限 [POST]
 + Requests JSON Message
@@ -2809,8 +2810,9 @@ Content-Disposition: form-data; name='node_uid'
 ## Github账号登录回调 [/github/callback/{?code}]
 + Parameters
     + code (string) - github登录返回一次性查询码code
+    + redirect_url (string) - 代理模式，再次重定向至此URL，并以QueryString的方式携带`token`和`third_party_id`参数
 
-### 获取权限 [POST]
+### 获取权限 [GET]
 + Requests JSON Message
     + Attributes
 
