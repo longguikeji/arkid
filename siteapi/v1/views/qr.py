@@ -461,7 +461,7 @@ class WechatQrCallbackView(APIView):
         '''
         处理微信用户扫码之后重定向页面
         '''
-        code = request.data.get('code')
+        code = request.GET.get('code')
         redirect_url = request.GET.get('redirect_url', None)
         appid = WechatConfig.get_current().appid
         secret = WechatConfig.get_current().secret
