@@ -2694,10 +2694,10 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'work_wechat qr not allowed'
 
-## 微信扫码回调 [/wechat/qr/callback/{?code}]
+## 微信扫码回调 [/wechat/qr/callback/{?code,redirect_url}]
 + Parameters
     + code (string) - 微信扫码返回一次性查询码code
-    + redirect_url (string) - 代理模式，再次重定向至此URL，并以QueryString的方式携带`token`和`third_party_id`参数
+    + redirect_url (string) - 代理模式，再次重定向至此URL，并以QueryString的方式携带Token和ThirdPartyId参数
 
 ### 获取权限 [POST]
 + Requests JSON Message
@@ -2807,10 +2807,10 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'work_qq qr not allowed'
 
-## Github账号登录回调 [/github/callback/{?code}]
+## Github账号登录回调 [/github/callback/{?redirect_url,code}]
 + Parameters
     + code (string) - github登录返回一次性查询码code
-    + redirect_url (string) - 代理模式，再次重定向至此URL，并以QueryString的方式携带`token`和`third_party_id`参数
+    + redirect_url (string) - 代理模式，再次重定向至此URL，并以QueryString的方式携带Token和ThirdPartyId参数
 
 ### 获取权限 [GET]
 + Requests JSON Message

@@ -457,7 +457,7 @@ class WechatQrCallbackView(APIView):
     authentication_classes = []
 
     @require_wechat_qr_supported
-    def post(self, request):
+    def get(self, request):
         '''
         处理微信用户扫码之后重定向页面
         '''
