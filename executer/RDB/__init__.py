@@ -3,7 +3,7 @@ RDB数据操作
 '''
 # pylint: disable=import-error
 # pylint: disable=no-self-use
-
+from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from executer.core import Executer
@@ -30,10 +30,11 @@ from siteapi.v1.serializers.group import (
     GroupDetailSerializer, )
 
 
-class RDBExecuter(Executer):    # pylint: disable=abstract-method
+class RDBExecuter(Executer):  # pylint: disable=abstract-method
     '''
     RDB数据操作接口
     '''
+
     def create_user(self, user_info):
         '''
         创建用户
@@ -121,10 +122,16 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         :param oneid_meta.models.User user:
         :param list groups:
         '''
-        for group in groups:
-            if not GroupMember.valid_objects.filter(user=user, owner=group).exists():
-                order_no = GroupMember.get_max_order_no(owner=group) + 1
-                GroupMember.valid_objects.create(user=user, owner=group, order_no=order_no)
+        # for group in groups:
+        #     if not GroupMember.valid_objects.filter(user=user, owner=group).exists():
+        #         order_no = GroupMember.get_max_order_no(owner=group) + 1
+        #         GroupMember.valid_objects.create(user=user, owner=group, order_no=order_no)
+        _groups = GroupMember.valid_objects.filter(~Q(user=user))
+        group_members = [
+            GroupMember(user=user, owner=item.owner, order_no=GroupMember.get_max_order_no(owner=item.owner) + 1)
+            for item in _groups
+        ]
+        GroupMember.valid_objects.bulk_create(group_members)
 
     def delete_user_from_depts(self, user, depts):
         '''
