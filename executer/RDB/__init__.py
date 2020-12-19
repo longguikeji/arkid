@@ -126,10 +126,11 @@ class RDBExecuter(Executer):  # pylint: disable=abstract-method
         #     if not GroupMember.valid_objects.filter(user=user, owner=group).exists():
         #         order_no = GroupMember.get_max_order_no(owner=group) + 1
         #         GroupMember.valid_objects.create(user=user, owner=group, order_no=order_no)
-        _groups = GroupMember.valid_objects.filter(~Q(user=user))
+        _group_uids = [x.owner.uid for x in GroupMember.valid_objects.filter(owner__in=groups, user=user)]
+        _groups = set(groups).difference(_group_uids)
         group_members = [
-            GroupMember(user=user, owner=item.owner, order_no=GroupMember.get_max_order_no(owner=item.owner) + 1)
-            for item in _groups
+            GroupMember(user=user, owner=x, order_no=GroupMember.get_max_order_no(owner=x) + 1)
+            for x in _groups
         ]
         GroupMember.valid_objects.bulk_create(group_members)
 
