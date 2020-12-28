@@ -45,6 +45,7 @@ def is_cn_mobile(mobile):
 
 
 def i18n_mobile_verify(mobile, state_code, state=None):
+    return True
     """
     根据国际手机接入配置校验手机号
     """
