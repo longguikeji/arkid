@@ -7,6 +7,8 @@ pipeline {
     }
 
     environment {
+        // 在北京龙归科技有限公司这个钉钉群的机器人
+        DINGTALK_ROBOT = "51e1b446-ccde-44f5-aad0-8303e4967d39"
         DOCKER_DEV_REGISTRY="https://harbor.longguikeji.com"
         DOCKER_DEV_REGISTRY_CREDENTIAL="devops-longguikeji-harbor"
         DOCKER_PROD_REGISTRY="https://index.docker.io/v1/"
@@ -136,10 +138,24 @@ def sendDingTalk(status, message) {
     } else {
         img=""
     }
-    dingTalk([
-        accessToken: "${env.DING_TALK_ENTRYPOINT}",
-        jenkinsUrl: "${env.JENKINS_URL}",
-        imageUrl: img,
-        message: message,
-    ])
+    
+    dingtalk (
+        //all
+        robot: "${env.DINGTALK_ROBOT}", 
+        type: 'LINK',
+        at: ["18031108921"],
+        atAll: false,
+
+        //LINK
+        title: "${env.IMAGE_NAME}-${env.GIT_TAG}",
+        text: [message],
+        messageUrl: "${env.BUILD_URL}",
+        picUrl: img,
+
+        //整体跳转
+        //singleTitle: '',
+        //btns: [],
+        //btnLayout: '',
+        //hideAvatar: false
+    )
 }
