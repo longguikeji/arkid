@@ -6,6 +6,8 @@ pipeline {
     // - PYPI_REGISTRY
 
     environment {
+        // 在北京龙归科技有限公司这个钉钉群的机器人
+        DINGTALK_ROBOT = "51e1b446-ccde-44f5-aad0-8303e4967d39"
         GIT_SHORT_COMMIT = """${sh(
             returnStdout: true,
             script: 'git rev-parse --short HEAD',
@@ -76,10 +78,24 @@ def sendDingTalk(status, message) {
     } else {
         img=""
     }
-    dingTalk([
-        accessToken: "${env.DING_TALK_ENTRYPOINT}",
-        jenkinsUrl: "${env.JENKINS_URL}",
-        imageUrl: img,
-        message: message,
-    ])
+    
+    dingtalk (
+        //all
+        robot: "${env.DINGTALK_ROBOT}", 
+        type: 'LINK',
+        at: ["18031108921"],
+        atAll: false,
+
+        //LINK
+        title: "${env.IMAGE_NAME}-${env.GIT_TAG}",
+        text: [message],
+        messageUrl: "${env.BUILD_URL}",
+        picUrl: img,
+
+        //整体跳转
+        //singleTitle: '',
+        //btns: [],
+        //btnLayout: '',
+        //hideAvatar: false
+    )
 }
