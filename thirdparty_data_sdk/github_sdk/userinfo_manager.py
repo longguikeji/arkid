@@ -33,7 +33,10 @@ class GithubUserInfoManager:
                                      }).__getattribute__('_content')
             result = dict([(k, v[0]) for k, v in parse_qs(response.decode()).items()])    # 将响应信息转换为字典
             # 获取user info
-            response = requests.get(constants.GET_USERINFO_URL, params={'access_token': result['access_token']}).json()
+            headers = {
+                'Authorization':'token '+ result['access_token']
+            }
+            response = requests.get(constants.GET_USERINFO_URL, params={'access_token': result['access_token']}, headers=headers).json()
             user_id = response['id']
             return user_id
         except Exception:
