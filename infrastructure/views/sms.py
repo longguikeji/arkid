@@ -16,7 +16,7 @@ from infrastructure.serializers.sms import (
     SMSClaimSerializer,
     LoginSMSClaimSerializer,
 )
-from oneid_meta.models import AccountConfig
+from oneid_meta.models import AccountConfig, User
 
 
 class SMSClaimAPIView(GenericAPIView):
@@ -82,7 +82,11 @@ class SMSClaimAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response('sms has send', status=status.HTTP_201_CREATED)
+
+        # 增加对mobile的检查，确定
+        mobile = serializer.validated_data['mobile']
+
+        return Response({'isregister':User.valid_objects.filter(mobile=mobile).exists(),'message':'sms has send'}, status=status.HTTP_201_CREATED)
 
     def get(self, request, *args, **kwargs):    # pylint: disable=unused-argument
         '''
