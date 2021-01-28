@@ -152,6 +152,8 @@ idp_metadata.xml
 
 # docker-compose
 docker-compose/db
+devops/docker-compose/db
+devops/docker-compose/be/upload
 
 # celery
 celerybeat.pid
