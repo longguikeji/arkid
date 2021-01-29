@@ -2,7 +2,7 @@
 
 ArkID是全新一代企业单点登录解决方案, 彻底告别企业内多系统多账号的烦恼, 节省管理成本, 自带功能全面的WEB管理界面，提升管理效率。
 
-更多细节参见 [docs.arkid.longguikeji.com](https://docs.arkid.longguikeji.com)
+更多细节参见 [docs.arkid.longguikeji.com](http://docs.arkid.longguikeji.com)
 
 ## 功能特性
 
