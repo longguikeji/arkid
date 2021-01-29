@@ -252,7 +252,7 @@ class APPSerializer(DynamicFieldsModelSerializer):
     oauth_app = OAuthAPPSerializer(many=False, required=False, allow_null=True)
     http_app = HTTPAPPSerializer(many=False, required=False, allow_null=True)
     ldap_app = LDAPAPPSerializer(many=False, required=False, allow_null=True)
-    oidc_app = OIDCAPPSerializer(many=False, required=False)
+    oidc_app = OIDCAPPSerializer(many=False, required=False, allow_null=True)
     saml_app = SAMLAPPSerializer(many=False, required=False, allow_null=True)
 
     uid = serializers.CharField(required=False, help_text='默认情况下根据`name`生成')
@@ -342,7 +342,7 @@ class APPSerializer(DynamicFieldsModelSerializer):
         app = instance
         if not app.editable:
             raise MethodNotAllowed('MODIFY protected APP')
-        oidc_app_data = validated_data.pop('oidc_app', None)
+        # oidc_app_data = validated_data.pop('oidc_app', None)
         uid = validated_data.pop('uid', '')
         if uid and uid != app.uid:
             raise ValidationError({'uid': ['this field is immutable']})
@@ -395,8 +395,21 @@ class APPSerializer(DynamicFieldsModelSerializer):
                     serializer.is_valid(raise_exception=True)
                     serializer.save(app=app)
 
-        if oidc_app_data:
-            pass
+        if 'oidc_app' in validated_data:
+            data = validated_data.pop('oidc_app')
+            if data is None:
+                if hasattr(app, 'oidc_app'):
+                    instance = app.oidc_app
+                    instance.delete()
+            else:
+                if hasattr(app, 'oidc_app'):
+                    serializer = OIDCAPPSerializer(app.oidc_app, data=data, partial=True)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                else:
+                    serializer = OIDCAPPSerializer(data=data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save(app=app)
 
         if 'saml_app' in validated_data:
             data = validated_data.pop('saml_app')

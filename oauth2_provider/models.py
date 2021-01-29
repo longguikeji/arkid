@@ -280,7 +280,7 @@ class OidcApplication(models.Model):
                                on_delete=models.CASCADE)
 
     class Meta:
-        abstract = False
+        # abstract = True
         swappable = "OAUTH2_PROVIDER_OIDC_APPLICATION_MODEL"
 
     objects = ApplicationManager()
@@ -368,6 +368,24 @@ class OidcApplication(models.Model):
         """
         return oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
 
+    @property
+    def more_detail(self):
+        '''
+        http 接口相关信息，用于展示
+        '''
+        return [{
+            'name': '认证地址',
+            'key': 'auth_url',
+            'value': settings.BASE_URL + '/oidc/authorize/',
+        }, {
+            'name': '获取token地址',
+            'key': 'token_url',
+            'value': settings.BASE_URL + '/oidc/token/',
+        }, {
+            'name': '身份信息地址',
+            'key': 'profile_url',
+            'value': settings.BASE_URL + '/oidc/userinfo/'
+        }]
 
 class Application(AbstractApplication):
 
