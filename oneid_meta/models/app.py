@@ -71,7 +71,7 @@ class APP(BaseModel):
         if hasattr(self, 'oauth_app'):
             yield "OAuth 2.0"
         if hasattr(self, 'oidc_app'):
-            yield "OpenID Connect"
+            yield "OIDC"
         if hasattr(self, 'saml_app'):
             yield "SAML"
         if hasattr(self, 'ldap_app'):
@@ -277,24 +277,6 @@ class OIDCAPP(OidcApplication):
     class Meta:    # pylint: disable=missing-docstring
         proxy = True
 
-    @property
-    def more_detail(self):
-        '''
-        http 接口相关信息，用于展示
-        '''
-        return [{
-            'name': '认证地址',
-            'key': 'auth_url',
-            'value': settings.BASE_URL + '/oauth/authorize/',
-        }, {
-            'name': '获取token地址',
-            'key': 'token_url',
-            'value': settings.BASE_URL + '/oauth/token/',
-        }, {
-            'name': '身份信息地址',
-            'key': 'profile_url',
-            'value': settings.BASE_URL + '/oauth/userinfo/'
-        }]
 
 
 class SAMLAPP(BaseModel):
