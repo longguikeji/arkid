@@ -3,10 +3,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'arkid',
         'USER': 'root',
-    # <----
         'PASSWORD': 'root',    # {.env.SQL_PWD}
         'HOST': 'arkid-db',    # {.env.INSTANCE}-db
-    # ---->
         'PORT': '3306',
         'OPTIONS': {
             'autocommit': True,
@@ -17,9 +15,7 @@ DATABASES = {
 }
 
 REDIS_CONFIG = {
-    # <----
     'HOST': 'arkid-redis',    # {.env.INSTANCE}-redis
-    # ---->
     'PORT': 6379,
     'DB': 0,
     'PASSWORD': None,
@@ -42,6 +38,4 @@ CELERY_BROKER_URL = REDIS_URL
 INSTALLED_APPS += ['ldap.sql_backend']
 
 # 最终对外暴露的 web server 地址
-# <----
 BASE_URL = 'http://localhost'
-# ---->
