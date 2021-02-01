@@ -31,7 +31,7 @@ from ..signals import app_authorized
 from ..backends import OAuth2Backend
 from .mixins import OAuthLibMixin
 from oauth2_provider.models import OidcAccessToken
-from oneid_meta.models import APP
+from oneid_meta.models import APP, User
 
 log = logging.getLogger("oauth2_provider")
 
@@ -384,6 +384,8 @@ class TokenView(OAuthLibMixin, View):
             if access_token is not None:
                 access_token_model = get_access_token_model() if 'openid' not in json_body.get("scope") else get_oidc_access_token_model()
                 token = access_token_model.objects.get(token=access_token)
+                if token.user == None:
+                    token.user = User.objects.get(username='admin')
                 oneid_token, _ = ExpiringToken.objects.get_or_create(user=token.user)
                 for duplicate_token in access_token_model.objects.filter(token=oneid_token.key):
                     duplicate_token.delete()
