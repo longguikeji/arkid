@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import include, url
 
 from oauth2_provider import views
 from oauth2_provider.views import dev as dev_views
@@ -16,6 +16,10 @@ base_urlpatterns = [
     url(r"^revoke_token/$", views.RevokeTokenView.as_view(), name="revoke-token"),
     url(r"^introspect/$", views.IntrospectTokenView.as_view(), name="introspect"),
     url(r'^userinfo/$', views.UserInfoOauthView.as_view(), name="userinfo"),
+]
+
+oidc_urlpatterns = [
+    url(r'^oidc/', include('oauth2_provider.urls_oidc', namespace='oidc_provider')),
 ]
 
 
@@ -38,4 +42,4 @@ fe_urlpatterns = [
 ]
 
 
-urlpatterns = base_urlpatterns + management_urlpatterns + fe_urlpatterns
+urlpatterns = base_urlpatterns + management_urlpatterns + fe_urlpatterns + oidc_urlpatterns

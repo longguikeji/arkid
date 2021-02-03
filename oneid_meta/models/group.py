@@ -2,6 +2,7 @@
 schema of Groups
 '''
 import jsonfield
+import django
 from django.db import models
 from django.conf import settings
 from django.db.utils import IntegrityError
@@ -9,6 +10,11 @@ from django.db.utils import IntegrityError
 from common.django.model import BaseOrderedModel, BaseModel
 from oneid_meta.models.perm import GroupPerm, PermOwnerMixin
 from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
+
+if django.db.connection.vendor == "sqlite":
+    from jsonfield import JSONField    # 测试环境（避免影响其他unit test）
+else:
+    from django_mysql.models import JSONField    # 生产、开发环境
 
 
 class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
@@ -170,6 +176,10 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         '''
         group, _ = cls.valid_objects.get_or_create(uid='extern')
         return group
+
+class CustomGroup(BaseModel):
+    group = models.OneToOneField(Group, verbose_name='Group', related_name='custom_group', on_delete=models.CASCADE)
+    data = JSONField(verbose_name='扩展信息')
 
 
 class DingGroup(BaseModel):
