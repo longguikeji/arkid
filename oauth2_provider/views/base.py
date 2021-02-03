@@ -385,7 +385,7 @@ class TokenView(OAuthLibMixin, View):
                 access_token_model = get_access_token_model() if 'openid' not in json_body.get("scope") else get_oidc_access_token_model()
                 token = access_token_model.objects.get(token=access_token)
                 if token.user == None:
-                    token.user = User.objects.get(username='admin')
+                    token.user = User.objects.get(username='admin') # todo 这里用admin用户临时
                 oneid_token, _ = ExpiringToken.objects.get_or_create(user=token.user)
                 for duplicate_token in access_token_model.objects.filter(token=oneid_token.key):
                     duplicate_token.delete()

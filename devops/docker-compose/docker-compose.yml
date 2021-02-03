@@ -69,7 +69,7 @@ services:
     networks:
       - arkid
     volumes:
-      - /Users/notevery/VSCode/arkid-frontend:/root/workspace/arkid-fe
+      - ../../../arkid-frontend:/root/workspace/arkid-fe
 
   db:
     image: mysql:5.7

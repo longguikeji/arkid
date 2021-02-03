@@ -21,6 +21,7 @@ from oneid_meta.models import (
 from oneid_meta.models.mixin import TreeNode as Node
 from siteapi.v1.serializers import UserLiteSerializer
 from siteapi.v1.serializers.node import NodeSerialzierMixin
+from oneid_meta.models.group import CustomGroup
 
 
 class DingGroupSerializer(DynamicFieldsModelSerializer):
@@ -218,6 +219,10 @@ class GroupLiteSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'accept_user',
         )
 
+class CustomGroupSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = CustomGroup
+        fields = ('data',)
 
 class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     '''
@@ -229,6 +234,7 @@ class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     manager_group = ManagerGroupSerializer(many=False, required=False)
     node_uid = serializers.CharField(read_only=True)
     node_subject = serializers.CharField(read_only=True)
+    custom_group = CustomGroupSerializer(many=False, required=False, allow_null=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = Group
@@ -237,6 +243,7 @@ class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'group_id',
             'node_uid',
             'node_subject',
+            'custom_group',
             'uid',
             'name',
             'remark',
@@ -250,6 +257,7 @@ class GroupDetailSerializer(GroupSerializer):
     '''
     group info with parent_uid
     '''
+
     class Meta:    # pylint: disable=missing-docstring
         model = Group
 
@@ -263,6 +271,7 @@ class GroupDetailSerializer(GroupSerializer):
             'uid',
             'name',
             'remark',
+            'custom_group',
             'accept_user',
             'ding_group',
             'manager_group',
@@ -277,9 +286,15 @@ class GroupDetailSerializer(GroupSerializer):
         create ding_group if provided
         create manager_group if provided
         '''
+        custom_group_data = validated_data.pop('custom_data', None)
         ding_group_data = validated_data.pop('ding_group', None)
         manager_group_data = validated_data.pop('manager_group', None)
         group = Group.objects.create(**validated_data)
+
+        if custom_group_data:
+            custom_data_serializer = CustomGroupSerializer(data=custom_group_data)
+            custom_data_serializer.is_valid(raise_exception=True)
+            custom_data_serializer.save(group=group)
 
         if ding_group_data:
             ding_group_serializer = DingGroupSerializer(data=ding_group_data)
@@ -299,8 +314,21 @@ class GroupDetailSerializer(GroupSerializer):
         update/create ding_dept if provided
         '''
         group = instance
+        custom_group_data = validated_data.pop('custom_group', None)
         ding_group_data = validated_data.pop('ding_group', None)
         manager_group_data = validated_data.pop('manager_group', None)
+
+        if custom_group_data:
+            if hasattr(group, 'custom_group'):
+                custom_data_serializer = CustomGroupSerializer(instance=instance.custom_group,
+                                                            data=custom_group_data,
+                                                            partial=True)
+                custom_data_serializer.is_valid(raise_exception=True)
+                custom_data_serializer.save()
+            else:
+                custom_data_serializer = CustomGroupSerializer(data=custom_group_data)
+                custom_data_serializer.is_valid(raise_exception=True)
+                custom_data_serializer.save(group=group)
 
         if ding_group_data:
             if hasattr(group, 'ding_group'):

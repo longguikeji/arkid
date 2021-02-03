@@ -35,10 +35,15 @@ DEFAULTS = {
     "CLIENT_ID_GENERATOR_CLASS": "oauth2_provider.generators.ClientIdGenerator",
     "CLIENT_SECRET_GENERATOR_CLASS": "oauth2_provider.generators.ClientSecretGenerator",
     "CLIENT_SECRET_GENERATOR_LENGTH": 128,
-    "OAUTH2_SERVER_CLASS": "oauthlib.oauth2.Server",
+
+    "OAUTH2_SERVER_CLASS": "oauthlib.openid.Server",
     "OAUTH2_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
     "OAUTH2_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OAuthLibCore",
+
+    "OIDC_SERVER_CLASS": "oauthlib.oidc.Server",
+    "OIDC_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
     "OIDC_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OidcLibCore",
+    
     "SCOPES": {"read": "Reading scope", "write": "Writing scope", "openid": "ID token scope", "introspect": "Token introspection"},
     "DEFAULT_SCOPES": ["__all__"],
     "SCOPES_BACKEND_CLASS": "oauth2_provider.scopes.SettingsScopes",

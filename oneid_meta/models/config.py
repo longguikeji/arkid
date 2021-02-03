@@ -379,6 +379,8 @@ class CustomField(BaseModel):
     SUBJECT_CHOICES = (
         ('user', '内部联系人'),    # '^[a-z]{1,16}$'
         ('extern_user', '外部联系人'),
+        ('group', '组'),
+        ('dept', '部门'),
     )
 
     name = models.CharField(max_length=128, verbose_name='字段名称')
