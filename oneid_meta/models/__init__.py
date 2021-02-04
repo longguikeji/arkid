@@ -9,6 +9,7 @@ from oneid_meta.models.dept import (
     Dept,
     DingDept,
     DeptMember,
+    CustomDept
 )
 
 from oneid_meta.models.group import (

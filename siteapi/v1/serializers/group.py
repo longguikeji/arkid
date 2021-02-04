@@ -234,7 +234,7 @@ class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     manager_group = ManagerGroupSerializer(many=False, required=False)
     node_uid = serializers.CharField(read_only=True)
     node_subject = serializers.CharField(read_only=True)
-    custom_group = CustomGroupSerializer(many=False, required=False, allow_null=True)
+    custom = CustomGroupSerializer(source='custom_group', many=False, required=False, allow_null=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = Group
@@ -243,7 +243,7 @@ class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'group_id',
             'node_uid',
             'node_subject',
-            'custom_group',
+            'custom',
             'uid',
             'name',
             'remark',
@@ -271,7 +271,7 @@ class GroupDetailSerializer(GroupSerializer):
             'uid',
             'name',
             'remark',
-            'custom_group',
+            'custom',
             'accept_user',
             'ding_group',
             'manager_group',
@@ -286,7 +286,7 @@ class GroupDetailSerializer(GroupSerializer):
         create ding_group if provided
         create manager_group if provided
         '''
-        custom_group_data = validated_data.pop('custom_data', None)
+        custom_group_data = validated_data.pop('custom', None)
         ding_group_data = validated_data.pop('ding_group', None)
         manager_group_data = validated_data.pop('manager_group', None)
         group = Group.objects.create(**validated_data)
@@ -314,13 +314,13 @@ class GroupDetailSerializer(GroupSerializer):
         update/create ding_dept if provided
         '''
         group = instance
-        custom_group_data = validated_data.pop('custom_group', None)
+        custom_group_data = validated_data.pop('custom', None)
         ding_group_data = validated_data.pop('ding_group', None)
         manager_group_data = validated_data.pop('manager_group', None)
 
         if custom_group_data:
-            if hasattr(group, 'custom_group'):
-                custom_data_serializer = CustomGroupSerializer(instance=instance.custom_group,
+            if hasattr(group, 'custom'):
+                custom_data_serializer = CustomGroupSerializer(instance=instance.custom,
                                                             data=custom_group_data,
                                                             partial=True)
                 custom_data_serializer.is_valid(raise_exception=True)

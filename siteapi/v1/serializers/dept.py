@@ -8,7 +8,7 @@ from common.django.drf.serializer import (
     DynamicFieldsModelSerializer, )
 from common.django.drf.serializer import IgnoreNoneMix
 
-from oneid_meta.models import Dept, DingDept
+from oneid_meta.models import Dept, DingDept, CustomDept
 from siteapi.v1.serializers import UserLiteSerializer
 from siteapi.v1.serializers.node import NodeSerialzierMixin
 
@@ -46,6 +46,10 @@ class DeptLiteSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'remark',
         )
 
+class CustomDeptSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = CustomDept
+        fields = ('data',)
 
 class DeptSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     '''
@@ -56,6 +60,7 @@ class DeptSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
     ding_dept = DingDeptSerializer(many=False, required=False)
     node_uid = serializers.CharField(read_only=True)
     node_subject = serializers.CharField(read_only=True)
+    custom = CustomDeptSerializer(source='custom_dept', many=False, required=False, allow_null=True)
 
     class Meta:    # pylint: disable=missing-docstring
         model = Dept
@@ -67,6 +72,7 @@ class DeptSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'uid',
             'name',
             'remark',
+            'custom',
             'ding_dept',
         )
 
@@ -88,6 +94,7 @@ class DeptDetailSerializer(DeptSerializer):
             'uid',
             'name',
             'remark',
+            'custom',
             'ding_dept',
             'visibility',
             'node_scope',
@@ -99,8 +106,14 @@ class DeptDetailSerializer(DeptSerializer):
         create dept
         create ding_dept if provided
         '''
+        custom_dept_data = validated_data.pop('custom',None)
         ding_dept_data = validated_data.pop('ding_dept', None)
         dept = Dept.objects.create(**validated_data)
+
+        if custom_dept_data:
+            custom_dept_serialier = CustomDeptSerializer(data=custom_dept_data)
+            custom_dept_serialier.is_valid(raise_exception=True)
+            custom_dept_serialier.save(dept=dept)
 
         if ding_dept_data:
             ding_dept_serialier = DingDeptSerializer(data=ding_dept_data)
@@ -115,7 +128,20 @@ class DeptDetailSerializer(DeptSerializer):
         update/create ding_dept if provided
         '''
         dept = instance
+        custom_dept_data = validated_data.pop('custom', None)
         ding_dept_data = validated_data.pop('ding_dept', None)
+
+        if custom_dept_data:
+            if hasattr(dept, 'custom'):
+                custom_dept_serializer = CustomDeptSerializer(instance=instance.custom,
+                                                          data=custom_dept_data,
+                                                          partial=True)
+                custom_dept_serializer.is_valid(raise_exception=True)
+                custom_dept_serializer.save()
+            else:
+                custom_dept_serializer = CustomDeptSerializer(data=custom_dept_data)
+                custom_dept_serializer.is_valid(raise_exception=True)
+                custom_dept_serializer.save(dept=dept)
 
         if ding_dept_data:
             if hasattr(dept, 'ding_dept'):
