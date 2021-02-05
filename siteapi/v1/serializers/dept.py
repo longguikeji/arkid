@@ -106,7 +106,7 @@ class DeptDetailSerializer(DeptSerializer):
         create dept
         create ding_dept if provided
         '''
-        custom_dept_data = validated_data.pop('custom',None)
+        custom_dept_data = validated_data.pop('custom_dept',None)
         ding_dept_data = validated_data.pop('ding_dept', None)
         dept = Dept.objects.create(**validated_data)
 
@@ -128,12 +128,12 @@ class DeptDetailSerializer(DeptSerializer):
         update/create ding_dept if provided
         '''
         dept = instance
-        custom_dept_data = validated_data.pop('custom', None)
+        custom_dept_data = validated_data.pop('custom_dept', None)
         ding_dept_data = validated_data.pop('ding_dept', None)
 
         if custom_dept_data:
-            if hasattr(dept, 'custom'):
-                custom_dept_serializer = CustomDeptSerializer(instance=instance.custom,
+            if hasattr(dept, 'custom_dept'):
+                custom_dept_serializer = CustomDeptSerializer(instance=instance.custom_dept,
                                                           data=custom_dept_data,
                                                           partial=True)
                 custom_dept_serializer.is_valid(raise_exception=True)
