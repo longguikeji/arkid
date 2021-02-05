@@ -31,7 +31,7 @@ def creata_ldap_attr_mappings(apps, schema_editor):
                 (odm.owner_id =ldap_group.id and odm.user_id=ldap_entries.keyval) \
             ) and ldap_entries.oc_map_id = 4',
             None, None, 3, 0,
-        )
+        ),
         ('description', 'ldap_group.name', 'ldap_group', None, None, None, 3, 0),
     ]:
         LDAPAttrMapping.objects.create(
