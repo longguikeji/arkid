@@ -286,7 +286,7 @@ class GroupDetailSerializer(GroupSerializer):
         create ding_group if provided
         create manager_group if provided
         '''
-        custom_group_data = validated_data.pop('custom', None)
+        custom_group_data = validated_data.pop('custom_group', None)
         ding_group_data = validated_data.pop('ding_group', None)
         manager_group_data = validated_data.pop('manager_group', None)
         group = Group.objects.create(**validated_data)
@@ -314,13 +314,13 @@ class GroupDetailSerializer(GroupSerializer):
         update/create ding_dept if provided
         '''
         group = instance
-        custom_group_data = validated_data.pop('custom', None)
+        custom_group_data = validated_data.pop('custom_group', None)
         ding_group_data = validated_data.pop('ding_group', None)
         manager_group_data = validated_data.pop('manager_group', None)
 
         if custom_group_data:
-            if hasattr(group, 'custom'):
-                custom_data_serializer = CustomGroupSerializer(instance=instance.custom,
+            if hasattr(group, 'custom_group'):
+                custom_data_serializer = CustomGroupSerializer(instance=instance.custom_group,
                                                             data=custom_group_data,
                                                             partial=True)
                 custom_data_serializer.is_valid(raise_exception=True)
