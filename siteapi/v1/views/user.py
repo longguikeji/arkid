@@ -367,7 +367,7 @@ class UserPasswordAPIView(generics.UpdateAPIView):
     '''
 
     serializer_class = ResetUserPasswordSerializer
-    permission_classes = [IsAuthenticated & IsAdminUser]
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     def get_object(self):
         '''
