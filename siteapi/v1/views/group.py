@@ -21,13 +21,7 @@ from rest_framework.exceptions import (
 )
 
 from oneid_meta.models import Group, GroupMember, User
-from oneid.permissions import (
-    IsAdminUser,
-    IsManagerUser,
-    IsNodeManager,
-    NodeManagerReadable,
-    CustomPerm,
-)
+from oneid.permissions import CustomPerm, IsAdminUser, IsManagerUser, IsNodeManager, NodeEmployeeReadable, NodeManagerReadable
 from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
 from siteapi.v1.serializers.group import (
     GroupSerializer,
@@ -204,7 +198,7 @@ class GroupChildGroupAPIView(
     '''
     serializer_class = GroupListSerializer
 
-    read_permission_classes = [IsAuthenticated & (IsAdminUser | NodeManagerReadable)]
+    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsAdminUser | NodeManagerReadable)]
     write_permission_classes = [IsAuthenticated & (IsAdminUser | IsNodeManager)]
     create_category_permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_category_create'))]
 
@@ -369,7 +363,7 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (IsManagerUser | IsAdminUser)]
+    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsManagerUser | IsAdminUser)]
     write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_permissions(self):
