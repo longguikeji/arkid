@@ -206,8 +206,57 @@ class DeptListSerializer(DynamicFieldsModelSerializer):
 
         fields = ('depts', )
 
+import time
+
+class DeptCash:
+    count = 0
+    zero = time.time()
+
+    @staticmethod
+    def pr(*args, **kwargs):
+        print(DeptCash.count, time.time() - DeptCash.zero, *args, **kwargs)
+
+    
+    dept_tree = {}
+    dept_hash = {}
+    @staticmethod
+    def clear():
+        DeptCash.dept_hash = {}
+        DeptCash.dept_tree = {}
+        DeptCash.count = 0
+        DeptCash.zero = time.time()
+
+    @staticmethod
+    def init():
+        if not DeptCash.dept_hash:
+            dept_hash = {}
+            dept_tree = {}
+            ds = Dept.valid_objects.all()
+            for d in ds:
+                dept_hash[d.id] = d
+                if d.parent_id:
+                    if not dept_tree.get(d.parent_id):
+                        dept_tree[d.parent_id] = [d.id]
+                    else:
+                        dept_tree[d.parent_id].append(d.id)
+                    
+            
+            DeptCash.dept_hash = dept_hash
+            DeptCash.dept_tree = dept_tree
+        return True
+
+    @staticmethod
+    def get_dept_children(dept_uid):
+        DeptCash.init()
+        return DeptCash.dept_tree.get(dept_uid)
+
+    @staticmethod
+    def get_dept(dept_id):
+        DeptCash.init()
+        return DeptCash.dept_hash.get(dept_id)
 
 class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
+
     '''
     部门结构树，包括子部门和成员
     '''
@@ -223,6 +272,7 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
 
     def __init__(self, *args, **kwargs):
         # TODO: requets not exists
+
         if kwargs.get('many', False):
             raise ValueError('not support many=True')
 
@@ -237,9 +287,10 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
             self._visible = True
         else:
             if self.context.get('user_identity', '') == 'manager':
-                self._visible = self.instance.is_open_to_manager(self._user) if self.instance else False
+                self._visible = self.instance.is_open_to_manager(self._user) if self.instance else False # todo 效率低下
             else:
                 self._visible = self.instance.is_open_to_employee(self._user) if self.instance else False
+
 
         url_name = self.context.get('url_name', '')
         if not url_name:
@@ -250,6 +301,8 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
         else:
             self.children_name = 'nodes'
             self.fields.pop('depts')
+        
+
 
     class Meta:    # pylint: disable=missing-docstring
         model = Dept
@@ -270,10 +323,10 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
 
     def get_info(self, instance):
         '''
-        若不可见则只返回基本信息
+        只返回基本信息
         '''
-        if self._visible:
-            return DeptSerializer(instance).data
+        # if self._visible:
+            # return DeptSerializer(instance).data
         return {
             'dept_id': instance.id,
             'node_uid': instance.node_uid,
@@ -294,7 +347,18 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
         '''
         下属部门
         '''
-        return [self.__class__(node, context=self.context).data for node in instance.children]
+        # redata = [self.__class__(node, context=self.context).data for node in instance.children]
+        children = []
+        child_ids = DeptCash.get_dept_children(instance.id)
+        if not child_ids:
+            return []
+        
+        for child_id in child_ids:
+            children.append(DeptCash.get_dept(child_id))
+
+        redata = [self.__class__(node, context=self.context).data for node in children]
+        return redata
+        # return [node for node in instance.children]
 
     def get_nodes(self, instance):
         '''
