@@ -343,13 +343,17 @@ class User(BaseModel, PermOwnerMixin):
         '''
         return GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False).exists()
 
+    _managerGroups = []
     @property
     def manager_groups(self):
         '''
         子管理员组 ManagerGroup
         '''
-        for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
-            yield group_member.owner.manager_group
+        if not self._managerGroups:
+            self._managerGroups = [gm.owner.manager_group for gm in list(GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False))]
+        return self._managerGroups
+        # for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
+        #     yield group_member.owner.manager_group
 
     @property
     def token(self):
@@ -456,6 +460,7 @@ class User(BaseModel, PermOwnerMixin):
         '''
         是否在某人管理之下
         '''
+        print('user.under_manage')
         if user.is_admin:
             return True
         self_all_node_uids = self.all_node_uids
