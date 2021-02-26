@@ -18,7 +18,7 @@ from siteapi.v1.views import (
     group as group_view,
     perm as perm_view,
 )
-from siteapi.v1.serializers.dept import DeptTreeSerializer, DeptSerializer
+from siteapi.v1.serializers.dept import DeptCash, DeptSerializer, DeptTreeSerializer
 from siteapi.v1.serializers.group import GroupTreeSerializer, GroupSerializer
 from oneid.permissions import IsAdminUser, IsManagerUser, NodeEmployeeReadable
 
@@ -237,7 +237,6 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
         '''
         获取节点结构树
         '''
-
         node = self.get_object()
         serializer = self.get_serializer(node)
         data = serializer.trim_visible_tree()
