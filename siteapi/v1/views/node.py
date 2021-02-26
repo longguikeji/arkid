@@ -237,6 +237,7 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
         '''
         获取节点结构树
         '''
+        DeptCash.clear()
         node = self.get_object()
         serializer = self.get_serializer(node)
         data = serializer.trim_visible_tree()

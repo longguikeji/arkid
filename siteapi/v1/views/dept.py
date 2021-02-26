@@ -18,12 +18,7 @@ from rest_framework.exceptions import (
 )
 
 from oneid_meta.models import Dept
-from oneid.permissions import (
-    IsNodeManager,
-    IsAdminUser,
-    IsManagerUser,
-    NodeManagerReadable,
-)
+from oneid.permissions import IsAdminUser, IsManagerUser, IsNodeManager, NodeEmployeeReadable, NodeManagerReadable
 from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
 from siteapi.v1.serializers.dept import (
     DeptTreeSerializer,
@@ -205,7 +200,7 @@ class DeptChildDeptAPIView(
     '''
     serializer_class = DeptListSerializer
 
-    read_permission_classes = [IsAuthenticated & (NodeManagerReadable | IsManagerUser | IsAdminUser)]
+    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | NodeManagerReadable | IsManagerUser | IsAdminUser)]
     write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_object(self):
@@ -295,7 +290,7 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
+    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsNodeManager | IsAdminUser)]
     write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_permissions(self):
