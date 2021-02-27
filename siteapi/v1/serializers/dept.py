@@ -209,13 +209,6 @@ class DeptListSerializer(DynamicFieldsModelSerializer):
 import time
 
 class DeptCash:
-    count = 0
-    zero = time.time()
-
-    @staticmethod
-    def pr(*args, **kwargs):
-        print(DeptCash.count, time.time() - DeptCash.zero, *args, **kwargs)
-
     
     dept_tree = {}
     dept_hash = {}

@@ -6,7 +6,7 @@ import datetime
 from django.conf import settings
 
 from oneid.utils import redis_conn
-
+import time
 
 class UserStatistics:
     """user statistics"""
@@ -37,3 +37,38 @@ class UserStatistics:
         else:
             redis_conn.hset(key, uuid, 1)
             redis_conn.expire(key, settings.ACTIVE_USER_DATA_LIFEDAY * 60 * 60 * 24)
+
+
+class TimeCash:
+
+    all_timer = {}
+
+    @staticmethod
+    def getInstance(name):
+        if TimeCash.all_timer.get(name):
+            return TimeCash.all_timer[name]
+        timer = TimeCash(name)
+        TimeCash.all_timer[name] = timer
+        return timer
+
+    @staticmethod
+    def over():
+        for name in TimeCash.all_timer:
+            TimeCash.all_timer[name].end()
+
+    def __init__(self,name):
+        self.name = name
+        self.count = {}
+        self.zero = time.time()
+        self.now = time.time()
+        super().__init__()
+
+    def pr(self,tag, *args, **kwargs):
+        self.pre = self.now 
+        self.now = time.time()
+        self.count[tag] = self.count.get(tag,0) + (self.now - self.pre)
+        # print( self.name ,tag, self.count.get(tag), time.time() - self.zero, *args, **kwargs)
+
+    def end(self):
+        for tag in self.count.keys():
+            print( self.name, tag, self.count.get(tag), time.time() - self.zero)

@@ -140,6 +140,10 @@ urlpatterns = [
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/$', node_views.UcenterNodeDetailAPIView.as_view(), name='ucenter_node_detail'),
     url(r'^ucenter/node/(?P<uid>[\w|-]+)/tree/$', node_views.UcenterNodeTreeAPIView.as_view(),
         name='ucenter_node_tree'),
+    # url(r'^ucenter/node/(?P<uid>[\w|-]+)/node/$', node_views.UcenterNodeChildNodeAPIView.as_view(),
+    #     name='ucenter_node_node'),
+    url(r'^ucenter/node/(?P<uid>[\w|-]+)/user/$', node_views.UcenterNodeChildUserAPIView.as_view(),
+        name='ucenter_node_user'),
     # ucenter app
     url(r'^ucenter/apps/$', app_views.UcenterAPPListAPIView.as_view(), name='ucenter_app_list'),
     # ucenter user
