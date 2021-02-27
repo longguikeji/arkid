@@ -459,3 +459,6 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         update_users_of_owner(group, users, subject)
 
         return Response(UserListSerializer(group).data)
+
+class UsercenterGroupChildUserAPIView(GroupChildUserAPIView):
+    read_permission_classes = [IsAuthenticated]
