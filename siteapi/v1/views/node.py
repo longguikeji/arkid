@@ -267,6 +267,39 @@ class UcenterNodeTreeAPIView(NodeTreeAPIView):
 
     user_identity = 'employee'
 
+class UcenterNodeChildUserAPIView(APIView):
+    '''
+    todo: 以普通用户身份获取节点user
+    '''
+    @abstract_node
+    @handle_exception
+    def dispatch(self, request, *args, **kwargs):
+        uid = kwargs['uid']
+
+        if uid.startswith(Dept.NODE_PREFIX):
+            kwargs['uid'] = uid.replace(Dept.NODE_PREFIX, '', 1)
+            return dept_view.UsercenterDeptChildUserAPIView().dispatch(request, *args, **kwargs)
+        if uid.startswith(Group.NODE_PREFIX):
+            kwargs['uid'] = uid.replace(Group.NODE_PREFIX, '', 1)
+            return group_view.UsercenterGroupChildUserAPIView().dispatch(request, *args, **kwargs)
+        raise ValidationError({'uid': 'this field must start with `d_` or `g_`'})
+
+class UcenterNodeChildNodeAPIView(APIView):
+    '''
+    todo: 以普通用户身份获取节点子节点
+    '''
+    # @abstract_node
+    # @handle_exception
+    # def dispatch(self, request, *args, **kwargs):
+    #     uid = kwargs['uid']
+
+    #     if uid.startswith(Dept.NODE_PREFIX):
+    #         kwargs['uid'] = uid.replace(Dept.NODE_PREFIX, '', 1)
+    #         return dept_view.UsercenterDeptChildUserAPIView().dispatch(request, *args, **kwargs)
+    #     if uid.startswith(Group.NODE_PREFIX):
+    #         kwargs['uid'] = uid.replace(Group.NODE_PREFIX, '', 1)
+    #         return group_view.UsercenterGroupChildGroupAPIView().dispatch(request, *args, **kwargs)
+    #     raise ValidationError({'uid': 'this field must start with `d_` or `g_`'})
 
 class NodeChildNodeAPIView(APIView):
     '''

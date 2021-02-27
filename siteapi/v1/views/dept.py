@@ -290,7 +290,7 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsNodeManager | IsAdminUser)]
+    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsNodeManager | IsAdminUser )]
     write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_permissions(self):
@@ -360,3 +360,6 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
             update_users_of_owner(dept, users, subject)
 
         return Response(UserListSerializer(dept).data)
+
+class UsercenterDeptChildUserAPIView(DeptChildUserAPIView):
+    read_permission_classes = [IsAuthenticated]
