@@ -276,7 +276,10 @@ class DeptCash:
                     for i in ids:
                         depts.append(DeptCash.get_dept(i))
                 else:
-                    depts = Dept.valid_objects.filter(uid__in=mg.nodes)
+                    uids = []
+                    for node in mg.nodes:
+                        uids.append(node.replace('d_', ''))
+                    depts = Dept.valid_objects.filter(uid__in=uids)
                 DeptCash.visible_dept += depts
             # print(DeptCash.visible_dept)
 
