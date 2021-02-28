@@ -319,6 +319,8 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
         self._visible = False    # 该节点对该用户是否可见，仅指判定结果
         if self.context.get('read_all', False):
             self._visible = True
+        elif self._user.is_admin:
+            self._visible = True
         else:
             if self.context.get('user_identity', '') == 'manager':
                 self._visible = DeptCash.get_dept_visible(self.instance, self._user) if self.instance else False
