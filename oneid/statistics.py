@@ -59,6 +59,7 @@ class TimeCash:
     def __init__(self,name):
         self.name = name
         self.count = {}
+        self.timelist = {}
         self.zero = time.time()
         self.now = time.time()
         super().__init__()
@@ -66,9 +67,10 @@ class TimeCash:
     def pr(self,tag, *args, **kwargs):
         self.pre = self.now 
         self.now = time.time()
-        self.count[tag] = self.count.get(tag,0) + (self.now - self.pre)
-        print( self.name ,tag, self.count.get(tag), self.now - self.pre, *args, **kwargs)
+        self.count[tag] = self.count.get(tag,0) + 1
+        self.timelist[tag] = self.timelist.get(tag,0) + (self.now - self.pre)
+        # print( self.name ,tag, self.timelist.get(tag), (self.now - self.pre), *args, **kwargs)
 
     def end(self):
-        for tag in self.count.keys():
-            print( self.name, tag, self.count.get(tag), time.time() - self.zero)
+        for tag in self.timelist.keys():
+            print( self.name, tag, self.count[tag], self.timelist.get(tag), time.time() - self.zero)
