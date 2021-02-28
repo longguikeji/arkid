@@ -240,8 +240,7 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
         '''
         获取节点结构树
         '''
-        tc = TimeCash.getInstance('retrieve')
-        tc.pr('start')
+        
         DeptCash.clear()
         node = self.get_object()
         serializer = self.get_serializer(node)
