@@ -136,21 +136,24 @@ class OwnerPerm(BaseModel):
     def __str__(self):
         return f'{self.__class__.__name__}: {self.owner} -> {self.perm} = {self.value}'
 
+    def save_value(self,value):
+        if self.value != value:
+            self.value = value
+            self.save()
+
     def permit(self):
         '''
         显式授权
         '''
         self.status = 1
-        self.value = True
-        self.save()
+        self.save_value(True)
 
     def reject(self):
         '''
         显式拒绝
         '''
         self.status = -1
-        self.value = False
-        self.save()
+        self.save_value(False)
 
     def boggle(self):
         '''
@@ -158,11 +161,11 @@ class OwnerPerm(BaseModel):
         '''
         # pylint: disable=no-member
         self.status = 0
+        
         if self.owner.is_root:
-            self.value = False
+            self.save_value(False)
         else:
-            self.value = self.owner.parent.get_perm(self.perm).value
-        self.save()
+            self.save_value(self.owner.parent.get_perm(self.perm).value)
 
     @property
     def locked(self):
@@ -209,7 +212,6 @@ class OwnerPerm(BaseModel):
 
         self.status = status
         self.update_value()
-        self.save()
 
     def update_value(self):
         '''
@@ -219,8 +221,7 @@ class OwnerPerm(BaseModel):
         if self.status == 0:
             self.boggle()
         else:
-            self.value = self.status == 1
-        self.save()
+            self.save_value(self.status == 1)
 
     def delete(self, *args, **kwargs):
         '''

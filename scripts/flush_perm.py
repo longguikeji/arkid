@@ -6,6 +6,7 @@ from django.db import connection
 
 from oneid_meta.models import User, Group, Dept
 from oneid_meta.models import GroupPerm, DeptPerm, UserPerm, Perm, GroupMember, DeptMember, APP
+from oneid.statistics import TimeCash
 
 
 def check_app_default_perm():
@@ -20,34 +21,36 @@ def check_perm_exists():
     '''
     为每个对象：user,gruop,dept创建perm判定结果
     '''
-    for perm in Perm.valid_objects.all():
-        for user in User.valid_objects.all():
-            if not UserPerm.valid_objects.filter(owner=user, perm=perm).exists():
-                UserPerm.valid_objects.create(
-                    owner=user,
-                    perm=perm,
-                    dept_perm_value=False,
-                    group_perm_value=False,
-                    status=0,
-                    value=perm.default_value,
-                )
-        for group in Group.valid_objects.all():
-            if not GroupPerm.valid_objects.filter(owner=group, perm=perm).exists():
-                GroupPerm.valid_objects.create(
-                    owner=group,
-                    perm=perm,
-                    status=0,
-                    value=perm.default_value,
-                )
-        for dept in Dept.valid_objects.all():
-            if not DeptPerm.valid_objects.filter(owner=dept, perm=perm).exists():
-                DeptPerm.valid_objects.create(
-                    owner=dept,
-                    perm=perm,
-                    status=0,
-                    value=perm.default_value,
-                )
+    perms = Perm.valid_objects.all()
 
+    for perm in perms:
+        users = User.objects.exclude(id__in=UserPerm.objects.values('owner').filter(perm=perm).distinct())
+        for user in users:
+            # if not UserPerm.valid_objects.filter(owner=user, perm=perm).exists():
+            UserPerm.valid_objects.create(
+                owner=user,
+                perm=perm,
+                dept_perm_value=False,
+                group_perm_value=False,
+                status=0,
+                value=perm.default_value,
+            )
+        groups = Group.objects.exclude(id__in=GroupPerm.objects.values('owner').filter(perm=perm).distinct())
+        for group in groups:
+            GroupPerm.valid_objects.create(
+                owner=group,
+                perm=perm,
+                status=0,
+                value=perm.default_value,
+            )
+        depts = Dept.objects.exclude(id__in=DeptPerm.objects.values('owner').filter(perm=perm).distinct())
+        for dept in depts:
+            DeptPerm.valid_objects.create(
+                owner=dept,
+                perm=perm,
+                status=0,
+                value=perm.default_value,
+            )
 
 def flush_all_perm():
     '''
@@ -84,10 +87,11 @@ def _flush_node_perm(node_cls, start_node=None, perms=None):
         perms = Perm.valid_objects.all()
 
     for node in start_node.tree_front_walker():
-        for perm in perms:
-            node_perm = node.get_perm(perm)
+        # for perm in perms:
+        #     node_perm = node.get_perm(perm)
+        for node_perm in node.perms:
             node_perm.update_value()
-
+        
 
 def _update_user_node_perm(user):
     '''
