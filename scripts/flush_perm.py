@@ -7,6 +7,7 @@ from django.db import connection
 from oneid_meta.models import User, Group, Dept
 from oneid_meta.models import GroupPerm, DeptPerm, UserPerm, Perm, GroupMember, DeptMember, APP
 from oneid.statistics import TimeCash
+from siteapi.v1.serializers.dept import DeptCash
 
 
 def check_app_default_perm():
@@ -56,41 +57,87 @@ def flush_all_perm():
     '''
     刷新全部权限
     '''
+    tc = TimeCash.getInstance('a')
+    tc.pr('1')
     check_app_default_perm()
+    tc.pr('2')
     check_perm_exists()    # 现存瓶颈，待商榷
+    tc.pr('3')
     flush_dept_perm()
+    tc.pr('4')
     flush_group_perm()
+    tc.pr('5')
     flush_user_perm()
+    tc.pr('6')
+    TimeCash.over()
 
 
 def flush_group_perm(group=None, perms=None):
     '''
     从上往下刷新组权限
     '''
-    return _flush_node_perm(node_cls=Group, start_node=group, perms=perms)
+    # GroupPerm.valid_objects.filter(owner=group)
+    return _flush_node_perm(node_cls=Group, perm_cls=GroupPerm, start_node=group, perms=perms)
 
 
 def flush_dept_perm(dept=None, perms=None):
     '''
     从上往下刷新部门权限
     '''
-    return _flush_node_perm(node_cls=Dept, start_node=dept, perms=perms)
+    if not dept:
+        dept = Dept.get_root()
+
+    DeptCash.get_dept(dept.id)
+    DeptPerm.valid_objects.filter(owner=dept)
+    return _flush_node_perm(node_cls=Dept, perm_cls=DeptPerm, start_node=dept, perms=perms)
 
 
-def _flush_node_perm(node_cls, start_node=None, perms=None):
+def _flush_node_perm(node_cls, perm_cls, start_node=None, perms=None):
     '''
     从上往下刷新节点权限
     '''
+    tc = TimeCash.getInstance('a')
     if not start_node:
         start_node = node_cls.get_root()
+
     if not perms:
         perms = Perm.valid_objects.all()
 
+    node: Dept
+
+    node_id_hash_perm_value = {}
+    zero_perms = []
+    one_perms = []
+
+    tc.pr('start')
     for node in start_node.tree_front_walker():
-        # for perm in perms:
-        #     node_perm = node.get_perm(perm)
+        node_id_hash_perm_value[node.id] = {}
         for node_perm in node.perms:
-            node_perm.update_value()
+            if node_perm.status == 0:
+                # 获取parent的权限值
+                node_perm.status = 0
+                if node.is_root:
+                    zero_perms.append(node_perm.id)
+                    node_id_hash_perm_value[node.id][node_perm.perm_id] = False
+                elif node_id_hash_perm_value[node.parent_id][node_perm.perm_id]:
+                    one_perms.append(node_perm.id)
+                    node_id_hash_perm_value[node.id][node_perm.perm_id] = True
+                else:
+                    zero_perms.append(node_perm.id)
+                    node_id_hash_perm_value[node.id][node_perm.perm_id] = False
+            elif node_perm.status == 1:
+                one_perms.append(node_perm.id)
+                node_id_hash_perm_value[node.id][node_perm.perm_id] = True
+            else:
+                zero_perms.append(node_perm.id)
+                node_id_hash_perm_value[node.id][node_perm.perm_id] = False
+        tc.pr('node')
+
+    perm_cls.objects.filter(id__in=zero_perms).update(value=False)
+    perm_cls.objects.filter(id__in=one_perms).update(value=True)
+
+    tc.pr(f'end')
+    TimeCash.over()
         
 
 def _update_user_node_perm(user):
