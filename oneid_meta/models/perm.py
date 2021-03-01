@@ -9,6 +9,7 @@ import re
 from django.db import models
 
 from common.django.model import BaseModel
+from oneid.statistics import TimeCash
 
 
 class Perm(BaseModel):
@@ -166,6 +167,7 @@ class OwnerPerm(BaseModel):
             self.save_value(False)
         else:
             self.save_value(self.owner.parent.get_perm(self.perm).value)
+
 
     @property
     def locked(self):

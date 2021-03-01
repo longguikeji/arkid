@@ -69,7 +69,7 @@ class TimeCash:
         self.now = time.time()
         self.count[tag] = self.count.get(tag,0) + 1
         self.timelist[tag] = self.timelist.get(tag,0) + (self.now - self.pre)
-        # print( self.name ,tag, self.timelist.get(tag), (self.now - self.pre), *args, **kwargs)
+        print( self.name ,tag, self.timelist.get(tag), (self.now - self.pre), *args, **kwargs)
 
     def end(self):
         for tag in self.timelist.keys():

@@ -349,11 +349,11 @@ class User(BaseModel, PermOwnerMixin):
         '''
         子管理员组 ManagerGroup
         '''
-        if not self._managerGroups:
-            self._managerGroups = [gm.owner.manager_group for gm in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False)]
-        return self._managerGroups
-        # for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
-        #     yield group_member.owner.manager_group
+        # if not self._managerGroups:
+        #     self._managerGroups = [gm.owner.manager_group for gm in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False)]
+        # return self._managerGroups
+        for group_member in GroupMember.valid_objects.filter(user=self, owner__manager_group__isnull=False):
+            yield group_member.owner.manager_group
 
     @property
     def token(self):
