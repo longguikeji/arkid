@@ -3,6 +3,7 @@ serialzier mixin for node
 '''
 
 from oneid_meta.models import Dept, Group
+from oneid.statistics import TimeCash
 
 
 class NodeSerialzierMixin():
@@ -89,10 +90,8 @@ class NodeSerialzierMixin():
         node[self.children_name] = [sub_node for sub_node in node[self.children_name] if sub_node is not None]
         if visible:
             return node
-
         if node[self.children_name]:
             if self.context.get('user_required', False):
                 node['users'] = []
             return node
-
         return None

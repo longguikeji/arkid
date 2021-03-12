@@ -21,6 +21,9 @@ from siteapi.v1.views import (
 from siteapi.v1.serializers.dept import DeptCash, DeptSerializer, DeptTreeSerializer
 from siteapi.v1.serializers.group import GroupTreeSerializer, GroupSerializer
 from oneid.permissions import IsAdminUser, IsManagerUser, NodeEmployeeReadable
+from oneid_meta.models.group import GroupMember, ManagerGroup
+from oneid_meta.models.dept import DeptMember
+from oneid.statistics import TimeCash
 
 
 class MetaNodeAPIView(APIView):
@@ -237,6 +240,7 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
         '''
         获取节点结构树
         '''
+        
         DeptCash.clear()
         node = self.get_object()
         serializer = self.get_serializer(node)
@@ -245,6 +249,7 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
             raise NotFound
         if self.user_required:
             serializer.aggregate_headcount(data)
+        TimeCash.over()
         return Response(data)
 
 

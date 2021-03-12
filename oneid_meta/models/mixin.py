@@ -118,13 +118,13 @@ class TreeNode():
     parent = None
     NODE_PREFIX = ''
 
-    def tree_front_walker(self):
+    def tree_front_walker(self, parent=None):
         '''
         前序遍历
         '''
         yield self
         for child in self.children:
-            for node in child.tree_front_walker():
+            for node in child.tree_front_walker(child):
                 yield node
 
     @property

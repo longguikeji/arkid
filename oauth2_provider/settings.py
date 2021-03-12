@@ -36,7 +36,7 @@ DEFAULTS = {
     "CLIENT_SECRET_GENERATOR_CLASS": "oauth2_provider.generators.ClientSecretGenerator",
     "CLIENT_SECRET_GENERATOR_LENGTH": 128,
 
-    "OAUTH2_SERVER_CLASS": "oauthlib.openid.Server",
+    "OAUTH2_SERVER_CLASS": "oauthlib.oauth2.Server",
     "OAUTH2_VALIDATOR_CLASS": "oauth2_provider.oauth2_validators.OAuth2Validator",
     "OAUTH2_BACKEND_CLASS": "oauth2_provider.oauth2_backends.OAuthLibCore",
 
