@@ -72,19 +72,25 @@ class Dept(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
             for item in DeptMember.valid_objects.filter(owner=self).order_by('order_no').select_related('user')
         ]
 
+    _perms = None
     @property
     def perms(self):
         '''
         所有权限
         '''
-        return DeptPerm.valid_objects.filter(owner=self)
+        if not self._perms:
+            self._perms = DeptPerm.valid_objects.filter(owner=self)
+        return self._perms
 
+    _depts = None
     @property
     def depts(self):
         '''
         下属子部门
         '''
-        return Dept.valid_objects.filter(parent=self).order_by('order_no')
+        if not self._depts:
+            self._depts = Dept.valid_objects.filter(parent=self).order_by('order_no')
+        return self._depts
 
     def if_belong_to_dept(self, dept, recursive):
         '''

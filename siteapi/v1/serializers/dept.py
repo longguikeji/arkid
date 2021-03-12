@@ -207,18 +207,20 @@ class DeptListSerializer(DynamicFieldsModelSerializer):
         fields = ('depts', )
 
 import time
+from oneid_meta.models.group import GroupMember, ManagerGroup
+from oneid_meta.models.dept import DeptMember
 
 class DeptCash:
     
     dept_tree = {}
     dept_hash = {}
+    visible_dept = []
     @staticmethod
     def clear():
         DeptCash.dept_hash = {}
         DeptCash.dept_tree = {}
-        DeptCash.count = 0
-        DeptCash.zero = time.time()
-
+        DeptCash.visible_dept = []
+        
     @staticmethod
     def init():
         if not DeptCash.dept_hash:
@@ -237,16 +239,58 @@ class DeptCash:
             DeptCash.dept_hash = dept_hash
             DeptCash.dept_tree = dept_tree
         return True
-
     @staticmethod
     def get_dept_children(dept_uid):
         DeptCash.init()
         return DeptCash.dept_tree.get(dept_uid)
 
     @staticmethod
+    def get_dept_list(dept_id):
+        DeptCash.init()
+        dids = DeptCash.get_dept_children(dept_id)
+        if not dids:
+            return []
+        depts = dids
+        # print('dids', dids)
+        for did in dids:
+            depts += DeptCash.get_dept_list(did)
+        return depts
+
+    @staticmethod
     def get_dept(dept_id):
         DeptCash.init()
         return DeptCash.dept_hash.get(dept_id)
+    
+    @staticmethod
+    def init_visible(user):
+        if not DeptCash.visible_dept:
+            mgs = ManagerGroup.valid_objects.filter(group__in=GroupMember.valid_objects.values('owner').filter(user=user).distinct())
+            for mg in mgs:
+                depts = []
+                if mg.scope_subject == 1: # 查出user所在的所有组
+                    dd = Dept.valid_objects.filter(id__in=DeptMember.valid_objects.values('owner').filter(user=user).distinct())
+                    depts += dd
+                    ids = []
+                    for d in dd:
+                        ids += DeptCash.get_dept_list(d.id)
+                    for i in ids:
+                        depts.append(DeptCash.get_dept(i))
+                else:
+                    uids = []
+                    for node in mg.nodes:
+                        uids.append(node.replace('d_', ''))
+                    depts = Dept.valid_objects.filter(uid__in=uids)
+                DeptCash.visible_dept += depts
+            # print(DeptCash.visible_dept)
+
+    @staticmethod
+    def get_dept_visible(dept,user):
+        DeptCash.init_visible(user)
+        for d in DeptCash.visible_dept:
+            if d.id == dept.id:
+                return True
+        return False
+    
 
 class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
 
@@ -278,9 +322,12 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
         self._visible = False    # 该节点对该用户是否可见，仅指判定结果
         if self.context.get('read_all', False):
             self._visible = True
+        elif self._user.is_admin:
+            self._visible = True
         else:
             if self.context.get('user_identity', '') == 'manager':
-                self._visible = self.instance.is_open_to_manager(self._user) if self.instance else False # todo 效率低下
+                self._visible = DeptCash.get_dept_visible(self.instance, self._user) if self.instance else False
+                # self._visible = self.instance.is_open_to_manager(self._user) if self.instance else False
             else:
                 self._visible = self.instance.is_open_to_employee(self._user) if self.instance else False
 
@@ -294,8 +341,6 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
         else:
             self.children_name = 'nodes'
             self.fields.pop('depts')
-        
-
 
     class Meta:    # pylint: disable=missing-docstring
         model = Dept
