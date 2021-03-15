@@ -254,6 +254,7 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
             'node_subject': instance.node_subject,
             'uid': instance.uid,
             'name': instance.name,
+            'remark': instance.remark,
         }
 
     def get_users(self, instance):
