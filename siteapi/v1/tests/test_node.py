@@ -111,23 +111,23 @@ class NodeTestCase(TestCase):
             'nodes': [
                 {
                     'info': {
-                        'uid': 'level_2-2',
-                        'node_uid': 'd_level_2-2',
-                        'node_subject': 'dept',
-                        'name': 'level_2-2',
-                        'remark': '',
-                        'dept_id': 4
-                    },
-                    'nodes': []
-                },
-                {
-                    'info': {
                         'uid': 'level_2-1',
                         'node_uid': 'd_level_2-1',
                         'node_subject': 'dept',
                         'name': 'level_2-1',
                         'remark': '',
                         'dept_id': 3
+                    },
+                    'nodes': []
+                },
+                {
+                    'info': {
+                        'uid': 'level_2-2',
+                        'node_uid': 'd_level_2-2',
+                        'node_subject': 'dept',
+                        'name': 'level_2-2',
+                        'remark': '',
+                        'dept_id': 4
                     },
                     'nodes': []
                 },

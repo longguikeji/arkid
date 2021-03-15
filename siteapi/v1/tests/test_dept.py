@@ -128,11 +128,11 @@ class DeptTestCase(TestCase):
                 'depts': [
                     {
                         'info': {
-                            'dept_id': 4,
-                            'uid': 'level_2-2',
-                            'node_uid': 'd_level_2-2',
+                            'dept_id': 3,
+                            'uid': 'level_2-1',
+                            'node_uid': 'd_level_2-1',
                             'node_subject': 'dept',
-                            'name': 'level_2-2',
+                            'name': 'level_2-1',
                             'remark': '',
                         },
                         'headcount': 0,
@@ -141,11 +141,11 @@ class DeptTestCase(TestCase):
                     },
                     {
                         'info': {
-                            'dept_id': 3,
-                            'uid': 'level_2-1',
-                            'node_uid': 'd_level_2-1',
+                            'dept_id': 4,
+                            'uid': 'level_2-2',
+                            'node_uid': 'd_level_2-2',
                             'node_subject': 'dept',
-                            'name': 'level_2-1',
+                            'name': 'level_2-2',
                             'remark': '',
                         },
                         'headcount': 0,
@@ -179,22 +179,22 @@ class DeptTestCase(TestCase):
                 'depts': [
                     {
                         'info': {
-                            'dept_id': 4,
-                            'uid': 'level_2-2',
-                            'node_uid': 'd_level_2-2',
+                            'dept_id': 3,
+                            'uid': 'level_2-1',
+                            'node_uid': 'd_level_2-1',
                             'node_subject': 'dept',
-                            'name': 'level_2-2',
+                            'name': 'level_2-1',
                             'remark': '',
                         },
                         'depts': []
                     },
                     {
                         'info': {
-                            'dept_id': 3,
-                            'uid': 'level_2-1',
-                            'node_uid': 'd_level_2-1',
+                            'dept_id': 4,
+                            'uid': 'level_2-2',
+                            'node_uid': 'd_level_2-2',
                             'node_subject': 'dept',
-                            'name': 'level_2-1',
+                            'name': 'level_2-2',
                             'remark': '',
                         },
                         'depts': []
@@ -500,21 +500,21 @@ class DeptTestCase(TestCase):
                 'parent_node_uid': 'd_root'
             },
             {
-                'dept_id': 4,
-                'node_uid': 'd_level_2-2',
-                'node_subject': 'dept',
-                'uid': 'level_2-2',
-                'name': 'level_2-2',
-                'remark': '',
-                'parent_uid': 'level_1',
-                'parent_node_uid': 'd_level_1'
-            },
-            {
                 'dept_id': 3,
                 'node_uid': 'd_level_2-1',
                 'node_subject': 'dept',
                 'uid': 'level_2-1',
                 'name': 'level_2-1',
+                'remark': '',
+                'parent_uid': 'level_1',
+                'parent_node_uid': 'd_level_1'
+            },
+            {
+                'dept_id': 4,
+                'node_uid': 'd_level_2-2',
+                'node_subject': 'dept',
+                'uid': 'level_2-2',
+                'name': 'level_2-2',
                 'remark': '',
                 'parent_uid': 'level_1',
                 'parent_node_uid': 'd_level_1'
