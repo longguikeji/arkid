@@ -46,9 +46,9 @@ class DeptPermTestCase(TestCase):
         res = self.employee.get(reverse('siteapi:dept_tree', args=('l11', )))
         self.assertEqual(res.status_code, 403)
         res = self.employee.get(reverse('siteapi:dept_child_user', args=('l11', )))
-        self.assertEqual(res.status_code, 403)
+        self.assertEqual(res.status_code, 200)
         res = self.employee.get(reverse('siteapi:dept_child_dept', args=('l11', )))
-        self.assertEqual(res.status_code, 403)
+        self.assertEqual(res.status_code, 200)
 
         res = self.employee.delete(reverse('siteapi:dept_detail', args=('l11', )))
         self.assertEqual(res.status_code, 403)
