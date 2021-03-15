@@ -69,6 +69,7 @@ class VisibleTreeTestCase(TestCase):
                     'node_uid': 'd_1-1',
                     'node_subject': 'dept',
                     'uid': '1-1',
+                    'remark': '',
                     'name': '1-1'
                 },
                 'nodes': [{
@@ -77,6 +78,7 @@ class VisibleTreeTestCase(TestCase):
                         'node_uid': 'd_1-1-1',
                         'node_subject': 'dept',
                         'uid': '1-1-1',
+                        'remark': '',
                         'name': '1-1-1'
                     },
                     'nodes': [{
@@ -156,6 +158,7 @@ class VisibleTreeTestCase(TestCase):
                     'node_uid': 'd_1-1',
                     'node_subject': 'dept',
                     'uid': '1-1',
+                    'remark': '',
                     'name': '1-1'
                 },
                 'users': [],
@@ -165,6 +168,7 @@ class VisibleTreeTestCase(TestCase):
                         'node_uid': 'd_1-1-1',
                         'node_subject': 'dept',
                         'uid': '1-1-1',
+                        'remark': '',
                         'name': '1-1-1'
                     },
                     'users': [],
