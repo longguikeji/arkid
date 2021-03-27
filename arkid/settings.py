@@ -45,8 +45,8 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_static',
     'corsheaders',    
     'rest_framework',
-    'rest_framework.authtoken',
-    'rest_framework_expiring_authtoken',
+    # 'rest_framework.authtoken',
+    'drf_expiring_authtoken',
     'drf_spectacular',    
     'tenant',    
     'inventory',
@@ -107,7 +107,7 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_expiring_authtoken.authentication.ExpiringTokenAuthentication',
+        'drf_expiring_authtoken.authentication.ExpiringTokenAuthentication',
     ),
     # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',

@@ -27,6 +27,7 @@ drf-spectacular = "*"
 jwcrypto = "*"
 twisted = "*"
 ldaptor = "*"
+oauthlib = "*"
 
 [requires]
 python_version = "3.8"
