@@ -2,7 +2,7 @@ from api.v1.serializers.permission import PermissionSerializer
 from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Group, Permission, User
 from rest_framework import serializers
-from .group import GroupSerializer
+from .group import GroupSerializer, GroupBaseSerializer
 from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
 
 class UserSerializer(BaseDynamicFieldModelSerializer):
@@ -60,7 +60,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         groups = instance.groups.all()
         ret = []
         for g in groups:
-            o = GroupSerializer(g)
+            o = GroupBaseSerializer(g)
             ret.append(o.data)
         
         return ret
@@ -114,3 +114,19 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         )
         instance.save()
         return instance
+
+class UserListResponsesSerializer(UserSerializer):
+    class Meta:
+        model = User
+
+        fields = (
+            'username',
+            'email',
+            'mobile',
+            'first_name',
+            'last_name',
+            'nickname',
+            'country',
+            'city',
+            'job_title',
+        )

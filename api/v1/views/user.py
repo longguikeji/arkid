@@ -10,15 +10,20 @@ from inventory.models import (
     User
 )
 from api.v1.serializers.user import (
-    UserSerializer
+    UserSerializer, UserListResponsesSerializer
 )
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.decorators import action
 
+@extend_schema_view(
+    list = extend_schema(
+        responses=UserListResponsesSerializer
+    )
+)
 @extend_schema(
-    tags = ['user']
+    tags = ['user'],
 )
 class UserViewSet(BaseViewSet):
 

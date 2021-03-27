@@ -15,13 +15,14 @@ class GroupBaseSerializer(serializers.ModelSerializer):
 class GroupSerializer(BaseDynamicFieldModelSerializer):
 
     parent = GroupBaseSerializer(read_only=True, many=False)
-    parent_id = create_foreign_key_field(serializers.IntegerField)(
+    parent_uuid = create_foreign_key_field(serializers.UUIDField)(
         model_cls=Group, 
-        field_name='id', 
+        field_name='uuid', 
         path='/api/v1/tenant/{parent_lookup_tenant}/group/', 
         method='get', 
+        label='上级组织', 
         page_type='TreeList', 
-        source='parent.id', 
+        source='parent.uuid', 
         default=None,
     )
 
@@ -48,17 +49,18 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         page_type='TreeList', 
         child=serializers.CharField(),
         write_only=True,
+        default=[]
     )
     class Meta:
         model = Group
 
         fields = ( 
-            'id', 'uuid', 'name', 'parent', 'parent_id', 'parent_name', 'permissions', 'children',
+            'id', 'uuid', 'name', 'parent', 'parent_uuid', 'parent_name', 'permissions', 'children',
             'set_permissions',
         )
 
         extra_kwargs = {
-            'parent_id': {'blank': True}
+            'parent_uuid': {'blank': True}
         }
 
     def get_permissions(self, instance):
@@ -72,12 +74,12 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
     
     def create(self, validated_data):
         name = validated_data.get('name')
-        parent_id = validated_data.get('parent').get('id')
+        parent_uuid = validated_data.get('parent').get('uuid')
         tenant = self.context['tenant']
 
         set_permissions = validated_data.pop('set_permissions', None)
 
-        parent = Group.valid_objects.filter(id=parent_id).first()
+        parent = Group.valid_objects.filter(uuid=parent_uuid).first()
 
         o: Group = Group.valid_objects.create(tenant=tenant, name=name, parent=parent)
 
@@ -100,15 +102,15 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
 class GroupListResponseSerializer(GroupSerializer):
     class Meta:
         model = Group
-        fields = ( 'id', 'name', 'parent_name', 'uuid', 'children' )
+        fields = ( 'name', 'parent_name', 'uuid', 'children' )
 
 
 class GroupCreateRequestSerializer(GroupSerializer):
     class Meta:
         model = Group
-        fields = ( 'id', 'uuid', 'name', 'parent_id', 'permissions', 'children', 'set_permissions' )
+        fields = ( 'uuid', 'name', 'parent_uuid', 'permissions', 'children', 'set_permissions' )
 
 class GroupCreateResponseSerializer(GroupSerializer):
     class Meta:
         model = Group
-        fields = ( 'id', 'uuid', 'name', 'parent', 'parent_id', 'parent_name',)
+        fields = ( 'uuid', 'name', 'parent', 'parent_uuid', 'parent_name',)
