@@ -1,82 +1,53 @@
-# 一账通
+ArkID - v2
 
-ArkID是全新一代企业单点登录解决方案, 彻底告别企业内多系统多账号的烦恼, 节省管理成本, 自带功能全面的WEB管理界面，提升管理效率。
+**DO NOT USE THIS VRESION IN PRODUCTION (请勿在生产环境中使用)**
 
-更多细节参见 [docs.arkid.longguikeji.com](https://www.yuque.com/longguikeji/arkid/)
+## TODO
 
-## 功能特性
-
-### 兼容各种常见协议, 让每个应用都可以连接
-
-1. LDAP
-2. OAuth 2.0
-3. OpenID Connect
-4. SAML 2.0
-5. HTTP API
-
-### 丰富的账号与分组管理
-
-1. 灵活高效的管理企业内部账号与分组
-2. 支持一键钉钉导入
-
-### 完备的权限管理
-
-细粒度的权限管理，让企业没有管理不到的权限
-
-1. 账号权限
-2. 分组权限
-3. 应用白名单，黑名单
-4. 应用内权限
-
-### 工作台(Workspace)
-
-每位员工均拥有自己的工作台，一键访问业务系统
-
-### 自定义登陆UI
-
-名称、LOGO、主题色，让登陆页面彰显企业文化
-
-## 项目说明
-
-- [arkid-frontend](https://github.com/longguikeji/arkid-frontend): 前端代码
-- [arkid-core](https://github.com/longguikeji/arkid-core): 后端核心以及其他
-- [arkid-broker](https://github.com/longguikeji/arkid-broker): 一账通部署在ArkOS中的服务Broker
-
-## DEMO
-
-https://arkid.demo.longguikeji.com
-
-```
-用户名: admin
-密码: longguikeji
-```
-
-## 文档
-
-- [完整文档](https://www.yuque.com/longguikeji/arkid/)
-- [接口文档](https://oneid1.docs.apiary.io/#)
-
-## 部署
-
-我们推荐基于Kubernetes的环境部署，官方helm charts参考: [Charts](https://github.com/longguikeji/arkid-charts)
+1. 通过扩展实现External idP的授权登陆
+   1. [ ] 钉钉
+   2. [x] Gitee
+   3. [x] Github
+2. 通过扩展实现tenant isolate, scope支持global, tenant
+3. 通过扩展实现同步功能
+   1. [ ] SCIM(从core中挪出来)
+   2. [ ] LDAP
+4. 通过扩展实现Storage Provider
+   1. [ ] 本地文件系统
+   2. [ ] 七牛
+   3. [ ] OSS
+   4. [ ] Minio
+5. 通过扩展实现MFA
+   1. [ ] Captcha
+   2. [ ] HOTP/TOTP
+   3. [ ] SMS
+   4. [ ] Email
+6. 通过扩展实现协议支持
+   1. [x] OAuth2
+   2. [x] OIDC
+   3. [ ] LDAP
+   4. [ ] SAML
+   5. [ ] CAS WEB
+7. 通过扩展实现Token 基础框架以及扩展实现Token扩展
+8. User & Group Model的扩展
+9.  ArkID Core Package化
+10. 扩展的DB Model 以及 依赖隔离支持
 
 
-## Issues
+## arkid cli命令
 
-请通过[Github Issues](https://github.com/longguikeji/arkid-core/issues)给我们提交问题
+### create-extension
 
-## Changelog
+### list-extension
 
-[Release Notes](https://github.com/longguikeji/arkid-core/releases)
+### start
+
+### reload
+
+### stop
 
 
-## Contact
+## 角色划分
 
-- [Website](https://www.longguikeji.com)
-- 技术交流 QQ 群 （167885406）
-
-## License
-
-[LGPL-3.0](https://opensource.org/licenses/LGPL-3.0)
-
-Copyright (c) 2019-present, 北京龙归科技有限公司
+1. Global Administrator(全局管理员) 跨租户管理
+2. Tenant Administrator(租户管理员)

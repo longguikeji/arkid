@@ -1,57 +1,32 @@
 [[source]]
-url = "https://mirrors.aliyun.com/pypi/simple/"
-verify_ssl = true
 name = "pypi"
-
-[[source]]
-url = "https://mirrors.aliyun.com/pypi/simple"
+url = "https://pypi.org/simple"
 verify_ssl = true
-
-[packages]
-django = "==2.2.10"
-djangorestframework = "==3.10.2"
-django-cors-headers = "==2.5.3"
-celery = "==4.2.1"
-coreapi = "==2.3.3"
-django-celery-results = "==1.0.1"
-django-celery-beat = "==1.1.1"
-pylint = "*"
-rules = "==2.0"
-ldap3 = "==2.5.2"
-passlib = "*"
-pypinyin = "*"
-django-oauth-toolkit = "==1.2.0"
-django-cors-middleware = "==1.4.0"
-redis = "==3.2.0"
-django-simple-captcha = "==0.5.12"
-aliyun-python-sdk-core-v3 = "==2.8.6"
-sqlparse = "*"
-kubernetes = "==10.0.0"
-django-jsonfield = "==1.2.0"
-minio = "==4.0.18"
-cryptography = "==2.8"
-django-redis = "==4.10.0"
-alipay-sdk-python = "==3.3.202"
-pysaml2 = "==4.9.0"
-mako = "==1.1.0"
-pyasn1 = "==0.4.8"
-repoze-who = "==2.3"
-cherrypy = "==18.4.0"
-# 当使用 MySQL 作为数据库时:
-pyjwkest = "*"
-#mysqlclient = "1.4.6"
-# 当使用 MySQL 作为数据库时:
-croniter = "*"
-# mysqlclient = "1.4.6"
-django-mysql = "==3.6.0"
 
 [dev-packages]
 ipython = "*"
-pre-commit = "*"
-pylint = "*"
-yapf = "*"
-v = {version = "*",editable = true}
-pipenv-to-requirements = "*"
+
+[packages]
+django = "*"
+celery = "*"
+djangorestframework = "*"
+six = "*"
+coreapi = "*"
+pyyaml = "*"
+# djangorestframework-expiring-authtoken = "*"
+django-cors-headers = "*"
+django-jsonfield = "*"
+drf-extensions = "*"
+django-otp = "*"
+requests = "*"
+toml = "*"
+aliyun-python-sdk-core = "*"
+aliyun-python-sdk-core-v3 = "*"
+redis = "*"
+drf-spectacular = "*"
+jwcrypto = "*"
+twisted = "*"
+ldaptor = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.8"

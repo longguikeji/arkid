@@ -162,3 +162,5 @@ celerybeat.pid
 # supervisord
 supervisord.pid
 supervisord.log
+
+arkid.local.toml

@@ -1,0 +1,3 @@
+class DuplicatedIdException(Exception):
+
+    pass
