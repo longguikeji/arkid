@@ -7,7 +7,6 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_201_CREATED, HTTP_200_OK
 from rest_framework.views import APIView
-from .settings import CLIENT_ID, SECRET_ID
 from .user_info_manager import GiteeUserInfoManager, APICallError
 from .models import GiteeUser
 from urllib.parse import urlencode, unquote
@@ -16,6 +15,7 @@ from django.urls import reverse
 from config import get_app_config
 from .constants import AUTHORIZE_URL
 from drf_spectacular.utils import extend_schema
+from .provider import GiteeExternalIdpProvider
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -36,7 +36,7 @@ class GiteeLoginView(APIView):
             next_url = ""
         url = "{}?client_id={}&redirect_uri={}&response_type=code&scope=user_info".format(
             AUTHORIZE_URL,
-            CLIENT_ID,
+            # `CLIENT_ID`,
             urllib.parse.quote(
                 "{}{}{}".format(
                     c.get_host(),
@@ -106,9 +106,9 @@ class GiteeCallbackView(APIView):
             next_url = ""
         if code:
             try:
-                user_id = GiteeUserInfoManager(CLIENT_ID, SECRET_ID).get_user_id(
-                    code, next_url
-                )
+                provider = GiteeExternalIdpProvider()
+                provider.load_data(tenant_id=tenant_id)
+                user_id = GiteeUserInfoManager(provider.client_id, provider.secret_id).get_user_id(code, next_url)
             except APICallError:
                 raise ValidationError({"code": ["invalid"]})
         else:

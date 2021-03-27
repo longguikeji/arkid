@@ -33,18 +33,6 @@ class GiteeUserInfoManager:
         查询用户id
         """
         try:
-            # 获取access token
-            # response = requests.post(
-            #     constants.GET_TOKEN_URL,
-            #     params={
-            #         "code": code,
-            #         "client_id": self.client_id,
-            #         "client_secret": self.client_secret,
-            #         "grant_type": "authorization_code",
-            #     },
-            # ).__getattribute__("_content")
-            print(code)
-            redirect_uri = "http://localhost:8000/api/v1/tenant/1/gitee/callback" +  next
             response = requests.post(
                 constants.GET_TOKEN_URL,
                 params={
@@ -52,15 +40,12 @@ class GiteeUserInfoManager:
                     "client_id": self.client_id,
                     "client_secret": self.client_secret,
                     "grant_type": "authorization_code",
-                    "redirect_uri": redirect_uri,
-                    # "redirect_uri": "http://localhost:9528/third_part_callback/?token_api=http://127.0.0.1:8000/api/v1/tenant/1/gitee/callback",
                 },
             )
-            response = response.__getattribute__("_content").decode()
-            # response = parse_qs(response)
-            result = json.loads(response)
-            print(result)
-            # result = dict([(k, v[0]) for k, v in response.items()])  # 将响应信息转换为字典
+            response = response.__getattribute__("_content")
+            result = dict(
+                [(k, v[0]) for k, v in parse_qs(response.decode()).items()]
+            )
             # 获取user info
             headers = {"Authorization": "token " + result["access_token"]}
             response = requests.get(
