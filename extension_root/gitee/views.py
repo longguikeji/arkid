@@ -7,7 +7,6 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_201_CREATED, HTTP_200_OK
 from rest_framework.views import APIView
-from .settings import CLIENT_ID, SECRET_ID
 from .user_info_manager import GiteeUserInfoManager, APICallError
 from .models import GiteeUser
 from urllib.parse import urlencode, unquote
@@ -37,7 +36,7 @@ class GiteeLoginView(APIView):
             next_url = ""
         url = "{}?client_id={}&redirect_uri={}&response_type=code&scope=user_info".format(
             AUTHORIZE_URL,
-            CLIENT_ID,
+            # `CLIENT_ID`,
             urllib.parse.quote(
                 "{}{}{}".format(
                     c.get_host(),

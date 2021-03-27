@@ -1,7 +1,7 @@
 from extension.models import Extension
 from django.urls import path, include
 
-from .serializers import GithubExternalIdpConfigSerializer
+from .serializers import GithubExternalIdpSerializer
 from .provider import GithubExternalIdpProvider
 from .constants import KEY
 
@@ -13,7 +13,7 @@ class GithubExternalIdpExtension(Extension):
             name='Github', 
             description='Github',
             provider=GithubExternalIdpProvider,
-            serializer=GithubExternalIdpConfigSerializer,
+            serializer=GithubExternalIdpSerializer,
         )
         
         super().start(runtime=runtime, *args, **kwargs)

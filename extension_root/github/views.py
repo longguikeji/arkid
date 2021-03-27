@@ -36,7 +36,7 @@ class GithubLoginView(APIView):
             next_url = ""
         url = "{}?client_id={}&redirect_uri={}".format(
             AUTHORIZE_URL,
-            CLIENT_ID,
+            # CLIENT_ID,
             urllib.parse.quote(
                 "{}{}{}".format(
                     c.get_host(),
