@@ -16,6 +16,7 @@ from django.urls import reverse
 from config import get_app_config
 from .constants import AUTHORIZE_URL
 from drf_spectacular.utils import extend_schema
+from .provider import GiteeExternalIdpProvider
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -106,9 +107,9 @@ class GiteeCallbackView(APIView):
             next_url = ""
         if code:
             try:
-                user_id = GiteeUserInfoManager(CLIENT_ID, SECRET_ID).get_user_id(
-                    code, next_url
-                )
+                provider = GiteeExternalIdpProvider()
+                provider.load_data(tenant_id=tenant_id)
+                user_id = GiteeUserInfoManager(provider.client_id, provider.secret_id).get_user_id(code, next_url)
             except APICallError:
                 raise ValidationError({"code": ["invalid"]})
         else:
