@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'webhook',
     'siteadmin',
     'provisioning',
+    'external_idp',
     'schema',
     'extension',
     'api',

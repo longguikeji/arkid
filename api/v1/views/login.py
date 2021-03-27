@@ -1,4 +1,3 @@
-from external_idp.models import ExternalIdp
 from api.v1.views import user
 from django.http import Http404
 from django.http.response import JsonResponse

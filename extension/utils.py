@@ -1,5 +1,3 @@
-import pathlib
-from runtime import Runtime
 import typing
 import os
 from pathlib import Path
@@ -49,7 +47,7 @@ def find_installed_extensions() -> typing.List[Extension]:
     return extensions
 
 
-def load_installed_extensions(runtime: Runtime) -> typing.List[Extension]:
+def load_installed_extensions(runtime) -> typing.List[Extension]:
     app_config = config.get_app_config()
 
     extensions = []

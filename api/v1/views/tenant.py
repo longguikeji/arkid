@@ -1,16 +1,11 @@
-from external_idp.models import ExternalIdp
 from api.v1.views import user
 import random
 import string
 from django.http import Http404
 from django.http.response import JsonResponse
-from rest_framework import generics, viewsets
 from django.utils.translation import gettext_lazy as _
-from rest_framework.permissions import IsAuthenticated
-# from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.decorators import action
 import runtime
-# from drf_spectacular.utils import extend_schema
 from openapi.utils import extend_schema
 
 from tenant.models import (
@@ -156,7 +151,7 @@ class TenantViewSet(BaseViewSet):
             bind_key = thirdparty_data.pop('bind_key')
             assert bind_key is not None
 
-            eidp: ExternalIdp
+            eidp: InMemExternalIdp
             for eidp in self.runtime.external_idps:
                 provider = eidp.provider
                 if provider.bind_key == bind_key:

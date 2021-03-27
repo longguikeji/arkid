@@ -1,4 +1,3 @@
-from runtime import get_app_runtime
 from .utils import load_installed_extensions
 from common.logger import logger
 
@@ -14,7 +13,7 @@ class ExtensionLoader:
         return cls._instance
 
     def _start(self):
-        print('>>>>>>111')
+        from runtime import get_app_runtime
         app_runtime = get_app_runtime()
 
         load_installed_extensions(

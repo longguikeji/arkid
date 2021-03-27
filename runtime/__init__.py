@@ -10,8 +10,7 @@ from common.provider import (
     AuthorizationServerProvider,
     AppTypeProvider,
 )
-from common.serializer import AppBaseSerializer
-from external_idp.models import ExternalIdp
+from common.serializer import AppBaseSerializer, ExternalIdpBaseSerializer
 from authorization_server.models import AuthorizationServer
 from mfa.models import MFA
 from common.exception import DuplicatedIdException
@@ -22,10 +21,15 @@ class Runtime:
 
     sms_provider: SMSProvider = None
     cache_provider: CacheProvider = None
-    external_idps: List[ExternalIdp] = []
+
+    external_idps: List
+    external_idp_providers: Dict[str, ExternalIdpProvider]
+    external_idp_serializers: Dict[str, ExternalIdpBaseSerializer]
+
     authorization_servers: List[AuthorizationServer] = []
 
     mfa_providers: Optional[List] = None
+
     app_types: List
     app_type_providers: Dict[str, AppTypeProvider]
     app_type_serializers: Dict[str, AppBaseSerializer]
@@ -39,6 +43,10 @@ class Runtime:
             cls._instance.app_types = []
             cls._instance.app_type_providers = {}
             cls._instance.app_type_serializers = {}
+
+            cls._instance.external_idps = []
+            cls._instance.external_idp_providers = {}
+            cls._instance.external_idp_serializers = {}
 
         return cls._instance
 
@@ -54,19 +62,13 @@ class Runtime:
         '''
         pass
 
-    def register_external_idp(self, id: str, name: str, description: str, provider: ExternalIdpProvider):
-        for idp in self.external_idps:
-            if idp.id == id:
-                raise DuplicatedIdException(f'duplicated extension: {idp.id} {idp.name}')
+    def register_external_idp(self, key: str, name: str, description: str, provider: ExternalIdpProvider, serializer: ExternalIdpBaseSerializer=None):
+        self.external_idps.append((key, name, description))
+        if provider is not None:
+            self.external_idp_providers[key] = provider
 
-        idp = ExternalIdp(
-            id=id, 
-            name=name, 
-            description=description,
-            provider=provider, 
-            source=None,
-        )
-        self.external_idps.append(idp)
+        if serializer is not None:
+            self.external_idp_serializers[key] = serializer
 
     def register_mfa_provider(self, name: str, provider: MFAProvider):
         pass

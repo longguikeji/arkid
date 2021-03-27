@@ -52,7 +52,7 @@ class FeishuExtension(Extension):
 
 
         runtime.register_external_idp(
-            id='feishu',             
+            key='feishu',             
             name='飞书',
             description='字节跳动出品的即时沟通工具',
             provider=provider,

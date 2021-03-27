@@ -1,11 +1,11 @@
 import typing
-from runtime import Runtime
 from extension.models import Extension
 from django.urls import path, include
 
 from common.provider import ExternalIdpProvider
 from .user_info_manager import GiteeUserInfoManager
 from .settings import CLIENT_ID, SECRET_ID
+from .serializers import GiteeExternalIdpSerializer
 
 
 class GiteeExternalIdpProvider(ExternalIdpProvider):
@@ -20,6 +20,15 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         )
         super().__init__()
 
+    def create(self, external_idp, data):
+        client_id = data.get('client_id')
+        secret_id = data.get('secret_id')
+
+        return {
+            'client_id': client_id,
+            'secret_id': secret_id,
+        }
+
     def bind(self, user: any, data: typing.Dict):
         from .models import GiteeUser
 
@@ -31,12 +40,13 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
 
 
 class GiteeExternalIdpExtension(Extension):
-    def start(self, runtime: Runtime, *args, **kwargs):
+    def start(self, runtime, *args, **kwargs):
         runtime.register_external_idp(
-            id="gitee",
+            key="gitee",
             name="Gitee",
             description="Gitee",
-            provider=GiteeExternalIdpProvider(),
+            provider=GiteeExternalIdpProvider,
+            serializer=GiteeExternalIdpSerializer,
         )
         super().start(runtime=runtime, *args, **kwargs)
 

@@ -51,6 +51,10 @@ class ExternalIdpProvider:
         self.name = None
 
     @abstractmethod
+    def create(self, external_idp) -> Dict:
+        raise NotImplementedError()
+
+    @abstractmethod
     def get_groups(self):
         '''
         ExternalIDP => ArkID

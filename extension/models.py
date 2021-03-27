@@ -1,6 +1,5 @@
 import typing
 
-from runtime import Runtime
 from config import Config, get_app_config
 from django.db import models
 
@@ -48,7 +47,7 @@ class Extension:
     def __repr__(self) -> str:
         return f'Extension: {self.name}'
 
-    def start(self, runtime: Runtime) -> None:
+    def start(self, runtime) -> None:
         if self.on_start is not None:
             self.on_start(runtime)
 

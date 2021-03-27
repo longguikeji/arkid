@@ -1,11 +1,11 @@
 import typing
-from runtime import Runtime
 from extension.models import Extension
 from django.urls import path, include
 
 from common.provider import ExternalIdpProvider
 from .user_info_manager import GithubUserInfoManager
 from .settings import CLIENT_ID, SECRET_ID
+from .serializers import GithubExternalIdpConfigSerializer
 
 
 class GithubExternalIdpProvider(ExternalIdpProvider):
@@ -18,8 +18,18 @@ class GithubExternalIdpProvider(ExternalIdpProvider):
         self.manager = GithubUserInfoManager(client_id=CLIENT_ID, client_secret=SECRET_ID)
         super().__init__()
 
+    def create(self, external_idp, data):
+        client_id = data.get('client_id')
+        secret_id = data.get('secret_id')
+
+        return {
+            'client_id': client_id,
+            'secret_id': secret_id,
+        }
+
     def bind(self, user: any, data: typing.Dict):
         from .models import GithubUser
+        
         GithubUser.objects.get_or_create(
             tenant=user.tenant,
             user=user,
@@ -28,13 +38,15 @@ class GithubExternalIdpProvider(ExternalIdpProvider):
 
 class GithubExternalIdpExtension(Extension):    
 
-    def start(self, runtime: Runtime, *args, **kwargs):
+    def start(self, runtime, *args, **kwargs):
         runtime.register_external_idp(
-            id='github', 
+            key='github', 
             name='Github', 
             description='Github',
-            provider=GithubExternalIdpProvider(),
+            provider=GithubExternalIdpProvider,
+            serializer=GithubExternalIdpConfigSerializer,
         )
+        
         super().start(runtime=runtime, *args, **kwargs)
 
 

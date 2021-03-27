@@ -10,8 +10,6 @@ from django.contrib.contenttypes.models import ContentType
 
 class AppSerializer(BaseDynamicFieldModelSerializer):
 
-    # protocol_type = serializers.ChoiceField(choices=get_app_runtime().app_types, write_only=True)
-    # protocol_data = serializers.JSONField()
     class Meta:
         model = App
 
@@ -21,13 +19,10 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
             'url',
             'type',
             'data',
-            # 'protocol_type',
-            # 'protocol_data',
             'description',
         )
 
         extra_kwargs = {
-            # 'type': {'read_only': True},
             'uuid': {'read_only': True},
         }
 
@@ -35,12 +30,10 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
         tenant = self.context['tenant']
 
         name = validated_data.pop('name')
-        # protocol_type = validated_data.pop('protocol_type')
         protocol_type = validated_data.pop('type')
         url = validated_data.pop('url', '')
         description = validated_data.pop('description', '')
 
-        # protocol_data = validated_data.pop('protocol_data', None)
         protocol_data = validated_data.pop('data', None)
 
         app = App.objects.create(

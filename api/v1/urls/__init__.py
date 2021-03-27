@@ -12,7 +12,6 @@ from . import (
     external_idp,
     authorization_server,
     jsonp,
-    app_type_form,    
     login,
 )
 
