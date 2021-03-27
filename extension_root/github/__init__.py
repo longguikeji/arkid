@@ -5,7 +5,7 @@ from django.urls import path, include
 from common.provider import ExternalIdpProvider
 from .user_info_manager import GithubUserInfoManager
 from .settings import CLIENT_ID, SECRET_ID
-from .serializers import GithubExternalIdpConfigSerializer
+from .serializers import GithubExternalIdpSerializer
 
 
 class GithubExternalIdpProvider(ExternalIdpProvider):
@@ -44,7 +44,7 @@ class GithubExternalIdpExtension(Extension):
             name='Github', 
             description='Github',
             provider=GithubExternalIdpProvider,
-            serializer=GithubExternalIdpConfigSerializer,
+            serializer=GithubExternalIdpSerializer,
         )
         
         super().start(runtime=runtime, *args, **kwargs)
