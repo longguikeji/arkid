@@ -4,7 +4,7 @@ from inventory.models import Group, Permission, User
 from rest_framework import serializers
 from .group import GroupSerializer, GroupBaseSerializer
 from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
-from ..pages import group
+from ..pages import group, permission
 
 class UserSerializer(BaseDynamicFieldModelSerializer):
 
@@ -24,10 +24,18 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     #     write_only=True,
     # )
 
-    set_permissions = serializers.ListField(
+    set_permissions = create_foreign_key_field(serializers.ListField)(
+        model_cls=Permission,
+        field_name='id',
+        page=permission.tag,
         child=serializers.CharField(),
         write_only=True,
     )
+
+    # set_permissions = serializers.ListField(
+    #     child=serializers.CharField(),
+    #     write_only=True,
+    # )
 
     class Meta:
         model = User
