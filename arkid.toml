@@ -32,20 +32,3 @@ root = "./extension_root"
 
     [extension.feishu]
     enabled = 1
-
-    # [extension.feishu.tenant_1]
-    app_id = ''
-    app_secret = ''
-
-    # [extension.feishu.tenant_2]
-    # app_id = ''
-    # app_secret = ''
-
-    [extension.local_storage]
-    data_path = './upload'
-
-    [extension.oss_storage]
-    domain = ''
-    access_key = ''
-    secret_key = ''
-    bucket = ''

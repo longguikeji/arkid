@@ -21,7 +21,7 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
         external_idp_type = validated_data.pop('type')
         data = validated_data.pop('data', None)
 
-        external_idp = ExternalIdp.objects.create(
+        external_idp, _ = ExternalIdp.objects.get_or_create(
             tenant=tenant,
             type=external_idp_type,
         )

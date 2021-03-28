@@ -6,7 +6,6 @@ from common.extension import InMemExtension
 
 class ExtensionSerializer(BaseDynamicFieldModelSerializer):
 
-    type = serializers.CharField()
     description = serializers.CharField(source='inmem.description', read_only=True)
     version = serializers.CharField(source='inmem.version', read_only=True)
     homepage = serializers.CharField(source='inmem.homepage', read_only=True)
@@ -27,6 +26,18 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
             'maintainer',
             'data',
         )
+
+    def create(self, validated_data):
+        extension_type = validated_data.pop('type', None)
+        assert extension_type is not None        
+
+        o, _ = Extension.active_objects.get_or_create(
+            type=extension_type
+        )
+
+        o.data = validated_data.get('data')
+        o.save()
+        return o
 
 class ExtensionListSerializer(ExtensionSerializer):
 
