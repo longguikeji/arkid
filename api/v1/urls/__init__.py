@@ -13,6 +13,7 @@ from . import (
     authorization_server,
     jsonp,
     login,
+    storage,
 )
 
 urlpatterns = []
@@ -49,3 +50,4 @@ if local_urlpatterns is not None:
 urlpatterns += login.urlpatterns
 urlpatterns += tenant.router.urls
 urlpatterns += jsonp.urlpatterns
+urlpatterns += storage.urlpatterns

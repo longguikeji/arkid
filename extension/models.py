@@ -52,13 +52,13 @@ class Extension:
         if self.on_start is not None:
             self.on_start(runtime)
 
-    def config(self, key) -> any:
+    def config(self, key, default=None) -> any:
         app_config: Config = get_app_config()
         value = app_config.extension.config.get(self.name, None)
         if value is None:
             return None
         
-        value = value.get(key, None)
+        value = value.get(key, default)
         return value
 
     def register(self, service_name):

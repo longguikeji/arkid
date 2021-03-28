@@ -43,7 +43,6 @@ class Permission(BaseModel):
 
 class User(AbstractUser, BaseModel):
     
-    # tenant = models.ForeignKey('tenant.Tenant', blank=True, null=True, on_delete=models.PROTECT) # Global Administrator
     tenants = models.ManyToManyField(
         'tenant.Tenant',
         blank=True,
@@ -63,6 +62,8 @@ class User(AbstractUser, BaseModel):
     job_title = models.CharField(max_length=128, blank=True)
     last_login = models.DateTimeField(blank=True, null=True)
 
+    avatar = models.CharField(blank=True, max_length=256)
+
     groups = models.ManyToManyField(
         'inventory.Group',
         blank=True,
@@ -77,6 +78,12 @@ class User(AbstractUser, BaseModel):
     )
 
     _password = None
+
+    @property
+    def avatar_url(self):
+        from runtime import get_app_runtime
+        r = get_app_runtime()
+        return r.storage_provider.resolve(self.avatar)
 
     @property
     def fullname(self):
@@ -120,7 +127,6 @@ class Group(BaseModel):
         'inventory.Permission',
         blank=True,
     )
-    # order_number = models.IntegerField(default=0)
 
     def __str__(self) -> str:
         return f'{self.tenant.name} - {self.name}'

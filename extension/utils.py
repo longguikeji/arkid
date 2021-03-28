@@ -70,7 +70,7 @@ def load_installed_extensions(runtime) -> typing.List[Extension]:
 
         extension_global_urls_filename = Path(ext_dir) / 'urls.py'
         if extension_global_urls_filename.exists():
-            print(f'load extension urls: {ext_name}.urls')
+            print(f'>>>load extension urls: {ext_name}.urls')
             urlpatterns = [url('', include((f'{ext_name}.urls', 'extension'), namespace=f'{ext.name}'))]
             runtime.register_route(urlpatterns)
 
