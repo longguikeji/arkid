@@ -14,22 +14,19 @@ class EmailProvider:
 
     @abstractmethod
     def send_auth_code(self, mobile, code):
-        pass
+        raise NotImplementedError
 
 
 class StorageProvider:
 
     @abstractmethod
-    def upload(self, path: str):
-        pass
+    def upload(self, path: str) -> str:
+        raise NotImplementedError
 
     @abstractmethod
-    def download(self, path: str):
-        pass
+    def download(self, key: str) -> str:
+        raise NotImplementedError
 
-    @abstractmethod
-    def remove(self, path: str):
-        pass
 
 class CacheProvider:
 
@@ -101,11 +98,6 @@ class MFAProvider:
     @abstractmethod
     def verify(self):
         pass
-
-
-class AuthorizationServerProvider:
-
-    pass
 
 
 class AppTypeProvider:

@@ -1,11 +1,10 @@
 import os
 from rest_framework.views import APIView
 from django.http import HttpResponseRedirect
-from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_201_CREATED, HTTP_200_OK
+from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from .user_info_manager import GiteeUserInfoManager, APICallError
 from .models import GiteeUser
@@ -29,6 +28,10 @@ class GiteeLoginView(APIView):
     def get(self, request, tenant_id):
         c = get_app_config()
         # @TODO: keep other query params
+
+        provider = GiteeExternalIdpProvider()
+        provider.load_data(tenant_id=tenant_id)
+
         next_url = request.GET.get("next", None)
         if next_url is not None:
             next_url = "?next=" + urllib.parse.quote(next_url)
@@ -36,7 +39,7 @@ class GiteeLoginView(APIView):
             next_url = ""
         url = "{}?client_id={}&redirect_uri={}&response_type=code&scope=user_info".format(
             AUTHORIZE_URL,
-            # `CLIENT_ID`,
+            provider.client_id,
             urllib.parse.quote(
                 "{}{}{}".format(
                     c.get_host(),
@@ -59,9 +62,6 @@ class GiteeLoginView(APIView):
 
 @extend_schema(tags=["gitee"])
 class GiteeBindAPIView(GenericAPIView):
-    """
-    Github账号绑定
-    """
 
     permission_classes = []
     authentication_classes = []

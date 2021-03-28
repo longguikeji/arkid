@@ -1,20 +1,21 @@
-import typing
+from typing import Optional, Callable
 
 from config import Config, get_app_config
 from django.db import models
 
 class Extension:
 
-    name: typing.Optional[str] = None
-    description: typing.Optional[str] = None
-    version: typing.Optional[str] = None
-    homepage: typing.Optional[str] = None
-    logo: typing.Optional[str] = None
-    maintainer: typing.Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    version: Optional[str] = None
+    homepage: Optional[str] = None
+    logo: Optional[str] = None
+    maintainer: Optional[str] = None
+    contact: Optional[str]
 
     scope: str = 'global'
     
-    on_start: typing.Optional[typing.Callable] = None
+    on_start: Optional[Callable] = None
 
     def __init__(self, *args, **kwargs) -> None:
         if self.scope is None:
