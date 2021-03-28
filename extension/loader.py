@@ -19,7 +19,6 @@ class ExtensionLoader:
         load_installed_extensions(
             runtime=app_runtime,
         )
-        xx
 
         if app_runtime.sms_provider is None:
             logger.warning('SMS Provider not set')
