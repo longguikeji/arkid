@@ -26,7 +26,7 @@ extend_schema_tags(
             'method': 'delete'
         },
         'childrenList': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
             'method': 'get'
         },
         'tableList': {
