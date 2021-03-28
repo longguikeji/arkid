@@ -1,11 +1,10 @@
-import typing
+from rest_framework.serializers import Serializer
 from runtime import Runtime
-from extension.models import Extension
-from django.urls import path, include
+from common.extension import InMemExtension
 from .provider import OSSStorageProvider
+from .serializers import OSSStorageSerializer
 
-
-class OSSStorageExtension(Extension):    
+class OSSStorageExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         provider = OSSStorageProvider()
@@ -30,4 +29,5 @@ extension = OSSStorageExtension(
     maintainer='北京龙归科技有限公司',
     homepage='https://www.longguikeji.com',
     contact='rock@longguikeji.com',
+    serializer=OSSStorageSerializer,
 )

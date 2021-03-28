@@ -105,6 +105,17 @@ class Runtime:
             self.app_type_serializers[key] = serializer
 
 
+    @property
+    def extension_serializers(self):
+        from extension.utils import find_installed_extensions
+        extensions = find_installed_extensions()
+        data = {}
+        for ext in extensions:
+            if ext.serializer is not None:
+                data[ext.name] = ext.serializer
+        
+        return data
+
 def get_app_runtime() -> Runtime:
     o = Runtime()
     return o

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 class AliyunConfigResponseSerializer(serializers.Serializer):
+
     access_key = serializers.CharField(required=True,label='Access Key')
     access_secret = serializers.CharField(required=True,label='Access Secret')
     sms_template = serializers.CharField(required=True,label='短信模板')
@@ -10,5 +11,6 @@ class AliyunConfigResponseSerializer(serializers.Serializer):
 
 
 class AliyunSendSMSSerializer(serializers.Serializer):
+    
     mobile = serializers.CharField(required=True,label='电话号码')
     

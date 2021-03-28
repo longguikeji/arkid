@@ -2,6 +2,7 @@ from typing import Any
 from common.provider import StorageProvider
 from pathlib import Path
 from django.urls import reverse
+from .constants import KEY
 
 
 class LocalStorageProvider(StorageProvider):
@@ -10,7 +11,14 @@ class LocalStorageProvider(StorageProvider):
 
     def __init__(self) -> None:
         super().__init__()
-        self.data_path = None
+
+        from extension.models import Extension
+        o = Extension.active_objects.filter(
+            type=KEY,
+        ).first()
+
+        assert o is not None
+        self.data_path = o.data.get('data_path')
 
     def upload(self, file: Any) -> str:
         key = self.generate_key(file)

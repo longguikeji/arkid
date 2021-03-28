@@ -1,7 +1,7 @@
 import typing
 import os
 from pathlib import Path
-from .models import Extension
+from common.extension import InMemExtension
 import config
 import importlib
 import shutil
@@ -31,7 +31,7 @@ def is_valid_extension_name(name: str) -> bool:
     return b
 
 
-def find_installed_extensions() -> typing.List[Extension]:
+def find_installed_extensions() -> typing.List[InMemExtension]:
     app_config = config.get_app_config()
 
     extensions = []
@@ -47,7 +47,7 @@ def find_installed_extensions() -> typing.List[Extension]:
     return extensions
 
 
-def load_installed_extensions(runtime) -> typing.List[Extension]:
+def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
     app_config = config.get_app_config()
 
     extensions = []

@@ -3,7 +3,7 @@ import uuid
 import json
 import logging
 from runtime import Runtime
-from extension.models import Extension
+from common.extension import InMemExtension
 from common.provider import SMSProvider
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkcore.profile import region_provider
@@ -56,7 +56,7 @@ class AliyunSMSProvider(SMSProvider):
             raise RuntimeError(sms_res)
 
 
-class AliyunExtension(Extension):    
+class AliyunExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         sms_provider = AliyunSMSProvider(
@@ -71,6 +71,7 @@ class AliyunExtension(Extension):
         runtime.register_route([
             path('extension/aliyun/config', AliyunSmsView.as_view(), name='aliyun')
         ], namespace='global')
+
         runtime.register_route([
             path('extension/aliyun/send_sms', AliyunSmsSendView.as_view(), name='aliyun')
         ], namespace='global')
@@ -80,7 +81,7 @@ class AliyunExtension(Extension):
 
 extension = AliyunExtension(
     scope='global',
-    name='aliyun',
+    name='aliyun_sms',
     description="""基于阿里云平台的扩展功能
 1. 短信发送
 """,

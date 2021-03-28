@@ -8,6 +8,7 @@ from . import (
     user,
     group,
     permission,
+    # market,
     extension,
     external_idp,
     authorization_server,

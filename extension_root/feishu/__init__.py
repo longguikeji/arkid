@@ -1,7 +1,6 @@
-import typing
 import requests
 from runtime import Runtime
-from extension.models import Extension
+from common.extension import InMemExtension
 from common.provider import ExternalIdpProvider
 
 
@@ -40,7 +39,7 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
         return token
 
 
-class FeishuExtension(Extension):    
+class FeishuExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         super().start(runtime, *args, **kwargs)

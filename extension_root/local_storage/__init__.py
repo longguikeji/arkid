@@ -1,15 +1,13 @@
-import typing
 from runtime import Runtime
-from extension.models import Extension
+from common.extension import InMemExtension
 from .provider import LocalStorageProvider
 from .constants import KEY
+from .serializers import LocalStorageSerializer
 
-
-class LocalStorageExtension(Extension):    
+class LocalStorageExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         provider = LocalStorageProvider()
-        provider.data_path = self.config('data_path')        
 
         runtime.register_storage_provider(
             provider=provider,
@@ -26,4 +24,5 @@ extension = LocalStorageExtension(
     maintainer='北京龙归科技有限公司',
     homepage='https://www.longguikeji.com',
     contact='rock@longguikeji.com',
+    serializer=LocalStorageSerializer,
 )
