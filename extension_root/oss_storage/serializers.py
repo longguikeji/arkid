@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
-from common.serializer import ExternalIdpBaseSerializer
+from common.serializer import ExtensionBaseSerializer
 
 
 class OSSStorageConfigSerializer(serializers.Serializer):
@@ -12,6 +12,6 @@ class OSSStorageConfigSerializer(serializers.Serializer):
     secret_key = serializers.CharField()
 
 
-class OSSStorageSerializer(ExternalIdpBaseSerializer):
+class OSSStorageSerializer(ExtensionBaseSerializer):
 
     data = OSSStorageConfigSerializer(label=_('data'))

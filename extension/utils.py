@@ -51,6 +51,9 @@ def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
     app_config = config.get_app_config()
 
     extensions = Extension.active_objects.filter()
+    loaded_extensions = []
+    
+    print(extensions)
     extension: Extension
     for extension in extensions:
         name = extension.type
@@ -64,7 +67,7 @@ def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
         if ext is not None:
             logger.info(f'extension {ext.name} loaded')
             ext.start(runtime)
-            extensions.append(ext)
+            loaded_extensions.append(ext)
 
         extension_global_urls_filename = Path(ext_dir) / 'urls.py'
         if extension_global_urls_filename.exists():
@@ -76,7 +79,7 @@ def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
             urlpatterns = [url(r'tenant/(?P<tenant_id>[\w-]+)/', include((f'{ext_name}.tenant_urls', 'extension'), namespace=f'{ext.name}'))]
             runtime.register_route(urlpatterns)
 
-    return extensions
+    return loaded_extensions
 
 
 def install_extension(p: Path) -> None:

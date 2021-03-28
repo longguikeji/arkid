@@ -9,7 +9,7 @@ class Extension(BaseModel):
 
     tenant = models.ForeignKey('tenant.Tenant', blank=True, null=True, on_delete=models.PROTECT, verbose_name=_('Tenant'))
     type = models.CharField(max_length=128, verbose_name=_('Extension Type'))
-    data = models.JSONField(default=dict, verbose_name=_('Settings'))
+    data = models.JSONField(blank=True, default=dict, verbose_name=_('Settings'))
 
     def __str__(self) -> str:
         return self.type

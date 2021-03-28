@@ -15,6 +15,7 @@ from . import (
     jsonp,
     login,
     storage,
+    sms,
 )
 
 urlpatterns = []
@@ -52,3 +53,8 @@ urlpatterns += login.urlpatterns
 urlpatterns += tenant.router.urls
 urlpatterns += jsonp.urlpatterns
 urlpatterns += storage.urlpatterns
+urlpatterns += sms.urlpatterns
+
+
+from extension.loader import ExtensionLoader
+ExtensionLoader()

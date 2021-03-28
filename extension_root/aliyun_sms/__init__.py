@@ -8,9 +8,8 @@ from common.provider import SMSProvider
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkcore.profile import region_provider
 from .request.v20170525.SendSmsRequest import SendSmsRequest
-from .views import AliyunSmsView, AliyunSmsSendView
-from django.urls import path
-from . import pages
+from .constants import KEY
+from .serializers import AliyunSMSSerializer
 
 class AliyunSMSProvider(SMSProvider):
 
@@ -59,29 +58,34 @@ class AliyunSMSProvider(SMSProvider):
 class AliyunExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
+
+        from extension.models import Extension
+        o = Extension.active_objects.filter(
+            type=KEY,
+        ).first()
+
+        assert o is not None
+        access_key = o.data.get('access_key')
+        secret_key = o.data.get('secret_key')
+        template = o.data.get('template')
+        signature = o.data.get('signature')
+
         sms_provider = AliyunSMSProvider(
-            access_key=self.config('access_key'),
-            secret_key=self.config('secret_key'),
-            template=self.config('template'),
-            signature=self.config('signature'),
+            access_key=access_key,
+            secret_key=secret_key,
+            template=template,
+            signature=signature,
         )
 
+        print('>>>>', sms_provider)
+
         runtime.sms_provider = sms_provider
-
-        runtime.register_route([
-            path('extension/aliyun/config', AliyunSmsView.as_view(), name='aliyun')
-        ], namespace='global')
-
-        runtime.register_route([
-            path('extension/aliyun/send_sms', AliyunSmsSendView.as_view(), name='aliyun')
-        ], namespace='global')
 
         super().start(runtime=runtime, *args, **kwargs)
 
 
 extension = AliyunExtension(
-    scope='global',
-    name='aliyun_sms',
+    name=KEY,
     description="""基于阿里云平台的扩展功能
 1. 短信发送
 """,
@@ -89,4 +93,5 @@ extension = AliyunExtension(
     homepage='https://www.longguikeji.com',
     logo='',
     maintainer='insfocus@gmail.com',
+    serializer=AliyunSMSSerializer,
 )

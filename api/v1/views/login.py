@@ -131,7 +131,7 @@ class MobileLoginView(LoginView):
             }
         })
 
-    def _get_token(self, user:User):
+    def _get_token(self, user: User):
         token, _ = Token.objects.get_or_create(
             user=user,
         )
