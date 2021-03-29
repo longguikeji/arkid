@@ -26,6 +26,10 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
             type=external_idp_type,
         )
 
+        if external_idp.is_del:
+            external_idp.is_del = False
+            external_idp.save()
+
         r: Runtime = get_app_runtime()
         provider_cls: ExternalIdpProvider = r.external_idp_providers.get(external_idp_type, None)
         assert provider_cls is not None
