@@ -4,17 +4,16 @@ from inventory.models import Group, Permission, User
 from rest_framework import serializers
 from .group import GroupSerializer, GroupBaseSerializer
 from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
+from ..pages import group, permission
 
 class UserSerializer(BaseDynamicFieldModelSerializer):
 
     groups = serializers.SerializerMethodField()
     set_groups = create_foreign_key_field(serializers.ListField)(
-        model_cls=User, 
-        field_name='id', 
-        path='/api/v1/tenant/{parent_lookup_tenant}/group/', 
-        method='get', 
-        page_type='TableList', 
-        child=serializers.CharField(), 
+        model_cls=User,
+        field_name='id',
+        page=group.tag,
+        child=serializers.CharField(),
         write_only=True,
     )
 
@@ -25,10 +24,18 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     #     write_only=True,
     # )
 
-    set_permissions = serializers.ListField(
+    set_permissions = create_foreign_key_field(serializers.ListField)(
+        model_cls=Permission,
+        field_name='id',
+        page=permission.tag,
         child=serializers.CharField(),
         write_only=True,
     )
+
+    # set_permissions = serializers.ListField(
+    #     child=serializers.CharField(),
+    #     write_only=True,
+    # )
 
     class Meta:
         model = User

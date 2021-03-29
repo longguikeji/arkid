@@ -4,7 +4,7 @@ from rest_framework import serializers
 from drf_spectacular.utils import extend_schema,extend_schema_view
 from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
 from .permission import PermissionSerializer
-
+from ..pages import group, permission
 class GroupBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -16,25 +16,21 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
 
     parent = GroupBaseSerializer(read_only=True, many=False)
     parent_uuid = create_foreign_key_field(serializers.UUIDField)(
-        model_cls=Group, 
-        field_name='uuid', 
-        path='/api/v1/tenant/{parent_lookup_tenant}/group/', 
-        method='get', 
-        label='上级组织', 
-        page_type='TreeList', 
-        source='parent.uuid', 
+        model_cls=Group,
+        field_name='uuid',
+        page=group.tag,
+        label='上级组织',
+        source='parent.uuid',
         default=None,
     )
 
     parent_name = create_foreign_field(serializers.CharField)(
-        model_cls=Group, 
-        field_name='name', 
-        path='/api/v1/tenant/{parent_lookup_tenant}/group/', 
-        method='get', 
-        page_type='TreeList', 
-        label='上级组织', 
-        read_only=True, 
-        source='parent.name', 
+        model_cls=Group,
+        field_name='name',
+        page=group.tag,
+        label='上级组织',
+        read_only=True,
+        source='parent.name',
         default=None,
     )
 
@@ -42,11 +38,9 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
     permissions = serializers.SerializerMethodField()
 
     set_permissions = create_foreign_key_field(serializers.ListField)(
-        model_cls=Permission, 
-        field_name='uuid', 
-        path='/api/v1/tenant/{parent_lookup_tenant}/permission/', 
-        method='get', 
-        page_type='TreeList', 
+        model_cls=Permission,
+        field_name='uuid',
+        page=permission.tag,
         child=serializers.CharField(),
         write_only=True,
         default=[]

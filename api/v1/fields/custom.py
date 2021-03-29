@@ -12,13 +12,11 @@ def create_foreign_field(field_cls):
     class ForeignField(field_cls):
         _field_meta = {}
 
-        def __init__(self, model_cls, field_name, path, method, page_type, **kwargs):
+        def __init__(self, model_cls, field_name, page, **kwargs):
             field = get_override(self, 'field', {})
             field['model'] = model_cls.__name__
             field['field'] = field_name
-            field['path'] = path
-            field['method'] = method
-            field['pageType'] = page_type
+            field['page'] = page
             if 'source' in kwargs:
                 field['source'] = kwargs['source']
 

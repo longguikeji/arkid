@@ -47,6 +47,8 @@ class InMemExtension:
         serializer = kwargs.get('serializer', None)
         if serializer is not None:
             self.serializer = serializer
+        else:
+            self.serializer = ExtensionBaseSerializer
 
     def __str__(self) -> str:
         return f'Extension: {self.name}'
