@@ -8,7 +8,7 @@ from . import (
     user,
     group,
     permission,
-    # market,
+    marketplace,
     extension,
     external_idp,
     authorization_server,
@@ -56,5 +56,3 @@ urlpatterns += storage.urlpatterns
 urlpatterns += sms.urlpatterns
 
 
-from extension.loader import ExtensionLoader
-ExtensionLoader()
