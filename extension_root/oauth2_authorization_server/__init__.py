@@ -1,8 +1,7 @@
 from runtime import Runtime
-from common.extension import InMemExtension
+from common.extension import InMemExtension, ExtensionBaseSerializer
 from .provider import OAuth2AppTypeProvider
 from .serializers import OAuth2AppSerializer, OIDCAppSerializer
-
 class OAuthAuthorizationServerExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):

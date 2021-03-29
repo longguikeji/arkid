@@ -13,6 +13,7 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         extensions = find_installed_extensions()
+        print(extensions)
         return extensions
 
     def get_object(self):
