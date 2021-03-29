@@ -35,6 +35,7 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
             type=extension_type
         )
 
+        o.is_del = False
         o.data = validated_data.get('data')
         o.save()
         return o
