@@ -53,7 +53,6 @@ def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
     extensions = Extension.active_objects.filter()
     loaded_extensions = []
     
-    print(extensions)
     extension: Extension
     for extension in extensions:
         name = extension.type
