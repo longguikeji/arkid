@@ -1,29 +1,57 @@
 from .base import BaseViewSet
 from rest_framework import viewsets
-from extension.models import Extension
+from common.extension import InMemExtension
 from extension.utils import find_installed_extensions
-from api.v1.serializers.extension import ExtensionSerializer
+from api.v1.serializers.extension import ExtensionSerializer, ExtensionListSerializer
 from rest_framework.decorators import action
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, PolymorphicProxySerializer
+from extension.models import Extension
+from runtime import get_app_runtime
+
+
+ExtensionPolymorphicProxySerializer = PolymorphicProxySerializer(
+    component_name='ExtensionPolymorphicProxySerializer',
+    serializers=get_app_runtime().extension_serializers,
+    resource_type_field_name='type'
+)
 
 @extend_schema(tags = ['extension'])
-class ExtensionViewSet(viewsets.ReadOnlyModelViewSet):
+class ExtensionViewSet(BaseViewSet):
 
     serializer_class = ExtensionSerializer
 
     def get_queryset(self):
-        extensions = find_installed_extensions()
-        return extensions
+        return Extension.valid_objects.filter()
 
     def get_object(self):
-        ext: Extension
-        extensions = find_installed_extensions()
-        for ext in extensions:
-            if ext.name == self.kwargs['pk']:
-                return ext
+        o = Extension.valid_objects.filter(
+            uuid=self.kwargs['pk']
+        ).first()
 
-        return None
+        return o
 
-    # @action(detail=True, methods=['get', 'post'])
-    # def test(self, request, parent_lookup_tenant, pk):
-    #     xx
+    @extend_schema(
+        responses=ExtensionListSerializer
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        request=ExtensionPolymorphicProxySerializer,
+        responses=ExtensionPolymorphicProxySerializer,
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @extend_schema(
+        request=ExtensionPolymorphicProxySerializer,
+        responses=ExtensionPolymorphicProxySerializer,
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @extend_schema(
+        responses=ExtensionPolymorphicProxySerializer
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)

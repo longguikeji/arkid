@@ -1,10 +1,9 @@
-import typing
 from runtime import Runtime
-from extension.models import Extension
+from common.extension import InMemExtension
 from django.urls import path, include
 
 
-class DemoExtension(Extension):    
+class DemoExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         print('loaded config > ', self.config('config1'))

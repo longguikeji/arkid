@@ -1,7 +1,9 @@
 from typing import (
-    Dict, Optional
+    Any, Dict, Optional
 )
 from abc import abstractmethod
+import uuid
+from django.core.files import File
 
 class SMSProvider:
 
@@ -20,12 +22,19 @@ class EmailProvider:
 class StorageProvider:
 
     @abstractmethod
-    def upload(self, path: str) -> str:
+    def upload(self, file: File) -> str:
         raise NotImplementedError
 
     @abstractmethod
-    def download(self, key: str) -> str:
+    def resolve(self, key: str) -> str:
         raise NotImplementedError
+
+    def generate_key(self, file: File):
+        key = '{}.{}'.format(
+            uuid.uuid4().hex,
+            file.name.split('.')[-1],
+        )
+        return key
 
 
 class CacheProvider:

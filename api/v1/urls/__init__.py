@@ -8,11 +8,14 @@ from . import (
     user,
     group,
     permission,
+    # market,
     extension,
     external_idp,
     authorization_server,
     jsonp,
     login,
+    storage,
+    sms,
 )
 
 urlpatterns = []
@@ -49,3 +52,9 @@ if local_urlpatterns is not None:
 urlpatterns += login.urlpatterns
 urlpatterns += tenant.router.urls
 urlpatterns += jsonp.urlpatterns
+urlpatterns += storage.urlpatterns
+urlpatterns += sms.urlpatterns
+
+
+from extension.loader import ExtensionLoader
+ExtensionLoader()

@@ -1,9 +1,9 @@
 from runtime import Runtime
-from extension.models import Extension
+from common.extension import InMemExtension
 from .provider import RedisCacheProvider
 
 
-class RedisCacheExtension(Extension):    
+class RedisCacheExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         cache_provider = RedisCacheProvider(
