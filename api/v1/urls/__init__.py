@@ -17,14 +17,13 @@ from . import (
     storage,
     sms,
 )
-
-urlpatterns = []
-
 from runtime import get_app_runtime
 
 
-runtime = get_app_runtime()
+urlpatterns = []
 
+
+runtime = get_app_runtime()
 # @TODO: check passed url
 global_urlpatterns = runtime.urlpatterns.get('global', None)
 if global_urlpatterns is not None:

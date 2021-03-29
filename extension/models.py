@@ -16,8 +16,8 @@ class Extension(BaseModel):
 
     @property
     def inmem(self):
-        from extension.utils import find_installed_extensions
-        for ext in find_installed_extensions():
+        from extension.utils import find_available_extensions
+        for ext in find_available_extensions():
             if ext.name == self.name:
                 return ext
 
