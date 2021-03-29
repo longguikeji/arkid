@@ -77,7 +77,7 @@ class Runtime:
     def register_authorization_server(self, id: str, name: str, description: str, provider: Optional[AuthorizationServerProvider]=None):
         for server in self.authorization_servers:
             if server.id == id:
-                raise DuplicatedIdException(f'duplicated extension: {server.id} {server.name}')
+                return # raise DuplicatedIdException(f'duplicated extension: {server.id} {server.name}')
 
         server = AuthorizationServer(
             id=id, 
@@ -106,8 +106,8 @@ class Runtime:
 
     @property
     def extension_serializers(self):
-        from extension.utils import find_installed_extensions
-        extensions = find_installed_extensions()
+        from extension.utils import find_available_extensions
+        extensions = find_available_extensions()
         data = {}
         for ext in extensions:
             if ext.serializer is not None:

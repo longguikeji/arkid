@@ -1,8 +1,6 @@
 from extension.models import Extension
-from rest_framework.utils import serializer_helpers
 from common.serializer import BaseDynamicFieldModelSerializer
 from rest_framework import serializers
-from common.extension import InMemExtension
 
 class ExtensionSerializer(BaseDynamicFieldModelSerializer):
 
@@ -38,6 +36,21 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
         o.is_del = False
         o.data = validated_data.get('data')
         o.save()
+
+        from django.urls import clear_url_caches
+        from extension.utils import load_extension
+        from runtime import get_app_runtime
+        from django.conf import settings
+
+        clear_url_caches()
+        load_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', execute=True)
+
+        from importlib import reload  
+        import api.v1.urls
+        import arkid.urls
+        reload(api.v1.urls)
+        reload(arkid.urls)
+
         return o
 
 class ExtensionListSerializer(ExtensionSerializer):
