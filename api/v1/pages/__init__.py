@@ -2,7 +2,8 @@ from . import (
     group, 
     tenant, 
     app, 
-    extension, 
+    extension,
+    maketplace,
     webhook, 
     external_idp, 
     authorization_server, 
@@ -66,10 +67,18 @@ root_add_routers([
     ),
     Router(
         path='extension',
-        name='插件配置',
+        name='插件管理',
         icon='list',
-        page=extension.tag,
-        children=[]
+        children=[
+            PageRouter(
+                page=extension,
+                icon='list',
+            ),
+            PageRouter(
+                page=maketplace,
+                icon='list',
+            ),
+        ]
     ),
     Router(
         path='system',
