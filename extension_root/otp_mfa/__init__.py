@@ -1,5 +1,5 @@
 from runtime import Runtime
-from extension.models import Extension
+from common.extension import InMemExtension
 from common.provider import MFAProvider
 # import pyotp
 from django.http.response import HttpResponseRedirect
@@ -28,7 +28,7 @@ class OTPMFAProvider(MFAProvider):
         pass
 
 
-class OTPMFAExtension(Extension):    
+class OTPMFAExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         super().start(runtime=runtime, *args, **kwargs)

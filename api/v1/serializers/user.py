@@ -48,6 +48,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'first_name',
             'last_name',
             'nickname',
+            'avatar_url',
             'country',
             'city',
             'job_title',

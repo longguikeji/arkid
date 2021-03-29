@@ -1,9 +1,9 @@
 from runtime import Runtime
-from extension.models import Extension
+from common.extension import InMemExtension
 from .provider import OAuth2AppTypeProvider
 from .serializers import OAuth2AppSerializer, OIDCAppSerializer
 
-class OAuthAuthorizationServerExtension(Extension):    
+class OAuthAuthorizationServerExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         # Contribute OAuth Authentication Server & parameters        

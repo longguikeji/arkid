@@ -1,0 +1,1 @@
+KEY = 'local_storage'

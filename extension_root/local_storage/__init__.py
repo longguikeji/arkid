@@ -1,21 +1,28 @@
-import typing
 from runtime import Runtime
-from extension.models import Extension
-from django.urls import path, include
+from common.extension import InMemExtension
+from .provider import LocalStorageProvider
+from .constants import KEY
+from .serializers import LocalStorageSerializer
 
-
-class DemoExtension(Extension):    
+class LocalStorageExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
-        print('loaded config > ', self.config('config1'))
+        provider = LocalStorageProvider()
+
+        runtime.register_storage_provider(
+            provider=provider,
+        )
+
         super().start(runtime=runtime, *args, **kwargs)
 
 
-extension = DemoExtension(
-    name='demo',
-    description='demonstration only',
-    version='1.0',
-    homepage='https://www.longguikeji.com',
+extension = LocalStorageExtension(
+    name=KEY,
+    description='local filesystem based storage solution',
+    version='1.0',    
     logo='',
-    maintainer='insfocus@gmail.com',
+    maintainer='北京龙归科技有限公司',
+    homepage='https://www.longguikeji.com',
+    contact='rock@longguikeji.com',
+    serializer=LocalStorageSerializer,
 )

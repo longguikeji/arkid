@@ -1,11 +1,10 @@
-from extension.models import Extension
-from django.urls import path, include
+from common.extension import InMemExtension
 
 from .serializers import GithubExternalIdpSerializer
 from .provider import GithubExternalIdpProvider
 from .constants import KEY
 
-class GithubExternalIdpExtension(Extension):    
+class GithubExternalIdpExtension(InMemExtension):    
 
     def start(self, runtime, *args, **kwargs):
         runtime.register_external_idp(

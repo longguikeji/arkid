@@ -8,7 +8,7 @@ from common.provider import (
     ExternalIdpProvider,
     MFAProvider,
     AuthorizationServerProvider,
-    AppTypeProvider,
+    AppTypeProvider, StorageProvider,
 )
 from common.serializer import AppBaseSerializer, ExternalIdpBaseSerializer
 from authorization_server.models import AuthorizationServer
@@ -21,6 +21,7 @@ class Runtime:
 
     sms_provider: SMSProvider = None
     cache_provider: CacheProvider = None
+    storage_provider: StorageProvider = None
 
     external_idps: List
     external_idp_providers: Dict[str, ExternalIdpProvider]
@@ -91,8 +92,8 @@ class Runtime:
         self.urlpatterns.setdefault(namespace, [])
         self.urlpatterns[namespace] += urlpatterns
 
-    def register_storage_provider(self):
-        pass
+    def register_storage_provider(self, provider: StorageProvider):
+        self.storage_provider = provider
     
     def register_app_type(self, key: str, name: str, provider: AppTypeProvider, serializer: AppBaseSerializer) -> None:
         self.app_types.append((key, name))
@@ -103,6 +104,17 @@ class Runtime:
         if serializer is not None:
             self.app_type_serializers[key] = serializer
 
+
+    @property
+    def extension_serializers(self):
+        from extension.utils import find_installed_extensions
+        extensions = find_installed_extensions()
+        data = {}
+        for ext in extensions:
+            if ext.serializer is not None:
+                data[ext.name] = ext.serializer
+        
+        return data
 
 def get_app_runtime() -> Runtime:
     o = Runtime()

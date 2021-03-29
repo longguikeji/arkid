@@ -1,12 +1,10 @@
-import typing
-
 from runtime import Runtime
-from extension.models import Extension
+from common.extension import InMemExtension
 from .provider import LDAPAppTypeProvider
 from .serializers import LDAPAppSerializer
 
 
-class LDAPExtension(Extension):    
+class LDAPExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         runtime.register_app_type(

@@ -48,7 +48,6 @@ class ExternalIdpViewSet(BaseViewSet):
         obj = ExternalIdp.valid_objects.filter(**kwargs).first()
         return obj
 
-
     @extend_schema(
         responses=ExternalIdpListSerializer
     )

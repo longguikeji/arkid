@@ -163,3 +163,5 @@ supervisord.pid
 supervisord.log
 
 arkid.local.toml
+
+/static/upload

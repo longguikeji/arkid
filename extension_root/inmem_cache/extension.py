@@ -1,9 +1,9 @@
 from runtime import Runtime
-from extension.models import Extension
+from common.extension import InMemExtension
 from .provider import InMemCacheProvider
 
 
-class InMemCacheExtension(Extension):    
+class InMemCacheExtension(InMemExtension):    
 
     def start(self, runtime: Runtime, *args, **kwargs):
         cache_provider = InMemCacheProvider()
