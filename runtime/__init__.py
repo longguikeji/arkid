@@ -104,7 +104,6 @@ class Runtime:
         if serializer is not None:
             self.app_type_serializers[key] = serializer
 
-
     @property
     def extension_serializers(self):
         from extension.utils import find_installed_extensions

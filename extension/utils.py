@@ -73,8 +73,9 @@ def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
             urlpatterns = [url('', include((f'{ext_name}.urls', 'extension'), namespace=f'{ext.name}'))]
             runtime.register_route(urlpatterns)
 
-        extension_tenant_urls_filename = Path(ext_dir) / 'tenant_urls.py'
+        extension_tenant_urls_filename = Path(ext_dir) / 'tenant_urls.py'        
         if extension_tenant_urls_filename.exists():
+            print('>>>>>>>>>', extension_tenant_urls_filename)
             urlpatterns = [url(r'tenant/(?P<tenant_id>[\w-]+)/', include((f'{ext_name}.tenant_urls', 'extension'), namespace=f'{ext.name}'))]
             runtime.register_route(urlpatterns)
 
