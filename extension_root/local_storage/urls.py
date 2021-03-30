@@ -1,5 +1,5 @@
 # from django.conf.urls.static import static
-# from .constants import KEY
+from .constants import KEY
 # from config import get_app_config
 from django.urls import re_path
 from django.views.static import serve
@@ -10,7 +10,7 @@ import re
 # data_path = c.extension.config[KEY].get('data_path')
 
 extension = Extension.valid_objects.filter(
-    type='local_storage'
+    type=KEY
 ).first()
 data_path = extension.data.get('data_path')
 
