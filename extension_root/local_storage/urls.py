@@ -1,12 +1,18 @@
-from django.conf.urls.static import static
-from .constants import KEY
-from config import get_app_config
+# from django.conf.urls.static import static
+# from .constants import KEY
+# from config import get_app_config
 from django.urls import re_path
 from django.views.static import serve
+from extension.models import Extension
 import re
 
-c = get_app_config()
-data_path = c.extension.config[KEY].get('data_path')
+# c = get_app_config()
+# data_path = c.extension.config[KEY].get('data_path')
+
+extension = Extension.valid_objects.filter(
+    type='local_storage'
+).first()
+data_path = extension.data.get('data_path')
 
 urlpatterns = [
     re_path(r'^%s(?P<path>.*)$' % re.escape('/upload/render/'.lstrip('/')), serve, name='render', kwargs = {
