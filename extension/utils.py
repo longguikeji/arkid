@@ -8,7 +8,6 @@ import importlib
 import shutil
 import string
 from common.logger import logger
-from config import Config
 from django.conf.urls import url, include
 
 
@@ -31,8 +30,9 @@ def is_valid_extension_name(name: str) -> bool:
     return b
 
 
-def find_installed_extensions() -> typing.List[InMemExtension]:
+def find_available_extensions() -> typing.List[InMemExtension]:
     app_config = config.get_app_config()
+    from runtime import get_app_runtime
 
     extensions = []
     for name in os.listdir(app_config.extension.root):
@@ -41,7 +41,7 @@ def find_installed_extensions() -> typing.List[InMemExtension]:
             continue
 
         ext_name = f'{ext_dir.parent}.{name}'
-        ext = load_extension(ext_name)
+        ext = load_extension(get_app_runtime(), ext_name, name)
         extensions.append(ext)
 
     return extensions
@@ -62,21 +62,12 @@ def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
 
         ext_name = f'{ext_dir.parent}.{name}'
 
-        ext = load_extension(ext_name)
+        ext = load_extension(runtime, ext_name, name, True)
         if ext is not None:
             logger.info(f'extension {ext.name} loaded')
             ext.start(runtime)
             loaded_extensions.append(ext)
 
-        extension_global_urls_filename = Path(ext_dir) / 'urls.py'
-        if extension_global_urls_filename.exists():
-            urlpatterns = [url('', include((f'{ext_name}.urls', 'extension'), namespace=f'{ext.name}'))]
-            runtime.register_route(urlpatterns)
-
-        extension_tenant_urls_filename = Path(ext_dir) / 'tenant_urls.py'
-        if extension_tenant_urls_filename.exists():
-            urlpatterns = [url(r'tenant/(?P<tenant_id>[\w-]+)/', include((f'{ext_name}.tenant_urls', 'extension'), namespace=f'{ext.name}'))]
-            runtime.register_route(urlpatterns)
 
     return loaded_extensions
 
@@ -115,9 +106,23 @@ def uninstall_extension(name: str) -> None:
         shutil.rmtree(ext_dir)
 
 
-def load_extension(name: str) -> any:
-    # if not is_valid_extension_name(name):
-    #     return
+def load_extension(runtime, ext_name: str, name: str, execute: bool=False) -> any:
+    app_config = config.get_app_config()
+    ext_dir = Path(app_config.extension.root) / name
 
-    ext = importlib.import_module(name)
+    ext = importlib.import_module(ext_name)
+    if not execute:
+        return ext.extension
+
+    extension_global_urls_filename = Path(ext_dir) / 'urls.py'
+    if extension_global_urls_filename.exists():
+        urlpatterns = [url('', include((f'{ext_name}.urls', 'extension'), namespace=f'{name}'))]
+        runtime.register_route(urlpatterns)
+
+    extension_tenant_urls_filename = Path(ext_dir) / 'tenant_urls.py'        
+    if extension_tenant_urls_filename.exists():
+        urlpatterns = [url(r'tenant/(?P<tenant_id>[\w-]+)/', include((f'{ext_name}.tenant_urls', 'extension'), namespace=f'{name}'))]
+        runtime.register_route(urlpatterns)
+        
+    ext.extension.start(runtime)
     return ext.extension

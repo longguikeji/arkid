@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
     if created:
-        content_type = ContentType.objects.get_for_model(App)
+        content_type = ContentType.objects.get_for_model(Tenant)
         Permission.objects.get_or_create(
             tenant=instance,
             content_type=content_type,            

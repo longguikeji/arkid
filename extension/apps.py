@@ -5,5 +5,6 @@ class ExtensionConfig(AppConfig):
     name = 'extension'
 
     def ready(self):
-        pass
+        from .loader import ExtensionLoader
+        ExtensionLoader()
 

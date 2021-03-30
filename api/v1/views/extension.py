@@ -1,7 +1,6 @@
 from .base import BaseViewSet
 from rest_framework import viewsets
 from common.extension import InMemExtension
-from extension.utils import find_installed_extensions
 from api.v1.serializers.extension import ExtensionSerializer, ExtensionListSerializer
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, PolymorphicProxySerializer
