@@ -12,7 +12,7 @@ from api.v1.serializers.tenant import (
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
 from runtime import get_app_runtime
-from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
 from inventory.models import Group, User
 from common.code import Code
@@ -60,7 +60,7 @@ class TenantViewSet(BaseViewSet):
 
     @action(detail=True, methods=['post'])
     def login(self, request, pk):
-        tenant = self.get_object()
+        tenant: Tenant = self.get_object()
 
         username = request.data.get('username')
         password = request.data.get('password')
@@ -75,12 +75,9 @@ class TenantViewSet(BaseViewSet):
                 'message': _('username or password is not correct'),
             })
         
-        if user.is_superuser:
-            tenants = Tenant.valid_objects.filter().order_by('id')
-        else:
-            tenants = user.tenants.all()
+        has_tenant_admin_perm = tenant.has_admin_perm(user)
 
-        if not user.is_superuser and tenant not in tenants:
+        if not has_tenant_admin_perm:
             return JsonResponse(data={
                 'error': Code.TENANT_NO_ACCESS.value,
                 'message': _('tenant no access permission'),
@@ -92,6 +89,7 @@ class TenantViewSet(BaseViewSet):
             'error': Code.OK.value,
             'data': {
                 'token': token.key,
+                'has_tenant_admin_perm': has_tenant_admin_perm,
             }
         })
 
@@ -118,12 +116,8 @@ class TenantViewSet(BaseViewSet):
         user = User.objects.get(mobile=mobile)
         token = self._get_token(user)
 
-        if user.is_superuser:
-            tenants = Tenant.valid_objects.filter().order_by('id')
-        else:
-            tenants = user.tenants.all()
-
-        if not user.is_superuser and tenant not in tenants:
+        has_tenant_admin_perm = tenant.has_admin_perm(user)
+        if not has_tenant_admin_perm:
             return JsonResponse(data={
                 'error': Code.TENANT_NO_ACCESS.value,
                 'message': _('tenant no access permission'),
@@ -144,7 +138,8 @@ class TenantViewSet(BaseViewSet):
         return JsonResponse(data={
             'error': Code.OK.value,
             'data': {
-                'token': token.key, # TODO: fullfil user info            
+                'token': token.key,
+                'has_tenant_admin_perm': has_tenant_admin_perm,          
             }
         })
 

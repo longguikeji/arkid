@@ -15,7 +15,7 @@ from api.v1.serializers.login import LoginSerializer
 from api.v1.serializers.tenant import TenantSerializer
 from common.paginator import DefaultListPaginator
 from runtime import get_app_runtime
-from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
 from inventory.models import User
 from common.code import Code

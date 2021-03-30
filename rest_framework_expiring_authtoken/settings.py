@@ -8,7 +8,8 @@ from datetime import timedelta
 from django.conf import settings
 
 
-class TokenSettings:
+class TokenSettings(object):
+
     """Provides settings as defaults for working with tokens."""
 
     @property
@@ -24,6 +25,5 @@ class TokenSettings:
             val = timedelta(days=30)
 
         return val
-
 
 token_settings = TokenSettings()
