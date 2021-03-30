@@ -1,38 +1,40 @@
-from api.v1.views import user
-import random
-import string
-from django.http import Http404
 from django.http.response import JsonResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
-import runtime
 from openapi.utils import extend_schema
-
+from rest_framework.response import Response
 from tenant.models import (
     Tenant,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer,
 )
+from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
 from runtime import get_app_runtime
 from drf_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
-from inventory.models import User
-from django.contrib.auth.hashers import check_password
+from inventory.models import Group, User
 from common.code import Code
 from .base import BaseViewSet
+from app.models import App
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 @extend_schema(tags = ['tenant'])
 class TenantViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [AllowAny]
+    authentication_classes = [ExpiringTokenAuthentication]
 
-    serializer_class = TenantSerializer
     pagination_class = DefaultListPaginator
-    
+
+    def get_serializer_class(self):
+        if self.action == 'app':
+            return AppBaseInfoSerializer
+
+        return TenantSerializer
+
     @extend_schema(
         summary=_('get tenant list'),
         action_type='list'
@@ -172,10 +174,32 @@ class TenantViewSet(BaseViewSet):
         })
 
     @action(detail=True, methods=['GET'])
-    def apps(self, request, pk):
-        print(request.user)
-        user = request.user
+    def app(self, request, pk):
+        user: User = request.user
+        tenant: Tenant = self.get_object()
 
+        all_apps = App.active_objects.filter(
+            tenant=tenant,
+        )
+
+        if tenant.has_admin_perm(user) or user.is_superuser:
+            objs = all_apps
+        else:
+            all_apps_perms = [app.access_perm_code for app in all_apps]
+
+            perms = set([perm.codename for perm in user.user_permissions.filter(
+                codename__in=all_apps_perms
+            )])
+
+            groups = user.groups.all()
+            g: Group
+            for g in groups:
+                perms = perms | set([perm.codename for perm in g.owned_perms(all_apps_perms)])
+
+            objs = [app for app in all_apps if app.access_perm_code in perms]
+
+        serializer = self.get_serializer(objs, many=True)
+        return Response(serializer.data)
 
     def _get_token(self, user:User):
         token, _ = Token.objects.get_or_create(

@@ -8,6 +8,19 @@ from inventory.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
 
+class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
+
+    class Meta:
+        model = App
+
+        fields = (
+            'uuid',
+            'name',
+            'logo',
+            'url',
+            'description',
+        )
+
 class AppSerializer(BaseDynamicFieldModelSerializer):
 
     class Meta:
