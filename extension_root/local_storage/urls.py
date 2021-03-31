@@ -7,7 +7,7 @@ import re
 
 c = get_app_config()
 
-data_path = c.extension.filter(KEY).get('data_path')
+data_path = c.extension.load_from_db(KEY).get('data_path')
 
 urlpatterns = [
     re_path(r'^%s(?P<path>.*)$' % re.escape('/upload/render/'.lstrip('/')), serve, name='render', kwargs = {
