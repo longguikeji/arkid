@@ -12,18 +12,21 @@ from inventory.models import (
 from api.v1.serializers.user import (
     UserSerializer, UserListResponsesSerializer
 )
+from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
+from app.models import App
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.decorators import action
 
+
 @extend_schema_view(
-    list = extend_schema(
+    list=extend_schema(
         responses=UserListResponsesSerializer
     )
 )
 @extend_schema(
-    tags = ['user'],
+    tags=['user'],
 )
 class UserViewSet(BaseViewSet):
 
@@ -67,28 +70,38 @@ class UserViewSet(BaseViewSet):
 
 
 @extend_schema(
-    tags = ['user-app']
+    tags=['user-app']
 )
 class UserAppViewSet(BaseViewSet):
 
     # permission_classes = [IsAuthenticated]
     # authentication_classes = [ExpiringTokenAuthentication]
 
-    model = User
+    model = App
 
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = UserSerializer
+    serializer_class = AppBaseInfoSerializer
     pagination_class = DefaultListPaginator
 
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-
-        kwargs = {
-            'tenants__in': [tenant],
-        }
-
-        objs = User.objects.filter(**kwargs).order_by('id')
+        user = context['user']
+        all_apps = App.active_objects.filter(
+            tenant=tenant,
+        )
+        if tenant.has_admin_perm(user) or user.is_superuser:
+            objs = all_apps
+        else:
+            all_apps_perms = [app.access_perm_code for app in all_apps]
+            perms = set([perm.codename for perm in user.user_permissions.filter(
+                codename__in=all_apps_perms
+            )])
+            groups = user.groups.all()
+            g: Group
+            for g in groups:
+                perms = perms | set([perm.codename for perm in g.owned_perms(all_apps_perms)])
+            objs = [app for app in all_apps if app.access_perm_code in perms]
         return objs
