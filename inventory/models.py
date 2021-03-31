@@ -1,3 +1,4 @@
+from typing import List
 from django.db import models
 from django.db.models.fields import related
 from tenant.models import Tenant
@@ -134,3 +135,12 @@ class Group(BaseModel):
     @property
     def children(self):
         return Group.valid_objects.filter(parent=self).order_by('id')
+
+    def owned_perms(self, perm_codes: List):
+        owned_perms = list(self.permissions.filter(
+            codename__in=perm_codes,
+        ))
+        if self.parent is not None:
+            owned_perms += list(self.parent.owned_perms(perm_codes))
+
+        return owned_perms

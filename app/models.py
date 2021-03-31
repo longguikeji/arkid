@@ -23,6 +23,10 @@ class App(BaseModel):
         r = get_app_runtime()
         return r.app_types
 
+    @property
+    def access_perm_code(self):
+        return f'app_access_{self.uuid}'
+
 
 # class AuthServer(BaseModel):
 

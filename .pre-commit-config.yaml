@@ -7,7 +7,7 @@ exclude: >
         oauth2_provider/.*|     # oauth2 django app from third party
         oneid/settings.py|
         docker-compose/be/settings.py|
-        drf_expiring_authtoken/.*|
+        rest_framework_expiring_authtoken/.*|
     )$
 repos:
   - repo: local
