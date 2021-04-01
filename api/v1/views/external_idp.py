@@ -14,13 +14,13 @@ from rest_framework.decorators import action
 from common.code import Code
 
 ExternalIdpPolymorphicProxySerializer = PolymorphicProxySerializer(
-    component_name="ExternalIdpPolymorphicProxySerializer",
+    component_name='ExternalIdpPolymorphicProxySerializer',
     serializers=get_app_runtime().external_idp_serializers,
-    resource_type_field_name="type",
+    resource_type_field_name='type',
 )
 
 
-@extend_schema(tags=["external_idp"])
+@extend_schema(tags=['external_idp'])
 class ExternalIdpViewSet(BaseViewSet):
 
     model = ExternalIdp
@@ -30,21 +30,21 @@ class ExternalIdpViewSet(BaseViewSet):
 
     def get_queryset(self):
         context = self.get_serializer_context()
-        tenant = context["tenant"]
+        tenant = context['tenant']
 
         kwargs = {
-            "tenant": tenant,
+            'tenant': tenant,
         }
 
-        return ExternalIdp.valid_objects.filter(**kwargs).order_by("order_no", "id")
+        return ExternalIdp.valid_objects.filter(**kwargs).order_by('order_no', 'id')
 
     def get_object(self):
         context = self.get_serializer_context()
-        tenant = context["tenant"]
+        tenant = context['tenant']
 
         kwargs = {
-            "tenant": tenant,
-            "uuid": self.kwargs["pk"],
+            'tenant': tenant,
+            'uuid': self.kwargs['pk'],
         }
 
         obj = ExternalIdp.valid_objects.filter(**kwargs).first()
@@ -76,11 +76,11 @@ class ExternalIdpViewSet(BaseViewSet):
         request=ExternalIdpReorderSerializer,
         responses=ExternalIdpReorderSerializer,
     )
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=['post'])
     def idp_reorder(self, request, *args, **kwargs):
         context = self.get_serializer_context()
-        tenant = context["tenant"]
-        idps = request.data.get("idps")
+        tenant = context['tenant']
+        idps = request.data.get('idps')
         not_found = []
         for i, uuid in enumerate(idps):
             idp = ExternalIdp.valid_objects.filter(uuid=uuid, tenant=tenant).first()
@@ -92,7 +92,7 @@ class ExternalIdpViewSet(BaseViewSet):
 
         return JsonResponse(
             data={
-                "error": Code.OK.value,
-                "data": {"not_found": not_found},
+                'error': Code.OK.value,
+                'data': {"not_found": not_found},
             }
         )

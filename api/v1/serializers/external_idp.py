@@ -10,19 +10,19 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
         model = ExternalIdp
 
         fields = (
-            "uuid",
-            "type",
-            "data",
-            "order_no",
+            'uuid',
+            'type',
+            'data',
+            'order_no',
         )
 
     def create(self, validated_data):
         from runtime import get_app_runtime, Runtime
 
-        tenant = self.context["tenant"]
+        tenant = self.context['tenant']
 
-        external_idp_type = validated_data.pop("type")
-        data = validated_data.pop("data", None)
+        external_idp_type = validated_data.pop('type')
+        data = validated_data.pop('data', None)
 
         external_idp, _ = ExternalIdp.objects.get_or_create(
             tenant=tenant,
@@ -39,7 +39,7 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
         data = provider.create(external_idp=external_idp, data=data)
         if data is not None:
             external_idp.data = data
-            external_idp.order_no = validated_data.get("order_no")
+            external_idp.order_no = validated_data.get('order_no')
             external_idp.is_del = False
             external_idp.is_active = True
             external_idp.save()
@@ -52,8 +52,8 @@ class ExternalIdpListSerializer(ExternalIdpSerializer):
         model = ExternalIdp
 
         fields = (
-            "type",
-            "order_no",
+            'type',
+            'order_no',
         )
 
 

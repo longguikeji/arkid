@@ -12,7 +12,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     groups = serializers.SerializerMethodField()
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
-        field_name="id",
+        field_name='id',
         page=group.tag,
         child=serializers.CharField(),
         write_only=True,
@@ -27,7 +27,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
     set_permissions = create_foreign_key_field(serializers.ListField)(
         model_cls=Permission,
-        field_name="id",
+        field_name='id',
         page=permission.tag,
         child=serializers.CharField(),
         write_only=True,
@@ -42,26 +42,26 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         model = User
 
         fields = (
-            "uuid",
-            "username",
-            "email",
-            "mobile",
-            "first_name",
-            "last_name",
-            "nickname",
-            "avatar_url",
-            "country",
-            "city",
-            "job_title",
-            "groups",
-            "permissions",
-            "set_groups",
-            "set_permissions",
+            'uuid',
+            'username',
+            'email',
+            'mobile',
+            'first_name',
+            'last_name',
+            'nickname',
+            'avatar_url',
+            'country',
+            'city',
+            'job_title',
+            'groups',
+            'permissions',
+            'set_groups',
+            'set_permissions',
         )
 
         extra_kwargs = {
-            "uuid": {"read_only": True},
-            "password": {"write_only": True},
+            'uuid': {'read_only': True},
+            'password': {'write_only': True},
         }
 
     def get_groups(self, instance):
@@ -82,14 +82,14 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         return ret
 
     def create(self, validated_data):
-        set_groups = validated_data.pop("set_groups", None)
-        set_permissions = validated_data.pop("set_permissions", None)
+        set_groups = validated_data.pop('set_groups', None)
+        set_permissions = validated_data.pop('set_permissions', None)
 
         u: User = User.objects.create(
             **validated_data,
         )
 
-        u.tenants.add(self.context["tenant"])
+        u.tenants.add(self.context['tenant'])
 
         if set_groups is not None:
             u.groups.clear()
@@ -109,8 +109,8 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         return u
 
     def update(self, instance, validated_data):
-        set_groups = validated_data.pop("set_groups", None)
-        set_permissions = validated_data.pop("set_permissions", None)
+        set_groups = validated_data.pop('set_groups', None)
+        set_permissions = validated_data.pop('set_permissions', None)
         if set_groups is not None:
             instance.groups.clear()
             for g_uuid in set_groups:
@@ -136,13 +136,13 @@ class UserListResponsesSerializer(UserSerializer):
         model = User
 
         fields = (
-            "username",
-            "email",
-            "mobile",
-            "first_name",
-            "last_name",
-            "nickname",
-            "country",
-            "city",
-            "job_title",
+            'username',
+            'email',
+            'mobile',
+            'first_name',
+            'last_name',
+            'nickname',
+            'country',
+            'city',
+            'job_title',
         )

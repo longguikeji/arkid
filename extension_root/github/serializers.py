@@ -14,4 +14,4 @@ class GithubExternalIdpConfigSerializer(serializers.Serializer):
 
 class GithubExternalIdpSerializer(ExternalIdpBaseSerializer):
 
-    data = GithubExternalIdpConfigSerializer(label=_("data"))
+    data = GithubExternalIdpConfigSerializer(label=_('data'))

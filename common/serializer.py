@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 class BaseDynamicFieldModelSerializer(DynamicFieldsModelSerializer):
 
-    uuid = serializers.UUIDField(label="UUID", read_only=True, format="hex")
+    uuid = serializers.UUIDField(label='UUID', read_only=True, format='hex')
 
 
 class AppBaseSerializer(serializers.Serializer):
