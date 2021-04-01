@@ -1,6 +1,7 @@
 from common.serializer import BaseDynamicFieldModelSerializer
 from external_idp.models import ExternalIdp
 from common.provider import ExternalIdpProvider
+from rest_framework import serializers
 
 
 class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
@@ -58,3 +59,16 @@ class ExternalIdpListSerializer(ExternalIdpSerializer):
             "type",
             "order_no",
         )
+
+
+class DataSerializer(serializers.Serializer):
+
+    not_found = serializers.ListField(child=serializers.CharField(), read_only=True)
+
+
+class ExternalIdpReorderSerializer(serializers.Serializer):
+
+    idps = serializers.ListField(child=serializers.CharField(), write_only=True)
+
+    error = serializers.CharField(read_only=True)
+    data = DataSerializer(read_only=True)
