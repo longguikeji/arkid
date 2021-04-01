@@ -2,6 +2,7 @@ from .base import BaseViewSet
 from api.v1.serializers.external_idp import (
     ExternalIdpSerializer,
     ExternalIdpListSerializer,
+    ExternalIdpReorderSerializer,
 )
 from runtime import get_app_runtime
 from django.http.response import JsonResponse
@@ -9,6 +10,8 @@ from drf_spectacular.utils import extend_schema, PolymorphicProxySerializer
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from external_idp.models import ExternalIdp
+from rest_framework.decorators import action
+from common.code import Code
 
 ExternalIdpPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name="ExternalIdpPolymorphicProxySerializer",
@@ -68,3 +71,28 @@ class ExternalIdpViewSet(BaseViewSet):
     @extend_schema(responses=ExternalIdpPolymorphicProxySerializer)
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        request=ExternalIdpReorderSerializer,
+        responses=ExternalIdpReorderSerializer,
+    )
+    @action(detail=False, methods=["post"])
+    def idp_reorder(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context["tenant"]
+        idps = request.data.get("idps")
+        not_found = []
+        for i, uuid in enumerate(idps):
+            idp = ExternalIdp.valid_objects.filter(uuid=uuid, tenant=tenant).first()
+            if not idp:
+                not_found.append(uuid)
+                continue
+            idp.order_no = i
+            idp.save()
+
+        return JsonResponse(
+            data={
+                "error": Code.OK.value,
+                "data": {"not_found": not_found},
+            }
+        )
