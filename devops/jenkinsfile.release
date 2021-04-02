@@ -1,0 +1,161 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: "DEV_VERSION", description: "the tag of the image to release, like `dev-6-02dbc80`")
+        string(name: "PROD_VERSION", description: "the tag of the image,src to release, like `1.2.3`")
+    }
+
+    environment {
+        // 在北京龙归科技有限公司这个钉钉群的机器人
+        DINGTALK_ROBOT = "51e1b446-ccde-44f5-aad0-8303e4967d39"
+        DOCKER_DEV_REGISTRY="https://harbor.longguikeji.com"
+        DOCKER_DEV_REGISTRY_CREDENTIAL="devops-longguikeji-harbor"
+        DOCKER_PROD_REGISTRY="https://index.docker.io/v1/"
+        DOCKER_PROD_REGISTRY_CREDENTIAL="devops-longguikeji-dockerhub"
+
+        DEV_DOCKER_IMAGE="harbor.longguikeji.com/ark-releases/arkid:${params.DEV_VERSION}"
+        STAGE_DOCKER_IMAGE="harbor.longguikeji.com/ark-releases/arkid:${params.PROD_VERSION}"
+        PROD_DOCKER_IMAGE="longguikeji/arkid:${params.PROD_VERSION}"
+
+        SSH_CREDENTIAL = 'devops-longguikeji-github-sshkey'
+        GITHUB_TOKEN = credentials('devops-longguikeji-github-token')
+
+        REPO_NAME = """${sh(
+            returnStdout: true,
+            script: "git remote show origin -n |  grep h.URL | sed 's/.*://;s/.git//' ",
+        ).trim()}"""
+
+        GIT_SHORT_COMMIT = """${sh(
+            returnStdout: true,
+            script: "echo '${params.DEV_VERSION}' | tr '-' '\\n' | sed -n '\$p'"
+        )}
+        """
+    }
+    stages {
+        // stage('pre') {
+        //     steps {
+        //         sendDingTalk("pending", "开始构建")
+        //     }
+        // }
+        stage("release docker image") {
+            steps {
+                echo "release docker image"
+                withDockerRegistry([credentialsId: "${DOCKER_DEV_REGISTRY_CREDENTIAL}", url: "${DOCKER_DEV_REGISTRY}"]){
+                    sh """
+                    docker pull ${env.DEV_DOCKER_IMAGE}
+                    docker tag ${env.DEV_DOCKER_IMAGE} ${env.STAGE_DOCKER_IMAGE}
+                    docker push ${env.STAGE_DOCKER_IMAGE}
+                    """
+                }
+                withDockerRegistry([credentialsId: "${DOCKER_PROD_REGISTRY_CREDENTIAL}", url: "${DOCKER_PROD_REGISTRY}"]){
+                    sh """
+                    docker tag ${env.DEV_DOCKER_IMAGE} ${env.PROD_DOCKER_IMAGE}
+                    docker push ${env.PROD_DOCKER_IMAGE}
+                    """
+                }
+            }
+        }
+        // stage("release src") {
+        //     agent {
+        //         docker {
+        //             image "longguikeji/ark-conventional-changelog:0.1.0"
+        //             reuseNode true
+        //         }
+        //     }
+        //     steps {
+        //         withCredentials([sshUserPrivateKey(
+        //             credentialsId: "${env.SSH_CREDENTIAL}",
+        //             keyFileVariable: "SSH_KEY",
+        //             usernameVariable: "SSH_USER",
+        //         )]) {
+        //             sh """
+        //             mkdir ~/.ssh
+        //             cp ${env.SSH_KEY} ~/.ssh/id_rsa
+        //             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+        //             """
+        //         }
+        //         releaseSRC()
+        //     }
+        // }
+    }
+    // post {
+    //     success {
+    //         sendDingTalk("success", "构建成功")
+    //     }
+    //     failure {
+    //         sendDingTalk("failure", "构建失败")
+    //     }
+    // }
+}
+
+def releaseSRC(){
+    changelog = getChangelog()
+    createTag()
+    createGitHubRelease(changelog)
+}
+
+def getChangelog(){
+    changelog = sh(
+        returnStdout: true,
+        script: 'conventional-changelog -p angular',
+    ).trim()
+    return changelog
+}
+
+def createTag(){
+    sh """
+    git tag -f v${params.PROD_VERSION} ${env.GIT_SHORT_COMMIT}
+    git push origin v${params.PROD_VERSION}
+    """
+}
+
+def createGitHubRelease(changelog){
+    sh """
+    python -c \"
+import json; print(json.dumps({
+    'tag_name': 'v${params.PROD_VERSION}',
+    'name': 'v${params.PROD_VERSION}',
+    'body': '''${changelog}''',
+    'draft': True,
+})) \" |
+    curl -X POST \
+    https://api.github.com/repos/${env.REPO_NAME}/releases \
+    -H "authorization: token ${env.GITHUB_TOKEN}" \
+    -H "content-type: application/json" \
+    -d @-
+    """
+}
+
+
+// def sendDingTalk(status, message) {
+//     if (status == "success") {
+//         img="https://s2.ax1x.com/2019/10/17/KEFSWd.png"
+//     } else if (status == "failure") {
+//         img="https://s2.ax1x.com/2019/10/17/KEFCQI.png"
+//     } else if (status == "pending") {
+//         img="https://s2.ax1x.com/2019/10/17/KEFkef.gif"
+//     } else {
+//         img=""
+//     }
+    
+//     dingtalk (
+//         //all
+//         robot: "${env.DINGTALK_ROBOT}", 
+//         type: 'LINK',
+//         at: ["18031108921"],
+//         atAll: false,
+
+//         //LINK
+//         title: "${env.IMAGE_NAME}-${env.GIT_TAG}",
+//         text: [message],
+//         messageUrl: "${env.BUILD_URL}",
+//         picUrl: img,
+
+//         //整体跳转
+//         //singleTitle: '',
+//         //btns: [],
+//         //btnLayout: '',
+//         //hideAvatar: false
+//     )
+// }
