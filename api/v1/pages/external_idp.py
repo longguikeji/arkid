@@ -24,6 +24,28 @@ extend_schema_tags(
         'delete': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
             'method': 'delete'
+        },
+        'sort': {
+            'up': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_up/',
+                'method': 'get'
+            },
+            'down': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_down/',
+                'method': 'get'
+            },
+            'top': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_top/',
+                'method': 'get'
+            },
+            'bottom': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_bottom/',
+                'method': 'get'
+            },
+            'batch': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/batch_update/',
+                'method': 'post'
+            }
         }
     }
 )
