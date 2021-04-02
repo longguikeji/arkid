@@ -2,6 +2,7 @@ from common.serializer import BaseDynamicFieldModelSerializer
 from external_idp.models import ExternalIdp
 from common.provider import ExternalIdpProvider
 from rest_framework import serializers
+from django.db.models import Max
 
 
 class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
@@ -28,6 +29,16 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
             tenant=tenant,
             type=external_idp_type,
         )
+        external_idp.is_del = False
+        external_idp.is_active = True
+
+        if not external_idp.order_no:
+            max_order_no = (
+                ExternalIdp.objects.filter(tenant=tenant)
+                .aggregate(Max('order_no'))
+                .get('order_no__max')
+            )
+            external_idp.order_no = max_order_no + 1
 
         r: Runtime = get_app_runtime()
         provider_cls: ExternalIdpProvider = r.external_idp_providers.get(
@@ -39,10 +50,7 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
         data = provider.create(external_idp=external_idp, data=data)
         if data is not None:
             external_idp.data = data
-            external_idp.order_no = validated_data.get('order_no')
-            external_idp.is_del = False
-            external_idp.is_active = True
-            external_idp.save()
+        external_idp.save()
 
         return external_idp
 
@@ -57,14 +65,8 @@ class ExternalIdpListSerializer(ExternalIdpSerializer):
         )
 
 
-class DataSerializer(serializers.Serializer):
-
-    not_found = serializers.ListField(child=serializers.CharField(), read_only=True)
-
-
 class ExternalIdpReorderSerializer(serializers.Serializer):
 
     idps = serializers.ListField(child=serializers.CharField(), write_only=True)
 
     error = serializers.CharField(read_only=True)
-    data = DataSerializer(read_only=True)

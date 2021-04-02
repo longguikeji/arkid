@@ -20,7 +20,7 @@ class AppBaseSerializer(serializers.Serializer):
 
 class ExternalIdpBaseSerializer(serializers.Serializer):
 
-    order_no = serializers.IntegerField()
+    # order_no = serializers.IntegerField()
     type = serializers.CharField()
     data = serializers.JSONField()
 

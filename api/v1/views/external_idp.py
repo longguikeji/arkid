@@ -77,22 +77,82 @@ class ExternalIdpViewSet(BaseViewSet):
         responses=ExternalIdpReorderSerializer,
     )
     @action(detail=False, methods=['post'])
-    def idp_reorder(self, request, *args, **kwargs):
+    def batch_update(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        idps = request.data.get('idps')
-        not_found = []
-        for i, uuid in enumerate(idps):
-            idp = ExternalIdp.valid_objects.filter(uuid=uuid, tenant=tenant).first()
+        idp_uuid_list = request.data.get('idps')
+        idps = ExternalIdp.valid_objects.filter(
+            uuid__in=idp_uuid_list, tenant=tenant
+        ).order_by('order_no')
+        original_order_no = [idp.order_no for idp in idps]
+        index = 0
+        for uuid in idp_uuid_list:
+            idp = idps.filter(uuid=uuid).first()
             if not idp:
-                not_found.append(uuid)
                 continue
-            idp.order_no = i
+            idp.order_no = original_order_no[index]
             idp.save()
-
+            index += 1
         return JsonResponse(
             data={
                 'error': Code.OK.value,
-                'data': {"not_found": not_found},
+            }
+        )
+
+    @extend_schema(
+        responses=ExternalIdpReorderSerializer,
+    )
+    @action(detail=True, methods=['get'])
+    def move_up(self, request, *args, **kwargs):
+        return self._do_actual_move('up', request, *args, **kwargs)
+
+    @extend_schema(
+        responses=ExternalIdpReorderSerializer,
+    )
+    @action(detail=True, methods=['get'])
+    def move_down(self, request, *args, **kwargs):
+        return self._do_actual_move('down', request, *args, **kwargs)
+
+    @extend_schema(
+        responses=ExternalIdpReorderSerializer,
+    )
+    @action(detail=True, methods=['get'])
+    def move_top(self, request, *args, **kwargs):
+        return self._do_actual_move('top', request, *args, **kwargs)
+
+    @extend_schema(
+        responses=ExternalIdpReorderSerializer,
+    )
+    @action(detail=True, methods=['get'])
+    def move_bottom(self, request, *args, **kwargs):
+        return self._do_actual_move('bottom', request, *args, **kwargs)
+
+    def _do_actual_move(self, direction, request, *args, **kwargs):
+
+        assert direction in ('top', 'bottom', 'up', 'down')
+        current_uuid = kwargs.get('pk')
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        order_str = 'order_no' if direction in ('up', 'top') else '-order_no'
+        valid_idps = ExternalIdp.valid_objects.filter(tenant=tenant).order_by(order_str)
+        index = 0
+        current_idp = None
+        for i, idp in enumerate(valid_idps):
+            if idp.uuid.hex == current_uuid:
+                index = i
+                current_idp = idp
+        if index:
+            if direction in ['top', 'bottom']:
+                prev_idp = valid_idps[0]
+            else:
+                prev_idp = valid_idps[index - 1]
+            prev_order_no = prev_idp.order_no
+            prev_idp.order_no = current_idp.order_no
+            current_idp.order_no = prev_order_no
+            prev_idp.save()
+            current_idp.save()
+        return JsonResponse(
+            data={
+                'error': Code.OK.value,
             }
         )
