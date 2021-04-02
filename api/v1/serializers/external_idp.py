@@ -2,6 +2,7 @@ from common.serializer import BaseDynamicFieldModelSerializer
 from external_idp.models import ExternalIdp
 from common.provider import ExternalIdpProvider
 from rest_framework import serializers
+from django.db.models import Max
 
 
 class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
@@ -10,24 +11,34 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
         model = ExternalIdp
 
         fields = (
-            "uuid",
-            "type",
-            "data",
-            "order_no",
+            'uuid',
+            'type',
+            'data',
+            'order_no',
         )
 
     def create(self, validated_data):
         from runtime import get_app_runtime, Runtime
 
-        tenant = self.context["tenant"]
+        tenant = self.context['tenant']
 
-        external_idp_type = validated_data.pop("type")
-        data = validated_data.pop("data", None)
+        external_idp_type = validated_data.pop('type')
+        data = validated_data.pop('data', None)
 
         external_idp, _ = ExternalIdp.objects.get_or_create(
             tenant=tenant,
             type=external_idp_type,
         )
+        external_idp.is_del = False
+        external_idp.is_active = True
+
+        if not external_idp.order_no:
+            max_order_no = (
+                ExternalIdp.objects.filter(tenant=tenant)
+                .aggregate(Max('order_no'))
+                .get('order_no__max')
+            )
+            external_idp.order_no = max_order_no + 1
 
         if external_idp.is_del:
             external_idp.is_del = False
@@ -43,10 +54,7 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
         data = provider.create(external_idp=external_idp, data=data)
         if data is not None:
             external_idp.data = data
-            external_idp.order_no = validated_data.get("order_no")
-            external_idp.is_del = False
-            external_idp.is_active = True
-            external_idp.save()
+        external_idp.save()
 
         return external_idp
 
@@ -56,14 +64,9 @@ class ExternalIdpListSerializer(ExternalIdpSerializer):
         model = ExternalIdp
 
         fields = (
-            "type",
-            "order_no",
+            'type',
+            'order_no',
         )
-
-
-class DataSerializer(serializers.Serializer):
-
-    not_found = serializers.ListField(child=serializers.CharField(), read_only=True)
 
 
 class ExternalIdpReorderSerializer(serializers.Serializer):
@@ -71,4 +74,3 @@ class ExternalIdpReorderSerializer(serializers.Serializer):
     idps = serializers.ListField(child=serializers.CharField(), write_only=True)
 
     error = serializers.CharField(read_only=True)
-    data = DataSerializer(read_only=True)
