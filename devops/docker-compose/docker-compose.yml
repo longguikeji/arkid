@@ -29,7 +29,7 @@ services:
       - ${WORKSPACE}/db.sqlite3:/var/arkid/db.sqlite3
 
   web:
-    image: harbor.longguikeji.com/ark-releases/arkid-fe:v2dev-8-94764ab
+    image: harbor.longguikeji.com/ark-releases/arkid-fe:v2dev
     container_name: ${INSTANCE}-web
     restart: always
     networks:

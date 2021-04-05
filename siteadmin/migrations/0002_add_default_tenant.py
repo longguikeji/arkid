@@ -6,12 +6,14 @@ from django.db import migrations
 def add_default_tenant(apps, schema_editor):
     from tenant.models import Tenant
 
-    Tenant.objects.create(
-        name="Default Tenant",
+    o, created = Tenant.objects.get_or_create(        
         slug="default",
     )
-    
 
+    if created:
+        o.name="Default Tenant",
+        o.save()
+    
 class Migration(migrations.Migration):
 
     dependencies = [
