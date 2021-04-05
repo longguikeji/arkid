@@ -11,7 +11,7 @@ def add_default_tenant(apps, schema_editor):
     )
 
     if created:
-        o.name="Default Tenant",
+        o.name="Default Tenant"
         o.save()
     
 class Migration(migrations.Migration):
