@@ -18,11 +18,6 @@ ADD . .
 RUN pre-commit install \
     && .git/hooks/pre-commit
 
-# FROM build_deps as run_test
-# ADD . .
-# RUN make test
-# RUN python manage.py migrate && python manage.py test siteapi.v1.tests infrastructure.tests.test_file infrastructure.tests.test_sms --settings=oneid.settings_test
-
 FROM build_deps as build
 RUN pip install mysqlclient==1.4.6 -i https://mirrors.aliyun.com/pypi/simple/
 ADD . .

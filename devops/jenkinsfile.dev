@@ -33,7 +33,7 @@ pipeline {
     stages {
         stage('pre') {
             steps {
-                sendFEISHU("pending")
+                sendFeishu("pending")
                 // replacePyPIRegistry()
             }
         }
@@ -68,10 +68,10 @@ pipeline {
     }
     post {
         success {
-            sendFEISHU("success")
+            sendFeishu("success")
         }
         failure {
-            sendFEISHU("fail")
+            sendFeishu("fail")
         }
     }
 }
@@ -90,7 +90,7 @@ pipeline {
 //     """
 // }
 
-def sendFEISHU(status){
+def sendFeishu(status){
     if (status == "success") {
         message="构建并部署成功，点击查看部署后的效果"
         href_url="${env.ARKIDV2DEV_PUBLIC_URL}"
