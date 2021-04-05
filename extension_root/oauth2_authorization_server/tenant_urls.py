@@ -16,5 +16,4 @@ oidc_urlpatterns = [
     re_path(r"userinfo/$", views.UserInfoView.as_view(), name="user-info"),
 ]
 
-
 urlpatterns = base_urlpatterns + oidc_urlpatterns

@@ -6,5 +6,5 @@ class ExtensionConfig(AppConfig):
 
     def ready(self):
         from .loader import ExtensionLoader
-        # ExtensionLoader()
+        ExtensionLoader()
 
