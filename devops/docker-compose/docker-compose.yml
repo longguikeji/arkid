@@ -17,7 +17,7 @@ services:
       - ${WORKSPACE}/nginx.conf:/etc/nginx/nginx.conf
 
   backend:
-    image: harbor.longguikeji.com/ark-releases/arkid:v2dev-23-531675e
+    image: harbor.longguikeji.com/ark-releases/arkid:v2dev
     container_name: ${INSTANCE}-backend
     sysctls:
       - net.core.somaxconn=65535
@@ -25,8 +25,8 @@ services:
     networks:
       - arkid
     volumes:
-      - ${WORKSPACE}/settings_local.py:/usr/src/app/settings_local.py
-      - ${WORKSPACE}/db.sqlite3:/usr/src/app/db.sqlite3
+      - ${WORKSPACE}/settings_local.py:/var/arkid/settings_local.py
+      - ${WORKSPACE}/db.sqlite3:/var/arkid/db.sqlite3
 
   web:
     image: harbor.longguikeji.com/ark-releases/arkid-fe:v2dev-8-94764ab

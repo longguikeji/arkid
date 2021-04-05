@@ -7,6 +7,8 @@ ArkID - v2
 
 ## docker-compose
 
+1. sqlite3
+
 ```
 cd devops/docker-compose
 touch db.sqlite3
