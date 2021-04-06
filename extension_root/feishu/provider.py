@@ -1,4 +1,5 @@
 import requests
+from typing import Dict
 from runtime import Runtime
 from common.extension import InMemExtension
 from common.provider import ExternalIdpProvider
@@ -75,3 +76,12 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
         data = r.json()
         token = data['tenant_access_token']
         return token
+
+    def bind(self, user: any, data: Dict):
+        from .models import FeishuUser
+
+        FeishuUser.objects.get_or_create(
+            tenant=user.tenant,
+            user=user,
+            feishu_user_id=data.get("user_id"),
+        )
