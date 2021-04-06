@@ -30,7 +30,7 @@ extend_schema_tags(
             'method': 'get'
         },
         'tableList': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/?group={id}',
             'method': 'get'
         },
         'tableUpdate': {
