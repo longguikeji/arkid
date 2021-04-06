@@ -1,7 +1,7 @@
 from typing import Dict
 from .user_info_manager import GiteeUserInfoManager
 from common.provider import ExternalIdpProvider
-from .constants import KEY, BIND_KEY
+from .constants import KEY, BIND_KEY, LOGIN_URL, IMG_URL
 
 
 class GiteeExternalIdpProvider(ExternalIdpProvider):
@@ -39,6 +39,8 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         return {
             'client_id': client_id,
             'secret_id': secret_id,
+            'login_url': LOGIN_URL,
+            'img_url': IMG_URL,
         }
 
     def bind(self, user: any, data: Dict):

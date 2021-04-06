@@ -165,3 +165,4 @@ supervisord.log
 arkid.local.toml
 
 /static/upload
+package.json
