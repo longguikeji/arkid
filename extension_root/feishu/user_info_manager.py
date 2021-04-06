@@ -20,7 +20,7 @@ class APICallError(Exception):
 # pylint: disable=consider-using-dict-comprehension
 class FeishuUserInfoManager:
     """
-    Gitee API
+    Feishu API
     """
 
     def __init__(self, app_id, secret_id, app_access_token):
