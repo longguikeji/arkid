@@ -14,14 +14,16 @@ pipeline {
             returnStdout: true,
             script: "git remote show origin -n |  grep h.URL | sed 's/.*://;s/.git//' ",
         ).trim()}"""
-        DOCKER_IMAGE_BUILD_VERSION = "build-${env.BUILD_NUMBER}-${env.GIT_SHORT_COMMIT}"
-        DOCKER_IMAGE_DEV_VERSION = "v2dev-${env.BUILD_NUMBER}-${env.GIT_SHORT_COMMIT}"
-
-        DOCKER_DEV_REGISTRY="https://harbor.longguikeji.com"
-        DOCKER_DEV_REGISTRY_CREDENTIAL="devops-longguikeji-harbor"
 
         // DOCKER_PROD_REGISTRY="https://index.docker.io/v1/"
         // DOCKER_PROD_REGISTRY_CREDENTIAL="devops-longguikeji-dockerhub"
+        REGISTRY_CREDENTIAL="devops-longguikeji-harbor"
+        REGISTRY_HOST = "harbor.longguikeji.com"
+        REGISTRY_NS = "/ark-releases/"
+        IMAGE_NAME = "arkid"
+        IMAGE_TAG = "v2dev-${env.BUILD_NUMBER}-${env.GIT_SHORT_COMMIT}"
+        IMAGE_FULL_TAG = "${env.REGISTRY_HOST}${env.REGISTRY_NS}${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+        
         K8S_HOST = "https://kubernetes"
         K8S_CREDENTIAL = "lg-k8s-dev"
         K8S_NS = "arkidv2"
@@ -42,14 +44,26 @@ pipeline {
                 script {
                     this_stage = env.STAGE_NAME
                 }
-                withDockerRegistry([credentialsId: "${DOCKER_DEV_REGISTRY_CREDENTIAL}", url: "${DOCKER_DEV_REGISTRY}"]){
+                withDockerRegistry([credentialsId: "${REGISTRY_CREDENTIAL}", url: "https://${REGISTRY_HOST}"]){
                     sh """#!/bin/bash
-                        docker build -t harbor.longguikeji.com/ark-releases/arkid:${env.DOCKER_IMAGE_DEV_VERSION} .
-                        docker push harbor.longguikeji.com/ark-releases/arkid:${env.DOCKER_IMAGE_DEV_VERSION}
+                        docker build -t ${env.IMAGE_FULL_TAG} .
+                        docker push ${env.IMAGE_FULL_TAG}
                     """
                 }
             }
         }
+        
+        stage('pushToDockerHub'){
+            sh """#!/bin/bash
+                withDockerRegistry([credentialsId: "devops-longguikeji-dockerhub", url: "https://index.docker.io/v1/"]){
+                    sh """
+                    docker tag ${env.IMAGE_FULL_TAG} longguikeji/arkid:v2dev
+                    docker push longguikeji/arkid:v2dev
+                    """
+                }
+            """
+        }
+
         stage('deploy image') {
             steps{
                 script {
@@ -60,7 +74,7 @@ pipeline {
                                 namespace: "${env.K8S_NS}"
                                 ]) {
                                     sh """
-                                        kubectl set image ${env.K8S_DEPLOY_KIND} ${env.K8S_DEPLOY_NAME} ${env.K8S_DEPLOY_CONTAINER_NAME}=harbor.longguikeji.com/ark-releases/arkid:${env.DOCKER_IMAGE_DEV_VERSION} --record=true
+                                        kubectl set image ${env.K8S_DEPLOY_KIND} ${env.K8S_DEPLOY_NAME} ${env.K8S_DEPLOY_CONTAINER_NAME}=${env.IMAGE_FULL_TAG} --record=true
                                     """
                 }
             }
@@ -98,7 +112,7 @@ def sendFeishu(status){
         message="开始构建，点击查看构建过程"
         href_url="${env.BUILD_URL}"
     } else {
-        message="${last_started}阶段失败，点击查看具体日志"
+        message="${this_stage}阶段失败，点击查看具体日志"
         href_url="${env.BUILD_URL}"
     }
 

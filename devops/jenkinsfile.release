@@ -141,7 +141,7 @@ def sendFEISHU(status){
         message="开始构建，点击查看构建过程"
         href_url="${env.BUILD_URL}"
     } else {
-        message="${last_started}阶段失败，点击查看具体日志"
+        message="${this_stage}阶段失败，点击查看具体日志"
         href_url="${env.BUILD_URL}"
     }
 
