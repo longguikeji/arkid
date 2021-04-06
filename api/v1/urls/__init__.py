@@ -36,7 +36,6 @@ if tenant_urlpatterns is not None:
     u: URLPattern
     a = []
     for u in tenant_urlpatterns:
-        print(u, u.pattern, u.name, type(u.pattern), dir(u))
         uu = copy.deepcopy(u)
         a.append(uu)
 
