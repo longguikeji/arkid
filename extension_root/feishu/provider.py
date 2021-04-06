@@ -58,7 +58,7 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
         return data
 
     def _get_token(self):
-        """
+        '''
         {
             "code":0,
             "msg":"ok",
@@ -66,7 +66,7 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
             "expire":7200,  // 过期时间，单位为秒（两小时失效）
             "tenant_access_token":"xxxxx"
         }
-        """
+        '''
         url = GET_TENANT_ACCESS_TOKEN
         r = requests.post(url, data={
             'app_id': self.app_id,

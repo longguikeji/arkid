@@ -1,6 +1,6 @@
-"""
+'''
 飞书查询用户信息
-"""
+'''
 # from urllib.parse import parse_qs
 # import requests
 
@@ -19,9 +19,9 @@ class APICallError(Exception):
 # pylint: disable=line-too-long
 # pylint: disable=consider-using-dict-comprehension
 class FeishuUserInfoManager:
-    """
+    '''
     Feishu API
-    """
+    '''
 
     def __init__(self, app_id, secret_id, app_access_token):
         self.app_id = app_id
@@ -29,9 +29,9 @@ class FeishuUserInfoManager:
         self.app_access_token = app_access_token
 
     def get_user_id(self, code, next):
-        """
+        '''
         查询用户id
-        """
+        '''
         try:
             response = requests.post(
                 constants.GET_TOKEN_URL,
@@ -44,7 +44,7 @@ class FeishuUserInfoManager:
                 },
             )
             result = response.json()
-            """
+            '''
             {
                 "code": 0,
                 "msg": "success",
@@ -68,7 +68,7 @@ class FeishuUserInfoManager:
                     "token_type": "Bearer"
                 }
             }
-            """
+            '''
             user_id = result.get("date").get("user_id")
             return user_id
         except Exception:

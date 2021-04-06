@@ -60,9 +60,9 @@ class FeishuCallbackView(APIView):
     authentication_classes = []
 
     def get(self, request, tenant_id):
-        """
+        '''
         处理feishu用户登录之后重定向页面
-        """
+        '''
         code = request.GET["code"]
         next_url = request.GET.get("next", None)
         if next_url is not None:
