@@ -1,11 +1,12 @@
 from typing import Dict
 from .user_info_manager import GiteeUserInfoManager
 from common.provider import ExternalIdpProvider
+from .constants import KEY, BIND_KEY
 
 
 class GiteeExternalIdpProvider(ExternalIdpProvider):
 
-    bind_key: str = "gitee_user_id"
+    bind_key: str = BIND_KEY
     name: str
 
     client_id: str
@@ -24,7 +25,7 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         )
 
         data = idp.data
-        
+
         client_id = data.get('client_id')
         secret_id = data.get('secret_id')
 
