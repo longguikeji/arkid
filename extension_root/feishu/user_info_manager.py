@@ -36,7 +36,7 @@ class FeishuUserInfoManager:
             response = requests.post(
                 constants.GET_TOKEN_URL,
                 headers={
-                    'Authorization': f'Bearer {app_access_token}',
+                    'Authorization': f'Bearer {self.app_access_token}',
                 }
                 params={
                     "code": code,
