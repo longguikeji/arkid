@@ -54,14 +54,17 @@ pipeline {
         }
         
         stage('pushToDockerHub'){
-            sh """#!/bin/bash
+            steps {
+                script {
+                    this_stage = env.STAGE_NAME
+                }
                 withDockerRegistry([credentialsId: "devops-longguikeji-dockerhub", url: "https://index.docker.io/v1/"]){
-                    sh """
+                    sh """#!/bin/bash
                     docker tag ${env.IMAGE_FULL_TAG} longguikeji/arkid:v2dev
                     docker push longguikeji/arkid:v2dev
                     """
                 }
-            """
+            }
         }
 
         stage('deploy image') {
