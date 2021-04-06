@@ -1,7 +1,7 @@
 from typing import Dict
 from .user_info_manager import GithubUserInfoManager
 from common.provider import ExternalIdpProvider
-from .constants import KEY, BIND_KEY
+from .constants import KEY, BIND_KEY, LOGIN_URL, IMG_URL
 
 
 class GithubExternalIdpProvider(ExternalIdpProvider):
@@ -25,7 +25,7 @@ class GithubExternalIdpProvider(ExternalIdpProvider):
         )
 
         data = idp.data
-        
+
         client_id = data.get('client_id')
         secret_id = data.get('secret_id')
 
@@ -39,11 +39,13 @@ class GithubExternalIdpProvider(ExternalIdpProvider):
         return {
             'client_id': client_id,
             'secret_id': secret_id,
+            'login_url': LOGIN_URL,
+            'img_url': IMG_URL,
         }
 
     def bind(self, user: any, data: Dict):
         from .models import GithubUser
-        
+
         GithubUser.objects.get_or_create(
             tenant=user.tenant,
             user=user,

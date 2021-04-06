@@ -12,3 +12,5 @@ CLIENT_VALID = 'bad_verification_code'
 
 KEY = 'github'
 BIND_KEY = 'github_user_id'
+LOGIN_URL = 'github/login'
+IMG_URL = 'https://github.githubassets.com/favicons/favicon.png'
