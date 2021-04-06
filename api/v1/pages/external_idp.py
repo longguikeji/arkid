@@ -8,22 +8,44 @@ extend_schema_tags(
     tag,
     name,
     {
-        'type':'table_page',
+        'type': 'table_page',
         'list': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
-            'method': 'get'
+            'method': 'get',
         },
         'create': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
-            'method': 'post'
+            'method': 'post',
         },
         'update': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
-            'method': 'put'
+            'method': 'put',
         },
         'delete': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
-            'method': 'delete'
-        }
-    }
+            'method': 'delete',
+        },
+        'sort': {
+            'up': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_up/',
+                'method': 'get',
+            },
+            'down': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_down/',
+                'method': 'get',
+            },
+            'top': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_top/',
+                'method': 'get',
+            },
+            'bottom': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_bottom/',
+                'method': 'get',
+            },
+            'batch': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/batch_update/',
+                'method': 'post',
+            },
+        },
+    },
 )
