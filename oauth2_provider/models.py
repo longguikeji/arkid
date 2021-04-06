@@ -509,7 +509,7 @@ class AbstractIDToken(models.Model):
         null=True,
         related_name="%(app_label)s_%(class)s",
     )
-    token = models.TextField(unique=True)
+    token = models.CharField(max_length=255, unique=True)
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL,
         on_delete=models.CASCADE,

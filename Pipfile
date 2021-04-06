@@ -1,10 +1,11 @@
 [[source]]
 name = "pypi"
-url = "https://pypi.org/simple"
+url = "https://mirrors.aliyun.com/pypi/simple"
 verify_ssl = true
 
 [dev-packages]
 ipython = "*"
+pre-commit = "*"
 
 [packages]
 django = "*"

@@ -30,7 +30,7 @@ class TenantViewSet(BaseViewSet):
     pagination_class = DefaultListPaginator
 
     def get_serializer_class(self):
-        if self.action == 'app':
+        if self.action == 'apps':
             return AppBaseInfoSerializer
 
         return TenantSerializer
@@ -169,7 +169,7 @@ class TenantViewSet(BaseViewSet):
         })
 
     @action(detail=True, methods=['GET'])
-    def app(self, request, pk):
+    def apps(self, request, pk):
         user: User = request.user
         tenant: Tenant = self.get_object()
 

@@ -50,7 +50,11 @@ def find_available_extensions() -> typing.List[InMemExtension]:
 def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
     app_config = config.get_app_config()
 
-    extensions = Extension.active_objects.filter()
+    try:
+        extensions = list(Extension.active_objects.filter())
+    except Exception:
+        return []
+
     loaded_extensions = []
     
     extension: Extension
@@ -121,7 +125,9 @@ def load_extension(runtime, ext_name: str, name: str, execute: bool=False) -> an
 
     extension_tenant_urls_filename = Path(ext_dir) / 'tenant_urls.py'        
     if extension_tenant_urls_filename.exists():
+        print('>>>', f'{ext_name}.tenant_urls')
         urlpatterns = [url(r'tenant/(?P<tenant_id>[\w-]+)/', include((f'{ext_name}.tenant_urls', 'extension'), namespace=f'{name}'))]
+        print(urlpatterns)
         runtime.register_route(urlpatterns)
         
     ext.extension.start(runtime)

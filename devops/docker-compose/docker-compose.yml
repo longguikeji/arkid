@@ -1,0 +1,48 @@
+version: '3.5'
+
+services:
+  portal:
+    image: nginx:alpine
+    container_name: ${INSTANCE}-portal
+    restart: always
+    networks:
+      - arkid
+    ports:
+      - 3700:80
+    depends_on:
+      - backend
+      - web
+    volumes:
+      - ${WORKSPACE}/portal.conf:/etc/nginx/conf.d/default.conf
+      - ${WORKSPACE}/nginx.conf:/etc/nginx/nginx.conf
+
+  backend:
+    image: harbor.longguikeji.com/ark-releases/arkid:v2dev
+    container_name: ${INSTANCE}-backend
+    sysctls:
+      - net.core.somaxconn=65535
+    restart: always
+    networks:
+      - arkid
+    volumes:
+      - ${WORKSPACE}/settings_local.py:/var/arkid/settings_local.py
+      - ${WORKSPACE}/db.sqlite3:/var/arkid/db.sqlite3
+
+  web:
+    image: harbor.longguikeji.com/ark-releases/arkid-fe:v2dev
+    container_name: ${INSTANCE}-web
+    restart: always
+    networks:
+      - arkid
+
+  redis:
+    image: redis:5.0.3
+    container_name: ${INSTANCE}-redis
+    restart: always
+    networks:
+      - arkid
+
+networks:
+  arkid:
+    name: ${INSTANCE}
+    driver: bridge
