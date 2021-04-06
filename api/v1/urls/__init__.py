@@ -28,6 +28,9 @@ runtime = get_app_runtime()
 global_urlpatterns = runtime.urlpatterns.get('global', None)
 if global_urlpatterns is not None:
     urlpatterns += global_urlpatterns
+else:
+    print('registered global urlpatterns...')
+
 
 tenant_urlpatterns = runtime.urlpatterns.get('tenant', None)
 if tenant_urlpatterns is not None:

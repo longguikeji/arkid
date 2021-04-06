@@ -11,6 +11,9 @@ class GithubExternalIdpConfigSerializer(serializers.Serializer):
     login_url = serializers.CharField(read_only=True)
     img_url = serializers.CharField(read_only=True)
 
+    login_url = serializers.URLField(read_only=True)
+    callback_url = serializers.URLField(read_only=True)
+    bind_url = serializers.URLField(read_only=True)
 
 class GithubExternalIdpSerializer(ExternalIdpBaseSerializer):
 

@@ -91,6 +91,7 @@ class Runtime:
         assert namespace in ['global', 'tenant', 'local']
         self.urlpatterns.setdefault(namespace, [])
         self.urlpatterns[namespace] += urlpatterns
+        print('register_route:', namespace, urlpatterns)
 
     def register_storage_provider(self, provider: StorageProvider):
         self.storage_provider = provider
