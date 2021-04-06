@@ -166,3 +166,6 @@ arkid.local.toml
 
 /static/upload
 package.json
+node_modules/
+package-lock.json
+
