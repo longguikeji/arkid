@@ -54,9 +54,11 @@ class LoginForm(dict):
         super().__init__(*args, **kwargs)
 
 class LoginPageExtend(dict):
-    def __init__(self, title:str, buttons:[Button] = [], *args, **kwargs):
-        self['title'] = title
-        self['buttons'] = buttons
+    def __init__(self, title:str=None, buttons:[Button]=None, *args, **kwargs):
+        if title:
+            self['title'] = title
+        if buttons:
+            self['buttons'] = buttons
         super().__init__(*args, **kwargs)
 
     def merge(self, extend):
@@ -65,13 +67,17 @@ class LoginPageExtend(dict):
         self.addButtons(extend.get('buttons'))
 
     def addButtons(self, buttons):
-        self.get('buttons').extend(buttons)
+        _buttons = self.get('buttons',[])
+        _buttons.extend(buttons)
+        self['buttons'] = _buttons
 
 class LoginPage(dict):
-    def __init__(self, name:str, forms:[LoginForm]=[], bottoms:[Button]=[], extend:LoginPageExtend=None, *args, **kwargs):
+    def __init__(self, name:str, forms:[LoginForm]=None, bottoms:[Button]=None, extend:LoginPageExtend=None, *args, **kwargs):
         self['name'] = name
-        self['forms'] = forms
-        self['bottoms'] = bottoms
+        if forms:
+            self['forms'] = forms
+        if bottoms:
+            self['bottoms'] = bottoms
         if extend:
             self['extend'] = extend
         super().__init__(*args, **kwargs)
@@ -85,10 +91,15 @@ class LoginPage(dict):
             self.addExtend(page.get('extend'))
 
     def addForms(self, forms:[LoginForm]):
-        self.get('forms').extend(forms)
+        _forms = self.get('forms',[])
+        _forms.extend(forms)
+        self['forms'] = _forms
+
 
     def addBottoms(self, bottoms:[Button]):
-        self.get('bottoms').extend(bottoms)
+        _bottoms = self.get('bottoms',[])
+        _bottoms.extend(bottoms)
+        self['bottoms'] = _bottoms
 
     def addExtend(self, extend:LoginPageExtend):
         _extend = self.get('extend',None)
@@ -112,22 +123,34 @@ class LoginPages(dict):
             _page.merge(page)
 
     def addForm(self, page, form:LoginForm):
-        self.addPage(LoginPage(
-            name=page,
-            forms=[form]
-        ))
+        if form:
+            self.addPage(LoginPage(
+                name=page,
+                forms=[form]
+            ))
 
     def addBottom(self, page, bottom:Button):
-        self.addPage(LoginPage(
-            name=page,
-            bottoms=[bottom]
-        ))
+        if bottom:
+            self.addPage(LoginPage(
+                name=page,
+                bottoms=[bottom]
+            ))
 
     def addExtend(self, page, extend:LoginPageExtend):
-        self.addPage(LoginPage(
-            name=page,
-            extend=extend
-        ))
+        if extend:
+            self.addPage(LoginPage(
+                name=page,
+                extend=extend
+            ))
+
+    def addExtendButton(self, page, button:Button):
+        if button:
+            self.addExtend(page, LoginPageExtend(
+                buttons=[button]
+            ))
+
+    def getPage(self, page):
+        return self.get('data').get(page,None)
 
 LOGIN = 'login'
 REGISTER = 'register'

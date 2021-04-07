@@ -4,6 +4,8 @@ from common import loginpage as model
 from openapi.utils import extend_schema
 from django.http.response import JsonResponse
 from api.v1.views.login import LoginView, MobileLoginView
+from api.v1.views.tenant import TenantViewSet
+from runtime import get_app_runtime
 
 @extend_schema(tags = ['login page'])
 class LoginPage(views.APIView):
@@ -13,21 +15,34 @@ class LoginPage(views.APIView):
     )
     def get(self, request):
         tenant_id = request.query_params.get('tenant', None)
+        data = model.LoginPages()
         if tenant_id:
-            pass
+            data.addForm( model.LOGIN, TenantViewSet().login_form(tenant_id) )
+            data.addForm( model.LOGIN, TenantViewSet().mobile_login_form(tenant_id) )
+            data.addForm( model.REGISTER, TenantViewSet().mobile_register_form(tenant_id) )
         else:
-            data = model.LoginPages()
-            data.addForm(model.LOGIN, LoginView().login_form())
-            data.addForm(model.LOGIN, MobileLoginView().login_form())
+            data.addForm( model.LOGIN, LoginView().login_form() )
+            data.addForm( model.LOGIN, MobileLoginView().login_form() )
+        
+        if data.getPage(model.REGISTER):
             data.addBottom(model.LOGIN, model.Button(
                 prepend='还没有账号，',
                 label='立即注册',
-                gopage='register'
+                gopage=model.REGISTER
             ))
+            data.addBottom(model.REGISTER, model.Button(
+                prepend='已有账号，',
+                label='立即登录',
+                gopage=model.LOGIN
+            ))
+        
+        if data.getPage(model.PASSWORD):
             data.addBottom(model.LOGIN, model.Button(
                 label='忘记密码',
                 gopage='password'
             ))
+        
+        
         
         pages = lp.LoginPagesSerializer(data=data)
         pages.is_valid()
