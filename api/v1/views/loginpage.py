@@ -6,6 +6,7 @@ from django.http.response import JsonResponse
 from api.v1.views.login import LoginView, MobileLoginView
 from api.v1.views.tenant import TenantViewSet
 from runtime import get_app_runtime
+from tenant.models import Tenant
 
 @extend_schema(tags = ['login page'])
 class LoginPage(views.APIView):
@@ -14,12 +15,14 @@ class LoginPage(views.APIView):
         responses=lp.LoginPagesSerializer
     )
     def get(self, request):
-        tenant_id = request.query_params.get('tenant', None)
+        tenant_uuid = request.query_params.get('tenant', None)
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+
         data = model.LoginPages()
-        if tenant_id:
-            data.addForm( model.LOGIN, TenantViewSet().login_form(tenant_id) )
-            data.addForm( model.LOGIN, TenantViewSet().mobile_login_form(tenant_id) )
-            data.addForm( model.REGISTER, TenantViewSet().mobile_register_form(tenant_id) )
+        if tenant:
+            data.addForm( model.LOGIN, TenantViewSet().login_form(tenant.id) )
+            data.addForm( model.LOGIN, TenantViewSet().mobile_login_form(tenant.id) )
+            data.addForm( model.REGISTER, TenantViewSet().mobile_register_form(tenant.id) )
         else:
             data.addForm( model.LOGIN, LoginView().login_form() )
             data.addForm( model.LOGIN, MobileLoginView().login_form() )

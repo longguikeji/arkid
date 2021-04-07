@@ -42,10 +42,10 @@ class LoginPageExtendSerializer(serializers.Serializer):
     buttons = ButtonSerializer(many=True, label=_('扩展按钮'))
 
 class LoginPageSerializer(serializers.Serializer):
-    name = serializers.CharField(label=_('页面ID'))
+    name = serializers.CharField(label=_('页面名字'))
     forms = LoginFormSerializer(label=_('表单'), many=True)
     bottoms = ButtonSerializer(label=_('表单下按钮'), many=True, required=False)
     extend = LoginPageExtendSerializer(label=_('扩展'), required=False)
 
 class LoginPagesSerializer(serializers.Serializer):
-    data = serializers.DictField(child=LoginPageSerializer())
+    data = serializers.DictField(label=_('key：页面名字（name）'), child=LoginPageSerializer())
