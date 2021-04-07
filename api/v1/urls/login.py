@@ -6,7 +6,7 @@ from api.v1.views import (
 )
 
 urlpatterns = [
-    path('login/', views_login.LoginView.as_view()),
-    path('mobile_login/', views_login.MobileLoginView.as_view()),
+    path('login/', views_login.LoginView.as_view(), name='login'),
+    path('mobile_login/', views_login.MobileLoginView.as_view(), name='mobile-login'),
     path('loginpage/', loginpage.LoginPage.as_view()),
 ]

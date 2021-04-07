@@ -19,6 +19,7 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 from rest_framework.authtoken.models import Token
 from inventory.models import User
 from common.code import Code
+from django.urls import reverse
 from common import loginpage as lp
 
 @extend_schema(tags = ['uc'])
@@ -110,7 +111,7 @@ class LoginView(generics.CreateAPIView):
             submit=lp.Button(
                 label='登录',
                 http=lp.ButtonHttp(
-                    url='/login/',
+                    url=reverse('api:login'),
                     method='post',
                     params={
                         'username':'username',
@@ -183,7 +184,7 @@ class MobileLoginView(LoginView):
                         label='发送验证码',
                         delay=60,
                         http=lp.ButtonHttp(
-                            url='/send_sms/',
+                            url=reverse('api:send-sms'),
                             method='post',
                             params={
                                 'mobile': 'mobile'
@@ -195,7 +196,7 @@ class MobileLoginView(LoginView):
             submit=lp.Button(
                 label='登录',
                 http=lp.ButtonHttp(
-                    url='/mobile_login/',
+                    url=reverse('api:mobile-login'),
                     method='post',
                     params={
                         'mobile':'mobile',
