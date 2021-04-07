@@ -8,6 +8,7 @@ import logging
 
 from .constants import API_URL
 from common.provider import SMSProvider
+from typing import Dict, List
 
 
 class HuaWeiSMSProvider(SMSProvider):
@@ -19,7 +20,12 @@ class HuaWeiSMSProvider(SMSProvider):
         self.signature = signature
         self.sender = sender
 
-    def send_auth_code(self, mobile, code):
+    def send_auth_code(self, mobile: str, code: str):
+        '''
+        发送短信
+        @param mobile: string 电话号码 示例:8615123456789
+        @param code: string 验证码
+        '''
         template_param = {"code": str(code)}
         self.send_sms([mobile], self.template, template_param)
 
@@ -34,12 +40,12 @@ class HuaWeiSMSProvider(SMSProvider):
         digestBase64 = base64.b64encode(digest.encode()).decode()  # PasswordDigest
         return 'UsernameToken Username="{}",PasswordDigest="{}",Nonce="{}",Created="{}"'.format(self.access_key, digestBase64, nonce, now)
 
-    def send_sms(self, mobiles=[], template_code='', template_param=None, status_callback=''):
+    def send_sms(self, mobiles: List[str], template_code: str, template_param: Dict[str, str], status_callback: str = ''):
         '''
         发送短信
         @param mobiles: arr 示例:['+8615123456789']多个号码之间用英文逗号分隔
         @param template_code: string 模板id
-        @param template_param: string 模板参数
+        @param template_param: arr 模板参数
         @param status_callback: string 选填,短信状态报告接收地址,推荐使用域名,为空或者不填表示不接收状态报告
         '''
         # 请求Headers
@@ -61,8 +67,8 @@ class HuaWeiSMSProvider(SMSProvider):
             'from': self.sender,
             'to': mobile,
             'templateId': template_code,
-            'templateParas': template_param,
-            'statusCallback': self.status_callback,
+            'templateParas': str(template_param),
+            'statusCallback': status_callback,
             'signature': self.signature
         }
         result = requests.post(API_URL, data=form_data, headers=header, verify=False)

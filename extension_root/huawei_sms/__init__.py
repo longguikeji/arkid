@@ -30,9 +30,7 @@ class HuaWeiExtension(InMemExtension):
             sender=sender,
         )
 
-        print('>>>>', sms_provider)
-
-        runtime.sms_provider = sms_provider
+        runtime.register_sms_provider(sms_provider)
 
         super().start(runtime=runtime, *args, **kwargs)
 
