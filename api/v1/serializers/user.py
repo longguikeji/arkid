@@ -6,6 +6,7 @@ from .group import GroupSerializer, GroupBaseSerializer
 from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
 from ..pages import group, permission
 
+
 class UserSerializer(BaseDynamicFieldModelSerializer):
 
     groups = serializers.SerializerMethodField()
@@ -18,7 +19,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     )
 
     permissions = serializers.SerializerMethodField()
-    
+
     # set_groups = serializers.ListField(
     #     child=serializers.CharField(),
     #     write_only=True,
@@ -52,9 +53,8 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'country',
             'city',
             'job_title',
-            'groups',            
+            'groups',
             'permissions',
-
             'set_groups',
             'set_permissions',
         )
@@ -70,7 +70,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         for g in groups:
             o = GroupBaseSerializer(g)
             ret.append(o.data)
-        
+
         return ret
 
     def get_permissions(self, instance):
@@ -104,12 +104,13 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
                 p = Permission.objects.filter(uuid=p_uuid).first()
                 if p is not None:
                     u.user_permissions.add(p)
-        
+
         u.save()
         return u
 
     def update(self, instance, validated_data):
         set_groups = validated_data.pop('set_groups', None)
+        set_permissions = validated_data.pop('set_permissions', None)
         if set_groups is not None:
             instance.groups.clear()
             for g_uuid in set_groups:
@@ -117,11 +118,18 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
                 if g is not None:
                     instance.groups.add(g)
 
-        instance.update(
-            **validated_data
-        )
+        if set_permissions is not None:
+            instance.user_permissions.clear()
+            for p_uuid in set_permissions:
+                p = Permission.objects.filter(uuid=p_uuid).first()
+                if p is not None:
+                    instance.user_permissions.add(p)
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
         instance.save()
         return instance
+
 
 class UserListResponsesSerializer(UserSerializer):
     class Meta:

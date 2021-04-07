@@ -1,12 +1,13 @@
 from typing import Dict
 from .user_info_manager import GiteeUserInfoManager
 from common.provider import ExternalIdpProvider
+from .constants import KEY, BIND_KEY, LOGIN_URL, IMG_URL
 from django.urls import reverse
 
 
 class GiteeExternalIdpProvider(ExternalIdpProvider):
 
-    bind_key: str = "gitee_user_id"
+    bind_key: str = 'gitee_user_id'
     name: str
 
     client_id: str
@@ -28,7 +29,7 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         )
 
         data = idp.data
-        
+
         client_id = data.get('client_id')
         secret_id = data.get('secret_id')
         login_url = data.get('login_url')
@@ -52,6 +53,8 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         return {
             'client_id': client_id,
             'secret_id': secret_id,
+            'login_url': LOGIN_URL,
+            'img_url': IMG_URL,
             'login_url': login_url,
             'callback_url': callback_url,
             'bind_url': bind_url,
@@ -63,5 +66,5 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         GiteeUser.objects.get_or_create(
             tenant=user.tenant,
             user=user,
-            gitee_user_id=data.get("user_id"),
+            gitee_user_id=data.get('user_id'),
         )

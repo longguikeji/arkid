@@ -1,12 +1,14 @@
 from lib.dynamic_fields_model_serializer import DynamicFieldsModelSerializer
 from rest_framework import serializers
 
+
 class BaseDynamicFieldModelSerializer(DynamicFieldsModelSerializer):
 
     uuid = serializers.UUIDField(label='UUID', read_only=True, format='hex')
 
+
 class AppBaseSerializer(serializers.Serializer):
-        
+
     type = serializers.CharField()
     data = serializers.JSONField()
 
@@ -17,7 +19,8 @@ class AppBaseSerializer(serializers.Serializer):
 
 
 class ExternalIdpBaseSerializer(serializers.Serializer):
-        
+
+    # order_no = serializers.IntegerField()
     type = serializers.CharField()
     data = serializers.JSONField()
 
