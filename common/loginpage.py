@@ -118,6 +118,10 @@ class LoginPages(dict):
         self['data'] = {}
         super().__init__(*args, **kwargs)
 
+    def setTenant(self, tenant):
+        if tenant:
+            self['tenant'] = tenant
+
     def addPage(self, page:LoginPage):
         page_hash = self.get('data')
         _page:LoginPage = page_hash.get(page['name'], None)

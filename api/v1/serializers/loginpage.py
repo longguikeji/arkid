@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
+from .tenant import TenantSerializer
 
 class ButtonRedirectSerializer(serializers.Serializer):
     url = serializers.URLField(label=_('重定向地址'))
@@ -49,3 +50,4 @@ class LoginPageSerializer(serializers.Serializer):
 
 class LoginPagesSerializer(serializers.Serializer):
     data = serializers.DictField(label=_('key：页面名字（name）'), child=LoginPageSerializer())
+    tenant = TenantSerializer(label=_('租户'), allow_null=True)
