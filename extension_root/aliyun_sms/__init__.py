@@ -11,6 +11,7 @@ from .request.v20170525.SendSmsRequest import SendSmsRequest
 from .constants import KEY
 from .serializers import AliyunSMSSerializer
 
+
 class AliyunSMSProvider(SMSProvider):
 
     product_name = 'Dysmsapi'
@@ -55,7 +56,7 @@ class AliyunSMSProvider(SMSProvider):
             raise RuntimeError(sms_res)
 
 
-class AliyunExtension(InMemExtension):    
+class AliyunExtension(InMemExtension):
 
     def start(self, runtime: Runtime, *args, **kwargs):
 
@@ -77,9 +78,7 @@ class AliyunExtension(InMemExtension):
             signature=signature,
         )
 
-        print('>>>>', sms_provider)
-
-        runtime.sms_provider = sms_provider
+        runtime.register_sms_provider(sms_provider)
 
         super().start(runtime=runtime, *args, **kwargs)
 
