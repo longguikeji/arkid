@@ -62,14 +62,15 @@ class LoginPageExtend(dict):
         super().__init__(*args, **kwargs)
 
     def merge(self, extend):
-        if not extend.get('title',None):
+        if extend.get('title',None):
             self['title'] = extend.get('title')
         self.addButtons(extend.get('buttons'))
 
     def addButtons(self, buttons):
-        _buttons = self.get('buttons',[])
-        _buttons.extend(buttons)
-        self['buttons'] = _buttons
+        if buttons:
+            _buttons = self.get('buttons',[])
+            _buttons.extend(buttons)
+            self['buttons'] = _buttons
 
 class LoginPage(dict):
     def __init__(self, name:str, forms:[LoginForm]=None, bottoms:[Button]=None, extend:LoginPageExtend=None, *args, **kwargs):
@@ -91,22 +92,25 @@ class LoginPage(dict):
             self.addExtend(page.get('extend'))
 
     def addForms(self, forms:[LoginForm]):
-        _forms = self.get('forms',[])
-        _forms.extend(forms)
-        self['forms'] = _forms
+        if forms:
+            _forms = self.get('forms',[])
+            _forms.extend(forms)
+            self['forms'] = _forms
 
 
     def addBottoms(self, bottoms:[Button]):
-        _bottoms = self.get('bottoms',[])
-        _bottoms.extend(bottoms)
-        self['bottoms'] = _bottoms
+        if bottoms:
+            _bottoms = self.get('bottoms',[])
+            _bottoms.extend(bottoms)
+            self['bottoms'] = _bottoms
 
     def addExtend(self, extend:LoginPageExtend):
-        _extend = self.get('extend',None)
-        if _extend is not None:
-            _extend.merge(extend)
-        else:
-            self['extend'] = extend
+        if extend:
+            _extend = self.get('extend',None)
+            if _extend is not None:
+                _extend.merge(extend)
+            else:
+                self['extend'] = extend
 
 class LoginPages(dict):
 
@@ -149,8 +153,15 @@ class LoginPages(dict):
                 buttons=[button]
             ))
 
+    def setExtendTitle(self, page, title):
+        if title:
+            self.addExtend(page, LoginPageExtend(
+                title=title
+            ))
+
     def getPage(self, page):
         return self.get('data').get(page,None)
+
 
 LOGIN = 'login'
 REGISTER = 'register'

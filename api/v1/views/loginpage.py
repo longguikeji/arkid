@@ -7,6 +7,8 @@ from api.v1.views.login import LoginView, MobileLoginView
 from api.v1.views.tenant import TenantViewSet
 from runtime import get_app_runtime
 from tenant.models import Tenant
+from external_idp.models import ExternalIdp
+
 
 @extend_schema(tags = ['login page'])
 class LoginPage(views.APIView):
@@ -23,6 +25,18 @@ class LoginPage(views.APIView):
             data.addForm( model.LOGIN, TenantViewSet().login_form(tenant.id) )
             data.addForm( model.LOGIN, TenantViewSet().mobile_login_form(tenant.id) )
             data.addForm( model.REGISTER, TenantViewSet().mobile_register_form(tenant.id) )
+
+            external_idps = ExternalIdp.valid_objects.filter(tenant=tenant)
+            for idp in external_idps:
+                data.addExtendButton( model.LOGIN, model.Button(
+                    img=idp.data['img_url'],
+                    tooltip=idp.type,
+                    redirect=model.ButtonRedirect(
+                        url=idp.data['login_url'],
+                    )
+                ))
+            if data.getPage(model.LOGIN) and data.getPage(model.LOGIN).get('extend',None):
+                data.setExtendTitle(model.LOGIN, '第三方登录')
         else:
             data.addForm( model.LOGIN, LoginView().login_form() )
             data.addForm( model.LOGIN, MobileLoginView().login_form() )
