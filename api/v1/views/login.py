@@ -19,7 +19,8 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 from rest_framework.authtoken.models import Token
 from inventory.models import User
 from common.code import Code
-
+from django.urls import reverse
+from common import loginpage as lp
 
 @extend_schema(tags = ['uc'])
 class LoginView(generics.CreateAPIView):
@@ -92,6 +93,34 @@ class LoginView(generics.CreateAPIView):
 
         return token
 
+    def login_form(self):
+        return lp.LoginForm(
+            label='密码登录',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name='username',
+                    placeholder='用户名',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='密码',
+                )
+            ],
+            submit=lp.Button(
+                label='登录',
+                http=lp.ButtonHttp(
+                    url=reverse('api:login'),
+                    method='post',
+                    params={
+                        'username':'username',
+                        'password':'password'
+                    }
+                )
+            ),
+        )
+
 
 @extend_schema(tags = ['uc'])
 class MobileLoginView(LoginView):
@@ -137,3 +166,42 @@ class MobileLoginView(LoginView):
         )
 
         return token
+
+    def login_form(self):
+        return lp.LoginForm(
+            label='验证码登录',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name='mobile',
+                    placeholder='手机号',
+                ),
+                lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                    append=lp.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=lp.ButtonHttp(
+                            url=reverse('api:send-sms'),
+                            method='post',
+                            params={
+                                'mobile': 'mobile'
+                            }
+                        )
+                    )
+                )
+            ],
+            submit=lp.Button(
+                label='登录',
+                http=lp.ButtonHttp(
+                    url=reverse('api:mobile-login'),
+                    method='post',
+                    params={
+                        'mobile':'mobile',
+                        'code':'code'
+                    }
+                )
+            ),
+        )
