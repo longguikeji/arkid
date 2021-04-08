@@ -205,7 +205,6 @@ class TenantViewSet(BaseViewSet):
 
         return token
 
-
     def login_form(self, tenant_id):
         return lp.LoginForm(
             label='密码登录',

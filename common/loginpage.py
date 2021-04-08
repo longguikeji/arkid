@@ -97,7 +97,6 @@ class LoginPage(dict):
             _forms.extend(forms)
             self['forms'] = _forms
 
-
     def addBottoms(self, bottoms:[Button]):
         if bottoms:
             _bottoms = self.get('bottoms',[])
