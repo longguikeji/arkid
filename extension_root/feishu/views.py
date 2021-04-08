@@ -19,12 +19,12 @@ class FeishuLoginView(APIView):
     permission_classes = []
     authentication_classes = []
 
-    def get(self, request, tenant_id):
+    def get(self, request, tenant_uuid):
         c = get_app_config()
         # @TODO: keep other query params
 
         provider = FeishuExternalIdpProvider()
-        provider.load_data(tenant_id=tenant_id)
+        provider.load_data(tenant_uuid=tenant_uuid)
 
         next_url = request.GET.get("next", None)
         if next_url is not None:
@@ -40,7 +40,7 @@ class FeishuLoginView(APIView):
                     reverse(
                         "api:feishu:callback",
                         args=[
-                            tenant_id,
+                            tenant_uuid,
                         ],
                     ),
                     next_url,
@@ -59,7 +59,7 @@ class FeishuCallbackView(APIView):
     permission_classes = []
     authentication_classes = []
 
-    def get(self, request, tenant_id):
+    def get(self, request, tenant_uuid):
         '''
         处理feishu用户登录之后重定向页面
         '''
@@ -72,7 +72,7 @@ class FeishuCallbackView(APIView):
         if code:
             try:
                 provider = FeishuExternalIdpProvider()
-                provider.load_data(tenant_id=tenant_id)
+                provider.load_data(tenant_uuid=tenant_uuid)
 
                 user_id = FeishuUserInfoManager(provider.app_id, provider.secret_id, provider._get_token()).get_user_id(code, next_url)
             except APICallError:
@@ -80,7 +80,7 @@ class FeishuCallbackView(APIView):
         else:
             raise ValidationError({"code": ["required"]})
 
-        context = self.get_token(user_id, tenant_id)
+        context = self.get_token(user_id, tenant_uuid)
         if next_url:
             next_url = next_url.replace("?next=", "")
             print("****************")
@@ -91,7 +91,7 @@ class FeishuCallbackView(APIView):
 
         return Response(context, HTTP_200_OK)
 
-    def get_token(self, user_id, tenant_id):  # pylint: disable=no-self-use
+    def get_token(self, user_id, tenant_uuid):  # pylint: disable=no-self-use
         feishu_user = FeishuUser.valid_objects.filter(feishu_user_id=user_id).first()
         if feishu_user:
             user = feishu_user.user
@@ -106,7 +106,7 @@ class FeishuCallbackView(APIView):
                 "bind": reverse(
                     "api:feishu:bind",
                     args=[
-                        tenant_id,
+                        tenant_uuid,
                     ],
                 ),
             }
