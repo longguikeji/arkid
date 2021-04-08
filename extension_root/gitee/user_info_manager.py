@@ -4,6 +4,7 @@ Gitee查询用户信息
 from urllib.parse import parse_qs, quote
 import requests
 import json
+from config import get_app_config
 
 from . import constants
 
@@ -24,11 +25,12 @@ class GiteeUserInfoManager:
     Gitee API
     """
 
-    def __init__(self, client_id, client_secret):
+    def __init__(self, client_id, client_secret, redirect_uri):
         self.client_id = client_id
         self.client_secret = client_secret
+        self.redirect_uri = redirect_uri
 
-    def get_user_id(self, code, next):
+    def get_user_id(self, code):
         """
         查询用户id
         """
@@ -40,12 +42,12 @@ class GiteeUserInfoManager:
                     "client_id": self.client_id,
                     "client_secret": self.client_secret,
                     "grant_type": "authorization_code",
+                    "redirect_uri": self.redirect_uri,
                 },
             )
-            response = response.__getattribute__("_content")
-            result = dict(
-                [(k, v[0]) for k, v in parse_qs(response.decode()).items()]
-            )
+            response = response.__getattribute__("_content").decode()
+            
+            result = json.loads(response)
             # 获取user info
             headers = {"Authorization": "token " + result["access_token"]}
             response = requests.get(
@@ -55,8 +57,8 @@ class GiteeUserInfoManager:
             ).json()
             user_id = response["id"]
             return user_id
-        except Exception:
-            raise APICallError("Invalid auth_code")
+        except Exception as e:
+            raise APICallError(e)
 
     def check_valid(self):  # pylint: disable=missing-function-docstring
         try:
