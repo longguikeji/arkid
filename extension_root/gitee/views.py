@@ -134,6 +134,7 @@ class GiteeCallbackView(APIView):
             context = {
                 "token": "",
                 "user_id": user_id,
+                "tenant_id": tenant_id,
                 "bind": reverse(
                     "api:gitee:bind",
                     args=[
