@@ -3,6 +3,8 @@ from .user_info_manager import GiteeUserInfoManager
 from common.provider import ExternalIdpProvider
 from .constants import KEY, BIND_KEY, LOGIN_URL, IMG_URL
 from django.urls import reverse
+from config import get_app_config
+
 
 
 class GiteeExternalIdpProvider(ExternalIdpProvider):
@@ -43,11 +45,13 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         self.bind_url = bind_url
 
     def create(self, tenant_id, external_idp, data):
+        host = get_app_config().get_host()
+
         client_id = data.get('client_id')
         secret_id = data.get('secret_id')
-        login_url = reverse("api:gitee:login", args=[tenant_id])
-        callback_url = reverse("api:gitee:callback", args=[tenant_id])
-        bind_url = reverse("api:gitee:bind", args=[tenant_id])
+        login_url = host + reverse("api:gitee:login", args=[tenant_id])
+        callback_url = host + reverse("api:gitee:callback", args=[tenant_id])
+        bind_url = host + reverse("api:gitee:bind", args=[tenant_id])
 
 
         return {
