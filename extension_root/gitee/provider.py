@@ -7,7 +7,7 @@ from django.urls import reverse
 
 class GiteeExternalIdpProvider(ExternalIdpProvider):
 
-    bind_key: str = 'gitee_user_id'
+    bind_key: str = BIND_KEY
     name: str
 
     client_id: str
@@ -66,5 +66,5 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         GiteeUser.objects.get_or_create(
             tenant=user.tenant,
             user=user,
-            gitee_user_id=data.get('user_id'),
+            gitee_user_id=data.get("user_id"),
         )
