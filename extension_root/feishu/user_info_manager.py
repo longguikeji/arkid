@@ -37,7 +37,7 @@ class FeishuUserInfoManager:
                 constants.GET_TOKEN_URL,
                 headers={
                     'Authorization': f'Bearer {self.app_access_token}',
-                }
+                },
                 params={
                     "code": code,
                     "grant_type": "authorization_code",

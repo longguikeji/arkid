@@ -3,7 +3,8 @@ from typing import Dict
 from runtime import Runtime
 from common.extension import InMemExtension
 from common.provider import ExternalIdpProvider
-from .constants import KEY, GET_TENANT_ACCESS_TOKEN
+from .constants import KEY, GET_TENANT_ACCESS_TOKEN, IMG_URL
+from django.urls import reverse
 
 
 class FeishuExternalIdpProvider(ExternalIdpProvider):
@@ -21,7 +22,7 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
         idp = ExternalIdp.objects.filter(
             tenant__uuid=tenant_uuid,
             type=KEY,
-        )
+        ).first()
 
         data = idp.data
 
@@ -31,13 +32,17 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
         self.app_id = app_id
         self.secret_id = secret_id
 
-    def create(self, external_idp, data):
+    def create(self, tenant_uuid, external_idp, data):
         app_id = data.get('app_id')
         secret_id = data.get('secret_id')
 
         return {
             'app_id': app_id,
             'secret_id': secret_id,
+            'login_url': reverse("api:feishu:login", args=[tenant_uuid]),
+            'callback_url' : reverse("api:feishu:callback", args=[tenant_uuid]),
+            'bind_url' : reverse("api:feishu:bind", args=[tenant_uuid]),
+            'img_url': IMG_URL,
         }
 
     def get_groups(self):

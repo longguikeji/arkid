@@ -112,3 +112,13 @@ class FeishuCallbackView(APIView):
             }
 
         return context
+
+
+@extend_schema(tags=["feishu"])
+class FeishuBindView(APIView):
+
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request, tenant_id):
+        pass
