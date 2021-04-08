@@ -5,5 +5,5 @@ from api.v1.views import (
 )
 
 urlpatterns = [
-    path('send_sms/', views_sms.SendSMSView.as_view()),
+    path('send_sms/', views_sms.SendSMSView.as_view(), name='send-sms'),
 ]

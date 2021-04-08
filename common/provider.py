@@ -57,7 +57,7 @@ class ExternalIdpProvider:
         self.name = None
 
     @abstractmethod
-    def create(self, external_idp) -> Dict:
+    def create(self, tenant_id, external_idp) -> Dict:
         raise NotImplementedError()
 
     @abstractmethod

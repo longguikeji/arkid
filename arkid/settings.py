@@ -43,15 +43,15 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_hotp',
     'django_otp.plugins.otp_static',
-    'corsheaders',    
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_expiring_authtoken',
-    'drf_spectacular',    
-    'tenant',    
+    'drf_spectacular',
+    'tenant',
     'inventory',
     'app',
-    'oauth2_provider',    
+    'oauth2_provider',
     'webhook',
     'siteadmin',
     'provisioning',
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'api',
     'extension_root.github',
     'extension_root.gitee',
+    'extension_root.feishu',
 ]
 
 MIDDLEWARE = [

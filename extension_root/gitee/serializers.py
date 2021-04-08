@@ -8,6 +8,10 @@ class GiteeExternalIdpConfigSerializer(serializers.Serializer):
     client_id = serializers.CharField()
     secret_id = serializers.CharField()
 
+    login_url = serializers.URLField(read_only=True)
+    callback_url = serializers.URLField(read_only=True)
+    bind_url = serializers.URLField(read_only=True)
+
 
 class GiteeExternalIdpSerializer(ExternalIdpBaseSerializer):
 

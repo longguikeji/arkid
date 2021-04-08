@@ -51,7 +51,7 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
         assert provider_cls is not None
 
         provider = provider_cls()
-        data = provider.create(external_idp=external_idp, data=data)
+        data = provider.create(tenant_id=tenant.id, external_idp=external_idp, data=data)
         if data is not None:
             external_idp.data = data
         external_idp.save()

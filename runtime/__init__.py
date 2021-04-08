@@ -15,6 +15,7 @@ from authorization_server.models import AuthorizationServer
 from mfa.models import MFA
 from common.exception import DuplicatedIdException
 
+
 class Runtime:
 
     _instance = None
@@ -63,7 +64,7 @@ class Runtime:
         '''
         pass
 
-    def register_external_idp(self, key: str, name: str, description: str, provider: ExternalIdpProvider, serializer: ExternalIdpBaseSerializer=None):
+    def register_external_idp(self, key: str, name: str, description: str, provider: ExternalIdpProvider, serializer: ExternalIdpBaseSerializer = None):
         self.external_idps.append((key, name, description))
         if provider is not None:
             self.external_idp_providers[key] = provider
@@ -74,20 +75,20 @@ class Runtime:
     def register_mfa_provider(self, name: str, provider: MFAProvider):
         pass
 
-    def register_authorization_server(self, id: str, name: str, description: str, provider: Optional[AuthorizationServerProvider]=None):
+    def register_authorization_server(self, id: str, name: str, description: str, provider: Optional[AuthorizationServerProvider] = None):
         for server in self.authorization_servers:
             if server.id == id:
-                return # raise DuplicatedIdException(f'duplicated extension: {server.id} {server.name}')
+                return  # raise DuplicatedIdException(f'duplicated extension: {server.id} {server.name}')
 
         server = AuthorizationServer(
-            id=id, 
-            name=name, 
+            id=id,
+            name=name,
             description=description,
-            provider=provider, 
+            provider=provider,
         )
         self.authorization_servers.append(server)
 
-    def register_route(self, urlpatterns: List, namespace: str='global') -> any:
+    def register_route(self, urlpatterns: List, namespace: str = 'global') -> any:
         assert namespace in ['global', 'tenant', 'local']
         self.urlpatterns.setdefault(namespace, [])
         self.urlpatterns[namespace] += urlpatterns
@@ -95,7 +96,7 @@ class Runtime:
 
     def register_storage_provider(self, provider: StorageProvider):
         self.storage_provider = provider
-    
+
     def register_app_type(self, key: str, name: str, provider: AppTypeProvider, serializer: AppBaseSerializer) -> None:
         self.app_types.append((key, name))
 
@@ -105,6 +106,9 @@ class Runtime:
         if serializer is not None:
             self.app_type_serializers[key] = serializer
 
+    def register_sms_provider(self, sms_provider: SMSProvider):
+        self.sms_provider = sms_provider
+
     @property
     def extension_serializers(self):
         from extension.utils import find_available_extensions
@@ -113,8 +117,9 @@ class Runtime:
         for ext in extensions:
             if ext.serializer is not None:
                 data[ext.name] = ext.serializer
-        
+
         return data
+
 
 def get_app_runtime() -> Runtime:
     o = Runtime()

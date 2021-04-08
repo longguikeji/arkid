@@ -54,4 +54,3 @@ urlpatterns += jsonp.urlpatterns
 urlpatterns += storage.urlpatterns
 urlpatterns += sms.urlpatterns
 
-

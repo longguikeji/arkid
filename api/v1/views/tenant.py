@@ -19,6 +19,8 @@ from common.code import Code
 from .base import BaseViewSet
 from app.models import App
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.urls import reverse
+from common import loginpage as lp
 
 
 @extend_schema(tags = ['tenant'])
@@ -202,3 +204,115 @@ class TenantViewSet(BaseViewSet):
         )
 
         return token
+
+    def login_form(self, tenant_id):
+        return lp.LoginForm(
+            label='密码登录',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name='username',
+                    placeholder='用户名',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='密码',
+                )
+            ],
+            submit=lp.Button(
+                label='登录',
+                http=lp.ButtonHttp(
+                    url=reverse("api:tenant-login", args=[tenant_id,]),
+                    method='post',
+                    params={
+                        'username':'username',
+                        'password':'password'
+                    }
+                )
+            ),
+        )
+
+    def mobile_login_form(self, tenant_id):
+        return lp.LoginForm(
+            label='验证码登录',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name='mobile',
+                    placeholder='手机号',
+                ),
+                lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                    append=lp.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=lp.ButtonHttp(
+                            url=reverse('api:send-sms'),
+                            method='post',
+                            params={
+                                'mobile': 'mobile'
+                            }
+                        )
+                    )
+                )
+            ],
+            submit=lp.Button(
+                label='登录',
+                http=lp.ButtonHttp(
+                    url=reverse("api:tenant-mobile-login", args=[tenant_id,]),
+                    method='post',
+                    params={
+                        'mobile':'mobile',
+                        'code':'code'
+                    }
+                )
+            ),
+        )
+
+    def mobile_register_form(self, tenant_id):
+        return lp.LoginForm(
+            label='手机号注册',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name='mobile',
+                    placeholder='手机号',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='密码',
+                ),
+                lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                    append=lp.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=lp.ButtonHttp(
+                            url=reverse('api:send-sms'),
+                            method='post',
+                            params={
+                                'mobile': 'mobile'
+                            }
+                        )
+                    )
+                )
+            ],
+            submit=lp.Button(
+                label='注册',
+                http=lp.ButtonHttp(
+                    url=reverse("api:tenant-mobile-register", args=[tenant_id,]),
+                    method='post',
+                    params={
+                        'mobile':'mobile',
+                        'password':'password',
+                        'code':'code'
+                    }
+                )
+            ),
+        )

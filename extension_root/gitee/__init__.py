@@ -3,6 +3,7 @@ from .serializers import GiteeExternalIdpSerializer
 from .provider import GiteeExternalIdpProvider
 from .constants import KEY
 
+
 class GiteeExternalIdpExtension(InMemExtension):
     def start(self, runtime, *args, **kwargs):
         runtime.register_external_idp(
