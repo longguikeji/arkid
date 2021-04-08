@@ -26,7 +26,7 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         idp = ExternalIdp.objects.filter(
             tenant__id=tenant_id,
             type=KEY,
-        )
+        ).first()
 
         data = idp.data
 
@@ -53,7 +53,6 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         return {
             'client_id': client_id,
             'secret_id': secret_id,
-            'login_url': LOGIN_URL,
             'img_url': IMG_URL,
             'login_url': login_url,
             'callback_url': callback_url,

@@ -8,9 +8,8 @@ class GithubExternalIdpConfigSerializer(serializers.Serializer):
 
     client_id = serializers.CharField()
     secret_id = serializers.CharField()
-    login_url = serializers.CharField(read_only=True)
-    img_url = serializers.CharField(read_only=True)
 
+    img_url = serializers.URLField(read_only=True)
     login_url = serializers.URLField(read_only=True)
     callback_url = serializers.URLField(read_only=True)
     bind_url = serializers.URLField(read_only=True)

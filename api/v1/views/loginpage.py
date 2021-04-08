@@ -62,8 +62,6 @@ class LoginPage(views.APIView):
                 gopage='password'
             ))
         
-        
-        
         pages = lp.LoginPagesSerializer(data=data)
         pages.is_valid()
         return JsonResponse(pages.data)
