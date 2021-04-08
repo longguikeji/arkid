@@ -288,6 +288,11 @@ class TenantViewSet(BaseViewSet):
                     placeholder='密码',
                 ),
                 lp.LoginFormItem(
+                    type='password',
+                    name='repassword',
+                    placeholder='密码确认',
+                ),
+                lp.LoginFormItem(
                     type='text',
                     name='code',
                     placeholder='验证码',
@@ -312,7 +317,8 @@ class TenantViewSet(BaseViewSet):
                     params={
                         'mobile':'mobile',
                         'password':'password',
-                        'code':'code'
+                        'code':'code',
+                        'repassword': 'repassword',
                     }
                 )
             ),
