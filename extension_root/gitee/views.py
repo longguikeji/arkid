@@ -25,12 +25,12 @@ class GiteeLoginView(APIView):
     permission_classes = []
     authentication_classes = []
 
-    def get(self, request, tenant_id):
+    def get(self, request, tenant_uuid):
         c = get_app_config()
         # @TODO: keep other query params
 
         provider = GiteeExternalIdpProvider()
-        provider.load_data(tenant_id=tenant_id)
+        provider.load_data(tenant_uuid=tenant_uuid)
 
         next_url = request.GET.get("next", None)
         if next_url is not None:
@@ -46,7 +46,7 @@ class GiteeLoginView(APIView):
                     reverse(
                         "api:gitee:callback",
                         args=[
-                            tenant_id,
+                            tenant_uuid,
                         ],
                     ),
                     next_url,
@@ -94,7 +94,7 @@ class GiteeCallbackView(APIView):
     permission_classes = []
     authentication_classes = []
 
-    def get(self, request, tenant_id):
+    def get(self, request, tenant_uuid):
         """
         处理gitee用户登录之后重定向页面
         """
@@ -107,14 +107,14 @@ class GiteeCallbackView(APIView):
         if code:
             try:
                 provider = GiteeExternalIdpProvider()
-                provider.load_data(tenant_id=tenant_id)
+                provider.load_data(tenant_uuid=tenant_uuid)
                 user_id = GiteeUserInfoManager(provider.client_id, provider.secret_id).get_user_id(code, next_url)
             except APICallError:
                 raise ValidationError({"code": ["invalid"]})
         else:
             raise ValidationError({"code": ["required"]})
 
-        context = self.get_token(user_id, tenant_id)
+        context = self.get_token(user_id, tenant_uuid)
         if next_url:
             next_url = next_url.replace("?next=", "")
             print("****************")
@@ -125,7 +125,7 @@ class GiteeCallbackView(APIView):
 
         return Response(context, HTTP_200_OK)
 
-    def get_token(self, user_id, tenant_id):  # pylint: disable=no-self-use
+    def get_token(self, user_id, tenant_uuid):  # pylint: disable=no-self-use
         gitee_user = GiteeUser.valid_objects.filter(gitee_user_id=user_id).first()
         if gitee_user:
             user = gitee_user.user
@@ -140,7 +140,7 @@ class GiteeCallbackView(APIView):
                 "bind": reverse(
                     "api:gitee:bind",
                     args=[
-                        tenant_id,
+                        tenant_uuid,
                     ],
                 ),
             }

@@ -13,9 +13,9 @@ import requests
 
 
 @app.task
-def provision_user(tenant_id: int, user_id: int):
+def provision_user(tenant_uuid: int, user_id: int):
     apps = App.active_objects.filter(
-        tenant__id=tenant_id,
+        tenant__uuid=tenant_uuid,
     )
 
     for app in apps:
@@ -26,12 +26,12 @@ def provision_user(tenant_id: int, user_id: int):
         if config is None or config.status != ProvisioningStatus.Enabled.value:
             continue
 
-        provision_app_user(tenant_id, app.id, user_id)
+        provision_app_user(tenant_uuid, app.id, user_id)
 
 
 @app.task
-def provision_app_user(tenant_id: int, app_id: int, user_id: int):
-    print(f'task: provision_app_user, tenant: {tenant_id}, app: {app_id}, user: {user_id}')
+def provision_app_user(tenant_uuid: int, app_id: int, user_id: int):
+    print(f'task: provision_app_user, tenant: {tenant_uuid}, app: {app_id}, user: {user_id}')
     return
 
     config: ProvisioningConfig = ProvisioningConfig.objects.filter(
@@ -59,9 +59,9 @@ def provision_app_user(tenant_id: int, app_id: int, user_id: int):
 
 
 @app.task
-def notify_webhook(tenant_id: int, event: Event):
+def notify_webhook(tenant_uuid: int, event: Event):
     webhooks = WebHook.objects.filter(
-        tenant__id=tenant_id,
+        tenant__uuid=tenant_uuid,
     )
 
     webhook: WebHook

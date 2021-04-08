@@ -20,7 +20,7 @@ def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
 def user_saved(sender, instance: User, created: bool, **kwargs):
     print('signal user saved', sender, instance, created, kwargs)
     from tasks.tasks import provision_user
-    # provision_user(instance.tenant.id, instance.id)
+    # provision_user(instance.tenant.uuid, instance.id)
 
 
 def group_saved(sender, instance: Group, created: bool, **kwargs):

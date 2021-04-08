@@ -14,12 +14,12 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
     def __init__(self) -> None:
         super().__init__()
 
-    def load_data(self, tenant_id):
+    def load_data(self, tenant_uuid):
         from tenant.models import Tenant
         from external_idp.models import ExternalIdp
 
         idp = ExternalIdp.objects.filter(
-            tenant__id=tenant_id,
+            tenant__uuid=tenant_uuid,
             type=KEY,
         )
 

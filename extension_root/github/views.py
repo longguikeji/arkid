@@ -26,7 +26,7 @@ class GithubLoginView(APIView):
     permission_classes = []
     authentication_classes = []
 
-    def get(self, request, tenant_id):
+    def get(self, request, tenant_uuid):
         c = get_app_config()
         # @TODO: keep other query params
         next_url = request.GET.get("next", None)
@@ -43,7 +43,7 @@ class GithubLoginView(APIView):
                     reverse(
                         "api:github:callback",
                         args=[
-                            tenant_id,
+                            tenant_uuid,
                         ],
                     ),
                     next_url,
@@ -91,7 +91,7 @@ class GithubCallbackView(APIView):
     permission_classes = []
     authentication_classes = []
 
-    def get(self, request, tenant_id):
+    def get(self, request, tenant_uuid):
         """
         处理github用户登录之后重定向页面
         """
@@ -100,14 +100,14 @@ class GithubCallbackView(APIView):
         if code:
             try:
                 provider = GithubExternalIdpProvider()
-                provider.load_data(tenant_id=tenant_id)
+                provider.load_data(tenant_uuid=tenant_uuid)
                 user_id = GithubUserInfoManager(provider.client_id, provider.secret_id).get_user_id(code)
             except APICallError:
                 raise ValidationError({"code": ["invalid"]})
         else:
             raise ValidationError({"code": ["required"]})
 
-        context = self.get_token(user_id, tenant_id)
+        context = self.get_token(user_id, tenant_uuid)
         if next_url:
             query_string = urlencode(context)
             url = f"{next_url}?{query_string}"
@@ -115,7 +115,7 @@ class GithubCallbackView(APIView):
             return HttpResponseRedirect(url)
         return Response(context, HTTP_200_OK)
 
-    def get_token(self, user_id, tenant_id):  # pylint: disable=no-self-use
+    def get_token(self, user_id, tenant_uuid):  # pylint: disable=no-self-use
         github_user = GithubUser.valid_objects.filter(github_user_id=user_id).first()
         if github_user:
             user = github_user.user
@@ -128,7 +128,7 @@ class GithubCallbackView(APIView):
                 "bind": reverse(
                     "api:github:bind",
                     args=[
-                        tenant_id,
+                        tenant_uuid,
                     ],
                 ),
             }
