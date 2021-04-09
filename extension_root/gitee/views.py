@@ -7,11 +7,14 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from .user_info_manager import GiteeUserInfoManager, APICallError
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from .models import GiteeUser
 from urllib.parse import urlencode, unquote
 import urllib.parse
 from django.urls import reverse
 from config import get_app_config
+from tenant.models import Tenant
 from .constants import AUTHORIZE_URL
 from drf_spectacular.utils import extend_schema
 from .provider import GiteeExternalIdpProvider
@@ -54,29 +57,29 @@ class GiteeLoginView(APIView):
 @extend_schema(tags=["gitee"])
 class GiteeBindAPIView(GenericAPIView):
 
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [AllowAny]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = GiteeBindSerializer
 
-    # def post(self, request):
-    #     """
-    #     绑定用户
-    #     """
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     user = serializer.validated_data['user']
-    #     github_user_id = serializer.validated_data['user_id']
-    #     github_user = GithubUser.valid_objects.filter(user=user).first()
-    #     if github_user:
-    #         github_user.github_user_id = github_user_id
-    #     else:
-    #         github_user = GithubUser.valid_objects.create(github_user_id=github_user_id, user=user)
-    #     github_user.save()
-    #     token = user.token
-    #     data = {'token': token, **UserWithPermSerializer(user).data}
-    #     LOG_CLI(user).user_login()
-    #     return Response(data, HTTP_201_CREATED)
+    def post(self, request, tenant_uuid):
+        """
+        绑定用户
+        """
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        gitee_user_id = serializer.validated_data['user_id']
+        github_user = GiteeUser.valid_objects.filter(user=user, tenant=tenant).first()
+        if github_user:
+            github_user.gitee_user_id = gitee_user_id
+        else:
+            github_user = GiteeUser.valid_objects.create(gitee_user_id=gitee_user_id, user=user, tenant=tenant)
+        github_user.save()
+        token = user.token
+        data = {"token": token}
+        return Response(data, HTTP_200_OK)
 
 
 @extend_schema(tags=["gitee"])
