@@ -126,7 +126,7 @@ def load_extension(runtime, ext_name: str, name: str, execute: bool=False) -> an
     extension_tenant_urls_filename = Path(ext_dir) / 'tenant_urls.py'        
     if extension_tenant_urls_filename.exists():
         print('>>>', f'{ext_name}.tenant_urls')
-        urlpatterns = [url(r'tenant/(?P<tenant_id>[\w-]+)/', include((f'{ext_name}.tenant_urls', 'extension'), namespace=f'{name}'))]
+        urlpatterns = [url(r'tenant/(?P<tenant_uuid>[\w-]+)/', include((f'{ext_name}.tenant_urls', 'extension'), namespace=f'{name}'))]
         print(urlpatterns)
         runtime.register_route(urlpatterns)
         

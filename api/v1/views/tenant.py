@@ -205,7 +205,7 @@ class TenantViewSet(BaseViewSet):
 
         return token
 
-    def login_form(self, tenant_id):
+    def login_form(self, tenant_uuid):
         return lp.LoginForm(
             label='密码登录',
             items=[
@@ -223,7 +223,7 @@ class TenantViewSet(BaseViewSet):
             submit=lp.Button(
                 label='登录',
                 http=lp.ButtonHttp(
-                    url=reverse("api:tenant-login", args=[tenant_id,]),
+                    url=reverse("api:tenant-login", args=[tenant_uuid,]),
                     method='post',
                     params={
                         'username':'username',
@@ -233,7 +233,7 @@ class TenantViewSet(BaseViewSet):
             ),
         )
 
-    def mobile_login_form(self, tenant_id):
+    def mobile_login_form(self, tenant_uuid):
         return lp.LoginForm(
             label='验证码登录',
             items=[
@@ -262,7 +262,7 @@ class TenantViewSet(BaseViewSet):
             submit=lp.Button(
                 label='登录',
                 http=lp.ButtonHttp(
-                    url=reverse("api:tenant-mobile-login", args=[tenant_id,]),
+                    url=reverse("api:tenant-mobile-login", args=[tenant_uuid,]),
                     method='post',
                     params={
                         'mobile':'mobile',
@@ -272,7 +272,7 @@ class TenantViewSet(BaseViewSet):
             ),
         )
 
-    def mobile_register_form(self, tenant_id):
+    def mobile_register_form(self, tenant_uuid):
         return lp.LoginForm(
             label='手机号注册',
             items=[
@@ -311,7 +311,7 @@ class TenantViewSet(BaseViewSet):
             submit=lp.Button(
                 label='注册',
                 http=lp.ButtonHttp(
-                    url=reverse("api:tenant-mobile-register", args=[tenant_id,]),
+                    url=reverse("api:tenant-mobile-register", args=[tenant_uuid,]),
                     method='post',
                     params={
                         'mobile':'mobile',

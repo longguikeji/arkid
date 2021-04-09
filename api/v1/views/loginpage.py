@@ -65,3 +65,4 @@ class LoginPage(views.APIView):
         pages = lp.LoginPagesSerializer(data=data)
         pages.is_valid()
         return JsonResponse(pages.data)
+

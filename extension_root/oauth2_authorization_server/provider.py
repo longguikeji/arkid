@@ -30,8 +30,8 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             'grant_type': authorization_grant_type,
             'client_id': obj.client_id,
             'client_secret': obj.client_secret,
-            'authorize': reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.id]),
-            'token': reverse("api:oauth2_authorization_server:token", args=[app.tenant.id]),
+            'authorize': reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
+            'token': reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
         }
 
         return uniformed_data
