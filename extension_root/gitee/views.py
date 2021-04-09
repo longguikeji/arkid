@@ -38,7 +38,7 @@ class GiteeLoginView(APIView):
 
         next_url = request.GET.get("next", None)
         if next_url is not None:
-            next_url = "&next=" + urllib.parse.quote(next_url)
+            next_url = "?next=" + urllib.parse.quote(next_url)
         else:
             next_url = ""
 
