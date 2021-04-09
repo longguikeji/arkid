@@ -26,7 +26,7 @@ class HuaWeiSMSProvider(SMSProvider):
         @param mobile: string 电话号码 示例:8615123456789
         @param code: string 验证码
         '''
-        template_param = {"code": str(code)}
+        template_param = [str(code)]
         self.send_sms([mobile], self.template, template_param)
 
     def build_wsse_header(self):
@@ -40,7 +40,7 @@ class HuaWeiSMSProvider(SMSProvider):
         digestBase64 = base64.b64encode(digest.encode()).decode()  # PasswordDigest
         return 'UsernameToken Username="{}",PasswordDigest="{}",Nonce="{}",Created="{}"'.format(self.access_key, digestBase64, nonce, now)
 
-    def send_sms(self, mobiles: List[str], template_code: str, template_param: Dict[str, str], status_callback: str = ''):
+    def send_sms(self, mobiles: List[str], template_code: str, template_param: Dict[str, str], status_callback: str = '') -> bool:
         '''
         发送短信
         @param mobiles: arr 示例:['+8615123456789']多个号码之间用英文逗号分隔
@@ -57,11 +57,11 @@ class HuaWeiSMSProvider(SMSProvider):
         mobile = ''
         for index, item in enumerate(mobiles):
             if '+' not in item:
-                mobile.append('+86{}'.format(str(item)))
+                mobile = mobile.join('+86{}'.format(str(item)))
             else:
-                mobile.append(str(item))
+                mobile = mobile.join(str(item))
             if index != len(mobiles) - 1:
-                mobile.append(',')
+                mobile = mobile.join(',')
         # 请求Body
         form_data = {
             'from': self.sender,
@@ -72,4 +72,8 @@ class HuaWeiSMSProvider(SMSProvider):
             'signature': self.signature
         }
         result = requests.post(API_URL, data=form_data, headers=header, verify=False)
-        logging.error(result)
+        result_json = result.json()
+        if result_json.get('code') == "000000":
+            return True
+        else:
+            return False
