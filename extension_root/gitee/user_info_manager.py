@@ -1,10 +1,9 @@
 """
 Gitee查询用户信息
 """
-from urllib.parse import parse_qs, quote
+from urllib.parse import parse_qs
 import requests
 import json
-from config import get_app_config
 
 from . import constants
 
@@ -46,7 +45,6 @@ class GiteeUserInfoManager:
                 },
             )
             response = response.__getattribute__("_content").decode()
-            
             result = json.loads(response)
             # 获取user info
             headers = {"Authorization": "token " + result["access_token"]}
