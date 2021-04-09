@@ -15,6 +15,7 @@ from config import get_app_config
 from .constants import AUTHORIZE_URL
 from drf_spectacular.utils import extend_schema
 from .provider import GiteeExternalIdpProvider
+from .serializers import GiteeBindSerializer
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -56,7 +57,7 @@ class GiteeBindAPIView(GenericAPIView):
     permission_classes = []
     authentication_classes = []
 
-    serializer_class = BindSerializer
+    serializer_class = GiteeBindSerializer
 
     # def post(self, request):
     #     """
