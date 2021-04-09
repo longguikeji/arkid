@@ -37,15 +37,15 @@ class GiteeLoginView(APIView):
             next_url = "?next=" + urllib.parse.quote(next_url)
         else:
             next_url = ""
-        redirect_uri = "{}{}{}".format( c.get_host(), provider.callback_url, next_url )
+
+        redirect_uri = "{}{}{}".format(c.get_host(), provider.callback_url, next_url)
+
         url = "{}?client_id={}&redirect_uri={}&response_type=code&scope=user_info".format(
             AUTHORIZE_URL,
             provider.client_id,
-            urllib.parse.quote( redirect_uri ),
+            urllib.parse.quote(redirect_uri),
             # request.GET.get("redirect_uri"),
         )
-
-        print(url)
 
         return HttpResponseRedirect(url)
 
@@ -99,16 +99,16 @@ class GiteeCallbackView(APIView):
                 provider = GiteeExternalIdpProvider()
                 provider.load_data(tenant_uuid=tenant_uuid)
                 user_id = GiteeUserInfoManager(
-                        provider.client_id, 
-                        provider.secret_id,
-                        "{}{}{}".format(
-                            get_app_config().get_host(),
-                            provider.callback_url,
-                            next_url,
-                        )
-                    ).get_user_id(code)
+                    provider.client_id,
+                    provider.secret_id,
+                    "{}{}{}".format(
+                        get_app_config().get_host(),
+                        provider.callback_url,
+                        next_url,
+                    )
+                ).get_user_id(code)
             except APICallError as error:
-                raise ValidationError({"code": ["invalid"],"message": error})
+                raise ValidationError({"code": ["invalid"], "message": error})
         else:
             raise ValidationError({"code": ["required"]})
 
