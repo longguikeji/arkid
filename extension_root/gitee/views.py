@@ -15,6 +15,7 @@ from config import get_app_config
 from .constants import AUTHORIZE_URL
 from drf_spectacular.utils import extend_schema
 from .provider import GiteeExternalIdpProvider
+from .serializers import GiteeBindSerializer
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -34,7 +35,7 @@ class GiteeLoginView(APIView):
 
         next_url = request.GET.get("next", None)
         if next_url is not None:
-            next_url = "?next=" + urllib.parse.quote(next_url)
+            next_url = "&next=" + next_url
         else:
             next_url = ""
 
@@ -56,7 +57,7 @@ class GiteeBindAPIView(GenericAPIView):
     permission_classes = []
     authentication_classes = []
 
-    # serializer_class = BindSerializer
+    serializer_class = GiteeBindSerializer
 
     # def post(self, request):
     #     """
