@@ -6,7 +6,6 @@ from django.urls import reverse
 from config import get_app_config
 
 
-
 class GiteeExternalIdpProvider(ExternalIdpProvider):
 
     bind_key: str = BIND_KEY
@@ -34,9 +33,9 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
 
         client_id = data.get('client_id')
         secret_id = data.get('secret_id')
-        login_url = data.get('login_url')
-        callback_url = data.get('callback_url')
-        bind_url = data.get('bind_url')
+        login_url = reverse("api:gitee:login", args=[tenant_uuid])
+        callback_url = reverse("api:gitee:callback", args=[tenant_uuid])
+        bind_url = reverse("api:gitee:bind", args=[tenant_uuid])
 
         self.client_id = client_id
         self.secret_id = secret_id

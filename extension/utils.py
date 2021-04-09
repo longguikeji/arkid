@@ -56,7 +56,7 @@ def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
         return []
 
     loaded_extensions = []
-    
+
     extension: Extension
     for extension in extensions:
         name = extension.type
@@ -71,7 +71,6 @@ def load_installed_extensions(runtime) -> typing.List[InMemExtension]:
             logger.info(f'extension {ext.name} loaded')
             ext.start(runtime)
             loaded_extensions.append(ext)
-
 
     return loaded_extensions
 
@@ -91,7 +90,7 @@ def install_extension(p: Path) -> None:
 
     app_config = config.get_app_config()
     ext_dir = Path(app_config.extension.root) / name
-    
+
     shutil.copytree(p, ext_dir)
 
 
@@ -110,7 +109,7 @@ def uninstall_extension(name: str) -> None:
         shutil.rmtree(ext_dir)
 
 
-def load_extension(runtime, ext_name: str, name: str, execute: bool=False) -> any:
+def load_extension(runtime, ext_name: str, name: str, execute: bool = False) -> any:
     app_config = config.get_app_config()
     ext_dir = Path(app_config.extension.root) / name
 
@@ -123,12 +122,12 @@ def load_extension(runtime, ext_name: str, name: str, execute: bool=False) -> an
         urlpatterns = [url('', include((f'{ext_name}.urls', 'extension'), namespace=f'{name}'))]
         runtime.register_route(urlpatterns)
 
-    extension_tenant_urls_filename = Path(ext_dir) / 'tenant_urls.py'        
+    extension_tenant_urls_filename = Path(ext_dir) / 'tenant_urls.py'
     if extension_tenant_urls_filename.exists():
         print('>>>', f'{ext_name}.tenant_urls')
         urlpatterns = [url(r'tenant/(?P<tenant_uuid>[\w-]+)/', include((f'{ext_name}.tenant_urls', 'extension'), namespace=f'{name}'))]
         print(urlpatterns)
         runtime.register_route(urlpatterns)
-        
+
     ext.extension.start(runtime)
     return ext.extension
