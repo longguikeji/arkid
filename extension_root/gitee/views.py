@@ -34,7 +34,7 @@ class GiteeLoginView(APIView):
 
         next_url = request.GET.get("next", None)
         if next_url is not None:
-            next_url = "?next=" + urllib.parse.quote(next_url)
+            next_url = "&next=" + next_url
         else:
             next_url = ""
 
@@ -56,7 +56,7 @@ class GiteeBindAPIView(GenericAPIView):
     permission_classes = []
     authentication_classes = []
 
-    # serializer_class = BindSerializer
+    serializer_class = BindSerializer
 
     # def post(self, request):
     #     """
