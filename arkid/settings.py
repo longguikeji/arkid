@@ -29,6 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+LOGIN_URL = '/login'
 
 # Application definition
 
@@ -62,6 +63,7 @@ INSTALLED_APPS = [
     'extension_root.github',
     'extension_root.gitee',
     'extension_root.feishu',
+    'extension_root.arkid',
 ]
 
 MIDDLEWARE = [
