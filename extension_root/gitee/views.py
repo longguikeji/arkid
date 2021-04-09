@@ -38,7 +38,7 @@ class GiteeLoginView(APIView):
 
         next_url = request.GET.get("next", None)
         if next_url is not None:
-            next_url = "?next=" + next_url
+            next_url = "?next=" + urllib.parse.quote(next_url)
         else:
             next_url = ""
 
@@ -47,8 +47,7 @@ class GiteeLoginView(APIView):
         url = "{}?client_id={}&redirect_uri={}&response_type=code&scope=user_info".format(
             AUTHORIZE_URL,
             provider.client_id,
-            redirect_uri,
-            # request.GET.get("redirect_uri"),
+            urllib.parse.quote(redirect_uri),
         )
 
         return HttpResponseRedirect(url)
