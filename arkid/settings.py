@@ -29,7 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-LOGIN_URL = '/login'
+LOGIN_URL = '/client/login'
 
 # Application definition
 
