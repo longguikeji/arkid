@@ -11,6 +11,7 @@ from common.model import BaseModel
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import PermissionManager
 from django.utils.translation import gettext_lazy as _
+from rest_framework.authtoken.models import Token
 
 
 class Permission(BaseModel):
@@ -43,7 +44,7 @@ class Permission(BaseModel):
 
 
 class User(AbstractUser, BaseModel):
-    
+
     tenants = models.ManyToManyField(
         'tenant.Tenant',
         blank=True,
@@ -90,6 +91,13 @@ class User(AbstractUser, BaseModel):
     def fullname(self):
         full_name = f'{self.first_name} {self.last_name}'
         return full_name.strip()
+
+    @property
+    def token(self):
+        token, _ = Token.objects.get_or_create(
+            user=self,
+        )
+        return token.key
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

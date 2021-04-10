@@ -1,5 +1,5 @@
 """
-Gitee查询用户信息
+ArkID查询用户信息
 """
 from urllib.parse import parse_qs
 import requests
@@ -19,9 +19,9 @@ class APICallError(Exception):
 
 # pylint: disable=line-too-long
 # pylint: disable=consider-using-dict-comprehension
-class GiteeUserInfoManager:
+class ArkIDUserInfoManager:
     """
-    Gitee API
+    ArkID API
     """
 
     def __init__(self, client_id, client_secret, redirect_uri):
