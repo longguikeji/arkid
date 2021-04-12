@@ -33,15 +33,15 @@ class FeishuLoginView(APIView):
 
         next_url = request.GET.get("next", None)
         if next_url is not None:
-            next_url = "?next=" + next_url
+            next_url = "?next=" + urllib.parse.quote(next_url)
         else:
             next_url = ""
-        redirect_uri = "{}{}{}".format(c.get_host(), reverse(
+        redirect_uri = urllib.parse.quote("{}{}{}".format(c.get_host(), reverse(
             "api:feishu:callback",
             args=[
                 tenant_uuid,
             ],
-        ), next_url)
+        ), next_url))
         url = "{}?app_id={}&redirect_uri={}".format(
             AUTHORIZE_URL,
             provider.app_id,
