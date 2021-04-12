@@ -1,6 +1,7 @@
 from django.http.response import JsonResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
+from rest_framework import generics
 from openapi.utils import extend_schema
 from rest_framework.response import Response
 from tenant.models import (
@@ -23,7 +24,7 @@ from django.urls import reverse
 from common import loginpage as lp
 
 
-@extend_schema(tags = ['tenant'])
+@extend_schema(tags=['tenant'])
 class TenantViewSet(BaseViewSet):
 
     permission_classes = [AllowAny]
@@ -67,7 +68,7 @@ class TenantViewSet(BaseViewSet):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        user = User.objects.filter(       
+        user = User.objects.filter(
             username=username,
         ).first()
 
@@ -76,7 +77,7 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.USERNAME_PASSWORD_MISMATCH.value,
                 'message': _('username or password is not correct'),
             })
-        
+
         has_tenant_admin_perm = tenant.has_admin_perm(user)
 
         if not has_tenant_admin_perm:
@@ -106,7 +107,7 @@ class TenantViewSet(BaseViewSet):
 
         cache_code = runtime.cache_provider.get(mobile)
 
-        if isinstance(cache_code,bytes):
+        if isinstance(cache_code, bytes):
             cache_code = str(cache_code, 'utf-8')
 
         if code != '123456' and (code is None or cache_code != code):
@@ -134,19 +135,19 @@ class TenantViewSet(BaseViewSet):
                 if provider.bind_key == bind_key:
                     if hasattr(provider, 'bind'):
                         provider.bind(user, thirdparty_data)
-                    
+
                     break
 
         return JsonResponse(data={
             'error': Code.OK.value,
             'data': {
                 'token': token.key,
-                'has_tenant_admin_perm': has_tenant_admin_perm,          
+                'has_tenant_admin_perm': has_tenant_admin_perm,
             }
         })
 
     @action(detail=True, methods=['post'])
-    def mobile_register(self, request, pk):        
+    def mobile_register(self, request, pk):
         mobile = request.data.get('mobile')
         code = request.data.get('code')
 
@@ -159,14 +160,14 @@ class TenantViewSet(BaseViewSet):
 
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
-            tenant=tenant, 
+            tenant=tenant,
             mobile=mobile,
         )
         token = self._get_token(user)
         return JsonResponse(data={
             'error': Code.OK.value,
             'data': {
-                'token': token.key, # TODO: fullfil user info            
+                'token': token.key,  # TODO: fullfil user info
             }
         })
 
@@ -198,7 +199,7 @@ class TenantViewSet(BaseViewSet):
         serializer = self.get_serializer(objs, many=True)
         return Response(serializer.data)
 
-    def _get_token(self, user:User):
+    def _get_token(self, user: User):
         token, _ = Token.objects.get_or_create(
             user=user,
         )
@@ -223,11 +224,11 @@ class TenantViewSet(BaseViewSet):
             submit=lp.Button(
                 label='登录',
                 http=lp.ButtonHttp(
-                    url=reverse("api:tenant-login", args=[tenant_uuid,]),
+                    url=reverse("api:tenant-login", args=[tenant_uuid, ]),
                     method='post',
                     params={
-                        'username':'username',
-                        'password':'password'
+                        'username': 'username',
+                        'password': 'password'
                     }
                 )
             ),
@@ -262,11 +263,11 @@ class TenantViewSet(BaseViewSet):
             submit=lp.Button(
                 label='登录',
                 http=lp.ButtonHttp(
-                    url=reverse("api:tenant-mobile-login", args=[tenant_uuid,]),
+                    url=reverse("api:tenant-mobile-login", args=[tenant_uuid, ]),
                     method='post',
                     params={
-                        'mobile':'mobile',
-                        'code':'code'
+                        'mobile': 'mobile',
+                        'code': 'code'
                     }
                 )
             ),
@@ -311,7 +312,7 @@ class TenantViewSet(BaseViewSet):
             submit=lp.Button(
                 label='注册',
                 http=lp.ButtonHttp(
-                    url=reverse("api:tenant-mobile-register", args=[tenant_uuid,]),
+                    url=reverse("api:tenant-mobile-register", args=[tenant_uuid, ]),
                     method='post',
                     params={
                         'mobile':'mobile',
@@ -322,3 +323,17 @@ class TenantViewSet(BaseViewSet):
                 )
             ),
         )
+
+
+@extend_schema(tags=['tenant'])
+class TenantSlugView(generics.RetrieveAPIView):
+
+    serializer_class = TenantSerializer
+
+    @extend_schema(
+        responses=TenantSerializer
+    )
+    def get(self, request, slug):
+        obj = Tenant.active_objects.filter(slug=slug).order_by('id').first()
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data)
