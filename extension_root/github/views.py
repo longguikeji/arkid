@@ -29,26 +29,18 @@ class GithubLoginView(APIView):
     def get(self, request, tenant_uuid):
         c = get_app_config()
         # @TODO: keep other query params
+        provider = GithubExternalIdpProvider()
+        provider.load_data(tenant_uuid=tenant_uuid)
         next_url = request.GET.get("next", None)
         if next_url is not None:
-            next_url = "?next=" + urllib.parse.quote(next_url)
+            next_url = "?next=" + next_url
         else:
             next_url = ""
+        redirect_uri = "{}{}{}".format(c.get_host(), provider.callback_url, next_url)
         url = "{}?client_id={}&redirect_uri={}".format(
             AUTHORIZE_URL,
-            # CLIENT_ID,
-            urllib.parse.quote(
-                "{}{}{}".format(
-                    c.get_host(),
-                    reverse(
-                        "api:github:callback",
-                        args=[
-                            tenant_uuid,
-                        ],
-                    ),
-                    next_url,
-                )
-            ),
+            provider.client_id,
+            redirect_uri,
         )
 
         return HttpResponseRedirect(url)
@@ -101,7 +93,9 @@ class GithubCallbackView(APIView):
             try:
                 provider = GithubExternalIdpProvider()
                 provider.load_data(tenant_uuid=tenant_uuid)
-                user_id = GithubUserInfoManager(provider.client_id, provider.secret_id).get_user_id(code)
+                user_id = GithubUserInfoManager(
+                    provider.client_id, provider.secret_id
+                ).get_user_id(code)
             except APICallError:
                 raise ValidationError({"code": ["invalid"]})
         else:
