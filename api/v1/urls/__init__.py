@@ -33,6 +33,7 @@ else:
 
 
 tenant_urlpatterns = runtime.urlpatterns.get('tenant', None)
+
 if tenant_urlpatterns is not None:
     u: URLPattern
     a = []
@@ -53,4 +54,4 @@ urlpatterns += tenant.router.urls
 urlpatterns += jsonp.urlpatterns
 urlpatterns += storage.urlpatterns
 urlpatterns += sms.urlpatterns
-
+urlpatterns += tenant.urlpatterns
