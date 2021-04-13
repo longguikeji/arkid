@@ -12,6 +12,12 @@ class FeiShuExternalIdpConfigSerializer(serializers.Serializer):
     callback_url = serializers.URLField(read_only=True)
     bind_url = serializers.URLField(read_only=True)
 
+
 class FeishuExternalIdpSerializer(ExternalIdpBaseSerializer):
 
     data = FeiShuExternalIdpConfigSerializer(label=_('data'))
+
+
+class FeishuBindSerializer(serializers.Serializer):
+
+    user_id = serializers.CharField()

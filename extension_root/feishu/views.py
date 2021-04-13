@@ -1,14 +1,19 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from config import get_app_config
 from .provider import FeishuExternalIdpProvider
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from .user_info_manager import FeishuUserInfoManager, APICallError
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.http import HttpResponseRedirect
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny
+from .serializers import FeishuBindSerializer
 from .constants import AUTHORIZE_URL
 from .models import FeishuUser
+from tenant.models import Tenant
 from django.urls import reverse
 import urllib.parse
 
@@ -31,25 +36,17 @@ class FeishuLoginView(APIView):
             next_url = "?next=" + urllib.parse.quote(next_url)
         else:
             next_url = ""
+        redirect_uri = urllib.parse.quote("{}{}{}".format(c.get_host(), reverse(
+            "api:feishu:callback",
+            args=[
+                tenant_uuid,
+            ],
+        ), next_url))
         url = "{}?app_id={}&redirect_uri={}".format(
             AUTHORIZE_URL,
             provider.app_id,
-            urllib.parse.quote(
-                "{}{}{}".format(
-                    c.get_host(),
-                    reverse(
-                        "api:feishu:callback",
-                        args=[
-                            tenant_uuid,
-                        ],
-                    ),
-                    next_url,
-                )
-            ),
+            redirect_uri,
         )
-
-        print(url)
-
         return HttpResponseRedirect(url)
 
 
@@ -115,10 +112,28 @@ class FeishuCallbackView(APIView):
 
 
 @extend_schema(tags=["feishu"])
-class FeishuBindView(APIView):
+class FeishuBindView(GenericAPIView):
 
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [AllowAny]
+    authentication_classes = [ExpiringTokenAuthentication]
 
-    def get(self, request, tenant_id):
-        pass
+    serializer_class = FeishuBindSerializer
+
+    def post(self, request, tenant_uuid):
+        """
+        绑定用户
+        """
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        feishu_user_id = serializer.validated_data['user_id']
+        feishu_user = FeishuUser.valid_objects.filter(user=user, tenant=tenant).first()
+        if feishu_user:
+            feishu_user.feishu_user_id = feishu_user_id
+        else:
+            feishu_user = FeishuUser.valid_objects.create(feishu_user_id=feishu_user_id, user=user, tenant=tenant)
+        feishu_user.save()
+        token = user.token
+        data = {"token": token}
+        return Response(data, HTTP_200_OK)
