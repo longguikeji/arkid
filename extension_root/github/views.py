@@ -125,6 +125,7 @@ class GithubCallbackView(APIView):
             context = {
                 "token": "",
                 "user_id": user_id,
+                "tenant_uuid": tenant_uuid,
                 "bind": reverse(
                     "api:github:bind",
                     args=[
