@@ -4,13 +4,17 @@ from django.http.response import JsonResponse
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.contrib.auth.models import User as DUser
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
 from tenant.models import Tenant
 from inventory.models import (
     User
 )
 from api.v1.serializers.user import (
-    UserSerializer, UserListResponsesSerializer
+    UserSerializer, UserListResponsesSerializer, TokenSerializer,
+    TokenRequestSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -105,3 +109,24 @@ class UserAppViewSet(BaseViewSet):
                 perms = perms | set([perm.codename for perm in g.owned_perms(all_apps_perms)])
             objs = [app for app in all_apps if app.access_perm_code in perms]
         return objs
+
+
+@extend_schema(tags=['user'])
+class TokenView(generics.CreateAPIView):
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = TokenRequestSerializer
+
+    @extend_schema(
+        responses=TokenSerializer
+    )
+    def post(self, request):
+        key = request.data.get('token', '')
+        expiring_token = ExpiringTokenAuthentication()
+        is_valid = True
+        try:
+            expiring_token.authenticate_credentials(key)
+        except Exception as e:
+            is_valid = False
+        return Response(is_valid)
