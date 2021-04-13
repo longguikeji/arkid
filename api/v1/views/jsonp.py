@@ -13,6 +13,11 @@ class JsonpView(APIView):
         method = request.query_params.get('method')
         data = parse.parse_qs(request.query_params.get('data'))
         callback = request.query_params.get('callback')
+        headers = {}
+
+        token = data.get('token')
+        if token:
+            headers['Authorization'] = 'token ' + token[0]
 
         _request:HttpRequest = request._request
         
@@ -21,11 +26,13 @@ class JsonpView(APIView):
             response = requests.get(
                 url = url, 
                 params = data, 
+                headers = headers,
             )
         elif method == 'post':
             response = requests.post(
                 url=url,
                 data=data,
+                headers = headers,
             )
         else:
             return HttpResponse('not allowed http method, only: get, post')

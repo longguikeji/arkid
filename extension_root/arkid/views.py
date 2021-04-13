@@ -6,25 +6,24 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
-from .user_info_manager import GiteeUserInfoManager, APICallError
+from .user_info_manager import ArkIDUserInfoManager, APICallError
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
-from .models import GiteeUser
+from .models import ArkIDUser
 from urllib.parse import urlencode, unquote
 import urllib.parse
 from django.urls import reverse
 from config import get_app_config
 from tenant.models import Tenant
-from .constants import AUTHORIZE_URL
 from drf_spectacular.utils import extend_schema
-from .provider import GiteeExternalIdpProvider
-from .serializers import GiteeBindSerializer
+from .provider import ArkIDExternalIdpProvider
+from .serializers import ArkIDBindSerializer
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
-@extend_schema(tags=["gitee"])
-class GiteeLoginView(APIView):
+@extend_schema(tags=["arkid"])
+class ArkIDLoginView(APIView):
 
     permission_classes = []
     authentication_classes = []
@@ -33,7 +32,7 @@ class GiteeLoginView(APIView):
         c = get_app_config()
         # @TODO: keep other query params
 
-        provider = GiteeExternalIdpProvider()
+        provider = ArkIDExternalIdpProvider()
         provider.load_data(tenant_uuid=tenant_uuid)
 
         next_url = request.GET.get("next", None)
@@ -45,7 +44,7 @@ class GiteeLoginView(APIView):
         redirect_uri = "{}{}{}".format(c.get_host(), provider.callback_url, next_url)
 
         url = "{}?client_id={}&redirect_uri={}&response_type=code&scope=user_info".format(
-            AUTHORIZE_URL,
+            provider.authorize_url,
             provider.client_id,
             urllib.parse.quote(redirect_uri),
         )
@@ -53,13 +52,13 @@ class GiteeLoginView(APIView):
         return HttpResponseRedirect(url)
 
 
-@extend_schema(tags=["gitee"])
-class GiteeBindAPIView(GenericAPIView):
+@extend_schema(tags=["arkid"])
+class ArkIDBindAPIView(GenericAPIView):
 
     permission_classes = [AllowAny]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    serializer_class = GiteeBindSerializer
+    serializer_class = ArkIDBindSerializer
 
     def post(self, request, tenant_uuid):
         """
@@ -69,27 +68,27 @@ class GiteeBindAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = request.user
-        gitee_user_id = serializer.validated_data['user_id']
-        github_user = GiteeUser.valid_objects.filter(user=user, tenant=tenant).first()
-        if github_user:
-            github_user.gitee_user_id = gitee_user_id
+        arkid_user_id = serializer.validated_data['user_id']
+        arkid_user = ArkIDUser.valid_objects.filter(user=user, tenant=tenant).first()
+        if arkid_user:
+            arkid_user.arkid_user_id = arkid_user_id
         else:
-            github_user = GiteeUser.valid_objects.create(gitee_user_id=gitee_user_id, user=user, tenant=tenant)
-        github_user.save()
+            arkid_user = ArkIDUser.valid_objects.create(arkid_user_id=arkid_user_id, user=user, tenant=tenant)
+        arkid_user.save()
         token = user.token
         data = {"token": token}
         return Response(data, HTTP_200_OK)
 
 
-@extend_schema(tags=["gitee"])
-class GiteeCallbackView(APIView):
+@extend_schema(tags=["arkid"])
+class ArkIDCallbackView(APIView):
 
     permission_classes = []
     authentication_classes = []
 
     def get(self, request, tenant_uuid):
         """
-        处理gitee用户登录之后重定向页面
+        处理arkid用户登录之后重定向页面
         """
         code = request.GET["code"]
         next_url = request.GET.get("next", None)
@@ -99,9 +98,9 @@ class GiteeCallbackView(APIView):
             next_url = ""
         if code:
             try:
-                provider = GiteeExternalIdpProvider()
+                provider = ArkIDExternalIdpProvider()
                 provider.load_data(tenant_uuid=tenant_uuid)
-                user_id = GiteeUserInfoManager(
+                user_id = ArkIDUserInfoManager(
                     provider.client_id,
                     provider.secret_id,
                     "{}{}{}".format(
@@ -126,20 +125,20 @@ class GiteeCallbackView(APIView):
         return Response(context, HTTP_200_OK)
 
     def get_token(self, user_id, tenant_uuid):  # pylint: disable=no-self-use
-        gitee_user = GiteeUser.valid_objects.filter(gitee_user_id=user_id).first()
-        if gitee_user:
-            user = gitee_user.user
+        arkid_user = ArkIDUser.valid_objects.filter(arkid_user_id=user_id).first()
+        if arkid_user:
+            user = arkid_user.user
             token = user.token
             # context = {"token": token, **UserWithPermSerializer(user).data}
             context = {"token": token}
         else:
-            # context = {"token": "", "gitee_user_id": user_id}
+            # context = {"token": "", "arkid_user_id": user_id}
             context = {
                 "token": "",
                 "user_id": user_id,
                 "tenant_uuid": tenant_uuid,
                 "bind": reverse(
-                    "api:gitee:bind",
+                    "api:arkid:bind",
                     args=[
                         tenant_uuid,
                     ],
@@ -147,39 +146,3 @@ class GiteeCallbackView(APIView):
             }
 
         return context
-
-
-# @extend_schema(tags=["gitee"])
-# class GiteeRegisterAndBindView(generics.CreateAPIView):
-#     """
-#     github账户注册加绑定
-#     """
-
-#     permission_classes = []
-#     authentication_classes = []
-
-# serializer_class = RegisterAndBindSerializer
-# read_serializer_class = UserWithPermSerializer
-
-# def create(self, request, *args, **kwargs):
-#     """
-#     github账户注册并绑定
-#     """
-
-#     serializer = self.get_serializer(data=request.data)
-#     serializer.is_valid(raise_exception=True)
-#     user = self.perform_create(serializer)
-
-#     cli = CLI(user)
-#     cli.add_users_to_group([user], Group.get_extern_root())
-#     data = self.read_serializer_class(user).data
-#     data.update(token=user.token)
-#     user_id = serializer.validated_data['user_id']
-#     github_user = GithubUser.valid_objects.create(github_user_id=user_id, user=user)
-#     github_user.save()
-#     return Response(data, status=status.HTTP_201_CREATED)
-
-# def perform_create(self, serializer):
-#     user = serializer.save()
-#     LOG_CLI(serializer.instance).user_register()
-#     return user
