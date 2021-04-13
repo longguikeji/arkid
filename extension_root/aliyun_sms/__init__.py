@@ -89,6 +89,7 @@ extension = AliyunExtension(
 1. 短信发送
 """,
     version='1.0',
+    tags='sms',
     homepage='https://www.longguikeji.com',
     logo='',
     maintainer='insfocus@gmail.com',
