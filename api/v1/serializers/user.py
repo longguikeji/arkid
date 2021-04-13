@@ -5,6 +5,7 @@ from rest_framework import serializers
 from .group import GroupSerializer, GroupBaseSerializer
 from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
 from ..pages import group, permission
+from django.utils.translation import gettext_lazy as _
 
 
 class UserSerializer(BaseDynamicFieldModelSerializer):
@@ -146,3 +147,13 @@ class UserListResponsesSerializer(UserSerializer):
             'city',
             'job_title',
         )
+
+
+class TokenRequestSerializer(serializers.Serializer):
+
+    token = serializers.CharField(label=_('需要验证的token'))
+
+
+class TokenSerializer(serializers.Serializer):
+
+    is_valid = serializers.BooleanField(label=_('是否有效'))
