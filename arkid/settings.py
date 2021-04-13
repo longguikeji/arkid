@@ -29,6 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+LOGIN_URL = '/client/login'
 
 # Application definition
 
@@ -63,6 +64,7 @@ INSTALLED_APPS = [
     'extension_root.gitee',
     'extension_root.feishu',
     'extension_root.mysql_migration',
+    'extension_root.arkid',
 ]
 
 MIDDLEWARE = [

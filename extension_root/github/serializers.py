@@ -4,6 +4,11 @@ from django.utils.translation import gettext_lazy as _
 from common.serializer import ExternalIdpBaseSerializer
 
 
+class GithubBindSerializer(serializers.Serializer):
+
+    user_id = serializers.CharField()
+
+
 class GithubExternalIdpConfigSerializer(serializers.Serializer):
 
     client_id = serializers.CharField()
@@ -13,6 +18,7 @@ class GithubExternalIdpConfigSerializer(serializers.Serializer):
     login_url = serializers.URLField(read_only=True)
     callback_url = serializers.URLField(read_only=True)
     bind_url = serializers.URLField(read_only=True)
+
 
 class GithubExternalIdpSerializer(ExternalIdpBaseSerializer):
 
