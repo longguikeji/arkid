@@ -1,25 +1,27 @@
 from rest_framework import serializers
-from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from common.serializer import ExternalIdpBaseSerializer
 
-
-class GithubBindSerializer(serializers.Serializer):
-
+class ArkIDBindSerializer(serializers.Serializer):
+    
     user_id = serializers.CharField()
+    
 
-
-class GithubExternalIdpConfigSerializer(serializers.Serializer):
-
+class ArkIDExternalIdpConfigSerializer(serializers.Serializer):
+    
     client_id = serializers.CharField()
     secret_id = serializers.CharField()
 
-    img_url = serializers.URLField(read_only=True)
+    authorize_url = serializers.URLField()
+    token_url = serializers.URLField()
+    userinfo_url = serializers.URLField()
+    img_url = serializers.URLField()
+
     login_url = serializers.URLField(read_only=True)
     callback_url = serializers.URLField(read_only=True)
     bind_url = serializers.URLField(read_only=True)
 
 
-class GithubExternalIdpSerializer(ExternalIdpBaseSerializer):
+class ArkIDExternalIdpSerializer(ExternalIdpBaseSerializer):
 
-    data = GithubExternalIdpConfigSerializer(label=_('data'))
+    data = ArkIDExternalIdpConfigSerializer(label=_('data'))
