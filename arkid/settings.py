@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 import common.monkeypatch
 from arkid.spectacular_settings import SPECTACULAR_SETTINGS
@@ -29,7 +30,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-LOGIN_URL = '/client/login'
+LOGIN_URL = '/login'
 
 # Application definition
 
@@ -206,7 +207,6 @@ SLAPD_PASSWORD = 'admin'
 SLAPD_DOMAIN = 'dc=example,dc=org'
 AUTH_USER_MODEL = 'inventory.User'
 
-import os
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())

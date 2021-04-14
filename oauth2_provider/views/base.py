@@ -60,6 +60,10 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
             allowed_schemes = oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
         else:
             allowed_schemes = application.get_allowed_schemes()
+        # 地址加参数
+        tenant_index = redirect_to.find('tenant/') + 7
+        slash_index = redirect_to.find('/', tenant_index)
+        redirect_to = '{}&tenant={}'.format(redirect_to, redirect_to[tenant_index:slash_index])
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
 
@@ -146,7 +150,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         except OAuthToolkitError as error:
             # Application is not available at this time.
             return self.error_response(error, application=None)
-
         all_scopes = get_scopes_backend().get_all_scopes()
         kwargs["scopes_descriptions"] = [all_scopes[scope] for scope in scopes]
         kwargs["scopes"] = scopes
