@@ -62,8 +62,9 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
             allowed_schemes = application.get_allowed_schemes()
         # 地址加参数
         tenant_index = redirect_to.find('tenant/') + 7
-        slash_index = redirect_to.find('/', tenant_index)
-        redirect_to = '{}&tenant={}'.format(redirect_to, redirect_to[tenant_index:slash_index])
+        if tenant_index != 6:
+            slash_index = redirect_to.find('/', tenant_index)
+            redirect_to = '{}&tenant={}'.format(redirect_to, redirect_to[tenant_index:slash_index])
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
 
