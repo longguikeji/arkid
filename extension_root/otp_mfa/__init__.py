@@ -9,7 +9,7 @@ class OTPMFAProvider(MFAProvider):
 
     def setup(self):
         # '''
-        # 1. 
+        # 1.
         # '''
         # secret = pyotp.random_base32()
         return HttpResponseRedirect('/')
@@ -17,7 +17,7 @@ class OTPMFAProvider(MFAProvider):
     def trigger(self):
         '''
         1. 渲染 /
-        2. 
+        2.
         '''
         pass
 
@@ -28,7 +28,7 @@ class OTPMFAProvider(MFAProvider):
         pass
 
 
-class OTPMFAExtension(InMemExtension):    
+class OTPMFAExtension(InMemExtension):
 
     def start(self, runtime: Runtime, *args, **kwargs):
         super().start(runtime=runtime, *args, **kwargs)
@@ -36,6 +36,7 @@ class OTPMFAExtension(InMemExtension):
 
 extension = OTPMFAExtension(
     name='otp_mfa',
+    tags='mfa',
     description='demonstration only',
     version='1.0',
     homepage='https://www.longguikeji.com',

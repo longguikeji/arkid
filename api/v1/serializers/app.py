@@ -21,6 +21,7 @@ class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
             'description',
         )
 
+
 class AppSerializer(BaseDynamicFieldModelSerializer):
 
     class Meta:
@@ -60,7 +61,6 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
         r = get_app_runtime()
         provider_cls: AppTypeProvider = r.app_type_providers.get(protocol_type, None)
         assert provider_cls is not None
-
         provider = provider_cls()
         data = provider.create(app=app, data=protocol_data)
         if data is not None:
@@ -68,6 +68,7 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
             app.save()
 
         return app
+
 
 class AppListSerializer(AppSerializer):
 

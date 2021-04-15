@@ -2,6 +2,7 @@ from extension.models import Extension
 from common.serializer import BaseDynamicFieldModelSerializer
 from rest_framework import serializers
 
+
 class ExtensionSerializer(BaseDynamicFieldModelSerializer):
 
     description = serializers.CharField(source='inmem.description', read_only=True)
@@ -27,7 +28,7 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
 
     def create(self, validated_data):
         extension_type = validated_data.pop('type', None)
-        assert extension_type is not None        
+        assert extension_type is not None
 
         o, _ = Extension.active_objects.get_or_create(
             type=extension_type
@@ -45,13 +46,14 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
         clear_url_caches()
         load_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', execute=True)
 
-        from importlib import reload  
+        from importlib import reload
         import api.v1.urls
         import arkid.urls
         reload(api.v1.urls)
         reload(arkid.urls)
 
         return o
+
 
 class ExtensionListSerializer(ExtensionSerializer):
 

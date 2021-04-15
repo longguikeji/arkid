@@ -4,11 +4,11 @@ from .provider import LDAPAppTypeProvider
 from .serializers import LDAPAppSerializer
 
 
-class LDAPExtension(InMemExtension):    
+class LDAPExtension(InMemExtension):
 
     def start(self, runtime: Runtime, *args, **kwargs):
         runtime.register_app_type(
-            key='LDAP', 
+            key='LDAP',
             name='LDAP',
             provider=LDAPAppTypeProvider,
             serializer=LDAPAppSerializer,
@@ -19,6 +19,7 @@ class LDAPExtension(InMemExtension):
 
 extension = LDAPExtension(
     name='ldap',
+    tags='ldap',
     description='',
     version='1.0',
     homepage='https://www.longguikeji.com',
