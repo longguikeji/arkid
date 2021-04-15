@@ -1,9 +1,11 @@
+import json
 from inventory.models import Group
 from api.v1.serializers.group import (
     GroupSerializer,
     GroupListResponseSerializer,
     GroupCreateRequestSerializer,
     GroupCreateResponseSerializer,
+    GroupImportSerializer,
 )
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
@@ -85,6 +87,10 @@ class GroupViewSet(BaseViewSet):
         obj = Group.valid_objects.filter(**kwargs).first()
         return obj
 
+    @extend_schema(
+        request=GroupImportSerializer,
+        responses=GroupImportSerializer,
+    )
     @action(detail=False, methods=['post'])
     def group_import(self, request, *args, **kwargs):
         context = self.get_serializer_context()
@@ -116,7 +122,9 @@ class GroupViewSet(BaseViewSet):
         )  # Test the data import
         if not result.has_errors() and not result.has_validation_errors():
             user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
-            return Response({'error': Code.OK.value, 'message': result.totals})
+            return Response(
+                {'error': Code.OK.value, 'message': json.dumps(result.totals)}
+            )
         else:
             base_errors = result.base_errors
             if base_errors:
@@ -135,10 +143,12 @@ class GroupViewSet(BaseViewSet):
             return Response(
                 {
                     'error': Code.GROUP_IMPORT_ERROR.value,
-                    'message': {
-                        'base_errors': base_errors,
-                        'row_errors': row_errors_dict,
-                        'invalid_rows': invalid_rows,
-                    },
+                    'message': json.dumps(
+                        {
+                            'base_errors': base_errors,
+                            'row_errors': row_errors_dict,
+                            'invalid_rows': invalid_rows,
+                        }
+                    ),
                 }
             )

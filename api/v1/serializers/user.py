@@ -161,6 +161,6 @@ class TokenSerializer(serializers.Serializer):
 
 class UserImportSerializer(serializers.Serializer):
 
-    file = serializers.FileField(label=_('上传文件'))
+    file = serializers.FileField(label=_('上传文件'), write_only=True)
     error = serializers.CharField(read_only=True)
     message = serializers.CharField(read_only=True)
