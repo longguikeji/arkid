@@ -4,7 +4,8 @@ from .provider import LocalStorageProvider
 from .constants import KEY
 from .serializers import LocalStorageSerializer
 
-class LocalStorageExtension(InMemExtension):    
+
+class LocalStorageExtension(InMemExtension):
 
     def start(self, runtime: Runtime, *args, **kwargs):
         provider = LocalStorageProvider()
@@ -18,8 +19,9 @@ class LocalStorageExtension(InMemExtension):
 
 extension = LocalStorageExtension(
     name=KEY,
+    tags='storage',
     description='local filesystem based storage solution',
-    version='1.0',    
+    version='1.0',
     logo='',
     maintainer='北京龙归科技有限公司',
     homepage='https://www.longguikeji.com',

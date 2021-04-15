@@ -18,6 +18,7 @@ class GiteeExternalIdpExtension(InMemExtension):
 
 extension = GiteeExternalIdpExtension(
     name="gitee",
+    tags='login',
     description="gitee as the external idP",
     version="1.0",
     homepage="https://www.longguikeji.com",

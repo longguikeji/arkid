@@ -1,7 +1,6 @@
-from rest_framework.utils import serializer_helpers
-from common.serializer import BaseDynamicFieldModelSerializer
+
 from rest_framework import serializers
-from common.extension import InMemExtension
+
 
 class MarketPlaceExtensionSerializer(serializers.Serializer):
 
@@ -11,6 +10,7 @@ class MarketPlaceExtensionSerializer(serializers.Serializer):
     homepage = serializers.CharField()
     logo = serializers.CharField()
     maintainer = serializers.CharField()
+    tags = serializers.CharField()
 
     # class Meta:
 

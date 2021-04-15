@@ -16,7 +16,6 @@ class OAuth2AppTypeProvider(AppTypeProvider):
         client_type = data.get('client_type')
         redirect_uris = data.get('redirect_uris')
         authorization_grant_type = data.get('grant_type')
-        
         obj = Application()
         obj.name = app.id
         obj.client_type = client_type

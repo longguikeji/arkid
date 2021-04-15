@@ -4,11 +4,12 @@ from common.extension import InMemExtension
 from .provider import OSSStorageProvider
 from .serializers import OSSStorageSerializer
 
-class OSSStorageExtension(InMemExtension):    
+
+class OSSStorageExtension(InMemExtension):
 
     def start(self, runtime: Runtime, *args, **kwargs):
         provider = OSSStorageProvider()
-        provider.domain = self.config('domain')        
+        provider.domain = self.config('domain')
         provider.bucket = self.config('bucket')
         provider.access_key = self.config('access_key')
         provider.secret_key = self.config('secret_key')
@@ -23,8 +24,9 @@ class OSSStorageExtension(InMemExtension):
 
 extension = OSSStorageExtension(
     name='oss_storage',
+    tags='storage',
     description='Aliyun OSS based storage solution',
-    version='1.0',    
+    version='1.0',
     logo='',
     maintainer='北京龙归科技有限公司',
     homepage='https://www.longguikeji.com',
