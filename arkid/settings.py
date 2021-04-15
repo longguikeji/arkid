@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 import common.monkeypatch
 from arkid.spectacular_settings import SPECTACULAR_SETTINGS
@@ -29,7 +30,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-LOGIN_URL = '/client/login'
+LOGIN_URL = '/login'
 
 # Application definition
 

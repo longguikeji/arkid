@@ -13,9 +13,10 @@ class InMemExtension:
     homepage: Optional[str] = None
     logo: Optional[str] = None
     maintainer: Optional[str] = None
+    tags: Optional[str] = None
 
     scope: str = 'global'
-    
+
     on_start: Optional[Callable] = None
     serializer: ExtensionBaseSerializer = None
 
@@ -28,21 +29,24 @@ class InMemExtension:
 
         if self.version is None:
             self.version = kwargs.get('version', None)
-        
+
         if self.description is None:
             self.description = kwargs.get('description', None)
-        
+
         if self.homepage is None:
             self.homepage = kwargs.get('homepage', None)
 
         if self.logo is None:
             self.logo = kwargs.get('logo', None)
-        
+
         if self.maintainer is None:
             self.maintainer = kwargs.get('maintainer', None)
 
         if self.on_start is None:
             self.on_start = kwargs.get('on_start', None)
+
+        if self.tags is None:
+            self.tags = kwargs.get('tags', None)
 
         serializer = kwargs.get('serializer', None)
         if serializer is not None:
@@ -65,11 +69,9 @@ class InMemExtension:
         value = app_config.extension.config.get(self.name, None)
         if value is None:
             return None
-        
+
         value = value.get(key, default)
         return value
 
     def register(self, service_name):
         pass
-
-    

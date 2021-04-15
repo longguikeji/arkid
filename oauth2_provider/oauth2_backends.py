@@ -96,7 +96,6 @@ class OAuthLibCore:
             scopes, credentials = self.server.validate_authorization_request(
                 uri, http_method=http_method, body=body, headers=headers
             )
-
             return scopes, credentials
         except oauth2.FatalClientError as error:
             raise FatalClientError(error=error)

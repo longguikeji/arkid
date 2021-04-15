@@ -42,13 +42,11 @@ class ArkIDLoginView(APIView):
             next_url = ""
 
         redirect_uri = "{}{}{}".format(c.get_host(), provider.callback_url, next_url)
-
         url = "{}?client_id={}&redirect_uri={}&response_type=code&scope=user_info".format(
             provider.authorize_url,
             provider.client_id,
             urllib.parse.quote(redirect_uri),
         )
-
         return HttpResponseRedirect(url)
 
 
