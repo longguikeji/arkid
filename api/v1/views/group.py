@@ -1,4 +1,5 @@
 import json
+import datetime
 from inventory.models import Group
 from api.v1.serializers.group import (
     GroupSerializer,
@@ -17,6 +18,7 @@ from inventory.resouces import GroupResource
 from tablib import Dataset
 from collections import defaultdict
 from common.code import Code
+from django.http import HttpResponse, HttpResponseRedirect
 
 
 @extend_schema_view(
@@ -152,3 +154,24 @@ class GroupViewSet(BaseViewSet):
                     ),
                 }
             )
+
+    @extend_schema(
+        responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
+    )
+    @action(detail=False, methods=['get'])
+    def group_export(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        kwargs = {
+            'tenant': tenant,
+        }
+
+        qs = Group.objects.filter(**kwargs).order_by('id')
+        data = GroupResource().export(qs)
+        export_data = data.xlsx
+        content_type = 'application/octet-stream'
+        response = HttpResponse(export_data, content_type=content_type)
+        date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+        filename = '%s-%s.%s' % ('Group', date_str, 'xlsx')
+        response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
+        return response

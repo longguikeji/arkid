@@ -40,8 +40,10 @@ class UserResource(resources.ModelResource):
         Override to add additional logic. Does nothing by default.
         """
         # row['tenants'] = kwargs.get('tenant_id', None)
-        tenant_id = kwargs.get('tenant_id', None)
-        row['tenants'] = tenant_id
+        origin_tenants = row.get('tenants')
+        if not origin_tenants:
+            tenant_id = kwargs.get('tenant_id', None)
+            row['tenants'] = tenant_id
         super().before_import_row(row, row_number, **kwargs)
 
 
@@ -52,6 +54,7 @@ class GroupResource(resources.ModelResource):
             'id',  # not null
             'name',
             'tenant',
+            'parent',
         )
         exclude = (
             'is_active',  # not null

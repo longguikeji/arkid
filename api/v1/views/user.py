@@ -1,4 +1,5 @@
 import json
+import datetime
 from django.db import models
 from django.http import Http404
 from django.http.response import JsonResponse
@@ -28,6 +29,8 @@ from rest_framework.decorators import action
 from tablib import Dataset
 from collections import defaultdict
 from common.code import Code
+from django.http import HttpResponse, HttpResponseRedirect
+from drf_spectacular.openapi import OpenApiTypes
 
 
 @extend_schema_view(list=extend_schema(responses=UserListResponsesSerializer))
@@ -139,6 +142,26 @@ class UserViewSet(BaseViewSet):
                     ),
                 }
             )
+
+    @extend_schema(
+        responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
+    )
+    @action(detail=False, methods=['get'])
+    def user_export(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        kwargs = {
+            'tenants__in': [tenant],
+        }
+        qs = User.objects.filter(**kwargs).order_by('id')
+        data = UserResource().export(qs)
+        export_data = data.xlsx
+        content_type = 'application/octet-stream'
+        response = HttpResponse(export_data, content_type=content_type)
+        date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+        filename = '%s-%s.%s' % ('User', date_str, 'xlsx')
+        response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
+        return response
 
 
 @extend_schema(tags=['user-app'])
