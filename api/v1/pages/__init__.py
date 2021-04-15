@@ -99,10 +99,6 @@ root_add_routers([
                         page=extension,
                         icon='list',
                     ),
-                    PageRouter(
-                        page=maketplace,
-                        icon='list',
-                    ),
                 ]
             ),
         ]
@@ -117,25 +113,10 @@ root_add_routers([
                 name='插件管理',
                 icon='list',
                 children=[
-                    Router(
-                        path='aliyun',
-                        name='阿里云配置',
-                        icon='aliyun',
-                        children=[
-                            Router(
-                                path='config',
-                                name='短信配置',
-                                icon='config_sms',
-                                page='config'
-                            ),
-                            Router(
-                                path='send_sms',
-                                name='发送短信',
-                                icon='send_sms',
-                                page='send_sms',
-                            )
-                        ]
-                    )
+                    PageRouter(
+                        page=maketplace,
+                        icon='list',
+                    ),
                 ]
             ),
         ]
