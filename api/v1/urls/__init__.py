@@ -55,4 +55,6 @@ urlpatterns += jsonp.urlpatterns
 urlpatterns += storage.urlpatterns
 urlpatterns += sms.urlpatterns
 urlpatterns += tenant.urlpatterns
+
+urlpatterns += marketplace.router.urls
 urlpatterns += user.urlpatterns
