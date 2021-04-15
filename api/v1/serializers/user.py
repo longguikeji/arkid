@@ -157,3 +157,10 @@ class TokenRequestSerializer(serializers.Serializer):
 class TokenSerializer(serializers.Serializer):
 
     is_valid = serializers.BooleanField(label=_('是否有效'))
+
+
+class UserImportSerializer(serializers.Serializer):
+
+    file = serializers.FileField(label=_('上传文件'))
+    error = serializers.CharField(read_only=True)
+    message = serializers.CharField(read_only=True)
