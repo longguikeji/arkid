@@ -26,6 +26,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.decorators import action
 from tablib import Dataset
 from collections import defaultdict
+from common.code import Code
 
 
 @extend_schema_view(list=extend_schema(responses=UserListResponsesSerializer))
@@ -86,9 +87,19 @@ class UserViewSet(BaseViewSet):
         ]
         upload = request.data.get("file", None)  # 设置默认值None
         if not upload:
-            return Response({'error': '1', 'message': 'No file find in form dada'})
+            return Response(
+                {
+                    'error': Code.USER_IMPORT_ERROR.value,
+                    'message': 'No file find in form dada',
+                }
+            )
         if upload.content_type not in support_content_types:
-            return Response({'error': '1', 'message': 'ContentType Not Support!'})
+            return Response(
+                {
+                    'error': Code.USER_IMPORT_ERROR.value,
+                    'message': 'ContentType Not Support!',
+                }
+            )
         user_resource = UserResource()
         dataset = Dataset()
         imported_data = dataset.load(upload.read())
@@ -96,8 +107,8 @@ class UserViewSet(BaseViewSet):
             dataset, dry_run=True, tenant_id=tenant.id
         )  # Test the data import
         if not result.has_errors() and not result.has_validation_errors():
-            user_resource.import_data(dataset, dry_run=False)
-            return Response({'error': '0', 'message': result.totals})
+            user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
+            return Response({'error': Code.OK.value, 'message': result.totals})
         else:
             base_errors = result.base_errors
             if base_errors:
@@ -115,7 +126,7 @@ class UserViewSet(BaseViewSet):
 
             return Response(
                 {
-                    'error': '1',
+                    'error': Code.USER_IMPORT_ERROR.value,
                     'message': {
                         'base_errors': base_errors,
                         'row_errors': row_errors_dict,
