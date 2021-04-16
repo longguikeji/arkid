@@ -20,6 +20,8 @@ from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..signals import app_authorized
 from .mixins import OAuthLibMixin
+from config import get_app_config
+from arkid.settings import LOGIN_URL
 
 
 log = logging.getLogger("oauth2_provider")
@@ -36,6 +38,15 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
 
     """
 
+    def get_login_url(self):
+        full_path = self.request.get_full_path()
+        # 地址加参数
+        tenant_index = full_path.find('tenant/') + 7
+        if tenant_index != 6:
+            slash_index = full_path.find('/', tenant_index)
+            full_path = '{}{}?tenant={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, full_path[tenant_index:slash_index])
+        return full_path
+
     def dispatch(self, request, *args, **kwargs):
         self.oauth2_data = {}
         return super().dispatch(request, *args, **kwargs)
@@ -46,7 +57,6 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
         error details or providing an error response
         """
         redirect, error_response = super().error_response(error, **kwargs)
-
         if redirect:
             return self.redirect(error_response["url"], application)
 
@@ -60,11 +70,6 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
             allowed_schemes = oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
         else:
             allowed_schemes = application.get_allowed_schemes()
-        # 地址加参数
-        tenant_index = redirect_to.find('tenant/') + 7
-        if tenant_index != 6:
-            slash_index = redirect_to.find('/', tenant_index)
-            redirect_to = '{}&tenant={}'.format(redirect_to, redirect_to[tenant_index:slash_index])
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
 
@@ -158,7 +163,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
         # TODO: Cache this!
         application = get_application_model().objects.get(client_id=credentials["client_id"])
-
         kwargs["application"] = application
         kwargs["client_id"] = credentials["client_id"]
         kwargs["redirect_uri"] = credentials["redirect_uri"]
