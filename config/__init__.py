@@ -6,6 +6,7 @@ from .email_config import EmailConfig
 from .extension_config import ExtensionConfig
 from common.utils import deep_merge
 
+
 class Config(object):
 
     extension: ExtensionConfig
@@ -32,6 +33,7 @@ class Config(object):
 
         self.name = data.get('name')
         self.host = data.get('host')
+        self.frontend_host = data.get('frontend_host')
         self.https_enabled = data.get('https_enabled')
 
         self.extension = ExtensionConfig(
@@ -54,7 +56,13 @@ class Config(object):
     def get_host(self, schema=True):
         if schema:
             return '{}://{}'.format('https' if self.https_enabled else 'http', self.host)
-        
+
+        return self.host
+
+    def get_frontend_host(self, schema=True):
+        if schema:
+            return '{}://{}'.format('https' if self.https_enabled else 'http', self.frontend_host)
+
         return self.host
 
 
