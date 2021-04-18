@@ -2,7 +2,7 @@ from openapi.utils import extend_schema_tags
 
 tag = 'permission'
 path = tag
-name = '权限管理'
+name = '权限列表'
 
 extend_schema_tags(
     tag,
