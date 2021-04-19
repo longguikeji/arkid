@@ -9,43 +9,53 @@ extend_schema_tags(
     name,
     {
         'type': 'table_page',
-        'list': {
+        'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
-            'method': 'get',
+            'method': 'get'
         },
-        'create': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
-            'method': 'post',
+        'page': {
+            'create': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
+                'method': 'post'
+            }
         },
-        'update': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
-            'method': 'put',
-        },
-        'delete': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
-            'method': 'delete',
+        'item': {
+            'update': {
+                'read': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
+                    'method': 'get'
+                },
+                'write': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
+                    'method': 'put'
+                }
+            },
+            'delete': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
+                'method': 'delete'
+            }
         },
         'sort': {
             'up': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_up/',
-                'method': 'get',
+                'method': 'get'
             },
             'down': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_down/',
-                'method': 'get',
+                'method': 'get'
             },
             'top': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_top/',
-                'method': 'get',
+                'method': 'get'
             },
             'bottom': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_bottom/',
-                'method': 'get',
+                'method': 'get'
             },
             'batch': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/batch_update/',
-                'method': 'post',
-            },
-        },
-    },
+                'method': 'post'
+            }
+        }
+    }
 )
