@@ -1,5 +1,6 @@
 import json
 import logging
+from tenant.models import Tenant
 import urllib.parse
 
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
@@ -296,7 +297,11 @@ class TokenView(OAuthLibMixin, View):
 
     @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
-        url, headers, body, status = self.create_token_response(request)
+        print('args:', args, kwargs)
+        tenant_uuid = kwargs.get('tenant_uuid')
+        tenant = Tenant.objects.get(uuid=tenant_uuid)
+
+        url, headers, body, status = self.create_token_response(request, tenant)
         if status == 200:
             access_token = json.loads(body).get("access_token")
             if access_token is not None:
