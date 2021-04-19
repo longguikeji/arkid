@@ -24,12 +24,12 @@ toml = "*"
 aliyun-python-sdk-core = "*"
 aliyun-python-sdk-core-v3 = "*"
 redis = "*"
-drf-spectacular = "*"
 jwcrypto = "*"
 twisted = "*"
 ldaptor = "*"
 oauthlib = "*"
 oss2 = "*"
+drf-spectacular = "==0.14.0"
 
 [requires]
 python_version = "3.8"

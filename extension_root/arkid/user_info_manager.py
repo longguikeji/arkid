@@ -2,6 +2,7 @@
 ArkID查询用户信息
 """
 from urllib.parse import parse_qs
+from config import get_app_config
 import requests
 import json
 
@@ -24,39 +25,30 @@ class ArkIDUserInfoManager:
     ArkID API
     """
 
-    def __init__(self, client_id, client_secret, redirect_uri):
+    def __init__(self, client_id, client_secret, redirect_uri, tenant_uuid):
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
+        self.tenant_uuid = tenant_uuid
 
     def get_user_id(self, code):
         """
         查询用户id
         """
-        try:
-            response = requests.post(
-                constants.GET_TOKEN_URL,
-                params={
-                    "code": code,
-                    "client_id": self.client_id,
-                    "client_secret": self.client_secret,
-                    "grant_type": "authorization_code",
-                    "redirect_uri": self.redirect_uri,
-                },
-            )
-            response = response.__getattribute__("_content").decode()
-            result = json.loads(response)
-            # 获取user info
-            headers = {"Authorization": "token " + result["access_token"]}
-            response = requests.get(
-                constants.GET_USERINFO_URL,
-                params={"access_token": result["access_token"]},
-                headers=headers,
-            ).json()
-            user_id = response["id"]
-            return user_id
-        except Exception as e:
-            raise APICallError(e)
+        c = get_app_config()
+        # # try:
+        token_url = "{}/api/v1/tenant/{}/oauth/token/".format(c.get_host(), self.tenant_uuid)
+        response = requests.post(
+            token_url,
+            params={
+                "code": code,
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "grant_type": "authorization_code",
+                "redirect_uri": self.redirect_uri,
+            },
+        )
+        print(response)
 
     def check_valid(self):  # pylint: disable=missing-function-docstring
         try:
