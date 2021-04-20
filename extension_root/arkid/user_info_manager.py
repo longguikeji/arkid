@@ -41,6 +41,7 @@ class ArkIDUserInfoManager:
             data={
                 "code": code,
                 "grant_type": "authorization_code",
+                "tenant_uuid": self.tenant_uuid,
             },
         )
         response = response.__getattribute__("_content").decode()

@@ -266,6 +266,13 @@ class OAuth2ProviderSettings:
         If only an oauthlib request is available, a dummy django request is
         built from that and used to generate the URL.
         """
+        # code=NSi6ZGPOusmyqvwlXko70kbewDMcol&grant_type=authorization_code&tenant_uuid=3efed4d9-f2ee-455e-b868-6f60ea8fdff6
+        body = request.body
+        arrs = body.split('&')
+        tenant = ''
+        for item in arrs:
+            if 'tenant_uuid=' in item:
+                tenant = item[12:]
         if self.OIDC_ISS_ENDPOINT:
             return self.OIDC_ISS_ENDPOINT
         if isinstance(request, HttpRequest):
@@ -275,8 +282,10 @@ class OAuth2ProviderSettings:
             django_request.META = request.headers
         else:
             raise TypeError("request must be a django or oauthlib request: got %r" % request)
-        # abs_url = django_request.build_absolute_uri(reverse("api:oauth2_authorization_server:oidc-connect-discovery-info", args=[]))
-        abs_url = ''
+        if tenant:
+            abs_url = django_request.build_absolute_uri(reverse("api:oauth2_authorization_server:oidc-connect-discovery-info", args=[tenant]))
+        else:
+            abs_url = ''
         return abs_url[: -len("/.well-known/openid-configuration/")]
 
 
