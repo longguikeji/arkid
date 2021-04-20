@@ -132,7 +132,7 @@ class OAuthLibCore:
         except oauth2.OAuth2Error as error:
             raise OAuthToolkitError(error=error, redirect_uri=credentials["redirect_uri"])
 
-    def create_token_response(self, request):
+    def create_token_response(self, request, tenant):
         """
         A wrapper method that calls create_token_response on `server_class` instance.
 
@@ -142,10 +142,9 @@ class OAuthLibCore:
         extra_credentials = self._get_extra_credentials(request)
 
         headers, body, status = self.server.create_token_response(
-            uri, http_method, body, headers, extra_credentials
+            uri, http_method, body, headers, extra_credentials,
         )
         uri = headers.get("Location", None)
-
         return uri, headers, body, status
 
     def create_revocation_response(self, request):

@@ -6,28 +6,24 @@ import os
 app = Flask(__name__)
 
 
-client_id = "aJejZoanOoQIzfl10ml6dimwdeMKd6kPmXbj6mEw"
-client_secret = "2xxVXzhH4d9Yi89eEDUkeseQf8fclOT6jVTDoTmCplrHOoW4C7DwPPdv1iaLS2wVbUhuJQrbykdxBlKtFWwLJ0qWUDmB07Tsin6vSXRtV1764zgQodRi9emuXnbsPMAI"
+client_id = "wyULKchGsMW7r5ZSNaMSnSseDSmUthrQvrUqx4Oa"
+client_secret = "t5FRJxpm7vtvn3W3j7wWRMgtqTmRSFKG1sC8C7L5QsoWX20amr4R5phd1ooT7oqp5bAJRsEicFD450GsLLN1NZ9SDNYqCq1tDADZmBMqIm8Fmx86KgWjzrSW2D7ZiESr"
 
-authorization_base_url = 'http://localhost:8000/api/v1/tenant/1/oauth/authorize/'
-token_url = 'http://localhost:8000/api/v1/tenant/1/oauth/token/'
+authorization_base_url = 'http://localhost:8000/api/v1/tenant/3efed4d9-f2ee-455e-b868-6f60ea8fdff6/oauth/authorize/'
+token_url = 'http://localhost:8000/api/v1/tenant/3efed4d9-f2ee-455e-b868-6f60ea8fdff6/oauth/token/'
 
 
 @app.route("/")
 def demo():
     """Step 1: User Authorization.
-
     Redirect the user/resource owner to the OAuth provider (i.e. Github)
     using an URL with a few key OAuth parameters.
     """
-    print(client_id)
     github = OAuth2Session(client_id)
-    print(github)
     authorization_url, state = github.authorization_url(authorization_base_url)
 
     # State is used to prevent CSRF, keep this for later.
     session['oauth_state'] = state
-    print(authorization_url)
     return redirect(authorization_url)
 
 
@@ -36,7 +32,6 @@ def demo():
 @app.route("/callback", methods=["GET"])
 def callback():
     """ Step 3: Retrieving an access token.
-
     The user has been redirected back from the provider to your registered
     callback URL. With this redirection comes an authorization code included
     in the redirect URL. We will use that to obtain an access token.

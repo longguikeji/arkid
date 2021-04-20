@@ -114,14 +114,14 @@ class OAuthLibMixin:
         core = self.get_oauthlib_core()
         return core.create_authorization_response(request, scopes, credentials, allow)
 
-    def create_token_response(self, request):
+    def create_token_response(self, request, tenant):
         """
         A wrapper method that calls create_token_response on `server_class` instance.
 
         :param request: The current django.http.HttpRequest object
         """
         core = self.get_oauthlib_core()
-        return core.create_token_response(request)
+        return core.create_token_response(request, tenant)
 
     def create_revocation_response(self, request):
         """
