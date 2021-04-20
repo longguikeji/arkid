@@ -37,7 +37,6 @@ def callback():
     in the redirect URL. We will use that to obtain an access token.
     """
     github = OAuth2Session(client_id, state=session['oauth_state'])
-    print('>>>>', token_url, client_secret, request.url, session['oauth_state'])
     token = github.fetch_token(token_url, client_secret=client_secret,
                                authorization_response=request.url)
 

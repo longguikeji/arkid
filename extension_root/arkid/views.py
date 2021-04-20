@@ -116,8 +116,6 @@ class ArkIDCallbackView(APIView):
             raise ValidationError({"code": ["required"]})
 
         context = self.get_token(user_id, tenant_uuid, token)
-        print('一些中间信息')
-        print(context)
         if next_url:
             next_url = next_url.replace("?next=", "")
             query_string = urlencode(context)

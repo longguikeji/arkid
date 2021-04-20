@@ -1,15 +1,17 @@
 from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Group, Permission
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema,extend_schema_view
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
 from .permission import PermissionSerializer
 from ..pages import group, permission
-class GroupBaseSerializer(serializers.ModelSerializer):
+from django.utils.translation import gettext_lazy as _
 
+
+class GroupBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = ( 'name', 'uuid')
+        fields = ('name', 'uuid')
 
 
 class GroupSerializer(BaseDynamicFieldModelSerializer):
@@ -43,19 +45,25 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         page=permission.tag,
         child=serializers.CharField(),
         write_only=True,
-        default=[]
+        default=[],
     )
+
     class Meta:
         model = Group
 
-        fields = ( 
-            'id', 'uuid', 'name', 'parent', 'parent_uuid', 'parent_name', 'permissions', 'children',
+        fields = (
+            'id',
+            'uuid',
+            'name',
+            'parent',
+            'parent_uuid',
+            'parent_name',
+            'permissions',
+            'children',
             'set_permissions',
         )
 
-        extra_kwargs = {
-            'parent_uuid': {'blank': True}
-        }
+        extra_kwargs = {'parent_uuid': {'blank': True}}
 
     def get_permissions(self, instance):
         permissions = instance.permissions.all()
@@ -64,8 +72,8 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
             o = PermissionSerializer(p)
             ret.append(o.data)
 
-        return ret        
-    
+        return ret
+
     def create(self, validated_data):
         name = validated_data.get('name')
         parent_uuid = validated_data.get('parent').get('uuid')
@@ -89,22 +97,44 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
     def get_children(self, instance):
         qs = Group.valid_objects.filter(parent=instance).order_by('id')
         return [GroupBaseSerializer(q).data for q in qs]
-    
+
 
 # for openapi
+
 
 class GroupListResponseSerializer(GroupSerializer):
     class Meta:
         model = Group
-        fields = ( 'name', 'parent_name', 'uuid', 'children' )
+        fields = ('name', 'parent_name', 'uuid', 'children')
 
 
 class GroupCreateRequestSerializer(GroupSerializer):
     class Meta:
         model = Group
-        fields = ( 'uuid', 'name', 'parent_uuid', 'permissions', 'children', 'set_permissions' )
+        fields = (
+            'uuid',
+            'name',
+            'parent_uuid',
+            'permissions',
+            'children',
+            'set_permissions',
+        )
+
 
 class GroupCreateResponseSerializer(GroupSerializer):
     class Meta:
         model = Group
-        fields = ( 'uuid', 'name', 'parent', 'parent_uuid', 'parent_name',)
+        fields = (
+            'uuid',
+            'name',
+            'parent',
+            'parent_uuid',
+            'parent_name',
+        )
+
+
+class GroupImportSerializer(serializers.Serializer):
+
+    file = serializers.FileField(label=_('上传文件'), write_only=True)
+    error = serializers.CharField(read_only=True)
+    message = serializers.CharField(read_only=True)

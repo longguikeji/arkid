@@ -1,3 +1,5 @@
+import json
+import datetime
 from django.db import models
 from django.http import Http404
 from django.http.response import JsonResponse
@@ -9,12 +11,14 @@ from django.contrib.auth.models import User as DUser
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from tenant.models import Tenant
-from inventory.models import (
-    User
-)
+from inventory.models import User
+from inventory.resouces import UserResource
 from api.v1.serializers.user import (
-    UserSerializer, UserListResponsesSerializer, TokenSerializer,
+    UserSerializer,
+    UserListResponsesSerializer,
+    TokenSerializer,
     TokenRequestSerializer,
+    UserImportSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -22,13 +26,14 @@ from .base import BaseViewSet
 from app.models import App
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.decorators import action
+from tablib import Dataset
+from collections import defaultdict
+from common.code import Code
+from django.http import HttpResponse, HttpResponseRedirect
+from drf_spectacular.openapi import OpenApiTypes
 
 
-@extend_schema_view(
-    list=extend_schema(
-        responses=UserListResponsesSerializer
-    )
-)
+@extend_schema_view(list=extend_schema(responses=UserListResponsesSerializer))
 @extend_schema(
     tags=['user'],
 )
@@ -72,10 +77,94 @@ class UserViewSet(BaseViewSet):
 
         return User.valid_objects.filter(**kwargs).first()
 
+    @extend_schema(
+        request=UserImportSerializer,
+        responses=UserImportSerializer,
+    )
+    @action(detail=False, methods=['post'])
+    def user_import(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        support_content_types = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
+        ]
+        upload = request.data.get("file", None)  # 设置默认值None
+        if not upload:
+            return Response(
+                {
+                    'error': Code.USER_IMPORT_ERROR.value,
+                    'message': 'No file find in form dada',
+                }
+            )
+        if upload.content_type not in support_content_types:
+            return Response(
+                {
+                    'error': Code.USER_IMPORT_ERROR.value,
+                    'message': 'ContentType Not Support!',
+                }
+            )
+        user_resource = UserResource()
+        dataset = Dataset()
+        imported_data = dataset.load(upload.read())
+        result = user_resource.import_data(
+            dataset, dry_run=True, tenant_id=tenant.id
+        )  # Test the data import
+        if not result.has_errors() and not result.has_validation_errors():
+            user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
+            return Response(
+                {'error': Code.OK.value, 'message': json.dumps(result.totals)}
+            )
+        else:
+            base_errors = result.base_errors
+            if base_errors:
+                base_errors = [err.error for err in base_errors]
+            row_errors = result.row_errors()
+            row_errors_dict = defaultdict(list)
+            if row_errors:
+                for lineno, err_list in row_errors:
+                    for err in err_list:
+                        row_errors_dict[lineno].append(str(err.error))
 
-@extend_schema(
-    tags=['user-app']
-)
+            invalid_rows = result.invalid_rows
+            if invalid_rows:
+                invalid_rows = [err.error for err in base_errors]
+
+            return Response(
+                {
+                    'error': Code.USER_IMPORT_ERROR.value,
+                    'message': json.dumps(
+                        {
+                            'base_errors': base_errors,
+                            'row_errors': row_errors_dict,
+                            'invalid_rows': invalid_rows,
+                        }
+                    ),
+                }
+            )
+
+    @extend_schema(
+        responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
+    )
+    @action(detail=False, methods=['get'])
+    def user_export(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        kwargs = {
+            'tenants__in': [tenant],
+        }
+        qs = User.objects.filter(**kwargs).order_by('id')
+        data = UserResource().export(qs)
+        export_data = data.xlsx
+        content_type = 'application/octet-stream'
+        response = HttpResponse(export_data, content_type=content_type)
+        date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+        filename = '%s-%s.%s' % ('User', date_str, 'xlsx')
+        response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
+        return response
+
+
+@extend_schema(tags=['user-app'])
 class UserAppViewSet(BaseViewSet):
 
     # permission_classes = [IsAuthenticated]
@@ -100,13 +189,20 @@ class UserAppViewSet(BaseViewSet):
             objs = all_apps
         else:
             all_apps_perms = [app.access_perm_code for app in all_apps]
-            perms = set([perm.codename for perm in user.user_permissions.filter(
-                codename__in=all_apps_perms
-            )])
+            perms = set(
+                [
+                    perm.codename
+                    for perm in user.user_permissions.filter(
+                        codename__in=all_apps_perms
+                    )
+                ]
+            )
             groups = user.groups.all()
             g: Group
             for g in groups:
-                perms = perms | set([perm.codename for perm in g.owned_perms(all_apps_perms)])
+                perms = perms | set(
+                    [perm.codename for perm in g.owned_perms(all_apps_perms)]
+                )
             objs = [app for app in all_apps if app.access_perm_code in perms]
         return objs
 
@@ -118,9 +214,7 @@ class TokenView(generics.CreateAPIView):
 
     serializer_class = TokenRequestSerializer
 
-    @extend_schema(
-        responses=TokenSerializer
-    )
+    @extend_schema(responses=TokenSerializer)
     def post(self, request):
         key = request.data.get('token', '')
         expiring_token = ExpiringTokenAuthentication()
