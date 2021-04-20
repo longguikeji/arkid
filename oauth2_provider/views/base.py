@@ -298,6 +298,7 @@ class TokenView(OAuthLibMixin, View):
     @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
         print('args:', args, kwargs)
+        print(request.uri_query)
         tenant_uuid = kwargs.get('tenant_uuid')
         tenant = Tenant.objects.get(uuid=tenant_uuid)
 
