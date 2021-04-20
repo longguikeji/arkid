@@ -6,13 +6,15 @@ extend_schema_tags(
     page={
             'type':'form_page',
             'router':'/system/extension/aliyun/config',
-            'fetch': {
-                'path': '/api/v1/extension/aliyun/config',
-                'method': 'get'
-            },
-            'request': {
-                'path': '/api/v1/extension/aliyun/config',
-                'method': 'put'
+            'init': {
+                'read': {
+                    'path': '/api/v1/extension/aliyun/config',
+                    'method': 'get'
+                },
+                'write': {
+                    'path': '/api/v1/extension/aliyun/config',
+                    'method': 'put'
+                }
             }
         }
 )
@@ -23,7 +25,7 @@ extend_schema_tags(
     page={
             'type':'form_page',
             'router':'/system/extension/aliyun/send_sms',
-            'request': {
+            'init': {
                 'path': '/api/v1/extension/aliyun/send_sms',
                 'method': 'post'
             }
