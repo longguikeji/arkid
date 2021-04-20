@@ -11,6 +11,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
+from rest_framework.authtoken.models import Token
 
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
@@ -102,6 +103,11 @@ class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
             allowed_schemes = oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
         else:
             allowed_schemes = application.get_allowed_schemes()
+        # 即将绑定的用户
+        key_obj = Token.objects.filter(user=self.request.user).first()
+        if key_obj:
+            token = key_obj.key
+            redirect_to = "{}&token={}".format(redirect_to, token)
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
 
@@ -298,7 +304,6 @@ class TokenView(OAuthLibMixin, View):
     @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
         print('args:', args, kwargs)
-        print(request.uri_query)
         tenant_uuid = kwargs.get('tenant_uuid')
         tenant = Tenant.objects.get(uuid=tenant_uuid)
 

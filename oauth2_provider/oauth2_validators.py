@@ -758,7 +758,6 @@ class OAuth2Validator(RequestValidator):
                 "auth_time": int(dateformat.format(request.user.last_login, "U")),
             }
         )
-
         return claims, expiration_time
 
     def get_oidc_issuer_endpoint(self, request):

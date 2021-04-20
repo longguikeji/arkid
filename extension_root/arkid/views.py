@@ -8,6 +8,7 @@ from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from .user_info_manager import ArkIDUserInfoManager, APICallError
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authtoken.models import Token
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from .models import ArkIDUser
 from urllib.parse import urlencode, unquote
@@ -89,6 +90,7 @@ class ArkIDCallbackView(APIView):
         处理arkid用户登录之后重定向页面
         """
         code = request.GET["code"]
+        token = request.GET["token"]
         next_url = request.GET.get("next", None)
         if next_url is not None:
             next_url = "?next=" + urllib.parse.quote(next_url)
@@ -113,7 +115,9 @@ class ArkIDCallbackView(APIView):
         else:
             raise ValidationError({"code": ["required"]})
 
-        context = self.get_token(user_id, tenant_uuid)
+        context = self.get_token(user_id, tenant_uuid, token)
+        print('一些中间信息')
+        print(context)
         if next_url:
             next_url = next_url.replace("?next=", "")
             query_string = urlencode(context)
@@ -123,25 +127,16 @@ class ArkIDCallbackView(APIView):
 
         return Response(context, HTTP_200_OK)
 
-    def get_token(self, user_id, tenant_uuid):  # pylint: disable=no-self-use
+    def get_token(self, user_id, tenant_uuid, default_token):  # pylint: disable=no-self-use
         arkid_user = ArkIDUser.valid_objects.filter(arkid_user_id=user_id).first()
         if arkid_user:
             user = arkid_user.user
             token = user.token
-            # context = {"token": token, **UserWithPermSerializer(user).data}
             context = {"token": token}
         else:
-            # context = {"token": "", "arkid_user_id": user_id}
-            context = {
-                "token": "",
-                "user_id": user_id,
-                "tenant_uuid": tenant_uuid,
-                "bind": reverse(
-                    "api:arkid:bind",
-                    args=[
-                        tenant_uuid,
-                    ],
-                ),
-            }
-
+            tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+            key_obj = Token.objects.filter(key=default_token).first()
+            user = key_obj.user
+            arkid_user = ArkIDUser.valid_objects.create(arkid_user_id=user_id, user=user, tenant=tenant)
+            context = {"token": user.token}
         return context

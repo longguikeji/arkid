@@ -145,7 +145,6 @@ class OAuthLibCore:
             uri, http_method, body, headers, extra_credentials,
         )
         uri = headers.get("Location", None)
-
         return uri, headers, body, status
 
     def create_revocation_response(self, request):
