@@ -12,28 +12,6 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/authorization_server/',
             'method': 'get'
-        },
-        'page': {
-            'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/authorization_server/',
-                'method': 'post'
-            }
-        },
-        'item': {
-            'update': {
-                'read': {
-                    'path': '/api/v1/tenant/{parent_lookup_tenant}/authorization_server/{id}/',
-                    'method': 'get'
-                },
-                'write': {
-                    'path': '/api/v1/tenant/{parent_lookup_tenant}/authorization_server/{id}/',
-                    'method': 'put'
-                }
-            },
-            'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/authorization_server/{id}/',
-                'method': 'delete'
-            }
         }
     }
 )
