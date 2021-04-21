@@ -12,28 +12,6 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/',
             'method': 'get'
-        },
-        'page': {
-            'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/',
-                'method': 'post'
-            }
-        },
-        'item': {
-            'update': {
-                'read': {
-                    'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/{id}/',
-                    'method': 'get'
-                },
-                'write': {
-                    'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/{id}/',
-                    'method': 'put'
-                }
-            },
-            'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/{id}/',
-                'method': 'delete'
-            }
         }
     }
 )
