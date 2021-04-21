@@ -24,5 +24,7 @@ extension = LDAPExtension(
     version='1.0',
     homepage='https://www.longguikeji.com',
     logo='',
+    scope='global',
+    type='global',
     maintainer='rock@longguikeji.com',
 )

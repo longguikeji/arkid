@@ -14,8 +14,9 @@ class InMemExtension:
     logo: Optional[str] = None
     maintainer: Optional[str] = None
     tags: Optional[str] = None
+    type: Optional[str] = None
 
-    scope: str = 'global'
+    scope: Optional[str] = None
 
     on_start: Optional[Callable] = None
     serializer: ExtensionBaseSerializer = None
@@ -48,7 +49,8 @@ class InMemExtension:
         if self.tags is None:
             self.tags = kwargs.get('tags', None)
 
-        self.scope = kwargs.get('scope', 'global')
+        if self.type is None:
+            self.type = kwargs.get('type', None)
 
         serializer = kwargs.get('serializer', None)
         if serializer is not None:

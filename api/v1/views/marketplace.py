@@ -16,11 +16,13 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags', '')
+        extension_type = self.request.query_params.get('type', '')
+        scope = self.request.query_params.get('scope', '')
         extensions = find_available_extensions()
-        if tags:
+        if tags or extension_type:
             result = []
             for extension in extensions:
-                if extension.tags == tags:
+                if tags and extension.tags == tags or extension_type and extension.type == extension_type or scope and extension.scope == scope:
                     result.append(extension)
             extensions = result
         return extensions

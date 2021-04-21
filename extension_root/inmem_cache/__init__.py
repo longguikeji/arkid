@@ -3,6 +3,7 @@ from .extension import InMemCacheExtension
 
 extension = InMemCacheExtension(
     scope='global',
+    type='global',
     name='inmem_cache',
     tags='cache',
     description='In Memery cache provider',

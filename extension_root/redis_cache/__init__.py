@@ -3,6 +3,7 @@ from .extension import RedisCacheExtension
 
 extension = RedisCacheExtension(
     scope='global',
+    type='global',
     name='redis_cache',
     tags='cache',
     description='Redis based cache provider',

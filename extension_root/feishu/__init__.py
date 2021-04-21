@@ -18,9 +18,10 @@ class FeishuExtension(InMemExtension):
 
 
 extension = FeishuExtension(
-    scope='tenant',  # TODO: to support tenant isolated extension
     name='feishu',
     tags='login',
+    scope='tenant',
+    type='tenant',
     description='飞书',
     version='1.0',
     homepage='https://www.longguikeji.com',
