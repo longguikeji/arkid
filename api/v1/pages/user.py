@@ -9,21 +9,39 @@ extend_schema_tags(
     name,
     {
         'type':'table_page',
-        'list': {
+        'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
             'method': 'get'
         },
-        'create': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
-            'method': 'post'
+        'page': {
+            'create': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
+                'method': 'post'
+            },
+            'export': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
+                'method': 'get'
+            },
+            'import': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_import/',
+                'method': 'post'
+            }
         },
-        'update': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
-            'method': 'put'
-        },
-        'delete': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
-            'method': 'delete'
+        'item': {
+            'update': {
+                'read': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
+                    'method': 'get'
+                },
+                'write': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
+                    'method': 'put'
+                }
+            },
+            'delete': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
+                'method': 'delete'
+            }
         }
     }
 )

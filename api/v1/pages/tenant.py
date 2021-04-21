@@ -10,21 +10,31 @@ extend_schema_tags(
     name,
     {
         'type':'table_page',
-        'list': {
+        'init': {
             'path': '/api/v1/tenant/',
             'method': 'get'
         },
-        'create': {
-            'path': '/api/v1/tenant/',
-            'method': 'post'
+        'page': {
+            'create': {
+                'path': '/api/v1/tenant/',
+                'method': 'post'
+            }
         },
-        'update': {
-            'path': '/api/v1/tenant/{id}/',
-            'method': 'put'
-        },
-        'delete': {
-            'path': '/api/v1/tenant/{id}/',
-            'method': 'delete'
+        'item': {
+            'update': {
+                'read': {
+                    'path': '/api/v1/tenant/{id}/',
+                    'method': 'get'
+                },
+                'write': {
+                    'path': '/api/v1/tenant/{id}/',
+                    'method': 'put'
+                }
+            },
+            'delete': {
+                'path': '/api/v1/tenant/{id}/',
+                'method': 'delete'
+            }   
         }
     }
 )

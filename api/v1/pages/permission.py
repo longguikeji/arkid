@@ -9,21 +9,9 @@ extend_schema_tags(
     name,
     {
         'type':'table_page',
-        'list': {
+        'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/',
             'method': 'get'
-        },
-        'create': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/',
-            'method': 'post'
-        },
-        'update': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/{id}/',
-            'method': 'put'
-        },
-        'delete': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/{id}/',
-            'method': 'delete'
         }
     }
 )

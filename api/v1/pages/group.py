@@ -9,37 +9,59 @@ extend_schema_tags(
     name,
     {
         'type':'tree_page',
-        'treeList': {
+        'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'get'
         },
-        'treeCreate': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
-            'method': 'post'
+        'page': {
+            'create': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
+                'method': 'post'
+            },
+            'import': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/group_import/',
+                'method': 'post'
+            },
+            'export': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/group_export/',
+                'method': 'get'
+            }
         },
-        'treeUpdate': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
-            'method': 'put'
+        'item': {
+            'update': {
+                'read': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
+                    'method': 'get'
+                },
+                'write': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
+                    'method': 'put'
+                }
+            },
+            'delete': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
+                'method': 'delete'
+            },
+            'children': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
+                'method': 'get'
+            }
         },
-        'treeDelete': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
-            'method': 'delete'
-        },
-        'childrenList': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
-            'method': 'get'
-        },
-        'tableList': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/?group={id}',
-            'method': 'get'
-        },
-        'tableUpdate': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
-            'method': 'put'
-        },
-        'tableDelete': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
-            'method': 'delete'
+        'table': {
+            'init': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/?group={id}',
+                'method': 'get'
+            },
+            'page': {
+                'export': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
+                    'method': 'get'
+                },
+                'import': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_import/',
+                    'method': 'post'
+                }
+            }
         }
     }
 )

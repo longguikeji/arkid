@@ -8,4 +8,4 @@ CLIENT_VALID = 'bad_verification_code'
 
 KEY = 'arkid'
 BIND_KEY = 'arkid_user_id'
-# IMG_URL = 'https://gitee.com/assets/favicon.ico'
+IMG_URL = 'http://arkid.vtwo.longguikeji.com/favicon.ico'
