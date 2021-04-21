@@ -26,7 +26,7 @@ class RequestAccessLog(models.Model):
         解析request
         '''
         return cls.objects.create(
-            ip='36.110.106.42',    # TODO: get real IP
+            ip=request.META.get('REMOTE_ADDR'),
             agent=request.META.get('HTTP_USER_AGENT', ''),
             url=request.get_full_path(),
             method=request.META.get('REQUEST_METHOD', ''),
