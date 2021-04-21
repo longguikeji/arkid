@@ -9,13 +9,9 @@ extend_schema_tags(
     name,
     {
         'type':'table_page',
-        'list': {
+        'init': {
             'path': '/api/v1/marketplace/',
             'method': 'get'
-        },
-        'retrieve': {
-            'path': '/api/v1/marketplace/',
-            'method': 'get'
-        },
+        }
     }
 )

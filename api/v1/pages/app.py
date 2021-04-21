@@ -9,21 +9,31 @@ extend_schema_tags(
     name,
     {
         'type':'table_page',
-        'list': {
+        'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
             'method': 'get'
         },
-        'create': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
-            'method': 'post'
+        'page': {
+            'create': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
+                'method': 'post'
+            }
         },
-        'update': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
-            'method': 'put'
+        'item': {
+            'update': {
+                'read': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
+                    'method': 'get'
+                },
+                'write': {
+                    'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
+                    'method': 'put'
+                }
+            },
+            'delete': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
+                'method': 'delete'
+            }
         },
-        'delete': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
-            'method': 'delete'
-        }
     }
 )
