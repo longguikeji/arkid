@@ -164,3 +164,20 @@ class UserImportSerializer(serializers.Serializer):
     file = serializers.FileField(label=_('上传文件'), write_only=True)
     error = serializers.CharField(read_only=True)
     message = serializers.CharField(read_only=True)
+
+
+class UserInfoSerializer(BaseDynamicFieldModelSerializer):
+    uuid = serializers.CharField(label=_('uuid'), read_only=True)
+    username = serializers.CharField(label=_('用户名'), read_only=True)
+    nickname = serializers.CharField(label=_('昵称'), read_only=True)
+    mobile = serializers.CharField(label=_('手机号'), read_only=True)
+
+    class Meta:
+        model = User
+
+        fields = (
+            'uuid',
+            'username',
+            'nickname',
+            'mobile',
+        )

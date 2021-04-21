@@ -1,5 +1,6 @@
 
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
 
 class MarketPlaceExtensionSerializer(serializers.Serializer):
@@ -21,3 +22,8 @@ class MarketPlaceExtensionSerializer(serializers.Serializer):
     #         'url',
     #         'description',
     #     )
+
+
+class MarketPlaceExtensionTagsSerializer(serializers.Serializer):
+
+    data = serializers.ListField(child=serializers.CharField(), label=_('标签'))

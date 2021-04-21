@@ -13,5 +13,6 @@ tenant_user_router.register(r'app',
                             parents_query_lookups=['tenant', 'user'])
 
 urlpatterns = [
-    path('user/token/', views_user.TokenView.as_view(), name='user-token'),
+    path('user/token/', views_user.UserTokenView.as_view(), name='user-token'),
+    path('user/info/', views_user.UserInfoView.as_view(), name='user-token'),
 ]
