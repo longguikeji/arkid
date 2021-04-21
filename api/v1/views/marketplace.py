@@ -19,11 +19,27 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
         extension_type = self.request.query_params.get('type', '')
         scope = self.request.query_params.get('scope', '')
         extensions = find_available_extensions()
-        if tags or extension_type:
+        if tags or extension_type or scope:
             result = []
             for extension in extensions:
-                if tags and extension.tags == tags or extension_type and extension.type == extension_type or scope and extension.scope == scope:
-                    result.append(extension)
+                if tags and extension_type and scope:
+                    if tags and tags in extension.tags and extension_type and extension_type in extension.type and scope and scope in extension.scope:
+                        result.append(extension)
+                elif tags and extension_type:
+                    if tags and tags in extension.tags and extension_type and extension_type in extension.type:
+                        result.append(extension)
+                elif tags and scope:
+                    if tags and tags in extension.tags or scope and scope in extension.scope:
+                        result.append(extension)
+                elif tags:
+                    if tags and tags in extension.tags:
+                        result.append(extension)
+                elif scope:
+                    if scope and scope in extension.scope:
+                        result.append(extension)
+                elif extension_type:
+                    if extension_type and extension_type in extension.type:
+                        result.append(extension)
             extensions = result
         return extensions
 
