@@ -17,6 +17,14 @@ extend_schema_tags(
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
                 'method': 'post'
+            },
+            'export': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
+                'method': 'get'
+            },
+            'import': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_import/',
+                'method': 'post'
             }
         },
         'item': {
