@@ -1,9 +1,9 @@
 import json
 import logging
+from tenant.models import Tenant
 import urllib.parse
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
@@ -11,23 +11,65 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
+from rest_framework.authtoken.models import Token
 
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
 from ..http import OAuth2ResponseRedirect
 from ..models import get_access_token_model, get_application_model
+from django.contrib.auth.mixins import AccessMixin
 from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..signals import app_authorized
 from .mixins import OAuthLibMixin
 from config import get_app_config
 from arkid.settings import LOGIN_URL
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 
 log = logging.getLogger("oauth2_provider")
 
 
-class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
+class TokenRequiredMixin(AccessMixin):
+
+    def get_login_url(self):
+        full_path = self.request.get_full_path()
+        # # 地址加租户uuid参数
+        tenant_index = full_path.find('tenant/') + 7
+        if tenant_index != 6:
+            slash_index = full_path.find('/', tenant_index)
+            full_path = '{}{}?tenant={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, full_path[tenant_index:slash_index], full_path)
+        return full_path
+
+    def dispatch(self, request, *args, **kwargs):
+        is_authenticated = self.check_token(request)
+        if is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            return self.handle_no_permission()
+
+    def check_token(self, request):
+        token = request.GET.get('token', '')
+        request.META['HTTP_AUTHORIZATION'] = 'Token ' + token
+        try:
+            res = ExpiringTokenAuthentication().authenticate(request)
+            if res is not None:
+                user, _ = res
+                request.user = user
+                return True
+            return False
+        except AuthenticationFailed:
+            return False
+
+    def handle_no_permission(self):
+        return self._redirect_to_login()
+
+    def _redirect_to_login(self):
+        return HttpResponseRedirect(self.get_login_url())
+
+
+class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
     """
     Implements a generic endpoint to handle *Authorization Requests* as in :rfc:`4.1.1`. The view
     does not implement any strategy to determine *authorize/do not authorize* logic.
@@ -37,15 +79,6 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
     * Implicit grant
 
     """
-
-    def get_login_url(self):
-        full_path = self.request.get_full_path()
-        # 地址加参数
-        tenant_index = full_path.find('tenant/') + 7
-        if tenant_index != 6:
-            slash_index = full_path.find('/', tenant_index)
-            full_path = '{}{}?tenant={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, full_path[tenant_index:slash_index])
-        return full_path
 
     def dispatch(self, request, *args, **kwargs):
         self.oauth2_data = {}
@@ -70,6 +103,11 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
             allowed_schemes = oauth2_settings.ALLOWED_REDIRECT_URI_SCHEMES
         else:
             allowed_schemes = application.get_allowed_schemes()
+        # 即将绑定的用户
+        key_obj = Token.objects.filter(user=self.request.user).first()
+        if key_obj:
+            token = key_obj.key
+            redirect_to = "{}&token={}".format(redirect_to, token)
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
 
@@ -265,7 +303,10 @@ class TokenView(OAuthLibMixin, View):
 
     @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
-        url, headers, body, status = self.create_token_response(request)
+        tenant_uuid = kwargs.get('tenant_uuid')
+        tenant = Tenant.objects.get(uuid=tenant_uuid)
+
+        url, headers, body, status = self.create_token_response(request, tenant)
         if status == 200:
             access_token = json.loads(body).get("access_token")
             if access_token is not None:

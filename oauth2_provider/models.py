@@ -286,7 +286,12 @@ class AbstractGrant(models.Model):
         return timezone.now() >= self.expires
 
     def redirect_uri_allowed(self, uri):
-        return uri == self.redirect_uri
+        uri1 = uri
+        uri2 = self.redirect_uri
+        index = uri2.find('?')
+        if index != -1:
+            uri2 = uri2[0:index]
+        return uri1 == uri2
 
     def __str__(self):
         return self.code

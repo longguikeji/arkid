@@ -1,27 +1,15 @@
 from rest_framework import serializers
 from oauth2_provider.models import Application
-from django.utils.translation import gettext_lazy as _
+# from django.utils.translation import gettext_lazy as _
 from common.serializer import AppBaseSerializer
-
-CLIENT_TYPE_CHOICES = [
-    (Application.CLIENT_CONFIDENTIAL, _("Confidential")),
-    (Application.CLIENT_PUBLIC, _("Public")),
-]
-
-GRANT_TYPE_CHOICES = [
-    (Application.GRANT_AUTHORIZATION_CODE, _("Authorization code")),
-    (Application.GRANT_IMPLICIT, _("Implicit")),
-    (Application.GRANT_PASSWORD, _("Resource owner password-based")),
-    (Application.GRANT_CLIENT_CREDENTIALS, _("Client credentials")),
-    (Application.GRANT_OPENID_HYBRID, _("OpenID connect hybrid")),
-]
 
 
 class OAuth2ConfigSerializer(serializers.Serializer):
 
     redirect_uris = serializers.URLField()
-    client_type = serializers.ChoiceField(choices=CLIENT_TYPE_CHOICES, default=Application.CLIENT_PUBLIC)
-    grant_type = serializers.ChoiceField(choices=GRANT_TYPE_CHOICES, default=Application.GRANT_AUTHORIZATION_CODE)
+    client_type = serializers.ChoiceField(choices=Application.CLIENT_TYPES, default=Application.CLIENT_PUBLIC)
+    grant_type = serializers.ChoiceField(choices=Application.GRANT_TYPES, default=Application.GRANT_AUTHORIZATION_CODE)
+    algorithm = serializers.ChoiceField(choices=Application.ALGORITHM_TYPES, default=Application.NO_ALGORITHM)
 
     client_id = serializers.CharField(read_only=True)
     client_secret = serializers.CharField(read_only=True)
@@ -38,8 +26,8 @@ class OAuth2AppSerializer(AppBaseSerializer):
 class OIDCConfigSerializer(serializers.Serializer):
 
     redirect_uris = serializers.URLField()
-    client_type = serializers.ChoiceField(choices=CLIENT_TYPE_CHOICES, default=Application.CLIENT_PUBLIC)
-    grant_type = serializers.ChoiceField(choices=GRANT_TYPE_CHOICES, default=Application.GRANT_AUTHORIZATION_CODE)
+    client_type = serializers.ChoiceField(choices=Application.CLIENT_TYPES, default=Application.CLIENT_PUBLIC)
+    grant_type = serializers.ChoiceField(choices=Application.GRANT_TYPES, default=Application.GRANT_AUTHORIZATION_CODE)
 
     client_id = serializers.CharField(read_only=True)
     client_secret = serializers.CharField(read_only=True)

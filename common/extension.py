@@ -48,6 +48,8 @@ class InMemExtension:
         if self.tags is None:
             self.tags = kwargs.get('tags', None)
 
+        self.scope = kwargs.get('scope', 'global')
+
         serializer = kwargs.get('serializer', None)
         if serializer is not None:
             self.serializer = serializer
