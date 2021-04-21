@@ -23,7 +23,7 @@ class InMemExtension:
 
     def __init__(self, *args, **kwargs) -> None:
         if self.scope is None:
-            self.scope = kwargs.get('scope', None)
+            self.scope = kwargs.get('scope', 'global')
 
         if self.name is None:
             self.name = kwargs.get('name', None)
