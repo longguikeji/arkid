@@ -20,6 +20,8 @@ class LocalStorageExtension(InMemExtension):
 extension = LocalStorageExtension(
     name=KEY,
     tags='storage',
+    scope='global',
+    type='global',
     description='local filesystem based storage solution',
     version='1.0',
     logo='',

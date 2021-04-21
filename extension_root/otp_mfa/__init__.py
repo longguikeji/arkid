@@ -41,5 +41,7 @@ extension = OTPMFAExtension(
     version='1.0',
     homepage='https://www.longguikeji.com',
     logo='',
+    scope='global',
+    type='global',
     maintainer='insfocus@gmail.com',
 )

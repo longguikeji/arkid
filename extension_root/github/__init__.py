@@ -22,6 +22,8 @@ class GithubExternalIdpExtension(InMemExtension):
 extension = GithubExternalIdpExtension(
     name='github',
     tags='login',
+    scope='tenant',
+    type='tenant',
     description='github as the external idP',
     version='1.0',
     homepage='https://www.longguikeji.com',

@@ -32,4 +32,6 @@ extension = OSSStorageExtension(
     homepage='https://www.longguikeji.com',
     contact='rock@longguikeji.com',
     serializer=OSSStorageSerializer,
+    scope='global',
+    type='global',
 )

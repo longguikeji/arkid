@@ -90,6 +90,8 @@ extension = AliyunExtension(
 """,
     version='1.0',
     tags='sms',
+    scope='global',
+    type='global',
     homepage='https://www.longguikeji.com',
     logo='',
     maintainer='insfocus@gmail.com',

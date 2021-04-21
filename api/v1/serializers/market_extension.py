@@ -12,6 +12,8 @@ class MarketPlaceExtensionSerializer(serializers.Serializer):
     logo = serializers.CharField()
     maintainer = serializers.CharField()
     tags = serializers.CharField()
+    type = serializers.CharField()
+    scope = serializers.CharField()
 
     # class Meta:
 

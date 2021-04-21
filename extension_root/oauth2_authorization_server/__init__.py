@@ -36,6 +36,7 @@ class OAuthAuthorizationServerExtension(InMemExtension):
 
 extension = OAuthAuthorizationServerExtension(
     scope='tenant',
+    type='tenant',
     tags='oauth',
     name='oauth2_authorization_server',
     description='Arkid OAuth2 authorization server',

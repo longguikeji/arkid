@@ -38,6 +38,8 @@ class HuaWeiExtension(InMemExtension):
 extension = HuaWeiExtension(
     name=KEY,
     tags='sms',
+    scope='global',
+    type='global',
     description="""基于华为云平台的短信发送功能""",
     version='1.0',
     homepage='https://www.longguikeji.com',

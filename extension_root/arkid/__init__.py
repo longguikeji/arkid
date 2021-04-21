@@ -19,6 +19,8 @@ class ArkIDExternalIdpExtension(InMemExtension):
 extension = ArkIDExternalIdpExtension(
     tags='login',
     name="arkid",
+    scope='tenant',
+    type='tenant',
     description="arkid as the external idP",
     version="1.0",
     homepage="https://www.longguikeji.com",
