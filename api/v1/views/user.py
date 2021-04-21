@@ -4,7 +4,7 @@ from django.db import models
 from django.http import Http404
 from django.http.response import JsonResponse
 from rest_framework import generics, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.contrib.auth.models import User as DUser
@@ -19,6 +19,7 @@ from api.v1.serializers.user import (
     TokenSerializer,
     TokenRequestSerializer,
     UserImportSerializer,
+    UserInfoSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -208,7 +209,7 @@ class UserAppViewSet(BaseViewSet):
 
 
 @extend_schema(tags=['user'])
-class TokenView(generics.CreateAPIView):
+class UserTokenView(generics.CreateAPIView):
     permission_classes = []
     authentication_classes = []
 
@@ -224,3 +225,14 @@ class TokenView(generics.CreateAPIView):
         except Exception as e:
             is_valid = False
         return Response(is_valid)
+
+
+@extend_schema(tags=['user'])
+class UserInfoView(generics.RetrieveAPIView):
+    permission_classes = [AllowAny]
+    authentication_classes = [ExpiringTokenAuthentication]
+    serializer_class = UserInfoSerializer
+
+    @extend_schema(responses=UserInfoSerializer)
+    def get_object(self):
+        return self.request.user
