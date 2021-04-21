@@ -58,3 +58,4 @@ urlpatterns += tenant.urlpatterns
 
 urlpatterns += marketplace.router.urls
 urlpatterns += user.urlpatterns
+urlpatterns += marketplace.urlpatterns
