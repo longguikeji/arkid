@@ -90,17 +90,6 @@ root_add_routers([
                     ),
                 ]
             ),
-            Router(
-                path='extension',
-                name='插件管理',
-                icon='list',
-                children=[
-                    PageRouter(
-                        page=extension,
-                        icon='list',
-                    ),
-                ]
-            ),
         ]
     ),
     Router(
@@ -113,6 +102,10 @@ root_add_routers([
                 name='插件管理',
                 icon='list',
                 children=[
+                    PageRouter(
+                        page=extension,
+                        icon='list',
+                    ),
                     PageRouter(
                         page=maketplace,
                         icon='list',
