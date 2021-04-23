@@ -3,7 +3,7 @@ import json
 root_list = []
 
 class Router(dict):
-    def __init__(self, path=None, name=None, icon=None, children=None, redirect=None, page=None, *args, **kwargs):
+    def __init__(self, path=None, name=None, icon=None, children=None, redirect=None, page=None, role=None, *args, **kwargs):
         if path:
             self['path'] = path
         if name:
@@ -16,6 +16,8 @@ class Router(dict):
             self['redirect'] = redirect
         if page:
             self['page'] = page
+        if role:
+            self['role'] = role
         super().__init__(*args, **kwargs)
 
     def add_child(self, child):
