@@ -137,3 +137,23 @@ class FeishuBindView(GenericAPIView):
         token = user.token
         data = {"token": token}
         return Response(data, HTTP_200_OK)
+
+
+@extend_schema(tags=["feishu"])
+class FeishuUnBindView(GenericAPIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    def get(self, request, tenant_uuid):
+        """
+        解除绑定用户
+        """
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        feishuuser = FeishuUser.valid_objects.filter(user=request.user, tenant=tenant).first()
+        if feishuuser:
+            feishuuser.delete()
+            data = {"is_del": True}
+        else:
+            data = {"is_del": False}
+        return Response(data, HTTP_200_OK)

@@ -58,10 +58,12 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'permissions',
             'set_groups',
             'set_permissions',
+            'bind_info',
         )
 
         extra_kwargs = {
             'uuid': {'read_only': True},
+            'bind_info': {'read_only': True},
             'password': {'write_only': True},
         }
 
@@ -181,3 +183,13 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
             'nickname',
             'mobile',
         )
+
+
+class UserBindInfoBaseSerializer(serializers.Serializer):
+    name = serializers.CharField(label=_('名称'), read_only=True)
+    tenant = serializers.CharField(label=_('租户'), read_only=True)
+    unbind = serializers.CharField(label=_('解绑地址'), read_only=True)
+
+
+class UserBindInfoSerializer(serializers.Serializer):
+    data = serializers.ListField(child=UserBindInfoBaseSerializer(), label=_('绑定信息'), read_only=True)

@@ -149,6 +149,26 @@ class GiteeCallbackView(APIView):
         return context
 
 
+@extend_schema(tags=["gitee"])
+class GiteeUnBindView(GenericAPIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    def get(self, request, tenant_uuid):
+        """
+        解除绑定用户
+        """
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        gitee_user = GiteeUser.valid_objects.filter(user=request.user, tenant=tenant).first()
+        if gitee_user:
+            gitee_user.delete()
+            data = {"is_del": True}
+        else:
+            data = {"is_del": False}
+        return Response(data, HTTP_200_OK)
+
+
 # @extend_schema(tags=["gitee"])
 # class GiteeRegisterAndBindView(generics.CreateAPIView):
 #     """

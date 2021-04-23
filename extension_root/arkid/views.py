@@ -138,3 +138,23 @@ class ArkIDCallbackView(APIView):
             arkid_user = ArkIDUser.valid_objects.create(arkid_user_id=user_id, user=user, tenant=tenant)
             context = {"token": user.token}
         return context
+
+
+@extend_schema(tags=["arkid"])
+class ArkIDUnBindView(GenericAPIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    def get(self, request, tenant_uuid):
+        """
+        解除绑定用户
+        """
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        arkid_user = ArkIDUser.valid_objects.filter(user=request.user, tenant=tenant).first()
+        if arkid_user:
+            arkid_user.delete()
+            data = {"is_del": True}
+        else:
+            data = {"is_del": False}
+        return Response(data, HTTP_200_OK)
