@@ -92,6 +92,26 @@ class User(AbstractUser, BaseModel):
         full_name = f'{self.first_name} {self.last_name}'
         return full_name.strip()
 
+    def bind_info(self):
+        from extension_root.feishu.models import FeishuUser
+        from extension_root.gitee.models import GiteeUser
+        from extension_root.github.models import GithubUser
+        from extension_root.arkid.models import ArkIDUser
+        feishuusers = FeishuUser.valid_objects.filter(user=self).exists()
+        giteeusers = GiteeUser.valid_objects.filter(user=self).exists()
+        githubusers = GithubUser.valid_objects.filter(user=self).exists()
+        arkidusers = ArkIDUser.valid_objects.filter(user=self).exists()
+        result = ''
+        if feishuusers:
+            result = '飞书'
+        if giteeusers:
+            result = result + 'gitee,'
+        if githubusers:
+            result = result + 'github,'
+        if arkidusers:
+            result = result + 'arkid'
+        return result
+
     @property
     def token(self):
         token, _ = Token.objects.get_or_create(

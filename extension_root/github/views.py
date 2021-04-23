@@ -138,6 +138,26 @@ class GithubCallbackView(APIView):
 
 
 @extend_schema(tags=["github"])
+class GithubUnBindView(GenericAPIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    def get(self, request, tenant_uuid):
+        """
+        解除绑定用户
+        """
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        github_user = GithubUser.valid_objects.filter(user=request.user, tenant=tenant).first()
+        if github_user:
+            github_user.delete()
+            data = {"is_del": True}
+        else:
+            data = {"is_del": False}
+        return Response(data, HTTP_200_OK)
+
+
+@extend_schema(tags=["github"])
 class GithubRegisterAndBindView(generics.CreateAPIView):
     """
     github账户注册加绑定
