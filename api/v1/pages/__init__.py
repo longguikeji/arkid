@@ -10,13 +10,14 @@ from . import (
     user,
     permission,
     profile,
-    third_party_account
+    third_party_account,
+    desktop
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter
 
 root_add_routers([
-     Router(
+    Router(
         path='book',
         name='通讯录',
         icon='education',
