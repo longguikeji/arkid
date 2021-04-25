@@ -20,6 +20,7 @@ from api.v1.serializers.user import (
     TokenRequestSerializer,
     UserImportSerializer,
     UserInfoSerializer,
+    UserBindInfoSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -30,6 +31,7 @@ from rest_framework.decorators import action
 from tablib import Dataset
 from collections import defaultdict
 from common.code import Code
+from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 
@@ -236,3 +238,48 @@ class UserInfoView(generics.RetrieveAPIView):
     @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
+
+
+@extend_schema(tags=['user'])
+class UserBindInfoView(generics.RetrieveAPIView):
+    permission_classes = [AllowAny]
+    authentication_classes = [ExpiringTokenAuthentication]
+    serializer_class = UserBindInfoSerializer
+
+    @extend_schema(responses=UserBindInfoSerializer)
+    def get(self, request):
+        from extension_root.feishu.models import FeishuUser
+        from extension_root.gitee.models import GiteeUser
+        from extension_root.github.models import GithubUser
+        from extension_root.arkid.models import ArkIDUser
+        user = request.user
+        feishuusers = FeishuUser.valid_objects.filter(user=request.user)
+        giteeusers = GiteeUser.valid_objects.filter(user=request.user)
+        githubusers = GithubUser.valid_objects.filter(user=request.user)
+        arkidusers = ArkIDUser.valid_objects.filter(user=request.user)
+        result = []
+        for item in feishuusers:
+            result.append({
+                'name': '飞书',
+                'tenant': item.tenant.uuid,
+                'unbind': '/api/v1/tenant/{}/feishu/unbind'.format(item.tenant.uuid),
+            })
+        for item in giteeusers:
+            result.append({
+                'name': 'gitee',
+                'tenant': item.tenant.uuid,
+                'unbind': '/api/v1/tenant/{}/gitee/unbind'.format(item.tenant.uuid),
+            })
+        for item in githubusers:
+            result.append({
+                'name': 'github',
+                'tenant': item.tenant.uuid,
+                'unbind': '/api/v1/tenant/{}/github/unbind'.format(item.tenant.uuid),
+            })
+        for item in arkidusers:
+            result.append({
+                'name': 'arkid',
+                'tenant': item.tenant.uuid,
+                'unbind': '/api/v1/tenant/{}/arkid/unbind'.format(item.tenant.uuid),
+            })
+        return JsonResponse({'data': result}, safe=False)
