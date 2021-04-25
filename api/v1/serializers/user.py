@@ -148,6 +148,7 @@ class UserListResponsesSerializer(UserSerializer):
             'country',
             'city',
             'job_title',
+            'bind_info',
         )
 
 
