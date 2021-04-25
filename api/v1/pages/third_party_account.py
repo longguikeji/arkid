@@ -10,20 +10,8 @@ extend_schema_tags(
     {
         'type':'form_page',
         'init': {
-            'path': '/api/v1/user/info/',
+            'path': '/api/v1/user/bind_info/',
             'method': 'get'
-        },
-        'page': {
-            'update': {
-                'read': {
-                    'path': '/api/v1/user/info/',
-                    'method': 'get'
-                },
-                'write': {
-                    'path': '/api/v1/user/info/',
-                    'method': 'post'
-                }
-            }
         }
     }
 )

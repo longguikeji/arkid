@@ -12,18 +12,6 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/user/info/',
             'method': 'get'
-        },
-        'page': {
-            'update': {
-                'read': {
-                    'path': '/api/v1/user/info/',
-                    'method': 'get'
-                },
-                'write': {
-                    'path': '/api/v1/user/info/',
-                    'method': 'post'
-                }
-            }
         }
     }
 )
