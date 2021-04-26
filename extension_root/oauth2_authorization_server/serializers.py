@@ -27,6 +27,7 @@ class OIDCConfigSerializer(serializers.Serializer):
     redirect_uris = serializers.URLField()
     client_type = serializers.ChoiceField(choices=Application.CLIENT_TYPES, default=Application.CLIENT_PUBLIC)
     grant_type = serializers.ChoiceField(choices=Application.GRANT_TYPES, default=Application.GRANT_AUTHORIZATION_CODE)
+    algorithm = serializers.ChoiceField(choices=Application.ALGORITHM_TYPES, default=Application.NO_ALGORITHM)
 
     client_id = serializers.CharField(read_only=True)
     client_secret = serializers.CharField(read_only=True)
@@ -37,4 +38,4 @@ class OIDCConfigSerializer(serializers.Serializer):
 class OIDCAppSerializer(AppBaseSerializer):
 
     # protocol_data = OIDCConfigSerializer()
-    data = OAuth2ConfigSerializer()
+    data = OIDCConfigSerializer()
