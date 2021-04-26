@@ -130,13 +130,13 @@ class ArkIDCallbackView(APIView):
         if arkid_user:
             user = arkid_user.user
             token = user.token
-            context = {"token": token}
+            context = {"token": token, "tenant_uuid": tenant_uuid}
         else:
             tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
             key_obj = Token.objects.filter(key=default_token).first()
             user = key_obj.user
             arkid_user = ArkIDUser.valid_objects.create(arkid_user_id=user_id, user=user, tenant=tenant)
-            context = {"token": user.token}
+            context = {"token": user.token, "tenant_uuid": tenant_uuid}
         return context
 
 

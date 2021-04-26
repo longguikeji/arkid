@@ -5,7 +5,6 @@ from openapi.utils import extend_schema
 from django.http.response import JsonResponse
 from api.v1.views.login import LoginView, MobileLoginView
 from api.v1.views.tenant import TenantViewSet
-from runtime import get_app_runtime
 from tenant.models import Tenant
 from external_idp.models import ExternalIdp
 from api.v1.serializers.tenant import TenantSerializer
@@ -28,6 +27,7 @@ class LoginPage(views.APIView):
             data.addForm( model.LOGIN, TenantViewSet().login_form(tenant_uuid) )
             data.addForm( model.LOGIN, TenantViewSet().mobile_login_form(tenant_uuid) )
             data.addForm( model.REGISTER, TenantViewSet().mobile_register_form(tenant_uuid) )
+            data.addForm( model.REGISTER, TenantViewSet().username_register_form(tenant_uuid) )
 
             external_idps = ExternalIdp.valid_objects.filter(tenant=tenant)
             for idp in external_idps:

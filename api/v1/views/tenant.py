@@ -160,9 +160,44 @@ class TenantViewSet(BaseViewSet):
 
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
-            tenant=tenant,
             mobile=mobile,
         )
+        user.tenants.add(tenant)
+        token = self._get_token(user)
+        return JsonResponse(data={
+            'error': Code.OK.value,
+            'data': {
+                'token': token.key,  # TODO: fullfil user info
+            }
+        })
+
+
+    @action(detail=True, methods=['post'])
+    def username_register(self, request, pk):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = User.objects.filter(
+            username=username
+        ).first()
+        if user:
+            return JsonResponse(data={
+                'error': Code.USERNAME_EXISTS_ERROR.value,
+                'message': _('username already exists'),
+            })
+        if not password:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_NONE_ERROR.value,
+                'message': _('password is empty'),
+            })
+
+        tenant = self.get_object()
+        user, created = User.objects.get_or_create(
+            username=username,
+        )
+        user.tenants.add(tenant)
+        user.set_password(password)
+        user.save()
         token = self._get_token(user)
         return JsonResponse(data={
             'error': Code.OK.value,
@@ -318,6 +353,40 @@ class TenantViewSet(BaseViewSet):
                         'mobile':'mobile',
                         'password':'password',
                         'code':'code',
+                        'repassword': 'repassword',
+                    }
+                )
+            ),
+        )
+
+    def username_register_form(self, tenant_uuid):
+        return lp.LoginForm(
+            label='用户名注册',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name='username',
+                    placeholder='用户名',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='密码',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='repassword',
+                    placeholder='密码确认',
+                ),
+            ],
+            submit=lp.Button(
+                label='注册',
+                http=lp.ButtonHttp(
+                    url=reverse("api:tenant-username-register", args=[tenant_uuid, ]),
+                    method='post',
+                    params={
+                        'username':'username',
+                        'password':'password',
                         'repassword': 'repassword',
                     }
                 )
