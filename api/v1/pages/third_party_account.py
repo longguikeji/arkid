@@ -8,7 +8,7 @@ extend_schema_tags(
     tag,
     name,
     {
-        'type':'form_page',
+        'type':'table_page',
         'init': {
             'path': '/api/v1/user/bind_info/',
             'method': 'get'
