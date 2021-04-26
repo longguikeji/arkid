@@ -13,7 +13,6 @@ class OAuth2AppTypeProvider(AppTypeProvider):
         '''
 
         client_type = data.get('client_type')
-        algorithm = data.get('algorithm')
         redirect_uris = data.get('redirect_uris')
         authorization_grant_type = data.get('grant_type')
         obj = Application()
@@ -21,7 +20,6 @@ class OAuth2AppTypeProvider(AppTypeProvider):
         obj.client_type = client_type
         obj.redirect_uris = redirect_uris
         obj.authorization_grant_type = authorization_grant_type
-        obj.algorithm = algorithm
         obj.save()
 
         uniformed_data = {
@@ -30,7 +28,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             'grant_type': authorization_grant_type,
             'client_id': obj.client_id,
             'client_secret': obj.client_secret,
-            'algorithm': obj.algorithm,
+            'userinfo': reverse("api:oauth2_authorization_server:user-info", args=[app.tenant.uuid]),
             'authorize': reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
             'token': reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
         }
@@ -39,14 +37,12 @@ class OAuth2AppTypeProvider(AppTypeProvider):
 
     def update(self, app, data: Dict) -> Dict:
         client_type = data.get('client_type')
-        algorithm = data.get('algorithm')
         redirect_uris = data.get('redirect_uris')
         authorization_grant_type = data.get('grant_type')
         obj = Application.objects.filter(name=app.id).first()
         obj.client_type = client_type
         obj.redirect_uris = redirect_uris
         obj.authorization_grant_type = authorization_grant_type
-        obj.algorithm = algorithm
         obj.save()
         uniformed_data = {
             'client_type': client_type,
@@ -54,7 +50,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             'grant_type': authorization_grant_type,
             'client_id': obj.client_id,
             'client_secret': obj.client_secret,
-            'algorithm': obj.algorithm,
+            'userinfo': reverse("api:oauth2_authorization_server:user-info", args=[app.tenant.uuid]),
             'authorize': reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
             'token': reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
         }
