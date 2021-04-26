@@ -69,6 +69,22 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
 
         return app
 
+    def update(self, instance, validated_data):
+        protocol_type = validated_data.pop('type')
+        protocol_data = validated_data.pop('data', None)
+        app = instance
+        r = get_app_runtime()
+        provider_cls: AppTypeProvider = r.app_type_providers.get(protocol_type, None)
+        assert provider_cls is not None
+        provider = provider_cls()
+        data = provider.update(app=app, data=protocol_data)
+        if data is not None:
+            app.data = data
+            app.save()
+        instance.__dict__.update(validated_data)
+        instance.save()
+        return instance
+
 
 class AppListSerializer(AppSerializer):
 

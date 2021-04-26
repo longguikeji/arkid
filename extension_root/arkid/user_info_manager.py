@@ -5,6 +5,7 @@ from config import get_app_config
 import requests
 import json
 
+
 class APICallError(Exception):
     def __init__(self, error_info):
         super(APICallError, self).__init__()
@@ -53,6 +54,7 @@ class ArkIDUserInfoManager:
         response = requests.get(
             user_info_url,
             headers=headers,
-        ).json()
+        )
+        response = response.json()
         user_id = response["sub"]
         return user_id
