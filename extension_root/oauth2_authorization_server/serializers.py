@@ -14,6 +14,7 @@ class OAuth2ConfigSerializer(serializers.Serializer):
     client_secret = serializers.CharField(read_only=True)
     authorize = serializers.URLField(read_only=True)
     token = serializers.URLField(read_only=True)
+    userinfo = serializers.URLField(read_only=True)
 
 
 class OAuth2AppSerializer(AppBaseSerializer):
@@ -33,6 +34,7 @@ class OIDCConfigSerializer(serializers.Serializer):
     client_secret = serializers.CharField(read_only=True)
     authorize = serializers.URLField(read_only=True)
     token = serializers.URLField(read_only=True)
+    userinfo = serializers.URLField(read_only=True)
 
 
 class OIDCAppSerializer(AppBaseSerializer):
