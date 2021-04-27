@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='idtoken',
             name='token',
-            field=models.TextField(unique=True),
+            field=models.CharField(max_length=1024),
         ),
     ]
