@@ -9,37 +9,41 @@ from . import (
     authorization_server, 
     user,
     permission,
+    profile,
+    third_party_account,
+    desktop
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter
 
 root_add_routers([
-     Router(
+    Router(
         path='book',
         name='通讯录',
         icon='education',
+        role=['global', 'tenant', 'user']
     ),
     Router(
         path='mine',
         name='个人管理',
         icon='people',
+        role=['global', 'tenant', 'user'],
         children=[
-            Router(
-                path='profile',
-                name='个人资料',
-                icon='edit',
+            PageRouter(
+                page=profile,
+                icon='edit'
             ),
-            Router(
-                path='external_idp',
-                name='第三方账号绑定',
-                icon='wechat',
-            ),
+            PageRouter(
+                page=third_party_account,
+                icon='wechat'
+            )
         ]
     ),
     Router(
         path='tmanage',
         name='租户管理',
         icon='peoples',
+        role=['global', 'tenant'],
         children=[
             PageRouter(
                 page=app,
@@ -90,6 +94,14 @@ root_add_routers([
                     ),
                 ]
             ),
+        ]
+    ),
+    Router(
+        path='system',
+        name='系统管理',
+        icon='setting',
+        role=['global', 'tenant', 'user'],
+        children=[
             Router(
                 path='extension',
                 name='插件管理',
@@ -99,20 +111,6 @@ root_add_routers([
                         page=extension,
                         icon='list',
                     ),
-                ]
-            ),
-        ]
-    ),
-    Router(
-        path='system',
-        name='系统管理',
-        icon='setting',
-        children=[
-            Router(
-                path='extension',
-                name='插件管理',
-                icon='list',
-                children=[
                     PageRouter(
                         page=maketplace,
                         icon='list',

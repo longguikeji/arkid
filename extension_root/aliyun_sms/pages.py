@@ -7,11 +7,11 @@ extend_schema_tags(
             'type':'form_page',
             'router':'/system/extension/aliyun/config',
             'init': {
-                'read': {
-                    'path': '/api/v1/extension/aliyun/config',
-                    'method': 'get'
-                },
-                'write': {
+                'path': '/api/v1/extension/aliyun/config',
+                'method': 'get'
+            },
+            'page': {
+                'update': {
                     'path': '/api/v1/extension/aliyun/config',
                     'method': 'put'
                 }
