@@ -4,7 +4,9 @@ from django.db.models.fields import related
 from tenant.models import Tenant
 from common.model import BaseModel
 from django.contrib.auth.hashers import (
-    check_password, is_password_usable, make_password,
+    check_password,
+    is_password_usable,
+    make_password,
 )
 from django.contrib.auth.models import AbstractUser
 from common.model import BaseModel
@@ -12,11 +14,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import PermissionManager
 from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
+from django_scim.models import AbstractSCIMUserMixin, AbstractSCIMGroupMixin
 
 
 class Permission(BaseModel):
 
-    tenant = models.ForeignKey('tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT)
+    tenant = models.ForeignKey(
+        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+    )
     name = models.CharField(_('name'), max_length=255)
     content_type = models.ForeignKey(
         ContentType,
@@ -43,7 +48,7 @@ class Permission(BaseModel):
     natural_key.dependencies = ['contenttypes.contenttype']
 
 
-class User(AbstractUser, BaseModel):
+class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
 
     tenants = models.ManyToManyField(
         'tenant.Tenant',
@@ -82,8 +87,18 @@ class User(AbstractUser, BaseModel):
     _password = None
 
     @property
+    def scim_groups(self):
+        return self.groups
+
+    def set_scim_id(self, is_new):
+        if is_new:
+            self.__class__.objects.filter(id=self.id).update(scim_id=self.uuid)
+            self.scim_id = str(self.uuid)
+
+    @property
     def avatar_url(self):
         from runtime import get_app_runtime
+
         r = get_app_runtime()
         return r.storage_provider.resolve(self.avatar)
 
@@ -97,6 +112,7 @@ class User(AbstractUser, BaseModel):
         from extension_root.gitee.models import GiteeUser
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
+
         feishuusers = FeishuUser.valid_objects.filter(user=self).exists()
         giteeusers = GiteeUser.valid_objects.filter(user=self).exists()
         githubusers = GithubUser.valid_objects.filter(user=self).exists()
@@ -128,6 +144,7 @@ class User(AbstractUser, BaseModel):
         Return a boolean of whether the raw_password was correct. Handles
         hashing formats behind the scenes.
         """
+
         def setter(raw_password):
             self.set_password(raw_password)
             # Password hash upgrades shouldn't be considered password changes.
@@ -147,11 +164,19 @@ class User(AbstractUser, BaseModel):
         return is_password_usable(self.password)
 
 
-class Group(BaseModel):
+class Group(AbstractSCIMGroupMixin, BaseModel):
 
-    tenant = models.ForeignKey('tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT)
+    tenant = models.ForeignKey(
+        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+    )
     name = models.CharField(max_length=128, blank=False, null=True)
-    parent = models.ForeignKey('inventory.Group', null=True, blank=True, on_delete=models.PROTECT, related_name='children')
+    parent = models.ForeignKey(
+        'inventory.Group',
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name='children',
+    )
     permissions = models.ManyToManyField(
         'inventory.Permission',
         blank=True,
@@ -165,9 +190,11 @@ class Group(BaseModel):
         return Group.valid_objects.filter(parent=self).order_by('id')
 
     def owned_perms(self, perm_codes: List):
-        owned_perms = list(self.permissions.filter(
-            codename__in=perm_codes,
-        ))
+        owned_perms = list(
+            self.permissions.filter(
+                codename__in=perm_codes,
+            )
+        )
         if self.parent is not None:
             owned_perms += list(self.parent.owned_perms(perm_codes))
 

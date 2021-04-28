@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'extension_root.gitee',
     'extension_root.feishu',
     'extension_root.arkid',
+    'django_scim',
 ]
 
 MIDDLEWARE = [
@@ -77,6 +78,7 @@ MIDDLEWARE = [
     'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_scim.middleware.SCIMAuthCheckMiddleware',
 ]
 
 ROOT_URLCONF = 'arkid.urls'
@@ -211,3 +213,17 @@ AUTH_USER_MODEL = 'inventory.User'
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
+
+# django-scim2
+SCIM_SERVICE_PROVIDER = {
+    'NETLOC': 'localhost',
+    'AUTHENTICATION_SCHEMES': [
+        {
+            'type': 'oauth2',
+            'name': 'OAuth 2',
+            'description': 'Oauth 2 implemented with bearer token',
+        },
+    ],
+    'GROUP_MODEL': 'inventory.models.Group',
+    'USER_ADAPTER': 'inventory.adapters.ArkidSCIMUser',
+}
