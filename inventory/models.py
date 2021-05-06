@@ -123,11 +123,9 @@ class User(AbstractUser, BaseModel):
         Token.objects.filter(
             user=self
         ).delete()
-
         token, _ = Token.objects.get_or_create(
             user=self
         )
-
         return token
 
     def set_password(self, raw_password):

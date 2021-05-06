@@ -86,13 +86,6 @@ class LoginView(generics.CreateAPIView):
             }
         })
 
-    def _get_token(self, user:User):
-        token, _ = Token.objects.get_or_create(
-            user=user,
-        )
-
-        return token
-
     def login_form(self):
         return lp.LoginForm(
             label='密码登录',
@@ -160,12 +153,6 @@ class MobileLoginView(LoginView):
             }
         })
 
-    def _get_token(self, user: User):
-        token, _ = Token.objects.get_or_create(
-            user=user,
-        )
-
-        return token
 
     def login_form(self):
         return lp.LoginForm(
