@@ -38,8 +38,8 @@ class ScimService:
     def get_schemas(self):
         return self.search_request(SCHEMAS_ENDPOINT).invoke()
 
-    def getSchema(self, id):
-        return retrieve(SCHEMAS_ENDPOINT, id)
+    def get_schema(self, id):
+        return retrieve(SCHEMAS_ENDPOINT, id).invoke()
 
     def retrieve(self, endpoint, id):
         return RetrieveRequestBuilder(endpoint, id)
@@ -53,8 +53,8 @@ class ScimService:
     def modify(self, endpoint, id):
         return ModifyRequestBuilder(endpoint, id)
 
-    def replace(self, endpoint, data):
-        return ReplaceRequestBuilder(endpoint, data)
+    def replace(self, endpoint, id, data):
+        return ReplaceRequestBuilder(endpoint, id, data)
 
     def delete(self, endpoint, id):
         return DeleteRequestBuilder(endpoint, id)
