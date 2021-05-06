@@ -119,6 +119,15 @@ class User(AbstractUser, BaseModel):
         )
         return token.key
 
+    def refresh_token(self):
+        Token.objects.filter(
+            user=self
+        ).delete()
+        token, _ = Token.objects.get_or_create(
+            user=self
+        )
+        return token
+
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
         self._password = raw_password

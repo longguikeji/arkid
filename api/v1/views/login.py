@@ -45,7 +45,7 @@ class LoginView(generics.CreateAPIView):
                 'message': _('username or password is not correct'),
             })
 
-        token = self._get_token(user)
+        token = user.refresh_token()
 
         return JsonResponse(data={
             'error': Code.OK.value,
@@ -74,7 +74,7 @@ class LoginView(generics.CreateAPIView):
             })
 
         user = User.objects.get(mobile=mobile)
-        token = self._get_token(user)
+        token = user.refresh_token()
 
         return JsonResponse(data={
             'error': Code.OK.value,
@@ -85,13 +85,6 @@ class LoginView(generics.CreateAPIView):
                 ]        
             }
         })
-
-    def _get_token(self, user:User):
-        token, _ = Token.objects.get_or_create(
-            user=user,
-        )
-
-        return token
 
     def login_form(self):
         return lp.LoginForm(
@@ -148,7 +141,7 @@ class MobileLoginView(LoginView):
             })
 
         user = User.objects.get(mobile=mobile)
-        token = self._get_token(user)
+        token = user.refresh_token()
 
         return JsonResponse(data={
             'error': Code.OK.value,
@@ -160,12 +153,6 @@ class MobileLoginView(LoginView):
             }
         })
 
-    def _get_token(self, user: User):
-        token, _ = Token.objects.get_or_create(
-            user=user,
-        )
-
-        return token
 
     def login_form(self):
         return lp.LoginForm(
