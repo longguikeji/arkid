@@ -1,0 +1,3 @@
+class MFA:
+
+    pass

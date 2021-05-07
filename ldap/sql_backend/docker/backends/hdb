@@ -1,5 +1,0 @@
-database hdb
-suffix "dc=example,dc=com"
-rootdn "cn=admin,dc=example,dc=com"
-rootpw admin
-directory /var/lib/ldap

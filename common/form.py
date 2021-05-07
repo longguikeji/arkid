@@ -1,0 +1,3 @@
+class AppTypeForm:
+
+    pass

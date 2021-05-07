@@ -17,7 +17,7 @@
                 <p>{% trans "Application requires following permissions" %}</p>
                 <ul>
                     {% for scope in scopes_descriptions %}
-                        <li>{% trans scope %}</li>
+                        <li>{{ scope }}</li>
                     {% endfor %}
                 </ul>
 

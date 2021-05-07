@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -162,3 +161,11 @@ celerybeat.pid
 # supervisord
 supervisord.pid
 supervisord.log
+
+arkid.local.toml
+
+/static/upload
+package.json
+node_modules/
+package-lock.json
+

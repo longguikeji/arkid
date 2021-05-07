@@ -1,0 +1,122 @@
+from . import (
+    group, 
+    tenant, 
+    app, 
+    extension,
+    maketplace,
+    webhook, 
+    external_idp, 
+    authorization_server, 
+    user,
+    permission,
+    profile,
+    third_party_account,
+    desktop
+)
+
+from openapi.routers import root_add_routers, Router, PageRouter
+
+root_add_routers([
+    Router(
+        path='book',
+        name='通讯录',
+        icon='education',
+        role=['global', 'tenant', 'user']
+    ),
+    Router(
+        path='mine',
+        name='个人管理',
+        icon='people',
+        role=['global', 'tenant', 'user'],
+        children=[
+            PageRouter(
+                page=profile,
+                icon='edit'
+            ),
+            PageRouter(
+                page=third_party_account,
+                icon='wechat'
+            )
+        ]
+    ),
+    Router(
+        path='tmanage',
+        name='租户管理',
+        icon='peoples',
+        role=['global', 'tenant'],
+        children=[
+            PageRouter(
+                page=app,
+                icon='component',
+            ),
+            Router(
+                path='user',
+                name='用户管理',
+                icon='user',
+                children=[
+                    PageRouter(
+                        page=user,
+                        icon='list',
+                    ),
+                    PageRouter(
+                        page=group,
+                        icon='tree-table',
+                    ),
+                    PageRouter(
+                        page=permission,
+                        icon='list'
+                    )
+                ]
+            ),
+            Router(
+                path='source',
+                name='连接身份源',
+                icon='component',
+                children=[
+                    PageRouter(
+                        page=external_idp,
+                        icon='wechat',
+                    ),
+                    PageRouter(
+                        page=authorization_server,
+                        icon='list',
+                    ),
+                ]
+            ),
+            Router(
+                path='developer',
+                name='开发者资源',
+                icon='developer',
+                children=[
+                    PageRouter(
+                        page=webhook,
+                        icon='webhook',
+                    ),
+                ]
+            ),
+        ]
+    ),
+    Router(
+        path='system',
+        name='系统管理',
+        icon='setting',
+        role=['global', 'tenant', 'user'],
+        children=[
+            Router(
+                path='extension',
+                name='插件管理',
+                icon='list',
+                children=[
+                    PageRouter(
+                        page=extension,
+                        icon='list',
+                    ),
+                    PageRouter(
+                        page=maketplace,
+                        icon='list',
+                    ),
+                ]
+            ),
+        ]
+    ),
+])

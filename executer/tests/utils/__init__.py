@@ -1,3 +1,0 @@
-'''
-tests for executer.utils
-'''
