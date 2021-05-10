@@ -80,3 +80,5 @@ https://arkid.demo.longguikeji.com
 [LGPL-3.0](https://opensource.org/licenses/LGPL-3.0)
 
 Copyright (c) 2019-present, 北京龙归科技有限公司
+
+正在招聘，欢迎简历： hr@longguikeji.com
