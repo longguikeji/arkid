@@ -153,7 +153,7 @@ class ArkIDUnBindView(GenericAPIView):
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         arkid_user = ArkIDUser.valid_objects.filter(user=request.user, tenant=tenant).first()
         if arkid_user:
-            arkid_user.delete()
+            arkid_user.kill()
             data = {"is_del": True}
         else:
             data = {"is_del": False}

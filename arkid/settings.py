@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'extension_root.gitee',
     'extension_root.feishu',
     'extension_root.arkid',
+    'extension_root.miniprogram',
 ]
 
 MIDDLEWARE = [
