@@ -150,7 +150,7 @@ class GithubUnBindView(GenericAPIView):
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         github_user = GithubUser.valid_objects.filter(user=request.user, tenant=tenant).first()
         if github_user:
-            github_user.delete()
+            github_user.kill()
             data = {"is_del": True}
         else:
             data = {"is_del": False}

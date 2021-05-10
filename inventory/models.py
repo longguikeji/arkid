@@ -97,10 +97,12 @@ class User(AbstractUser, BaseModel):
         from extension_root.gitee.models import GiteeUser
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
+        from extension_root.miniprogram.models import MiniProgramUser
         feishuusers = FeishuUser.valid_objects.filter(user=self).exists()
         giteeusers = GiteeUser.valid_objects.filter(user=self).exists()
         githubusers = GithubUser.valid_objects.filter(user=self).exists()
         arkidusers = ArkIDUser.valid_objects.filter(user=self).exists()
+        miniprogramusers = MiniProgramUser.valid_objects.filter(user=self).exists()
         result = ''
         if feishuusers:
             result = '飞书'
@@ -109,7 +111,9 @@ class User(AbstractUser, BaseModel):
         if githubusers:
             result = result + 'github,'
         if arkidusers:
-            result = result + 'arkid'
+            result = result + 'arkid,'
+        if miniprogramusers:
+            result = result + '微信'
         return result
 
     @property

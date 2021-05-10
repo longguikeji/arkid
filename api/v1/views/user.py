@@ -252,11 +252,13 @@ class UserBindInfoView(generics.RetrieveAPIView):
         from extension_root.gitee.models import GiteeUser
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
+        from extension_root.miniprogram.models import MiniProgramUser
         user = request.user
         feishuusers = FeishuUser.valid_objects.filter(user=request.user)
         giteeusers = GiteeUser.valid_objects.filter(user=request.user)
         githubusers = GithubUser.valid_objects.filter(user=request.user)
         arkidusers = ArkIDUser.valid_objects.filter(user=request.user)
+        miniprogramusers = MiniProgramUser.valid_objects.filter(user=request.user)
         result = []
         for item in feishuusers:
             result.append({
@@ -281,5 +283,11 @@ class UserBindInfoView(generics.RetrieveAPIView):
                 'name': 'arkid',
                 'tenant': item.tenant.uuid,
                 'unbind': '/api/v1/tenant/{}/arkid/unbind'.format(item.tenant.uuid),
+            })
+        for item in miniprogramusers:
+            result.append({
+                'name': '微信小程序',
+                'tenant': item.tenant.uuid,
+                'unbind': '/api/v1/tenant/{}/miniprogram/unbind'.format(item.tenant.uuid),
             })
         return JsonResponse({'data': result}, safe=False)
