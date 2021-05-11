@@ -21,6 +21,8 @@ from api.v1.serializers.user import (
     UserImportSerializer,
     UserInfoSerializer,
     UserBindInfoSerializer,
+    PasswordSerializer,
+    PasswordRequestSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -227,6 +229,27 @@ class UserTokenView(generics.CreateAPIView):
         except Exception as e:
             is_valid = False
         return Response(is_valid)
+
+
+@extend_schema(tags=['user'])
+class UpdatePasswordView(generics.CreateAPIView):
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = PasswordRequestSerializer
+
+    @extend_schema(responses=PasswordSerializer)
+    def post(self, request):
+        uuid = request.data.get('uuid', '')
+        password = request.data.get('password', '')
+        is_succeed = True
+        try:
+            user = User.objects.filter(uuid=uuid).first()
+            user.set_password(password)
+            user.save()
+        except Exception as e:
+            is_succeed = False
+        return Response(is_succeed)
 
 
 @extend_schema(tags=['user'])

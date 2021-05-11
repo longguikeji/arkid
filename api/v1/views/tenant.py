@@ -171,7 +171,6 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
-
     @action(detail=True, methods=['post'])
     def username_register(self, request, pk):
         username = request.data.get('username')
@@ -343,9 +342,9 @@ class TenantViewSet(BaseViewSet):
                     url=reverse("api:tenant-mobile-register", args=[tenant_uuid, ]),
                     method='post',
                     params={
-                        'mobile':'mobile',
-                        'password':'password',
-                        'code':'code',
+                        'mobile': 'mobile',
+                        'password': 'password',
+                        'code': 'code',
                         'repassword': 'repassword',
                     }
                 )
@@ -378,8 +377,8 @@ class TenantViewSet(BaseViewSet):
                     url=reverse("api:tenant-username-register", args=[tenant_uuid, ]),
                     method='post',
                     params={
-                        'username':'username',
-                        'password':'password',
+                        'username': 'username',
+                        'password': 'password',
                         'repassword': 'repassword',
                     }
                 )
