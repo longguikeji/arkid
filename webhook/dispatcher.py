@@ -4,42 +4,40 @@
 """Default webhook dispatcher."""
 
 from celery import group
-from tasks import dispatch_requests
+from .tasks import dispatch_requests
 from .utils import chunks
 from .request import Request
+from .models import WebHook
 import json
 
 MIME_JSON = 'application/json'
 DEFAULT_CODECS = {MIME_JSON: json.dumps}
 CHUNKSIZE = 10
+EVENT_TIMEOUT = 3.0
 
 
 class BaseDispatcher:
-    def __init__(self, timeout=None):
-        self.timeout = (
-            timeout if timeout is not None else self.app.settings.THORN_EVENT_TIMEOUT
-        )
+    def __init__(self):
+        self.timeout = EVENT_TIMEOUT
 
     def send(self, event, payload, sender, allow_keepalive=True, **kwargs):
         pass
 
-    def prepare_requests(self, event, payload, sender, timeout=None, **kwargs):
+    def prepare_requests(self, event, payload, tenants, timeout=None, **kwargs):
         # holds a cache of the payload serialized by content-type,
         # built incrementally depending on what content-types are
         # required by the subscribers.
         cache = {}
         timeout = timeout if timeout is not None else self.timeout
-        context = context or {}
         return (
             Request(
                 event,
-                self.encode_cached(payload, cache, subscriber.content_type),
-                sender,
-                subscriber,
+                self.encode_cached(payload, cache, webhook.content_type),
+                webhook,
                 timeout=timeout,
                 **kwargs
             )
-            for subscriber in self.subscribers_for_event(event, sender)
+            for webhook in self.webhooks_for_event(event, tenants)
         )
 
     def encode_cached(self, payload, cache, ctype):
@@ -57,10 +55,10 @@ class BaseDispatcher:
         else:
             return encode(data)
 
-    def subscribers_for_event(self, name, sender=None):
-        """Return a list of :class:`~thorn.django.models.Subscriber`
-        subscribing to an event by name (optionally filtered by sender)."""
-        pass
+    def webhooks_for_event(self, name, tenants=None):
+        assert tenants.count() >= 1
+        hooks = WebHook.objects.filter(events__contains=name, tenant__in=tenants)
+        return hooks
 
 
 class CeleryDispatcher(BaseDispatcher):
@@ -76,12 +74,12 @@ class CeleryDispatcher(BaseDispatcher):
         """Group requests by keep-alive host/port/scheme ident."""
         return chunks(iter(requests), CHUNKSIZE)
 
-    def send(self, event, payload, sender, timeout=None, **kwargs):
+    def send(self, event, payload, tenants, timeout=None, **kwargs):
         return self.as_request_group(
             self.prepare_requests(
                 event,
                 payload,
-                sender.pk if sender else sender,
+                tenants,
                 timeout,
             )
         ).apply_async()

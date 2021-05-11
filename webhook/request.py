@@ -10,15 +10,18 @@ import uuid
 from requests.exceptions import ConnectionError, Timeout
 
 logger = logging.getLogger(__name__)
+RETRY = True
+RETRY_MAX = 10
+RETRY_DELAY = 60.0
+ALLOW_REDIRECTS = False
 
 
-class Request(ThenableProxy):
+class Request:
     """Webhook HTTP request.
 
     Arguments:
         event (str): Name of event.
         data (Any): Event payload.
-        sender (Any): Sender of event (or :const:`None`).
         subscriber (~thorn.generic.models.Subscriber): Subscriber to
             dispatch the request for.
 
@@ -59,8 +62,7 @@ class Request(ThenableProxy):
         self,
         event,
         data,
-        sender,
-        subscriber,
+        webhook,
         id=None,
         timeout=None,
         retry=None,
@@ -70,27 +72,18 @@ class Request(ThenableProxy):
         allow_keepalive=True,
         allow_redirects=None,
     ):
-        # type: (str, Dict, Any, Subscriber, str, Callable,
-        #        Callable, float, Callable, bool, int,
-        #        float, Mapping, str, App, Sequence[Callable],
-        #        bool, bool) -> None
-        self.id = id or uuid()
+        self.id = id or uuid.uuid4()
         self.event = event
         self.data = data
-        self.sender = sender
-        self.subscriber = subscriber
+        self.webhook = webhook
         self.timeout = timeout
-        self.retry = self.app.settings.THORN_RETRY if retry is None else retry
-        self.retry_max = (
-            self.app.settings.THORN_RETRY_MAX if retry_max is None else retry_max
-        )
-        self.retry_delay = (
-            self.app.settings.THORN_RETRY_DELAY if retry_delay is None else retry_delay
-        )
+        self.retry = RETRY if retry is None else retry
+        self.retry_max = RETRY_MAX if retry_max is None else retry_max
+        self.retry_delay = RETRY_DELAY if retry_delay is None else retry_delay
         self.allow_keepalive = allow_keepalive
-        if allow_redirects is None:
-            allow_redirects = self.app.settings.THORN_ALLOW_REDIRECTS
-        self.allow_redirects = allow_redirects
+        self.allow_redirects = (
+            ALLOW_REDIRECTS if allow_redirects is None else allow_redirects
+        )
         self.response = None
         self._headers = headers
 
@@ -102,17 +95,15 @@ class Request(ThenableProxy):
         # type: (str) -> None
         return True
 
-    def sign_request(self, subscriber, data):
+    def sign_request(self, webhook, data):
         # type: (Subscriber, str) -> str
-        return subscriber.sign(data)
+        return webhook.sign(data)
 
     def dispatch(self, session=None):
-        # type: (requests.Session, bool) -> 'Request'
-        if not self.cancelled:
-            self.validate_recipient(self.subscriber.url)
-            with self._finalize_unless_request_error():
-                self.response = self.post(session=session)
-                return self
+        self.validate_recipient(self.webhook.url)
+        with self._finalize_unless_request_error():
+            self.response = self.post(session=session)
+            return self
 
     @contextmanager
     def _finalize_unless_request_error(self):
@@ -139,7 +130,7 @@ class Request(ThenableProxy):
 
     def post(self, session=None):
         # type: (requests.Session) -> requests.Response
-        url = self.subscriber.url
+        url = self.webhook.url
         with self.session_or_acquire(session) as session:
             return session.post(
                 url=url,
@@ -148,8 +139,8 @@ class Request(ThenableProxy):
                 timeout=self.timeout,
                 headers=self.annotate_headers(
                     {
-                        'Hook-HMAC': self.sign_request(self.subscriber, self.data),
-                        'Hook-Subscription': str(self.subscriber.uuid),
+                        'Hook-HMAC': self.sign_request(self.webhook, self.data),
+                        'Hook-UUID': str(self.webhook.uuid),
                     }
                 ),
                 verify=False,
@@ -176,7 +167,6 @@ class Request(ThenableProxy):
         )
 
     def as_dict(self):
-        # type: () -> Dict[str, Any]
         """Return dictionary representation of this request.
 
         Note:
@@ -185,8 +175,7 @@ class Request(ThenableProxy):
         return {
             'id': self.id,
             'event': self.event,
-            'sender': self.sender,
-            'subscriber': self.subscriber.as_dict(),
+            'webhook': self.webhook.as_dict(),
             'data': self.data,
             'timeout': self.timeout,
             'retry': self.retry,
@@ -197,14 +186,12 @@ class Request(ThenableProxy):
 
     @property
     def headers(self):
-        # type: () -> Dict[str, Any]
         return dict(self.default_headers, **self._headers or {})
 
     @property
     def default_headers(self):
-        # type: () -> Dict[str, Any]
         return {
-            'Content-Type': self.subscriber.content_type,
+            # 'Content-Type': self.webhook.content_type,
             'Hook-Event': self.event,
             'Hook-Delivery': self.id,
         }

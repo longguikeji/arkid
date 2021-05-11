@@ -14,6 +14,23 @@ class WebHook(BaseModel):
     content_type = models.CharField(max_length=128, default="application/json")
     events = jsonfield.JSONField()
 
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'uuid': str(self.uuid),
+            'url': self.url,
+            # 'hmac_secret': self.hmac_secret,
+            # 'hmac_digest': self.hmac_digest,
+        }
+
+    def sign(self, message):
+        # return current_app().hmac_sign(
+        #     self.hmac_digest,
+        #     self.hmac_secret,
+        #     message,
+        # )
+        return message
+
 
 class WebHookTriggerHistory(BaseModel):
 
@@ -26,7 +43,5 @@ class WebHookTriggerHistory(BaseModel):
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT)
     webhook = models.ForeignKey(WebHook, on_delete=models.PROTECT)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
-    request = jsonfield.JSONField() # Headers, Body/Payload ...
-    response = jsonfield.JSONField() # Headers, StatusCode, Body ...
-
-
+    request = jsonfield.JSONField()  # Headers, Body/Payload ...
+    response = jsonfield.JSONField()  # Headers, StatusCode, Body ...

@@ -4,8 +4,8 @@
 """Tasks used by the Celery dispatcher."""
 
 from celery import shared_task
-from celery.utils.functional import memoize
 from .request import Request
+from .models import WebHook
 
 
 @shared_task(ignore_result=True)
@@ -17,12 +17,13 @@ def dispatch_requests(reqs, app=None):
 
 
 @shared_task(bind=True, ignore_result=True)
-def dispatch_request(self, event, data, sender, subscriber, session=None, **kwargs):
+def dispatch_request(self, event, data, webhook, session=None, **kwargs):
     # type: (str, Dict, Any, Dict, requests.Session, App, **Any) -> None
     """Process a single HTTP request."""
-    request = Request(event, data, sender, subscriber, **kwargs)
+    webhook = WebHook(**webhook)
+    request = Request(event, data, webhook, **kwargs)
     try:
-        request.dispatch(session=session, propagate=request.retry)
+        request.dispatch(session=session)
     except request.connection_errors + request.timeout_errors as exc:
         if request.retry:
             raise self.retry(

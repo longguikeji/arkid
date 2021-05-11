@@ -6,6 +6,9 @@
 import logging
 from operator import attrgetter
 from .dispatcher import CeleryDispatcher
+from inventory.models import User, Group
+from app.models import App
+from django.db.models.signals import post_save, post_delete
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +34,7 @@ class Event(object):
     """
 
     allow_keepalive = True
+    dispatcher = CeleryDispatcher()
 
     def __init__(
         self,
@@ -39,7 +43,6 @@ class Event(object):
         retry=None,
         retry_max=None,
         retry_delay=None,
-        request_data=None,
         allow_keepalive=None,
         **kwargs
     ):
@@ -52,21 +55,20 @@ class Event(object):
         self.retry_delay = retry_delay
         if allow_keepalive is not None:
             self.allow_keepalive = allow_keepalive
-        self.dispatcher = CeleryDispatcher()
 
-    def send(self, data, sender=None, timeout=None):
+    def send(self, data, tenants=None, timeout=None):
         # type: (Any, Any, Callable, Callable, float, Callable) -> promise
         """Send event to all subscribers."""
-        return self._send(self.name, data, sender=sender, timeout=timeout)
+        return self._send(self.name, data, tenants=tenants, timeout=timeout)
 
-    def _send(self, name, data, sender=None, timeout=None):
+    def _send(self, name, data, tenants=None, timeout=None):
         # type: (str, Any, Dict, Any, Callable,
         #        Callable, float, Callable, Dict) -> promise
         timeout = timeout if timeout is not None else self.timeout
         return self.dispatcher.send(
             name,
             data,
-            sender,
+            tenants,
             timeout=timeout,
             retry=self.retry,
             retry_max=self.retry_max,
@@ -88,12 +90,14 @@ class ModelEvent(Event):
 
     """
 
-    def __init__(self, name, model, signal, *args, **kwargs):
+    def __init__(self, name, model, signal, tenant_field=None, **kwargs):
         super(ModelEvent, self).__init__(name, **kwargs)
         self.signal = signal
         self.model = model
+        self.tenant_field = tenant_field
+        self.connect_model_signal()
 
-    def send(self, instance, data=None, sender=None, **kwargs):
+    def send(self, instance, data=None, tenants=None, **kwargs):
         # type: (Model, Any, Any, **Any) -> promise
         """Send event for model ``instance``.
 
@@ -108,9 +112,8 @@ class ModelEvent(Event):
             self.to_message(
                 data,
                 instance=instance,
-                sender=sender,
             ),
-            sender=sender,
+            tenants=tenants,
             **kwargs
         )
 
@@ -119,21 +122,20 @@ class ModelEvent(Event):
         return self.send(
             instance=instance,
             data=self.instance_data(instance),
-            sender=self.instance_sender(instance),
+            tenants=self.instance_tenants(instance),
         )
 
-    def to_message(self, data, instance=None, sender=None):
+    def to_message(self, data, instance=None):
         # type: (Any, Model, Any, str) -> Dict[str, Any]
         return {
             'event': self.name,
-            'sender': sender,
             'data': data or {},
         }
 
-    def instance_sender(self, instance):
+    def instance_tenants(self, instance):
         # type: (Model) -> Any
-        """Get event ``sender`` from model instance."""
-        return None
+        """Get tenants send to from model instance."""
+        return attrgetter(self.tenant_field)(instance).all()
 
     def instance_data(self, instance):
         # type: (Model) -> Any
@@ -142,11 +144,14 @@ class ModelEvent(Event):
 
     def connect_model_signal(self, **kwargs):
 
-        signal.connect(self, sender=self.model, **kwargs)
+        self.signal.connect(self, sender=self.model, **kwargs)
 
     def should_dispatch(self, instance, **kwargs):
         # type: (Model, **Any) -> bool
-        return True
+        if attrgetter(self.tenant_field)(instance):
+            return True
+        else:
+            return False
 
     def on_signal(self, instance, **kwargs):
         try:
@@ -158,3 +163,34 @@ class ModelEvent(Event):
     def __call__(self, instance, **kwargs):
         if self.should_dispatch(instance, **kwargs):
             return self.on_signal(instance, **kwargs)
+
+
+user_created_event = ModelEvent(
+    'event.user.created', User, post_save, tenant_field='tenants'
+)
+user_updated_event = ModelEvent(
+    'event.user.updated', User, post_save, tenant_field='tenants'
+)
+user_deleted_event = ModelEvent(
+    'event.user.deleted', User, post_delete, tenant_field='tenants'
+)
+
+group_created_event = ModelEvent(
+    'event.group.created', Group, post_save, tenant_field='tenant'
+)
+group_updated_event = ModelEvent(
+    'event.group.updated', Group, post_save, tenant_field='tenant'
+)
+group_deleted_event = ModelEvent(
+    'event.group.deleted', Group, post_delete, tenant_field='tenant'
+)
+
+app_created_event = ModelEvent(
+    'event.app.created', App, post_save, tenant_field='tenant'
+)
+app_updated_event = ModelEvent(
+    'event.app.updated', App, post_save, tenant_field='tenant'
+)
+app_deleted_event = ModelEvent(
+    'event.app.deleted', App, post_delete, tenant_field='tenant'
+)

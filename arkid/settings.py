@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_expiring_authtoken',
     'drf_spectacular',
+    'common',
     'tenant',
     'inventory',
     'app',
@@ -227,3 +228,14 @@ SCIM_SERVICE_PROVIDER = {
     'GROUP_MODEL': 'inventory.models.Group',
     'USER_ADAPTER': 'inventory.adapters.ArkidSCIMUser',
 }
+
+
+# Celery settings
+
+CELERY_BROKER_URL = 'redis://localhost'
+
+#: Only add pickle to this list if your broker is secured
+#: from unwanted access (see userguide/security.html)
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
+# CELERY_TASK_SERIALIZER = 'json'
