@@ -10,7 +10,7 @@ from external_idp.models import ExternalIdp
 from api.v1.serializers.tenant import TenantSerializer
 
 
-@extend_schema(tags = ['login page'])
+@extend_schema(tags=['login page'])
 class LoginPage(views.APIView):
 
     @extend_schema(
@@ -24,26 +24,27 @@ class LoginPage(views.APIView):
         if tenant:
             data.setTenant(TenantSerializer(instance=tenant).data)
 
-            data.addForm( model.LOGIN, TenantViewSet().login_form(tenant_uuid) )
-            data.addForm( model.LOGIN, TenantViewSet().mobile_login_form(tenant_uuid) )
-            data.addForm( model.REGISTER, TenantViewSet().mobile_register_form(tenant_uuid) )
-            data.addForm( model.REGISTER, TenantViewSet().username_register_form(tenant_uuid) )
+            data.addForm(model.LOGIN, TenantViewSet().login_form(tenant_uuid))
+            data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant_uuid))
+            data.addForm(model.REGISTER, TenantViewSet().mobile_register_form(tenant_uuid))
+            data.addForm(model.REGISTER, TenantViewSet().username_register_form(tenant_uuid))
 
             external_idps = ExternalIdp.valid_objects.filter(tenant=tenant)
             for idp in external_idps:
-                data.addExtendButton( model.LOGIN, model.Button(
-                    img=idp.data['img_url'],
-                    tooltip=idp.type,
-                    redirect=model.ButtonRedirect(
-                        url=idp.data['login_url'],
-                    )
-                ))
-            if data.getPage(model.LOGIN) and data.getPage(model.LOGIN).get('extend',None):
+                if idp.type not in ['miniprogram']:
+                    data.addExtendButton(model.LOGIN, model.Button(
+                        img=idp.data['img_url'],
+                        tooltip=idp.type,
+                        redirect=model.ButtonRedirect(
+                            url=idp.data['login_url'],
+                        )
+                    ))
+            if data.getPage(model.LOGIN) and data.getPage(model.LOGIN).get('extend', None):
                 data.setExtendTitle(model.LOGIN, '第三方登录')
         else:
-            data.addForm( model.LOGIN, LoginView().login_form() )
-            data.addForm( model.LOGIN, MobileLoginView().login_form() )
-        
+            data.addForm(model.LOGIN, LoginView().login_form())
+            data.addForm(model.LOGIN, MobileLoginView().login_form())
+
         if data.getPage(model.REGISTER):
             data.addBottom(model.LOGIN, model.Button(
                 prepend='还没有账号，',
@@ -55,14 +56,13 @@ class LoginPage(views.APIView):
                 label='立即登录',
                 gopage=model.LOGIN
             ))
-        
+
         if data.getPage(model.PASSWORD):
             data.addBottom(model.LOGIN, model.Button(
                 label='忘记密码',
                 gopage='password'
             ))
-        
+
         pages = lp.LoginPagesSerializer(data=data)
         pages.is_valid()
         return JsonResponse(pages.data)
-
