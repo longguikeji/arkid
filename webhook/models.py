@@ -19,6 +19,7 @@ class WebHook(BaseModel):
             'name': self.name,
             'uuid': str(self.uuid),
             'url': self.url,
+            'content_type': self.content_type,
             # 'hmac_secret': self.hmac_secret,
             # 'hmac_digest': self.hmac_digest,
         }

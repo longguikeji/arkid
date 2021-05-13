@@ -5,9 +5,11 @@
 import requests
 import logging
 from contextlib import contextmanager
+from vine.abstract import Thenable, ThenableProxy
+from vine import maybe_promise, promise
 
 import uuid
-from requests.exceptions import ConnectionError, Timeout
+from requests.exceptions import ConnectionError, Timeout, ProxyError
 
 logger = logging.getLogger(__name__)
 RETRY = True
@@ -16,7 +18,8 @@ RETRY_DELAY = 60.0
 ALLOW_REDIRECTS = False
 
 
-class Request:
+@Thenable.register
+class Request(ThenableProxy):
     """Webhook HTTP request.
 
     Arguments:
@@ -53,7 +56,7 @@ class Request:
     response = None
 
     #: Tuple of exceptions considered a connection error.
-    connection_errors = (ConnectionError,)
+    connection_errors = (ConnectionError, ProxyError)
 
     #: Tuple of exceptions considered a timeout error.
     timeout_errors = (Timeout,)
@@ -64,7 +67,10 @@ class Request:
         data,
         webhook,
         id=None,
+        on_timeout=None,
         timeout=None,
+        on_success=None,
+        on_error=None,
         retry=None,
         retry_max=None,
         retry_delay=None,
@@ -77,6 +83,9 @@ class Request:
         self.data = data
         self.webhook = webhook
         self.timeout = timeout
+        self.on_success = on_success
+        self.on_timeout = maybe_promise(on_timeout)
+        self.on_error = on_error
         self.retry = RETRY if retry is None else retry
         self.retry_max = RETRY_MAX if retry_max is None else retry_max
         self.retry_delay = RETRY_DELAY if retry_delay is None else retry_delay
@@ -86,6 +95,13 @@ class Request:
         )
         self.response = None
         self._headers = headers
+        self._set_promise_target(
+            promise(
+                args=(self,),
+                callback=self.on_success,
+                on_error=self.on_error,
+            )
+        )
 
     def annotate_headers(self, extra_headers):
         # type: (Dict[str, Any]) -> Dict[str, Any]
@@ -99,23 +115,24 @@ class Request:
         # type: (Subscriber, str) -> str
         return webhook.sign(data)
 
-    def dispatch(self, session=None):
-        self.validate_recipient(self.webhook.url)
-        with self._finalize_unless_request_error():
-            self.response = self.post(session=session)
-            return self
+    def dispatch(self, session=None, propagate=False):
+        if not self.cancelled:
+            self.validate_recipient(self.webhook.url)
+            with self._finalize_unless_request_error(propagate):
+                self.response = self.post(session=session)
+                return self
 
     @contextmanager
-    def _finalize_unless_request_error(self):
+    def _finalize_unless_request_error(self, propagate=False):
         # type: (bool) -> Any
         try:
             yield
         except self.timeout_errors as exc:
-            self.handle_timeout_error(exc)
+            self.handle_timeout_error(exc, propagate=propagate)
         except self.connection_errors as exc:
-            self.handle_connection_error(exc)
+            self.handle_connection_error(exc, propagate=propagate)
         else:
-            pass
+            self._p()
 
     @contextmanager
     def session_or_acquire(self, session=None, close_session=False):
@@ -156,6 +173,7 @@ class Request:
         )
         if self.on_timeout:
             return self.on_timeout(self, exc)
+        return self._p.throw(exc, propagate=propagate)
 
     def handle_connection_error(self, exc, propagate=False):
         # type: (Exception, bool) -> None
@@ -165,6 +183,7 @@ class Request:
             exc_info=1,
             extra={'data': self.as_dict()},
         )
+        self._p.throw(exc, propagate=propagate)
 
     def as_dict(self):
         """Return dictionary representation of this request.
@@ -191,7 +210,7 @@ class Request:
     @property
     def default_headers(self):
         return {
-            # 'Content-Type': self.webhook.content_type,
+            'Content-Type': self.webhook.content_type,
             'Hook-Event': self.event,
             'Hook-Delivery': self.id,
         }

@@ -8,7 +8,8 @@ from operator import attrgetter
 from .dispatcher import CeleryDispatcher
 from inventory.models import User, Group
 from app.models import App
-from django.db.models.signals import post_save, post_delete
+from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 
 logger = logging.getLogger(__name__)
 
@@ -46,24 +47,18 @@ class Event(object):
         allow_keepalive=None,
         **kwargs
     ):
-        # type: (str, float, Dispatcher, bool, int, float, App,
-        #        List, Mapping, Dict, bool) -> None
         self.name = name
         self.timeout = timeout
         self.retry = retry
         self.retry_max = retry_max
         self.retry_delay = retry_delay
-        if allow_keepalive is not None:
-            self.allow_keepalive = allow_keepalive
+        self.allow_keepalive = allow_keepalive
 
     def send(self, data, tenants=None, timeout=None):
-        # type: (Any, Any, Callable, Callable, float, Callable) -> promise
         """Send event to all subscribers."""
         return self._send(self.name, data, tenants=tenants, timeout=timeout)
 
     def _send(self, name, data, tenants=None, timeout=None):
-        # type: (str, Any, Dict, Any, Callable,
-        #        Callable, float, Callable, Dict) -> promise
         timeout = timeout if timeout is not None else self.timeout
         return self.dispatcher.send(
             name,
@@ -90,12 +85,15 @@ class ModelEvent(Event):
 
     """
 
-    def __init__(self, name, model, signal, tenant_field=None, **kwargs):
+    def __init__(self, name, model, tenant_field=None, **kwargs):
         super(ModelEvent, self).__init__(name, **kwargs)
-        self.signal = signal
-        self.model = model
         self.tenant_field = tenant_field
-        self.connect_model_signal()
+        self.model = model
+        self.signals = self.setup_signals()
+        self.connect_signal_receiver(model)
+
+    def setup_signals(self):
+        return {}
 
     def send(self, instance, data=None, tenants=None, **kwargs):
         # type: (Model, Any, Any, **Any) -> promise
@@ -135,23 +133,29 @@ class ModelEvent(Event):
     def instance_tenants(self, instance):
         # type: (Model) -> Any
         """Get tenants send to from model instance."""
-        return attrgetter(self.tenant_field)(instance).all()
+        value = attrgetter(self.tenant_field)(instance)
+        if not value:
+            return []
+        elif isinstance(value, models.ManyToManyField):
+            return value.all()
+        else:
+            return [value]
 
     def instance_data(self, instance):
-        # type: (Model) -> Any
         """Get event data from ``instance.webhooks.payload()``."""
         return {}
 
-    def connect_model_signal(self, **kwargs):
+    def prepare_sender(self, sender):
+        return sender
 
-        self.signal.connect(self, sender=self.model, **kwargs)
+    def connect_signal_receiver(self, sender=None, weak=False, **kwargs):
+        for signal, handler in self.signals.items():
+            signal.connect(
+                handler, sender=self.prepare_sender(sender), weak=weak, **kwargs
+            )
 
     def should_dispatch(self, instance, **kwargs):
-        # type: (Model, **Any) -> bool
-        if attrgetter(self.tenant_field)(instance):
-            return True
-        else:
-            return False
+        raise NotImplementedError('Method Not Implemented!')
 
     def on_signal(self, instance, **kwargs):
         try:
@@ -165,32 +169,75 @@ class ModelEvent(Event):
             return self.on_signal(instance, **kwargs)
 
 
-user_created_event = ModelEvent(
-    'event.user.created', User, post_save, tenant_field='tenants'
+class CreateModelEvent(ModelEvent):
+    def should_dispatch(self, instance, raw=False, created=False, **kwargs):
+        return not raw and created
+
+    def setup_signals(self):
+        from django.db.models.signals import post_save
+
+        return {post_save: self}
+
+
+class UpdateModelEvent(ModelEvent):
+    def should_dispatch(self, instance, created=False, raw=False, **kwargs):
+        if instance.is_del:
+            return False
+
+        return not raw and not created
+
+    def setup_signals(self):
+        from django.db.models.signals import post_save
+
+        return {post_save: self}
+
+
+class DeleteModelEvent(ModelEvent):
+    def should_dispatch(self, instance, created=False, raw=False, **kwargs):
+        if not instance.is_del:
+            return False
+        if not hasattr(instance, '_previous_version'):
+            return False
+        if instance._previous_version.is_del:
+            return False
+        return not raw and not created
+
+    def setup_signals(self):
+        from django.db.models.signals import post_save, pre_save
+
+        return {
+            post_save: self,
+            pre_save: self.on_pre_save,
+        }
+
+    def on_pre_save(self, instance, sender, raw=False, **kwargs):
+        if not raw and instance.pk and instance.is_del:
+            try:
+                instance._previous_version = sender.objects.get(pk=instance.pk)
+            except ObjectDoesNotExist:
+                pass
+
+
+user_created_event = CreateModelEvent(
+    'event.user.created', User, tenant_field='tenants'
 )
-user_updated_event = ModelEvent(
-    'event.user.updated', User, post_save, tenant_field='tenants'
+user_updated_event = UpdateModelEvent(
+    'event.user.updated', User, tenant_field='tenants'
 )
-user_deleted_event = ModelEvent(
-    'event.user.deleted', User, post_delete, tenant_field='tenants'
+user_deleted_event = DeleteModelEvent(
+    'event.user.deleted', User, tenant_field='tenants'
 )
 
-group_created_event = ModelEvent(
-    'event.group.created', Group, post_save, tenant_field='tenant'
+group_created_event = CreateModelEvent(
+    'event.group.created', Group, tenant_field='tenant'
 )
-group_updated_event = ModelEvent(
-    'event.group.updated', Group, post_save, tenant_field='tenant'
+group_updated_event = UpdateModelEvent(
+    'event.group.updated', Group, tenant_field='tenant'
 )
-group_deleted_event = ModelEvent(
-    'event.group.deleted', Group, post_delete, tenant_field='tenant'
+group_deleted_event = DeleteModelEvent(
+    'event.group.deleted', Group, tenant_field='tenant'
 )
 
-app_created_event = ModelEvent(
-    'event.app.created', App, post_save, tenant_field='tenant'
-)
-app_updated_event = ModelEvent(
-    'event.app.updated', App, post_save, tenant_field='tenant'
-)
-app_deleted_event = ModelEvent(
-    'event.app.deleted', App, post_delete, tenant_field='tenant'
-)
+app_created_event = CreateModelEvent('event.app.created', App, tenant_field='tenant')
+app_updated_event = UpdateModelEvent('event.app.updated', App, tenant_field='tenant')
+app_deleted_event = DeleteModelEvent('event.app.deleted', App, tenant_field='tenant')

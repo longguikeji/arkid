@@ -56,8 +56,9 @@ class BaseDispatcher:
             return encode(data)
 
     def webhooks_for_event(self, name, tenants=None):
-        assert tenants.count() >= 1
-        hooks = WebHook.objects.filter(events__contains=name, tenant__in=tenants)
+        if not tenants:
+            return []
+        hooks = WebHook.objects.filter(events__contains=name, tenant__id__in=tenants)
         return hooks
 
 
@@ -75,11 +76,9 @@ class CeleryDispatcher(BaseDispatcher):
         return chunks(iter(requests), CHUNKSIZE)
 
     def send(self, event, payload, tenants, timeout=None, **kwargs):
-        return self.as_request_group(
-            self.prepare_requests(
-                event,
-                payload,
-                tenants,
-                timeout,
-            )
-        ).apply_async()
+        tenants_ids = [t.id for t in tenants]
+        reqs = self.prepare_requests(event, payload, tenants_ids, timeout)
+        reqs = list(reqs)
+        if not reqs:
+            return
+        return self.as_request_group(reqs).apply_async()
