@@ -143,7 +143,7 @@ class ModelEvent(Event):
 
     def instance_data(self, instance):
         """Get event data from ``instance.webhooks.payload()``."""
-        return {}
+        return instance.as_dict()
 
     def prepare_sender(self, sender):
         return sender

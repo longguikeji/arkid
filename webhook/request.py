@@ -156,8 +156,10 @@ class Request(ThenableProxy):
                 timeout=self.timeout,
                 headers=self.annotate_headers(
                     {
-                        'Hook-HMAC': self.sign_request(self.webhook, self.data),
-                        'Hook-UUID': str(self.webhook.uuid),
+                        'Arkid-Signature-256': self.sign_request(
+                            self.webhook, self.data
+                        ),
+                        'Arkid-Hook-UUID': str(self.webhook.uuid),
                     }
                 ),
                 verify=False,
@@ -211,6 +213,6 @@ class Request(ThenableProxy):
     def default_headers(self):
         return {
             'Content-Type': self.webhook.content_type,
-            'Hook-Event': self.event,
-            'Hook-Delivery': self.id,
+            'Arkid-Hook-Event': self.event,
+            'Arkid-Hook-Delivery': self.id,
         }

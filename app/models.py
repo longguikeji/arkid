@@ -20,12 +20,25 @@ class App(BaseModel):
     @property
     def app_type(self):
         from runtime import get_app_runtime
+
         r = get_app_runtime()
         return r.app_types
 
     @property
     def access_perm_code(self):
         return f'app_access_{self.uuid}'
+
+    def as_dict(self):
+        return {
+            'uuid': self.uuid.hex,
+            'is_del': self.is_del,
+            'is_active': self.is_active,
+            'name': self.name,
+            'url': self.url,
+            'description': self.description,
+            'type': self.type,
+            'data': self.data,
+        }
 
 
 # class AuthServer(BaseModel):

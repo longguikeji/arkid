@@ -163,6 +163,25 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         """
         return is_password_usable(self.password)
 
+    def as_dict(self):
+        groups = [g.uuid.hex for g in self.groups]
+        return {
+            'uuid': self.uuid.hex,
+            'is_del': self.is_del,
+            'is_active': self.is_active,
+            'username': self.username,
+            'password': self.password,
+            'email': self.email,
+            'mobile': self.mobile,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'nickname': self.nickname,
+            'country': self.country,
+            'city': self.city,
+            'job_title': self.job_title,
+            'groups': groups,
+        }
+
 
 class Group(AbstractSCIMGroupMixin, BaseModel):
 
@@ -199,3 +218,12 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
             owned_perms += list(self.parent.owned_perms(perm_codes))
 
         return owned_perms
+
+    def as_dict(self):
+        return {
+            'uuid': self.uuid.hex,
+            'is_del': self.is_del,
+            'is_active': self.is_active,
+            'name': self.name,
+            'parent': self.parent and self.parent.uuid.hex,
+        }
