@@ -21,6 +21,8 @@ from api.v1.serializers.user import (
     UserImportSerializer,
     UserInfoSerializer,
     UserBindInfoSerializer,
+    PasswordSerializer,
+    PasswordRequestSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -230,6 +232,27 @@ class UserTokenView(generics.CreateAPIView):
 
 
 @extend_schema(tags=['user'])
+class UpdatePasswordView(generics.CreateAPIView):
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = PasswordRequestSerializer
+
+    @extend_schema(responses=PasswordSerializer)
+    def post(self, request):
+        uuid = request.data.get('uuid', '')
+        password = request.data.get('password', '')
+        is_succeed = True
+        try:
+            user = User.objects.filter(uuid=uuid).first()
+            user.set_password(password)
+            user.save()
+        except Exception as e:
+            is_succeed = False
+        return Response(is_succeed)
+
+
+@extend_schema(tags=['user'])
 class UserInfoView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     authentication_classes = [ExpiringTokenAuthentication]
@@ -252,11 +275,13 @@ class UserBindInfoView(generics.RetrieveAPIView):
         from extension_root.gitee.models import GiteeUser
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
+        from extension_root.miniprogram.models import MiniProgramUser
         user = request.user
         feishuusers = FeishuUser.valid_objects.filter(user=request.user)
         giteeusers = GiteeUser.valid_objects.filter(user=request.user)
         githubusers = GithubUser.valid_objects.filter(user=request.user)
         arkidusers = ArkIDUser.valid_objects.filter(user=request.user)
+        miniprogramusers = MiniProgramUser.valid_objects.filter(user=request.user)
         result = []
         for item in feishuusers:
             result.append({
@@ -281,5 +306,11 @@ class UserBindInfoView(generics.RetrieveAPIView):
                 'name': 'arkid',
                 'tenant': item.tenant.uuid,
                 'unbind': '/api/v1/tenant/{}/arkid/unbind'.format(item.tenant.uuid),
+            })
+        for item in miniprogramusers:
+            result.append({
+                'name': '微信小程序',
+                'tenant': item.tenant.uuid,
+                'unbind': '/api/v1/tenant/{}/miniprogram/unbind'.format(item.tenant.uuid),
             })
         return JsonResponse({'data': result}, safe=False)

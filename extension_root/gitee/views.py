@@ -162,7 +162,7 @@ class GiteeUnBindView(GenericAPIView):
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         gitee_user = GiteeUser.valid_objects.filter(user=request.user, tenant=tenant).first()
         if gitee_user:
-            gitee_user.delete()
+            gitee_user.kill()
             data = {"is_del": True}
         else:
             data = {"is_del": False}

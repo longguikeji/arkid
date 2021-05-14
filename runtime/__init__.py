@@ -1,6 +1,4 @@
-from typing import (
-    Optional, List, Dict, TypeVar, Generic
-)
+from typing import Optional, List, Dict, TypeVar, Generic
 from collections import OrderedDict
 from common.provider import (
     SMSProvider,
@@ -8,7 +6,9 @@ from common.provider import (
     ExternalIdpProvider,
     MFAProvider,
     AuthorizationServerProvider,
-    AppTypeProvider, StorageProvider,
+    AppTypeProvider,
+    StorageProvider,
+    MigrationProvider,
 )
 from common.serializer import AppBaseSerializer, ExternalIdpBaseSerializer
 from authorization_server.models import AuthorizationServer
@@ -23,6 +23,7 @@ class Runtime:
     sms_provider: SMSProvider = None
     cache_provider: CacheProvider = None
     storage_provider: StorageProvider = None
+    migration_provider: MigrationProvider = None
 
     external_idps: List
     external_idp_providers: Dict[str, ExternalIdpProvider]
@@ -53,18 +54,25 @@ class Runtime:
         return cls._instance
 
     def register_task(self):
-        '''
+        """
         register background task
-        '''
+        """
         pass
 
     def register_config(self, name: str, key: str):
-        '''
+        """
         register config section
-        '''
+        """
         pass
 
-    def register_external_idp(self, key: str, name: str, description: str, provider: ExternalIdpProvider, serializer: ExternalIdpBaseSerializer = None):
+    def register_external_idp(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: ExternalIdpProvider,
+        serializer: ExternalIdpBaseSerializer = None,
+    ):
         self.external_idps.append((key, name, description))
         if provider is not None:
             self.external_idp_providers[key] = provider
@@ -75,7 +83,13 @@ class Runtime:
     def register_mfa_provider(self, name: str, provider: MFAProvider):
         pass
 
-    def register_authorization_server(self, id: str, name: str, description: str, provider: Optional[AuthorizationServerProvider] = None):
+    def register_authorization_server(
+        self,
+        id: str,
+        name: str,
+        description: str,
+        provider: Optional[AuthorizationServerProvider] = None,
+    ):
         for server in self.authorization_servers:
             if server.id == id:
                 return  # raise DuplicatedIdException(f'duplicated extension: {server.id} {server.name}')
@@ -97,7 +111,16 @@ class Runtime:
     def register_storage_provider(self, provider: StorageProvider):
         self.storage_provider = provider
 
-    def register_app_type(self, key: str, name: str, provider: AppTypeProvider, serializer: AppBaseSerializer) -> None:
+    def register_migration_provider(self, provider: MigrationProvider):
+        self.migration_provider = provider
+
+    def register_app_type(
+        self,
+        key: str,
+        name: str,
+        provider: AppTypeProvider,
+        serializer: AppBaseSerializer,
+    ) -> None:
         self.app_types.append((key, name))
 
         if provider is not None:
@@ -112,6 +135,7 @@ class Runtime:
     @property
     def extension_serializers(self):
         from extension.utils import find_available_extensions
+
         extensions = find_available_extensions()
         data = {}
         for ext in extensions:

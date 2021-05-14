@@ -1,3 +1,4 @@
+from inspect import Parameter
 from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Group, Permission
 from rest_framework import serializers
@@ -93,6 +94,32 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
                     o.permissions.add(p)
 
         return o
+
+    def update(self, instance: Group, validated_data):
+        name = validated_data.get('name', None)
+        parent_uuid = validated_data.get('parent', {}).get('uuid', None)
+
+        set_permissions = validated_data.pop('set_permissions', None)
+
+        if name is not None:
+            instance.name = name
+
+        if parent_uuid is not None:
+            parent = Group.valid_objects.filter(uuid=parent_uuid).first()
+            instance.parent = parent
+
+        if set_permissions is not None:
+            instance.permissions.clear()
+            for p_uuid in set_permissions:
+                p = Permission.objects.filter(uuid=p_uuid).first()
+                if p is not None:
+                    instance.permissions.add(p)
+        else:
+            instance.permissions.clear()
+
+        instance.save()
+        return instance
+
 
     def get_children(self, instance):
         qs = Group.valid_objects.filter(parent=instance).order_by('id')

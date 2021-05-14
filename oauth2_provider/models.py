@@ -365,7 +365,7 @@ class AbstractAccessToken(models.Model):
 
         :param scopes: An iterable containing the scopes to check or None
         """
-        return not self.is_expired() and self.allow_scopes(scopes)
+        return not self.is_expired()
 
     def is_expired(self):
         """
@@ -384,10 +384,8 @@ class AbstractAccessToken(models.Model):
         """
         if not scopes:
             return True
-
         provided_scopes = set(self.scope.split())
         resource_scopes = set(scopes)
-
         return resource_scopes.issubset(provided_scopes)
 
     def revoke(self):
@@ -514,7 +512,7 @@ class AbstractIDToken(models.Model):
         null=True,
         related_name="%(app_label)s_%(class)s",
     )
-    token = models.CharField(max_length=255, unique=True)
+    token = models.CharField(max_length=1024)
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL,
         on_delete=models.CASCADE,

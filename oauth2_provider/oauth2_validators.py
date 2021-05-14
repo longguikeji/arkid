@@ -385,7 +385,6 @@ class OAuth2Validator(RequestValidator):
             access_token = AccessToken.objects.select_related("application", "user").get(token=token)
         except AccessToken.DoesNotExist:
             access_token = None
-
         # if there is no token or it's invalid then introspect the token if there's an external OAuth server
         if not access_token or not access_token.is_valid(scopes):
             if introspection_url and (introspection_token or introspection_credentials):

@@ -162,6 +162,17 @@ class TokenSerializer(serializers.Serializer):
     is_valid = serializers.BooleanField(label=_('是否有效'))
 
 
+class PasswordRequestSerializer(serializers.Serializer):
+
+    uuid = serializers.CharField(label=_('用户uuid'))
+    password = serializers.CharField(label=_('需要修改的密码'))
+
+
+class PasswordSerializer(serializers.Serializer):
+
+    is_succeed = serializers.BooleanField(label=_('是否修改成功'))
+
+
 class UserImportSerializer(serializers.Serializer):
 
     file = serializers.FileField(label=_('上传文件'), write_only=True)

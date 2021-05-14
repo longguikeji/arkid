@@ -152,7 +152,7 @@ class FeishuUnBindView(GenericAPIView):
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         feishuuser = FeishuUser.valid_objects.filter(user=request.user, tenant=tenant).first()
         if feishuuser:
-            feishuuser.delete()
+            feishuuser.kill()
             data = {"is_del": True}
         else:
             data = {"is_del": False}

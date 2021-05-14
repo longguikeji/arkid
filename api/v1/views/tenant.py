@@ -86,7 +86,7 @@ class TenantViewSet(BaseViewSet):
                 'message': _('tenant no access permission'),
             })
 
-        token = self._get_token(user)
+        token = user.refresh_token()
 
         return JsonResponse(data={
             'error': Code.OK.value,
@@ -117,7 +117,7 @@ class TenantViewSet(BaseViewSet):
             })
 
         user = User.objects.get(mobile=mobile)
-        token = self._get_token(user)
+        token = user.refresh_token()
 
         has_tenant_admin_perm = tenant.has_admin_perm(user)
         if not has_tenant_admin_perm:
@@ -163,14 +163,13 @@ class TenantViewSet(BaseViewSet):
             mobile=mobile,
         )
         user.tenants.add(tenant)
-        token = self._get_token(user)
+        token = user.refresh_token()
         return JsonResponse(data={
             'error': Code.OK.value,
             'data': {
                 'token': token.key,  # TODO: fullfil user info
             }
         })
-
 
     @action(detail=True, methods=['post'])
     def username_register(self, request, pk):
@@ -198,7 +197,7 @@ class TenantViewSet(BaseViewSet):
         user.tenants.add(tenant)
         user.set_password(password)
         user.save()
-        token = self._get_token(user)
+        token = user.refresh_token()
         return JsonResponse(data={
             'error': Code.OK.value,
             'data': {
@@ -233,13 +232,6 @@ class TenantViewSet(BaseViewSet):
 
         serializer = self.get_serializer(objs, many=True)
         return Response(serializer.data)
-
-    def _get_token(self, user: User):
-        token, _ = Token.objects.get_or_create(
-            user=user,
-        )
-
-        return token
 
     def login_form(self, tenant_uuid):
         return lp.LoginForm(
@@ -350,9 +342,9 @@ class TenantViewSet(BaseViewSet):
                     url=reverse("api:tenant-mobile-register", args=[tenant_uuid, ]),
                     method='post',
                     params={
-                        'mobile':'mobile',
-                        'password':'password',
-                        'code':'code',
+                        'mobile': 'mobile',
+                        'password': 'password',
+                        'code': 'code',
                         'repassword': 'repassword',
                     }
                 )
@@ -385,8 +377,8 @@ class TenantViewSet(BaseViewSet):
                     url=reverse("api:tenant-username-register", args=[tenant_uuid, ]),
                     method='post',
                     params={
-                        'username':'username',
-                        'password':'password',
+                        'username': 'username',
+                        'password': 'password',
                         'repassword': 'repassword',
                     }
                 )
