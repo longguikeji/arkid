@@ -1,21 +1,37 @@
 from django.http import Http404
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
+
 # from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 from webhook.models import (
     WebHook,
 )
 from api.v1.serializers.webhook import (
-    WebHookSerializer
+    WebHookSerializer,
+    WebHookListResponseSerializer,
+    WebhookCreateRequestSerializer,
 )
 from common.paginator import DefaultListPaginator
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 from .base import BaseViewSet
 
-@extend_schema(
-    tags = ['webhook']
+
+@extend_schema_view(
+    list=extend_schema(
+        responses=WebHookListResponseSerializer,
+    ),
+    retrieve=extend_schema(
+        responses=WebHookListResponseSerializer,
+    ),
+    create=extend_schema(
+        request=WebhookCreateRequestSerializer,
+    ),
+    update=extend_schema(
+        request=WebhookCreateRequestSerializer,
+    ),
 )
+@extend_schema(tags=['webhook'])
 class WebHookViewSet(BaseViewSet):
 
     # permission_classes = [IsAuthenticated]
