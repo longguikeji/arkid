@@ -7,8 +7,9 @@ import logging
 from contextlib import contextmanager
 from vine.abstract import Thenable, ThenableProxy
 from vine import maybe_promise, promise
-
+from .models import WebHookTriggerHistory
 import uuid
+import json
 from requests.exceptions import ConnectionError, Timeout, ProxyError
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,7 @@ class Request(ThenableProxy):
         headers=None,
         allow_keepalive=True,
         allow_redirects=None,
+        history_id=None,
     ):
         self.id = id or uuid.uuid4()
         self.event = event
@@ -102,6 +104,20 @@ class Request(ThenableProxy):
                 on_error=self.on_error,
             )
         )
+        if not history_id:
+            self.history_id = self.create_webhook_trigger_history(webhook, data)
+        else:
+            self.history_id = history_id
+
+    def create_webhook_trigger_history(self, webhook, data):
+        history = WebHookTriggerHistory.objects.create(
+            tenant=webhook.tenant,
+            webhook=webhook,
+            status=0,
+            request=json.loads(data),
+            response=None,
+        )
+        return history.uuid.hex
 
     def annotate_headers(self, extra_headers):
         # type: (Dict[str, Any]) -> Dict[str, Any]
@@ -132,6 +148,7 @@ class Request(ThenableProxy):
         except self.connection_errors as exc:
             self.handle_connection_error(exc, propagate=propagate)
         else:
+            self.set_history_state(self.history_id, 1, self.response)
             self._p()
 
     @contextmanager
@@ -165,6 +182,16 @@ class Request(ThenableProxy):
                 verify=False,
             )
 
+    def set_history_state(self, history_id, status, response):
+        print('+++++++++++++++++++++')
+        print(response.text)
+        print('--------------------')
+        assert history_id
+        history = WebHookTriggerHistory.objects.get(uuid=self.history_id)
+        history.status = status
+        history.response = response.json()
+        history.save()
+
     def handle_timeout_error(self, exc, propagate=False):
         # type: (Exception, bool) -> Any
         logger.info(
@@ -173,6 +200,7 @@ class Request(ThenableProxy):
             exc_info=1,
             extra={'data': self.as_dict()},
         )
+        self.set_history_state(self.history_id, 2, {'error': str(exc)})
         if self.on_timeout:
             return self.on_timeout(self, exc)
         return self._p.throw(exc, propagate=propagate)
@@ -185,6 +213,7 @@ class Request(ThenableProxy):
             exc_info=1,
             extra={'data': self.as_dict()},
         )
+        self.set_history_state(self.history_id, 2, {'error': str(exc)})
         self._p.throw(exc, propagate=propagate)
 
     def as_dict(self):
@@ -203,6 +232,7 @@ class Request(ThenableProxy):
             'retry_max': self.retry_max,
             'retry_delay': self.retry_delay,
             'allow_keepalive': self.allow_keepalive,
+            'history_id': self.history_id,
         }
 
     @property
