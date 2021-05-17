@@ -17,6 +17,7 @@ from . import (
     storage,
     sms,
     migration,
+    setup,
 )
 from runtime import get_app_runtime
 
@@ -57,6 +58,7 @@ urlpatterns += storage.urlpatterns
 urlpatterns += sms.urlpatterns
 urlpatterns += migration.urlpatterns
 urlpatterns += tenant.urlpatterns
+urlpatterns += setup.urlpatterns
 
 urlpatterns += marketplace.router.urls
 urlpatterns += user.urlpatterns
