@@ -23,22 +23,32 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
             result = []
             for extension in extensions:
                 if tags and extension_type and scope:
-                    if tags and tags in extension.tags and extension_type and extension_type in extension.type and scope and scope in extension.scope:
+                    tags_cp = tags.split(',')
+                    extension_type_cp = extension_type.split(',')
+                    scope_cp = scope.split(',')
+                    if tags_cp and extension.tags in tags_cp and extension_type_cp and extension.type in extension_type_cp and scope_cp and extension.scope in scope_cp:
                         result.append(extension)
                 elif tags and extension_type:
-                    if tags and tags in extension.tags and extension_type and extension_type in extension.type:
+                    tags_cp = tags.split(',')
+                    extension_type_cp = extension_type.split(',')
+                    if tags_cp and extension.tags in tags_cp and extension_type_cp and extension.type in extension_type_cp:
                         result.append(extension)
                 elif tags and scope:
-                    if tags and tags in extension.tags or scope and scope in extension.scope:
+                    tags_cp = tags.split(',')
+                    scope_cp = scope.split(',')
+                    if tags_cp and extension.tags in tags_cp and scope_cp and extension.scope in scope_cp:
                         result.append(extension)
                 elif tags:
-                    if tags and tags in extension.tags:
+                    tags_cp = tags.split(',')
+                    if tags_cp and extension.tags in tags_cp:
                         result.append(extension)
                 elif scope:
-                    if scope and scope in extension.scope:
+                    scope_cp = scope.split(',')
+                    if scope_cp and extension.scope in scope_cp:
                         result.append(extension)
                 elif extension_type:
-                    if extension_type and extension_type in extension.type:
+                    extension_type_cp = extension_type.split(',')
+                    if extension_type_cp and extension.type in extension_type_cp:
                         result.append(extension)
             extensions = result
         return extensions
