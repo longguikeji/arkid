@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 
 class BaseRequestBuilder:
     def __init__(self, endpoint, id=None, data=None):
-        self.base_url = urljoin(endpoint, str(id))
+        self.base_url = urljoin(endpoint, str(id) if id else '')
         self.headers = {"Accept": "application/json, application/scim+json"}
         self.params = {}
         self.data = data

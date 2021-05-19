@@ -136,7 +136,7 @@ class ModelEvent(Event):
         value = attrgetter(self.tenant_field)(instance)
         if not value:
             return []
-        elif isinstance(value, models.ManyToManyField):
+        elif hasattr(value, 'all') and callable(getattr(value, 'all')):
             return value.all()
         else:
             return [value]

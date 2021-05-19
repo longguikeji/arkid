@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'inventory',
     'app',
     'oauth2_provider',
+    'tasks',
     'webhook',
     'siteadmin',
     'provisioning',

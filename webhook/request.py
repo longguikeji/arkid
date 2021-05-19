@@ -148,7 +148,7 @@ class Request(ThenableProxy):
         except self.connection_errors as exc:
             self.handle_connection_error(exc, propagate=propagate)
         else:
-            self.set_history_state(self.history_id, 1, self.response)
+            self.set_history_state(self.history_id, 1, self.response.json())
             self._p()
 
     @contextmanager
@@ -183,14 +183,12 @@ class Request(ThenableProxy):
             )
 
     def set_history_state(self, history_id, status, response):
-        print('+++++++++++++++++++++')
-        print(response.text)
-        print('--------------------')
         assert history_id
         history = WebHookTriggerHistory.objects.get(uuid=self.history_id)
-        history.status = status
-        history.response = response.json()
-        history.save()
+        if history:
+            history.status = status
+            history.response = response
+            history.save()
 
     def handle_timeout_error(self, exc, propagate=False):
         # type: (Exception, bool) -> Any

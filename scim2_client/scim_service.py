@@ -36,25 +36,31 @@ class ScimService:
         return self.retrieve(RESOURCE_TYPES_ENDPOINT, name).invoke()
 
     def get_schemas(self):
-        return self.search_request(SCHEMAS_ENDPOINT).invoke()
+        return self.search(SCHEMAS_ENDPOINT).invoke()
 
     def get_schema(self, id):
-        return retrieve(SCHEMAS_ENDPOINT, id).invoke()
+        return self.retrieve(SCHEMAS_ENDPOINT, id).invoke()
 
     def retrieve(self, endpoint, id):
+        endpoint = urljoin(self.base_url, endpoint)
         return RetrieveRequestBuilder(endpoint, id)
 
     def search(self, endpoint):
+        endpoint = urljoin(self.base_url, endpoint)
         return SearchRequestBuilder(endpoint)
 
     def create(self, endpoint, data):
+        endpoint = urljoin(self.base_url, endpoint)
         return CreateRequestBuilder(endpoint, data)
 
     def modify(self, endpoint, id):
+        endpoint = urljoin(self.base_url, endpoint)
         return ModifyRequestBuilder(endpoint, id)
 
     def replace(self, endpoint, id, data):
+        endpoint = urljoin(self.base_url, endpoint)
         return ReplaceRequestBuilder(endpoint, id, data)
 
     def delete(self, endpoint, id):
+        endpoint = urljoin(self.base_url, endpoint)
         return DeleteRequestBuilder(endpoint, id)

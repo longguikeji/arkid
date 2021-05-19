@@ -5,7 +5,7 @@ from .base_request_builder import BaseRequestBuilder
 
 class RetrieveRequestBuilder(BaseRequestBuilder):
     def __init__(self, endpoint, id):
-        super().__init__(self, endpoint, id)
+        super().__init__(endpoint, id)
         this.version = None
 
     def if_none_match(self, version):

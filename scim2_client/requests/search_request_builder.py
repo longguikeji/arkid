@@ -16,7 +16,12 @@ from scim2_client.constants import (
 
 class SearchRequestBuilder(BaseRequestBuilder):
     def __init__(self, endpoint):
-        super().__init__(self, endpoint)
+        super().__init__(endpoint)
+        self.filter_str = ''
+        self.sort_by = ''
+        self.sort_order = ''
+        self.start_index = ''
+        self.count = ''
 
     def filter(self, filter_str):
         self.filter_str = filter_str
@@ -49,16 +54,18 @@ class SearchRequestBuilder(BaseRequestBuilder):
             else:
                 data[QUERY_PARAMETER_ATTRIBUTE] = ','.join(self.attributes)
 
+        return data
+
     def build_params(self):
         if self.filter_str:
-            self.params[QUERY_PARAMETER_FILTER] = filter_str
+            self.params[QUERY_PARAMETER_FILTER] = self.filter_str
         if self.sort_by:
-            self.params[QUERY_PARAMETER_SORT_BY] = sort_by
+            self.params[QUERY_PARAMETER_SORT_BY] = self.sort_by
         if self.sort_order:
-            self.params[QUERY_PARAMETER_SORT_ORDER] = sort_order
+            self.params[QUERY_PARAMETER_SORT_ORDER] = self.sort_order
         if self.start_index and self.count:
-            self.params[QUERY_PARAMETER_PAGE_START_INDEX] = start_index
-            self.params[QUERY_PARAMETER_PAGE_SIZE] = count
+            self.params[QUERY_PARAMETER_PAGE_START_INDEX] = self.start_index
+            self.params[QUERY_PARAMETER_PAGE_SIZE] = self.count
 
     def invoke(self, use_post=False):
         if use_post:

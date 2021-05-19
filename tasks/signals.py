@@ -11,8 +11,8 @@ def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
         content_type = ContentType.objects.get_for_model(Tenant)
         Permission.objects.get_or_create(
             tenant=instance,
-            content_type=content_type,            
-            codename=f'tenant_admin_{instance.uuid}',            
+            content_type=content_type,
+            codename=f'tenant_admin_{instance.uuid}',
             name=_('Can admin tenant') + f' {instance.name}',
         )
 
@@ -20,7 +20,14 @@ def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
 def user_saved(sender, instance: User, created: bool, **kwargs):
     print('signal user saved', sender, instance, created, kwargs)
     from tasks.tasks import provision_user
-    # provision_user(instance.tenant.uuid, instance.id)
+
+    tenants = instance.tenants.all()
+    if not tenants:
+        print('User with no tenants!')
+        return
+
+    for tenant in instance.tenants.all():
+        provision_user.delay(tenant.uuid, instance.id)
 
 
 def group_saved(sender, instance: Group, created: bool, **kwargs):

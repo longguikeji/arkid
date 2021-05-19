@@ -113,6 +113,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
         from extension_root.miniprogram.models import MiniProgramUser
+
         feishuusers = FeishuUser.valid_objects.filter(user=self).exists()
         giteeusers = GiteeUser.valid_objects.filter(user=self).exists()
         githubusers = GithubUser.valid_objects.filter(user=self).exists()
@@ -139,12 +140,8 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         return token.key
 
     def refresh_token(self):
-        Token.objects.filter(
-            user=self
-        ).delete()
-        token, _ = Token.objects.get_or_create(
-            user=self
-        )
+        Token.objects.filter(user=self).delete()
+        token, _ = Token.objects.get_or_create(user=self)
         return token
 
     def set_password(self, raw_password):
@@ -176,7 +173,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         return is_password_usable(self.password)
 
     def as_dict(self):
-        groups = [g.uuid.hex for g in self.groups]
+        groups = [g.uuid.hex for g in self.groups.all()]
         return {
             'uuid': self.uuid.hex,
             'is_del': self.is_del,

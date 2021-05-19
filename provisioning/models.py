@@ -12,9 +12,7 @@ class Config(BaseModel):
         (ProvisioningStatus.Disabled.value, 'Disabled'),
     )
 
-    MODE_CHOICES = (
-        (ProvisioningMode.Automatic.value, 'Automatic'),
-    )
+    MODE_CHOICES = ((ProvisioningMode.Automatic.value, 'Automatic'),)
 
     app = models.ForeignKey(App, on_delete=models.PROTECT)
     endpoint = models.CharField(max_length=1024, blank=False, null=True)
@@ -24,3 +22,5 @@ class Config(BaseModel):
     mode = models.IntegerField(choices=MODE_CHOICES, default=0)
     status = models.IntegerField(choices=STATUS_CHOICES, default=1)
 
+    def should_provision(self, user):
+        return True
