@@ -50,7 +50,7 @@ class TenantViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     def get_queryset(self):
-        objs = Tenant.active_objects.filter().order_by('id')
+        objs = self.request.user.tenants.all()
         return objs
 
     def get_object(self):
