@@ -50,8 +50,11 @@ class TenantViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     def get_queryset(self):
-        objs = self.request.user.tenants.all()
-        return objs
+        if self.request.user and self.request.user.username != "":
+            objs = self.request.user.tenants.all()
+            return objs
+        else:
+            return []
 
     def get_object(self):
         uuid = self.kwargs['pk']
