@@ -51,7 +51,7 @@ class TenantViewSet(BaseViewSet):
 
     def get_queryset(self):
         if self.request.user and self.request.user.username != "":
-            objs = self.request.user.tenants.all()
+            objs = self.request.user.tenants.filter(is_del=False).all()
             return objs
         else:
             return []
