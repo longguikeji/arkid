@@ -62,6 +62,7 @@ class UserViewSet(BaseViewSet):
         group = self.request.query_params.get('group', None)
 
         kwargs = {
+            'is_del': False,
             'tenants__in': [tenant],
         }
 
