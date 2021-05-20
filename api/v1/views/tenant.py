@@ -50,8 +50,11 @@ class TenantViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     def get_queryset(self):
-        objs = Tenant.active_objects.filter().order_by('id')
-        return objs
+        if self.request.user and self.request.user.username != "":
+            objs = self.request.user.tenants.filter(is_del=False).all()
+            return objs
+        else:
+            return []
 
     def get_object(self):
         uuid = self.kwargs['pk']
@@ -80,11 +83,11 @@ class TenantViewSet(BaseViewSet):
 
         has_tenant_admin_perm = tenant.has_admin_perm(user)
 
-        if not has_tenant_admin_perm:
-            return JsonResponse(data={
-                'error': Code.TENANT_NO_ACCESS.value,
-                'message': _('tenant no access permission'),
-            })
+        # if not has_tenant_admin_perm:
+        #     return JsonResponse(data={
+        #         'error': Code.TENANT_NO_ACCESS.value,
+        #         'message': _('tenant no access permission'),
+        #     })
 
         token = user.refresh_token()
 
@@ -120,11 +123,11 @@ class TenantViewSet(BaseViewSet):
         token = user.refresh_token()
 
         has_tenant_admin_perm = tenant.has_admin_perm(user)
-        if not has_tenant_admin_perm:
-            return JsonResponse(data={
-                'error': Code.TENANT_NO_ACCESS.value,
-                'message': _('tenant no access permission'),
-            })
+        # if not has_tenant_admin_perm:
+        #     return JsonResponse(data={
+        #         'error': Code.TENANT_NO_ACCESS.value,
+        #         'message': _('tenant no access permission'),
+        #     })
 
         if thirdparty_data is not None:
             bind_key = thirdparty_data.pop('bind_key')
