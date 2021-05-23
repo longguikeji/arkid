@@ -6,10 +6,11 @@ from runtime import get_app_runtime
 from drf_spectacular.utils import extend_schema
 from inventory.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from provisioning.models import Config
+from schema.models import Schema
 
 
 class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
-
     class Meta:
         model = App
 
@@ -23,7 +24,6 @@ class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
 
 
 class AppSerializer(BaseDynamicFieldModelSerializer):
-
     class Meta:
         model = App
 
@@ -87,7 +87,6 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
 
 
 class AppListSerializer(AppSerializer):
-
     class Meta:
         model = App
 
@@ -97,3 +96,79 @@ class AppListSerializer(AppSerializer):
             'type',
             'description',
         )
+
+
+class AppProvisioningShemasSerializer(AppSerializer):
+    class Meta:
+        model = Schema
+
+        fields = (
+            'name',
+            'description',
+            'mapping_type',
+            'default_value_if_is_none',
+            'source_attribute',
+            'target_attribute',
+            'is_used_matching',
+            'matching_precedence',
+            'constant_value',
+            'scim_path',
+            'sub_attrs',
+        )
+
+
+class AppProvisioningSerializer(BaseDynamicFieldModelSerializer):
+    schemas = AppProvisioningShemasSerializer(many=True)
+
+    class Meta:
+        model = Config
+
+        fields = (
+            'endpoint',
+            'token',
+            'schemas',
+            'mode',
+            'status',
+            'username',
+            'password',
+        )
+
+    def create(self, validated_data):
+        app = self.context['app']
+
+        endpoint = validated_data.pop('endpoint')
+        token = validated_data.pop('token')
+        mode = validated_data.pop('mode', 0)
+        status = validated_data.pop('status', 1)
+        username = validated_data.pop('username')
+        password = validated_data.pop('password')
+
+        schemas = validated_data.pop('schemas', [])
+
+        provision = Config.objects.create(
+            app=app,
+            endpoint=endpoint,
+            token=token,
+            mode=mode,
+            status=status,
+            username=username,
+            password=password,
+        )
+
+        for sch in schemas:
+            obj = Schema.objects.create(
+                name=sch.get('name', ''),
+                description=sch.get('mapping_type', 0),
+                default_value_if_is_none=sch.get('default_value_if_is_none', ''),
+                source_attribute=sch.get('source_attribute', ''),
+                target_attribute=sch.get('target_attribute', ''),
+                is_used_matching=sch.get('is_used_matching', False),
+                matching_precedence=sch.get('matching_precedence', -1),
+                constant_value=sch.get('constant_value', ''),
+                scim_path=sch.get('scim_path', ''),
+                sub_attrs=sch.get('sub_attrs', {}),
+            )
+            provision.schemas.add(obj)
+        provision.save()
+
+        return provision

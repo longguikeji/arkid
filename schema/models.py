@@ -15,7 +15,7 @@ class Schema(BaseModel):
     name = models.CharField(max_length=128)
     description = models.TextField(blank=True)
     mapping_type = models.IntegerField(choices=MAPPING_TYPE_CHOICES, default=0)
-    default_value_if_is_none = models.CharField(max_length=128)
+    default_value_if_is_none = models.CharField(max_length=128, blank=True, null=True)
     source_attribute = models.CharField(max_length=256)
     target_attribute = models.CharField(max_length=256)
     is_used_matching = models.BooleanField(default=False)
