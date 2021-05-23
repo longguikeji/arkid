@@ -15,8 +15,8 @@ from scim2_client.constants import (
 
 
 class SearchRequestBuilder(BaseRequestBuilder):
-    def __init__(self, endpoint):
-        super().__init__(endpoint)
+    def __init__(self, session, endpoint):
+        super().__init__(session, endpoint)
         self.filter_str = ''
         self.sort_by = ''
         self.sort_order = ''
@@ -71,10 +71,12 @@ class SearchRequestBuilder(BaseRequestBuilder):
         if use_post:
             data = self.build_data()
             url = urljoin(self.base_url, SEARCH_WITH_POST_PATH_EXTENSION)
-            r = requests.post(url, data=data, headers=self.headers)
+            r = self.session.json(url, data=data, headers=self.headers)
             return r.status_code, r.text
         else:
             super().invoke()
             self.build_params()
-            r = requests.get(self.base_url, params=self.params, headers=self.headers)
+            r = self.session.get(
+                self.base_url, params=self.params, headers=self.headers
+            )
             return r.status_code, r.text

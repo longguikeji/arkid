@@ -10,6 +10,7 @@ from inventory.models import User, Group
 from app.models import App
 from webhook.models import WebHook, WebHookTriggerHistory
 import requests
+from scim2_client.scim_service import ScimService
 
 
 @app.task
@@ -27,6 +28,7 @@ def provision_user(tenant_uuid: str, user_id: int):
             continue
 
         provision_app_user.delay(tenant_uuid, app.id, config.id, user_id)
+        # provision_app_user(tenant_uuid, app.id, config.id, user_id)
 
 
 @app.task
@@ -41,11 +43,20 @@ def provision_app_user(tenant_uuid: str, app_id: int, config_id: int, user_id: i
     if not config.should_provision(user):
         print(f'User Provisioning Skiped: {user_id}')
         return
+    # if not config.ensure_connection():
+    #     return
 
-    if not user_exists(config, user):
-        create_user(config, user)
+    session = config.get_session()
+    if not session:
+        print('*****Error Connection******')
+        return
+    service = ScimService(session, config.endpoint)
+    user_id = user_exists(service, config, user)
+    if not user_id:
+        user_id = create_user(service, config, user)
+        print('created user with uuid: {}'.format(user_id))
     else:
-        update_user(user)
+        update_user(service, config, user, user_id)
 
 
 @app.task

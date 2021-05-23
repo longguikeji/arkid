@@ -18,7 +18,8 @@ from .requests import SearchRequestBuilder
 class ScimService:
     MEDIA_TYPE_SCIM_TYPE = MEDIA_TYPE_SCIM
 
-    def __init__(self, base_url):
+    def __init__(self, session, base_url):
+        self.session = session
         self.base_url = base_url
         self.service_provider_config = None
 
@@ -43,24 +44,24 @@ class ScimService:
 
     def retrieve(self, endpoint, id):
         endpoint = urljoin(self.base_url, endpoint)
-        return RetrieveRequestBuilder(endpoint, id)
+        return RetrieveRequestBuilder(self.session, endpoint, id)
 
     def search(self, endpoint):
         endpoint = urljoin(self.base_url, endpoint)
-        return SearchRequestBuilder(endpoint)
+        return SearchRequestBuilder(self.session, endpoint)
 
     def create(self, endpoint, data):
         endpoint = urljoin(self.base_url, endpoint)
-        return CreateRequestBuilder(endpoint, data)
+        return CreateRequestBuilder(self.session, endpoint, data)
 
     def modify(self, endpoint, id):
         endpoint = urljoin(self.base_url, endpoint)
-        return ModifyRequestBuilder(endpoint, id)
+        return ModifyRequestBuilder(self.session, endpoint, id)
 
     def replace(self, endpoint, id, data):
         endpoint = urljoin(self.base_url, endpoint)
-        return ReplaceRequestBuilder(endpoint, id, data)
+        return ReplaceRequestBuilder(self.session, endpoint, id, data)
 
     def delete(self, endpoint, id):
         endpoint = urljoin(self.base_url, endpoint)
-        return DeleteRequestBuilder(endpoint, id)
+        return DeleteRequestBuilder(self.session, endpoint, id)

@@ -6,8 +6,8 @@ from .base_request_builder import BaseRequestBuilder
 
 
 class ModifyRequestBuilder(BaseRequestBuilder):
-    def __init__(self, endpoint, id):
-        super().__init__(self, endpoint, id)
+    def __init__(self, session, endpoint, id):
+        super().__init__(session, endpoint, id)
         self.version = None
         self.operations = []
 
@@ -48,5 +48,5 @@ class ModifyRequestBuilder(BaseRequestBuilder):
             self.headers['If-Match'] = self.version
 
         data = self.build_data()
-        r = requests.patch(self.base_url, data=data, headers=self.headers)
+        r = self.session.patch(self.base_url, json=data, headers=self.headers)
         return r.status_code, r.text
