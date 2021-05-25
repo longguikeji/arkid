@@ -306,6 +306,7 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
     nodes = serializers.SerializerMethodField()
 
     visible = serializers.SerializerMethodField()
+    has_children = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         # TODO: requets not exists
@@ -341,6 +342,8 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
         else:
             self.children_name = 'nodes'
             self.fields.pop('depts')
+        self.return_child_depts = self.context.get('return_child_depts', True)
+
 
     class Meta:    # pylint: disable=missing-docstring
         model = Dept
@@ -351,6 +354,7 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
             'depts',
             'nodes',
             'visible',
+            'has_children'
         )
 
     def get_visible(self, instance):    # pylint: disable=unused-argument
@@ -382,11 +386,20 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
             return UserLiteSerializer(instance.users, many=True).data
         return []
 
+    def get_has_children(self, instance):
+        child_ids = DeptCash.get_dept_children(instance.id)
+        if child_ids:
+            return True
+        else:
+            return False
+
     def get_depts(self, instance):
         '''
         下属部门
         '''
         # redata = [self.__class__(node, context=self.context).data for node in instance.children]
+        if not self.return_child_depts:
+            return []
         children = []
         child_ids = DeptCash.get_dept_children(instance.id)
         if not child_ids:
@@ -395,6 +408,7 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
         for child_id in child_ids:
             children.append(DeptCash.get_dept(child_id))
 
+        self.context['return_child_depts'] = False
         redata = [self.__class__(node, context=self.context).data for node in children]
         return redata
         # return [node for node in instance.children]
