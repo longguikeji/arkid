@@ -1,6 +1,5 @@
 from drf_spectacular.utils import extend_schema
 from django.urls import reverse
-from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from .provider import MiniProgramExternalIdpProvider
 from rest_framework.response import Response
@@ -9,24 +8,29 @@ from .user_info_manager import MiniProgramUserInfoManager, APICallError
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
-from .serializers import MiniProgramBindSerializer
+from .serializers import(
+    MiniProgramBindSerializer, MiniProgramLoginSerializer, MiniProgramLoginResponseSerializer,
+    MiniProgramBindResponseSerializer,
+)
 from .models import MiniProgramUser
 from tenant.models import Tenant
 
 
 @extend_schema(tags=["miniprogram"])
-class MiniProgramLoginView(APIView):
+class MiniProgramLoginView(GenericAPIView):
 
     permission_classes = []
     authentication_classes = []
+    serializer_class = MiniProgramLoginSerializer
 
-    def get(self, request, tenant_uuid):
+    @extend_schema(responses=MiniProgramLoginResponseSerializer)
+    def post(self, request, tenant_uuid):
         '''
         处理miniprogram用户登录
         '''
-        code = request.GET["code"]
-        name = request.GET["name"]
-        avatar = request.GET["avatar"]
+        code = request.data.get("code")
+        name = request.data.get("name")
+        avatar = request.data.get("avatar")
         if code:
             try:
                 provider = MiniProgramExternalIdpProvider()
@@ -77,6 +81,7 @@ class MiniProgramBindAPIView(GenericAPIView):
 
     serializer_class = MiniProgramBindSerializer
 
+    @extend_schema(responses=MiniProgramBindResponseSerializer)
     def post(self, request, tenant_uuid):
         """
         绑定用户
