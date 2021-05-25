@@ -8,7 +8,9 @@ from tenant.models import (
     Tenant,
 )
 from api.v1.serializers.tenant import (
-    TenantSerializer,
+    TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
+    UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
+    UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -35,7 +37,14 @@ class TenantViewSet(BaseViewSet):
     def get_serializer_class(self):
         if self.action == 'apps':
             return AppBaseInfoSerializer
-
+        elif self.action == 'mobile_login':
+            return MobileLoginRequestSerializer
+        elif self.action == 'mobile_register':
+            return MobileRegisterRequestSerializer
+        elif self.action == 'username_register':
+            return UserNameRegisterRequestSerializer
+        elif self.action == 'login':
+            return UserNameRegisterRequestSerializer
         return TenantSerializer
 
     @extend_schema(
@@ -64,6 +73,7 @@ class TenantViewSet(BaseViewSet):
     def runtime(self):
         return get_app_runtime()
 
+    @extend_schema(responses=UserNameLoginResponseSerializer)
     @action(detail=True, methods=['post'])
     def login(self, request, pk):
         tenant: Tenant = self.get_object()
@@ -99,6 +109,7 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
+    @extend_schema(responses=MobileLoginResponseSerializer)
     @action(detail=True, methods=['post'])
     def mobile_login(self, request, pk):
         tenant = self.get_object()
@@ -149,6 +160,7 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
+    @extend_schema(responses=MobileRegisterResponseSerializer)
     @action(detail=True, methods=['post'])
     def mobile_register(self, request, pk):
         mobile = request.data.get('mobile')
@@ -174,6 +186,7 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
+    @extend_schema(responses=UserNameRegisterResponseSerializer)
     @action(detail=True, methods=['post'])
     def username_register(self, request, pk):
         username = request.data.get('username')
