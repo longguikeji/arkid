@@ -11,7 +11,8 @@ class GiteeAppConfig(AppConfig):
 
 
 class GiteeUser(BaseModel):
-    class meta:
+
+    class Meta:
 
         app_label = "gitee"
 
@@ -22,3 +23,13 @@ class GiteeUser(BaseModel):
     gitee_user_id = models.CharField(
         max_length=255, blank=True, verbose_name="Gitee ID"
     )
+
+
+class GiteeInfo(BaseModel):
+
+    class Meta:
+        app_label = "gitee"
+
+    gitee_user_id = models.CharField(max_length=256, default='', null=True, blank=True, verbose_name="Gitee ID")
+    access_token = models.CharField(max_length=256, default='', null=True, blank=True, verbose_name='access_token')
+    refresh_token = models.CharField(max_length=256, default='', null=True, blank=True, verbose_name='refresh_token')
