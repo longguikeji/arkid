@@ -16,7 +16,7 @@ import urllib.parse
 from django.urls import reverse
 from config import get_app_config
 from tenant.models import Tenant
-from .constants import AUTHORIZE_URL
+from .constants import AUTHORIZE_URL, FRESH_TOKEN_URL
 from drf_spectacular.utils import extend_schema
 from .provider import GiteeExternalIdpProvider
 from .serializers import GiteeBindSerializer, GiteeDataSerializer
@@ -206,16 +206,58 @@ class GiteeDataView(GenericAPIView):
                     url,
                     params=params,
                     headers=headers,
-                ).json()
+                )
+                if response.status_code == 401:
+                    # 401 Unauthorized: Access token is expired
+                    response = self.again_get_response(url, giteeinfo, data)
+                response = response.json()
             else:
                 response = requests.post(
                     url,
                     params=params,
                     headers=headers,
-                ).json()
+                )
+                if response.status_code == 401:
+                    # 401 Unauthorized: Access token is expired
+                    response = self.again_get_response(url, giteeinfo, data)
+                response = response.json()
             return Response(response, HTTP_200_OK)
         else:
             return Response({'error_msg': '该用户没有绑定的gitee'}, HTTP_200_OK)
+
+
+    def again_get_response(self, url, giteeinfo, data):
+        self.refresh_token(giteeinfo)
+        headers = {"Authorization": "token " + giteeinfo.access_token}
+        params = {"access_token": giteeinfo.access_token}
+        params = params.update(data)
+        response = requests.get(
+            url,
+            params=params,
+            headers=headers,
+        )
+        return response
+
+
+    def refresh_token(self, giteeinfo):
+        fresh_url = FRESH_TOKEN_URL.format(giteeinfo.refresh_token)
+        fresh_response = requests.post(fresh_url)
+        fresh_response = fresh_response.json()
+        # fresh_response = {
+        #     "access_token":"b517256123159fd34d992511ff83c567",
+        #     "token_type":"bearer",
+        #     "expires_in":86400,
+        #     "refresh_token":"356fd83639a5758b05ccb92b343e3aac5039a3ae19bf54a28be837e896a98762",
+        #     "scope":"user_info projects pull_requests issues notes keys hook groups gists enterprises emails",
+        #     "created_at":1622084590
+        # }
+        access_token = fresh_response.get('access_token', None)
+        refresh_token = fresh_response.get('refresh_token', None)
+        if access_token:
+            giteeinfo.access_token = access_token
+        if refresh_token:
+            giteeinfo.refresh_token = refresh_token
+        giteeinfo.save()
 
 # @extend_schema(tags=["gitee"])
 # class GiteeRegisterAndBindView(generics.CreateAPIView):
