@@ -121,7 +121,7 @@ class DeptTestCase(TestCase):
             'headcount': 1,
             'info': {
                 'dept_id': 1,
-                'name': '部门',
+                'name': 'root',
                 'node_subject': 'dept',
                 'node_uid': 'd_root',
                 'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
@@ -150,7 +150,7 @@ class DeptTestCase(TestCase):
             ],
             'info': {
                 'dept_id': 1,
-                'name': '部门',
+                'name': 'root',
                 'node_subject': 'dept',
                 'node_uid': 'd_root',
                 'remark': '所有顶级的部门的父级，可视为整个公司。请勿修改',
