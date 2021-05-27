@@ -263,14 +263,16 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
             return self.legacy_retrieve(request, *args, **kwargs)
 
     def retrieve_dept(self, node, request, *args, **kwargs):
+        url_name = resolve(self.request.path_info).url_name
+        user_required = self.request.query_params.get('user_required', False) not in (False, 'false', 'False')
         if self.request.user.is_admin:
             sub_depts = Dept.valid_objects.filter(parent=node)
-            data = self.get_response_data(node, sub_depts)
+            data = self.get_response_data(node, sub_depts, url_name, user_required)
             return Response(data)
         if node.uid == 'root':
             # 子管理员根据管理组的类型返回不同的节点
             sub_depts = self.get_sub_manager_depts(request.user)
-            data = self.get_response_data(node, sub_depts)
+            data = self.get_response_data(node, sub_depts, url_name, user_required)
             return Response(data)
         else:
             # 判断node是否在当前用户管理范围内
@@ -283,11 +285,11 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
                 if manager_group.scope_subject == 1:  # 所在节点及下属节点
                     if upstream_uids & set(request.user.node_uids):
                         sub_depts = Dept.valid_objects.filter(parent=node)
-                        data = self.get_response_data(node, sub_depts)
+                        data = self.get_response_data(node, sub_depts, url_name, user_required)
                         return Response(data)
                 if manager_group.scope_subject == 2:  # 指定节点、人
                     if node.node_uid in manager_group.nodes:
-                        data = self.get_response_data(node, [])
+                        data = self.get_response_data(node, [], url_name, user_required)
                         return Response(data)
             return Response({})
 
@@ -317,18 +319,24 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
                     continue
         return depts.values()
 
-    def get_response_data(self, father_dept, sub_depts):
+    def get_response_data(self, father_dept, sub_depts, url_name, user_required):
         nodes = []
         if sub_depts:
             for sub in sub_depts:
-                nodes.append(self.get_response_data(sub, []))
-        users = self.get_users(father_dept)
-        return {
+                nodes.append(self.get_response_data(sub, [], url_name, user_required))
+
+        data = {
             'info': self.get_info(father_dept),
-            'users': users,
-            'nodes': nodes,
-            'headcount': len(users),  # 只返回当前节点下面用户数量
         }
+        if user_required:
+            users = self.get_users(father_dept)
+            data['users'] = users
+            data['headcount'] = len(users)
+        if 'dept' in url_name:
+            data['depts'] = nodes
+        else:
+            data['nodes'] = nodes
+        return data
 
     def get_info(self, instance):
         '''
