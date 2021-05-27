@@ -24,6 +24,7 @@ from oneid.permissions import IsAdminUser, IsManagerUser, NodeEmployeeReadable
 from oneid_meta.models.group import GroupMember, ManagerGroup
 from oneid_meta.models.dept import DeptMember
 from oneid.statistics import TimeCash
+from siteapi.v1.serializers import UserLiteSerializer
 
 
 class MetaNodeAPIView(APIView):
@@ -236,7 +237,7 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
         context['user_identity'] = self.user_identity
         return context
 
-    def retrieve(self, request, *args, **kwargs):
+    def legacy_retrieve(self, request, *args, **kwargs):
         '''
         获取节点结构树
         '''
@@ -251,6 +252,108 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
             serializer.aggregate_headcount(data)
         TimeCash.over()
         return Response(data)
+
+    def retrieve(self, request, *args, **kwargs):
+        if self.user_identity == 'employee':
+            return self.legacy_retrieve(request, *args, **kwargs)
+        node = self.get_object()
+        if node.__class__ == Dept:
+            return self.retrieve_dept(node, request, *args, **kwargs)
+        else:
+            return self.legacy_retrieve(request, *args, **kwargs)
+
+    def retrieve_dept(self, node, request, *args, **kwargs):
+        url_name = resolve(self.request.path_info).url_name
+        user_required = self.request.query_params.get('user_required', False) not in (False, 'false', 'False')
+        if self.request.user.is_admin:
+            sub_depts = Dept.valid_objects.filter(parent=node)
+            data = self.get_response_data(node, sub_depts, url_name, user_required)
+            return Response(data)
+        if node.uid == 'root':
+            # 子管理员根据管理组的类型返回不同的节点
+            sub_depts = self.get_sub_manager_depts(request.user)
+            data = self.get_response_data(node, sub_depts, url_name, user_required)
+            return Response(data)
+        else:
+            # 判断node是否在当前用户管理范围内
+            # 如果是在当前用户类型1（所在节点及下属节点）的管理下，返回当前及子几点
+            # 如果是在当前用户类型2（指定节点）只返回当前节点，不返回子节点，
+            # 否则放回{}
+
+            upstream_uids = set(node.upstream_uids)
+            for manager_group in request.user.manager_groups:
+                if manager_group.scope_subject == 1:  # 所在节点及下属节点
+                    if upstream_uids & set(request.user.node_uids):
+                        sub_depts = Dept.valid_objects.filter(parent=node)
+                        data = self.get_response_data(node, sub_depts, url_name, user_required)
+                        return Response(data)
+                if manager_group.scope_subject == 2:  # 指定节点、人
+                    if node.node_uid in manager_group.nodes:
+                        data = self.get_response_data(node, [], url_name, user_required)
+                        return Response(data)
+            return Response({})
+
+    def get_sub_manager_depts(self, user):
+        depts = {}
+        for mg in self.request.user.manager_groups:
+            scope_1_count = 0
+            dd = []
+            if mg.scope_subject == 1:
+                if scope_1_count > 0:
+                    continue
+                dd = Dept.valid_objects.filter(
+                    id__in=DeptMember.valid_objects.values('owner')
+                    .filter(user=user)
+                    .distinct()
+                )
+            else:
+                uids = []
+                for node in mg.nodes:
+                    uids.append(node.replace('d_', ''))
+                dd = Dept.valid_objects.filter(uid__in=uids)
+
+            for d in dd:
+                if d.uid not in depts:
+                    depts[d.uid] = d
+                else:
+                    continue
+        return depts.values()
+
+    def get_response_data(self, father_dept, sub_depts, url_name, user_required):
+        nodes = []
+        if sub_depts:
+            for sub in sub_depts:
+                nodes.append(self.get_response_data(sub, [], url_name, user_required))
+
+        data = {
+            'info': self.get_info(father_dept),
+        }
+        if user_required:
+            users = self.get_users(father_dept)
+            data['users'] = users
+            data['headcount'] = len(users)
+        if 'dept' in url_name:
+            data['depts'] = nodes
+        else:
+            data['nodes'] = nodes
+        return data
+
+    def get_info(self, instance):
+        '''
+        只返回基本信息
+        '''
+        return {
+            'dept_id': instance.id,
+            'node_uid': instance.node_uid,
+            'node_subject': instance.node_subject,
+            'uid': instance.uid,
+            'name': instance.name,
+            'remark': instance.remark,
+        }
+
+    def get_users(self, instance):
+        return UserLiteSerializer(instance.users, many=True).data
+
 
 
 class ManagerNodeTreeAPIView(NodeTreeAPIView):
