@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 
 class TenantSerializer(BaseDynamicFieldModelSerializer):
+
     class Meta:
         model = Tenant
 
@@ -14,6 +15,15 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
             'icon',
             'created',
         )
+
+    def create(self, validated_data):
+        tenant = Tenant.objects.create(
+            **validated_data
+        )
+        user = self.context['request'].user
+        if user and user.username != "":
+            user.tenants.add(tenant)
+        return tenant
 
 
 class MobileLoginRequestSerializer(serializers.Serializer):
