@@ -95,3 +95,33 @@ class UserInfoView(OIDCOnlyMixin, OAuthLibMixin, View):
         for k, v in headers.items():
             response[k] = v
         return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class UserInfoExtendView(OIDCOnlyMixin, OAuthLibMixin, View):
+    """
+    View used to show Claims about the authenticated End-User
+    """
+
+    def get(self, request, *args, **kwargs):
+        access_token = request.META.get('HTTP_AUTHORIZATION', '')
+        return self.get_user(access_token)
+
+
+    def post(self, request, *args, **kwargs):
+        access_token = request.META.get('HTTP_AUTHORIZATION', '')
+        return self.get_user(access_token)
+
+    def get_user(self, access_token):
+        from oauth2_provider.models import AccessToken
+        if access_token:
+            access_token = access_token.split(' ')[1]
+            access_token = AccessToken.objects.filter(token=access_token).first()
+            if access_token:
+                user = access_token.user
+                return JsonResponse({"data": {"user":{"id":user.id,"name":user.username,"email":user.email}}})
+            else:
+                return JsonResponse({"error": "access_token 不存在"})
+        else:
+            return JsonResponse({"error": "access_token 不能为空"})
+        
