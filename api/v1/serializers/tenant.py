@@ -26,7 +26,6 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         return tenant
 
 
-
 class MobileLoginRequestSerializer(serializers.Serializer):
 
     mobile = serializers.CharField(label=_('手机号'))
