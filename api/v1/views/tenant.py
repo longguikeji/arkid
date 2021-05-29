@@ -182,7 +182,7 @@ class TenantViewSet(BaseViewSet):
             })
 
 
-        user_exists = User.active_objects.filter(
+        user_exists = User.objects.filter(
             Q(username=mobile) | Q(mobile=mobile)
         ).exists()
         if user_exists:
@@ -192,6 +192,8 @@ class TenantViewSet(BaseViewSet):
             })
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
+            is_del=False,
+            is_active=True,
             username=mobile,
             mobile=mobile,
         )
@@ -226,6 +228,8 @@ class TenantViewSet(BaseViewSet):
 
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
+            is_del=False,
+            is_active=True,
             username=username,
         )
         user.tenants.add(tenant)
