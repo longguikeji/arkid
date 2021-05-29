@@ -81,7 +81,7 @@ class TenantViewSet(BaseViewSet):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        user = User.objects.filter(
+        user = User.active_objects.filter(
             username=username,
         ).first()
 
@@ -130,7 +130,14 @@ class TenantViewSet(BaseViewSet):
                 'message': _('SMS Code not match'),
             })
 
-        user = User.objects.get(mobile=mobile)
+        user = User.active_objects.filter(mobile=mobile).first()
+
+        if not user:
+            return JsonResponse(data={
+                'error': Code.USERNAME_EXISTS_ERROR.value,
+                'message': _('username is not correct'),
+            })
+
         token = user.refresh_token()
 
         has_tenant_admin_perm = tenant.has_admin_perm(user)

@@ -105,13 +105,13 @@ class User(AbstractUser, BaseModel):
         miniprogramusers = MiniProgramUser.valid_objects.filter(user=self).exists()
         result = ''
         if feishuusers:
-            result = '飞书'
+            result = '飞书 '
         if giteeusers:
-            result = result + 'gitee,'
+            result = result + 'gitee '
         if githubusers:
-            result = result + 'github,'
+            result = result + 'github '
         if arkidusers:
-            result = result + 'arkid,'
+            result = result + 'arkid '
         if miniprogramusers:
             result = result + '微信'
         return result
