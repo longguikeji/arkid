@@ -84,6 +84,15 @@ class UserViewSet(BaseViewSet):
 
         return User.valid_objects.filter(**kwargs).first()
 
+    def destroy(self, request, *args, **kwargs):
+        self.get_object().kill()
+        return Response(
+            {
+                'error_code': 0,
+                'error_msg': '删除成功',
+            }
+        )
+
     @extend_schema(
         request=UserImportSerializer,
         responses=UserImportSerializer,

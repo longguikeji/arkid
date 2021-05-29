@@ -182,7 +182,7 @@ class TenantViewSet(BaseViewSet):
             })
 
 
-        user_exists = User.objects.filter(
+        user_exists = User.active_objects.filter(
             Q(username=mobile) | Q(mobile=mobile)
         ).exists()
         if user_exists:
@@ -212,7 +212,7 @@ class TenantViewSet(BaseViewSet):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        user = User.objects.filter(
+        user = User.active_objects.filter(
             username=username
         ).first()
         if user:
