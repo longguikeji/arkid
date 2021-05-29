@@ -172,16 +172,27 @@ class TenantViewSet(BaseViewSet):
     def mobile_register(self, request, pk):
         mobile = request.data.get('mobile')
         code = request.data.get('code')
+        from django.db.models import Q
 
         cache_code = self.runtime.cache_provider.get(mobile)
-        if code != '123456' and (code is None or str(cache_code, 'utf-8') != code):
+        if code != '123456' and (code is None or str(cache_code) != code):
             return JsonResponse(data={
                 'error': Code.SMS_CODE_MISMATCH.value,
                 'message': _('SMS Code not match'),
             })
 
+
+        user_exists = User.active_objects.filter(
+            Q(username=mobile) | Q(mobile=mobile)
+        ).exists()
+        if user_exists:
+            return JsonResponse(data={
+                'error': Code.MOBILE_ERROR.value,
+                'message': _('The mobile is exists'),
+            })
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
+            username=mobile,
             mobile=mobile,
         )
         user.tenants.add(tenant)
