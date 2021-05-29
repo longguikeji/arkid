@@ -188,7 +188,7 @@ class TenantViewSet(BaseViewSet):
         if user_exists:
             return JsonResponse(data={
                 'error': Code.MOBILE_ERROR.value,
-                'message': _('The mobile is exists'),
+                'message': _('mobile already exists'),
             })
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
