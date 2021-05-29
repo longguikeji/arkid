@@ -71,8 +71,12 @@ class HuaWeiSMSProvider(SMSProvider):
             'statusCallback': status_callback,
             'signature': self.signature
         }
+        logging.error('短信请求体')
+        logging.error(form_data)
         result = requests.post(API_URL, data=form_data, headers=header, verify=False)
         result_json = result.json()
+        logging.error('短信返回体')
+        logging.error(result_json)
         if result_json.get('code') == "000000":
             return True
         else:
