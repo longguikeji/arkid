@@ -124,6 +124,9 @@ class User(AbstractUser, BaseModel):
         return token.key
 
     def refresh_token(self):
+        import datetime
+        self.last_login = datetime.datetime.now()
+        self.save()
         Token.objects.filter(
             user=self
         ).delete()
