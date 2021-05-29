@@ -15,3 +15,4 @@ class Code(Enum):
 
     USER_IMPORT_ERROR = '12001'
     GROUP_IMPORT_ERROR = '12002'
+    MOBILE_ERROR = '12003'
