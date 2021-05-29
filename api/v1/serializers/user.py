@@ -205,3 +205,8 @@ class UserBindInfoBaseSerializer(serializers.Serializer):
 
 class UserBindInfoSerializer(serializers.Serializer):
     data = serializers.ListField(child=UserBindInfoBaseSerializer(), label=_('绑定信息'), read_only=True)
+
+
+class LogoutSerializer(serializers.Serializer):
+
+    is_succeed = serializers.BooleanField(label=_('是否退出成功'))

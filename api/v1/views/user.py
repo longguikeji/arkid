@@ -23,6 +23,7 @@ from api.v1.serializers.user import (
     UserBindInfoSerializer,
     PasswordSerializer,
     PasswordRequestSerializer,
+    LogoutSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -315,3 +316,21 @@ class UserBindInfoView(generics.RetrieveAPIView):
                 'unbind': '/api/v1/tenant/{}/miniprogram/unbind'.format(item.tenant.uuid),
             })
         return JsonResponse({'data': result}, safe=False)
+
+
+@extend_schema(tags=['user'])
+class UserLogoutView(generics.RetrieveAPIView):
+
+    @extend_schema(responses=LogoutSerializer)
+    def get(self, request):
+        user = request.user
+        is_succeed = False
+        if user and user.username:
+            from rest_framework.authtoken.models import Token
+            Token.objects.filter(
+                user=user
+            ).delete()
+            is_succeed = True
+        return Response({
+            "is_succeed": is_succeed
+        })
