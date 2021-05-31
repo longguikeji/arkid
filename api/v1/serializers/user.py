@@ -187,6 +187,7 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
     username = serializers.CharField(label=_('用户名'), read_only=True)
     nickname = serializers.CharField(label=_('昵称'), read_only=True)
     mobile = serializers.CharField(label=_('手机号'), read_only=True)
+    manage_tenants = serializers.ListField(label=_('当前用户所管理的租户列表'), child=serializers.CharField(), read_only=True)
 
     class Meta:
         model = User
@@ -196,6 +197,7 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
             'username',
             'nickname',
             'mobile',
+            'manage_tenants',
         )
 
 
