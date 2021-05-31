@@ -59,6 +59,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'set_groups',
             'set_permissions',
             'bind_info',
+            'password',
         )
 
         extra_kwargs = {
@@ -87,6 +88,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     def create(self, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
+        password = validated_data.pop('password', None)
 
         u: User = User.objects.create(
             **validated_data,
@@ -107,7 +109,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
                 p = Permission.objects.filter(uuid=p_uuid).first()
                 if p is not None:
                     u.user_permissions.add(p)
-
+        u.set_password(password)
         u.save()
         return u
 
