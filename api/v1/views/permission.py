@@ -28,7 +28,6 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         context = self.get_serializer_context()
-        print(context)
         tenant = context['tenant']
 
         objs = Permission.objects.filter(

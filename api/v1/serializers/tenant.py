@@ -2,6 +2,7 @@ from tenant.models import Tenant
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
+from inventory.models import Permission
 
 class TenantSerializer(BaseDynamicFieldModelSerializer):
 
@@ -23,6 +24,9 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         user = self.context['request'].user
         if user and user.username != "":
             user.tenants.add(tenant)
+        permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
+        if permission:
+            user.user_permissions.add(permission)
         return tenant
 
 
