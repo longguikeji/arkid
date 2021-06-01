@@ -25,6 +25,7 @@ from api.v1.serializers.user import (
     PasswordSerializer,
     PasswordRequestSerializer,
     LogoutSerializer,
+    UserManageTenantsSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -293,7 +294,7 @@ class UpdatePasswordView(generics.CreateAPIView):
 
 
 @extend_schema(tags=['user'])
-class UserInfoView(generics.RetrieveAPIView):
+class UserInfoView(generics.RetrieveUpdateAPIView):
     permission_classes = [AllowAny]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserInfoSerializer
@@ -301,6 +302,20 @@ class UserInfoView(generics.RetrieveAPIView):
     @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        password = request.data.get('password')
+        if password and self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        return super(UserInfoView, self).update(request, *args, **kwargs)
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
 
 
 @extend_schema(tags=['user'])
@@ -372,3 +387,15 @@ class UserLogoutView(generics.RetrieveAPIView):
         return Response({
             "is_succeed": is_succeed
         })
+
+
+@extend_schema(tags=['user'])
+class UserManageTenantsView(generics.RetrieveAPIView):
+
+    @extend_schema(responses=UserManageTenantsSerializer)
+    def get(self, request):
+        user = request.user
+        if user and user.username:
+            return Response({
+                "manage_tenants": user.manage_tenants()
+            })
