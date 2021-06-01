@@ -188,9 +188,9 @@ class UserImportSerializer(serializers.Serializer):
 class UserInfoSerializer(BaseDynamicFieldModelSerializer):
     uuid = serializers.CharField(label=_('uuid'), read_only=True)
     username = serializers.CharField(label=_('用户名'), read_only=True)
-    nickname = serializers.CharField(label=_('昵称'), read_only=True)
-    mobile = serializers.CharField(label=_('手机号'), read_only=True)
-    manage_tenants = serializers.ListField(label=_('当前用户所管理的租户列表'), child=serializers.CharField(), read_only=True)
+    nickname = serializers.CharField(label=_('昵称'), required=False)
+    mobile = serializers.CharField(label=_('手机号'), required=False)
+    password = serializers.CharField(label=_('密码'), write_only=True, required=False)
 
     class Meta:
         model = User
@@ -200,9 +200,21 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
             'username',
             'nickname',
             'mobile',
-            'manage_tenants',
+            'password',
         )
 
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)
+        nickname = validated_data.pop('nickname', None)
+        if nickname:
+            instance.nickname = nickname
+        mobile = validated_data.pop('mobile', None)
+        if mobile:
+            instance.mobile = mobile
+        instance.save()
+        return instance
 
 class UserBindInfoBaseSerializer(serializers.Serializer):
     name = serializers.CharField(label=_('名称'), read_only=True)
@@ -215,5 +227,9 @@ class UserBindInfoSerializer(serializers.Serializer):
 
 
 class LogoutSerializer(serializers.Serializer):
-
     is_succeed = serializers.BooleanField(label=_('是否退出成功'))
+
+
+class UserManageTenantsSerializer(serializers.Serializer):
+    manage_tenants = serializers.ListField(child=serializers.CharField(), label=_('管理的租户信息'), read_only=True)
+

@@ -163,7 +163,8 @@ class User(AbstractUser, BaseModel):
         return is_password_usable(self.password)
 
     def manage_tenants(self):
-        tenants = self.tenants.all()
+        from tenant.models import Tenant
+        tenants = Tenant.active_objects.all()
         uuids = []
         for tenant in tenants:
             if tenant.has_admin_perm(self):

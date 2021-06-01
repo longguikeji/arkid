@@ -18,4 +18,5 @@ urlpatterns = [
     path('user/bind_info/', views_user.UserBindInfoView.as_view(), name='user-bind-info'),
     path('user/update_password/', views_user.UpdatePasswordView.as_view(), name='user-update-password'),
     path('user/logout/', views_user.UserLogoutView.as_view(), name='user-logout'),
+    path('user/manage_tenants/', views_user.UserManageTenantsView.as_view(), name='user-manage-tenants'),
 ]
