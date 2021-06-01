@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 from django.http import Http404
 from django.http.response import JsonResponse
+from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -92,6 +93,34 @@ class UserViewSet(BaseViewSet):
                 'error_msg': '删除成功',
             }
         )
+
+    def create(self, request, *args, **kwargs):
+        password = request.data.get('password')
+        if not password:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_NONE_ERROR.value,
+                'message': _('password is empty'),
+            })
+        if self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        return super(UserViewSet, self).create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        password = request.data.get('password')
+        if password and self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        return super(UserViewSet, self).update(request, *args, **kwargs)
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
 
     @extend_schema(
         request=UserImportSerializer,
