@@ -172,6 +172,7 @@ class TenantViewSet(BaseViewSet):
     def mobile_register(self, request, pk):
         mobile = request.data.get('mobile')
         code = request.data.get('code')
+        password = request.data.get('password')
         from django.db.models import Q
 
         cache_code = self.runtime.cache_provider.get(mobile)
@@ -190,6 +191,16 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.MOBILE_ERROR.value,
                 'message': _('mobile already exists'),
             })
+        if not password:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_NONE_ERROR.value,
+                'message': _('password is empty'),
+            })
+        if self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
             is_del=False,
@@ -198,6 +209,8 @@ class TenantViewSet(BaseViewSet):
             mobile=mobile,
         )
         user.tenants.add(tenant)
+        user.set_password(password)
+        user.save()
         token = user.refresh_token()
         return JsonResponse(data={
             'error': Code.OK.value,
@@ -225,7 +238,11 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-
+        if self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
             is_del=False,
@@ -242,6 +259,11 @@ class TenantViewSet(BaseViewSet):
                 'token': token.key,  # TODO: fullfil user info
             }
         })
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
 
     @action(detail=True, methods=['GET'])
     def apps(self, request, pk):

@@ -116,6 +116,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     def update(self, instance, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
+        password = validated_data.pop('password', None)
         if set_groups is not None:
             instance.groups.clear()
             for g_uuid in set_groups:
@@ -132,6 +133,8 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
         for key, value in validated_data.items():
             setattr(instance, key, value)
+        if password:
+            instance.set_password(password)
         instance.save()
         return instance
 
