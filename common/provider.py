@@ -16,6 +16,18 @@ class EmailProvider:
         raise NotImplementedError
 
 
+class AuthCodeProvider:
+    @abstractmethod
+    def get_authcode_picture(self):
+        pass
+
+    def generate_key(self):
+        key = '{}.jpg'.format(
+            uuid.uuid4().hex
+        )
+        return key
+
+
 class StorageProvider:
     @abstractmethod
     def upload(self, file: File) -> str:

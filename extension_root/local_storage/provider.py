@@ -34,7 +34,5 @@ class LocalStorageProvider(StorageProvider):
 
         return key
 
-    def resolve(self, key):        
-        return reverse("api:local_storage:render", args=[key,])
-
-
+    def resolve(self, key):
+        return reverse("api:local_storage:render", args=[key, ])
