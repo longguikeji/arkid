@@ -32,8 +32,6 @@ class AuthCodeGenerateView(generics.RetrieveAPIView):
             })
         char_4, key = self.runtime.authcode_provider.get_authcode_picture()
         # 存当前验证码
-        print(char_4)
-        print(key)
         self.runtime.cache_provider.set(key, char_4, 180)
         return JsonResponse(data={
             'key': key
