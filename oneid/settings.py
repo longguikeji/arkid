@@ -334,6 +334,8 @@ PASSWORD_COMPLEXITY = {
     "WORD": 0,        # 包含单词的个数 (由空格或标点分隔的字母数字序列)
 }
 
+WEB_ADMIN_PASSWORD = 'admin'
+
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
 
