@@ -30,7 +30,7 @@ def create_admin_user(apps, schema_editor):
     Perm = apps.get_model('oneid_meta', 'Perm')
     admin = User.objects.create(
         username='admin',
-        password=encrypt_password('admin', settings.PASSWORD_ENCRYPTION),
+        password=encrypt_password(settings.WEB_ADMIN_PASSWORD, settings.PASSWORD_ENCRYPTION),
     )
     UserPerm.objects.create(
         owner=admin,
