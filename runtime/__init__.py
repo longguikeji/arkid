@@ -9,6 +9,7 @@ from common.provider import (
     AppTypeProvider,
     StorageProvider,
     MigrationProvider,
+    AuthCodeProvider,
 )
 from common.serializer import AppBaseSerializer, ExternalIdpBaseSerializer
 from authorization_server.models import AuthorizationServer
@@ -23,6 +24,7 @@ class Runtime:
     sms_provider: SMSProvider = None
     cache_provider: CacheProvider = None
     storage_provider: StorageProvider = None
+    authcode_provider: AuthCodeProvider = None
     migration_provider: MigrationProvider = None
 
     external_idps: List
@@ -131,6 +133,9 @@ class Runtime:
 
     def register_sms_provider(self, sms_provider: SMSProvider):
         self.sms_provider = sms_provider
+
+    def register_authcode_provider(self, authcode_provider: AuthCodeProvider):
+        self.authcode_provider = authcode_provider
 
     @property
     def extension_serializers(self):

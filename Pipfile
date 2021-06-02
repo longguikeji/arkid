@@ -31,6 +31,7 @@ ldaptor = "*"
 oauthlib = "*"
 oss2 = "*"
 django-import-export = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.8"
