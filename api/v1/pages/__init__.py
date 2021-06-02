@@ -21,13 +21,13 @@ root_add_routers([
         path='book',
         name='通讯录',
         icon='education',
-        role=['global', 'tenant', 'user']
+        role=['tenant', 'user']
     ),
     Router(
         path='mine',
         name='个人管理',
         icon='people',
-        role=['global', 'tenant', 'user'],
+        role=['tenant', 'user'],
         children=[
             PageRouter(
                 page=profile,
@@ -43,7 +43,7 @@ root_add_routers([
         path='tmanage',
         name='租户管理',
         icon='peoples',
-        role=['global', 'tenant'],
+        role=['tenant'],
         children=[
             PageRouter(
                 page=app,
@@ -100,7 +100,7 @@ root_add_routers([
         path='system',
         name='系统管理',
         icon='setting',
-        role=['global', 'tenant', 'user'],
+        role=['tenant'],
         children=[
             Router(
                 path='extension',
