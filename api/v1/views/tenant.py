@@ -185,7 +185,6 @@ class TenantViewSet(BaseViewSet):
                 'message': _('SMS Code not match'),
             })
 
-
         user_exists = User.active_objects.filter(
             Q(username=mobile) | Q(mobile=mobile)
         ).exists()
@@ -199,7 +198,7 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) == False:
+        if self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -241,7 +240,7 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) == False:
+        if self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -309,7 +308,7 @@ class TenantViewSet(BaseViewSet):
                     type='password',
                     name='password',
                     placeholder='密码',
-                )
+                ),
             ],
             submit=lp.Button(
                 label='登录',
