@@ -61,6 +61,14 @@ class UserNameRegisterRequestSerializer(serializers.Serializer):
     password = serializers.CharField(label=_('密码'))
 
 
+class UserNameLoginRequestSerializer(serializers.Serializer):
+
+    username = serializers.CharField(label=_('用户名'))
+    password = serializers.CharField(label=_('密码'))
+    code = serializers.CharField(label=_('图片验证码'), required=False)
+    code_filename = serializers.CharField(label=_('图片验证码的文件名称'), required=False)
+
+
 class UserNameRegisterResponseSerializer(serializers.Serializer):
 
     token = serializers.CharField(label=_('token'))

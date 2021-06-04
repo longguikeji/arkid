@@ -44,7 +44,7 @@ class TenantViewSet(BaseViewSet):
         elif self.action == 'username_register':
             return UserNameRegisterRequestSerializer
         elif self.action == 'login':
-            return UserNameRegisterRequestSerializer
+            return UserNameLoginRequestSerializer
         return TenantSerializer
 
     @extend_schema(
@@ -94,6 +94,32 @@ class TenantViewSet(BaseViewSet):
                 'message': _('username or password is not correct'),
             })
 
+        # 进入图片验证码判断
+        login_config = self.get_login_config(tenant.uuid)
+        is_open_authcode = login_config.get('is_open_authcode', 0)
+        error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
+        if is_open_authcode == 1:
+            check_code = request.data.get('code', '')
+            key = request.data.get('code_filename', '')
+            if check_code == '':
+                return JsonResponse(data={
+                    'error': Code.CODE_EXISTS_ERROR.value,
+                    'message': _('code is not exists'),
+                })
+            if key == '':
+                return JsonResponse(data={
+                    'error': Code.CODE_FILENAME_EXISTS_ERROR.value,
+                    'message': _('code_filename is not exists'),
+                })
+            code = self.runtime.cache_provider.get(key)
+            if code and str(code).upper() == str(check_code).upper():
+                pass
+            else:
+                return JsonResponse(data={
+                    'error': Code.AUTHCODE_ERROR.value,
+                    'message': _('code error'),
+                })
+        # 获取权限
         has_tenant_admin_perm = tenant.has_admin_perm(user)
 
         # if not has_tenant_admin_perm:
@@ -295,30 +321,55 @@ class TenantViewSet(BaseViewSet):
         serializer = self.get_serializer(objs, many=True)
         return Response(serializer.data)
 
+    def get_login_config(self, tenant_uuid):
+        # 获取基础配置信息
+        result = {
+            'is_open_authcode': 0,
+            'error_number_open_authcode': 0
+        }
+        tenantconfig = TenantConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
+        if tenantconfig:
+            result = tenantconfig.data
+        return result
+
     def login_form(self, tenant_uuid):
+        login_config = self.get_login_config(tenant_uuid)
+        is_open_authcode = login_config.get('is_open_authcode', 0)
+        error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
+        # 根据配置信息生成表单
+        items = [
+            lp.LoginFormItem(
+                type='text',
+                name='username',
+                placeholder='用户名',
+            ),
+            lp.LoginFormItem(
+                type='password',
+                name='password',
+                placeholder='密码',
+            ),
+        ]
+        params = {
+            'username': 'username',
+            'password': 'password'
+        }
+        if is_open_authcode == 1:
+            items.append(lp.LoginFormItem(
+                type='text',
+                name='code',
+                placeholder='图片验证码',
+            ))
+            params['code'] = 'code'
+            params['code_filename'] = 'code_filename'
         return lp.LoginForm(
             label='密码登录',
-            items=[
-                lp.LoginFormItem(
-                    type='text',
-                    name='username',
-                    placeholder='用户名',
-                ),
-                lp.LoginFormItem(
-                    type='password',
-                    name='password',
-                    placeholder='密码',
-                ),
-            ],
+            items=items,
             submit=lp.Button(
                 label='登录',
                 http=lp.ButtonHttp(
                     url=reverse("api:tenant-login", args=[tenant_uuid, ]),
                     method='post',
-                    params={
-                        'username': 'username',
-                        'password': 'password'
-                    }
+                    params=params
                 )
             ),
         )
@@ -464,6 +515,9 @@ class TenantSlugView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['tenant'])
 class TenantConfigView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = TenantConfigSerializer
 
