@@ -82,16 +82,12 @@ class UserNameLoginResponseSerializer(serializers.Serializer):
 
 class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
 
-    id = serializers.IntegerField(read_only=True)
-    tenant_uuid = serializers.CharField(read_only=True, label=_('租户uuid'))
     data = serializers.JSONField(label=_('配置数据:{"is_open_authcode":0,"error_number_open_authcode":0}'))
 
     class Meta:
         model = TenantConfig
 
         fields = (
-            'id',
-            'tenant_uuid',
             'data',
         )
 
