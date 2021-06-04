@@ -1,8 +1,9 @@
-from tenant.models import Tenant
+from tenant.models import Tenant, TenantConfig
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Permission
+
 
 class TenantSerializer(BaseDynamicFieldModelSerializer):
 
@@ -53,6 +54,7 @@ class MobileRegisterResponseSerializer(serializers.Serializer):
 
     token = serializers.CharField(label=_('token'))
 
+
 class UserNameRegisterRequestSerializer(serializers.Serializer):
 
     username = serializers.CharField(label=_('用户名'))
@@ -68,3 +70,25 @@ class UserNameLoginResponseSerializer(serializers.Serializer):
 
     token = serializers.CharField(label=_('token'))
     has_tenant_admin_perm = serializers.ListField(child=serializers.CharField(), label=_('权限列表'))
+
+
+class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
+
+    id = serializers.IntegerField(read_only=True)
+    tenant_uuid = serializers.CharField(read_only=True, label=_('租户uuid'))
+    data = serializers.JSONField(label=_('配置数据:{"is_open_authcode":0,"error_number_open_authcode":0}'))
+
+    class Meta:
+        model = TenantConfig
+
+        fields = (
+            'id',
+            'tenant_uuid',
+            'data',
+        )
+
+    def update(self, instance, validated_data):
+        data = validated_data.get('data')
+        instance.data = data
+        instance.save()
+        return instance

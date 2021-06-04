@@ -9,5 +9,6 @@ router = ExtendedSimpleRouter()
 tenant_router = router.register(r'tenant', views_tenant.TenantViewSet, basename='tenant')
 
 urlpatterns = [
+    re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/config/', views_tenant.TenantConfigView.as_view(), name='tenant-config'),
     re_path(r'^tenant/(?P<slug>[\w-]+)/slug/$', views_tenant.TenantSlugView.as_view(), name='tenant-slug'),
 ]

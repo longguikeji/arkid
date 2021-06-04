@@ -5,12 +5,12 @@ from rest_framework import generics
 from openapi.utils import extend_schema
 from rest_framework.response import Response
 from tenant.models import (
-    Tenant,
+    Tenant, TenantConfig,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
     UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
-    UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer,
+    UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer, TenantConfigSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -460,3 +460,27 @@ class TenantSlugView(generics.RetrieveAPIView):
         obj = Tenant.active_objects.filter(slug=slug).order_by('id').first()
         serializer = self.get_serializer(obj)
         return Response(serializer.data)
+
+
+@extend_schema(tags=['tenant'])
+class TenantConfigView(generics.RetrieveUpdateAPIView):
+
+    serializer_class = TenantConfigSerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).order_by('id').first()
+        if tenant:
+            tenantconfig, is_created = TenantConfig.objects.get_or_create(
+                is_del=False,
+                tenant=tenant,
+            )
+            if is_created is True:
+                tenantconfig.data = {
+                    'is_open_authcode': 0,
+                    'error_number_open_authcode': 0
+                }
+                tenantconfig.save()
+            return tenantconfig
+        else:
+            return []
