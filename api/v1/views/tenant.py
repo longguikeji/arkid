@@ -11,6 +11,7 @@ from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
     UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
     UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer, TenantConfigSerializer,
+    UserNameLoginRequestSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
