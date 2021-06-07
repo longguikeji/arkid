@@ -181,7 +181,7 @@ class TenantViewSet(BaseViewSet):
             v = 1
         else:
             v = int(data) + 1
-        self.runtime.cache_provider.set(key, v, 600)
+        self.runtime.cache_provider.set(key, v, 86400)
 
     @extend_schema(responses=MobileLoginResponseSerializer)
     @action(detail=True, methods=['post'])
