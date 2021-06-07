@@ -80,9 +80,14 @@ class UserNameLoginResponseSerializer(serializers.Serializer):
     has_tenant_admin_perm = serializers.ListField(child=serializers.CharField(), label=_('权限列表'))
 
 
+class ConfigSerializer(serializers.Serializer):
+    is_open_authcode = serializers.IntegerField(label=_('是否打开验证码(0打开)'))
+    error_number_open_authcode = serializers.IntegerField(label=_('错误几次提示输入验证码'))
+
+
 class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
 
-    data = serializers.JSONField(label=_('配置数据:{"is_open_authcode":0,"error_number_open_authcode":0}'))
+    data = ConfigSerializer()
 
     class Meta:
         model = TenantConfig
