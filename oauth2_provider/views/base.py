@@ -212,7 +212,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             request.session.pop('scopes')
             return self.redirect(self.success_url, application)
         else:
-            return super().dispatch(request, *args, **kwargs)
+            return super().post(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         try:
