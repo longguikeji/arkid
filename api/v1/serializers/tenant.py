@@ -81,7 +81,7 @@ class UserNameLoginResponseSerializer(serializers.Serializer):
 
 
 class ConfigSerializer(serializers.Serializer):
-    is_open_authcode = serializers.IntegerField(label=_('是否打开验证码(0打开)'))
+    is_open_authcode = serializers.IntegerField(label=_('是否打开验证码'))
     error_number_open_authcode = serializers.IntegerField(label=_('错误几次提示输入验证码'))
 
 
