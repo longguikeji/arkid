@@ -102,7 +102,7 @@ class UserViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) == False:
+        if self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -111,7 +111,7 @@ class UserViewSet(BaseViewSet):
 
     def update(self, request, *args, **kwargs):
         password = request.data.get('password')
-        if password and self.check_password(password) == False:
+        if password and self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -295,7 +295,7 @@ class UpdatePasswordView(generics.CreateAPIView):
 
 @extend_schema(tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserInfoSerializer
 
@@ -305,10 +305,17 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         password = request.data.get('password')
-        if password and self.check_password(password) == False:
+        old_password = request.data.get('old_password', '')
+        if password and self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
+            })
+        user = request.user
+        if password and user.check_password(old_password) is False:
+            return JsonResponse(data={
+                'error': Code.OLD_PASSWORD_ERROR.value,
+                'message': _('old password error'),
             })
         return super(UserInfoView, self).update(request, *args, **kwargs)
 

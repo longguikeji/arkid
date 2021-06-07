@@ -191,6 +191,7 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
     nickname = serializers.CharField(label=_('昵称'), required=False)
     mobile = serializers.CharField(label=_('手机号'), required=False)
     password = serializers.CharField(label=_('密码'), write_only=True, required=False)
+    old_password = serializers.CharField(label=_('旧密码'), write_only=True, required=False)
 
     class Meta:
         model = User
@@ -201,6 +202,7 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
             'nickname',
             'mobile',
             'password',
+            'old_password',
         )
 
     def update(self, instance, validated_data):
@@ -215,6 +217,7 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
             instance.mobile = mobile
         instance.save()
         return instance
+
 
 class UserBindInfoBaseSerializer(serializers.Serializer):
     name = serializers.CharField(label=_('名称'), read_only=True)
@@ -232,4 +235,3 @@ class LogoutSerializer(serializers.Serializer):
 
 class UserManageTenantsSerializer(serializers.Serializer):
     manage_tenants = serializers.ListField(child=serializers.CharField(), label=_('管理的租户信息'), read_only=True)
-
