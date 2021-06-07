@@ -81,45 +81,64 @@ class TenantViewSet(BaseViewSet):
     @action(detail=True, methods=['post'])
     def login(self, request, pk):
         tenant: Tenant = self.get_object()
-
+        # 账户信息
         username = request.data.get('username')
         password = request.data.get('password')
-
+        ip = self.get_client_ip(request)
+        # 图片验证码信息
+        login_config = self.get_login_config(tenant.uuid)
+        is_open_authcode = login_config.get('is_open_authcode', 0)
+        error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
         user = User.active_objects.filter(
             username=username,
         ).first()
 
         if not user or not user.check_password(password):
-            return JsonResponse(data={
+            # 记录当前ip的错误次数
+            self.mark_user_login_failed(ip)
+            # 取得密码错误次数
+            password_error_count = self.get_password_error_count(ip)
+            data = {
                 'error': Code.USERNAME_PASSWORD_MISMATCH.value,
                 'message': _('username or password is not correct'),
-            })
-
-        # 进入图片验证码判断
-        login_config = self.get_login_config(tenant.uuid)
-        is_open_authcode = login_config.get('is_open_authcode', 0)
-        error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
-        if is_open_authcode == 1:
-            check_code = request.data.get('code', '')
-            key = request.data.get('code_filename', '')
-            if check_code == '':
-                return JsonResponse(data={
-                    'error': Code.CODE_EXISTS_ERROR.value,
-                    'message': _('code is not exists'),
-                })
-            if key == '':
-                return JsonResponse(data={
-                    'error': Code.CODE_FILENAME_EXISTS_ERROR.value,
-                    'message': _('code_filename is not exists'),
-                })
-            code = self.runtime.cache_provider.get(key)
-            if code and str(code).upper() == str(check_code).upper():
-                pass
+            }
+            if is_open_authcode == 1:
+                if password_error_count >= error_number_open_authcode:
+                    data['is_need_refresh'] = True
+                else:
+                    data['is_need_refresh'] = False
             else:
-                return JsonResponse(data={
-                    'error': Code.AUTHCODE_ERROR.value,
-                    'message': _('code error'),
-                })
+                data['is_need_refresh'] = False
+            return JsonResponse(data=data)
+        # 进入图片验证码判断
+        if is_open_authcode == 1:
+            # 取得密码错误次数
+            password_error_count = self.get_password_error_count(ip)
+            # 如果密码错误的次数超过了规定的次数，则需要图片验证码
+            if password_error_count >= error_number_open_authcode:
+                check_code = request.data.get('code', '')
+                key = request.data.get('code_filename', '')
+                if check_code == '':
+                    return JsonResponse(data={
+                        'error': Code.CODE_EXISTS_ERROR.value,
+                        'message': _('code is not exists'),
+                        'is_need_refresh': False,
+                    })
+                if key == '':
+                    return JsonResponse(data={
+                        'error': Code.CODE_FILENAME_EXISTS_ERROR.value,
+                        'message': _('code_filename is not exists'),
+                        'is_need_refresh': False,
+                    })
+                code = self.runtime.cache_provider.get(key)
+                if code and str(code).upper() == str(check_code).upper():
+                    pass
+                else:
+                    return JsonResponse(data={
+                        'error': Code.AUTHCODE_ERROR.value,
+                        'message': _('code error'),
+                        'is_need_refresh': False,
+                    })
         # 获取权限
         has_tenant_admin_perm = tenant.has_admin_perm(user)
 
@@ -138,6 +157,31 @@ class TenantViewSet(BaseViewSet):
                 'has_tenant_admin_perm': has_tenant_admin_perm,
             }
         })
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+    def get_password_error_count(self, ip, check_str='login'):
+        key = f'{ip}-{check_str}'
+        data = self.runtime.cache_provider.get(key)
+        if data is None:
+            return 0
+        return int(data)
+
+    def mark_user_login_failed(self, ip, check_str='login'):
+        key = f'{ip}-{check_str}'
+        runtime = get_app_runtime()
+        data = runtime.cache_provider.get(key)
+        if data is None:
+            v = 1
+        else:
+            v = int(data) + 1
+        self.runtime.cache_provider.set(key, v, 600)
 
     @extend_schema(responses=MobileLoginResponseSerializer)
     @action(detail=True, methods=['post'])
@@ -333,10 +377,11 @@ class TenantViewSet(BaseViewSet):
             result = tenantconfig.data
         return result
 
-    def login_form(self, tenant_uuid):
+    def login_form(self, request, tenant_uuid):
         login_config = self.get_login_config(tenant_uuid)
         is_open_authcode = login_config.get('is_open_authcode', 0)
         error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
+        ip = self.get_client_ip(request)
         # 根据配置信息生成表单
         items = [
             lp.LoginFormItem(
@@ -355,13 +400,15 @@ class TenantViewSet(BaseViewSet):
             'password': 'password'
         }
         if is_open_authcode == 1:
-            items.append(lp.LoginFormItem(
-                type='text',
-                name='code',
-                placeholder='图片验证码',
-            ))
-            params['code'] = 'code'
-            params['code_filename'] = 'code_filename'
+            password_error_count = self.get_password_error_count(ip)
+            if password_error_count >= error_number_open_authcode:
+                items.append(lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='图片验证码',
+                ))
+                params['code'] = 'code'
+                params['code_filename'] = 'code_filename'
         return lp.LoginForm(
             label='密码登录',
             items=items,
