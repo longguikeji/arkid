@@ -87,7 +87,7 @@ class TenantViewSet(BaseViewSet):
         ip = self.get_client_ip(request)
         # 图片验证码信息
         login_config = self.get_login_config(tenant.uuid)
-        is_open_authcode = login_config.get('is_open_authcode', 0)
+        is_open_authcode = login_config.get('is_open_authcode', False)
         error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
         user = User.active_objects.filter(
             username=username,
@@ -102,7 +102,7 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.USERNAME_PASSWORD_MISMATCH.value,
                 'message': _('username or password is not correct'),
             }
-            if is_open_authcode == 1:
+            if is_open_authcode is True:
                 if password_error_count >= error_number_open_authcode:
                     data['is_need_refresh'] = True
                 else:
@@ -111,7 +111,7 @@ class TenantViewSet(BaseViewSet):
                 data['is_need_refresh'] = False
             return JsonResponse(data=data)
         # 进入图片验证码判断
-        if is_open_authcode == 1:
+        if is_open_authcode is True:
             # 取得密码错误次数
             password_error_count = self.get_password_error_count(ip)
             # 如果密码错误的次数超过了规定的次数，则需要图片验证码
@@ -369,7 +369,7 @@ class TenantViewSet(BaseViewSet):
     def get_login_config(self, tenant_uuid):
         # 获取基础配置信息
         result = {
-            'is_open_authcode': 0,
+            'is_open_authcode': False,
             'error_number_open_authcode': 0
         }
         tenantconfig = TenantConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
@@ -379,7 +379,7 @@ class TenantViewSet(BaseViewSet):
 
     def login_form(self, request, tenant_uuid):
         login_config = self.get_login_config(tenant_uuid)
-        is_open_authcode = login_config.get('is_open_authcode', 0)
+        is_open_authcode = login_config.get('is_open_authcode', False)
         error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
         ip = self.get_client_ip(request)
         # 根据配置信息生成表单
@@ -399,7 +399,7 @@ class TenantViewSet(BaseViewSet):
             'username': 'username',
             'password': 'password'
         }
-        if is_open_authcode == 1:
+        if is_open_authcode is True:
             password_error_count = self.get_password_error_count(ip)
             if password_error_count >= error_number_open_authcode:
                 items.append(lp.LoginFormItem(
@@ -579,7 +579,7 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
             )
             if is_created is True:
                 tenantconfig.data = {
-                    'is_open_authcode': 0,
+                    'is_open_authcode': False,
                     'error_number_open_authcode': 0
                 }
                 tenantconfig.save()
