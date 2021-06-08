@@ -94,8 +94,6 @@ class TenantViewSet(BaseViewSet):
         ).first()
 
         if not user or not user.check_password(password):
-            # 记录当前ip的错误次数
-            self.mark_user_login_failed(ip)
             # 取得密码错误次数
             password_error_count = self.get_password_error_count(ip)
             data = {
@@ -103,6 +101,8 @@ class TenantViewSet(BaseViewSet):
                 'message': _('username or password is not correct'),
             }
             if is_open_authcode is True:
+                # 记录当前ip的错误次数
+                self.mark_user_login_failed(ip)
                 if password_error_count >= error_number_open_authcode:
                     data['is_need_refresh'] = True
                 else:
