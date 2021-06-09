@@ -31,7 +31,8 @@ from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from app.models import App
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from openapi.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view
 from rest_framework.decorators import action
 from tablib import Dataset
 from collections import defaultdict
@@ -41,7 +42,13 @@ from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 
 
-@extend_schema_view(list=extend_schema(responses=UserListResponsesSerializer))
+@extend_schema_view(
+    list=extend_schema(roles=['tenant admin', 'global admin'], responses=UserListResponsesSerializer),
+    retrieve=extend_schema(roles=['tenant admin', 'global admin']),
+    create=extend_schema(roles=['tenant admin', 'global admin']),
+    update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenant admin', 'global admin']),
+)
 @extend_schema(
     tags=['user'],
 )
@@ -320,7 +327,7 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserInfoSerializer
 
-    @extend_schema(responses=UserInfoSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
 
@@ -331,7 +338,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserBindInfoSerializer
 
-    @extend_schema(responses=UserBindInfoSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserBindInfoSerializer)
     def get(self, request):
         from extension_root.feishu.models import FeishuUser
         from extension_root.gitee.models import GiteeUser
@@ -381,7 +388,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
 @extend_schema(tags=['user'])
 class UserLogoutView(generics.RetrieveAPIView):
 
-    @extend_schema(responses=LogoutSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=LogoutSerializer)
     def get(self, request):
         user = request.user
         is_succeed = False
@@ -399,10 +406,11 @@ class UserLogoutView(generics.RetrieveAPIView):
 @extend_schema(tags=['user'])
 class UserManageTenantsView(generics.RetrieveAPIView):
 
-    @extend_schema(responses=UserManageTenantsSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserManageTenantsSerializer)
     def get(self, request):
         user = request.user
         if user and user.username:
             return Response({
-                "manage_tenants": user.manage_tenants()
+                "manage_tenants": user.manage_tenants(),
+                "is_global_admin": user.is_superuser,
             })

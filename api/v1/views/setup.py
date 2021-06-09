@@ -1,7 +1,7 @@
 from django.http.response import JsonResponse
 from rest_framework.views import APIView
 from config import get_app_config
-from drf_spectacular.utils import extend_schema
+from openapi.utils import extend_schema
 from api.v1.serializers.setup import (
     FrontendUrlSerializer,
 )

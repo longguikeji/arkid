@@ -49,13 +49,14 @@ class TenantViewSet(BaseViewSet):
         return TenantSerializer
 
     @extend_schema(
+        roles=['general user', 'tenant admin', 'global admin'],
         summary=_('get tenant list'),
         action_type='list'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @extend_schema(summary=_('update tenant'))
+    @extend_schema(roles=['tenant admin', 'global admin'], summary=_('update tenant'))
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
@@ -77,7 +78,7 @@ class TenantViewSet(BaseViewSet):
     def runtime(self):
         return get_app_runtime()
 
-    @extend_schema(responses=UserNameLoginResponseSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserNameLoginResponseSerializer)
     @action(detail=True, methods=['post'])
     def login(self, request, pk):
         tenant: Tenant = self.get_object()
@@ -183,7 +184,7 @@ class TenantViewSet(BaseViewSet):
             v = int(data) + 1
         self.runtime.cache_provider.set(key, v, 86400)
 
-    @extend_schema(responses=MobileLoginResponseSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=MobileLoginResponseSerializer)
     @action(detail=True, methods=['post'])
     def mobile_login(self, request, pk):
         tenant = self.get_object()
@@ -241,7 +242,7 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
-    @extend_schema(responses=MobileRegisterResponseSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=MobileRegisterResponseSerializer)
     @action(detail=True, methods=['post'])
     def mobile_register(self, request, pk):
         mobile = request.data.get('mobile')
@@ -292,7 +293,7 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
-    @extend_schema(responses=UserNameRegisterResponseSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserNameRegisterResponseSerializer)
     @action(detail=True, methods=['post'])
     def username_register(self, request, pk):
         username = request.data.get('username')
@@ -547,7 +548,7 @@ class TenantViewSet(BaseViewSet):
         )
 
 
-@extend_schema(tags=['tenant'])
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
 class TenantSlugView(generics.RetrieveAPIView):
 
     serializer_class = TenantSerializer
@@ -561,7 +562,7 @@ class TenantSlugView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(tags=['tenant'])
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
 class TenantConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]

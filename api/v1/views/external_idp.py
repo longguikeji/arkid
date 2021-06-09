@@ -6,7 +6,8 @@ from api.v1.serializers.external_idp import (
 )
 from runtime import get_app_runtime
 from django.http.response import JsonResponse
-from drf_spectacular.utils import extend_schema, PolymorphicProxySerializer
+from openapi.utils import extend_schema
+from drf_spectacular.utils import PolymorphicProxySerializer
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from external_idp.models import ExternalIdp
@@ -50,11 +51,12 @@ class ExternalIdpViewSet(BaseViewSet):
         obj = ExternalIdp.valid_objects.filter(**kwargs).first()
         return obj
 
-    @extend_schema(responses=ExternalIdpListSerializer)
+    @extend_schema(roles=['tenant admin', 'global admin'], responses=ExternalIdpListSerializer)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=ExternalIdpPolymorphicProxySerializer,
         responses=ExternalIdpPolymorphicProxySerializer,
     )
@@ -62,17 +64,19 @@ class ExternalIdpViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=ExternalIdpPolymorphicProxySerializer,
         responses=ExternalIdpPolymorphicProxySerializer,
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @extend_schema(responses=ExternalIdpPolymorphicProxySerializer)
+    @extend_schema(roles=['tenant admin', 'global admin'], responses=ExternalIdpPolymorphicProxySerializer)
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=ExternalIdpReorderSerializer,
         responses=ExternalIdpReorderSerializer,
     )
@@ -100,6 +104,7 @@ class ExternalIdpViewSet(BaseViewSet):
         )
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses=ExternalIdpReorderSerializer,
     )
     @action(detail=True, methods=['get'])
@@ -107,6 +112,7 @@ class ExternalIdpViewSet(BaseViewSet):
         return self._do_actual_move('up', request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses=ExternalIdpReorderSerializer,
     )
     @action(detail=True, methods=['get'])
@@ -114,6 +120,7 @@ class ExternalIdpViewSet(BaseViewSet):
         return self._do_actual_move('down', request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses=ExternalIdpReorderSerializer,
     )
     @action(detail=True, methods=['get'])
@@ -121,6 +128,7 @@ class ExternalIdpViewSet(BaseViewSet):
         return self._do_actual_move('top', request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses=ExternalIdpReorderSerializer,
     )
     @action(detail=True, methods=['get'])

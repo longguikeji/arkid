@@ -4,12 +4,12 @@ from common.extension import InMemExtension
 from extension.utils import find_available_extensions
 from api.v1.serializers.market_extension import MarketPlaceExtensionSerializer, MarketPlaceExtensionTagsSerializer
 from rest_framework.decorators import action
-from drf_spectacular.utils import extend_schema
+from openapi.utils import extend_schema
 from rest_framework import generics
 from django.http.response import JsonResponse
 
 
-@extend_schema(tags=['market-extension'])
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['market-extension'])
 class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = MarketPlaceExtensionSerializer
@@ -63,7 +63,7 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
         return None
 
 
-@extend_schema(tags=['market-extension'])
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['market-extension'])
 class MarketPlaceTagsViewSet(generics.RetrieveAPIView):
 
     serializer_class = MarketPlaceExtensionTagsSerializer
