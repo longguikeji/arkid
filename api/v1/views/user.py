@@ -283,14 +283,35 @@ class UpdatePasswordView(generics.CreateAPIView):
     def post(self, request):
         uuid = request.data.get('uuid', '')
         password = request.data.get('password', '')
+        old_password = request.data.get('old_password', '')
+        user = User.objects.filter(uuid=uuid).first()
         is_succeed = True
+        if not user:
+            return JsonResponse(data={
+                'error': Code.USER_EXISTS_ERROR.value,
+                'message': _('user does not exist'),
+            })
+        if password and self.check_password(password) is False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        if password and user.check_password(old_password) is False:
+            return JsonResponse(data={
+                'error': Code.OLD_PASSWORD_ERROR.value,
+                'message': _('old password error'),
+            })
         try:
-            user = User.objects.filter(uuid=uuid).first()
             user.set_password(password)
             user.save()
         except Exception as e:
             is_succeed = False
         return Response(is_succeed)
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
 
 
 @extend_schema(tags=['user'])
@@ -302,27 +323,6 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
     @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
-
-    def update(self, request, *args, **kwargs):
-        password = request.data.get('password')
-        old_password = request.data.get('old_password', '')
-        if password and self.check_password(password) is False:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                'message': _('password strength not enough'),
-            })
-        user = request.user
-        if password and user.check_password(old_password) is False:
-            return JsonResponse(data={
-                'error': Code.OLD_PASSWORD_ERROR.value,
-                'message': _('old password error'),
-            })
-        return super(UserInfoView, self).update(request, *args, **kwargs)
-
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True
 
 
 @extend_schema(tags=['user'])
