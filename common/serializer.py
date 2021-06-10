@@ -1,5 +1,6 @@
 from lib.dynamic_fields_model_serializer import DynamicFieldsModelSerializer
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
 
 class BaseDynamicFieldModelSerializer(DynamicFieldsModelSerializer):
@@ -19,16 +20,14 @@ class AppBaseSerializer(serializers.Serializer):
 
 
 class ExternalIdpBaseSerializer(serializers.Serializer):
-
     # order_no = serializers.IntegerField()
     type = serializers.CharField()
     data = serializers.JSONField()
-
     uuid = serializers.UUIDField(read_only=True)
 
 
 class ExtensionBaseSerializer(serializers.Serializer):
-
     type = serializers.CharField()
     data = serializers.JSONField()
     uuid = serializers.UUIDField(read_only=True)
+    is_active = serializers.BooleanField(label=_('是否启用'))

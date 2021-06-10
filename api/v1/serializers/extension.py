@@ -1,6 +1,7 @@
 from extension.models import Extension
 from common.serializer import BaseDynamicFieldModelSerializer
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
 
 class ExtensionSerializer(BaseDynamicFieldModelSerializer):
@@ -10,6 +11,7 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
     homepage = serializers.CharField(source='inmem.homepage', read_only=True)
     logo = serializers.CharField(source='inmem.logo', read_only=True)
     maintainer = serializers.CharField(source='inmem.maintainer', read_only=True)
+    is_active = serializers.BooleanField(label=_('是否启用'))
 
     class Meta:
 
@@ -23,6 +25,7 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
             'homepage',
             'logo',
             'maintainer',
+            'is_active',
             'data',
         )
 
@@ -30,10 +33,10 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
         extension_type = validated_data.pop('type', None)
         assert extension_type is not None
 
-        o, _ = Extension.active_objects.get_or_create(
+        o, _ = Extension.objects.get_or_create(
             type=extension_type
         )
-
+        o.is_active = validated_data.get('is_active')
         o.is_del = False
         o.data = validated_data.get('data')
         o.save()

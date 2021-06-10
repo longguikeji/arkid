@@ -13,5 +13,4 @@ class HuaWeiSMSConfigSerializer(serializers.Serializer):
 
 
 class HuaWeiSMSSerializer(ExtensionBaseSerializer):
-
     data = HuaWeiSMSConfigSerializer(label=_('data'))

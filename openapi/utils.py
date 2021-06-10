@@ -169,8 +169,6 @@ def extend_schema(
 
             def get_roles(self):
                 if roles and is_in_scope(self):
-                    print('----shuchu2')
-                    print(roles)
                     return roles
                 return []
 
