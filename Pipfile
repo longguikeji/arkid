@@ -32,6 +32,7 @@ oauthlib = "*"
 oss2 = "*"
 django-import-export = "*"
 django-scim2 = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.8"

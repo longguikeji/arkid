@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 from django.http import Http404
 from django.http.response import JsonResponse
+from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -23,6 +24,8 @@ from api.v1.serializers.user import (
     UserBindInfoSerializer,
     PasswordSerializer,
     PasswordRequestSerializer,
+    LogoutSerializer,
+    UserManageTenantsSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -82,6 +85,43 @@ class UserViewSet(BaseViewSet):
         }
 
         return User.valid_objects.filter(**kwargs).first()
+
+    def destroy(self, request, *args, **kwargs):
+        self.get_object().kill()
+        return Response(
+            {
+                'error_code': 0,
+                'error_msg': '删除成功',
+            }
+        )
+
+    def create(self, request, *args, **kwargs):
+        password = request.data.get('password')
+        if not password:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_NONE_ERROR.value,
+                'message': _('password is empty'),
+            })
+        if self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        return super(UserViewSet, self).create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        password = request.data.get('password')
+        if password and self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        return super(UserViewSet, self).update(request, *args, **kwargs)
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
 
     @extend_schema(
         request=UserImportSerializer,
@@ -254,7 +294,7 @@ class UpdatePasswordView(generics.CreateAPIView):
 
 
 @extend_schema(tags=['user'])
-class UserInfoView(generics.RetrieveAPIView):
+class UserInfoView(generics.RetrieveUpdateAPIView):
     permission_classes = [AllowAny]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserInfoSerializer
@@ -262,6 +302,20 @@ class UserInfoView(generics.RetrieveAPIView):
     @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        password = request.data.get('password')
+        if password and self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        return super(UserInfoView, self).update(request, *args, **kwargs)
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
 
 
 @extend_schema(tags=['user'])
@@ -315,3 +369,33 @@ class UserBindInfoView(generics.RetrieveAPIView):
                 'unbind': '/api/v1/tenant/{}/miniprogram/unbind'.format(item.tenant.uuid),
             })
         return JsonResponse({'data': result}, safe=False)
+
+
+@extend_schema(tags=['user'])
+class UserLogoutView(generics.RetrieveAPIView):
+
+    @extend_schema(responses=LogoutSerializer)
+    def get(self, request):
+        user = request.user
+        is_succeed = False
+        if user and user.username:
+            from rest_framework.authtoken.models import Token
+            Token.objects.filter(
+                user=user
+            ).delete()
+            is_succeed = True
+        return Response({
+            "is_succeed": is_succeed
+        })
+
+
+@extend_schema(tags=['user'])
+class UserManageTenantsView(generics.RetrieveAPIView):
+
+    @extend_schema(responses=UserManageTenantsSerializer)
+    def get(self, request):
+        user = request.user
+        if user and user.username:
+            return Response({
+                "manage_tenants": user.manage_tenants()
+            })

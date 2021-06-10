@@ -49,7 +49,7 @@ extend_schema_tags(
         },
         'table': {
             'init': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/?group={id}',
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
                 'method': 'get'
             },
             'page': {

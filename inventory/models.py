@@ -121,13 +121,13 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         miniprogramusers = MiniProgramUser.valid_objects.filter(user=self).exists()
         result = ''
         if feishuusers:
-            result = '飞书'
+            result = '飞书 '
         if giteeusers:
-            result = result + 'gitee,'
+            result = result + 'gitee '
         if githubusers:
-            result = result + 'github,'
+            result = result + 'github '
         if arkidusers:
-            result = result + 'arkid,'
+            result = result + 'arkid '
         if miniprogramusers:
             result = result + '微信'
         return result
@@ -140,8 +140,15 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         return token.key
 
     def refresh_token(self):
-        Token.objects.filter(user=self).delete()
-        token, _ = Token.objects.get_or_create(user=self)
+        import datetime
+        self.last_login = datetime.datetime.now()
+        self.save()
+        Token.objects.filter(
+            user=self
+        ).delete()
+        token, _ = Token.objects.get_or_create(
+            user=self
+        )
         return token
 
     def set_password(self, raw_password):
@@ -191,12 +198,23 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
             'groups': groups,
         }
 
+    def manage_tenants(self):
+        from tenant.models import Tenant
+        tenants = Tenant.active_objects.all()
+        uuids = []
+        for tenant in tenants:
+            if tenant.has_admin_perm(self):
+                uuids.append(tenant.uuid)
+        return uuids
+
 
 class Group(AbstractSCIMGroupMixin, BaseModel):
 
     tenant = models.ForeignKey(
         'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
     )
+
+
     name = models.CharField(max_length=128, blank=False, null=True)
     parent = models.ForeignKey(
         'inventory.Group',

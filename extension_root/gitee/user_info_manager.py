@@ -46,15 +46,25 @@ class GiteeUserInfoManager:
             )
             response = response.__getattribute__("_content").decode()
             result = json.loads(response)
+            access_token = result["access_token"]
+            refresh_token = result["refresh_token"]
             # 获取user info
-            headers = {"Authorization": "token " + result["access_token"]}
+            # {
+            #     "access_token":"ea7d7cdfdeb0c8c986fdde9c371ae96d",
+            #     "token_type":"bearer",
+            #     "expires_in":86400,
+            #     "refresh_token":"ffff7399095b206cbbdcc22da38dbfbea847db9528bc69cd6bf3e427cc6c736f",
+            #     "scope":"user_info projects pull_requests issues notes keys hook groups gists enterprises emails",
+            #     "created_at":1621943205
+            # }
+            headers = {"Authorization": "token " + access_token}
             response = requests.get(
                 constants.GET_USERINFO_URL,
-                params={"access_token": result["access_token"]},
+                params={"access_token": access_token},
                 headers=headers,
             ).json()
             user_id = response["id"]
-            return user_id
+            return user_id, access_token, refresh_token
         except Exception as e:
             raise APICallError(e)
 

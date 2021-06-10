@@ -8,6 +8,7 @@ urlpatterns = [
     path("gitee/callback", views.GiteeCallbackView.as_view(), name="callback"),
     path("gitee/bind", views.GiteeBindAPIView.as_view(), name="bind"),
     path("gitee/unbind", views.GiteeUnBindView.as_view(), name="unbind"),
+    path("gitee/data", views.GiteeDataView.as_view(), name="data"),
     # path(
     #     "gitee/register/bind",
     #     views.GiteeRegisterAndBindView.as_view(),

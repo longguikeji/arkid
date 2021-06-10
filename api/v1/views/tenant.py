@@ -8,7 +8,9 @@ from tenant.models import (
     Tenant,
 )
 from api.v1.serializers.tenant import (
-    TenantSerializer,
+    TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
+    UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
+    UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -35,7 +37,14 @@ class TenantViewSet(BaseViewSet):
     def get_serializer_class(self):
         if self.action == 'apps':
             return AppBaseInfoSerializer
-
+        elif self.action == 'mobile_login':
+            return MobileLoginRequestSerializer
+        elif self.action == 'mobile_register':
+            return MobileRegisterRequestSerializer
+        elif self.action == 'username_register':
+            return UserNameRegisterRequestSerializer
+        elif self.action == 'login':
+            return UserNameRegisterRequestSerializer
         return TenantSerializer
 
     @extend_schema(
@@ -51,7 +60,10 @@ class TenantViewSet(BaseViewSet):
 
     def get_queryset(self):
         if self.request.user and self.request.user.username != "":
-            objs = self.request.user.tenants.filter(is_del=False).all()
+            if self.request.user.is_superuser:
+                objs = Tenant.active_objects.all()
+            else:
+                objs = self.request.user.tenants.filter(is_del=False).all()
             return objs
         else:
             return []
@@ -64,6 +76,7 @@ class TenantViewSet(BaseViewSet):
     def runtime(self):
         return get_app_runtime()
 
+    @extend_schema(responses=UserNameLoginResponseSerializer)
     @action(detail=True, methods=['post'])
     def login(self, request, pk):
         tenant: Tenant = self.get_object()
@@ -71,7 +84,7 @@ class TenantViewSet(BaseViewSet):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        user = User.objects.filter(
+        user = User.active_objects.filter(
             username=username,
         ).first()
 
@@ -99,6 +112,7 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
+    @extend_schema(responses=MobileLoginResponseSerializer)
     @action(detail=True, methods=['post'])
     def mobile_login(self, request, pk):
         tenant = self.get_object()
@@ -119,7 +133,14 @@ class TenantViewSet(BaseViewSet):
                 'message': _('SMS Code not match'),
             })
 
-        user = User.objects.get(mobile=mobile)
+        user = User.active_objects.filter(mobile=mobile).first()
+
+        if not user:
+            return JsonResponse(data={
+                'error': Code.USERNAME_EXISTS_ERROR.value,
+                'message': _('username is not correct'),
+            })
+
         token = user.refresh_token()
 
         has_tenant_admin_perm = tenant.has_admin_perm(user)
@@ -149,23 +170,50 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
+    @extend_schema(responses=MobileRegisterResponseSerializer)
     @action(detail=True, methods=['post'])
     def mobile_register(self, request, pk):
         mobile = request.data.get('mobile')
         code = request.data.get('code')
+        password = request.data.get('password')
+        from django.db.models import Q
 
         cache_code = self.runtime.cache_provider.get(mobile)
-        if code != '123456' and (code is None or str(cache_code, 'utf-8') != code):
+        if code != '123456' and (code is None or str(cache_code) != code):
             return JsonResponse(data={
                 'error': Code.SMS_CODE_MISMATCH.value,
                 'message': _('SMS Code not match'),
             })
 
+
+        user_exists = User.active_objects.filter(
+            Q(username=mobile) | Q(mobile=mobile)
+        ).exists()
+        if user_exists:
+            return JsonResponse(data={
+                'error': Code.MOBILE_ERROR.value,
+                'message': _('mobile already exists'),
+            })
+        if not password:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_NONE_ERROR.value,
+                'message': _('password is empty'),
+            })
+        if self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
+            is_del=False,
+            is_active=True,
+            username=mobile,
             mobile=mobile,
         )
         user.tenants.add(tenant)
+        user.set_password(password)
+        user.save()
         token = user.refresh_token()
         return JsonResponse(data={
             'error': Code.OK.value,
@@ -174,12 +222,13 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
+    @extend_schema(responses=UserNameRegisterResponseSerializer)
     @action(detail=True, methods=['post'])
     def username_register(self, request, pk):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        user = User.objects.filter(
+        user = User.active_objects.filter(
             username=username
         ).first()
         if user:
@@ -192,9 +241,15 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-
+        if self.check_password(password) == False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
+            is_del=False,
+            is_active=True,
             username=username,
         )
         user.tenants.add(tenant)
@@ -207,6 +262,11 @@ class TenantViewSet(BaseViewSet):
                 'token': token.key,  # TODO: fullfil user info
             }
         })
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
 
     @action(detail=True, methods=['GET'])
     def apps(self, request, pk):

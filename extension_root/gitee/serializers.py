@@ -22,3 +22,10 @@ class GiteeExternalIdpConfigSerializer(serializers.Serializer):
 class GiteeExternalIdpSerializer(ExternalIdpBaseSerializer):
 
     data = GiteeExternalIdpConfigSerializer(label=_('data'))
+
+
+class GiteeDataSerializer(serializers.Serializer):
+
+    url = serializers.CharField(label=_('请求地址'))
+    method = serializers.CharField(label=_('请求方法 get or post'))
+    params = serializers.CharField(label=_('这个参数名称不固定，数量不固定，根据gitee文档来传就可以'), required=False)
