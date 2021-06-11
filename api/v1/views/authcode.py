@@ -24,11 +24,6 @@ class AuthCodeGenerateView(generics.RetrieveAPIView):
                 'error': Code.AUTHCODE_PROVIDER_IS_MISSING.value,
                 'message': _('Please enable a authcode Provider extension'),
             })
-        if self.runtime.storage_provider is None:
-            return JsonResponse(data={
-                'error': Code.LOCAL_STORAGE_PROVIDER_IS_MISSING.value,
-                'message': _('Please enable a local_storage Provider extension'),
-            })
         char_4, key = self.runtime.authcode_provider.get_authcode_picture()
         # 存当前验证码(验证码会缓存1天)
         self.runtime.cache_provider.set(key, char_4, 86400)

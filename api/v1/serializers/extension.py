@@ -1,6 +1,7 @@
 from extension.models import Extension
 from common.serializer import BaseDynamicFieldModelSerializer
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
 
 class ExtensionSerializer(BaseDynamicFieldModelSerializer):
@@ -10,6 +11,7 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
     homepage = serializers.CharField(source='inmem.homepage', read_only=True)
     logo = serializers.CharField(source='inmem.logo', read_only=True)
     maintainer = serializers.CharField(source='inmem.maintainer', read_only=True)
+    is_active = serializers.BooleanField(label=_('是否启用'))
 
     class Meta:
 
@@ -23,6 +25,7 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
             'homepage',
             'logo',
             'maintainer',
+            'is_active',
             'data',
         )
 
@@ -30,29 +33,46 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
         extension_type = validated_data.pop('type', None)
         assert extension_type is not None
 
-        o, _ = Extension.active_objects.get_or_create(
+        o, _ = Extension.objects.get_or_create(
             type=extension_type
         )
-
+        o.is_active = validated_data.get('is_active')
         o.is_del = False
         o.data = validated_data.get('data')
         o.save()
 
-        from django.urls import clear_url_caches
-        from extension.utils import load_extension
+        from extension.utils import load_installed_extensions
         from runtime import get_app_runtime
-        from django.conf import settings
+        app_runtime = get_app_runtime()
+        # 退出所有插件重新加载
+        app_runtime.quit_all_extension()
+        load_installed_extensions(app_runtime)
+        # from django.urls import clear_url_caches
+        # from extension.utils import load_extension
+        # from runtime import get_app_runtime
+        # from django.conf import settings
 
-        clear_url_caches()
-        load_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', execute=True)
+        # clear_url_caches()
+        # load_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', execute=True)
 
-        from importlib import reload
-        import api.v1.urls
-        import arkid.urls
-        reload(api.v1.urls)
-        reload(arkid.urls)
+        # from importlib import reload
+        # import api.v1.urls
+        # import arkid.urls
+        # reload(api.v1.urls)
+        # reload(arkid.urls)
 
         return o
+
+    def update(self, instance, validated_data):
+        from extension.utils import load_installed_extensions
+        from runtime import get_app_runtime
+        app_runtime = get_app_runtime()
+        instance.__dict__.update(validated_data)
+        instance.save()
+        # 退出所有插件重新加载
+        app_runtime.quit_all_extension()
+        load_installed_extensions(app_runtime)
+        return instance
 
 
 class ExtensionListSerializer(ExtensionSerializer):

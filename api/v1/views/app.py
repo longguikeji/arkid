@@ -1,6 +1,4 @@
-from django.http import Http404
-from rest_framework import generics, viewsets
-from rest_framework.permissions import IsAuthenticated
+
 from .base import BaseViewSet
 
 from app.models import (
@@ -10,8 +8,10 @@ from api.v1.serializers.app import (
     AppSerializer, AppListSerializer
 )
 from common.paginator import DefaultListPaginator
-from drf_spectacular.utils import extend_schema, PolymorphicProxySerializer
+from openapi.utils import extend_schema
+from drf_spectacular.utils import PolymorphicProxySerializer
 from runtime import get_app_runtime
+from drf_spectacular.utils import extend_schema_view
 
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='AppPolymorphicProxySerializer',
@@ -19,7 +19,10 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     resource_type_field_name='type'
 )
 
-
+@extend_schema_view(
+    destroy=extend_schema(roles=['tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+)
 @extend_schema(
     tags = ['app'],
 )
@@ -50,12 +53,14 @@ class AppViewSet(BaseViewSet):
         ).order_by('id').first()
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses=AppListSerializer
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=AppPolymorphicProxySerializer,
         responses=AppPolymorphicProxySerializer,
     )
@@ -63,6 +68,7 @@ class AppViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=AppPolymorphicProxySerializer,
         responses=AppPolymorphicProxySerializer,
     )
@@ -70,6 +76,7 @@ class AppViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses=AppPolymorphicProxySerializer
     )
     def retrieve(self, request, *args, **kwargs):

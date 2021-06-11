@@ -9,10 +9,14 @@ from api.v1.serializers.webhook_trigger_history import (
     WebHookTriggerHistorySerializer
 )
 from common.paginator import DefaultListPaginator
-from drf_spectacular.utils import extend_schema
+from openapi.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view
 from .base import BaseViewSet
 
-
+@extend_schema_view(
+    list=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+)
 @extend_schema(
     tags = ['webhook_histroy']
 )

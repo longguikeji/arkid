@@ -24,7 +24,7 @@ class LoginPage(views.APIView):
         if tenant:
             data.setTenant(TenantSerializer(instance=tenant).data)
 
-            data.addForm(model.LOGIN, TenantViewSet().login_form(tenant_uuid))
+            data.addForm(model.LOGIN, TenantViewSet().login_form(request, tenant_uuid))
             data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant_uuid))
             data.addForm(model.REGISTER, TenantViewSet().mobile_register_form(tenant_uuid))
             data.addForm(model.REGISTER, TenantViewSet().username_register_form(tenant_uuid))

@@ -20,3 +20,16 @@ class Tenant(BaseModel):
 
     def has_admin_perm(self, user: 'User'):
         return user.is_superuser or user.user_permissions.filter(codename=self.admin_perm_code).count() > 0
+
+
+class TenantConfig(BaseModel):
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    data = models.JSONField(blank=True, default=dict)
+
+    def __str__(self) -> str:
+        return f'Tenant: {self.tenant.name}'
+
+    @property
+    def tenant_uuid(self):
+        return self.tenant.uuid

@@ -6,13 +6,14 @@ from api.v1.serializers.permission import (
     PermissionSerializer
 )
 from common.paginator import DefaultListPaginator
-from drf_spectacular.utils import extend_schema
+from openapi.utils import extend_schema
 from .base import BaseTenantViewSet
 from inventory.models import Permission
 from rest_framework import viewsets
 
 
 @extend_schema(
+    roles=['general user', 'tenant admin', 'global admin'],
     tags = ['permission']
 )
 class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):

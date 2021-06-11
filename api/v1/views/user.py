@@ -31,7 +31,8 @@ from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from app.models import App
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from openapi.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view
 from rest_framework.decorators import action
 from tablib import Dataset
 from collections import defaultdict
@@ -41,7 +42,14 @@ from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 
 
-@extend_schema_view(list=extend_schema(responses=UserListResponsesSerializer))
+@extend_schema_view(
+    list=extend_schema(roles=['tenant admin', 'global admin'], responses=UserListResponsesSerializer),
+    retrieve=extend_schema(roles=['tenant admin', 'global admin']),
+    create=extend_schema(roles=['tenant admin', 'global admin']),
+    update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+)
 @extend_schema(
     tags=['user'],
 )
@@ -102,7 +110,7 @@ class UserViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) == False:
+        if self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -111,7 +119,7 @@ class UserViewSet(BaseViewSet):
 
     def update(self, request, *args, **kwargs):
         password = request.data.get('password')
-        if password and self.check_password(password) == False:
+        if password and self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -124,6 +132,7 @@ class UserViewSet(BaseViewSet):
         return True
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=UserImportSerializer,
         responses=UserImportSerializer,
     )
@@ -190,6 +199,7 @@ class UserViewSet(BaseViewSet):
             )
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
     )
     @action(detail=False, methods=['get'])
@@ -210,6 +220,14 @@ class UserViewSet(BaseViewSet):
         return response
 
 
+@extend_schema_view(
+    list=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    create=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+)
 @extend_schema(tags=['user-app'])
 class UserAppViewSet(BaseViewSet):
 
@@ -279,43 +297,53 @@ class UpdatePasswordView(generics.CreateAPIView):
 
     serializer_class = PasswordRequestSerializer
 
-    @extend_schema(responses=PasswordSerializer)
+    @extend_schema(
+        roles=['tenant admin', 'global admin', 'general user'],
+        responses=PasswordSerializer
+    )
     def post(self, request):
         uuid = request.data.get('uuid', '')
         password = request.data.get('password', '')
+        old_password = request.data.get('old_password', '')
+        user = User.objects.filter(uuid=uuid).first()
         is_succeed = True
+        if not user:
+            return JsonResponse(data={
+                'error': Code.USER_EXISTS_ERROR.value,
+                'message': _('user does not exist'),
+            })
+        if password and self.check_password(password) is False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        if password and user.check_password(old_password) is False:
+            return JsonResponse(data={
+                'error': Code.OLD_PASSWORD_ERROR.value,
+                'message': _('old password error'),
+            })
         try:
-            user = User.objects.filter(uuid=uuid).first()
             user.set_password(password)
             user.save()
         except Exception as e:
             is_succeed = False
         return Response(is_succeed)
 
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
 
-@extend_schema(tags=['user'])
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserInfoSerializer
 
     @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
-
-    def update(self, request, *args, **kwargs):
-        password = request.data.get('password')
-        if password and self.check_password(password) == False:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                'message': _('password strength not enough'),
-            })
-        return super(UserInfoView, self).update(request, *args, **kwargs)
-
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True
 
 
 @extend_schema(tags=['user'])
@@ -324,7 +352,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserBindInfoSerializer
 
-    @extend_schema(responses=UserBindInfoSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserBindInfoSerializer)
     def get(self, request):
         from extension_root.feishu.models import FeishuUser
         from extension_root.gitee.models import GiteeUser
@@ -392,10 +420,11 @@ class UserLogoutView(generics.RetrieveAPIView):
 @extend_schema(tags=['user'])
 class UserManageTenantsView(generics.RetrieveAPIView):
 
-    @extend_schema(responses=UserManageTenantsSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserManageTenantsSerializer)
     def get(self, request):
         user = request.user
         if user and user.username:
             return Response({
-                "manage_tenants": user.manage_tenants()
+                "manage_tenants": user.manage_tenants(),
+                "is_global_admin": user.is_superuser,
             })

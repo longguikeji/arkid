@@ -108,7 +108,7 @@ class LoginView(generics.CreateAPIView):
         )
 
 
-@extend_schema(tags=['uc'])
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['uc'])
 class MobileLoginView(LoginView):
 
     serializer_class = LoginSerializer
