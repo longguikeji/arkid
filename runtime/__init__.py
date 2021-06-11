@@ -55,6 +55,24 @@ class Runtime:
 
         return cls._instance
 
+    def quit_all_extension(self):
+        '''
+        quit all extension
+        '''
+        self.urlpatterns = OrderedDict()
+        self.app_types = []
+        self.app_type_providers = {}
+        self.app_type_serializers = {}
+
+        self.external_idps = []
+        self.external_idp_providers = {}
+        self.external_idp_serializers = {}
+        self.sms_provider = None
+        self.cache_provider = None
+        self.storage_provider = None
+        self.authcode_provider = None
+        self.migration_provider = None
+
     def register_task(self):
         """
         register background task

@@ -41,21 +41,38 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
         o.data = validated_data.get('data')
         o.save()
 
-        from django.urls import clear_url_caches
-        from extension.utils import load_extension
+        from extension.utils import load_installed_extensions
         from runtime import get_app_runtime
-        from django.conf import settings
+        app_runtime = get_app_runtime()
+        # 退出所有插件重新加载
+        app_runtime.quit_all_extension()
+        load_installed_extensions(app_runtime)
+        # from django.urls import clear_url_caches
+        # from extension.utils import load_extension
+        # from runtime import get_app_runtime
+        # from django.conf import settings
 
-        clear_url_caches()
-        load_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', execute=True)
+        # clear_url_caches()
+        # load_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', execute=True)
 
-        from importlib import reload
-        import api.v1.urls
-        import arkid.urls
-        reload(api.v1.urls)
-        reload(arkid.urls)
+        # from importlib import reload
+        # import api.v1.urls
+        # import arkid.urls
+        # reload(api.v1.urls)
+        # reload(arkid.urls)
 
         return o
+
+    def update(self, instance, validated_data):
+        from extension.utils import load_installed_extensions
+        from runtime import get_app_runtime
+        app_runtime = get_app_runtime()
+        instance.__dict__.update(validated_data)
+        instance.save()
+        # 退出所有插件重新加载
+        app_runtime.quit_all_extension()
+        load_installed_extensions(app_runtime)
+        return instance
 
 
 class ExtensionListSerializer(ExtensionSerializer):

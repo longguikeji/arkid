@@ -19,11 +19,12 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
         from tenant.models import Tenant
         from external_idp.models import ExternalIdp
 
-        idp = ExternalIdp.objects.filter(
+        idp = ExternalIdp.active_objects.filter(
             tenant__uuid=tenant_uuid,
             type=KEY,
         ).first()
 
+        assert idp is not None
         data = idp.data
 
         app_id = data.get('app_id')
