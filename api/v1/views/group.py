@@ -50,10 +50,10 @@ from django.http import HttpResponse, HttpResponseRedirect
         responses=GroupSerializer,
     ),
     destroy=extend_schema(
-        roles=['general user', 'tenant admin']
+        roles=['tenant admin', 'global admin'],
     ),
     partial_update=extend_schema(
-        roles=['general user', 'tenant admin']
+        roles=['tenant admin', 'global admin'],
     ),
 )
 @extend_schema(tags=['group'])
