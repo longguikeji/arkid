@@ -1,12 +1,10 @@
 from .base import BaseViewSet
-from rest_framework import viewsets
-from common.extension import InMemExtension
 from api.v1.serializers.extension import ExtensionSerializer, ExtensionListSerializer
-from rest_framework.decorators import action
 from openapi.utils import extend_schema
 from drf_spectacular.utils import PolymorphicProxySerializer
 from extension.models import Extension
 from runtime import get_app_runtime
+from drf_spectacular.utils import extend_schema_view
 
 
 ExtensionPolymorphicProxySerializer = PolymorphicProxySerializer(
@@ -15,6 +13,10 @@ ExtensionPolymorphicProxySerializer = PolymorphicProxySerializer(
     resource_type_field_name='type'
 )
 
+@extend_schema_view(
+    destroy=extend_schema(roles=['tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+)
 @extend_schema(tags = ['extension'])
 class ExtensionViewSet(BaseViewSet):
 
@@ -44,6 +46,12 @@ class ExtensionViewSet(BaseViewSet):
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
     @extend_schema(
         roles=['tenant admin', 'global admin'],

@@ -12,6 +12,7 @@ from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from external_idp.models import ExternalIdp
 from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema_view
 from common.code import Code
 
 ExternalIdpPolymorphicProxySerializer = PolymorphicProxySerializer(
@@ -21,6 +22,10 @@ ExternalIdpPolymorphicProxySerializer = PolymorphicProxySerializer(
 )
 
 
+@extend_schema_view(
+    destroy=extend_schema(roles=['tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+)
 @extend_schema(tags=['external_idp'])
 class ExternalIdpViewSet(BaseViewSet):
 

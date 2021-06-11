@@ -11,6 +11,7 @@ from common.paginator import DefaultListPaginator
 from openapi.utils import extend_schema
 from drf_spectacular.utils import PolymorphicProxySerializer
 from runtime import get_app_runtime
+from drf_spectacular.utils import extend_schema_view
 
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='AppPolymorphicProxySerializer',
@@ -18,7 +19,10 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     resource_type_field_name='type'
 )
 
-
+@extend_schema_view(
+    destroy=extend_schema(roles=['tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+)
 @extend_schema(
     tags = ['app'],
 )

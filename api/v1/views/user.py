@@ -48,6 +48,7 @@ from drf_spectacular.openapi import OpenApiTypes
     create=extend_schema(roles=['tenant admin', 'global admin']),
     update=extend_schema(roles=['tenant admin', 'global admin']),
     destroy=extend_schema(roles=['tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
 )
 @extend_schema(
     tags=['user'],
@@ -131,6 +132,7 @@ class UserViewSet(BaseViewSet):
         return True
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=UserImportSerializer,
         responses=UserImportSerializer,
     )
@@ -197,6 +199,7 @@ class UserViewSet(BaseViewSet):
             )
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
     )
     @action(detail=False, methods=['get'])
@@ -217,6 +220,14 @@ class UserViewSet(BaseViewSet):
         return response
 
 
+@extend_schema_view(
+    list=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    create=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+)
 @extend_schema(tags=['user-app'])
 class UserAppViewSet(BaseViewSet):
 
@@ -286,7 +297,10 @@ class UpdatePasswordView(generics.CreateAPIView):
 
     serializer_class = PasswordRequestSerializer
 
-    @extend_schema(responses=PasswordSerializer)
+    @extend_schema(
+        roles=['tenant admin', 'global admin', 'general user'],
+        responses=PasswordSerializer
+    )
     def post(self, request):
         uuid = request.data.get('uuid', '')
         password = request.data.get('password', '')
@@ -321,13 +335,13 @@ class UpdatePasswordView(generics.CreateAPIView):
         return True
 
 
-@extend_schema(tags=['user'])
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserInfoSerializer
 
-    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserInfoSerializer)
+    @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
 
@@ -388,7 +402,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
 @extend_schema(tags=['user'])
 class UserLogoutView(generics.RetrieveAPIView):
 
-    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=LogoutSerializer)
+    @extend_schema(responses=LogoutSerializer)
     def get(self, request):
         user = request.user
         is_succeed = False

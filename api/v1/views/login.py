@@ -15,7 +15,7 @@ from django.urls import reverse
 from common import loginpage as lp
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['uc'])
+@extend_schema(tags=['uc'])
 class LoginView(generics.CreateAPIView):
 
     serializer_class = LoginSerializer

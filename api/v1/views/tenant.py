@@ -23,10 +23,15 @@ from common.code import Code
 from .base import BaseViewSet
 from app.models import App
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from drf_spectacular.utils import extend_schema_view
 from django.urls import reverse
 from common import loginpage as lp
 
-
+@extend_schema_view(
+    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+)
 @extend_schema(tags=['tenant'])
 class TenantViewSet(BaseViewSet):
 

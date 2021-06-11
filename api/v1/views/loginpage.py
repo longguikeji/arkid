@@ -14,7 +14,6 @@ from api.v1.serializers.tenant import TenantSerializer
 class LoginPage(views.APIView):
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
         responses=lp.LoginPagesSerializer
     )
     def get(self, request):

@@ -17,6 +17,10 @@ from .base import BaseViewSet
 @extend_schema_view(
     list=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
     retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    create=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
 )
 @extend_schema(
     tags = ['webhook'],

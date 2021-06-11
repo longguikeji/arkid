@@ -16,7 +16,6 @@ class AuthCodeGenerateView(generics.RetrieveAPIView):
         return get_app_runtime()
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
         responses=AuthCodeResponseSerializer
     )
     def get(self, request):
@@ -43,7 +42,6 @@ class AuthCodeCheckView(generics.CreateAPIView):
         return get_app_runtime()
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
         responses=AuthCodeCheckResponseSerializer
     )
     def post(self, request):

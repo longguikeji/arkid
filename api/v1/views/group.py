@@ -49,6 +49,12 @@ from django.http import HttpResponse, HttpResponseRedirect
         request=GroupSerializer,
         responses=GroupSerializer,
     ),
+    destroy=extend_schema(
+        roles=['general user', 'tenant admin']
+    ),
+    partial_update=extend_schema(
+        roles=['general user', 'tenant admin']
+    ),
 )
 @extend_schema(tags=['group'])
 class GroupViewSet(BaseViewSet):
