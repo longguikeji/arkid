@@ -11,7 +11,8 @@ from . import (
     permission,
     profile,
     third_party_account,
-    desktop
+    desktop,
+    tenant_config
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter
@@ -21,13 +22,11 @@ root_add_routers([
         path='book',
         name='通讯录',
         icon='education',
-        role=['global', 'tenant', 'user']
     ),
     Router(
         path='mine',
         name='个人管理',
         icon='people',
-        role=['global', 'tenant', 'user'],
         children=[
             PageRouter(
                 page=profile,
@@ -43,11 +42,21 @@ root_add_routers([
         path='tmanage',
         name='租户管理',
         icon='peoples',
-        role=['global', 'tenant'],
         children=[
             PageRouter(
                 page=app,
                 icon='component',
+            ),
+            Router(
+                path='tconfig',
+                name='租户设置',
+                icon='setting',
+                children=[
+                    PageRouter(
+                        page=tenant_config,
+                        icon='icon'
+                    )
+                ]
             ),
             Router(
                 path='user',
@@ -100,7 +109,6 @@ root_add_routers([
         path='system',
         name='系统管理',
         icon='setting',
-        role=['global', 'tenant', 'user'],
         children=[
             Router(
                 path='extension',
