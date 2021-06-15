@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 class UserSerializer(BaseDynamicFieldModelSerializer):
 
     groups = serializers.SerializerMethodField()
+    email = serializers.EmailField(required=False, help_text="请填写正确的email格式")
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='id',
