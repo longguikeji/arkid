@@ -1,14 +1,15 @@
 import json
+import aiohttp
+import asyncio
 from .models import Config
 from inventory.models import User
-from scim2_client.scim_service import ScimService
-
+from scim_client.async_client import AsyncSCIMClient
 
 def build_users_url(c: Config) -> str:
     return f'{c.endpoint}/Users'
 
 
-def user_exists(service: ScimService, c: Config, user: User) -> bool:
+def user_exists(client: AsyncSCIMClient, c: Config, user: User) -> bool:
     """
     GET /Users?filter=userName eq "demo"
 
@@ -19,59 +20,58 @@ def user_exists(service: ScimService, c: Config, user: User) -> bool:
     """
     # filter_str = 'userName eq "{}"'.format(user.username)
     # 'emails[primary eq "true" and type eq "work" and value eq "test@qq.com"]'
-    for filter_str in c.get_filter_str(user):
-        print(filter_str)
-        code, text = service.search('Users').filter(filter_str).invoke()
-        print(code, text)
-        if code == 200:
-            total = json.loads(text).get('totalResults')
-            if total == 0:
-                continue
-            else:
-                id = json.loads(text).get('Resources')[0].get("id")
-                return id
+    filter_str = c.get_match_filter(user)
+    print(filter_str)
+    response = asyncio.run(client.search_users(start_index=1, count=100, filter=filter_str))
+    print(response)
+    if response.status_code == 200:
+        users = response.users
+        if len(users) > 0:
+            return True
         else:
-            continue
+            return False
     return False
 
 
-def create_user(service: ScimService, c: Config, user: User):
+def create_user(client: AsyncSCIMClient, c: Config, user: User):
     """
     POST /Users
     """
 
     data = c.get_user_mapped_data(user)
-    data.update(
-        {
-            'externalId': user.uuid.hex,
-            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
-        }
-    )
-    code, text = service.create('Users', data).invoke()
-    print(code, text)
-    if code == 201:
-        return json.loads(text).get('id')
+    # data.update(
+    #     {
+    #         'externalId': user.uuid.hex,
+    #         "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+    #     }
+    # )
+    response = asyncio.run(client.create_user(data))
+    print(response)
+    if response.status_code == 201:
+        # return json.loads(text).get('id')
+        print('create user success')
+        return response.user
     else:
         return False
 
 
-def list_users(service: ScimService, c: Config):
+def list_users(client: AsyncSCIMClient, c: Config):
     """
     GET /Users
     """
-    code, text = service.search('Users').invoke()
-    print(code, text)
+    response = asyncio.run(client.search_users(count=50, start_index=1))
+    print(response.users)
 
 
-def retrieve_user(service: ScimService, c: Config, user_id: str):
+def retrieve_user(client: AsyncSCIMClient, c: Config, user_id: str):
     """
     GET /Users/$user_id
     """
-    code, text = service.retrieve('Users/', user_id).invoke()
-    print(code, text)
+    response = asyncio.run(client.read_user(user_id))
+    print(response.user)
 
 
-def update_user(service: ScimService, c: Config, user: User, user_id: str):
+def update_user(client: AsyncSCIMClient, c: Config, user: User, user_id: str):
     """
     PUT /Users/$user_id
 
@@ -84,32 +84,33 @@ def update_user(service: ScimService, c: Config, user: User, user_id: str):
             "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
         }
     )
-    code, text = service.replace('Users/', user_id, data).invoke()
-    print(code, text)
+    response = asyncio.run(client.update_user(user_id, data))
+    print(response.user)
 
 
-def patch_user(service: ScimService, c: Config, user_id: str):
+def patch_user(client: AsyncSCIMClient, c: Config, user:User, user_id: str):
     """
     PATCH /Users/$user_id
 
     """
-    code, text = service.modify('Users/', user_id).invoke()
-    print(code, text)
+    data = c.get_user_mapped_data(user)
+    response = asyncio.run(client.patch_user(user_id, data))
+    print(response.user)
 
 
-def delete_user(service: ScimService, c: Config, user_id: str):
+def delete_user(client: AsyncSCIMClient, c: Config, user_id: str):
     """
     DELETE /Users/$user_id
     """
-    code, text = service.delete('Users/', user_id).invoke()
-    print(code, text)
-    if code == 204:
+    response = asyncio.run(client.delete_user(user_id))
+    print(response)
+    if response.status_code == 204:
         return True
     else:
         return False
 
 
-def create_groups(service: ScimService, c: Config):
+def create_groups(client: AsyncSCIMClient, c: Config):
     """
     POST /Groups
     """

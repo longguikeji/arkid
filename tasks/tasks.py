@@ -11,6 +11,7 @@ from app.models import App
 from webhook.models import WebHook, WebHookTriggerHistory
 import requests
 from scim2_client.scim_service import ScimService
+from provisioning.constants import ProvisioningType
 
 
 @app.task
@@ -26,13 +27,22 @@ def provision_user(tenant_uuid: str, user_id: int):
 
         if config is None or config.status != ProvisioningStatus.Enabled.value:
             continue
+        # 只支持下游同步
+        if config.sync_type == ProvisioningType.upstream.value:
+            continue
 
-        provision_app_user.delay(tenant_uuid, app.id, config.id, user_id)
-        # provision_app_user(tenant_uuid, app.id, config.id, user_id)
+        # provision_app_user.delay(tenant_uuid, app.id, config.id, user_id)
+        provision_app_user(tenant_uuid, app.id, config.id, user_id)
 
 
 @app.task
 def provision_app_user(tenant_uuid: str, app_id: int, config_id: int, user_id: int):
+    """
+    同步逻辑：
+    根据profile mapping的match attributes判断APP有没有该User,如果不存在,
+    直接Create, 如果存在, 更新该User的属性
+
+    """
     print(
         f'task: provision_app_user, tenant: {tenant_uuid}, app: {app_id}, user: {user_id}'
     )
@@ -43,20 +53,17 @@ def provision_app_user(tenant_uuid: str, app_id: int, config_id: int, user_id: i
     if not config.should_provision(user):
         print(f'User Provisioning Skiped: {user_id}')
         return
-    # if not config.ensure_connection():
-    #     return
 
-    session = config.get_session()
-    if not session:
-        print('*****Error Connection******')
-        return
-    service = ScimService(session, config.endpoint)
-    user_id = user_exists(service, config, user)
-    if not user_id:
-        user_id = create_user(service, config, user)
+    cookies = {'sessionid': 'iidk5ugp4myow9jzt4sxb5g8eb5hf3gs'}
+    scim_client = config.get_scim_client(cookies=cookies)
+    # service = ScimService(session, config.endpoint)
+    is_exist = user_exists(scim_client, config, user)
+    if not is_exist:
+        user_id = create_user(scim_client, config, user)
         print('created user with uuid: {}'.format(user_id))
     else:
-        update_user(service, config, user, user_id)
+        update_user(scim_client, config, user, user_id)
+
 
 
 @app.task
@@ -69,3 +76,7 @@ def notify_webhook(tenant_uuid: int, event: Event):
     for webhook in webhooks:
         r = requests.post(webhook.url)
         print(r.json())
+
+@app.task
+def provision_tenant_app(tenant_uuid: str, app_id:int):
+    pass

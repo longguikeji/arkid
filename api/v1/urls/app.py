@@ -9,9 +9,23 @@ tenant_app_router = tenant_router.register(
     parents_query_lookups=['tenant'],
 )
 
-tenant_app_router.register(
+app_provisioning_router = tenant_app_router.register(
     r'provisioning',
     views_app.AppProvisioningViewSet,
     basename='tenant-app-provisioning',
     parents_query_lookups=['tenant', 'app'],
+)
+
+app_provisioning_router.register(
+    r'mapping',
+    views_app.AppProvisioningMappingViewSet,
+    basename='tenant-app-provisioning-mapping',
+    parents_query_lookups=['tenant', 'app', 'provisioning'],
+)
+
+app_provisioning_router.register(
+    r'profile',
+    views_app.AppProvisioningProfileViewSet,
+    basename='tenant-app-provisioning-profile',
+    parents_query_lookups=['tenant', 'app', 'provisioning'],
 )

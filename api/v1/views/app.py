@@ -8,11 +8,14 @@ from api.v1.serializers.app import (
     AppSerializer,
     AppListSerializer,
     AppProvisioningSerializer,
+    AppProvisioningMappingSerializer,
+    AppProvisioningProfileSerializer
 )
 from common.paginator import DefaultListPaginator
 from drf_spectacular.utils import extend_schema, PolymorphicProxySerializer
 from runtime import get_app_runtime
 from provisioning.models import Config
+from schema.models import Schema, AppProfile
 
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='AppPolymorphicProxySerializer',
@@ -97,3 +100,52 @@ class AppProvisioningViewSet(BaseViewSet):
             app=app,
         )
         return all_configs
+
+
+@extend_schema(tags=['app'])
+class AppProvisioningMappingViewSet(BaseViewSet):
+
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [ExpiringTokenAuthentication]
+
+    model = Schema
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = AppProvisioningMappingSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        app = context['app']
+        provisioning = context.get('provisioning')
+        mapping = Schema.active_objects.filter(
+            provisioning_config=provisioning,
+        )
+        return mapping
+
+@extend_schema(tags=['app'])
+class AppProvisioningProfileViewSet(BaseViewSet):
+
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [ExpiringTokenAuthentication]
+
+    model = AppProfile
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = AppProvisioningProfileSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        app = context['app']
+        provisioning = context.get('provisioning')
+        mapping = AppProfile.active_objects.filter(
+            provisioning_config=provisioning,
+        )
+        return mapping

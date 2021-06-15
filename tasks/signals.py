@@ -27,8 +27,8 @@ def user_saved(sender, instance: User, created: bool, **kwargs):
         return
 
     for tenant in instance.tenants.all():
-        provision_user.delay(tenant.uuid, instance.id)
-        # provision_user(tenant.uuid, instance.id)
+        # provision_user.delay(tenant.uuid, instance.id)
+        provision_user(tenant.uuid, instance.id)
 
 
 def group_saved(sender, instance: Group, created: bool, **kwargs):
