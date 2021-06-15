@@ -13,7 +13,7 @@ from rest_framework import viewsets
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['tenant admin', 'global admin'],
     tags = ['permission']
 )
 class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):

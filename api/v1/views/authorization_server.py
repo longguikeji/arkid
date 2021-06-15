@@ -8,7 +8,7 @@ from common.paginator import DefaultListPaginator
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'], tags = ['authorizationServer']
+    roles=['tenant admin', 'global admin'], tags = ['authorizationServer']
 )
 class AuthorizationServerViewSet(viewsets.ReadOnlyModelViewSet):
 
