@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'tenant_config'
+tag = 'desktop_config'
 path = tag
-name = '租户配置'
+name = '桌面设置'
 
 extend_schema_tags(
     tag,

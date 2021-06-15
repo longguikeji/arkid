@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'tenant_config'
+tag = 'sdk_download'
 path = tag
-name = '租户配置'
+name = 'SDK下载'
 
 extend_schema_tags(
     tag,

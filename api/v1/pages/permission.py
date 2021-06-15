@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'permission'
+tag = 'permission_list'
 path = tag
 name = '权限列表'
 
