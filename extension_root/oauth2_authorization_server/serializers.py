@@ -6,7 +6,7 @@ from common.serializer import AppBaseSerializer
 
 class OAuth2ConfigSerializer(serializers.Serializer):
 
-    redirect_uris = serializers.URLField()
+    redirect_uris = serializers.URLField(help_text='请填写正确的url格式')
     client_type = serializers.ChoiceField(choices=Application.CLIENT_TYPES, default=Application.CLIENT_PUBLIC)
     grant_type = serializers.ChoiceField(choices=Application.GRANT_TYPES, default=Application.GRANT_AUTHORIZATION_CODE)
 
@@ -25,7 +25,7 @@ class OAuth2AppSerializer(AppBaseSerializer):
 
 class OIDCConfigSerializer(serializers.Serializer):
 
-    redirect_uris = serializers.URLField()
+    redirect_uris = serializers.URLField(help_text='请填写正确的url格式')
     client_type = serializers.ChoiceField(choices=Application.CLIENT_TYPES, default=Application.CLIENT_PUBLIC)
     grant_type = serializers.ChoiceField(choices=Application.GRANT_TYPES, default=Application.GRANT_AUTHORIZATION_CODE)
     algorithm = serializers.ChoiceField(choices=Application.ALGORITHM_TYPES, default=Application.NO_ALGORITHM)
