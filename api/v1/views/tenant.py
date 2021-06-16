@@ -31,6 +31,7 @@ from common import loginpage as lp
     retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
     destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
     partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    create=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
 )
 @extend_schema(tags=['tenant'])
 class TenantViewSet(BaseViewSet):

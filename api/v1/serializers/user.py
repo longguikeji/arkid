@@ -3,7 +3,7 @@ from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Group, Permission, User
 from rest_framework import serializers
 from .group import GroupSerializer, GroupBaseSerializer
-from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
+from api.v1.fields.custom import create_foreign_key_field, create_foreign_field, create_hint_field
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
 
@@ -11,7 +11,10 @@ from django.utils.translation import gettext_lazy as _
 class UserSerializer(BaseDynamicFieldModelSerializer):
 
     groups = serializers.SerializerMethodField()
-    email = serializers.EmailField(required=False, help_text="请填写正确的email格式")
+    email = create_hint_field(serializers.EmailField)(
+        hint="请填写正确的email格式",
+        required=False,
+    )
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='id',
