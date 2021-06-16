@@ -7,10 +7,15 @@ from rest_framework.decorators import action
 from openapi.utils import extend_schema
 from rest_framework import generics
 from django.http.response import JsonResponse
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['market-extension'])
 class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = MarketPlaceExtensionSerializer
 

@@ -36,7 +36,7 @@ from common import loginpage as lp
 @extend_schema(tags=['tenant'])
 class TenantViewSet(BaseViewSet):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     pagination_class = DefaultListPaginator

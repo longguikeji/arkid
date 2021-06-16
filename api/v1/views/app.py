@@ -12,6 +12,8 @@ from openapi.utils import extend_schema
 from drf_spectacular.utils import PolymorphicProxySerializer
 from runtime import get_app_runtime
 from drf_spectacular.utils import extend_schema_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='AppPolymorphicProxySerializer',
@@ -28,8 +30,8 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
 )
 class AppViewSet(BaseViewSet):
 
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = AppSerializer
     pagination_class = DefaultListPaginator

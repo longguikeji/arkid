@@ -5,7 +5,7 @@ from django.http import Http404
 from django.http.response import JsonResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.contrib.auth.models import User as DUser
@@ -55,8 +55,8 @@ from drf_spectacular.openapi import OpenApiTypes
 )
 class UserViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     model = User
 
@@ -231,13 +231,10 @@ class UserViewSet(BaseViewSet):
 @extend_schema(tags=['user-app'])
 class UserAppViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     model = App
-
-    permission_classes = []
-    authentication_classes = []
 
     serializer_class = AppBaseInfoSerializer
     pagination_class = DefaultListPaginator
@@ -292,8 +289,8 @@ class UserTokenView(generics.CreateAPIView):
 
 @extend_schema(tags=['user'])
 class UpdatePasswordView(generics.CreateAPIView):
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PasswordRequestSerializer
 
@@ -348,7 +345,7 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
 
 @extend_schema(tags=['user'])
 class UserBindInfoView(generics.RetrieveAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserBindInfoSerializer
 
@@ -401,6 +398,8 @@ class UserBindInfoView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserLogoutView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(responses=LogoutSerializer)
     def get(self, request):
@@ -419,6 +418,8 @@ class UserLogoutView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserManageTenantsView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserManageTenantsSerializer)
     def get(self, request):

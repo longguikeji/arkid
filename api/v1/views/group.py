@@ -19,7 +19,9 @@ from inventory.resouces import GroupResource
 from tablib import Dataset
 from collections import defaultdict
 from common.code import Code
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 
 @extend_schema_view(
@@ -59,13 +61,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 @extend_schema(tags=['group'])
 class GroupViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     model = Group
-
-    permission_classes = []
-    authentication_classes = []
 
     serializer_class = GroupSerializer
     pagination_class = DefaultListPaginator

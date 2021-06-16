@@ -10,6 +10,7 @@ from openapi.utils import extend_schema
 from .base import BaseTenantViewSet
 from inventory.models import Permission
 from rest_framework import viewsets
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 
 @extend_schema(
@@ -18,11 +19,8 @@ from rest_framework import viewsets
 )
 class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
-
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionSerializer
     pagination_class = DefaultListPaginator
