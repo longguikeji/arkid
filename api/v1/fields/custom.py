@@ -1,4 +1,4 @@
-from rest_framework import serializers
+
 from drf_spectacular.drainage import set_override, get_override
 from drf_spectacular.utils import extend_schema_field
 
@@ -43,3 +43,22 @@ def create_foreign_key_field(field_cls):
             super().__init__(model_cls, field_name, **kwargs)
 
     return ForeignKeyField
+
+
+def create_hint_field(field_cls):
+
+    class HintField(field_cls):
+        _field_meta = {}
+
+        def __init__(self, hint, **kwargs):
+            field = get_override(self, 'field', {})
+            field['hint'] = hint
+
+            for k, v in kwargs.items():
+                if isinstance (v,(str,int,list,bool,dict,float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+
+    return HintField
