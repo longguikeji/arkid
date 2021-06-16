@@ -26,6 +26,7 @@ from api.v1.serializers.user import (
     PasswordRequestSerializer,
     LogoutSerializer,
     UserManageTenantsSerializer,
+    
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -59,9 +60,6 @@ class UserViewSet(BaseViewSet):
     authentication_classes = [ExpiringTokenAuthentication]
 
     model = User
-
-    permission_classes = []
-    authentication_classes = []
 
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator

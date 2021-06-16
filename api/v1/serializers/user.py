@@ -47,7 +47,6 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         model = User
 
         fields = (
-            'uuid',
             'username',
             'email',
             'mobile',
