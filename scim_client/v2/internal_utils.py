@@ -2,12 +2,12 @@ import copy
 import logging
 import re
 import sys
+import platform
 from typing import Dict, Callable
 from typing import Union, Optional, Any
 from urllib.parse import quote
 
 from .default_arg import DefaultArg, NotGiven
-from slack_sdk.web.internal_utils import get_user_agent
 
 
 def _build_query(params: Optional[Dict[str, Any]]) -> str:
@@ -156,3 +156,20 @@ def _debug_log_response(logger, resp: "SCIMResponse") -> None:  # noqa: F821
             f"headers: {(dict(resp.headers))}, "
             f"body: {resp.raw_body}"
         )
+
+def get_user_agent(prefix: Optional[str] = None, suffix: Optional[str] = None):
+    """Construct the user-agent header with the package info,
+    Python version and OS version.
+
+    Returns:
+        The user agent string.
+        e.g. 'Python/3.6.7 slackclient/2.0.0 Darwin/17.7.0'
+    """
+    # __name__ returns all classes, we only want the client
+    client = "{0}/{1}".format("ScimClient", "2.0")
+    python_version = "Python/{v.major}.{v.minor}.{v.micro}".format(v=sys.version_info)
+    system_info = "{0}/{1}".format(platform.system(), platform.release())
+    user_agent_string = " ".join([python_version, client, system_info])
+    prefix = f"{prefix} " if prefix else ""
+    suffix = f" {suffix}" if suffix else ""
+    return prefix + user_agent_string + suffix
