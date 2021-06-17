@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'login_config'
+tag = 'lr_config'
 path = tag
-name = '登录配置'
+name = '登录注册配置'
 
 extend_schema_tags(
     tag,

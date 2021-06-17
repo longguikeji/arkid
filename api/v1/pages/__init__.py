@@ -14,7 +14,6 @@ from . import (
     third_party_account,
     desktop,
     login_config,
-    register_config,
     book,
     desktop_config,
     book_config,
@@ -180,14 +179,10 @@ root_add_routers([
             Router(
                 path='login_register_config',
                 name='登录注册配置',
-                icon='edit',
+                icon='lock',
                 children=[
                     PageRouter(
                         page=login_config,
-                        icon='setting'
-                    ),
-                    PageRouter(
-                        page=register_config,
                         icon='setting'
                     ),
                     PageRouter(
