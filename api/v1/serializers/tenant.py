@@ -83,7 +83,7 @@ class UserNameLoginResponseSerializer(serializers.Serializer):
 class ConfigSerializer(serializers.Serializer):
     is_open_authcode = serializers.BooleanField(label=_('是否打开验证码'))
     error_number_open_authcode = serializers.IntegerField(label=_('错误几次提示输入验证码'))
-    is_open_register_limit = serializers.BooleanField(label=_('是否用户注册限制'))
+    is_open_register_limit = serializers.BooleanField(label=_('是否限制注册用户'))
     register_time_limit = serializers.IntegerField(label=_('用户注册时间限制(分钟)'))
     register_count_limit = serializers.IntegerField(label=_('用户注册数量限制'))
 
