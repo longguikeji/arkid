@@ -2,7 +2,6 @@ from common.extension import InMemExtension
 
 from .provider import AuthCodeIdpProvider
 from .constants import KEY
-from .serializers import AuthCodeInfoSerializer
 
 
 class AuthCodeExternalIdpExtension(InMemExtension):
@@ -26,5 +25,4 @@ extension = AuthCodeExternalIdpExtension(
     homepage='https://www.longguikeji.com',
     logo='',
     maintainer='insfocus@gmail.com',
-    serializer=AuthCodeInfoSerializer,
 )
