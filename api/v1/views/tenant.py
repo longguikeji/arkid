@@ -271,6 +271,7 @@ class TenantViewSet(BaseViewSet):
         mobile = request.data.get('mobile')
         code = request.data.get('code')
         password = request.data.get('password')
+        ip = self.get_client_ip(request)
         from django.db.models import Q
 
         cache_code = self.runtime.cache_provider.get(mobile)
@@ -298,6 +299,18 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
             })
+        # 判断注册次数
+        login_config = self.get_login_config(pk)
+        is_open_register_limit = login_config.get('is_open_register_limit', False)
+        register_time_limit = login_config.get('register_time_limit', 1)
+        register_count_limit = login_config.get('register_count_limit', 10)
+        if is_open_register_limit is True:
+            register_count = self.get_user_register_count(ip)
+            if register_count >= register_count_limit:
+                return JsonResponse(data={
+                    'error': Code.REGISTER_FAST_ERROR.value,
+                    'message': _('a large number of registrations in a short time'),
+                })
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
             is_del=False,
@@ -309,6 +322,9 @@ class TenantViewSet(BaseViewSet):
         user.set_password(password)
         user.save()
         token = user.refresh_token()
+        # 注册成功进行计数
+        if is_open_register_limit is True:
+            self.user_register_count(ip, 'register', register_time_limit)
         return JsonResponse(data={
             'error': Code.OK.value,
             'data': {
@@ -316,11 +332,29 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
+    def user_register_count(self, ip, check_str='register', time_limit=1):
+        key = f'{ip}-{check_str}'
+        runtime = get_app_runtime()
+        data = runtime.cache_provider.get(key)
+        if data is None:
+            v = 1
+        else:
+            v = int(data) + 1
+        self.runtime.cache_provider.set(key, v, time_limit*60)
+    
+    def get_user_register_count(self, ip, check_str='register'):
+        key = f'{ip}-{check_str}'
+        data = self.runtime.cache_provider.get(key)
+        if data is None:
+            return 0
+        return int(data)
+
     @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserNameRegisterResponseSerializer)
     @action(detail=True, methods=['post'])
     def username_register(self, request, pk):
         username = request.data.get('username')
         password = request.data.get('password')
+        ip = self.get_client_ip(request)
 
         user = User.active_objects.filter(
             username=username
@@ -340,6 +374,18 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
             })
+        # 判断注册次数
+        login_config = self.get_login_config(pk)
+        is_open_register_limit = login_config.get('is_open_register_limit', False)
+        register_time_limit = login_config.get('register_time_limit', 1)
+        register_count_limit = login_config.get('register_count_limit', 10)
+        if is_open_register_limit is True:
+            register_count = self.get_user_register_count(ip)
+            if register_count >= register_count_limit:
+                return JsonResponse(data={
+                    'error': Code.REGISTER_FAST_ERROR.value,
+                    'message': _('a large number of registrations in a short time'),
+                })
         tenant = self.get_object()
         user, created = User.objects.get_or_create(
             is_del=False,
@@ -350,6 +396,9 @@ class TenantViewSet(BaseViewSet):
         user.set_password(password)
         user.save()
         token = user.refresh_token()
+        # 注册成功进行计数
+        if is_open_register_limit is True:
+            self.user_register_count(ip, 'register', register_time_limit)
         return JsonResponse(data={
             'error': Code.OK.value,
             'data': {
@@ -394,7 +443,10 @@ class TenantViewSet(BaseViewSet):
         # 获取基础配置信息
         result = {
             'is_open_authcode': False,
-            'error_number_open_authcode': 0
+            'error_number_open_authcode': 0,
+            'is_open_register_limit': False,
+            'register_time_limit': 1,
+            'register_count_limit': 10
         }
         tenantconfig = TenantConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
         if tenantconfig:
@@ -604,8 +656,20 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
             if is_created is True:
                 tenantconfig.data = {
                     'is_open_authcode': False,
-                    'error_number_open_authcode': 0
+                    'error_number_open_authcode': 0,
+                    'is_open_register_limit': False,
+                    'register_time_limit': 1,
+                    'register_count_limit': 10
                 }
+                tenantconfig.save()
+            else:
+                data = tenantconfig.data
+                if 'is_open_register_limit' not in data:
+                    data['is_open_register_limit'] = False
+                if 'register_time_limit' not in data:
+                    data['register_time_limit'] = 1
+                if 'register_count_limit' not in data:
+                    data['register_count_limit'] = 10
                 tenantconfig.save()
             return tenantconfig
         else:
