@@ -3,7 +3,10 @@ from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Group, Permission, User
 from rest_framework import serializers
 from .group import GroupSerializer, GroupBaseSerializer
-from api.v1.fields.custom import create_foreign_key_field, create_foreign_field, create_hint_field
+from api.v1.fields.custom import (
+    create_foreign_key_field, create_foreign_field, create_hint_field,
+    create_mobile_field, create_password_field,
+)
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
 
@@ -13,6 +16,15 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     groups = serializers.SerializerMethodField()
     email = create_hint_field(serializers.EmailField)(
         hint="请填写正确的email格式",
+        required=False,
+    )
+    mobile = create_mobile_field(serializers.CharField)(
+        hint="请填写正确的电话格式",
+        required=False,
+    )
+    password = create_password_field(serializers.CharField)(
+        hint="请填写正确的密码格式",
+        write_only=True,
         required=False,
     )
     set_groups = create_foreign_key_field(serializers.ListField)(
@@ -69,7 +81,6 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         extra_kwargs = {
             'uuid': {'read_only': True},
             'bind_info': {'read_only': True},
-            'password': {'write_only': True},
         }
 
     def get_groups(self, instance):
@@ -174,8 +185,18 @@ class TokenSerializer(serializers.Serializer):
 class PasswordRequestSerializer(serializers.Serializer):
 
     uuid = serializers.CharField(label=_('用户uuid'))
-    password = serializers.CharField(label=_('密码'), write_only=True, required=False)
-    old_password = serializers.CharField(label=_('旧密码'), write_only=True, required=False)
+    password = create_password_field(serializers.CharField)(
+        label=_('新密码'),
+        hint="请填写正确的密码格式",
+        write_only=True,
+        required=False,
+    )
+    old_password = create_password_field(serializers.CharField)(
+        label=_('旧密码'),
+        hint="请填写正确的密码格式",
+        write_only=True,
+        required=False,
+    )
 
 
 class PasswordSerializer(serializers.Serializer):
@@ -194,7 +215,11 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
     uuid = serializers.CharField(label=_('uuid'), read_only=True)
     username = serializers.CharField(label=_('用户名'), read_only=True)
     nickname = serializers.CharField(label=_('昵称'), required=False)
-    mobile = serializers.CharField(label=_('手机号'), required=False)
+    mobile = create_mobile_field(serializers.CharField)(
+        label=_('手机号'),
+        hint="请填写正确的电话格式",
+        required=False,
+    )
 
     class Meta:
         model = User
