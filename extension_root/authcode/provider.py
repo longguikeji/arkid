@@ -1,6 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from common.provider import AuthCodeProvider
+from django.http import HttpResponse
 from .constants import KEY
+from io import BytesIO
 
 import random
 import string
@@ -8,7 +10,6 @@ import string
 
 class AuthCodeIdpProvider(AuthCodeProvider):
 
-    upload_file_path: str
 
     def __init__(self) -> None:
         super().__init__()
@@ -19,7 +20,6 @@ class AuthCodeIdpProvider(AuthCodeProvider):
         ).first()
 
         assert o is not None
-        self.upload_file_path = o.data.get('upload_file_path')
 
     def get_random_char(self):
         '''
@@ -35,7 +35,7 @@ class AuthCodeIdpProvider(AuthCodeProvider):
         '''
         return (random.randint(low, high), random.randint(low, high), random.randint(low, high))
 
-    def get_authcode_picture(self):
+    def get_authcode_picture(self, request):
         '''
         制作验证码图片
         '''
@@ -58,7 +58,9 @@ class AuthCodeIdpProvider(AuthCodeProvider):
             draw.point((x, y), fill=self.get_random_color(50, 150))
         # 模糊处理
         image = image.filter(ImageFilter.BLUR)
-        # 保存图片
-        key = self.generate_key()
-        image.save('{}/{}'.format(self.upload_file_path, key))
-        return char_4, key
+        # 存入session,用于做进一步的验证
+        request.session['verification_code'] = char_4
+        buf = BytesIO()
+        # 将图片保存在内存中，文件类型为png
+        image.save(buf, 'png')
+        return HttpResponse(buf.getvalue(), 'image/png')

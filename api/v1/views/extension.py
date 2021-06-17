@@ -5,6 +5,8 @@ from drf_spectacular.utils import PolymorphicProxySerializer
 from extension.models import Extension
 from runtime import get_app_runtime
 from drf_spectacular.utils import extend_schema_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 
 ExtensionPolymorphicProxySerializer = PolymorphicProxySerializer(
@@ -20,6 +22,8 @@ ExtensionPolymorphicProxySerializer = PolymorphicProxySerializer(
 @extend_schema(tags = ['extension'])
 class ExtensionViewSet(BaseViewSet):
 
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = ExtensionSerializer
 
     def get_queryset(self):

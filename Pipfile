@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 ipython = "*"
 pre-commit = "*"
+pylint = "*"
 
 [packages]
 django = "*"

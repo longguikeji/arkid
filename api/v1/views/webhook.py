@@ -1,8 +1,7 @@
-from django.http import Http404
-from rest_framework import generics, viewsets
+
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema_view
-# from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 from webhook.models import (
     WebHook,
@@ -27,11 +26,8 @@ from .base import BaseViewSet
 )
 class WebHookViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
-
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = WebHookSerializer
     pagination_class = DefaultListPaginator
