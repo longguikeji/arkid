@@ -28,7 +28,7 @@ class AuthCodeGenerateView(generics.RetrieveAPIView):
         self.runtime.cache_provider.set(key, char_4, 86400)
         return JsonResponse(data={
             'key': key,
-            'base64_str': str(base64_str,'utf8')
+            'base64': str(base64_str,'utf8')
         })
 
 
