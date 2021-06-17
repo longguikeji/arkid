@@ -124,20 +124,13 @@ class TenantViewSet(BaseViewSet):
             # 如果密码错误的次数超过了规定的次数，则需要图片验证码
             if password_error_count >= error_number_open_authcode:
                 check_code = request.data.get('code', '')
-                key = request.data.get('code_filename', '')
                 if check_code == '':
                     return JsonResponse(data={
                         'error': Code.CODE_EXISTS_ERROR.value,
                         'message': _('code is not exists'),
                         'is_need_refresh': False,
                     })
-                if key == '':
-                    return JsonResponse(data={
-                        'error': Code.CODE_FILENAME_EXISTS_ERROR.value,
-                        'message': _('code_filename is not exists'),
-                        'is_need_refresh': False,
-                    })
-                code = self.runtime.cache_provider.get(key)
+                code = request.session.get('verification_code', None)
                 if code and str(code).upper() == str(check_code).upper():
                     pass
                 else:
@@ -415,7 +408,6 @@ class TenantViewSet(BaseViewSet):
                     placeholder='图片验证码',
                 ))
                 params['code'] = 'code'
-                params['code_filename'] = 'code_filename'
         return lp.LoginForm(
             label='密码登录',
             items=items,

@@ -40,7 +40,7 @@ class AuthCodeCheckView(generics.CreateAPIView):
         responses=AuthCodeCheckResponseSerializer
     )
     def post(self, request):
-        code = request.session['verification_code']
+        code = request.session.get('verification_code', None)
         check_code = request.data.get('code')
         if code and str(code).upper() == str(check_code).upper():
             return JsonResponse(data={
