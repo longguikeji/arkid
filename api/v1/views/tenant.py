@@ -31,7 +31,6 @@ from common import loginpage as lp
     retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
     destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
     partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    create=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
 )
 @extend_schema(tags=['tenant'])
 class TenantViewSet(BaseViewSet):
@@ -64,7 +63,25 @@ class TenantViewSet(BaseViewSet):
 
     @extend_schema(roles=['tenant admin', 'global admin'], summary=_('update tenant'))
     def update(self, request, *args, **kwargs):
+        slug = request.data.get('slug')
+        tenant_exists = Tenant.active_objects.exclude(uuid=kwargs.get('pk')).filter(slug=slug).exists()
+        if tenant_exists:
+            return JsonResponse(data={
+                'error': Code.SLUG_EXISTS_ERROR.value,
+                'message': _('slug already exists'),
+            })
         return super().update(request, *args, **kwargs)
+
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], summary=_('create tenant'))
+    def create(self, request):
+        slug = request.data.get('slug')
+        tenant_exists = Tenant.active_objects.filter(slug=slug).exists()
+        if tenant_exists:
+            return JsonResponse(data={
+                'error': Code.SLUG_EXISTS_ERROR.value,
+                'message': _('slug already exists'),
+            })
+        return super().create(request)
 
     def get_queryset(self):
         if self.request.user and self.request.user.username != "":
