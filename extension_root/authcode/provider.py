@@ -64,5 +64,4 @@ class AuthCodeIdpProvider(AuthCodeProvider):
         image.save(buf, 'png')
         byte_data = buf.getvalue()
         base64_str = base64.b64encode(byte_data)
-        print(base64_str)
         return key, char_4, base64_str
