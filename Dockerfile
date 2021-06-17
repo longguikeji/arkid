@@ -9,7 +9,7 @@ RUN set -eux; \
         gettext xmlsec1 \
         python-dev default-libmysqlclient-dev tini gosu; \
     # verify that the binary works
-	gosu nobody true; \
+    gosu nobody true; \
     rm -rf /var/lib/apt/lists/*; \
     groupadd -r arker && useradd -r -g arker arker; \
     setcap 'cap_net_bind_service=+ep' /usr/local/bin/python3.8
