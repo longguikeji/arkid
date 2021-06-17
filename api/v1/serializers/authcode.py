@@ -10,7 +10,8 @@ class AuthCodeSerializer(serializers.Serializer):
 
 class AuthCodeResponseSerializer(serializers.Serializer):
 
-    key = serializers.CharField(label=_('图片名称<需要和上传地址一起连用>'))
+    key = serializers.CharField(label=_('图片名称'))
+    base64 = serializers.CharField(label=_('图片base64'))
 
 
 class AuthCodeCheckResponseSerializer(serializers.Serializer):
