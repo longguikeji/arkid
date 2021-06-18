@@ -25,7 +25,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     password = create_password_field(serializers.CharField)(
         hint="请填写正确的密码格式",
         write_only=True,
-        required=False,
+        required=True,
     )
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
