@@ -55,7 +55,7 @@ class UploadAPIView(APIView):
     def get_upload_config(self, tenant_uuid):
         # 获取基础配置信息
         result = {
-            'upload_file_format': ['jpg','png','gif']
+            'upload_file_format': ['jpg','png','gif','jpeg']
         }
         tenantconfig = TenantConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
         if tenantconfig:
