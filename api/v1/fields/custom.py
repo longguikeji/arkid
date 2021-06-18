@@ -110,3 +110,22 @@ def create_password_field(field_cls):
             super().__init__(**kwargs)
 
     return PasswordField
+
+
+def create_enum_field(field_cls):
+
+    class EnumField(field_cls):
+        _field_meta = {}
+
+        def __init__(self, enum, **kwargs):
+            field = get_override(self, 'field', {})
+            field['enum'] = enum
+
+            for k, v in kwargs.items():
+                if isinstance (v,(str,int,list,bool,dict,float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+
+    return EnumField
