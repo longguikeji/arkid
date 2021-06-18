@@ -214,11 +214,12 @@ class UserImportSerializer(serializers.Serializer):
 class UserInfoSerializer(BaseDynamicFieldModelSerializer):
     uuid = serializers.CharField(label=_('uuid'), read_only=True)
     username = serializers.CharField(label=_('用户名'), read_only=True)
-    nickname = serializers.CharField(label=_('昵称'), required=False)
+    nickname = serializers.CharField(label=_('昵称'), required=False, allow_blank=True)
     mobile = create_mobile_field(serializers.CharField)(
         label=_('手机号'),
         hint="请填写正确的电话格式",
         required=False,
+        allow_blank=True,
     )
 
     class Meta:
