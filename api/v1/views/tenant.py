@@ -659,7 +659,8 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                     'error_number_open_authcode': 0,
                     'is_open_register_limit': False,
                     'register_time_limit': 1,
-                    'register_count_limit': 10
+                    'register_count_limit': 10,
+                    'upload_file_format': ['jpg','png','gif']
                 }
                 tenantconfig.save()
             else:
@@ -670,6 +671,8 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                     data['register_time_limit'] = 1
                 if 'register_count_limit' not in data:
                     data['register_count_limit'] = 10
+                if 'upload_file_format' not in data:
+                    data['upload_file_format'] = ['jpg','png','gif']
                 tenantconfig.save()
             return tenantconfig
         else:
