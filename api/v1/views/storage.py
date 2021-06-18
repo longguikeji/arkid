@@ -34,10 +34,13 @@ class UploadAPIView(APIView):
         if 'file' not in request.data:
             raise ParseError("Empty content")
         uploaded_file = request.data['file']
-        tenant_uuid = request.data.get('tenant_uuid')
+        tenant_uuid = request.data.get('tenant_uuid', '')
         # 扩展名称验证
-        result = self.get_upload_config(tenant_uuid)
-        exts = result.get('upload_file_format', ['jpg','png','gif'])
+        if tenant_uuid:
+            result = self.get_upload_config(tenant_uuid)
+            exts = result.get('upload_file_format', ['jpg','png','gif'])
+        else:
+            exts = ['jpg','png','gif']
         ext = str(uploaded_file.name.split('.')[-1]).lower()
         if ext not in exts:
             return JsonResponse(data={
