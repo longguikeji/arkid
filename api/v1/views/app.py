@@ -8,12 +8,15 @@ from api.v1.serializers.app import (
     AppSerializer, AppListSerializer
 )
 from common.paginator import DefaultListPaginator
+from django.http.response import JsonResponse
 from openapi.utils import extend_schema
 from drf_spectacular.utils import PolymorphicProxySerializer
 from runtime import get_app_runtime
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from django.utils.translation import gettext_lazy as _
+from common.code import Code
 
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='AppPolymorphicProxySerializer',
@@ -67,6 +70,17 @@ class AppViewSet(BaseViewSet):
         responses=AppPolymorphicProxySerializer,
     )
     def update(self, request, *args, **kwargs):
+        data = request.data.get('data','')
+        if data:
+            redirect_uris = data.get('redirect_uris', '')
+            if redirect_uris:
+                if redirect_uris.startswith('http') or redirect_uris.startswith('https'):
+                    pass
+                else:
+                    return JsonResponse(data={
+                        'error': Code.URI_FROMAT_ERROR.value,
+                        'message': _('redirect_uris format error'),
+                    })
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
@@ -75,6 +89,17 @@ class AppViewSet(BaseViewSet):
         responses=AppPolymorphicProxySerializer,
     )
     def create(self, request, *args, **kwargs):
+        data = request.data.get('data','')
+        if data:
+            redirect_uris = data.get('redirect_uris', '')
+            if redirect_uris:
+                if redirect_uris.startswith('http') or redirect_uris.startswith('https'):
+                    pass
+                else:
+                    return JsonResponse(data={
+                        'error': Code.URI_FROMAT_ERROR.value,
+                        'message': _('redirect_uris format error'),
+                    })
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
