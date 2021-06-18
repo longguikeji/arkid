@@ -89,6 +89,17 @@ class AppViewSet(BaseViewSet):
         responses=AppPolymorphicProxySerializer,
     )
     def create(self, request, *args, **kwargs):
+        data = request.data.get('data','')
+        if data:
+            redirect_uris = data.get('redirect_uris', '')
+            if redirect_uris:
+                if redirect_uris.startswith('http') or redirect_uris.startswith('https'):
+                    pass
+                else:
+                    return JsonResponse(data={
+                        'error': Code.URI_FROMAT_ERROR.value,
+                        'message': _('redirect_uris format error'),
+                    })
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
