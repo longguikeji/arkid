@@ -4,9 +4,12 @@ from openapi.utils import extend_schema
 from drf_spectacular.utils import PolymorphicProxySerializer
 from extension.models import Extension
 from runtime import get_app_runtime
+from django.http.response import JsonResponse
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from django.utils.translation import gettext_lazy as _
+from common.code import Code
 
 
 ExtensionPolymorphicProxySerializer = PolymorphicProxySerializer(
@@ -49,6 +52,14 @@ class ExtensionViewSet(BaseViewSet):
         responses=ExtensionPolymorphicProxySerializer,
     )
     def update(self, request, *args, **kwargs):
+        data = request.data.get('data','')
+        data_path = data.get('data_path', '')
+        if data_path:
+            if '../' in data_path or './' in data_path:
+                return JsonResponse(data={
+                    'error': Code.DATA_PATH_ERROR.value,
+                    'message': _('data_path format error'),
+                })
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
