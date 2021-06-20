@@ -38,9 +38,9 @@ class UploadAPIView(APIView):
         # 扩展名称验证
         if tenant_uuid:
             result = self.get_upload_config(tenant_uuid)
-            exts = result.get('upload_file_format', ['jpg','png','gif'])
+            exts = result.get('upload_file_format', ['jpg','png','gif','jpeg'])
         else:
-            exts = ['jpg','png','gif']
+            exts = ['jpg','png','gif','jpeg']
         ext = str(uploaded_file.name.split('.')[-1]).lower()
         if ext not in exts:
             return JsonResponse(data={
@@ -55,7 +55,7 @@ class UploadAPIView(APIView):
     def get_upload_config(self, tenant_uuid):
         # 获取基础配置信息
         result = {
-            'upload_file_format': ['jpg','png','gif']
+            'upload_file_format': ['jpg','png','gif','jpeg']
         }
         tenantconfig = TenantConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
         if tenantconfig:
