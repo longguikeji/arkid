@@ -112,8 +112,8 @@ class GroupViewSet(BaseViewSet):
         context = self.get_serializer_context()
         tenant = context['tenant']
         support_content_types = [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/vnd.ms-excel',
+            'application/csv',
+            'text/csv',
         ]
         upload = request.data.get("file", None)  # 设置默认值None
         if not upload:
@@ -130,14 +130,14 @@ class GroupViewSet(BaseViewSet):
                     'message': 'ContentType Not Support!',
                 }
             )
-        user_resource = GroupResource()
+        group_resource = GroupResource()
         dataset = Dataset()
         imported_data = dataset.load(upload.read())
-        result = user_resource.import_data(
+        result = group_resource.import_data(
             dataset, dry_run=True, tenant_id=tenant.id
         )  # Test the data import
         if not result.has_errors() and not result.has_validation_errors():
-            user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
+            group_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
             return Response(
                 {'error': Code.OK.value, 'message': json.dumps(result.totals)}
             )
@@ -183,10 +183,10 @@ class GroupViewSet(BaseViewSet):
 
         qs = Group.objects.filter(**kwargs).order_by('id')
         data = GroupResource().export(qs)
-        export_data = data.xlsx
+        export_data = data.csv
         content_type = 'application/octet-stream'
         response = HttpResponse(export_data, content_type=content_type)
         date_str = datetime.datetime.now().strftime('%Y-%m-%d')
-        filename = '%s-%s.%s' % ('Group', date_str, 'xlsx')
+        filename = '%s-%s.%s' % ('Group', date_str, 'csv')
         response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
         return response
