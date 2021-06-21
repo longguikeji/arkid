@@ -13,6 +13,7 @@ class App(BaseModel):
     description = models.TextField(blank=True, null=True)
     type = models.CharField(max_length=128, verbose_name=_('App Type'))
     data = models.JSONField(blank=True, default=dict)
+    auth_tmpl = models.TextField(blank=True, null=True, default='')
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'

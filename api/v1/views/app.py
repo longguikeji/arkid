@@ -1,17 +1,22 @@
 
 from .base import BaseViewSet
+from common.code import Code
+from rest_framework.response import Response
 
 from app.models import (
     App
 )
 from api.v1.serializers.app import (
-    AppSerializer, AppListSerializer
+    AppSerializer, AppListSerializer, AddAuthTmplSerializer
 )
 from common.paginator import DefaultListPaginator
 from openapi.utils import extend_schema
 from drf_spectacular.utils import PolymorphicProxySerializer
 from runtime import get_app_runtime
+from rest_framework.decorators import action
+from oauth2_provider.models import Application
 from drf_spectacular.utils import extend_schema_view
+
 
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='AppPolymorphicProxySerializer',
@@ -81,3 +86,36 @@ class AppViewSet(BaseViewSet):
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
+
+
+    @extend_schema(
+        request=AddAuthTmplSerializer,
+        responses=AddAuthTmplSerializer,
+    )
+    @action(detail=True, methods=['post'])
+    def add_auth_tmpl(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        app_uuid = self.kwargs['pk']
+        app = App.active_objects.filter(tenant=tenant, uuid=app_uuid).first()
+        tmpl = request.data.get('html')
+
+        if not app:
+            return {
+                'error': Code.ADD_AUTH_TMPL_ERROR,
+                'message': 'No app found'
+            }
+        app.auth_tmpl = tmpl
+        app.save()
+
+        auth_app = Application.objects.filter(name=app.id).first()
+        if not auth_app:
+            return {
+                'error': Code.ADD_AUTH_TMPL_ERROR,
+                'message': 'No oauth app found'
+            }
+        auth_app.custom_template = tmpl
+        auth_app.save()
+        return Response({
+            'error': Code.OK.value
+        })
