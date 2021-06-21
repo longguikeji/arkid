@@ -1,6 +1,7 @@
 from django.http import Http404
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema_view
 # from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 from webhook.models import (
@@ -10,11 +11,19 @@ from api.v1.serializers.webhook import (
     WebHookSerializer
 )
 from common.paginator import DefaultListPaginator
-from drf_spectacular.utils import extend_schema
+from openapi.utils import extend_schema
 from .base import BaseViewSet
 
+@extend_schema_view(
+    list=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    create=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+)
 @extend_schema(
-    tags = ['webhook']
+    tags = ['webhook'],
 )
 class WebHookViewSet(BaseViewSet):
 

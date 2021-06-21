@@ -10,7 +10,8 @@ from api.v1.serializers.group import (
 )
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+from openapi.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view, OpenApiParameter
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -23,6 +24,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 @extend_schema_view(
     list=extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses=GroupSerializer,
         parameters=[
             OpenApiParameter(
@@ -34,15 +36,24 @@ from django.http import HttpResponse, HttpResponseRedirect
         ],
     ),
     create=extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=GroupCreateRequestSerializer,
         responses=GroupSerializer,
     ),
     retrieve=extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses=GroupSerializer,
     ),
     update=extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=GroupSerializer,
         responses=GroupSerializer,
+    ),
+    destroy=extend_schema(
+        roles=['tenant admin', 'global admin'],
+    ),
+    partial_update=extend_schema(
+        roles=['tenant admin', 'global admin'],
     ),
 )
 @extend_schema(tags=['group'])
@@ -58,6 +69,7 @@ class GroupViewSet(BaseViewSet):
 
     serializer_class = GroupSerializer
     pagination_class = DefaultListPaginator
+
 
     def get_queryset(self):
         context = self.get_serializer_context()
@@ -77,6 +89,7 @@ class GroupViewSet(BaseViewSet):
         qs = Group.valid_objects.filter(**kwargs).order_by('id')
         return qs
 
+
     def get_object(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
@@ -90,6 +103,7 @@ class GroupViewSet(BaseViewSet):
         return obj
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=GroupImportSerializer,
         responses=GroupImportSerializer,
     )
@@ -156,6 +170,7 @@ class GroupViewSet(BaseViewSet):
             )
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
     )
     @action(detail=False, methods=['get'])

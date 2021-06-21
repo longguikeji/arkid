@@ -5,12 +5,13 @@ from rest_framework import generics
 from openapi.utils import extend_schema
 from rest_framework.response import Response
 from tenant.models import (
-    Tenant,
+    Tenant, TenantConfig,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
     UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
-    UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer,
+    UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer, TenantConfigSerializer,
+    UserNameLoginRequestSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -22,10 +23,15 @@ from common.code import Code
 from .base import BaseViewSet
 from app.models import App
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from drf_spectacular.utils import extend_schema_view
 from django.urls import reverse
 from common import loginpage as lp
 
-
+@extend_schema_view(
+    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+)
 @extend_schema(tags=['tenant'])
 class TenantViewSet(BaseViewSet):
 
@@ -44,17 +50,18 @@ class TenantViewSet(BaseViewSet):
         elif self.action == 'username_register':
             return UserNameRegisterRequestSerializer
         elif self.action == 'login':
-            return UserNameRegisterRequestSerializer
+            return UserNameLoginRequestSerializer
         return TenantSerializer
 
     @extend_schema(
+        roles=['general user', 'tenant admin', 'global admin'],
         summary=_('get tenant list'),
         action_type='list'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @extend_schema(summary=_('update tenant'))
+    @extend_schema(roles=['tenant admin', 'global admin'], summary=_('update tenant'))
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
@@ -76,24 +83,69 @@ class TenantViewSet(BaseViewSet):
     def runtime(self):
         return get_app_runtime()
 
-    @extend_schema(responses=UserNameLoginResponseSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserNameLoginResponseSerializer)
     @action(detail=True, methods=['post'])
     def login(self, request, pk):
         tenant: Tenant = self.get_object()
-
+        # 账户信息
         username = request.data.get('username')
         password = request.data.get('password')
-
+        ip = self.get_client_ip(request)
+        # 图片验证码信息
+        login_config = self.get_login_config(tenant.uuid)
+        is_open_authcode = login_config.get('is_open_authcode', False)
+        error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
         user = User.active_objects.filter(
             username=username,
         ).first()
 
         if not user or not user.check_password(password):
-            return JsonResponse(data={
+            data = {
                 'error': Code.USERNAME_PASSWORD_MISMATCH.value,
                 'message': _('username or password is not correct'),
-            })
-
+            }
+            if is_open_authcode is True:
+                # 记录当前ip的错误次数
+                self.mark_user_login_failed(ip)
+                # 取得密码错误次数
+                password_error_count = self.get_password_error_count(ip)
+                if password_error_count >= error_number_open_authcode:
+                    data['is_need_refresh'] = True
+                else:
+                    data['is_need_refresh'] = False
+            else:
+                data['is_need_refresh'] = False
+            return JsonResponse(data=data)
+        # 进入图片验证码判断
+        if is_open_authcode is True:
+            # 取得密码错误次数
+            password_error_count = self.get_password_error_count(ip)
+            # 如果密码错误的次数超过了规定的次数，则需要图片验证码
+            if password_error_count >= error_number_open_authcode:
+                check_code = request.data.get('code', '')
+                key = request.data.get('code_filename', '')
+                if check_code == '':
+                    return JsonResponse(data={
+                        'error': Code.CODE_EXISTS_ERROR.value,
+                        'message': _('code is not exists'),
+                        'is_need_refresh': False,
+                    })
+                if key == '':
+                    return JsonResponse(data={
+                        'error': Code.CODE_FILENAME_EXISTS_ERROR.value,
+                        'message': _('code_filename is not exists'),
+                        'is_need_refresh': False,
+                    })
+                code = self.runtime.cache_provider.get(key)
+                if code and str(code).upper() == str(check_code).upper():
+                    pass
+                else:
+                    return JsonResponse(data={
+                        'error': Code.AUTHCODE_ERROR.value,
+                        'message': _('code error'),
+                        'is_need_refresh': False,
+                    })
+        # 获取权限
         has_tenant_admin_perm = tenant.has_admin_perm(user)
 
         # if not has_tenant_admin_perm:
@@ -112,7 +164,32 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
-    @extend_schema(responses=MobileLoginResponseSerializer)
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+    def get_password_error_count(self, ip, check_str='login'):
+        key = f'{ip}-{check_str}'
+        data = self.runtime.cache_provider.get(key)
+        if data is None:
+            return 0
+        return int(data)
+
+    def mark_user_login_failed(self, ip, check_str='login'):
+        key = f'{ip}-{check_str}'
+        runtime = get_app_runtime()
+        data = runtime.cache_provider.get(key)
+        if data is None:
+            v = 1
+        else:
+            v = int(data) + 1
+        self.runtime.cache_provider.set(key, v, 86400)
+
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=MobileLoginResponseSerializer)
     @action(detail=True, methods=['post'])
     def mobile_login(self, request, pk):
         tenant = self.get_object()
@@ -170,7 +247,7 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
-    @extend_schema(responses=MobileRegisterResponseSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=MobileRegisterResponseSerializer)
     @action(detail=True, methods=['post'])
     def mobile_register(self, request, pk):
         mobile = request.data.get('mobile')
@@ -185,7 +262,6 @@ class TenantViewSet(BaseViewSet):
                 'message': _('SMS Code not match'),
             })
 
-
         user_exists = User.active_objects.filter(
             Q(username=mobile) | Q(mobile=mobile)
         ).exists()
@@ -199,7 +275,7 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) == False:
+        if self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -222,7 +298,7 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
-    @extend_schema(responses=UserNameRegisterResponseSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserNameRegisterResponseSerializer)
     @action(detail=True, methods=['post'])
     def username_register(self, request, pk):
         username = request.data.get('username')
@@ -241,7 +317,7 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) == False:
+        if self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -296,30 +372,58 @@ class TenantViewSet(BaseViewSet):
         serializer = self.get_serializer(objs, many=True)
         return Response(serializer.data)
 
-    def login_form(self, tenant_uuid):
+    def get_login_config(self, tenant_uuid):
+        # 获取基础配置信息
+        result = {
+            'is_open_authcode': False,
+            'error_number_open_authcode': 0
+        }
+        tenantconfig = TenantConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
+        if tenantconfig:
+            result = tenantconfig.data
+        return result
+
+    def login_form(self, request, tenant_uuid):
+        login_config = self.get_login_config(tenant_uuid)
+        is_open_authcode = login_config.get('is_open_authcode', False)
+        error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
+        ip = self.get_client_ip(request)
+        # 根据配置信息生成表单
+        items = [
+            lp.LoginFormItem(
+                type='text',
+                name='username',
+                placeholder='用户名',
+            ),
+            lp.LoginFormItem(
+                type='password',
+                name='password',
+                placeholder='密码',
+            ),
+        ]
+        params = {
+            'username': 'username',
+            'password': 'password'
+        }
+        if is_open_authcode is True:
+            password_error_count = self.get_password_error_count(ip)
+            if password_error_count >= error_number_open_authcode:
+                items.append(lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='图片验证码',
+                ))
+                params['code'] = 'code'
+                params['code_filename'] = 'code_filename'
         return lp.LoginForm(
             label='密码登录',
-            items=[
-                lp.LoginFormItem(
-                    type='text',
-                    name='username',
-                    placeholder='用户名',
-                ),
-                lp.LoginFormItem(
-                    type='password',
-                    name='password',
-                    placeholder='密码',
-                )
-            ],
+            items=items,
             submit=lp.Button(
                 label='登录',
                 http=lp.ButtonHttp(
                     url=reverse("api:tenant-login", args=[tenant_uuid, ]),
                     method='post',
-                    params={
-                        'username': 'username',
-                        'password': 'password'
-                    }
+                    params=params
                 )
             ),
         )
@@ -379,7 +483,7 @@ class TenantViewSet(BaseViewSet):
                 ),
                 lp.LoginFormItem(
                     type='password',
-                    name='repassword',
+                    name='checkpassword',
                     placeholder='密码确认',
                 ),
                 lp.LoginFormItem(
@@ -408,7 +512,7 @@ class TenantViewSet(BaseViewSet):
                         'mobile': 'mobile',
                         'password': 'password',
                         'code': 'code',
-                        'repassword': 'repassword',
+                        'checkpassword': 'checkpassword',
                     }
                 )
             ),
@@ -430,7 +534,7 @@ class TenantViewSet(BaseViewSet):
                 ),
                 lp.LoginFormItem(
                     type='password',
-                    name='repassword',
+                    name='checkpassword',
                     placeholder='密码确认',
                 ),
             ],
@@ -442,14 +546,14 @@ class TenantViewSet(BaseViewSet):
                     params={
                         'username': 'username',
                         'password': 'password',
-                        'repassword': 'repassword',
+                        'checkpassword': 'checkpassword',
                     }
                 )
             ),
         )
 
 
-@extend_schema(tags=['tenant'])
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
 class TenantSlugView(generics.RetrieveAPIView):
 
     serializer_class = TenantSerializer
@@ -461,3 +565,30 @@ class TenantSlugView(generics.RetrieveAPIView):
         obj = Tenant.active_objects.filter(slug=slug).order_by('id').first()
         serializer = self.get_serializer(obj)
         return Response(serializer.data)
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantConfigView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantConfigSerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).order_by('id').first()
+        if tenant:
+            tenantconfig, is_created = TenantConfig.objects.get_or_create(
+                is_del=False,
+                tenant=tenant,
+            )
+            if is_created is True:
+                tenantconfig.data = {
+                    'is_open_authcode': False,
+                    'error_number_open_authcode': 0
+                }
+                tenantconfig.save()
+            return tenantconfig
+        else:
+            return []

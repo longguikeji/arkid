@@ -25,3 +25,4 @@ password: **admin**
 
 ## Helm Charts
 
+文档地址：https://www.yuque.com/longguikeji/arkid2/

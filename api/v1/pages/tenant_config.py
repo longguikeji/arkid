@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'profile'
+tag = 'tenant_config'
 path = tag
-name = '个人资料'
+name = '登录配置'
 
 extend_schema_tags(
     tag,
@@ -10,23 +10,19 @@ extend_schema_tags(
     {
         'type':'form_page',
         'init': {
-            'path': '/api/v1/user/info/',
+            'path': '/api/v1/tenant/{tenant_uuid}/config/',
             'method': 'get'
         },
         'item': {
             'update': {
                 'write': {
-                    'path': '/api/v1/user/info/',
+                    'path': '/api/v1/tenant/{tenant_uuid}/config/',
                     'method': 'patch'
                 },
                 'read': {
-                    'path': '/api/v1/user/info/',
+                    'path': '/api/v1/tenant/{tenant_uuid}/config/',
                     'method': 'get'
                 }
-            },
-            'password': {
-                'path': '/api/v1/user/update_password/',
-                'method': 'post'
             }
         }
     }

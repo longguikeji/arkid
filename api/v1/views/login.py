@@ -1,33 +1,26 @@
-from api.v1.views import user
-from django.http import Http404
+
 from django.http.response import JsonResponse
-from rest_framework import generics, viewsets
+from rest_framework import generics
 from django.utils.translation import gettext_lazy as _
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-import runtime
 from openapi.utils import extend_schema
 
-from tenant.models import (
-    Tenant,
-)
 from api.v1.serializers.login import LoginSerializer
 from api.v1.serializers.tenant import TenantSerializer
 from common.paginator import DefaultListPaginator
 from runtime import get_app_runtime
-from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
-from rest_framework.authtoken.models import Token
 from inventory.models import User
 from common.code import Code
 from django.urls import reverse
 from common import loginpage as lp
 
-@extend_schema(tags = ['uc'])
+
+@extend_schema(tags=['uc'])
 class LoginView(generics.CreateAPIView):
 
     serializer_class = LoginSerializer
     pagination_class = DefaultListPaginator
-    
+
     @property
     def runtime(self):
         return get_app_runtime()
@@ -64,7 +57,7 @@ class LoginView(generics.CreateAPIView):
 
         cache_code = self.runtime.cache_provider.get(mobile)
 
-        if isinstance(cache_code,bytes):
+        if isinstance(cache_code, bytes):
             cache_code = str(cache_code, 'utf-8')
 
         if code != '123456' and (code is None or cache_code != code):
@@ -82,7 +75,7 @@ class LoginView(generics.CreateAPIView):
                 'token': token.key,
                 'tenants': [
                     TenantSerializer(o).data for o in user.tenants.all()
-                ]        
+                ]
             }
         })
 
@@ -99,7 +92,7 @@ class LoginView(generics.CreateAPIView):
                     type='password',
                     name='password',
                     placeholder='密码',
-                )
+                ),
             ],
             submit=lp.Button(
                 label='登录',
@@ -107,20 +100,20 @@ class LoginView(generics.CreateAPIView):
                     url=reverse('api:login'),
                     method='post',
                     params={
-                        'username':'username',
-                        'password':'password'
+                        'username': 'username',
+                        'password': 'password'
                     }
                 )
             ),
         )
 
 
-@extend_schema(tags = ['uc'])
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['uc'])
 class MobileLoginView(LoginView):
 
     serializer_class = LoginSerializer
     pagination_class = DefaultListPaginator
-    
+
     @property
     def runtime(self):
         return get_app_runtime()
@@ -131,7 +124,7 @@ class MobileLoginView(LoginView):
 
         cache_code = self.runtime.cache_provider.get(mobile)
 
-        if isinstance(cache_code,bytes):
+        if isinstance(cache_code, bytes):
             cache_code = str(cache_code, 'utf-8')
 
         if code != '123456' and (code is None or cache_code != code):
@@ -149,10 +142,9 @@ class MobileLoginView(LoginView):
                 'token': token.key,
                 'tenants': [
                     TenantSerializer(o).data for o in user.tenants.all()
-                ]        
+                ]
             }
         })
-
 
     def login_form(self):
         return lp.LoginForm(
@@ -186,8 +178,8 @@ class MobileLoginView(LoginView):
                     url=reverse('api:mobile-login'),
                     method='post',
                     params={
-                        'mobile':'mobile',
-                        'code':'code'
+                        'mobile': 'mobile',
+                        'code': 'code'
                     }
                 )
             ),

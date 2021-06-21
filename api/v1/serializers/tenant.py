@@ -1,8 +1,9 @@
-from tenant.models import Tenant
+from tenant.models import Tenant, TenantConfig
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Permission
+
 
 class TenantSerializer(BaseDynamicFieldModelSerializer):
 
@@ -53,10 +54,19 @@ class MobileRegisterResponseSerializer(serializers.Serializer):
 
     token = serializers.CharField(label=_('token'))
 
+
 class UserNameRegisterRequestSerializer(serializers.Serializer):
 
     username = serializers.CharField(label=_('用户名'))
     password = serializers.CharField(label=_('密码'))
+
+
+class UserNameLoginRequestSerializer(serializers.Serializer):
+
+    username = serializers.CharField(label=_('用户名'))
+    password = serializers.CharField(label=_('密码'))
+    code = serializers.CharField(label=_('图片验证码'), required=False)
+    code_filename = serializers.CharField(label=_('图片验证码的文件名称'), required=False)
 
 
 class UserNameRegisterResponseSerializer(serializers.Serializer):
@@ -68,3 +78,26 @@ class UserNameLoginResponseSerializer(serializers.Serializer):
 
     token = serializers.CharField(label=_('token'))
     has_tenant_admin_perm = serializers.ListField(child=serializers.CharField(), label=_('权限列表'))
+
+
+class ConfigSerializer(serializers.Serializer):
+    is_open_authcode = serializers.BooleanField(label=_('是否打开验证码'))
+    error_number_open_authcode = serializers.IntegerField(label=_('错误几次提示输入验证码'))
+
+
+class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
+
+    data = ConfigSerializer()
+
+    class Meta:
+        model = TenantConfig
+
+        fields = (
+            'data',
+        )
+
+    def update(self, instance, validated_data):
+        data = validated_data.get('data')
+        instance.data = data
+        instance.save()
+        return instance

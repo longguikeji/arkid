@@ -11,6 +11,6 @@ class AliyunSMSConfigSerializer(serializers.Serializer):
 
 
 class AliyunSMSSerializer(ExtensionBaseSerializer):
-    
+
     data = AliyunSMSConfigSerializer(label=_('data'))
     

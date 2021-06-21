@@ -3,9 +3,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from runtime import get_app_runtime
+from openapi.utils import extend_schema
 from api.v1.serializers.storage import UploadSerializer
 
 
+@extend_schema(tags = ['upload'], roles=['general user', 'tenant admin', 'global admin'])
 class UploadAPIView(APIView):
 
     serializer_class = UploadSerializer
