@@ -1,4 +1,5 @@
 import json
+import io
 import datetime
 from inventory.models import Group
 from api.v1.serializers.group import (
@@ -132,7 +133,7 @@ class GroupViewSet(BaseViewSet):
             )
         group_resource = GroupResource()
         dataset = Dataset()
-        imported_data = dataset.load(upload.read())
+        imported_data = dataset.load(io.StringIO(upload.read().decode('utf-8')), format='csv')
         result = group_resource.import_data(
             dataset, dry_run=True, tenant_id=tenant.id
         )  # Test the data import
@@ -181,7 +182,7 @@ class GroupViewSet(BaseViewSet):
             'tenant': tenant,
         }
 
-        qs = Group.objects.filter(**kwargs).order_by('id')
+        qs = Group.active_objects.filter(**kwargs).order_by('id')
         data = GroupResource().export(qs)
         export_data = data.csv
         content_type = 'application/octet-stream'

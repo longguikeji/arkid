@@ -45,7 +45,6 @@ class UserResource(resources.ModelResource):
         user.save()
         return super().after_import_row(row, row_result, row_number=row_number, **kwargs)
 
-
 class GroupResource(resources.ModelResource):
     class Meta:
         model = Group
@@ -63,13 +62,8 @@ class GroupResource(resources.ModelResource):
             'created',
         )
 
-
-    def after_import_row(self, row, row_result, row_number, **kwargs):
-        group_id = row_result.object_id
-        group = Group.active_objects.get(id=group_id)
+    def after_import_instance(self, instance, new, row_number, **kwargs):
         from tenant.models import Tenant
         tenant_id = kwargs.get('tenant_id')
-        tenant = Tenant.active_objects.get(id=tenant_id)
-        group.tenant_id = tenant 
-        group.save()
-        return super().after_import_row(row, row_result, row_number=row_number, **kwargs)
+        instance.tenant_id = tenant_id 
+        return super().after_import_instance(instance, new, row_number=row_number, **kwargs)
