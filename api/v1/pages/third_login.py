@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'tenant_config'
+tag = 'third_login'
 path = tag
-name = '租户配置'
+name = '第三方登录配置'
 
 extend_schema_tags(
     tag,

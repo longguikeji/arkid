@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'tenant_config'
+tag = 'all_users'
 path = tag
-name = '租户配置'
+name = '用户列表'
 
 extend_schema_tags(
     tag,

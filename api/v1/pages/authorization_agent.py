@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'tenant_config'
+tag = 'authorization_agent'
 path = tag
-name = '租户配置'
+name = '身份源代理'
 
 extend_schema_tags(
     tag,

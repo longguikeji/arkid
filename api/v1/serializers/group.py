@@ -136,6 +136,7 @@ class GroupListResponseSerializer(GroupSerializer):
 
 
 class GroupCreateRequestSerializer(GroupSerializer):
+    
     class Meta:
         model = Group
         fields = (
@@ -143,7 +144,6 @@ class GroupCreateRequestSerializer(GroupSerializer):
             'name',
             'parent_uuid',
             'permissions',
-            'children',
             'set_permissions',
         )
 

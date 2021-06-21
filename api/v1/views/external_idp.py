@@ -13,6 +13,8 @@ from .base import BaseViewSet
 from external_idp.models import ExternalIdp
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from common.code import Code
 
 ExternalIdpPolymorphicProxySerializer = PolymorphicProxySerializer(
@@ -31,6 +33,8 @@ class ExternalIdpViewSet(BaseViewSet):
 
     model = ExternalIdp
 
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = ExternalIdpSerializer
     pagination_class = DefaultListPaginator
 

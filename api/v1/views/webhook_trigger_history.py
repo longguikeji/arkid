@@ -1,7 +1,6 @@
-from django.http import Http404
-from rest_framework import generics, viewsets
-from rest_framework.permissions import IsAuthenticated
 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from webhook.models import (
     WebHookTriggerHistory
 )
@@ -22,11 +21,8 @@ from .base import BaseViewSet
 )
 class WebHookTriggerHistoryViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
-
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = WebHookTriggerHistorySerializer
     pagination_class = DefaultListPaginator

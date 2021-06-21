@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'tenant_config'
+tag = 'custom_process'
 path = tag
-name = '租户配置'
+name = '自定义流程'
 
 extend_schema_tags(
     tag,

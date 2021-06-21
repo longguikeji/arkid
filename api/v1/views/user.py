@@ -5,7 +5,7 @@ from django.http import Http404
 from django.http.response import JsonResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.contrib.auth.models import User as DUser
@@ -26,6 +26,7 @@ from api.v1.serializers.user import (
     PasswordRequestSerializer,
     LogoutSerializer,
     UserManageTenantsSerializer,
+    
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -55,13 +56,10 @@ from drf_spectacular.openapi import OpenApiTypes
 )
 class UserViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     model = User
-
-    permission_classes = []
-    authentication_classes = []
 
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
@@ -141,8 +139,8 @@ class UserViewSet(BaseViewSet):
         context = self.get_serializer_context()
         tenant = context['tenant']
         support_content_types = [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/vnd.ms-excel',
+            'application/csv',
+            'text/csv',
         ]
         upload = request.data.get("file", None)  # 设置默认值None
         if not upload:
@@ -211,11 +209,11 @@ class UserViewSet(BaseViewSet):
         }
         qs = User.objects.filter(**kwargs).order_by('id')
         data = UserResource().export(qs)
-        export_data = data.xlsx
+        export_data = data.csv
         content_type = 'application/octet-stream'
         response = HttpResponse(export_data, content_type=content_type)
         date_str = datetime.datetime.now().strftime('%Y-%m-%d')
-        filename = '%s-%s.%s' % ('User', date_str, 'xlsx')
+        filename = '%s-%s.%s' % ('User', date_str, 'csv')
         response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
         return response
 
@@ -231,13 +229,10 @@ class UserViewSet(BaseViewSet):
 @extend_schema(tags=['user-app'])
 class UserAppViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     model = App
-
-    permission_classes = []
-    authentication_classes = []
 
     serializer_class = AppBaseInfoSerializer
     pagination_class = DefaultListPaginator
@@ -292,8 +287,8 @@ class UserTokenView(generics.CreateAPIView):
 
 @extend_schema(tags=['user'])
 class UpdatePasswordView(generics.CreateAPIView):
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PasswordRequestSerializer
 
@@ -348,7 +343,7 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
 
 @extend_schema(tags=['user'])
 class UserBindInfoView(generics.RetrieveAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserBindInfoSerializer
 
@@ -401,6 +396,8 @@ class UserBindInfoView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserLogoutView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(responses=LogoutSerializer)
     def get(self, request):
@@ -419,6 +416,8 @@ class UserLogoutView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserManageTenantsView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserManageTenantsSerializer)
     def get(self, request):

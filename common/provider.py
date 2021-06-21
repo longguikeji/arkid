@@ -17,15 +17,14 @@ class EmailProvider:
 
 
 class AuthCodeProvider:
-    @abstractmethod
-    def get_authcode_picture(self):
-        pass
-
     def generate_key(self):
-        key = '{}.jpg'.format(
+        key = '{}.png'.format(
             uuid.uuid4().hex
         )
         return key
+    @abstractmethod
+    def get_authcode_picture(self):
+        pass
 
 
 class StorageProvider:

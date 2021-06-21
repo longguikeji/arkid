@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'tenant_config'
+tag = 'data_synchronism'
 path = tag
-name = '租户配置'
+name = '数据同步'
 
 extend_schema_tags(
     tag,

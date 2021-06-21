@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'tenant_config'
+tag = 'permission_group'
 path = tag
-name = '租户配置'
+name = '权限分组'
 
 extend_schema_tags(
     tag,
