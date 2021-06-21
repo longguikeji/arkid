@@ -43,6 +43,8 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 
+import re
+
 
 @extend_schema_view(
     list=extend_schema(roles=['tenant admin', 'global admin'], responses=UserListResponsesSerializer),
@@ -114,6 +116,18 @@ class UserViewSet(BaseViewSet):
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
             })
+        email = request.data.get('email')
+        if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
+            return JsonResponse(data={
+                'error': Code.EMAIL_FROMAT_ERROR.value,
+                'message': _('email format error'),
+            })
+        mobile = request.data.get('mobile')
+        if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
+            return JsonResponse(data={
+                'error': Code.MOBILE_FROMAT_ERROR.value,
+                'message': _('mobile format error'),
+            })
         return super(UserViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
@@ -122,6 +136,18 @@ class UserViewSet(BaseViewSet):
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
+            })
+        email = request.data.get('email')
+        if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
+            return JsonResponse(data={
+                'error': Code.EMAIL_FROMAT_ERROR.value,
+                'message': _('email format error'),
+            })
+        mobile = request.data.get('mobile')
+        if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
+            return JsonResponse(data={
+                'error': Code.MOBILE_FROMAT_ERROR.value,
+                'message': _('mobile format error'),
             })
         return super(UserViewSet, self).update(request, *args, **kwargs)
 
@@ -164,6 +190,21 @@ class UserViewSet(BaseViewSet):
         result = user_resource.import_data(
             dataset, dry_run=True, tenant_id=tenant.id
         )  # Test the data import
+        for item in dataset:
+            email = str(item[2])
+            mobile = str(item[3])
+            print(email)
+            print(mobile)
+            if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
+                return JsonResponse(data={
+                    'error': Code.EMAIL_FROMAT_ERROR.value,
+                    'message': _('email format error:{}'.format(email)),
+                })
+            if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
+                return JsonResponse(data={
+                    'error': Code.MOBILE_FROMAT_ERROR.value,
+                    'message': _('mobile format error:{}'.format(mobile)),
+                })
         if not result.has_errors() and not result.has_validation_errors():
             user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
             return Response(
@@ -341,6 +382,20 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+    def update(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
+            return JsonResponse(data={
+                'error': Code.EMAIL_FROMAT_ERROR.value,
+                'message': _('email format error'),
+            })
+        mobile = request.data.get('mobile')
+        if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
+            return JsonResponse(data={
+                'error': Code.MOBILE_FROMAT_ERROR.value,
+                'message': _('mobile format error'),
+            })
+        return super(UserInfoView, self).update(request, *args, **kwargs)
 
 @extend_schema(tags=['user'])
 class UserBindInfoView(generics.RetrieveAPIView):

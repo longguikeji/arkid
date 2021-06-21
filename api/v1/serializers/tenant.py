@@ -88,7 +88,8 @@ class ConfigSerializer(serializers.Serializer):
     is_open_register_limit = serializers.BooleanField(label=_('是否限制注册用户'))
     register_time_limit = serializers.IntegerField(label=_('用户注册时间限制(分钟)'))
     register_count_limit = serializers.IntegerField(label=_('用户注册数量限制'))
-    serializers.ListField(child=serializers.CharField(), label=_('允许上传的文件格式'))
+    upload_file_format = serializers.ListField(child=serializers.CharField(), label=_('允许上传的文件格式'))
+    close_page_auto_logout = serializers.BooleanField(label=_('是否关闭页面自动退出'))
 
 
 class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
