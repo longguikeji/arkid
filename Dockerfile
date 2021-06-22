@@ -11,7 +11,7 @@ RUN set -eux; \
     # verify that the binary works
     gosu nobody true; \
     rm -rf /var/lib/apt/lists/*; \
-    groupadd -r arker && useradd -r -g arker arker; \
+    groupadd -r arkid && useradd -r -g arkid arkid; \
     setcap 'cap_net_bind_service=+ep' /usr/local/bin/python3.8
 
 ADD requirements.txt ./

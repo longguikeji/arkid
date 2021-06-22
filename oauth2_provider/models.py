@@ -226,6 +226,11 @@ class ApplicationManager(models.Manager):
 class Application(AbstractApplication):
     objects = ApplicationManager()
 
+    custom_template = models.TextField(
+        blank=True,
+        help_text=_("Application custom authorization html page"),
+    )
+
     class Meta(AbstractApplication.Meta):
         swappable = "OAUTH2_PROVIDER_APPLICATION_MODEL"
 
