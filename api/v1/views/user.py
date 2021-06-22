@@ -149,6 +149,12 @@ class UserViewSet(BaseViewSet):
                 'error': Code.MOBILE_FROMAT_ERROR.value,
                 'message': _('mobile format error'),
             })
+        user = self.get_object()
+        if password and user.valid_password(password) is True:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_CHECK_ERROR.value,
+                'message': _('password is already in use'),
+            })
         return super(UserViewSet, self).update(request, *args, **kwargs)
 
     def check_password(self, pwd):
@@ -358,6 +364,11 @@ class UpdatePasswordView(generics.CreateAPIView):
             return JsonResponse(data={
                 'error': Code.OLD_PASSWORD_ERROR.value,
                 'message': _('old password error'),
+            })
+        if password and user.valid_password(password) is True:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_CHECK_ERROR.value,
+                'message': _('password is already in use'),
             })
         try:
             user.set_password(password)

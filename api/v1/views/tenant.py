@@ -18,7 +18,7 @@ from common.paginator import DefaultListPaginator
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
-from inventory.models import Group, User
+from inventory.models import Group, User, UserPassword
 from common.code import Code
 from .base import BaseViewSet
 from app.models import App
@@ -173,7 +173,7 @@ class TenantViewSet(BaseViewSet):
         #     })
 
         token = user.refresh_token()
-
+        UserPassword.valid_objects.get_or_create(user=user, password=user.md5_password(password))
         return JsonResponse(data={
             'error': Code.OK.value,
             'data': {
