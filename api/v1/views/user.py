@@ -1,4 +1,5 @@
 import json
+import io
 import datetime
 from django.db import models
 from django.http import Http404
@@ -165,8 +166,8 @@ class UserViewSet(BaseViewSet):
         context = self.get_serializer_context()
         tenant = context['tenant']
         support_content_types = [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/vnd.ms-excel',
+            'application/csv',
+            'text/csv',
         ]
         upload = request.data.get("file", None)  # 设置默认值None
         if not upload:
@@ -185,7 +186,7 @@ class UserViewSet(BaseViewSet):
             )
         user_resource = UserResource()
         dataset = Dataset()
-        imported_data = dataset.load(upload.read())
+        imported_data = dataset.load(io.StringIO(upload.read().decode('utf-8')), format='csv')
         result = user_resource.import_data(
             dataset, dry_run=True, tenant_id=tenant.id
         )  # Test the data import
@@ -248,13 +249,13 @@ class UserViewSet(BaseViewSet):
         kwargs = {
             'tenants__in': [tenant],
         }
-        qs = User.objects.filter(**kwargs).order_by('id')
+        qs = User.active_objects.filter(**kwargs).order_by('id')
         data = UserResource().export(qs)
-        export_data = data.xlsx
+        export_data = data.csv
         content_type = 'application/octet-stream'
         response = HttpResponse(export_data, content_type=content_type)
         date_str = datetime.datetime.now().strftime('%Y-%m-%d')
-        filename = '%s-%s.%s' % ('User', date_str, 'xlsx')
+        filename = '%s-%s.%s' % ('User', date_str, 'csv')
         response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
         return response
 

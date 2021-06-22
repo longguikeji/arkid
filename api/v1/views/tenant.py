@@ -553,7 +553,7 @@ class TenantViewSet(BaseViewSet):
                 ),
                 lp.LoginFormItem(
                     type='password',
-                    name='repassword',
+                    name='checkpassword',
                     placeholder='密码确认',
                 ),
                 lp.LoginFormItem(
@@ -582,7 +582,7 @@ class TenantViewSet(BaseViewSet):
                         'mobile': 'mobile',
                         'password': 'password',
                         'code': 'code',
-                        'repassword': 'repassword',
+                        'checkpassword': 'checkpassword',
                     }
                 )
             ),
@@ -604,7 +604,7 @@ class TenantViewSet(BaseViewSet):
                 ),
                 lp.LoginFormItem(
                     type='password',
-                    name='repassword',
+                    name='checkpassword',
                     placeholder='密码确认',
                 ),
             ],
@@ -616,7 +616,7 @@ class TenantViewSet(BaseViewSet):
                     params={
                         'username': 'username',
                         'password': 'password',
-                        'repassword': 'repassword',
+                        'checkpassword': 'checkpassword',
                     }
                 )
             ),
