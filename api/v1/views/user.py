@@ -105,17 +105,6 @@ class UserViewSet(BaseViewSet):
         )
 
     def create(self, request, *args, **kwargs):
-        password = request.data.get('password')
-        if not password:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_NONE_ERROR.value,
-                'message': _('password is empty'),
-            })
-        if self.check_password(password) is False:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                'message': _('password strength not enough'),
-            })
         email = request.data.get('email')
         if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
             return JsonResponse(data={
@@ -131,12 +120,6 @@ class UserViewSet(BaseViewSet):
         return super(UserViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        password = request.data.get('password')
-        if password and self.check_password(password) is False:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                'message': _('password strength not enough'),
-            })
         email = request.data.get('email')
         if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
             return JsonResponse(data={
@@ -149,18 +132,7 @@ class UserViewSet(BaseViewSet):
                 'error': Code.MOBILE_FROMAT_ERROR.value,
                 'message': _('mobile format error'),
             })
-        user = self.get_object()
-        if password and user.valid_password(password) is True:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_CHECK_ERROR.value,
-                'message': _('password is already in use'),
-            })
         return super(UserViewSet, self).update(request, *args, **kwargs)
-
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True
 
     @extend_schema(
         roles=['tenant admin', 'global admin'],
