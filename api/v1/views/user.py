@@ -1,11 +1,12 @@
 import json
+import io
 import datetime
 from django.db import models
 from django.http import Http404
 from django.http.response import JsonResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.contrib.auth.models import User as DUser
@@ -26,12 +27,14 @@ from api.v1.serializers.user import (
     PasswordRequestSerializer,
     LogoutSerializer,
     UserManageTenantsSerializer,
+    
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from app.models import App
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from openapi.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view
 from rest_framework.decorators import action
 from tablib import Dataset
 from collections import defaultdict
@@ -41,19 +44,23 @@ from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 
 
-@extend_schema_view(list=extend_schema(responses=UserListResponsesSerializer))
+@extend_schema_view(
+    list=extend_schema(roles=['tenant admin', 'global admin'], responses=UserListResponsesSerializer),
+    retrieve=extend_schema(roles=['tenant admin', 'global admin']),
+    create=extend_schema(roles=['tenant admin', 'global admin']),
+    update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+)
 @extend_schema(
     tags=['user'],
 )
 class UserViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     model = User
-
-    permission_classes = []
-    authentication_classes = []
 
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
@@ -102,7 +109,7 @@ class UserViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) == False:
+        if self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -111,7 +118,7 @@ class UserViewSet(BaseViewSet):
 
     def update(self, request, *args, **kwargs):
         password = request.data.get('password')
-        if password and self.check_password(password) == False:
+        if password and self.check_password(password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -124,6 +131,7 @@ class UserViewSet(BaseViewSet):
         return True
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         request=UserImportSerializer,
         responses=UserImportSerializer,
     )
@@ -132,8 +140,8 @@ class UserViewSet(BaseViewSet):
         context = self.get_serializer_context()
         tenant = context['tenant']
         support_content_types = [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/vnd.ms-excel',
+            'application/csv',
+            'text/csv',
         ]
         upload = request.data.get("file", None)  # 设置默认值None
         if not upload:
@@ -152,7 +160,7 @@ class UserViewSet(BaseViewSet):
             )
         user_resource = UserResource()
         dataset = Dataset()
-        imported_data = dataset.load(upload.read())
+        imported_data = dataset.load(io.StringIO(upload.read().decode('utf-8')), format='csv')
         result = user_resource.import_data(
             dataset, dry_run=True, tenant_id=tenant.id
         )  # Test the data import
@@ -190,6 +198,7 @@ class UserViewSet(BaseViewSet):
             )
 
     @extend_schema(
+        roles=['tenant admin', 'global admin'],
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
     )
     @action(detail=False, methods=['get'])
@@ -199,27 +208,32 @@ class UserViewSet(BaseViewSet):
         kwargs = {
             'tenants__in': [tenant],
         }
-        qs = User.objects.filter(**kwargs).order_by('id')
+        qs = User.active_objects.filter(**kwargs).order_by('id')
         data = UserResource().export(qs)
-        export_data = data.xlsx
+        export_data = data.csv
         content_type = 'application/octet-stream'
         response = HttpResponse(export_data, content_type=content_type)
         date_str = datetime.datetime.now().strftime('%Y-%m-%d')
-        filename = '%s-%s.%s' % ('User', date_str, 'xlsx')
+        filename = '%s-%s.%s' % ('User', date_str, 'csv')
         response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
         return response
 
 
+@extend_schema_view(
+    list=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    create=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+)
 @extend_schema(tags=['user-app'])
 class UserAppViewSet(BaseViewSet):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     model = App
-
-    permission_classes = []
-    authentication_classes = []
 
     serializer_class = AppBaseInfoSerializer
     pagination_class = DefaultListPaginator
@@ -274,43 +288,42 @@ class UserTokenView(generics.CreateAPIView):
 
 @extend_schema(tags=['user'])
 class UpdatePasswordView(generics.CreateAPIView):
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PasswordRequestSerializer
 
-    @extend_schema(responses=PasswordSerializer)
+    @extend_schema(
+        roles=['tenant admin', 'global admin', 'general user'],
+        responses=PasswordSerializer
+    )
     def post(self, request):
         uuid = request.data.get('uuid', '')
         password = request.data.get('password', '')
+        old_password = request.data.get('old_password', '')
+        user = User.objects.filter(uuid=uuid).first()
         is_succeed = True
+        if not user:
+            return JsonResponse(data={
+                'error': Code.USER_EXISTS_ERROR.value,
+                'message': _('user does not exist'),
+            })
+        if password and self.check_password(password) is False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        if password and user.check_password(old_password) is False:
+            return JsonResponse(data={
+                'error': Code.OLD_PASSWORD_ERROR.value,
+                'message': _('old password error'),
+            })
         try:
-            user = User.objects.filter(uuid=uuid).first()
             user.set_password(password)
             user.save()
         except Exception as e:
             is_succeed = False
         return Response(is_succeed)
-
-
-@extend_schema(tags=['user'])
-class UserInfoView(generics.RetrieveUpdateAPIView):
-    permission_classes = [AllowAny]
-    authentication_classes = [ExpiringTokenAuthentication]
-    serializer_class = UserInfoSerializer
-
-    @extend_schema(responses=UserInfoSerializer)
-    def get_object(self):
-        return self.request.user
-
-    def update(self, request, *args, **kwargs):
-        password = request.data.get('password')
-        if password and self.check_password(password) == False:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                'message': _('password strength not enough'),
-            })
-        return super(UserInfoView, self).update(request, *args, **kwargs)
 
     def check_password(self, pwd):
         if pwd.isdigit() or len(pwd) < 8:
@@ -318,13 +331,24 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
         return True
 
 
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+class UserInfoView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+    serializer_class = UserInfoSerializer
+
+    @extend_schema(responses=UserInfoSerializer)
+    def get_object(self):
+        return self.request.user
+
+
 @extend_schema(tags=['user'])
 class UserBindInfoView(generics.RetrieveAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserBindInfoSerializer
 
-    @extend_schema(responses=UserBindInfoSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserBindInfoSerializer)
     def get(self, request):
         from extension_root.feishu.models import FeishuUser
         from extension_root.gitee.models import GiteeUser
@@ -373,6 +397,8 @@ class UserBindInfoView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserLogoutView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(responses=LogoutSerializer)
     def get(self, request):
@@ -391,11 +417,14 @@ class UserLogoutView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserManageTenantsView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
-    @extend_schema(responses=UserManageTenantsSerializer)
+    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserManageTenantsSerializer)
     def get(self, request):
         user = request.user
         if user and user.username:
             return Response({
-                "manage_tenants": user.manage_tenants()
+                "manage_tenants": user.manage_tenants(),
+                "is_global_admin": user.is_superuser,
             })

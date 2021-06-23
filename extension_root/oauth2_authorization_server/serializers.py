@@ -2,11 +2,12 @@ from rest_framework import serializers
 from oauth2_provider.models import Application
 # from django.utils.translation import gettext_lazy as _
 from common.serializer import AppBaseSerializer
+from api.v1.fields.custom import create_hint_field
 
 
 class OAuth2ConfigSerializer(serializers.Serializer):
 
-    redirect_uris = serializers.URLField()
+    redirect_uris = create_hint_field(serializers.URLField)(hint="请填写正确的url格式")
     client_type = serializers.ChoiceField(choices=Application.CLIENT_TYPES, default=Application.CLIENT_PUBLIC)
     grant_type = serializers.ChoiceField(choices=Application.GRANT_TYPES, default=Application.GRANT_AUTHORIZATION_CODE)
 
@@ -18,14 +19,14 @@ class OAuth2ConfigSerializer(serializers.Serializer):
 
 
 class OAuth2AppSerializer(AppBaseSerializer):
-
+    url = create_hint_field(serializers.URLField)(hint="请填写正确的url格式")
     # protocol_data = OAuth2ConfigSerializer()
     data = OAuth2ConfigSerializer(label='数据')
 
 
 class OIDCConfigSerializer(serializers.Serializer):
 
-    redirect_uris = serializers.URLField()
+    redirect_uris = create_hint_field(serializers.URLField)(hint="请填写正确的url格式")
     client_type = serializers.ChoiceField(choices=Application.CLIENT_TYPES, default=Application.CLIENT_PUBLIC)
     grant_type = serializers.ChoiceField(choices=Application.GRANT_TYPES, default=Application.GRANT_AUTHORIZATION_CODE)
     algorithm = serializers.ChoiceField(choices=Application.ALGORITHM_TYPES, default=Application.NO_ALGORITHM)

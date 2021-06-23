@@ -4,6 +4,9 @@ from tenant.models import Tenant
 import urllib.parse
 
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.template.response import TemplateResponse
+from django.template import Template
+from  django.template import RequestContext
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
@@ -188,6 +191,29 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         log.debug("Success url for the request: {0}".format(self.success_url))
         return self.redirect(self.success_url, application)
 
+    def post(self, request, *args, **kwargs):
+        if 'credentials' in request.session and request.session['credentials']:
+            credentials = request.session.get("credentials")
+            scopes = " ".join(request.session.get("scopes", []))
+            allow = True if "allow" in request.POST else False
+
+            client_id = credentials.get("client_id")
+            application = get_application_model().objects.get(client_id=client_id)
+            try:
+                uri, headers, body, status = self.create_authorization_response(
+                    request=self.request, scopes=scopes, credentials=credentials, allow=allow
+                )
+            except OAuthToolkitError as error:
+                return self.error_response(error, application)
+
+            self.success_url = uri
+            log.debug("Success url for the request: {0}".format(self.success_url))
+            request.session.pop('credentials')
+            request.session.pop('scopes')
+            return self.redirect(self.success_url, application)
+        else:
+            return super().post(request, *args, **kwargs)
+
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
@@ -258,7 +284,22 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         except OAuthToolkitError as error:
             return self.error_response(error, application)
 
-        return self.render_to_response(self.get_context_data(**kwargs))
+        if not application.custom_template:
+            return self.render_to_response(self.get_context_data(**kwargs))
+        else:
+            credentials.pop('request')  # object can not json serialize
+            request.session['credentials'] = credentials
+            request.session['scopes'] = scopes
+
+            template = Template(application.custom_template) 
+            rendered_template = template.render(RequestContext(request))
+            print(rendered_template)
+            return HttpResponse(rendered_template)
+
+            # return TemplateResponse(request, template, {})
+
+            # response = HttpResponse(application.custom_template)
+            # return response 
 
     def redirect(self, redirect_to, application, token=None):
 

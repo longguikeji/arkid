@@ -95,6 +95,7 @@ class AppListSerializer(AppSerializer):
             'url',
             'type',
             'description',
+            'auth_tmpl',
         )
 
 
@@ -242,3 +243,10 @@ class AppProvisioningSerializer(BaseDynamicFieldModelSerializer):
         # provision.save()
 
         return provision
+
+class AddAuthTmplSerializer(serializers.Serializer):
+
+    uuid = serializers.CharField(write_only=True)
+    html = serializers.CharField(write_only=True)
+    error = serializers.CharField(read_only=True)
+    message = serializers.CharField(read_only=True)

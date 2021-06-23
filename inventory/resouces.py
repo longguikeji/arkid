@@ -19,7 +19,7 @@ class UserResource(resources.ModelResource):
             'country',  # not null
             'city',  # not null
             'job_title',  # not null
-            'tenants',
+            # 'tenants',
         )
         exclude = (
             'is_superuser',  # not null
@@ -35,17 +35,15 @@ class UserResource(resources.ModelResource):
             'avatar',  # not null
         )
 
-    def before_import_row(self, row, row_number=None, **kwargs):
-        """
-        Override to add additional logic. Does nothing by default.
-        """
-        # row['tenants'] = kwargs.get('tenant_id', None)
-        origin_tenants = row.get('tenants')
-        if not origin_tenants:
-            tenant_id = kwargs.get('tenant_id', None)
-            row['tenants'] = tenant_id
-        super().before_import_row(row, row_number, **kwargs)
-
+    def after_import_row(self, row, row_result, row_number, **kwargs):
+        user_id = row_result.object_id
+        user = User.active_objects.get(id=user_id)
+        from tenant.models import Tenant
+        tenant_id = kwargs.get('tenant_id')
+        tenant = Tenant.active_objects.get(id=tenant_id)
+        user.tenants.add(tenant)
+        user.save()
+        return super().after_import_row(row, row_result, row_number=row_number, **kwargs)
 
 class GroupResource(resources.ModelResource):
     class Meta:
@@ -53,7 +51,7 @@ class GroupResource(resources.ModelResource):
         fields = (
             'id',  # not null
             'name',
-            'tenant',
+            # 'tenant',
             'parent',
         )
         exclude = (
@@ -64,11 +62,8 @@ class GroupResource(resources.ModelResource):
             'created',
         )
 
-    def before_import_row(self, row, row_number=None, **kwargs):
-        """
-        Override to add additional logic. Does nothing by default.
-        """
-        # row['tenants'] = kwargs.get('tenant_id', None)
-        tenant_id = kwargs.get('tenant_id', None)
-        row['tenant'] = tenant_id
-        super().before_import_row(row, row_number, **kwargs)
+    def after_import_instance(self, instance, new, row_number, **kwargs):
+        from tenant.models import Tenant
+        tenant_id = kwargs.get('tenant_id')
+        instance.tenant_id = tenant_id 
+        return super().after_import_instance(instance, new, row_number=row_number, **kwargs)

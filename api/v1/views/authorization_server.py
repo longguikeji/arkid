@@ -3,12 +3,12 @@ from rest_framework import viewsets
 from api.v1.serializers.authorization_server import AuthorizationServerSerializer
 from rest_framework.decorators import action
 from runtime import get_app_runtime
-from drf_spectacular.utils import extend_schema
+from openapi.utils import extend_schema
 from common.paginator import DefaultListPaginator
 
 
 @extend_schema(
-    tags = ['authorizationServer']
+    roles=['tenant admin', 'global admin'], tags = ['authorizationServer']
 )
 class AuthorizationServerViewSet(viewsets.ReadOnlyModelViewSet):
 

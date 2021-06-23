@@ -13,7 +13,7 @@ extend_schema_tags(
             'path': '/api/v1/user/info/',
             'method': 'get'
         },
-        'page': {
+        'item': {
             'update': {
                 'write': {
                     'path': '/api/v1/user/info/',
@@ -23,6 +23,10 @@ extend_schema_tags(
                     'path': '/api/v1/user/info/',
                     'method': 'get'
                 }
+            },
+            'password': {
+                'path': '/api/v1/user/update_password/',
+                'method': 'post'
             }
         }
     }

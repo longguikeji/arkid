@@ -1,14 +1,15 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from common.provider import AuthCodeProvider
 from .constants import KEY
+from io import BytesIO
 
 import random
 import string
+import base64
 
 
 class AuthCodeIdpProvider(AuthCodeProvider):
 
-    upload_file_path: str
 
     def __init__(self) -> None:
         super().__init__()
@@ -19,7 +20,6 @@ class AuthCodeIdpProvider(AuthCodeProvider):
         ).first()
 
         assert o is not None
-        self.upload_file_path = o.data.get('upload_file_path')
 
     def get_random_char(self):
         '''
@@ -58,7 +58,10 @@ class AuthCodeIdpProvider(AuthCodeProvider):
             draw.point((x, y), fill=self.get_random_color(50, 150))
         # 模糊处理
         image = image.filter(ImageFilter.BLUR)
-        # 保存图片
         key = self.generate_key()
-        image.save('{}/{}'.format(self.upload_file_path, key))
-        return char_4, key
+        buf = BytesIO()
+        # 将图片保存在内存中，文件类型为png
+        image.save(buf, 'png')
+        byte_data = buf.getvalue()
+        base64_str = base64.b64encode(byte_data)
+        return key, char_4, base64_str
