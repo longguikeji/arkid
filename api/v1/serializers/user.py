@@ -22,11 +22,6 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         hint="请填写正确的电话格式",
         required=False,
     )
-    password = create_password_field(serializers.CharField)(
-        hint="密码长度大于等于8位的字母数字组合",
-        write_only=True,
-        required=True,
-    )
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='id',
@@ -37,11 +32,6 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
     permissions = serializers.SerializerMethodField()
 
-    # set_groups = serializers.ListField(
-    #     child=serializers.CharField(),
-    #     write_only=True,
-    # )
-
     set_permissions = create_foreign_key_field(serializers.ListField)(
         model_cls=Permission,
         field_name='id',
@@ -49,11 +39,6 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         child=serializers.CharField(),
         write_only=True,
     )
-
-    # set_permissions = serializers.ListField(
-    #     child=serializers.CharField(),
-    #     write_only=True,
-    # )
 
     class Meta:
         model = User
@@ -75,7 +60,6 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'set_groups',
             'set_permissions',
             'bind_info',
-            'password',
         )
 
         extra_kwargs = {
@@ -103,7 +87,6 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     def create(self, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
-        password = validated_data.pop('password', None)
 
         u: User = User.objects.create(
             **validated_data,
@@ -124,14 +107,12 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
                 p = Permission.objects.filter(uuid=p_uuid).first()
                 if p is not None:
                     u.user_permissions.add(p)
-        u.set_password(password)
         u.save()
         return u
 
     def update(self, instance, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
-        password = validated_data.pop('password', None)
         if set_groups is not None:
             instance.groups.clear()
             for g_uuid in set_groups:
@@ -148,8 +129,6 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
         for key, value in validated_data.items():
             setattr(instance, key, value)
-        if password:
-            instance.set_password(password)
         instance.save()
         return instance
 
@@ -196,6 +175,17 @@ class PasswordRequestSerializer(serializers.Serializer):
         hint="密码长度大于等于8位的字母数字组合",
         write_only=True,
         required=False,
+    )
+
+
+class ResetPasswordRequestSerializer(serializers.Serializer):
+
+    uuid = serializers.CharField(label=_('用户uuid'))
+    password = create_password_field(serializers.CharField)(
+        label=_('密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
     )
 
 
