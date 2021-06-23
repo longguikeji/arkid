@@ -27,7 +27,7 @@ from api.v1.serializers.user import (
     PasswordRequestSerializer,
     LogoutSerializer,
     UserManageTenantsSerializer,
-    
+    ResetPasswordRequestSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -354,6 +354,49 @@ class UpdatePasswordView(generics.CreateAPIView):
             return False
         return True
 
+
+@extend_schema(tags=['user'])
+class ResetPasswordView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = ResetPasswordRequestSerializer
+
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        responses=PasswordSerializer
+    )
+    def post(self, request):
+        uuid = request.data.get('uuid', '')
+        password = request.data.get('password', '')
+        user = User.objects.filter(uuid=uuid).first()
+        is_succeed = True
+        if not user:
+            return JsonResponse(data={
+                'error': Code.USER_EXISTS_ERROR.value,
+                'message': _('user does not exist'),
+            })
+        if password and self.check_password(password) is False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        if password and user.valid_password(password) is True:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_CHECK_ERROR.value,
+                'message': _('password is already in use'),
+            })
+        try:
+            user.set_password(password)
+            user.save()
+        except Exception as e:
+            is_succeed = False
+        return Response(is_succeed)
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
 
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):

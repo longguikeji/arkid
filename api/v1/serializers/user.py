@@ -178,6 +178,17 @@ class PasswordRequestSerializer(serializers.Serializer):
     )
 
 
+class ResetPasswordRequestSerializer(serializers.Serializer):
+
+    uuid = serializers.CharField(label=_('用户uuid'))
+    password = create_password_field(serializers.CharField)(
+        label=_('密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
+    )
+
+
 class PasswordSerializer(serializers.Serializer):
 
     is_succeed = serializers.BooleanField(label=_('是否修改成功'))
