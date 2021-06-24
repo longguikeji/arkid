@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     'extension_root.miniprogram',
 ]
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
