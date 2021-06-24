@@ -11,7 +11,7 @@ from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
     UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
     UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer, TenantConfigSerializer,
-    UserNameLoginRequestSerializer, TenantPasswordComplexitySerializer,
+    UserNameLoginRequestSerializer, TenantPasswordComplexitySerializer, InitPasswordComplexitySerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -738,6 +738,9 @@ class TenantInitPasswordComplexityView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
+    @extend_schema(
+        responses=InitPasswordComplexitySerializer
+    )
     def get(self, request, tenant_uuid):
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         password_complexity, created = TenantPasswordComplexity.active_objects.get_or_create(
@@ -751,5 +754,4 @@ class TenantInitPasswordComplexityView(generics.RetrieveAPIView):
         ).exclude(id=password_complexity.id).exists() is False:
             password_complexity.is_apply = True
             password_complexity.save()
-        return Response({'error_code':0})
-
+        return Response({'is_succeed': True})

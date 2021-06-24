@@ -69,6 +69,10 @@ class UserNameRegisterRequestSerializer(serializers.Serializer):
     password = serializers.CharField(label=_('密码'))
 
 
+class InitPasswordComplexitySerializer(serializers.Serializer):
+    is_succeed = serializers.BooleanField(label=_('是否成功初始化'))
+
+
 class UserNameLoginRequestSerializer(serializers.Serializer):
 
     username = serializers.CharField(label=_('用户名'))
