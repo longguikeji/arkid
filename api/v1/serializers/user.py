@@ -181,6 +181,7 @@ class PasswordRequestSerializer(serializers.Serializer):
 class ResetPasswordRequestSerializer(serializers.Serializer):
 
     uuid = serializers.CharField(label=_('用户uuid'))
+    tenant_uuid = serializers.CharField(label=_('租户uuid'))
     password = create_password_field(serializers.CharField)(
         label=_('密码'),
         hint="密码长度大于等于8位的字母数字组合",

@@ -1,4 +1,4 @@
-from tenant.models import Tenant, TenantConfig
+from tenant.models import Tenant, TenantConfig, TenantPasswordComplexity
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
@@ -30,6 +30,12 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
         if permission:
             user.user_permissions.add(permission)
+        password_complexity, created = TenantPasswordComplexity.active_objects.get_or_create(
+            is_apply=True,
+            tenant=tenant,
+            title='6-18位字母、数字、特殊字符组合',
+            regular='^(?=.*[A-Za-z])(?=.*\d)(?=.*[~$@$!%*#?&])[A-Za-z\d~$@$!%*#?&]{6,18}$'
+        )
         return tenant
 
 
@@ -108,3 +114,39 @@ class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
         instance.data = data
         instance.save()
         return instance
+
+
+class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
+    regular = serializers.CharField(label=_('正则表达式'))
+    is_apply = serializers.BooleanField(label=_('是否应用'))
+    title = serializers.CharField(label=_('标题'), required=False)
+
+    class Meta:
+        model = TenantPasswordComplexity
+
+        fields = ( 
+            'uuid',
+            'regular',
+            'is_apply',
+            'title',
+        )
+
+        extra_kwargs = {
+            'uuid': {'read_only': True},
+        }
+    
+    def create(self, validated_data):
+        tenant_uuid = self.context['request'].parser_context.get('kwargs').get('tenant_uuid')
+        regular = validated_data.get('regular')
+        is_apply = validated_data.get('is_apply')
+        title = validated_data.get('title')
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        complexity = TenantPasswordComplexity()
+        complexity.tenant = tenant
+        complexity.regular = regular
+        complexity.is_apply = is_apply
+        complexity.title = title
+        complexity.save()
+        if is_apply is True:
+            TenantPasswordComplexity.active_objects.filter(tenant=tenant).exclude(id=complexity.id).update(is_apply=False)
+        return complexity
