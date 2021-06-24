@@ -54,8 +54,8 @@ def provision_app_user(tenant_uuid: str, app_id: int, config_id: int, user_id: i
         print(f'User Provisioning Skiped: {user_id}')
         return
 
-    # cookies = {'sessionid': 'iidk5ugp4myow9jzt4sxb5g8eb5hf3gs'}
-    scim_client = config.get_scim_client()
+    cookies = {'sessionid': 'crzs2tq95u5799j0kc6irw03pqmruikg'}
+    scim_client = config.get_scim_client(cookies=cookies)
     is_exist = user_exists(scim_client, config, user)
     if not is_exist:
         user_id = create_user(scim_client, config, user)

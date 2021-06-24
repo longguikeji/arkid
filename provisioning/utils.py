@@ -79,8 +79,8 @@ def update_user(client: AsyncSCIMClient, c: Config, user: User, user_id: str):
     data = c.get_user_mapped_data(user)
     data.update(
         {
-            "externalId": user.uuid.hex,
-            "id": user_id,
+            # "externalId": user.uuid.hex,
+            # "id": user_id,
             "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
         }
     )
