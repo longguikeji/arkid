@@ -8,7 +8,7 @@ from api.v1.views.login import(
     MobileRegisterView,
 )
 from api.v1.views.tenant import TenantViewSet
-from tenant.models import Tenant
+from tenant.models import Tenant, TenantConfig
 from external_idp.models import ExternalIdp
 from api.v1.serializers.tenant import TenantExtendSerializer
 from system.models import SystemConfig
@@ -28,10 +28,39 @@ class LoginPage(views.APIView):
         if tenant:
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
 
-            data.addForm(model.LOGIN, TenantViewSet().login_form(request, tenant_uuid))
-            data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant_uuid))
-            data.addForm(model.REGISTER, TenantViewSet().mobile_register_form(tenant_uuid))
-            data.addForm(model.REGISTER, TenantViewSet().username_register_form(tenant_uuid))
+            # 获取 tenant的登录注册配置
+            tenant_config = TenantConfig.objects.get(
+                is_del=False,
+                tenant=tenant,
+            )
+            if not tenant_config:
+                username_login_enabled =  True,
+                username_register_enabled =  True,
+                mobile_login_enabled =  True,
+                mobile_register_enabled =  True,
+                native_login_enabled =  False,
+                native_register_enabled =  False,
+            else:
+                username_login_enabled = tenant_config.data.get('username_login_enabled', True)
+                username_register_enabled = tenant_config.data.get('username_register_enabled', True)
+                mobile_login_enabled = tenant_config.data.get('mobile_login_enabled', True)
+                mobile_register_enabled = tenant_config.data.get('mobile_register_enabled', True)
+                native_login_enabled = tenant_config.data.get('native_login_enabled', False)
+                native_register_enabled = tenant_config.data.get('native_register_enabled', False)
+                native_login_field_name = tenant_config.data.get('native_login_field_name')
+
+            if username_login_enabled:
+                data.addForm(model.LOGIN, TenantViewSet().login_form(request, tenant_uuid))
+            if mobile_login_enabled:
+                data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant_uuid))
+            if mobile_register_enabled:
+                data.addForm(model.REGISTER, TenantViewSet().mobile_register_form(tenant_uuid))
+            if username_register_enabled:
+                data.addForm(model.REGISTER, TenantViewSet().username_register_form(tenant_uuid))
+            if native_login_enabled:
+                data.addForm(model.LOGIN, TenantViewSet().native_field_login_form(request, tenant_uuid, native_login_field_name))
+            if native_register_enabled:
+                data.addForm(model.REGISTER, TenantViewSet().native_field_register_form(tenant_uuid, native_login_field_name))
 
             external_idps = ExternalIdp.valid_objects.filter(tenant=tenant)
             for idp in external_idps:
