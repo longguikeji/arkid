@@ -12,7 +12,7 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 from django.contrib.auth.models import User as DUser
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
-from tenant.models import Tenant
+from tenant.models import Tenant, TenantPasswordComplexity
 from inventory.models import User
 from inventory.resouces import UserResource
 from api.v1.serializers.user import (
@@ -171,8 +171,6 @@ class UserViewSet(BaseViewSet):
         for item in dataset:
             email = str(item[2])
             mobile = str(item[3])
-            print(email)
-            print(mobile)
             if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
                 return JsonResponse(data={
                     'error': Code.EMAIL_FROMAT_ERROR.value,
@@ -369,6 +367,7 @@ class ResetPasswordView(generics.CreateAPIView):
     def post(self, request):
         uuid = request.data.get('uuid', '')
         password = request.data.get('password', '')
+        tenant_uuid = request.data.get('tenant_uuid', '')
         user = User.objects.filter(uuid=uuid).first()
         is_succeed = True
         if not user:
@@ -376,7 +375,7 @@ class ResetPasswordView(generics.CreateAPIView):
                 'error': Code.USER_EXISTS_ERROR.value,
                 'message': _('user does not exist'),
             })
-        if password and self.check_password(password) is False:
+        if password and self.check_password(tenant_uuid, password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -393,10 +392,12 @@ class ResetPasswordView(generics.CreateAPIView):
             is_succeed = False
         return Response(is_succeed)
 
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
+    def check_password(self, tenant_uuid, pwd):
+        comlexity = TenantPasswordComplexity.active_objects.filter(is_apply=True).first()
+        if comlexity:
+            return comlexity.check_pwd(pwd)
         return True
+
 
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):

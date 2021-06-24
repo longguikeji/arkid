@@ -5,13 +5,13 @@ from rest_framework import generics
 from openapi.utils import extend_schema
 from rest_framework.response import Response
 from tenant.models import (
-    Tenant, TenantConfig,
+    Tenant, TenantConfig, TenantPasswordComplexity,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
     UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
     UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer, TenantConfigSerializer,
-    UserNameLoginRequestSerializer,
+    UserNameLoginRequestSerializer, TenantPasswordComplexitySerializer, InitPasswordComplexitySerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -680,3 +680,78 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
             return tenantconfig
         else:
             return []
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantPasswordComplexityView(generics.ListCreateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantPasswordComplexitySerializer
+
+    def get_queryset(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        return TenantPasswordComplexity.active_objects.filter(
+            tenant__uuid=tenant_uuid
+        ).order_by('-is_apply')
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantPasswordComplexityDetailView(generics.RetrieveUpdateDestroyAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantPasswordComplexitySerializer
+
+    def get_object(self):
+        uuid = self.kwargs['complexity_uuid']
+        return TenantPasswordComplexity.active_objects.filter(uuid=uuid).first()
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+class TenantCurrentPasswordComplexityView(generics.RetrieveAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantPasswordComplexitySerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        return TenantPasswordComplexity.active_objects.filter(tenant__uuid=tenant_uuid, is_apply=True).first()
+
+    
+    def get(self, request, tenant_uuid):
+        comlexity = TenantPasswordComplexity.active_objects.filter(tenant__uuid=tenant_uuid, is_apply=True).first()
+        if comlexity:
+            serializer = self.get_serializer(comlexity)
+            return Response(serializer.data)
+        else:
+            return Response({})
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+class TenantInitPasswordComplexityView(generics.RetrieveAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    @extend_schema(
+        responses=InitPasswordComplexitySerializer
+    )
+    def get(self, request, tenant_uuid):
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        password_complexity, created = TenantPasswordComplexity.active_objects.get_or_create(
+            tenant=tenant,
+            title='6-18位字母、数字、特殊字符组合',
+            regular='^(?=.*[A-Za-z])(?=.*\d)(?=.*[~$@$!%*#?&])[A-Za-z\d~$@$!%*#?&]{6,18}$'
+        )
+        if TenantPasswordComplexity.active_objects.filter(
+            is_apply=True,
+            tenant=tenant,
+        ).exclude(id=password_complexity.id).exists() is False:
+            password_complexity.is_apply = True
+            password_complexity.save()
+        return Response({'is_succeed': True})
