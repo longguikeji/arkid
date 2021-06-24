@@ -30,7 +30,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
         if permission:
             user.user_permissions.add(permission)
-        password_complexity, created = TenantPasswordComplexity.active_objects.get_or_create(
+        TenantPasswordComplexity.active_objects.get_or_create(
             is_apply=True,
             tenant=tenant,
             title='6-18位字母、数字、特殊字符组合',
@@ -67,10 +67,6 @@ class UserNameRegisterRequestSerializer(serializers.Serializer):
 
     username = serializers.CharField(label=_('用户名'))
     password = serializers.CharField(label=_('密码'))
-
-
-class InitPasswordComplexitySerializer(serializers.Serializer):
-    is_succeed = serializers.BooleanField(label=_('是否成功初始化'))
 
 
 class UserNameLoginRequestSerializer(serializers.Serializer):
