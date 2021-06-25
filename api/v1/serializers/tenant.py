@@ -150,3 +150,14 @@ class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
         if is_apply is True:
             TenantPasswordComplexity.active_objects.filter(tenant=tenant).exclude(id=complexity.id).update(is_apply=False)
         return complexity
+
+
+    def update(self, instance, validated_data):
+        tenant_uuid = self.context['request'].parser_context.get('kwargs').get('tenant_uuid')
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        is_apply = validated_data.get('is_apply')
+        if is_apply is True:
+            TenantPasswordComplexity.active_objects.filter(tenant=tenant).exclude(id=instance.id).update(is_apply=False)
+        instance.__dict__.update(validated_data)
+        instance.save()
+        return instance
