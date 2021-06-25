@@ -621,10 +621,13 @@ class TenantViewSet(BaseViewSet):
                     'message': _('a large number of registrations in a short time'),
                 })
         tenant = self.get_object()
+        kwargs = {field_name:field_value}
+        if field_name != 'username':
+            kwargs.update(username=field_value)
         user, created = User.objects.get_or_create(
             is_del=False,
             is_active=True,
-            **{field_name:field_value},
+            **kwargs,
         )
         user.tenants.add(tenant)
         user.set_password(password)
