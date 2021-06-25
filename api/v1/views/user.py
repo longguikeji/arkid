@@ -393,7 +393,7 @@ class ResetPasswordView(generics.CreateAPIView):
         return Response(is_succeed)
 
     def check_password(self, tenant_uuid, pwd):
-        comlexity = TenantPasswordComplexity.active_objects.filter(is_apply=True).first()
+        comlexity = TenantPasswordComplexity.active_objects.filter(tenant__uuid=tenant_uuid, is_apply=True).first()
         if comlexity:
             return comlexity.check_pwd(pwd)
         return True
