@@ -509,4 +509,5 @@ class UserManageTenantsView(generics.RetrieveAPIView):
             return Response({
                 "manage_tenants": user.manage_tenants(),
                 "is_global_admin": user.is_superuser,
+                "is_platform_user": user.is_platform_user,
             })

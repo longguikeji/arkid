@@ -40,6 +40,21 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         return tenant
 
 
+class TenantExtendSerializer(BaseDynamicFieldModelSerializer):
+
+    class Meta:
+        model = Tenant
+
+        fields = (
+            'uuid',
+            'name',
+            'slug',
+            'icon',
+            'created',
+            'password_complexity',
+        )
+
+
 class MobileLoginRequestSerializer(serializers.Serializer):
 
     mobile = serializers.CharField(label=_('手机号'))

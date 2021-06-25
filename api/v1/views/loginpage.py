@@ -10,7 +10,7 @@ from api.v1.views.login import(
 from api.v1.views.tenant import TenantViewSet
 from tenant.models import Tenant
 from external_idp.models import ExternalIdp
-from api.v1.serializers.tenant import TenantSerializer
+from api.v1.serializers.tenant import TenantExtendSerializer
 
 
 @extend_schema(tags=['login page'])
@@ -25,7 +25,7 @@ class LoginPage(views.APIView):
 
         data = model.LoginPages()
         if tenant:
-            data.setTenant(TenantSerializer(instance=tenant).data)
+            data.setTenant(TenantExtendSerializer(instance=tenant).data)
 
             data.addForm(model.LOGIN, TenantViewSet().login_form(request, tenant_uuid))
             data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant_uuid))
