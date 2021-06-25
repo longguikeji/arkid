@@ -1,8 +1,11 @@
-from tenant.models import Tenant
+from tenant.models import Tenant, TenantConfig
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Permission
+from api.v1.fields.custom import (
+    create_enum_field,
+)
 
 class TenantSerializer(BaseDynamicFieldModelSerializer):
 
@@ -53,10 +56,19 @@ class MobileRegisterResponseSerializer(serializers.Serializer):
 
     token = serializers.CharField(label=_('token'))
 
+
 class UserNameRegisterRequestSerializer(serializers.Serializer):
 
     username = serializers.CharField(label=_('用户名'))
     password = serializers.CharField(label=_('密码'))
+
+
+class UserNameLoginRequestSerializer(serializers.Serializer):
+
+    username = serializers.CharField(label=_('用户名'))
+    password = serializers.CharField(label=_('密码'))
+    code = serializers.CharField(label=_('图片验证码'), required=False)
+    code_filename = serializers.CharField(label=_('图片验证码的文件名称'), required=False)
 
 
 class UserNameRegisterResponseSerializer(serializers.Serializer):
@@ -68,3 +80,30 @@ class UserNameLoginResponseSerializer(serializers.Serializer):
 
     token = serializers.CharField(label=_('token'))
     has_tenant_admin_perm = serializers.ListField(child=serializers.CharField(), label=_('权限列表'))
+
+
+class ConfigSerializer(serializers.Serializer):
+    is_open_authcode = serializers.BooleanField(label=_('是否打开验证码'))
+    error_number_open_authcode = serializers.IntegerField(label=_('错误几次提示输入验证码'))
+    is_open_register_limit = serializers.BooleanField(label=_('是否限制注册用户'))
+    register_time_limit = serializers.IntegerField(label=_('用户注册时间限制(分钟)'))
+    register_count_limit = serializers.IntegerField(label=_('用户注册数量限制'))
+    serializers.ListField(child=serializers.CharField(), label=_('允许上传的文件格式'))
+
+
+class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
+
+    data = ConfigSerializer()
+
+    class Meta:
+        model = TenantConfig
+
+        fields = (
+            'data',
+        )
+
+    def update(self, instance, validated_data):
+        data = validated_data.get('data')
+        instance.data = data
+        instance.save()
+        return instance

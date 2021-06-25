@@ -1,4 +1,3 @@
-
 from django.http.response import JsonResponse
 from rest_framework import generics
 from django.utils.translation import gettext_lazy as _
@@ -19,31 +18,26 @@ class AuthCodeGenerateView(generics.RetrieveAPIView):
         responses=AuthCodeResponseSerializer
     )
     def get(self, request):
-
         if self.runtime.authcode_provider is None:
             return JsonResponse(data={
                 'error': Code.AUTHCODE_PROVIDER_IS_MISSING.value,
                 'message': _('Please enable a authcode Provider extension'),
             })
-        if self.runtime.storage_provider is None:
-            return JsonResponse(data={
-                'error': Code.LOCAL_STORAGE_PROVIDER_IS_MISSING.value,
-                'message': _('Please enable a local_storage Provider extension'),
-            })
-        char_4, key = self.runtime.authcode_provider.get_authcode_picture()
-        # 存当前验证码
-        self.runtime.cache_provider.set(key, char_4, 180)
+        key, char_4, base64_str = self.runtime.authcode_provider.get_authcode_picture()
+        # 存当前验证码(验证码会缓存1天)
+        self.runtime.cache_provider.set(key, char_4, 86400)
         return JsonResponse(data={
-            'key': key
+            'key': key,
+            'base64': str(base64_str,'utf8')
         })
 
 
-@ extend_schema(tags=['authcode'])
+@extend_schema(tags=['authcode'])
 class AuthCodeCheckView(generics.CreateAPIView):
 
     serializer_class = AuthCodeSerializer
 
-    @ property
+    @property
     def runtime(self):
         return get_app_runtime()
 

@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'app'
+tag = 'app_list'
 path = tag
 name = '应用管理'
 

@@ -36,7 +36,7 @@ from drf_spectacular.utils import OpenApiParameter
 
 
 class AutoSchema(ViewInspector):
-    
+
     def get_operation(self, path, path_regex, method, registry: ComponentRegistry):
         self.registry = registry
         self.path = path
@@ -82,6 +82,10 @@ class AutoSchema(ViewInspector):
         if action_type:
             operation['action_type'] = action_type
 
+        roles = self.get_roles()
+        if roles:
+            operation['roles'] = roles
+
         return operation
 
     def get_action(self):
@@ -94,7 +98,9 @@ class AutoSchema(ViewInspector):
     def get_action_type(self):
         return ''
 
-    
+    def get_roles(self):
+        return []
+
     def _map_serializer_field(self, field, direction):
         meta = self._get_serializer_field_meta(field)
 
@@ -302,7 +308,6 @@ class AutoSchema(ViewInspector):
         warn(f'could not resolve serializer field "{field}". defaulting to "string"')
         return append_meta(build_basic_type(OpenApiTypes.STR), meta)
 
-    
     def _get_serializer_field_meta(self, field):
         if not isinstance(field, serializers.Field):
             warn(
@@ -325,9 +330,7 @@ class AutoSchema(ViewInspector):
                 default = list(default)
             meta['default'] = default
         if field.label:
-          meta['title'] = str(field.label)
+            meta['title'] = str(field.label)
         if field.help_text:
             meta['description'] = str(field.help_text)
         return meta
-
-    

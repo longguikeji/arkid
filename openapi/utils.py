@@ -10,7 +10,9 @@ from rest_framework.serializers import Serializer
 from rest_framework.settings import api_settings
 
 from drf_spectacular.drainage import error, get_view_methods, set_override, warn
-def extend_schema_tags(name, description, page = None):
+
+
+def extend_schema_tags(name, description, page=None):
     tag = {
         'name': name,
         'description': description,
@@ -18,6 +20,7 @@ def extend_schema_tags(name, description, page = None):
     if page:
         tag['page'] = page
     SPECTACULAR_SETTINGS.get('TAGS').append(tag)
+
 
 def extend_schema(
         operation_id=None,
@@ -35,6 +38,7 @@ def extend_schema(
         versions=None,
         examples: Optional[List[OpenApiExample]] = None,
         action=None,
+        roles=[],
         action_type=None
 ):
     """
@@ -152,16 +156,21 @@ def extend_schema(
                 if tags is not None and is_in_scope(self):
                     return tags
                 return super().get_tags()
-            
+
             def get_action(self):
                 if action and is_in_scope(self):
                     return action
                 return super().get_action()
-            
+
             def get_action_type(self):
                 if action_type and is_in_scope(self):
                     return action_type
                 return ''
+
+            def get_roles(self):
+                if roles and is_in_scope(self):
+                    return roles
+                return []
 
         if inspect.isclass(f):
             # either direct decoration of views, or unpacked @api_view from OpenApiViewExtension
