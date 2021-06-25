@@ -123,17 +123,22 @@ class ConfigSerializer(serializers.Serializer):
     upload_file_format = serializers.ListField(
         child=serializers.CharField(), label=_('允许上传的文件格式'))
     close_page_auto_logout = serializers.BooleanField(label=_('是否关闭页面自动退出'))
-    username_login_enabled = serializers.BooleanField(label=_('是否打开用户名登录'))
-    username_register_enabled = serializers.BooleanField(label=_('是否打开用户名注册'))
+    # username_login_enabled = serializers.BooleanField(label=_('是否打开用户名登录'))
+    # username_register_enabled = serializers.BooleanField(label=_('是否打开用户名注册'))
     mobile_login_enabled = serializers.BooleanField(label=_('是否打开手机号登录'))
     mobile_register_enabled = serializers.BooleanField(label=_('是否打开手机号注册'))
     need_complete_profile_after_register = serializers.BooleanField(label=_('注册完成后是否跳转到完善用户资料页面'))
     can_skip_complete_profile = serializers.BooleanField(label=_('完善用户资料页面是否可以跳过'))
+
     native_login_field_name = serializers.CharField(label=_('用于登录的原生字段名'))
+    native_login_field_label = serializers.CharField(label=_('用于登录的原生字段标签'))
     native_login_enabled = serializers.BooleanField(label=_('开启用原生字段登录'))
     native_register_enabled = serializers.BooleanField(label=_('开启用原生字段注册'))
+
     custom_login_field_uuid = serializers.CharField(label=_('用于登录的自定义字段UUID'))
+    custom_login_field_label = serializers.CharField(label=_('用于登录的自定义字段标签'))
     custom_login_enabled = serializers.BooleanField(label=_('开启用自定义字段登录'))
+    custom_register_enabled = serializers.BooleanField(label=_('开启用自定义字段注册'))
 
 
 
