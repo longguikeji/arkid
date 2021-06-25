@@ -369,7 +369,8 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) is False:
+        tenant = self.get_object()
+        if self.check_password(tenant.uuid, password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -386,7 +387,6 @@ class TenantViewSet(BaseViewSet):
                     'error': Code.REGISTER_FAST_ERROR.value,
                     'message': _('a large number of registrations in a short time'),
                 })
-        tenant = self.get_object()
         user, created = User.objects.get_or_create(
             is_del=False,
             is_active=True,
@@ -406,9 +406,10 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
+    def check_password(self, tenant_uuid, pwd):
+        comlexity = TenantPasswordComplexity.active_objects.filter(tenant__uuid=tenant_uuid, is_apply=True).first()
+        if comlexity:
+            return comlexity.check_pwd(pwd)
         return True
 
     @action(detail=True, methods=['GET'])
@@ -713,8 +714,8 @@ class TenantPasswordComplexityDetailView(generics.RetrieveUpdateDestroyAPIView):
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
 class TenantCurrentPasswordComplexityView(generics.RetrieveAPIView):
 
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = []
+    authentication_classes = []
 
     serializer_class = TenantPasswordComplexitySerializer
 

@@ -78,6 +78,7 @@ class User(AbstractUser, BaseModel):
         related_name="user_permission_set",
         related_query_name="user_permission",
     )
+    is_platform_user = models.BooleanField(default=False, verbose_name='是否是平台用户')
 
     _password = None
 

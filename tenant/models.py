@@ -20,6 +20,15 @@ class Tenant(BaseModel):
 
     def has_admin_perm(self, user: 'User'):
         return user.is_superuser or user.user_permissions.filter(codename=self.admin_perm_code).count() > 0
+    
+    @property
+    def password_complexity(self):
+        result = {}
+        comlexity = TenantPasswordComplexity.active_objects.filter(tenant=self, is_apply=True).first()
+        if comlexity:
+            result['title'] = comlexity.title
+            result['regular']= comlexity.regular
+        return result
 
 
 class TenantConfig(BaseModel):
