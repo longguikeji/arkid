@@ -34,8 +34,14 @@ class LoginSerializer(serializers.Serializer):
         )
 
 
-
 class UserNameRegisterRequestSerializer(serializers.Serializer):
 
     username = serializers.CharField(label=_('用户名'))
+    password = serializers.CharField(label=_('密码'))
+
+
+class MobileRegisterRequestSerializer(serializers.Serializer):
+
+    mobile = serializers.CharField(label=_('手机号'))
+    code = serializers.CharField(label=_('验证码'))
     password = serializers.CharField(label=_('密码'))

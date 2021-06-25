@@ -3,7 +3,10 @@ from ..serializers import loginpage as lp
 from common import loginpage as model
 from openapi.utils import extend_schema
 from django.http.response import JsonResponse
-from api.v1.views.login import LoginView, MobileLoginView
+from api.v1.views.login import(
+    LoginView, MobileLoginView, UserNameRegisterView,
+    MobileRegisterView,
+)
 from api.v1.views.tenant import TenantViewSet
 from tenant.models import Tenant
 from external_idp.models import ExternalIdp
@@ -44,6 +47,8 @@ class LoginPage(views.APIView):
         else:
             data.addForm(model.LOGIN, LoginView().login_form())
             data.addForm(model.LOGIN, MobileLoginView().login_form())
+            data.addForm(model.REGISTER, UserNameRegisterView().username_register_form())
+            data.addForm(model.REGISTER, MobileRegisterView().mobile_register_form())
 
         if data.getPage(model.REGISTER):
             data.addBottom(model.LOGIN, model.Button(

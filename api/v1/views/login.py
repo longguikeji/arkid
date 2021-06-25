@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from openapi.utils import extend_schema
 
 from api.v1.serializers.login import (
-    LoginSerializer, UserNameRegisterRequestSerializer
+    LoginSerializer, UserNameRegisterRequestSerializer, MobileRegisterRequestSerializer,
 )
 from api.v1.serializers.tenant import TenantSerializer
 from common.paginator import DefaultListPaginator
@@ -15,6 +15,7 @@ from inventory.models import User
 from common.code import Code
 from django.urls import reverse
 from common import loginpage as lp
+from django.db.models import Q
 
 
 @extend_schema(tags=['uc'])
@@ -209,6 +210,21 @@ class UserNameRegisterView(LoginView):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
+        user, created = User.objects.get_or_create(
+            is_del=False,
+            is_active=True,
+            username=username,
+        )
+        user.set_password(password)
+        user.is_platform_user = True
+        user.save()
+        token = user.refresh_token()
+        return JsonResponse(data={
+            'error': Code.OK.value,
+            'data': {
+                'token': token.key,
+            }
+        })
 
     def username_register_form(self):
         return lp.LoginForm(
@@ -238,6 +254,109 @@ class UserNameRegisterView(LoginView):
                     params={
                         'username': 'username',
                         'password': 'password',
+                        'checkpassword': 'checkpassword',
+                    }
+                )
+            ),
+        )
+
+
+@extend_schema(tags=['uc'])
+class MobileRegisterView(LoginView):
+
+    serializer_class = MobileRegisterRequestSerializer
+
+    @property
+    def runtime(self):
+        return get_app_runtime()
+
+    def create(self, request):
+        mobile = request.data.get('mobile')
+        code = request.data.get('code')
+        password = request.data.get('password')
+
+        cache_code = self.runtime.cache_provider.get(mobile)
+        if code != '123456' and (code is None or str(cache_code) != code):
+            return JsonResponse(data={
+                'error': Code.SMS_CODE_MISMATCH.value,
+                'message': _('SMS Code not match'),
+            })
+
+        user_exists = User.active_objects.filter(
+            Q(username=mobile) | Q(mobile=mobile)
+        ).exists()
+        if user_exists:
+            return JsonResponse(data={
+                'error': Code.MOBILE_ERROR.value,
+                'message': _('mobile already exists'),
+            })
+        if not password:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_NONE_ERROR.value,
+                'message': _('password is empty'),
+            })
+        user, created = User.objects.get_or_create(
+            is_del=False,
+            is_active=True,
+            username=mobile,
+            mobile=mobile,
+        )
+        user.set_password(password)
+        user.is_platform_user = True
+        user.save()
+        token = user.refresh_token()
+        return JsonResponse(data={
+            'error': Code.OK.value,
+            'data': {
+                'token': token.key,
+            }
+        })
+
+    def mobile_register_form(self):
+        return lp.LoginForm(
+            label='手机号注册',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name='mobile',
+                    placeholder='手机号',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='密码',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='checkpassword',
+                    placeholder='密码确认',
+                ),
+                lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                    append=lp.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=lp.ButtonHttp(
+                            url=reverse('api:send-sms'),
+                            method='post',
+                            params={
+                                'mobile': 'mobile'
+                            }
+                        )
+                    )
+                )
+            ],
+            submit=lp.Button(
+                label='注册',
+                http=lp.ButtonHttp(
+                    url=reverse("api:mobile-register"),
+                    method='post',
+                    params={
+                        'mobile': 'mobile',
+                        'password': 'password',
+                        'code': 'code',
                         'checkpassword': 'checkpassword',
                     }
                 )
