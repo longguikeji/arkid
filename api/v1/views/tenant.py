@@ -417,7 +417,7 @@ class TenantViewSet(BaseViewSet):
         )
 
 
-    def native_field_login_form(self, request, tenant_uuid, native_field_name, native_field_label):
+    def native_field_login_form(self, request, tenant_uuid, native_field_names):
         login_config = self.get_login_config(tenant_uuid)
         is_open_authcode = login_config.get('is_open_authcode', False)
         error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
@@ -426,8 +426,8 @@ class TenantViewSet(BaseViewSet):
         items = [
             lp.LoginFormItem(
                 type='text',
-                name=native_field_name,
-                placeholder=native_field_label,
+                name='username',
+                placeholder='用户名',
             ),
             lp.LoginFormItem(
                 type='password',
@@ -436,8 +436,7 @@ class TenantViewSet(BaseViewSet):
             ),
         ]
         params = {
-            # 'field_name': native_field_name,
-            native_field_name: native_field_name,
+            'username': 'username',
             'password': 'password'
         }
         if is_open_authcode is True:
@@ -450,7 +449,8 @@ class TenantViewSet(BaseViewSet):
                 ))
                 params['code'] = 'code'
                 params['code_filename'] = 'code_filename'
-        url = reverse("api:tenant-native-field-login", args=[tenant_uuid]) + f'?field_name={native_field_name}'
+        field_names = ','.join(native_field_names)
+        url = reverse("api:tenant-native-field-login", args=[tenant_uuid]) + f'?field_names={field_names}'
         return lp.LoginForm(
             label='密码登录',
             items=items,
@@ -464,14 +464,14 @@ class TenantViewSet(BaseViewSet):
             ),
         )
 
-    def native_field_register_form(self, tenant_uuid, native_field_name, native_field_label):
+    def native_field_register_form(self, tenant_uuid, native_field_name):
         return lp.LoginForm(
-            label=f'{native_field_label}注册',
+            label=f'{native_field_name}注册',
             items=[
                 lp.LoginFormItem(
                     type='text',
                     name=native_field_name,
-                    placeholder=native_field_label,
+                    placeholder=native_field_name,
                 ),
                 lp.LoginFormItem(
                     type='password',
@@ -503,17 +503,19 @@ class TenantViewSet(BaseViewSet):
     def native_field_login(self, request, pk):
         tenant: Tenant = self.get_object()
         # 账户信息
-        field_name = request.query_params.get('field_name')
-        field_value = request.data.get(field_name)
+        field_names = request.query_params.get('field_names').split(',')
+        username = request.data.get('username')
         password = request.data.get('password')
         ip = self.get_client_ip(request)
         # 图片验证码信息
         login_config = self.get_login_config(tenant.uuid)
         is_open_authcode = login_config.get('is_open_authcode', False)
         error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
-        user = User.active_objects.filter(
-            **{field_name:field_value}
-        ).first()
+        user = None
+        for field_name in field_names:
+            user = User.active_objects.filter(**{field_name:username}).first()
+            if user:
+                break
 
         if not user or not user.check_password(password):
             data = {
@@ -684,20 +686,13 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                     'register_time_limit': 1,
                     'register_count_limit': 10,
                     'upload_file_format': ['jpg','png','gif','jpeg'],
-                    # 'username_login_enabled': True,
-                    # 'username_register_enabled': True,
-                    'mobile_login_enabled': True,
-                    'mobile_register_enabled': True,
+                    'mobile_login_register_enabled': True,
+                    'secret_login_register_enabled': True,
+                    'secret_login_register_field_names': ['username', 'email'],
+                    'custom_login_register_enabled': False,
+                    'custom_login_register_field_uuids': [],
                     'need_complete_profile_after_register': True,
                     'can_skip_complete_profile': True,
-                    'native_login_field_name': 'username',
-                    'native_login_field_label': '用户名',
-                    'native_login_enabled': True,
-                    'native_register_enabled': True,
-                    'custom_login_field_uuid': '',
-                    'custom_login_field_label': '',
-                    'custom_login_enabled': False,
-                    'custom_register_enabled': False,
                 }
                 tenantconfig.save()
             else:
@@ -710,34 +705,24 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                     data['register_count_limit'] = 10
                 if 'upload_file_format' not in data:
                     data['upload_file_format'] = ['jpg','png','gif','jpeg']
-                # if 'username_login_enabled' not in data:
-                #     data['username_login_enabled'] = True
-                # if 'username_register_enabled' not in data:
-                #     data['username_register_enabled'] = True
-                if 'mobile_login_enabled' not in data:
-                    data['mobile_login_enabled'] = True
-                if 'mobile_register_enabled' not in data:
-                    data['mobile_register_enabled'] = True
+
+                if 'mobile_login_register_enabled' not in data:
+                    data['mobile_login_register_enabled'] = True
+
+                if 'secret_login_register_enabled' not in data:
+                    data['secret_login_register_enabled'] = True
+                if 'secret_login_register_field_names' not in data:
+                    data['secret_login_register_field_names'] = ['username', 'email']
+
+                if 'custom_login_register_enabled' not in data:
+                    data['custom_login_register_enabled'] = False
+                if 'custom_login_register_field_uuids' not in data:
+                    data['custom_login_register_field_uuids'] = []
+
                 if 'need_complete_profile_after_register' not in data:
                     data['need_complete_profile_after_register'] = True
                 if 'can_skip_complete_profile' not in data:
                     data['can_skip_complete_profile'] = True
-                if 'native_login_field_name' not in data:
-                    data['native_login_field_name'] = 'username'
-                if 'native_login_field_label' not in data:
-                    data['native_login_field_label'] = '用户名'
-                if 'native_login_enabled' not in data:
-                    data['native_login_enabled'] = True
-                if 'native_register_enabled' not in data:
-                    data['native_register_enabled'] = True
-                if 'custom_login_field_uuid' not in data:
-                    data['custom_login_field_uuid'] = ''
-                if 'custom_login_field_label' not in data:
-                    data['custom_login_field_label'] = ''
-                if 'custom_login_enabled' not in data:
-                    data['custom_login_enabled'] = False
-                if 'custom_register_enabled' not in data:
-                    data['custom_register_enabled'] = False
                 tenantconfig.save()
             return tenantconfig
         else:

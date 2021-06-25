@@ -88,23 +88,17 @@ class ConfigSerializer(serializers.Serializer):
     is_open_register_limit = serializers.BooleanField(label=_('是否限制注册用户'))
     register_time_limit = serializers.IntegerField(label=_('用户注册时间限制(分钟)'))
     register_count_limit = serializers.IntegerField(label=_('用户注册数量限制'))
-    serializers.ListField(child=serializers.CharField(), label=_('允许上传的文件格式'))
-    # username_login_enabled = serializers.BooleanField(label=_('是否打开用户名登录'))
-    # username_register_enabled = serializers.BooleanField(label=_('是否打开用户名注册'))
-    mobile_login_enabled = serializers.BooleanField(label=_('是否打开手机号登录'))
-    mobile_register_enabled = serializers.BooleanField(label=_('是否打开手机号注册'))
-    need_complete_profile_after_register = serializers.BooleanField(label=_('注册完成后是否跳转到完善用户资料页面'))
-    can_skip_complete_profile = serializers.BooleanField(label=_('完善用户资料页面是否可以跳过'))
+    upload_file_format = serializers.ListField(child=serializers.CharField(), label=_('允许上传的文件格式'))
 
-    native_login_field_name = serializers.CharField(label=_('用于登录的原生字段名'))
-    native_login_field_label = serializers.CharField(label=_('用于登录的原生字段标签'))
-    native_login_enabled = serializers.BooleanField(label=_('开启用原生字段登录'))
-    native_register_enabled = serializers.BooleanField(label=_('开启用原生字段注册'))
+    mobile_login_register_enabled = serializers.BooleanField(label=_('开启手机号登录注册'))
+    secret_login_register_enabled = serializers.BooleanField(label=_('开启密码登录注册'))
+    secret_login_register_field_names = serializers.ListField(child=serializers.CharField(), label=_('用于密码登录的基础字段'))
 
-    custom_login_field_uuid = serializers.CharField(label=_('用于登录的自定义字段UUID'))
-    custom_login_field_label = serializers.CharField(label=_('用于登录的自定义字段标签'))
-    custom_login_enabled = serializers.BooleanField(label=_('开启用自定义字段登录'))
-    custom_register_enabled = serializers.BooleanField(label=_('开启用自定义字段注册'))
+    custom_login_register_field_uuids = serializers.ListField(child=serializers.CharField(), label=_('用于登录的自定义字段UUID'))
+    custom_login_register_enabled = serializers.BooleanField(label=_('开启自定义字段登录注册'))
+
+    need_complete_profile_after_register = serializers.BooleanField(label=_('注册完成后跳转到完善用户资料页面'))
+    can_skip_complete_profile = serializers.BooleanField(label=_('完善用户资料页面允许跳过'))
 
 
 
