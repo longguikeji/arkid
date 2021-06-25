@@ -251,3 +251,4 @@ class LogoutSerializer(serializers.Serializer):
 class UserManageTenantsSerializer(serializers.Serializer):
     manage_tenants = serializers.ListField(child=serializers.CharField(), label=_('管理的租户信息'), read_only=True)
     is_global_admin = serializers.BooleanField(label=_('是否是系统管理员'))
+    is_platform_user = serializers.BooleanField(label=_('是否是平台用户'))
