@@ -34,28 +34,21 @@ class LoginPage(views.APIView):
                 tenant=tenant,
             )
             if not tenant_config:
-                mobile_login_enabled =  True,
-                mobile_register_enabled =  True,
-                native_login_enabled = True,
-                native_register_enabled = True,
-                native_login_field_name = 'username'
-                native_login_field_label = '用户名'
+                mobile_login_register_enabled =  True,
+                secret_login_register_enabled = True,
+                secret_login_register_field_names = ['username','email']
             else:
-                mobile_login_enabled = tenant_config.data.get('mobile_login_enabled', True)
-                mobile_register_enabled = tenant_config.data.get('mobile_register_enabled', True)
-                native_login_enabled = tenant_config.data.get('native_login_enabled', True)
-                native_register_enabled = tenant_config.data.get('native_register_enabled', True)
-                native_login_field_name = tenant_config.data.get('native_login_field_name', 'username')
-                native_login_field_label = tenant_config.data.get('native_login_field_label', '用户名')
+                mobile_login_register_enabled = tenant_config.data.get('mobile_login_register_enabled', True)
+                secret_login_register_enabled = tenant_config.data.get('secret_login_register_enabled', True)
+                secret_login_register_field_names = tenant_config.data.get('secret_login_register_field_names', ['username', 'email'])
 
-            if mobile_login_enabled:
+            if mobile_login_register_enabled:
                 data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant_uuid))
-            if mobile_register_enabled:
                 data.addForm(model.REGISTER, TenantViewSet().mobile_register_form(tenant_uuid))
-            if native_login_enabled:
-                data.addForm(model.LOGIN, TenantViewSet().native_field_login_form(request, tenant_uuid, native_login_field_name, native_login_field_label))
-            if native_register_enabled:
-                data.addForm(model.REGISTER, TenantViewSet().native_field_register_form(tenant_uuid, native_login_field_name, native_login_field_label))
+            if secret_login_register_enabled:
+                data.addForm(model.LOGIN, TenantViewSet().native_field_login_form(request, tenant_uuid, secret_login_register_field_names))
+            for field_name in secret_login_register_field_names:
+                data.addForm(model.REGISTER, TenantViewSet().native_field_register_form(tenant_uuid, field_name))
 
             external_idps = ExternalIdp.valid_objects.filter(tenant=tenant)
             for idp in external_idps:
