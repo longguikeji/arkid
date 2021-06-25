@@ -74,6 +74,14 @@ class ExtensionViewSet(BaseViewSet):
         responses=ExtensionPolymorphicProxySerializer,
     )
     def create(self, request, *args, **kwargs):
+        data = request.data.get('data','')
+        data_path = data.get('data_path', '')
+        if data_path:
+            if '../' in data_path or './' in data_path:
+                return JsonResponse(data={
+                    'error': Code.DATA_PATH_ERROR.value,
+                    'message': _('data_path format error'),
+                })
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
