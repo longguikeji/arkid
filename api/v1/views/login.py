@@ -5,7 +5,9 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
 from openapi.utils import extend_schema
 
-from api.v1.serializers.login import LoginSerializer
+from api.v1.serializers.login import (
+    LoginSerializer, UserNameRegisterRequestSerializer
+)
 from api.v1.serializers.tenant import TenantSerializer
 from common.paginator import DefaultListPaginator
 from runtime import get_app_runtime
@@ -108,7 +110,7 @@ class LoginView(generics.CreateAPIView):
         )
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['uc'])
+@extend_schema(tags=['uc'])
 class MobileLoginView(LoginView):
 
     serializer_class = LoginSerializer
@@ -180,6 +182,63 @@ class MobileLoginView(LoginView):
                     params={
                         'mobile': 'mobile',
                         'code': 'code'
+                    }
+                )
+            ),
+        )
+
+
+@extend_schema(tags=['uc'])
+class UserNameRegisterView(LoginView):
+
+    serializer_class = UserNameRegisterRequestSerializer
+
+    def create(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = User.active_objects.filter(
+            username=username
+        ).first()
+        if user:
+            return JsonResponse(data={
+                'error': Code.USERNAME_EXISTS_ERROR.value,
+                'message': _('username already exists'),
+            })
+        if not password:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_NONE_ERROR.value,
+                'message': _('password is empty'),
+            })
+
+    def username_register_form(self):
+        return lp.LoginForm(
+            label='用户名注册',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name='username',
+                    placeholder='用户名',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='密码',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='checkpassword',
+                    placeholder='密码确认',
+                ),
+            ],
+            submit=lp.Button(
+                label='注册',
+                http=lp.ButtonHttp(
+                    url=reverse("api:username-register"),
+                    method='post',
+                    params={
+                        'username': 'username',
+                        'password': 'password',
+                        'checkpassword': 'checkpassword',
                     }
                 )
             ),
