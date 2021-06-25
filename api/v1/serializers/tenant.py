@@ -7,6 +7,7 @@ from api.v1.fields.custom import (
     create_enum_field,
 )
 
+
 class TenantSerializer(BaseDynamicFieldModelSerializer):
 
     class Meta:
@@ -37,21 +38,6 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
             regular='^(?=.*[A-Za-z])(?=.*\d)(?=.*[~$@$!%*#?&])[A-Za-z\d~$@$!%*#?&]{6,18}$'
         )
         return tenant
-
-
-class TenantExtendSerializer(BaseDynamicFieldModelSerializer):
-
-    class Meta:
-        model = Tenant
-
-        fields = (
-            'uuid',
-            'name',
-            'slug',
-            'icon',
-            'created',
-            'password_complexity',
-        )
 
 
 class MobileLoginRequestSerializer(serializers.Serializer):
