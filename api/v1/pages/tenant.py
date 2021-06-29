@@ -19,22 +19,6 @@ extend_schema_tags(
                 'path': '/api/v1/tenant/',
                 'method': 'post'
             }
-        },
-        'item': {
-            'update': {
-                'read': {
-                    'path': '/api/v1/tenant/{id}/',
-                    'method': 'get'
-                },
-                'write': {
-                    'path': '/api/v1/tenant/{id}/',
-                    'method': 'put'
-                }
-            },
-            'delete': {
-                'path': '/api/v1/tenant/{id}/',
-                'method': 'delete'
-            }   
         }
     }
 )

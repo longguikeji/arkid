@@ -18,6 +18,7 @@ from . import (
     desktop_config,
     book_config,
     profile_config,
+    security,
     tenant_config,
     sub_admin_config,
     agent_rules,
@@ -84,6 +85,10 @@ root_add_routers([
                     PageRouter(
                         page=profile_config,
                         icon='people'
+                    ),
+                    PageRouter(
+                        page=security,
+                        icon='lock'
                     ),
                     PageRouter(
                         page=sub_admin_config,
