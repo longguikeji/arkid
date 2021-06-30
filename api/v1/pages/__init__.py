@@ -39,7 +39,8 @@ from . import (
     all_tenants,
     all_tenants_config,
     all_users,
-    all_users_config
+    all_users_config,
+    system_config
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter
@@ -259,6 +260,10 @@ root_add_routers([
         name='系统管理',
         icon='setting',
         children=[
+            PageRouter(
+                page=system_config,
+                icon='setting'
+            ),
             Router(
                 path='all_tenants',
                 name='租户信息',
