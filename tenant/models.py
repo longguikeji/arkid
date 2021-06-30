@@ -49,7 +49,7 @@ class TenantPasswordComplexity(BaseModel):
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
     regular = models.CharField(verbose_name='正则表达式', max_length=512)
     is_apply = models.BooleanField(default=False, verbose_name='是否启用')
-    title = models.CharField(verbose_name='标题', max_length=128, default='')
+    title = models.CharField(verbose_name='标题', max_length=128, default='', null=True, blank=True)
 
     @property
     def tenant_uuid(self):
