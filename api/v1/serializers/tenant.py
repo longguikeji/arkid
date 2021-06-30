@@ -135,7 +135,7 @@ class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
 class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
     regular = serializers.CharField(label=_('正则表达式'))
     is_apply = serializers.BooleanField(label=_('是否应用'))
-    title = serializers.CharField(label=_('标题'), required=False)
+    title = serializers.CharField(label=_('标题'), required=False, allow_blank=True)
 
     class Meta:
         model = TenantPasswordComplexity
