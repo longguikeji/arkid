@@ -45,7 +45,10 @@ class Config(BaseModel):
     username = models.CharField(max_length=256, blank=True, null=True)
     password = models.CharField(max_length=256, blank=True, null=True)
 
-    def should_provision(self, user):
+    def should_provision_user(self, user):
+        return True
+
+    def should_provision_group(self, group):
         return True
 
     def get_scim_client(self, cookies=None):

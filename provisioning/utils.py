@@ -2,7 +2,7 @@ import json
 import aiohttp
 import asyncio
 from .models import Config
-from inventory.models import User
+from inventory.models import User,Group
 from scim_client.async_client import AsyncSCIMClient
 
 def build_users_url(c: Config) -> str:
@@ -26,11 +26,11 @@ def user_exists(client: AsyncSCIMClient, c: Config, user: User) -> bool:
     print(response)
     if response.status_code == 200:
         users = response.users
-        if len(users) > 0:
-            return True
+        if len(users) >= 1:
+            return True, users[0].id
         else:
-            return False
-    return False
+            return False, None
+    return False, None
 
 
 def create_user(client: AsyncSCIMClient, c: Config, user: User):
@@ -77,14 +77,17 @@ def update_user(client: AsyncSCIMClient, c: Config, user: User, user_id: str):
 
     """
     data = c.get_user_mapped_data(user)
-    data.update(
-        {
-            # "externalId": user.uuid.hex,
-            # "id": user_id,
-            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
-        }
-    )
-    response = asyncio.run(client.update_user(user_id, data))
+    from scim_client import User
+    user = User(**data)
+    user.id = user_id
+    # data.update(
+    #     {
+    #         # "externalId": user.uuid.hex,
+    #         "id": user_id,
+    #         "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+    #     }
+    # )
+    response = asyncio.run(client.update_user(user))
     print(response.user)
 
 
@@ -110,10 +113,43 @@ def delete_user(client: AsyncSCIMClient, c: Config, user_id: str):
         return False
 
 
-def create_groups(client: AsyncSCIMClient, c: Config):
+def group_exists(client: AsyncSCIMClient, c: Config, group: Group) -> bool:
+    """
+    GET /Groups?filter=displayName eq "demo"
+
+    Assume:
+
+    200 OK
+    404 NOT FOUND
+    """
+    filter_str = 'externalId eq "{}" or displayName eq "{}"'.format(group.uuid.hex, group.name)
+    print(filter_str)
+    response = asyncio.run(client.search_groups(start_index=1, count=100, filter=filter_str))
+    print(response)
+    if response.status_code == 200:
+        groups = response.groups
+        if len(groups) >= 1:
+            return True, groups[0].id
+        else:
+            return False, None
+    return False, None
+
+def create_group(client: AsyncSCIMClient, c: Config, group:Group):
     """
     POST /Groups
     """
+    data = {
+        "displayName": group.name,
+        "externalId": group.uuid.hex,
+    }
+    response = asyncio.run(client.create_group(data))
+    print(response)
+    if response.status_code == 201:
+        # return json.loads(text).get('id')
+        print('create group success')
+        return response.group
+    else:
+        return False
 
 
 def list_groups(c: Config):
@@ -128,11 +164,20 @@ def retrieve_group(c: Config):
     """
 
 
-def update_group(c: Config):
+def update_group(client: AsyncSCIMClient, c: Config, group: Group, group_id:str):
     """
     PUT /Groups/$group_id
-
+    暂时只支持修改名字
     """
+    data = {
+        "displayName": group.name,
+        "externalId": group.uuid.hex,
+    }
+    from scim_client import Group
+    group = Group(**data)
+    group.id = group_id
+    response = asyncio.run(client.update_group(group))
+    print(response.group)
 
 
 def patch_group(c: Config):
@@ -142,7 +187,14 @@ def patch_group(c: Config):
     """
 
 
-def delete_group(c: Config):
+def delete_group(client: AsyncSCIMClient, c: Config, group_id: str):
     """
     DELETE /Groups/$group_id
     """
+
+    response = asyncio.run(client.delete_group(group_id))
+    print(response)
+    if response.status_code == 204:
+        return True
+    else:
+        return False
