@@ -8,9 +8,9 @@ extend_schema_tags(
     tag,
     name,
     {
-        'type':'table_page',
+        'type':'form_page',
         'init': {
-            'path': '/api/v1/tenant/',
+            'path': '/api/v1/tenant/{id}/',
             'method': 'get'
         },
         'item': {
@@ -27,7 +27,7 @@ extend_schema_tags(
             'delete': {
                 'path': '/api/v1/tenant/{id}/',
                 'method': 'delete'
-            }   
+            } 
         }
     }
 )
