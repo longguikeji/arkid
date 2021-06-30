@@ -19,8 +19,8 @@ ExtensionPolymorphicProxySerializer = PolymorphicProxySerializer(
 )
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['global admin']),
+    partial_update=extend_schema(roles=['global admin']),
 )
 @extend_schema(tags = ['extension'])
 class ExtensionViewSet(BaseViewSet):
@@ -40,14 +40,14 @@ class ExtensionViewSet(BaseViewSet):
         return o
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['global admin'],
         responses=ExtensionListSerializer
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['global admin'],
         request=ExtensionPolymorphicProxySerializer,
         responses=ExtensionPolymorphicProxySerializer,
     )
@@ -63,13 +63,13 @@ class ExtensionViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['global admin'],
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['global admin'],
         request=ExtensionPolymorphicProxySerializer,
         responses=ExtensionPolymorphicProxySerializer,
     )
@@ -85,7 +85,7 @@ class ExtensionViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['global admin'],
         responses=ExtensionPolymorphicProxySerializer
     )
     def retrieve(self, request, *args, **kwargs):
