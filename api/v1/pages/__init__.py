@@ -306,7 +306,7 @@ root_add_routers([
                     PageRouter(
                         page=maketplace,
                         icon='list',
-                    ),
+                    )
                 ]
             )
         ]
