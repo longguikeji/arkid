@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'schema',
     'extension',
     'api',
+    'system',
     'extension_root.github',
     'extension_root.gitee',
     'extension_root.feishu',
