@@ -45,11 +45,12 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
         self.bind_url = bind_url
 
     def create(self, tenant_uuid, external_idp, data):
+        host = get_app_config().host
         client_id = data.get('client_id')
         secret_id = data.get('secret_id')
-        login_url = reverse("api:gitee:login", args=[tenant_uuid])
-        callback_url = reverse("api:gitee:callback", args=[tenant_uuid])
-        bind_url = reverse("api:gitee:bind", args=[tenant_uuid])
+        login_url = host+reverse("api:gitee:login", args=[tenant_uuid])
+        callback_url = host+reverse("api:gitee:callback", args=[tenant_uuid])
+        bind_url = host+reverse("api:gitee:bind", args=[tenant_uuid])
 
         return {
             'client_id': client_id,
