@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['market-extension'])
+@extend_schema(roles=['global admin'], tags=['market-extension'])
 class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
 
     permission_classes = [IsAuthenticated]
@@ -68,7 +68,7 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
         return None
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['market-extension'])
+@extend_schema(roles=['global admin'], tags=['market-extension'])
 class MarketPlaceTagsViewSet(generics.RetrieveAPIView):
 
     serializer_class = MarketPlaceExtensionTagsSerializer

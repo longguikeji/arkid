@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'schema',
     'extension',
     'api',
+    'system',
     'extension_root.github',
     'extension_root.gitee',
     'extension_root.feishu',
@@ -68,6 +69,8 @@ INSTALLED_APPS = [
     'extension_root.arkid',
     'extension_root.miniprogram',
 ]
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
