@@ -83,19 +83,21 @@ class Config(BaseModel):
         """
         # TODO 支持复杂类型的映射: emails[type eq "work"].value
         attr_map = {
-            ('name', 'familyname', None): 'name.familyname',
-            ('emails', None, None): 'emails',
-            ('emails', 'type', None): 'emails.type',
-            ('emails', 'value', None): 'emails.value',
-            ('userName', None, None): 'username',
-            ('title', None, None): 'title',
-            ('userType', None, None): 'usertype',
-            ('schemas', None, None): 'schemas',
-            ('userName', None, 'urn:ietf:params:scim:schemas:core:2.0:User'): 'username',
-            ('meta', 'lastModified', None): 'meta.lastmodified',
-            ('ims', 'type', None): 'ims.type',
-            ('ims', 'value', None): 'ims.value',
-        }
+        # attr, sub attr, uri
+        ('externalId', None, None): 'scim_external_id',
+        ('userName', None, None): 'username',
+        ('name', 'familyName', None): 'last_name',
+        ('familyName', None, None): 'last_name',
+        ('name', 'givenName', None): 'first_name',
+        ('givenName', None, None): 'first_name',
+        ('active', None, None): 'is_active',
+        ('nickName', None, None): 'nickname',
+        ('title', None, None): 'job_title',
+        ('emails', 'type', None): 'email',
+        ('emails', 'value', None): 'email',
+        ('phoneNumbers', 'value', None): 'mobile',
+        ('phoneNumbers', 'type', None): 'mobile',
+    }
         data = {}
         mappings = self.app_profile_mappings.all()
         if not mappings:

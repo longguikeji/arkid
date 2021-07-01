@@ -255,6 +255,10 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
             'parent': self.parent and self.parent.uuid.hex,
         }
 
+    def set_scim_id(self, is_new):
+        if is_new:
+            self.__class__.objects.filter(id=self.id).update(scim_id=self.uuid)
+            self.scim_id = str(self.uuid)
 
 class CustomField(BaseModel):
     '''

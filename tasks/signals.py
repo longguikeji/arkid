@@ -89,10 +89,14 @@ def user_groups_changed(sender, **kwargs):
     action = kwargs.get('action')
     instance = kwargs.get('instance')
     pk_set = kwargs.get('pk_set')
+    reverse = kwargs.get('reverse')
+    if reverse:
+        # Arkid暂时只有改变User的Group, 改变Group包含的User暂不支持
+        return
     if action not in ('pre_clear', 'pre_add', 'pre_remove'):
         return
     for tenant in instance.tenants.all():
-        provision_user_groups_changed(tenant.uuid, action, instance, pk_set)
+        provision_user_groups_changed(tenant.uuid, action, instance.id, pk_set)
 
 post_save.connect(receiver=tenant_saved, sender=Tenant)
 

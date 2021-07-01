@@ -159,10 +159,14 @@ class AsyncSCIMClient:
     async def update_user(
         self, user: Union[Dict[str, Any], User]
     ) -> UserUpdateResponse:
+        if hasattr(user, 'id'):
+            user_id = user.id
+        else:
+            user_id = user.get('id')
         return UserUpdateResponse(
             await self.api_call(
                 http_verb="PUT",
-                path=f"Users/{quote(user.id)}",
+                path=f"Users/{quote(user_id)}",
                 body_params=user.to_dict()
                 if isinstance(user, User)
                 else _to_dict_without_not_given(user),

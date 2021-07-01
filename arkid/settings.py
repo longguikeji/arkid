@@ -240,6 +240,9 @@ SCIM_SERVICE_PROVIDER = {
     ],
     'GROUP_MODEL': 'inventory.models.Group',
     'USER_ADAPTER': 'inventory.adapters.ArkidSCIMUser',
+    'GROUP_ADAPTER': 'inventory.adapters.ArkidSCIMGroup',
+    'GROUP_FILTER_PARSER': 'inventory.filters.GroupFilterQuery',
+    'USER_FILTER_PARSER': 'inventory.filters.UserFilterQuery'
 }
 
 

@@ -13,7 +13,8 @@ from provisioning.utils import (
     group_exists,
     create_group,
     update_group,
-    delete_group)
+    delete_group,
+    patch_group)
 from inventory.models import User, Group
 from app.models import App
 from webhook.models import WebHook, WebHookTriggerHistory
@@ -66,10 +67,10 @@ def provision_app_user(tenant_uuid: str, app_id: int, config_id: int, user_id: i
         print(f'User Provisioning Skiped: {user_id}')
         return
 
-    cookies = {'sessionid': 'bkv1n1n0s47mbtmxgib6ssgzbfvvoj8i'}
+    cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
     scim_client = config.get_scim_client(cookies=cookies)
     is_exists, user_uuid = user_exists(scim_client, config, user)
-    if not user_exists:
+    if not is_exists:
         ret = create_user(scim_client, config, user)
         print('created user from scim server: {}'.format(ret))
     else:
@@ -95,7 +96,7 @@ def deprovision_app_user(tenant_uuid: str, app_id: int, config_id: int, user_id:
         print(f'User deprovisioning Skiped: {user_id}')
         return
 
-    cookies = {'sessionid': 'bkv1n1n0s47mbtmxgib6ssgzbfvvoj8i'}
+    cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
     scim_client = config.get_scim_client(cookies=cookies)
     is_exists, user_uuid = user_exists(scim_client, config, user)
     if not is_exists:
@@ -148,7 +149,7 @@ def provision_app_group(tenant_uuid: str, app_id: int, config_id: int, group_id:
         print(f'Group Deprovisioning Skiped: {group_id}')
         return
 
-    cookies = {'sessionid': 'bkv1n1n0s47mbtmxgib6ssgzbfvvoj8i'}
+    cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
     scim_client = config.get_scim_client(cookies=cookies)
     is_exists, group_uuid = group_exists(scim_client, config, group)
     if not is_exists:
@@ -176,7 +177,7 @@ def deprovision_app_group(tenant_uuid: str, app_id: int, config_id: int, group_i
         print(f'Group Provisioning Skiped: {group_id}')
         return
 
-    cookies = {'sessionid': 'bkv1n1n0s47mbtmxgib6ssgzbfvvoj8i'}
+    cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
     scim_client = config.get_scim_client(cookies=cookies)
     is_exists, group_uuid = group_exists(scim_client, config, group)
     if not is_exists:
@@ -202,6 +203,85 @@ def provision_tenant_app(tenant_uuid: str, app_id:int):
 
 @app.task
 def provision_user_groups_changed(tenant_uuid: str, action: str, user_id: int, group_set: set):
-    print(
-        f'task: deprovision_app_group, tenant: {tenant_uuid}, action: {action}, group_set: {group_set}'
+    '''
+    同步的前提是User和Group已经同步到服务端
+    '''
+    apps = App.active_objects.filter(
+        tenant__uuid=tenant_uuid,
     )
+
+    for app in apps:
+        config: Config = Config.active_objects.filter(
+            app=app,
+        ).first()
+
+        if config is None or config.status != ProvisioningStatus.Enabled.value:
+            continue
+        # 只支持下游同步
+        if config.sync_type == ProvisioningType.upstream.value:
+            continue
+
+        user = User.objects.get(id=user_id)
+        if not user:
+            return
+
+        if action == 'pre_clear':
+            groups = user.groups.all()
+            for grp in groups:
+                provision_update_group_members(config.id, user.id, grp.id, 'Remove')
+
+        elif action == 'pre_add':
+            for grp_id in group_set:
+                grp = Group.objects.get(id=grp_id)
+                provision_update_group_members(config.id, user.id, grp.id, 'Add')
+
+        elif action == 'pre_remove':
+            for grp in group_set:
+                grp = Group.objects.get(id=grp_id)
+                provision_update_group_members(config.id, user.id, grp.id, 'Remove')
+
+def get_user_group_uuid(scim_client, config, user_id, group_id):
+    user: User = User.objects.get(id=user_id)
+    group: Group = Group.objects.get(id=group_id)
+
+    if not config.should_provision_user(user):
+        print(f'User Provisioning Skiped: {user_id}')
+        return (None, None)
+
+    if not config.should_provision_group(group):
+        print(f'Group Provisioning Skiped: {group_id}')
+        return (None, None)
+
+
+    _, user_uuid = user_exists(scim_client, config, user)
+    _, group_uuid = group_exists(scim_client, config, group)
+
+    return (user_uuid, group_uuid)
+
+@app.task
+def provision_update_group_members(config_id, user_id, group_id, operation):
+    print(f'group:{group_id} {operation} user:{user_id}')
+    config: Config = Config.objects.get(id=config_id)
+    cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
+    scim_client = config.get_scim_client(cookies=cookies)
+
+    user_uuid, group_uuid = get_user_group_uuid(scim_client, config, user_id, group_id)
+    if not user_uuid or not group_uuid:
+        return
+    data = {
+        "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+        "Operations": [{
+            "op": operation,
+            "path": "members",
+            "value": [{
+                "$ref": None,
+                "value": user_uuid
+            }]
+        }]
+    }
+
+    ret = patch_group(scim_client, group_uuid, data)
+    if ret:
+        print(f'group{group_uuid} {operation} user{user_uuid} success')
+    else:
+        print(f'group{group_uuid} {operation} user{user_uuid} failed')

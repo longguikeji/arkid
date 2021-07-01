@@ -78,16 +78,16 @@ def update_user(client: AsyncSCIMClient, c: Config, user: User, user_id: str):
     """
     data = c.get_user_mapped_data(user)
     from scim_client import User
-    user = User(**data)
-    user.id = user_id
-    # data.update(
-    #     {
-    #         # "externalId": user.uuid.hex,
-    #         "id": user_id,
-    #         "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
-    #     }
-    # )
-    response = asyncio.run(client.update_user(user))
+    # user = User(**data)
+    # user.id = user_id
+    data.update(
+        {
+            # "externalId": user.uuid.hex,
+            "id": user_id,
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+        }
+    )
+    response = asyncio.run(client.update_user(data))
     print(response.user)
 
 
@@ -180,11 +180,15 @@ def update_group(client: AsyncSCIMClient, c: Config, group: Group, group_id:str)
     print(response.group)
 
 
-def patch_group(c: Config):
+def patch_group(client: AsyncSCIMClient, group_id:str, data:dict):
     """
     PATCH /Groups/$group_id
-
     """
+    response = asyncio.run(client.patch_group(group_id, data))
+    if response.status_code == 200:
+        return True
+    else:
+        return False
 
 
 def delete_group(client: AsyncSCIMClient, c: Config, group_id: str):
