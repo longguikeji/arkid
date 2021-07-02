@@ -62,6 +62,9 @@ class FeishuCallbackView(APIView):
         '''
         code = request.GET["code"]
         next_url = request.GET.get("next", None)
+        frontend_host = get_app_config().get_frontend_host().replace('http://' , '').replace('https://' , '')
+        if "third_part_callback" not in next_url or frontend_host not in next_url:
+            return Response({'error_msg': '错误的跳转页面'}, HTTP_200_OK)
         if next_url is not None:
             next_url = "?next=" + urllib.parse.quote(next_url)
         else:
