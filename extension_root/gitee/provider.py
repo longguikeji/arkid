@@ -23,6 +23,7 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
     def load_data(self, tenant_uuid):
         from tenant.models import Tenant
         from external_idp.models import ExternalIdp
+        host = get_app_config().get_host()
 
         idp = ExternalIdp.active_objects.filter(
             tenant__uuid=tenant_uuid,
@@ -34,9 +35,9 @@ class GiteeExternalIdpProvider(ExternalIdpProvider):
 
         client_id = data.get('client_id')
         secret_id = data.get('secret_id')
-        login_url = reverse("api:gitee:login", args=[tenant_uuid])
-        callback_url = reverse("api:gitee:callback", args=[tenant_uuid])
-        bind_url = reverse("api:gitee:bind", args=[tenant_uuid])
+        login_url = data.get('login_url')
+        callback_url = data.get('callback_url')
+        bind_url = data.get('bind_url')
 
         self.client_id = client_id
         self.secret_id = secret_id
