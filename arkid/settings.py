@@ -74,7 +74,7 @@ INSTALLED_APPS = [
     'extension_root.miniprogram',
 ]
 
-X_FRAME_OPTIONS = 'AllowAll'
+# X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -86,7 +86,7 @@ MIDDLEWARE = [
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_scim.middleware.SCIMAuthCheckMiddleware',
 ]
 
