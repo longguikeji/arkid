@@ -20,6 +20,7 @@ from . import (
     setup,
     authcode,
     system,
+    config,
 )
 from runtime import get_app_runtime
 
@@ -67,3 +68,4 @@ urlpatterns += user.urlpatterns
 urlpatterns += marketplace.urlpatterns
 urlpatterns += authcode.urlpatterns
 urlpatterns += system.urlpatterns
+urlpatterns += config.urlpatterns

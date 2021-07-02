@@ -16,7 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 
 urlpatterns = [
@@ -25,6 +29,5 @@ urlpatterns = [
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('superadmin/', admin.site.urls),
     url(r'^api/v1/', include(('api.v1.urls', 'api'), namespace='api')),
+    path('scim/v2/', include('django_scim.urls')),
 ]
-
-
