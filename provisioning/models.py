@@ -33,8 +33,8 @@ class Config(BaseModel):
     # MODE_CHOICES = ((ProvisioningMode.Automatic.value, 'Automatic'),)
 
     app = models.ForeignKey(App, on_delete=models.PROTECT)
-    sync_type = models.CharField(max_length=32, choices=SYNC_TYPE, default=ProvisioningType.downstream.value)
-    auth_type = models.CharField(max_length=32, choices=AUTH_TYPE, default=AuthenticationType.token.value)
+    sync_type = models.IntegerField(max_length=32, choices=SYNC_TYPE, default=ProvisioningType.downstream.value)
+    auth_type = models.IntegerField(max_length=32, choices=AUTH_TYPE, default=AuthenticationType.token.value)
 
     base_url = models.CharField(max_length=1024, blank=False, null=True)
     token = models.CharField(max_length=256, blank=True, null=True)

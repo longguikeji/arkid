@@ -6,6 +6,7 @@ class GroupFilterQuery(FilterQuery):
     model_getter = get_group_model
     attr_map = {
         ('displayName', None, None): 'name',
+        ('externalId', None, None): 'scim_external_id',
         # ('members', None, None): 'members'
     }
 

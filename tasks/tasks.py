@@ -68,6 +68,7 @@ def provision_app_user(tenant_uuid: str, app_id: int, config_id: int, user_id: i
         return
 
     cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
+    cookies = {'sessionid': 'yhoyqw29ew439sjrh7gdktzm3pkngyc7'}
     scim_client = config.get_scim_client(cookies=cookies)
     is_exists, user_uuid = user_exists(scim_client, config, user)
     if not is_exists:
@@ -92,11 +93,11 @@ def deprovision_app_user(tenant_uuid: str, app_id: int, config_id: int, user_id:
     # TODO: check the scope of the selected range
     user: User = User.objects.get(id=user_id)
     config: Config = Config.objects.get(id=config_id)
-    if not config.should_provision(user):
+    if not config.should_provision_user(user):
         print(f'User deprovisioning Skiped: {user_id}')
         return
 
-    cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
+    cookies = {'sessionid': 'yhoyqw29ew439sjrh7gdktzm3pkngyc7'}
     scim_client = config.get_scim_client(cookies=cookies)
     is_exists, user_uuid = user_exists(scim_client, config, user)
     if not is_exists:
@@ -149,7 +150,7 @@ def provision_app_group(tenant_uuid: str, app_id: int, config_id: int, group_id:
         print(f'Group Deprovisioning Skiped: {group_id}')
         return
 
-    cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
+    cookies = {'sessionid': 'yhoyqw29ew439sjrh7gdktzm3pkngyc7'}
     scim_client = config.get_scim_client(cookies=cookies)
     is_exists, group_uuid = group_exists(scim_client, config, group)
     if not is_exists:
@@ -177,7 +178,7 @@ def deprovision_app_group(tenant_uuid: str, app_id: int, config_id: int, group_i
         print(f'Group Provisioning Skiped: {group_id}')
         return
 
-    cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
+    cookies = {'sessionid': 'yhoyqw29ew439sjrh7gdktzm3pkngyc7'}
     scim_client = config.get_scim_client(cookies=cookies)
     is_exists, group_uuid = group_exists(scim_client, config, group)
     if not is_exists:
@@ -262,7 +263,7 @@ def get_user_group_uuid(scim_client, config, user_id, group_id):
 def provision_update_group_members(config_id, user_id, group_id, operation):
     print(f'group:{group_id} {operation} user:{user_id}')
     config: Config = Config.objects.get(id=config_id)
-    cookies = {'sessionid': 'hgnk3f0j2fmt70zc484l0ajdv7xj13q1'}
+    cookies = {'sessionid': 'yhoyqw29ew439sjrh7gdktzm3pkngyc7'}
     scim_client = config.get_scim_client(cookies=cookies)
 
     user_uuid, group_uuid = get_user_group_uuid(scim_client, config, user_id, group_id)

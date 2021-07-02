@@ -229,7 +229,7 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
     )
 
     def __str__(self) -> str:
-        return f'{self.tenant.name} - {self.name}'
+        return f'{self.name}'
 
     @property
     def children(self):
