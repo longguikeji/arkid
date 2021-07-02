@@ -106,8 +106,7 @@ class ArkIDCallbackView(APIView):
                 user_id = ArkIDUserInfoManager(
                     provider.client_id,
                     provider.secret_id,
-                    "{}{}{}".format(
-                        get_app_config().get_host(),
+                    "{}{}".format(
                         provider.callback_url,
                         next_url,
                     ),

@@ -107,8 +107,7 @@ class GiteeCallbackView(APIView):
                 user_id, access_token, refresh_token = GiteeUserInfoManager(
                     provider.client_id,
                     provider.secret_id,
-                    "{}{}{}".format(
-                        get_app_config().get_host(),
+                    "{}{}".format(
                         provider.callback_url,
                         next_url,
                     )
