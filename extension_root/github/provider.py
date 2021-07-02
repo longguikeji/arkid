@@ -43,7 +43,7 @@ class GithubExternalIdpProvider(ExternalIdpProvider):
         self.bind_url = bind_url
 
     def create(self, tenant_uuid, external_idp, data):
-        host = get_app_config().host
+        host = get_app_config().get_host()
         client_id = data.get('client_id')
         secret_id = data.get('secret_id')
 

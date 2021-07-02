@@ -58,6 +58,29 @@ class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
 
         return external_idp
 
+    def update(self, instance, validated_data):
+        from runtime import get_app_runtime
+        external_idp_type = validated_data.pop('type')
+        data = validated_data.pop('data', None)
+
+        tenant = self.context['tenant']
+        r = get_app_runtime()
+
+        provider_cls: ExternalIdpProvider = r.external_idp_providers.get(
+            external_idp_type, None
+        )
+        assert provider_cls is not None
+        provider = provider_cls()
+        print(data)
+        data = provider.create(tenant_uuid=tenant.uuid, external_idp=instance, data=data)
+        print('----设置递增信息----')
+        print(data)
+        if data is not None:
+            instance.data = data
+        instance.type = external_idp_type
+        instance.save()
+        return instance
+
 
 class ExternalIdpListSerializer(ExternalIdpSerializer):
     class Meta:
