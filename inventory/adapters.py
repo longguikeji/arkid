@@ -23,7 +23,7 @@ class ArkidSCIMGroup(SCIMGroup):
         """
         if path.first_path == ('members', None, None):
             members = value or []
-            ids = [int(member.get('value')) for member in members]
+            ids = [member.get('value') for member in members]
             kwargs = {
                 f'{self.id_field}__in': ids
             }
@@ -44,7 +44,7 @@ class ArkidSCIMGroup(SCIMGroup):
         """
         if path.first_path == ('members', None, None):
             members = value or []
-            ids = [int(member.get('value')) for member in members]
+            ids = [member.get('value') for member in members]
             kwargs = {
                 f'{self.id_field}__in': ids
             }
