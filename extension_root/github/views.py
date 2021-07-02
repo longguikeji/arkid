@@ -40,7 +40,7 @@ class GithubLoginView(APIView):
             next_url = "?next=" + next_url
         else:
             next_url = ""
-        redirect_uri = "{}{}{}".format(c.get_host(), provider.callback_url, next_url)
+        redirect_uri = "{}{}".format(provider.callback_url, next_url)
         url = "{}?client_id={}&redirect_uri={}".format(
             AUTHORIZE_URL,
             provider.client_id,
