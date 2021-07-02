@@ -37,7 +37,7 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
     def create(self, tenant_uuid, external_idp, data):
         app_id = data.get('app_id')
         secret_id = data.get('secret_id')
-        host = get_app_config().host
+        host = get_app_config().get_host()
 
         return {
             'app_id': app_id,
