@@ -56,7 +56,7 @@ class GithubBindAPIView(GenericAPIView):
     Github账号绑定
     """
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = GithubBindSerializer
@@ -143,7 +143,7 @@ class GithubCallbackView(APIView):
 @extend_schema(tags=["github"])
 class GithubUnBindView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     def get(self, request, tenant_uuid):

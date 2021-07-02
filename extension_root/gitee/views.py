@@ -57,7 +57,7 @@ class GiteeLoginView(APIView):
 @extend_schema(tags=["gitee"])
 class GiteeBindAPIView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = GiteeBindSerializer
 
@@ -161,7 +161,7 @@ class GiteeCallbackView(APIView):
 @extend_schema(tags=["gitee"])
 class GiteeUnBindView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     def get(self, request, tenant_uuid):
@@ -181,7 +181,7 @@ class GiteeUnBindView(GenericAPIView):
 @extend_schema(tags=["gitee"])
 class GiteeDataView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = GiteeDataSerializer
 

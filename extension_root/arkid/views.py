@@ -54,7 +54,7 @@ class ArkIDLoginView(APIView):
 @extend_schema(tags=["arkid"])
 class ArkIDBindAPIView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = ArkIDBindSerializer
@@ -145,7 +145,7 @@ class ArkIDCallbackView(APIView):
 @extend_schema(tags=["arkid"])
 class ArkIDUnBindView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     def get(self, request, tenant_uuid):

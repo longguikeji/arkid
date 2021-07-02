@@ -9,7 +9,7 @@ from .user_info_manager import FeishuUserInfoManager, APICallError
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.http import HttpResponseRedirect
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import FeishuBindSerializer
 from .constants import AUTHORIZE_URL
 from .models import FeishuUser
@@ -117,7 +117,7 @@ class FeishuCallbackView(APIView):
 @extend_schema(tags=["feishu"])
 class FeishuBindView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = FeishuBindSerializer
@@ -145,7 +145,7 @@ class FeishuBindView(GenericAPIView):
 @extend_schema(tags=["feishu"])
 class FeishuUnBindView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     def get(self, request, tenant_uuid):
