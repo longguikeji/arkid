@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'extension_root.mysql_migration',
     'extension_root.arkid',
     'extension_root.miniprogram',
+    'djangosaml2',
 ]
 
 MIDDLEWARE = [
@@ -215,3 +216,5 @@ import os
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
