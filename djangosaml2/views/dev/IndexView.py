@@ -14,4 +14,4 @@ class IndexView(View):
     """
     def get(self, request,tenant_uuid,app_id):    # pylint: disable=no-self-use
         sp_app = App.active_objects.get(id=app_id)
-        return redirect(reverse("api:saml2idp:login_post", args=[tenant_uuid,app_id]))
+        return redirect(reverse("api:saml2idp:response", args=[tenant_uuid,app_id]))

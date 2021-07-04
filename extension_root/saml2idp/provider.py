@@ -40,6 +40,8 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
             f"saml2_config/{app.tenant.uuid}/{app.id}/idp_metadata.xml"
         )
 
+        data["BASE_DIR"] = BASE_DIR
+
         return data
 
     def update(self, app: App, data: Dict) -> Dict:
@@ -57,6 +59,8 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
             BASE_DIR,
             f"saml2_config/{app.tenant.uuid}/{app.id}/idp_metadata.xml"
         )
+
+        data["BASE_DIR"] = BASE_DIR
 
         return data
 
