@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     'extension_root.mysql_migration',
     'extension_root.arkid',
     'extension_root.miniprogram',
-    'djangosaml2',
 ]
 
 MIDDLEWARE = [
