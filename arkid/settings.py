@@ -28,7 +28,7 @@ SECRET_KEY = 'y)c6vgiyu#-yll0#&kn!c0^t#2pqx_45w-b#sg2)asv+j_5pro'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', "arkid.guancyxx.cn"]
 
 LOGIN_URL = '/login'
 
@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'extension_root.mysql_migration',
     'extension_root.arkid',
     'extension_root.miniprogram',
+    'djangosaml2idp'
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -81,7 +82,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'arkid.urls'
@@ -110,8 +111,18 @@ WSGI_APPLICATION = 'arkid.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
+        'NAME': 'oneid',  # 你要存储数据的库名，事先要创建之
+        'USER': 'guancy',  # 数据库用户名
+        'PASSWORD': 'Guancyxx2021**',  # 密码
+        'HOST': 'git.guancyxx.cn',  # 主机
+        'PORT': '3306',  # 数据库使用的端口
+        'CONN_MAX_AGE': 3600,
+        'OPTIONS': {
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
+        "ATOMIC_REQUESTS": True,
     }
 }
 
@@ -213,8 +224,9 @@ SLAPD_PASSWORD = 'admin'
 SLAPD_DOMAIN = 'dc=example,dc=org'
 AUTH_USER_MODEL = 'inventory.User'
 
-import os
 
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
+
+# X_FRAME_OPTIONS = 'SAMEORIGIN'

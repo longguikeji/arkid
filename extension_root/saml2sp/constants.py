@@ -1,0 +1,1 @@
+KEY = 'smal2sp'
