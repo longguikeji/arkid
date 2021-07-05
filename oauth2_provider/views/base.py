@@ -42,7 +42,13 @@ class TokenRequiredMixin(AccessMixin):
         tenant_index = full_path.find('tenant/') + 7
         if tenant_index != 6:
             slash_index = full_path.find('/', tenant_index)
-            full_path = '{}{}?tenant={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, full_path[tenant_index:slash_index], full_path)
+            tenant_uuid = full_path[tenant_index:slash_index]
+            tenant = Tenant.objects.filter(uuid=tenant_uuid).frist()
+            if tenant:
+                full_path = '{}.{}{}?next={}'.format(tenant.slug, get_app_config().get_frontend_host(), LOGIN_URL, full_path)
+            else:
+                full_path = '{}{}?tenant={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, tenant_uuid, full_path)
+            # full_path = '{}{}?tenant={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, tenant_uuid, full_path)
         return full_path
 
     def dispatch(self, request, *args, **kwargs):
