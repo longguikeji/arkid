@@ -6,7 +6,7 @@ from common.event import Event
 
 
 class WebHookSerializer(DynamicFieldsModelSerializer):
-    events = serializers.ChoiceField(choices=Event.choices)
+    events = serializers.MultipleChoiceField(choices=Event.choices)
     url = serializers.URLField()
 
     class Meta:
@@ -31,7 +31,7 @@ class WebHookSerializer(DynamicFieldsModelSerializer):
         url = validated_data.get('url')
         secret = validated_data.get('secret')
         events = validated_data.get('events')
-        events_json = json.loads(events)
+        events_json = list(events)
 
         hook = WebHook.valid_objects.create(
             tenant=tenant, name=name, url=url, secret=secret, events=events_json
