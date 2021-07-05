@@ -133,7 +133,7 @@ class SSOResponse(View):
             'destination': app.data["acs"],
         }
         sp_config = {
-            'processor': 'djangosaml2.processors.BaseProcessor',
+            'processor': 'djangosaml2idp.processors.BaseProcessor',
             'attribute_mapping': {
                 'username': 'username',
                 'token': 'token',

@@ -2,14 +2,14 @@ from django.conf.urls import url
 from django.urls import re_path
 from django.urls.conf import path
 # dev
-from djangosaml2.views.dev import IndexView
-from djangosaml2.views.dev.MockLoginView import MockLogin
+from djangosaml2idp.views.dev import IndexView
+from djangosaml2idp.views.dev.MockLoginView import MockLogin
 
 # sso
-from djangosaml2.views.SSOEntryView import SSOEntry
-from djangosaml2.views.MetadataView import Metadata
-from djangosaml2.views.MetadataDownloadView import MetadataDownload
-from djangosaml2.views.SSOResponseView import SSOResponse
+from djangosaml2idp.views.SSOEntryView import SSOEntry
+from djangosaml2idp.views.MetadataView import Metadata
+from djangosaml2idp.views.MetadataDownloadView import MetadataDownload
+from djangosaml2idp.views.SSOResponseView import SSOResponse
 
 
 urlpatterns = [

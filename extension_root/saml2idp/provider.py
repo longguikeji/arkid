@@ -6,7 +6,7 @@ from saml2.sigver import get_xmlsec_binary
 from app.models import App
 from common.provider import AppTypeProvider
 from django.urls import reverse
-from djangosaml2.cert import check_or_create_self_signed_cert
+from djangosaml2idp.cert import check_or_create_self_signed_cert
 import copy
 from six import text_type
 
