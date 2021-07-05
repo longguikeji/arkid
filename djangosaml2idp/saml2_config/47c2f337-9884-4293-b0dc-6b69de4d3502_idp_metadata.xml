@@ -1,0 +1,21 @@
+<ns0:EntityDescriptor xmlns:ns0="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:ns1="urn:oasis:names:tc:SAML:metadata:algsupport" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" entityID="http:localhost:8000/api/v1/tenant/47c2f337-9884-4293-b0dc-6b69de4d3502/metadata/" validUntil="2022-07-05T10:34:31Z"><ns0:Extensions><ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#md5" /><ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#ripemd160" /><ns1:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#sha224" /><ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#sha384" /><ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512" /><ns1:SigningMethod Algorithm="http://www.w3.org/2000/09/xmldsig#dsa-sha1" /><ns1:SigningMethod Algorithm="http://www.w3.org/2009/xmldsig11#dsa-sha256" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha224" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-md5" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-ripemd160" /><ns1:SigningMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha224" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha384" /><ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha512" /></ns0:Extensions><ns0:IDPSSODescriptor WantAuthnRequestsSigned="false" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol"><ns0:KeyDescriptor use="signing"><ns2:KeyInfo><ns2:X509Data><ns2:X509Certificate>MIIBsjCCARsCAgPoMA0GCSqGSIb3DQEBBQUAMCExCzAJBgNVBAYTAkNOMRIwEAYD
+VQQDDAltYWNkZWltYWMwHhcNMjEwNzA1MTAyMTExWhcNMzEwNzAzMTAyMTExWjAh
+MQswCQYDVQQGEwJDTjESMBAGA1UEAwwJbWFjZGVpbWFjMIGfMA0GCSqGSIb3DQEB
+AQUAA4GNADCBiQKBgQCXVu87Pf1E0W93+kEXj8CQixeEPVub/NTbbqBgXOEi7CGz
+pq0luXAe8Mr8ATyT+pSoMOxkMTF16EOmixXiKhauGpYoN6dA5A4u4te3UmcCx3xq
+UNlGJhkvYsovtmAWKd9qHO5ds+XWT8XPQ1/ussE/9sgxWVH3RplPWA8kLz71HQID
+AQABMA0GCSqGSIb3DQEBBQUAA4GBAFSNI6rhHmTJW0GAQc10GrLbYdLcSR4FDiMN
+z5dNoNry2+or9jXyFus5MEKkgvUsY4K/S6nMhuzuGaCQeteRyxUaL9XTuit1nxQi
+oU3C5iNJOx+YrZ1SDXQ9TbrhAODrCjYNQXCD2FRHTq4Mq+J7JfgfJVVfwZarwsF6
+z9v+FrDn
+</ns2:X509Certificate></ns2:X509Data></ns2:KeyInfo></ns0:KeyDescriptor><ns0:KeyDescriptor use="encryption"><ns2:KeyInfo><ns2:X509Data><ns2:X509Certificate>MIIBsjCCARsCAgPoMA0GCSqGSIb3DQEBBQUAMCExCzAJBgNVBAYTAkNOMRIwEAYD
+VQQDDAltYWNkZWltYWMwHhcNMjEwNzA1MTAyMTExWhcNMzEwNzAzMTAyMTExWjAh
+MQswCQYDVQQGEwJDTjESMBAGA1UEAwwJbWFjZGVpbWFjMIGfMA0GCSqGSIb3DQEB
+AQUAA4GNADCBiQKBgQCXVu87Pf1E0W93+kEXj8CQixeEPVub/NTbbqBgXOEi7CGz
+pq0luXAe8Mr8ATyT+pSoMOxkMTF16EOmixXiKhauGpYoN6dA5A4u4te3UmcCx3xq
+UNlGJhkvYsovtmAWKd9qHO5ds+XWT8XPQ1/ussE/9sgxWVH3RplPWA8kLz71HQID
+AQABMA0GCSqGSIb3DQEBBQUAA4GBAFSNI6rhHmTJW0GAQc10GrLbYdLcSR4FDiMN
+z5dNoNry2+or9jXyFus5MEKkgvUsY4K/S6nMhuzuGaCQeteRyxUaL9XTuit1nxQi
+oU3C5iNJOx+YrZ1SDXQ9TbrhAODrCjYNQXCD2FRHTq4Mq+J7JfgfJVVfwZarwsF6
+z9v+FrDn
+</ns2:X509Certificate></ns2:X509Data></ns2:KeyInfo></ns0:KeyDescriptor><ns0:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</ns0:NameIDFormat><ns0:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</ns0:NameIDFormat><ns0:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="http:localhost:8000/api/v1/tenant/47c2f337-9884-4293-b0dc-6b69de4d3502/sso/post/" /><ns0:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="http:localhost:8000/api/v1/tenant/47c2f337-9884-4293-b0dc-6b69de4d3502/sso/redirect/" /></ns0:IDPSSODescriptor></ns0:EntityDescriptor>
