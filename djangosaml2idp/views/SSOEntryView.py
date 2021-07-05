@@ -15,15 +15,15 @@ class SSOEntry(View):
         passed_data = request.GET
         binding = BINDING_HTTP_REDIRECT
 
-        return self.make_response(request,passed_data,binding)
+        return self.make_response(request,passed_data,binding,tenant_uuid,app_id)
 
     def post(self, request,tenant_uuid,app_id):
         passed_data = request.POST
         binding = BINDING_HTTP_POST
-        return self.make_response(request,passed_data,binding)
+        return self.make_response(request,passed_data,binding,tenant_uuid,app_id)
 
 
-    def make_response(self,request,passed_data,binding):
+    def make_response(self,request,passed_data,binding,tenant_uuid,app_id):
         request.session['Binding'] = binding
         try:
             request.session['SAMLRequest'] = passed_data['SAMLRequest']
@@ -34,4 +34,4 @@ class SSOEntry(View):
         if "SigAlg" in passed_data and "Signature" in passed_data:
             request.session['SigAlg'] = passed_data['SigAlg']
             request.session['Signature'] = passed_data['Signature']
-        return HttpResponseRedirect(reverse('djangosaml2idp:saml_login_process'))
+        return HttpResponseRedirect(reverse("api:saml2idp:login_process", args=[tenant_uuid,app_id]))
