@@ -150,4 +150,4 @@ def create_dowload_url_field(field_cls):
             set_override(self, 'field', field)
             super().__init__(**kwargs)
 
-    return EnumField
+    return DownloadUrlField
