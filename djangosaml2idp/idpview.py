@@ -530,7 +530,7 @@ class AliyunSSORoleView(AliyunRoleSSOAccessMixin, IdPHandlerViewMixin, View):
         """
         try:
             spauthn = request.COOKIES['spauthn']
-            token = ExpiringToken.objects.get(key=spauthn)
+            token = Token.objects.get(key=spauthn)
             return token.user
         except Exception:    # pylint: disable=broad-except
             return request.user
