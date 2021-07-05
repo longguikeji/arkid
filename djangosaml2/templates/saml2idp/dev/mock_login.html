@@ -1,0 +1,22 @@
+{#oneid_base_url需要更改为本地开发环境IP:port#}
+<form class='form' method="POST">
+    username<input name="username">
+    password<input name="password">
+    <button type='button' id='submit'>submit</button>
+</form>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript">
+    $('#submit').click(function(){
+        const username = $('input[name=username]').val();
+        const password = $('input[name=password]').val();
+        $.ajax({
+            method: 'POST',
+            url: '{{token_url}}',
+            data: {'username': username, 'password': password},
+            success: function(data){
+                window.location.href = '{{next}}?spauthn='+data["data"]["token"];
+            }
+        })
+        return false;
+    })
+</script>

@@ -1,4 +1,6 @@
 import copy
+
+from rest_framework.authtoken.models import Token
 from inventory.models import User
 from saml2.config import IdPConfig
 from extension_root.saml2idp.provider import BASE_DIR
@@ -36,13 +38,13 @@ class SSOResponse(View):
         """
         返回cookie对应的用户
         """
-        user = User.objects.filter(
-            username="admin",
-        ).first()
-        return user
+        # user = User.objects.filter(
+        #     username="admin",
+        # ).first()
+        # return user
         try:
             spauthn = request.COOKIES['spauthn']
-            token = ExpiringToken.objects.get(key=spauthn)
+            token = Token.objects.get(key=spauthn)
             return token.user
         except Exception:    # pylint: disable=broad-except
             return request.user
