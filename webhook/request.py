@@ -147,8 +147,11 @@ class Request(ThenableProxy):
             self.handle_timeout_error(exc, propagate=propagate)
         except self.connection_errors as exc:
             self.handle_connection_error(exc, propagate=propagate)
+        except Exception as exc:
+            self.set_history_state(self.history_id, 2, {'error': str(exc)})
+            self._p.throw(exc, propagate=propagate)
         else:
-            self.set_history_state(self.history_id, 1, self.response.json())
+            self.set_history_state(self.history_id, 1, {'status_code': self.response.status_code, 'response': self.response.text}) 
             self._p()
 
     @contextmanager

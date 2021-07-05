@@ -6,7 +6,8 @@ from common.event import Event
 
 
 class WebHookSerializer(DynamicFieldsModelSerializer):
-    available_events = serializers.SerializerMethodField()
+    events = serializers.ChoiceField(choices=Event.choices)
+    url = serializers.URLField()
 
     class Meta:
         model = WebHook
@@ -17,13 +18,11 @@ class WebHookSerializer(DynamicFieldsModelSerializer):
             'url',
             'content_type',
             'events',
-            'available_events',
             'secret',
         )
         extra_kwargs = {
             'uuid': {'read_only': True},
             'content_type': {'read_only': True},
-            'available_events': {'read_only': True},
         }
 
     def create(self, validated_data):
@@ -38,11 +37,6 @@ class WebHookSerializer(DynamicFieldsModelSerializer):
             tenant=tenant, name=name, url=url, secret=secret, events=events_json
         )
         return hook
-
-    def get_available_events(self, instance):
-        from common.event import Event
-
-        return Event.choices
 
 
 class WebHookListResponseSerializer(WebHookSerializer):
