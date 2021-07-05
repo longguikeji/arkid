@@ -44,6 +44,7 @@ class GiteeUserInfoManager:
                     "redirect_uri": self.redirect_uri,
                 },
             )
+
             response = response.__getattribute__("_content").decode()
             result = json.loads(response)
             access_token = result["access_token"]
