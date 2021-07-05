@@ -45,7 +45,7 @@ class TokenRequiredMixin(AccessMixin):
             tenant_uuid = full_path[tenant_index:slash_index]
             tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
             if tenant:
-                full_path = '{}.{}{}?next={}'.format(tenant.slug, get_app_config().get_frontend_host(), LOGIN_URL, full_path)
+                full_path = '{}{}?next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, full_path)
             else:
                 full_path = '{}{}?tenant={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, tenant_uuid, full_path)
             # full_path = '{}{}?tenant={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, tenant_uuid, full_path)

@@ -65,6 +65,11 @@ class Config(object):
 
         return self.host
 
+    def get_slug_frontend_host(self, slug, schema=True):
+        if schema:
+            return '{}://{}.{}'.format('https' if self.https_enabled else 'http', slug, self.frontend_host)
+        return self.host
+
 
 def get_app_config() -> Config:
     return Config()
