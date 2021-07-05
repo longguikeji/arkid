@@ -38,12 +38,12 @@ from saml2.s_utils import UnknownPrincipal, UnsupportedBinding
 from saml2.server import Server
 from saml2.md import entity_descriptor_from_string
 
-from djangosaml2idp.serializers.aliyun import AliyunSSORoleSerializer
+# from djangosaml2idp.serializers.aliyun import AliyunSSORoleSerializer
 from djangosaml2idp.processors import BaseProcessor
 from djangosaml2idp import idpsettings
-from oneid.permissions import IsAdminUser, IsUserManager
-from oneid_meta.models import SAMLAPP, AliyunSSORole
-from drf_expiring_authtoken.models import ExpiringToken
+# from oneid.permissions import IsAdminUser, IsUserManager
+# from oneid_meta.models import SAMLAPP, AliyunSSORole
+# from drf_expiring_authtoken.models import ExpiringToken
 
 logger = logging.getLogger(__name__)    # pylint: disable=invalid-name
 
@@ -648,8 +648,8 @@ class AliyunSSORoleView(AliyunRoleSSOAccessMixin, IdPHandlerViewMixin, View):
 
 class AliyunSSORoleListCreateAPIView(generics.ListCreateAPIView):
     """用户关联阿里云SSO关联信息"""
-    serializer_class = AliyunSSORoleSerializer
-    permission_classes = [IsAuthenticated & (IsAdminUser | IsUserManager)]
+    # serializer_class = AliyunSSORoleSerializer
+    # permission_classes = [IsAuthenticated & (IsAdminUser | IsUserManager)]
 
     def get_queryset(self):
         """return queryset for list [GET]"""
@@ -680,8 +680,8 @@ class AliyunSSORoleListCreateAPIView(generics.ListCreateAPIView):
 
 class AliyunSSORoleDetailCreateAPIView(generics.RetrieveUpdateAPIView):
     """特定阿里云角色SSO信息 [GET],[PATCH]"""
-    serializer_class = AliyunSSORoleSerializer
-    permission_classes = [IsAuthenticated & (IsAdminUser | IsUserManager)]
+    # serializer_class = AliyunSSORoleSerializer
+    # permission_classes = [IsAuthenticated & (IsAdminUser | IsUserManager)]
 
     def get_object(self):
         """

@@ -17,16 +17,16 @@ base_urlpatterns = [
     # path('login/process_multi_factor/', idpview.ProcessMultiFactorView.as_view(), name='saml_multi_factor'),
     path('metadata/', idpview.metadata, name='saml2_idp_metadata'),
     path('download/metadata/', idpview.download_metadata, name='saml2_idp_download_metadata'),
-    path('aliyun/sso-role/login/', idpview.AliyunSSORoleView.as_view(), name='aliyun_sso_role_login'),
-    path('aliyun/sso-role/', idpview.AliyunSSORoleListCreateAPIView.as_view(), name='aliyun_sso_role_list'),
-    path('aliyun/sso-role/<str:username>/',
-         idpview.AliyunSSORoleDetailCreateAPIView.as_view(),
-         name='aliyun_sso_role_detail'),
+#     path('aliyun/sso-role/login/', idpview.AliyunSSORoleView.as_view(), name='aliyun_sso_role_login'),
+#     path('aliyun/sso-role/', idpview.AliyunSSORoleListCreateAPIView.as_view(), name='aliyun_sso_role_list'),
+#     path('aliyun/sso-role/<str:username>/',
+#          idpview.AliyunSSORoleDetailCreateAPIView.as_view(),
+#          name='aliyun_sso_role_detail'),
 ]
 
 fe_urlpatterns = [
-    path('fe/login/', dev_views.LoginView.as_view(), name='fe_login'),
-    path('aliyun/sso-role/fe/login/', dev_views.AliyunRoleSSOLoginView.as_view(), name='aliyun_sso_role_fe_login'),
+    # path('fe/login/', dev_views.LoginView.as_view(), name='fe_login'),
+    # path('aliyun/sso-role/fe/login/', dev_views.AliyunRoleSSOLoginView.as_view(), name='aliyun_sso_role_fe_login'),
 ]
 
 urlpatterns = base_urlpatterns + fe_urlpatterns
