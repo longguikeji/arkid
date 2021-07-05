@@ -25,4 +25,8 @@ SAML 2.0 Login Success as admin
         })
         return false;
     })
+
+    window.addEventListener('message', function(event){
+        console.log("收到" + event.origin + "消息：" + event.data);
+    }, false);
 </script>
