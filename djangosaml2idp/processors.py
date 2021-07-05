@@ -2,8 +2,7 @@
 检查是否有权限等
 '''
 from django.conf import settings
-# from oneid_meta.models import SAMLAPP, Perm, UserPerm
-# from drf_expiring_authtoken.models import ExpiringToken
+from rest_framework.authtoken.models import Token
 
 
 class BaseProcessor:
@@ -17,12 +16,12 @@ class BaseProcessor:
         """
         Check if this user is allowed to use this IDP
         """
-        spauthn = request.COOKIES['spauthn']
-        token_object = ExpiringToken.objects.get(key=spauthn)
+        spauthn = request.GET.get("spauthn",None) or request.COOKIES['spauthn']
+        token_object = Token.objects.get(key=spauthn)
         user = token_object.user
-        if user.is_admin:
+        if user.is_superuser:
             return True
-        samlapp = SAMLAPP.objects.filter(entity_id=self._entity_id, is_del=False).first()
+        samlapp = APP.objects.filter(entity_id=self._entity_id, is_del=False).first()
         app = samlapp.app
         perm = Perm.valid_objects.filter(scope=app.uid, action='access', subject='app').first()
         userperm = UserPerm.valid_objects.filter(owner=user, perm=perm, value=True)

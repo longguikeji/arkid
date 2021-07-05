@@ -219,3 +219,5 @@ if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
 
 BASE_URL="http:localhost:8000"
 ALIYUN_ROLE_SSO_LOGIN_URL=""
+SAML_IDP_SP_FIELD_DEFAULT_PROCESSOR = 'djangosaml2idp.processors.BaseProcessor'
+SAML_IDP_SP_FIELD_DEFAULT_ATTRIBUTE_MAPPING = {"email": "email", "first_name": "first_name", "last_name": "last_name", "is_staff": "is_staff", "is_superuser": "is_superuser"}

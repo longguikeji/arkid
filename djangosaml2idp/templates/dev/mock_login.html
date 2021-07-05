@@ -8,10 +8,9 @@ SAML 2.0 Login Success as admin
 </form>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
-    const oneid_base_url = 'http://localhost:8000'
     const urlParams = new URLSearchParams(window.location.search);
     const SAMLRequest = urlParams.get('SAMLRequest');
-    let next = oneid_base_url + '/saml/login/process/'+'?SAMLRequest='+SAMLRequest;
+    let next = '{{next}}'+'?SAMLRequest='+SAMLRequest;
 
     $('#submit').click(function(){
         const username = $('input[name=username]').val();
@@ -20,8 +19,8 @@ SAML 2.0 Login Success as admin
             method: 'POST',
             url: '{{token_url}}',
             data: {'username': username, 'password': password},
-            success: function(){
-                window.location.href = next;
+            success: function(data){
+                window.location.href = next+'&spauthn='+data["data"]["token"];
             }
         })
         return false;
