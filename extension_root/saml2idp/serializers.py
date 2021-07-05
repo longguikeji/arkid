@@ -4,7 +4,7 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import AppBaseSerializer
 from django.conf import settings
-
+from api.v1.fields.custom import create_dowload_url_field
 
 class SAMLasIDPConfigSerializer(serializers.Serializer):
     
@@ -29,9 +29,14 @@ class SAMLasIDPConfigSerializer(serializers.Serializer):
         label=_("元数据文件")
     )
 
-    idp_metadata = serializers.CharField(
-        read_only=True,
+    idp_metadata = create_dowload_url_field(serializers.CharField)(
+        hint=_("点击下载"),
         label=_("IDP元数据文件"),
+        read_only=True
+    )
+
+    sso_url = serializers.CharField(
+        label=_("登陆地址"),
     )
 
 class SAMLasIDPSerializer(AppBaseSerializer):

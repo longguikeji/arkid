@@ -6,6 +6,7 @@ from django.urls import path
 
 from djangosaml2idp import idpview
 from djangosaml2idp import dev as dev_views
+from djangosaml2idp.hook import HookView
 
 app_name = 'djangosaml2idp'
 
@@ -17,6 +18,7 @@ base_urlpatterns = [
     # path('login/process_multi_factor/', idpview.ProcessMultiFactorView.as_view(), name='saml_multi_factor'),
     path('metadata/', idpview.metadata, name='saml2_idp_metadata'),
     path('download/metadata/', idpview.download_metadata, name='saml2_idp_download_metadata'),
+    path('sso_hook/', HookView.as_view(), name='saml2_sso_hook'),
 #     path('aliyun/sso-role/login/', idpview.AliyunSSORoleView.as_view(), name='aliyun_sso_role_login'),
 #     path('aliyun/sso-role/', idpview.AliyunSSORoleListCreateAPIView.as_view(), name='aliyun_sso_role_list'),
 #     path('aliyun/sso-role/<str:username>/',

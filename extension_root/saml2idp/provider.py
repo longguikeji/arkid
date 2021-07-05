@@ -34,6 +34,8 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
         if os.path.exists(BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename):
             os.remove(BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename)
 
+        app.url = f'{reverse("api:saml2idp:saml2_sso_hook",args=(app.tenant.uuid,))}?app_id={app.id}'
+
         return data
 
     def update(self, app: App, data: Dict) -> Dict:
@@ -59,4 +61,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
 
         if os.path.exists(BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename):
             os.remove(BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename)
+
+        app.url = f'{reverse("api:saml2idp:saml2_sso_hook",args=(app.tenant.uuid,))}?app_id={app.id}'
+        
         return data
