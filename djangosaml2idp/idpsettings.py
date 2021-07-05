@@ -43,13 +43,13 @@ def get_SAML_IDP_CONFIG(tenant_uuid):
         },
         # Signing
         'key_file':
-        BASE_DIR + '/djangosaml2idp/certificates/mykey.pem',
+        BASE_DIR + f'/djangosaml2idp/certificates/{tenant_uuid}_key.pem',
         'cert_file':
-        BASE_DIR + '/djangosaml2idp/certificates/mycert.pem',
+        BASE_DIR + f'/djangosaml2idp/certificates/{tenant_uuid}_cert.pem',
         # Encryption
         'encryption_keypairs': [{
-            'key_file': BASE_DIR + '/djangosaml2idp/certificates/mykey.pem',
-            'cert_file': BASE_DIR + '/djangosaml2idp/certificates/mycert.pem',
+            'key_file': BASE_DIR + f'/djangosaml2idp/certificates/{tenant_uuid}_key.pem',
+            'cert_file': BASE_DIR + f'/djangosaml2idp/certificates/{tenant_uuid}_cert.pem',
         }],
         'valid_for':
         365 * 24,
