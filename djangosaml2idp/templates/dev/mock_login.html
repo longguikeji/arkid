@@ -8,15 +8,15 @@ SAML 2.0 Login Success as admin
 </form>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
-
-    spauthn = localStorage.getItem("spauthn");
-    if( spauthn!=null && spauthn != "" ){
-        window.location.href = next+'&spauthn='+spauthn;
-    };
-
     const urlParams = new URLSearchParams(window.location.search);
     const SAMLRequest = urlParams.get('SAMLRequest');
     let next = '{{next}}'+'?SAMLRequest='+SAMLRequest;
+    
+    spauthn = localStorage.getItem("spauthn");
+    console.log(spauthn);
+    if( spauthn!=null && spauthn != "" ){
+        window.location.href = next+'&spauthn='+spauthn;
+    };
 
     $('#submit').click(function(){
         const username = $('input[name=username]').val();
