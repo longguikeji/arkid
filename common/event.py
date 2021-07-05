@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 class Event(models.TextChoices):
 
-    USER_CREATED = ('event.user.created', _('USER_CREATED'))
+    USER_CREATED = 'event.user.created', _('USER_CREATED')
     USER_UPDATED = 'event.user.updated', _('USER_UPDATED')
     USER_DELETED = 'event.user.deleted', _('USER_DELETED')
 
