@@ -129,3 +129,25 @@ def create_enum_field(field_cls):
             super().__init__(**kwargs)
 
     return EnumField
+
+def create_dowload_url_field(field_cls):
+    @extend_schema_field(
+        field = {
+            'format': 'download_url',
+        }
+    )
+    class DownloadUrlField(field_cls):
+        _field_meta = {}
+
+        def __init__(self, hint, **kwargs):
+            field = get_override(self, 'field', {})
+            field['hint'] = hint
+
+            for k, v in kwargs.items():
+                if isinstance (v,(str,int,list,bool,dict,float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+
+    return EnumField
