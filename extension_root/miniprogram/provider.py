@@ -5,6 +5,7 @@ from common.extension import InMemExtension
 from common.provider import ExternalIdpProvider
 from .constants import KEY
 from django.urls import reverse
+from config import get_app_config
 
 
 class MiniProgramExternalIdpProvider(ExternalIdpProvider):
@@ -37,12 +38,13 @@ class MiniProgramExternalIdpProvider(ExternalIdpProvider):
     def create(self, tenant_uuid, external_idp, data):
         app_id = data.get('app_id')
         secret_id = data.get('secret_id')
+        host = get_app_config().host
 
         return {
             'app_id': app_id,
             'secret_id': secret_id,
-            'login_url': reverse("api:miniprogram:login", args=[tenant_uuid]),
-            'bind_url': reverse("api:miniprogram:bind", args=[tenant_uuid]),
+            'login_url': host+reverse("api:miniprogram:login", args=[tenant_uuid]),
+            'bind_url': host+reverse("api:miniprogram:bind", args=[tenant_uuid]),
         }
 
     def _get_token(self):

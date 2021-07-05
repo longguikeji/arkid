@@ -3,6 +3,7 @@ from app.models import App
 from common.provider import AppTypeProvider
 from oauth2_provider.models import Application
 from django.urls import reverse
+from config import get_app_config
 
 
 class OAuth2AppTypeProvider(AppTypeProvider):
@@ -16,6 +17,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
         redirect_uris = data.get('redirect_uris')
         authorization_grant_type = data.get('grant_type')
         algorithm = data.get('algorithm')
+        host = get_app_config().get_host()
         obj = Application()
         obj.name = app.id
         obj.client_type = client_type
@@ -31,9 +33,9 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             'grant_type': authorization_grant_type,
             'client_id': obj.client_id,
             'client_secret': obj.client_secret,
-            'userinfo': reverse("api:oauth2_authorization_server:user-info", args=[app.tenant.uuid]),
-            'authorize': reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
-            'token': reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
+            'userinfo': host+reverse("api:oauth2_authorization_server:user-info", args=[app.tenant.uuid]),
+            'authorize': host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
+            'token': host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
         }
         if algorithm and app.type == 'OIDC':
             uniformed_data['algorithm'] = obj.algorithm
@@ -44,6 +46,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
         redirect_uris = data.get('redirect_uris')
         authorization_grant_type = data.get('grant_type')
         algorithm = data.get('algorithm')
+        host = get_app_config().get_host()
         obj = Application.objects.filter(name=app.id).first()
         obj.client_type = client_type
         obj.redirect_uris = redirect_uris
@@ -57,9 +60,9 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             'grant_type': authorization_grant_type,
             'client_id': obj.client_id,
             'client_secret': obj.client_secret,
-            'userinfo': reverse("api:oauth2_authorization_server:user-info", args=[app.tenant.uuid]),
-            'authorize': reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
-            'token': reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
+            'userinfo': host+reverse("api:oauth2_authorization_server:user-info", args=[app.tenant.uuid]),
+            'authorize': host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
+            'token': host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
         }
         if algorithm and app.type == 'OIDC':
             uniformed_data['algorithm'] = obj.algorithm
