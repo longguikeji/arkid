@@ -13,7 +13,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
 
     def create(self, app: App, data: Dict) -> Dict:
         idp_init(app.tenant.uuid)
-        data["idp_metadata"] = get_app_config().get_host() + reverse("api:saml2idp:saml2_idp_metadata",args=(app.tenant.uuid,))
+        data["idp_metadata"] = get_app_config().get_host() + reverse("api:saml2idp:saml2_idp_download_metadata",args=(app.tenant.uuid,))
 
         filename = f"{app.tenant.uuid}_{app.id}"
         xmldata = data.get('xmldata', '')
@@ -41,7 +41,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
 
     def update(self, app: App, data: Dict) -> Dict:
         idp_init(app.tenant.uuid)
-        data["idp_metadata"] = get_app_config().get_host()+reverse("api:saml2idp:saml2_idp_metadata",args=(app.tenant.uuid,))
+        data["idp_metadata"] = get_app_config().get_host()+reverse("api:saml2idp:saml2_idp_download_metadata",args=(app.tenant.uuid,))
 
         filename = f"{app.tenant.uuid}_{app.id}"
         xmldata = data.get('xmldata', '')
