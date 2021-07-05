@@ -5,7 +5,6 @@ import os
 import logging
 import copy
 from socket import gethostname
-from urllib.parse import quote_plus
 from OpenSSL import crypto
 
 from django.conf import settings
@@ -79,7 +78,7 @@ def create_self_signed_cert(tenant_uuid):
 @never_cache
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
-def sso_entry(request, tenant_uuid):
+def sso_entry(request,tenant_uuid):
     """ Entrypoint view for SSO. Gathers the parameters from the HTTP request, stores them in the session
         and redirects the requester to the login_process view.
     """
@@ -100,7 +99,7 @@ def sso_entry(request, tenant_uuid):
     if "SigAlg" in passed_data and "Signature" in passed_data:
         request.session['SigAlg'] = passed_data['SigAlg']
         request.session['Signature'] = passed_data['Signature']
-    return HttpResponseRedirect(reverse('api:saml2idp:saml_login_process', args=(tenant_uuid,)))
+    return HttpResponseRedirect(reverse('api:saml2idp:saml_login_process',args=(tenant_uuid,)))
 
 
 class AccessMixin:
@@ -136,30 +135,29 @@ class AccessMixin:
         """
         return self.redirect_field_name
 
-    def handle_no_permission(self, request_data, tenant_uuid):
+    def handle_no_permission(self, request_data,tenant_uuid):
         '''
         未登录用户跳转登录页面
         '''
         if self.raise_exception:
             raise PermissionDenied(self.get_permission_denied_message())
-        return HttpResponseRedirect(reverse("api:saml2idp:fe_login", args=(tenant_uuid,)) + '?SAMLRequest={}'.format(request_data))
+        return HttpResponseRedirect(reverse("api:saml2idp:fe_login",args=(tenant_uuid,)) + '?SAMLRequest={}'.format(request_data))
 
 
 class LoginRequiredMixin(AccessMixin):
     """Verify that the current user is authenticated."""
 
-    def dispatch(self, request, tenant_uuid, *args, **kwargs):
+    def dispatch(self, request,tenant_uuid,*args, **kwargs):
         '''检查用户cookies是否登录
         '''
         try:
-            spauthn = request.GET.get(
-                "spauthn", None) or request.COOKIES["spauthn"]
+            spauthn = request.GET.get("spauthn",None) or request.COOKIES["spauthn"]
             token = Token.objects.get(key=spauthn)
             exp = token
             if exp:
                 return super().dispatch(request, tenant_uuid, *args, **kwargs)
         except Exception as err:    # pylint: disable=broad-except
-            return self.handle_no_permission(request.session['SAMLRequest'], tenant_uuid)
+            return self.handle_no_permission(request.session['SAMLRequest'],tenant_uuid)
 
 
 class IdPHandlerViewMixin:
@@ -177,12 +175,12 @@ class IdPHandlerViewMixin:
         """
         conf = IdPConfig()
         try:
-
+            
             conf.load(copy.copy(idpsettings.get_SAML_IDP_CONFIG(tenant_uuid)))
             self.IDP = Server(config=conf)    # pylint: disable=invalid-name
         except Exception as e:    # pylint: disable=invalid-name, broad-except
             return self.handle_error(request, exception=e)
-        return super(IdPHandlerViewMixin, self).dispatch(request, tenant_uuid, *args, **kwargs)
+        return super(IdPHandlerViewMixin, self).dispatch(request,tenant_uuid,*args, **kwargs)
 
     def get_processor(self, entity_id, sp_config):    # pylint: disable=no-self-use
         """
@@ -221,8 +219,7 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
         '''返回cookie对应的用户
         '''
         try:
-            spauthn = request.GET.get(
-                "spauthn", None) or request.COOKIES['spauthn']
+            spauthn = request.GET.get("spauthn",None) or request.COOKIES['spauthn']
             token = Token.objects.get(key=spauthn)
             return token.user
         except Exception:    # pylint: disable=broad-except
@@ -302,20 +299,21 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
 
             _spsso_descriptor = entity_descriptor_from_string(
                 app.data["xmldata"]).spsso_descriptor.pop()    # pylint: disable=no-member
-
-            name_id = NameID(format=resp_args['name_id_policy'],
-                             sp_name_qualifier=resp_args['sp_entity_id'],
-                             text=user_id)
             authn_resp = self.IDP.create_authn_response(
                 identity=identity,
                 userid=user_id,
-                name_id=name_id,
-                
+                name_id=NameID(format=resp_args['name_id_policy'].format,
+                               sp_name_qualifier=resp_args['sp_entity_id'],
+                               text=user_id),
+                # name_id=NameID(format=resp_args['name_id_policy'],
+                #                sp_name_qualifier=resp_args['sp_entity_id'],
+                #                text=user_id),
                 authn=AUTHN_BROKER.get_authn_by_accr(req_authn_context),
-                sign_response=getattr( _spsso_descriptor, 'want_response_signed', '') == 'true',
-                sign_assertion=getattr(_spsso_descriptor, 'want_assertions_signed', '') == 'true',
-                **resp_args
-            )
+                sign_response=getattr(
+                    _spsso_descriptor, 'want_response_signed', '') == 'true',
+                sign_assertion=getattr(
+                    _spsso_descriptor, 'want_assertions_signed', '') == 'true',
+                **resp_args)
         except Exception as excp:    # pylint: disable=broad-except
             return self.handle_error(request, exception=excp, status=500)
         # print('authn_resp is', authn_resp)
@@ -453,7 +451,7 @@ class ProcessMultiFactorView(LoginRequiredMixin, View):
 
 
 @never_cache
-def metadata(request, tenant_uuid):    # pylint: disable=unused-argument
+def metadata(request,tenant_uuid):    # pylint: disable=unused-argument
     """
     Returns an XML with the SAML 2.0 metadata for this Idp.
     The metadata is constructed on-the-fly based on the config dict in the django settings.
@@ -465,12 +463,12 @@ def metadata(request, tenant_uuid):    # pylint: disable=unused-argument
 
 
 @never_cache
-def download_metadata(request, tenant_uuid):    # pylint: disable=unused-argument
+def download_metadata(request,tenant_uuid):    # pylint: disable=unused-argument
     """
     Returns an XML with the SAML 2.0 metadata for this Idp.
     The metadata is constructed on-the-fly based on the config dict in the django settings.
     """
-    res = metadata(request, tenant_uuid)
+    res = metadata(request,tenant_uuid)
     res['Content-Type'] = 'application/octet-stream'
     res['Content-Disposition'] = 'attachment;filename="idp_metadata.xml"'
     return res
