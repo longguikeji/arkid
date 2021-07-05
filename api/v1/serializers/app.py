@@ -63,10 +63,10 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
         assert provider_cls is not None
         provider = provider_cls()
         data = provider.create(app=app, data=protocol_data)
+        print(1111,app.url)
         if data is not None:
             app.data = data
             app.save()
-
         return app
 
     def update(self, instance, validated_data):
