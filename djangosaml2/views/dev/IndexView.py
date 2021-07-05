@@ -7,7 +7,6 @@ from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 
 @method_decorator(never_cache, name='dispatch')
-@method_decorator(login_required, name='dispatch')
 class IndexView(View):
     """
     SAML2.0  IDP默认页面
