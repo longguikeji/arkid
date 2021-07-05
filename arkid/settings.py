@@ -70,7 +70,7 @@ INSTALLED_APPS = [
     'extension_root.miniprogram',
 ]
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'
+X_FRAME_OPTIONS = 'ALLOW-FROM http://arkid.vtwo.longguikeji.com'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
