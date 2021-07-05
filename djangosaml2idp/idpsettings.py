@@ -6,12 +6,13 @@ from django.conf import settings
 from saml2.saml import NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED
 from saml2.sigver import get_xmlsec_binary
 from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
+from config import get_app_config
 
 # djangosaml2idp config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def get_SAML_IDP_CONFIG(tenant_uuid):
-    BASE_URL = f"{settings.BASE_URL}/api/v1/tenant/{tenant_uuid}"
+    BASE_URL = f"{get_app_config().get_host()}/api/v1/tenant/{tenant_uuid}"
     SAML_IDP_CONFIG = {
         'debug':
         settings.DEBUG,
