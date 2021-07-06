@@ -170,5 +170,4 @@ node_modules/
 package-lock.json
 
 db.sqlite3-journal
-djangosaml2idp/saml2_config/afd25cbc-9619-4177-9ccd-0b417489285b_idp_metadata.xml
-djangosaml2idp/saml2_config/afd25cbc-9619-4177-9ccd-0b417489285b_1.xml
+djangosaml2idp/saml2_config/*.xml
