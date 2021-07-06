@@ -1,8 +1,8 @@
-<form class='form' method="POST" id="form_login" style="display: none;">
+<!-- <form class='form' method="POST" id="form_login" style="display: none;">
     username<input name="username">
     password<input name="password">
     <button type='button' id='submit'>submit</button>
-</form>
+</form> -->
 
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
@@ -16,19 +16,19 @@
         window.location.href = next+'&spauthn='+spauthn;
     };
 
-    document.getElementById("form_login").setAttribute("style","display:block");
+    // document.getElementById("form_login").setAttribute("style","display:block");
 
-    $('#submit').click(function(){
-        const username = $('input[name=username]').val();
-        const password = $('input[name=password]').val();
-        $.ajax({
-            method: 'POST',
-            url: '{{token_url}}',
-            data: {'username': username, 'password': password},
-            success: function(data){
-                // window.location.href = next+'&spauthn='+data["data"]["token"];
-            }
-        })
-        return false;
-    })
+    // $('#submit').click(function(){
+    //     const username = $('input[name=username]').val();
+    //     const password = $('input[name=password]').val();
+    //     $.ajax({
+    //         method: 'POST',
+    //         url: '{{token_url}}',
+    //         data: {'username': username, 'password': password},
+    //         success: function(data){
+    //             // window.location.href = next+'&spauthn='+data["data"]["token"];
+    //         }
+    //     })
+    //     return false;
+    // })
 </script>
