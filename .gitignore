@@ -169,3 +169,5 @@ package.json
 node_modules/
 package-lock.json
 
+db.sqlite3-journal
+djangosaml2idp/saml2_config/*.xml
