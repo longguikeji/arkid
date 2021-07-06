@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>SAML2 Error</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <h2>Error during SAML2 authentication</h2>
+
+    {% if exception_type %}
+        <p><strong>{{exception_type}}</strong><br>
+        {% if exception_msg %}
+            {{exception_msg}}</p>
+        {% endif %}
+    {% endif %}
+    {% if extra_message %}
+        <p>{{extra_message}}</p>
+    {% endif %}
+</body>
+
+</html>
