@@ -33,7 +33,7 @@ class OAuthAuthorizationServerExtension(InMemExtension):
 
         super().start(runtime=runtime, *args, **kwargs)
 
-    def logout(self, runtime: Runtime, *args, **kwargs):
+    def teardown(self, runtime: Runtime, *args, **kwargs):
         # Contribute OAuth Authentication Server & parameters
         runtime.logout_authorization_server(
             id='oauth2',

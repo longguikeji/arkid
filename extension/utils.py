@@ -132,7 +132,7 @@ def load_extension(runtime, ext_name: str, name: str, execute: bool = False) -> 
     return ext.extension
 
 
-def remove_extension(runtime, ext_name: str, name: str, execute: bool = False) -> any:
+def teardown_extension(runtime, ext_name: str, name: str, execute: bool = False) -> any:
     app_config = config.get_app_config()
     ext_dir = Path(app_config.extension.root) / name
 
@@ -150,7 +150,7 @@ def remove_extension(runtime, ext_name: str, name: str, execute: bool = False) -
         urlpatterns = [url(r'tenant/(?P<tenant_uuid>[\w-]+)/', include((f'{ext_name}.tenant_urls', 'extension'), namespace=f'{name}'))]
         runtime.logout_route(urlpatterns)
 
-    ext.extension.logout(runtime)
+    ext.extension.teardown(runtime)
     return ext.extension
 
 
@@ -177,7 +177,7 @@ def reload_extension(extension_type, is_add=True):
         load_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', True)
     else:
         # 取消加载
-        remove_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', True)
+        teardown_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', True)
     # 重新加载相应的url
     reload(api.v1.urls)
     reload(arkid.urls)

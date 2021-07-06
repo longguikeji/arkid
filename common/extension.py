@@ -77,7 +77,10 @@ class InMemExtension:
         value = value.get(key, default)
         return value
 
-    def logout(self, runtime) -> None:
+    def teardown(self, runtime) -> None:
+        pass
+
+    def setup(self, runtime) -> None:
         pass
 
     def register(self, service_name):
