@@ -241,7 +241,6 @@ AUTH_USER_MODEL = 'inventory.User'
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
 
-<<<<<<< HEAD
 # django-scim2
 SCIM_SERVICE_PROVIDER = {
     'NETLOC': 'localhost',
@@ -272,10 +271,3 @@ CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 # X_FRAME_OPTIONS = 'SAMEORIGIN'
 # 此处暂时徐保留
 ALIYUN_ROLE_SSO_LOGIN_URL=""
-=======
-BASE_URL="http:localhost:8000"
-ALIYUN_ROLE_SSO_LOGIN_URL=""
-SAML_IDP_SP_FIELD_DEFAULT_PROCESSOR = 'djangosaml2idp.processors.BaseProcessor'
-SAML_IDP_SP_FIELD_DEFAULT_ATTRIBUTE_MAPPING = {"email": "email", "first_name": "first_name", "last_name": "last_name", "is_staff": "is_staff", "is_superuser": "is_superuser"}
-SAML_IDP_DJANGO_USERNAME_FIELD="uuid"
->>>>>>> a8f5f03cde43b38c5370e977547c2f3dd4470e49
