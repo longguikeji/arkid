@@ -9,6 +9,7 @@ from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.utils.translation import gettext_lazy as _
+from extension.utils import reload_extension
 from common.code import Code
 
 
@@ -64,12 +65,6 @@ class ExtensionViewSet(BaseViewSet):
 
     @extend_schema(
         roles=['global admin'],
-    )
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-    @extend_schema(
-        roles=['global admin'],
         request=ExtensionPolymorphicProxySerializer,
         responses=ExtensionPolymorphicProxySerializer,
     )
@@ -90,3 +85,12 @@ class ExtensionViewSet(BaseViewSet):
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['global admin'],
+    )
+    def destroy(self, request, *args, **kwargs):
+        o = self.get_object()
+        result = super(ExtensionViewSet, self).destroy(request, *args, **kwargs)
+        reload_extension(o.type, False)
+        return result

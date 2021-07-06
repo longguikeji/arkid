@@ -33,6 +33,30 @@ class OAuthAuthorizationServerExtension(InMemExtension):
 
         super().start(runtime=runtime, *args, **kwargs)
 
+    def logout(self, runtime: Runtime, *args, **kwargs):
+        # Contribute OAuth Authentication Server & parameters
+        runtime.logout_authorization_server(
+            id='oauth2',
+            name='OAuth2',
+            description='OAuth2',
+        )
+        runtime.logout_authorization_server(
+            id='oidc',
+            name='OpenID Connect',
+            description='OpenID Connect',
+        )
+        runtime.logout_app_type(
+            key='OAuth2',
+            name='OAuth2',
+            provider=OAuth2AppTypeProvider,
+            serializer=OAuth2AppSerializer
+        )
+        runtime.logout_app_type(
+            key='OIDC',
+            name='OpenID Connect',
+            provider=OAuth2AppTypeProvider,
+            serializer=OIDCAppSerializer
+        )
 
 extension = OAuthAuthorizationServerExtension(
     scope='tenant',
