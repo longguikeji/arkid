@@ -1,0 +1,27 @@
+{#oneid_base_url需要更改为本地开发环境IP:port#}
+
+Aliyun Role SSO Login
+<form class='form' method="POST">
+    username<input name="username">
+    password<input name="password">
+    <button type='button' id='submit'>submit</button>
+</form>
+<script src="https://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript">
+    const oneid_base_url = 'http://localhost:8000'
+    let next = oneid_base_url + '/saml/aliyun/sso-role/login/';
+
+    $('#submit').click(function(){
+        const username = $('input[name=username]').val();
+        const password = $('input[name=password]').val();
+        $.ajax({
+            method: 'POST',
+            url: '{{token_url}}',
+            data: {'username': username, 'password': password},
+            success: function(){
+                window.location.href = next;
+            }
+        })
+        return false;
+    })
+</script>
