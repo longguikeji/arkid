@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'extension_root.mysql_migration',
     'extension_root.arkid',
     'extension_root.miniprogram',
+    'djangosaml2idp'
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -217,3 +218,6 @@ import os
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
+
+# 此处暂时徐保留
+ALIYUN_ROLE_SSO_LOGIN_URL=""
