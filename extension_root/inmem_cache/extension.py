@@ -7,8 +7,9 @@ class InMemCacheExtension(InMemExtension):
 
     def start(self, runtime: Runtime, *args, **kwargs):
         cache_provider = InMemCacheProvider()
-
-        runtime.cache_provider = cache_provider
-        print('>>>', runtime.cache_provider)
-
+        runtime.register_cache_provider(cache_provider)
         super().start(runtime=runtime, *args, **kwargs)
+    
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        cache_provider = InMemCacheProvider()
+        runtime.logout_cache_provider(cache_provider)

@@ -1,10 +1,12 @@
 from common.extension import InMemExtension
 from .constants import KEY
+from runtime import Runtime
 from .provider import SAML2IDPAppTypeProvider
 from .serializers import SAMLasIDPSerializer
 
 class SAML2IdpExtension(InMemExtension):
-    def start(self, runtime, *args, **kwargs):
+
+    def start(self, runtime: Runtime, *args, **kwargs):
         runtime.register_authorization_server(
             id='saml2idp',
             name='SAML2.0 IDP',
@@ -17,6 +19,19 @@ class SAML2IdpExtension(InMemExtension):
             serializer=SAMLasIDPSerializer
         )
         super().start(runtime=runtime, *args, **kwargs)
+
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        runtime.logout_authorization_server(
+            id='saml2idp',
+            name='SAML2.0 IDP',
+            description='SAML2.0 IDP',
+        )
+        runtime.logout_app_type(
+            key='saml2idp',
+            name='SAML2.0 IDP',
+            provider=SAML2IDPAppTypeProvider,
+            serializer=SAMLasIDPSerializer
+        )
 
 
 extension = SAML2IdpExtension(

@@ -93,12 +93,29 @@ class Runtime:
         provider: ExternalIdpProvider,
         serializer: ExternalIdpBaseSerializer = None,
     ):
-        self.external_idps.append((key, name, description))
+        if (key, name, description) not in self.external_idps:
+            self.external_idps.append((key, name, description))
         if provider is not None:
             self.external_idp_providers[key] = provider
 
         if serializer is not None:
             self.external_idp_serializers[key] = serializer
+
+    def logout_external_idp(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: ExternalIdpProvider,
+        serializer: ExternalIdpBaseSerializer = None,
+    ):
+        if (key, name, description) in self.external_idps:
+            self.external_idps.remove((key, name, description))
+        if provider is not None and key in self.external_idp_providers:
+            self.external_idp_providers.pop(key)
+        if serializer is not None and key in self.external_idp_serializers:
+            self.external_idp_serializers.pop(key)
+        print('logout_external_idp:', name)
 
     def register_mfa_provider(self, name: str, provider: MFAProvider):
         pass
@@ -160,8 +177,16 @@ class Runtime:
     def register_storage_provider(self, provider: StorageProvider):
         self.storage_provider = provider
 
+    def logout_storage_provider(self, provider: StorageProvider):
+        self.storage_provider = None
+        print('logout_storage_provider')
+
     def register_migration_provider(self, provider: MigrationProvider):
         self.migration_provider = provider
+
+    def logout_migration_provider(self, provider: MigrationProvider):
+        self.migration_provider = None
+        print('logout_migration_provider')
 
     def register_app_type(
         self,
@@ -195,14 +220,30 @@ class Runtime:
         if serializer is not None and key in self.app_type_serializers:
             self.app_type_serializers.pop(key)
         print('logout_app_type:', key)
-        
-
 
     def register_sms_provider(self, sms_provider: SMSProvider):
         self.sms_provider = sms_provider
 
+    def logout_sms_provider(self, sms_provider: SMSProvider):
+        if self.sms_provider and sms_provider.signature == self.sms_provider.signature:
+            self.sms_provider = None
+            print('logout_sms_provider:', sms_provider.signature)
+
+    def register_cache_provider(self, cache_provider: CacheProvider):
+        self.cache_provider = cache_provider
+
+    def logout_cache_provider(self, cache_provider: CacheProvider):
+        self.cache_provider = None
+        print('logout_cache_provider')
+
     def register_authcode_provider(self, authcode_provider: AuthCodeProvider):
         self.authcode_provider = authcode_provider
+
+    def logout_authcode_provider(self, authcode_provider: AuthCodeProvider):
+        # if self.authcode_provider and authcode_provider == self.authcode_provider:
+        #     self.authcode_provider = None
+        self.authcode_provider = None
+        print('logout_authcode_provider')
 
     @property
     def extension_serializers(self):
