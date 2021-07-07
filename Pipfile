@@ -33,6 +33,8 @@ oauthlib = "*"
 oss2 = "*"
 django-import-export = "*"
 pillow = "*"
+pysaml2 = "*"
+mysqlclient = "*"
 
 [requires]
 python_version = "3.8"
