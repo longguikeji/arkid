@@ -35,6 +35,7 @@ django-import-export = "*"
 pillow = "*"
 pysaml2 = "*"
 mysqlclient = "*"
+arrow = "*"
 
 [requires]
 python_version = "3.8"
