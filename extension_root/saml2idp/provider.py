@@ -1,7 +1,7 @@
 """
 SAML2协议 SP注册
 """
-
+import logging
 import os
 from typing import Dict
 from django.urls.base import reverse
@@ -10,7 +10,10 @@ from app.models import App
 from common.provider import AppTypeProvider
 from djangosaml2idp.scripts.idpinit import run as idp_init
 from djangosaml2idp.scripts.idpinit import BASEDIR
+from djangosaml2idp.scripts.idpclear import run as idpclear
 from config import get_app_config
+
+logger = logging.Logger(__name__)
 
 
 class SAML2IDPAppTypeProvider(AppTypeProvider):
@@ -21,7 +24,13 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
         """
         创建APP
         """
-        idp_init(app.tenant.uuid, app.id)
+        try:
+            idp_init(app.tenant.uuid, app.id)
+        except Exception as err: # pylint: disable=broad-except
+            logger.debug(f"idp初始化出错:{err}") # pylint: disable=logging-fstring-interpolation
+            idpclear(app.tenant.uuid, app.id)
+            raise err
+
         data["idp_metadata"] = get_app_config().get_host() + \
              reverse("api:saml2idp:download_metadata", args=(app.tenant.uuid,app.id))
 
@@ -52,7 +61,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                 BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename)
 
         app.url = f'{get_app_config().get_host()} \
-             {reverse("api:saml2idp:saml2_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
+             {reverse("api:saml2idp:saml_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
 
         return data
 
@@ -60,7 +69,13 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
         """
         更新APP
         """
-        idp_init(app.tenant.uuid, app.id)
+        try:
+            idp_init(app.tenant.uuid, app.id)
+        except Exception as err: # pylint: disable=broad-except
+            logger.debug(f"idp初始化出错:{err}") # pylint: disable=logging-fstring-interpolation
+            idpclear(app.tenant.uuid, app.id)
+            raise err
+
         data["idp_metadata"] = get_app_config().get_host()+ \
             reverse("api:saml2idp:download_metadata", args=(app.tenant.uuid,app.id))
 
@@ -87,7 +102,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                 BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename)
 
         app.url = f'{get_app_config().get_host()} \
-             {reverse("api:saml2idp:saml2_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
+             {reverse("api:saml2idp:saml_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
 
         return data
 

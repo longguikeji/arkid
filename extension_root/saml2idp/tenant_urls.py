@@ -30,6 +30,6 @@ urlpatterns = [
     re_path(
         r'app/(?P<app_id>[\w-]+)/hook/',
         SsoHook.as_view(), 
-        name="hook"
+        name="saml_sso_hook"
     ),
 ]
