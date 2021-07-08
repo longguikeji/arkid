@@ -11,20 +11,9 @@ from django.utils.translation import gettext as _
 import arrow
 import requests
 from django.core.exceptions import ValidationError
-
-
-def repr_saml(saml: str, b64: bool = False):
-    """ Decode SAML from b64 and b64 deflated and return a pretty printed representation
-    """
-    try:
-        msg = base64.b64decode(saml).decode() if b64 else saml
-        dom = xml.dom.minidom.parseString(msg)
-    except (UnicodeDecodeError, ExpatError):
-        # in HTTP-REDIRECT the base64 must be inflated
-        compressed = base64.b64decode(saml)
-        inflated = zlib.decompress(compressed, -15)
-        dom = xml.dom.minidom.parseString(inflated.decode())
-    return dom.toprettyxml()
+from .store_params_in_session import store_params_in_session
+from .sso_entry import sso_entry
+from .repr_saml import repr_saml
 
 
 def encode_saml(saml_envelope: str, use_zlib: bool = False) -> bytes:

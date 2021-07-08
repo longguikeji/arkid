@@ -176,7 +176,7 @@ class IdPHandlerViewMixin:
         conf = IdPConfig()
         try:
             
-            conf.load(copy.copy(idpsettings.get_SAML_IDP_CONFIG(tenant_uuid)))
+            conf.load(copy.copy(idpsettings.get_saml_idp_config(tenant_uuid)))
             self.IDP = Server(config=conf)    # pylint: disable=invalid-name
         except Exception as e:    # pylint: disable=invalid-name, broad-except
             return self.handle_error(request, exception=e)
@@ -457,7 +457,7 @@ def metadata(request,tenant_uuid):    # pylint: disable=unused-argument
     The metadata is constructed on-the-fly based on the config dict in the django settings.
     """
     conf = IdPConfig()
-    conf.load(idpsettings.get_SAML_IDP_CONFIG(tenant_uuid))
+    conf.load(idpsettings.get_saml_idp_config(tenant_uuid))
     meta_data = entity_descriptor(conf)
     return HttpResponse(content=text_type(meta_data).encode('utf-8'), content_type="text/xml; charset=utf8")
 
