@@ -60,8 +60,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
             os.remove(
                 BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename)
 
-        app.url = f'{get_app_config().get_host()} \
-             {reverse("api:saml2idp:saml_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
+        app.url = f'{get_app_config().get_host()}{reverse("api:saml2idp:saml_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
 
         return data
 
@@ -101,8 +100,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
             os.remove(
                 BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename)
 
-        app.url = f'{get_app_config().get_host()} \
-             {reverse("api:saml2idp:saml_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
+        app.url = f'{get_app_config().get_host()}{reverse("api:saml2idp:saml_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
 
         return data
 
