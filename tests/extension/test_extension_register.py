@@ -35,6 +35,18 @@ class ExtensionTestCase(TestCase):
             type='oauth2_authorization_server',
         )
         self.client = Client(HTTP_AUTHORIZATION='Token {}'.format(self.token))
+    
+    def test_extension_create(self):
+        url = '/api/v1/tenant/{}/extension/'.format(self.tenant.uuid)
+        body = {
+            'is_active': True,
+            'type': 'arkid',
+            'data': {}
+        }
+        resp = self.client.post(url, body, content_type='application/json')
+        self.assertEqual(resp.status_code, 201, resp.content.decode())
+        result = json.loads(resp.content.decode())
+        self.assertIsNotNone(result.get('uuid'))
 
     def test_extension_register(self):
         url = '/api/v1/tenant/{}/extension/{}/'.format(self.tenant.uuid, self.extension.uuid)
@@ -46,4 +58,23 @@ class ExtensionTestCase(TestCase):
         resp = self.client.put(url, body, content_type='application/json')
         self.assertEqual(resp.status_code, 200, resp.content.decode())
         result = json.loads(resp.content.decode())
-        print(result)
+        is_active = result['is_active']
+        self.assertEqual(True, is_active)
+    
+    def test_extension_unregister(self):
+        url = '/api/v1/tenant/{}/extension/{}/'.format(self.tenant.uuid, self.extension.uuid)
+        body = {
+            'is_active': False,
+            'type': 'arkid',
+            'data': {}
+        }
+        resp = self.client.put(url, body, content_type='application/json')
+        self.assertEqual(resp.status_code, 200, resp.content.decode())
+        result = json.loads(resp.content.decode())
+        is_active = result['is_active']
+        self.assertEqual(False, is_active)
+    
+    def test_extension_delete(self):
+        url = '/api/v1/tenant/{}/extension/{}/'.format(self.tenant.uuid, self.extension.uuid)
+        resp = self.client.delete(url, content_type='application/json')
+        self.assertEqual(resp.status_code, 204, resp.content.decode())
