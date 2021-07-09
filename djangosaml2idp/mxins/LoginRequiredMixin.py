@@ -20,4 +20,4 @@ class LoginRequiredMixin(AccessMixin):
                 return super().dispatch(request, tenant_uuid, app_id, *args, **kwargs)
         except Exception as err:    # pylint: disable=broad-except
             logger.debug(err)
-            return self.handle_no_permission(tenant_uuid,app_id,request.session['SAMLRequest'])
+            return self.handle_no_permission(request.session['SAMLRequest'],tenant_uuid,app_id)

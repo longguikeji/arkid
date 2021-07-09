@@ -16,4 +16,4 @@ class FakeLogin(View):
         arkid login
         """
         token_url = reverse("api:login")
-        return render(request, 'dev/mock_login.html', context={'token_url': token_url,"next":reverse("api:saml2idp:saml_login_process",args=(tenant_uuid,app_id))})
+        return render(request, 'djangosaml2idp/fake_login.html', context={'token_url': token_url,"next":reverse("api:saml2idp:saml_login_process",args=(tenant_uuid,app_id))})
