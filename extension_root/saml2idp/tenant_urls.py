@@ -4,7 +4,7 @@ SAML2.0协议IDP 插件路由
 
 from django.urls import re_path
 
-from djangosaml2idp.views import SSOEntry, metadata, download_metadata,SsoHook
+from djangosaml2idp.views import SSOEntry, metadata, download_metadata,SsoHook,SAML2LoginProcess,FakeLogin
 
 urlpatterns = [
     re_path(
@@ -31,5 +31,15 @@ urlpatterns = [
         r'app/(?P<app_id>[\w-]+)/hook/',
         SsoHook.as_view(), 
         name="saml_sso_hook"
+    ),
+    re_path(
+        r'app/(?P<app_id>[\w-]+)/saml_login_process/',
+        SAML2LoginProcess.as_view(), 
+        name="saml_login_process"
+    ),
+    re_path(
+        r'app/(?P<app_id>[\w-]+)/fake_login/',
+        FakeLogin.as_view(), 
+        name="fake_login"
     ),
 ]

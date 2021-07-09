@@ -8,7 +8,7 @@ from app.models import App
 
 class SsoHook(View):
 
-    def get(self, request, tenant_uuid, app_id):    # pylint: disable=no-self-use
+    def get(self, request, tenant_uuid, app_id):    # pylint: disable=no-self-use unused-argument
         """
         调用sso url 前中转
         """

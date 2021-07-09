@@ -1,0 +1,16 @@
+
+
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript">
+    const urlParams = new URLSearchParams(window.location.search);
+    const SAMLRequest = urlParams.get('SAMLRequest');
+    let next = '{{next}}'+'?SAMLRequest='+SAMLRequest;
+    spauthn = localStorage.getItem("spauthn");
+    console.log(spauthn);
+    if( spauthn!=null && spauthn != "" ){
+        localStorage.removeItem("spauthn");
+        window.location.href = next+'&spauthn='+spauthn;
+    }else{
+        
+    }
+</script>
