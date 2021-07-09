@@ -33,7 +33,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             'grant_type': authorization_grant_type,
             'client_id': obj.client_id,
             'client_secret': obj.client_secret,
-            'userinfo': host+reverse("api:oauth2_authorization_server:user-info", args=[app.tenant.uuid]),
+            'userinfo': host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[app.tenant.uuid]),
             'authorize': host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
             'token': host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
         }
@@ -60,7 +60,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             'grant_type': authorization_grant_type,
             'client_id': obj.client_id,
             'client_secret': obj.client_secret,
-            'userinfo': host+reverse("api:oauth2_authorization_server:user-info", args=[app.tenant.uuid]),
+            'userinfo': host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[app.tenant.uuid]),
             'authorize': host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
             'token': host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
         }

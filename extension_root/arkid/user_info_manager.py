@@ -49,12 +49,12 @@ class ArkIDUserInfoManager:
         result = json.loads(response)
         access_token = result["access_token"]
         # 获取user info
-        user_info_url = "{}/api/v1/tenant/{}/userinfo/".format(c.get_host(), self.tenant_uuid)
+        user_info_url = "{}/api/v1/tenant/{}/oauth/userinfo/".format(c.get_host(), self.tenant_uuid)
         headers = {"Authorization": "bearer " + access_token}
         response = requests.get(
             user_info_url,
             headers=headers,
         )
         response = response.json()
-        user_id = response["sub"]
+        user_id = response["id"]
         return user_id
