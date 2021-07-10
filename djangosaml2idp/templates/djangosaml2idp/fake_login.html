@@ -4,7 +4,8 @@
 <script type="text/javascript">
     const urlParams = new URLSearchParams(window.location.search);
     const SAMLRequest = urlParams.get('SAMLRequest');
-    let next = '{{next}}'+'?SAMLRequest='+SAMLRequest;
+    const binding = urlParams.get('binding');
+    let next = '{{next}}'+'?SAMLRequest='+SAMLRequest+'&binding='+binding;
     spauthn = localStorage.getItem("spauthn");
     console.log(spauthn);
     if( spauthn!=null && spauthn != "" ){

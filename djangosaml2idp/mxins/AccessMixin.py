@@ -45,11 +45,11 @@ class AccessMixin:
         """
         return self.redirect_field_name
 
-    def handle_no_permission(self,request_data,tenant_uuid,app_id):
+    def handle_no_permission(self,request_data,binding,tenant_uuid,app_id):
         '''
         未登录用户跳转登录页面
         '''
         if self.raise_exception:
             raise PermissionDenied(self.get_permission_denied_message())
-        return HttpResponseRedirect(reverse("api:saml2idp:fake_login",args=(tenant_uuid,app_id)) + '?SAMLRequest={}'.format(request_data))
+        return HttpResponseRedirect(reverse("api:saml2idp:fake_login",args=(tenant_uuid,app_id)) + '?SAMLRequest={}&binding={}'.format(request_data,binding))
 

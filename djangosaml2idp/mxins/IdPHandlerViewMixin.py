@@ -1,3 +1,4 @@
+from djangosaml2idp.idp import IDP
 from typing import Optional
 import base64
 import logging
@@ -40,33 +41,33 @@ class IdPHandlerViewMixin:
             template = get_template(default_name, using=using)
         return template
 
-    def create_html_response(self, request: HttpRequest, binding, authn_resp, destination, relay_state):
+    def create_html_response(self, tenant__uuid, app_id, request: HttpRequest, binding, authn_resp, destination, relay_state):
         """ Login form for SSO
         """
-        if binding == BINDING_HTTP_POST:
-            context = {
-                "acs_url": destination,
-                "saml_response": base64.b64encode(str(authn_resp).encode()).decode(),
-                "relay_state": relay_state,
-            }
-            html_response = {
-                "data": self.render_login_html_to_string(context=context, request=request),
-                "type": "POST",
-            }
-        else:
-            idp_server = IDP.load()
-            http_args = idp_server.apply_binding(
-                binding=binding,
-                msg_str=authn_resp,
-                destination=destination,
-                relay_state=relay_state,
-                response=True)
+        # if binding == BINDING_HTTP_POST:
+        #     context = {
+        #         "acs_url": destination,
+        #         "saml_response": base64.b64encode(str(authn_resp).encode()).decode(),
+        #         "relay_state": relay_state,
+        #     }
+        #     html_response = {
+        #         "data": self.render_login_html_to_string(context=context, request=request),
+        #         "type": "POST",
+        #     }
+        # else:
+        idp_server = IDP.load(tenant__uuid,app_id)
+        http_args = idp_server.apply_binding(
+            binding=binding,
+            msg_str=authn_resp,
+            destination=destination,
+            relay_state=relay_state,
+            response=True)
 
-            logger.debug('http args are: %s' % http_args)
-            html_response = {
-                "data": http_args['headers'][0][1],
-                "type": "REDIRECT",
-            }
+        logger.debug('http args are: %s' % http_args)
+        html_response = {
+            "data": http_args['headers'][0][1],
+            "type": "REDIRECT",
+        }
         return html_response
 
     def render_response(self, request: HttpRequest, html_response, processor: BaseProcessor = None) -> HttpResponse:

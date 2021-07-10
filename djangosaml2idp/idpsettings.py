@@ -3,7 +3,7 @@ SAML IdP config
 '''
 import os
 from django.conf import settings
-from saml2.saml import NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED
+from saml2.saml import NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED,NAMEID_FORMAT_TRANSIENT
 from saml2.sigver import get_xmlsec_binary
 from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
 from config import get_app_config
@@ -31,7 +31,7 @@ def get_saml_idp_config(tenant_uuid,app_id):
                         ('%s/sso/redirect/' % baseurl, BINDING_HTTP_REDIRECT),
                     ],
                 },
-                'name_id_format': [NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED],
+                'name_id_format': [NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED, NAMEID_FORMAT_TRANSIENT],
                 'sign_response': False,
                 'sign_assertion': False,
             },

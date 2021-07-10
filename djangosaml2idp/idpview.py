@@ -298,7 +298,7 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
                     break
 
             _spsso_descriptor = entity_descriptor_from_string(
-                app.data["xmldata"]).spsso_descriptor.pop()    # pylint: disable=no-member
+                app.data["xmldata"]).spsso_descriptor.pop()    #  pylint: disable=no-member
             authn_resp = self.IDP.create_authn_response(
                 identity=identity,
                 userid=user_id,
