@@ -1,13 +1,7 @@
 '''清除IdP配置
 '''
 from __future__ import absolute_import, unicode_literals
-import copy
 import os
-from six import text_type
-from saml2.config import IdPConfig
-from saml2.metadata import entity_descriptor
-from djangosaml2idp import idpsettings
-from djangosaml2idp.idpview import create_self_signed_cert
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

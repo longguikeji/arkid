@@ -2,110 +2,21 @@
 SAML2.0协议登陆流程
 """
 import logging
-from django.contrib.auth import get_user_model
-from django.core.exceptions import (ImproperlyConfigured, ObjectDoesNotExist)
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls.base import reverse
 from django.utils.decorators import method_decorator
-from django.utils.translation import gettext as _
 from django.views import View
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
-from rest_framework.authtoken.models import Token
 from saml2 import BINDING_HTTP_POST
 from saml2.authn_context import PASSWORD, AuthnBroker, authn_context_class_ref
 from saml2.ident import NameID
 from saml2.md import entity_descriptor_from_string
 from saml2.s_utils import UnknownPrincipal, UnsupportedBinding
-from saml2.saml import NAMEID_FORMAT_UNSPECIFIED
-from djangosaml2idp.idp import IDP
-from djangosaml2idp.processors import BaseProcessor
 from djangosaml2idp.mxins import LoginRequiredMixin, IdPHandlerViewMixin
-from djangosaml2idp.utils import repr_saml, verify_request_signature
-from djangosaml2idp.views import SAML2IDPError as error_cbv
-from djangosaml2idp.models import ServiceProvider
 from app.models import App
 
 logger = logging.getLogger(__name__)
-
-User = get_user_model()
-
-
-def get_sp_config(app_id: int) -> ServiceProvider:
-    """ Get a dict with the configuration for a SP according to the SAML_IDP_SPCONFIG settings.
-        Raises an exception if no SP matching the given entity id can be found.
-    """
-    try:
-        sp_config = ServiceProvider(app_id)
-    except ObjectDoesNotExist:
-        raise ImproperlyConfigured(
-            _("No active Service Provider object matching the entity_id '{}' found").format(app_id))
-    return sp_config
-
-
-def get_authn(req_info=None):
-    """get_authn
-    """
-    req_authn_context = req_info.message.requested_authn_context if req_info else PASSWORD
-    broker = AuthnBroker()
-    broker.add(authn_context_class_ref(req_authn_context), "")
-    return broker.get_authn_by_accr(req_authn_context)
-
-
-def build_authn_response(tenant__uuid, app_id, user, authn, resp_args, service_provider) -> list:  # type: ignore
-    """ pysaml2 server.Server.create_authn_response wrapper
-    """
-    policy = resp_args.get('name_id_policy', None)
-    if policy is None:
-        name_id_format = NAMEID_FORMAT_UNSPECIFIED
-    else:
-        name_id_format = policy.format
-
-    idp_server = IDP.load(tenant__uuid, app_id)
-    idp_name_id_format_list = idp_server.config.getattr(
-        "name_id_format",
-        "idp"
-    ) or [NAMEID_FORMAT_UNSPECIFIED]
-
-    if name_id_format not in idp_name_id_format_list:
-        raise ImproperlyConfigured(
-            _('SP requested a name_id_format that is not supported in the IDP: {}').format(
-                name_id_format
-            )
-        )
-
-    processor: BaseProcessor = service_provider.processor  # type: ignore
-    user_id = processor.get_user_id(
-        user,
-        name_id_format,
-        service_provider,
-        idp_server.config
-    )
-    name_id = NameID(
-        format=name_id_format,
-        sp_name_qualifier=service_provider.entity_id,
-        text=user_id
-    )
-
-    return idp_server.create_authn_response(
-        authn=authn,
-        identity=processor.create_identity(
-            user,
-            service_provider.attribute_mapping
-        ),
-        name_id=name_id,
-        userid=user_id,
-        sp_entity_id=service_provider.entity_id,
-        # Signing
-        sign_response=service_provider.sign_response,
-        sign_assertion=service_provider.sign_assertion,
-        sign_alg=service_provider.signing_algorithm,
-        digest_alg=service_provider.digest_algorithm,
-        # Encryption
-        encrypt_assertion=service_provider.encrypt_saml_responses,
-        encrypted_advice_attributes=service_provider.encrypt_saml_responses,
-        **resp_args
-    )
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -114,7 +25,7 @@ class LoginProcess(LoginRequiredMixin, IdPHandlerViewMixin, View):
         The login_required decorator ensures the user authenticates first on the IdP using 'normal' ways.
     """
 
-    def get(self, request, tenant__uuid, app_id):
+    def get(self, request, tenant__uuid, app_id): # pylint: disable=unused-argument
         """SAML2.0协议登陆流程
         """
         binding = request.session.get('Binding', BINDING_HTTP_POST)
@@ -137,7 +48,6 @@ class LoginProcess(LoginRequiredMixin, IdPHandlerViewMixin, View):
                 #    verified_ok = True
                 #    break
                 verified_ok = True
-                pass
             if not verified_ok:
                 return self.handle_error(request, extra_message="Message signature verification failure", status=400)
         # Gather response arguments
@@ -211,8 +121,7 @@ class LoginProcess(LoginRequiredMixin, IdPHandlerViewMixin, View):
                                            relay_state=request.session['RelayState'],
                                            response=True)
 
-        logger.debug('http args are: %s' %
-                     http_args)    # pylint: disable=logging-not-lazy
+        logger.debug('http args are: %s' % http_args)    # pylint: disable=logging-not-lazy
         return self.render_response(request, processor, http_args)
 
     def render_response(self, request, processor, http_args):    # pylint: disable=no-self-use

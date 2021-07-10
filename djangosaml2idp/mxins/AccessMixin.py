@@ -1,14 +1,10 @@
 """
 SAML2.0 AccessMixin
 """
-from urllib.parse import urlparse
-
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.http.response import HttpResponseRedirect
-from django.shortcuts import resolve_url
-from django.contrib.auth.views import redirect_to_login
 from django.shortcuts import reverse
 
 class AccessMixin:

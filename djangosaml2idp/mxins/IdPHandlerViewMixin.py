@@ -1,24 +1,13 @@
+"""
+IdPHandlerViewMixin
+"""
 import copy
-from django.utils.module_loading import import_string
-
-from saml2.server import Server
-from djangosaml2idp import idpsettings
-from saml2.config import IdPConfig
-import djangosaml2idp
-from djangosaml2idp.idp import IDP
-from typing import Optional
-import base64
 import logging
-
-from django.template.loader import get_template
-from django.template.exceptions import (
-    TemplateDoesNotExist, TemplateSyntaxError)
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.template.backends.django import Template
-from django.urls import reverse
-
-from saml2 import BINDING_HTTP_POST
+from django.utils.module_loading import import_string
+from saml2.server import Server
+from saml2.config import IdPConfig
 from djangosaml2idp.processors import BaseProcessor
+from djangosaml2idp import idpsettings
 from djangosaml2idp.views import SAML2IDPError as error_cbv
 
 logger = logging.getLogger(__name__)

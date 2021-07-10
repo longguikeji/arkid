@@ -17,8 +17,8 @@ class BaseProcessor:
         Check if this user is allowed to use this IDP
         """
         spauthn = request.GET.get("spauthn",None) or request.COOKIES['spauthn']
-        token_object = Token.objects.get(key=spauthn)
-        user = token_object.user
+        token_object = Token.objects.get(key=spauthn) # pylint: disable=no-member
+        user = token_object.user # pylint: disable=unused-variable
         return True
 
     def enable_multifactor(self, user):    # pylint: disable=unused-argument, no-self-use
