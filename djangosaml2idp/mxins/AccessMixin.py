@@ -7,6 +7,7 @@ from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import reverse
 
+
 class AccessMixin:
     """
     Abstract CBV mixin that gives access mixins the same customizable
@@ -41,11 +42,10 @@ class AccessMixin:
         """
         return self.redirect_field_name
 
-    def handle_no_permission(self,request_data,binding,tenant_uuid,app_id):
+    def handle_no_permission(self, request_data, binding, tenant_uuid, app_id):
         '''
         未登录用户跳转登录页面
         '''
         if self.raise_exception:
             raise PermissionDenied(self.get_permission_denied_message())
-        return HttpResponseRedirect(reverse("api:saml2idp:fake_login",args=(tenant_uuid,app_id)) + '?SAMLRequest={}&binding={}'.format(request_data,binding))
-
+        return HttpResponseRedirect(reverse("api:saml2idp:fake_login", args=(tenant_uuid, app_id)) + '?SAMLRequest={}&binding={}'.format(request_data, binding))

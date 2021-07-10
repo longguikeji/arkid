@@ -11,9 +11,10 @@ class FakeLogin(View):
     """
     模拟登录页面 无操作 获取前端登陆状态  如无则直接跳转登陆页面
     """
+
     def get(self, request, tenant_uuid, app_id):    # pylint: disable=no-self-use
         """
         arkid login
         """
         token_url = reverse("api:login")
-        return render(request, 'djangosaml2idp/fake_login.html', context={'token_url': token_url,"next":reverse("api:saml2idp:saml_login_process",args=(tenant_uuid,app_id))})
+        return render(request, 'djangosaml2idp/fake_login.html', context={'token_url': token_url, "next": reverse("api:saml2idp:saml_login_process", args=(tenant_uuid, app_id))})

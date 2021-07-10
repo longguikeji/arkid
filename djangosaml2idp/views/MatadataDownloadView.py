@@ -5,6 +5,7 @@ SAML2.0协议 IDP元文件下载
 from django.views.decorators.cache import never_cache
 from .MetadataView import metadata
 
+
 @never_cache
 def download_metadata(request, tenant_uuid, app_id):    # pylint: disable=unused-argument
     """

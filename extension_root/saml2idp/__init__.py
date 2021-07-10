@@ -1,9 +1,16 @@
+"""
+SAML 2.0  插件处理
+"""
 from common.extension import InMemExtension
 from .constants import KEY
 from .provider import SAML2IDPAppTypeProvider
 from .serializers import SAMLasIDPSerializer
 
+
 class SAML2IdpExtension(InMemExtension):
+    """
+    SAML2 IDP插件
+    """
     def start(self, runtime, *args, **kwargs):
         runtime.register_authorization_server(
             id='saml2idp',

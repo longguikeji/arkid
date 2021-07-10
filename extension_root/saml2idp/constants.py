@@ -1,2 +1,5 @@
+"""
+SAML2.0 插件配置
+"""
+
 KEY = 'smal_as_idp'
-BASE_URL = "http://localhost:8000"

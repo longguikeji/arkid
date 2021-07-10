@@ -1,8 +1,8 @@
+"""
+SAML2IDPError
+"""
 import logging
-
-from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from django.utils.module_loading import import_string
 from django.views.generic import TemplateView
 
 logger = logging.getLogger(__name__)

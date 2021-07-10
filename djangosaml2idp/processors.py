@@ -9,6 +9,7 @@ class BaseProcessor:
     """ Processor class is used to determine if a user has access to a client service of this IDP
         and to construct the identity dictionary which is sent to the SP
     """
+
     def __init__(self, entity_id):
         self._entity_id = entity_id
 
@@ -16,9 +17,11 @@ class BaseProcessor:
         """
         Check if this user is allowed to use this IDP
         """
-        spauthn = request.GET.get("spauthn",None) or request.COOKIES['spauthn']
-        token_object = Token.objects.get(key=spauthn) # pylint: disable=no-member
-        user = token_object.user # pylint: disable=unused-variable
+        spauthn = request.GET.get(
+            "spauthn", None) or request.COOKIES['spauthn']
+        token_object = Token.objects.get(
+            key=spauthn)  # pylint: disable=no-member
+        user = token_object.user  # pylint: disable=unused-variable
         return True
 
     def enable_multifactor(self, user):    # pylint: disable=unused-argument, no-self-use
@@ -31,7 +34,7 @@ class BaseProcessor:
             use the USERNAME_FIELD property which is set on the user Model. This defaults to the user.username field.
         """
         user_field = getattr(settings, 'SAML_IDP_DJANGO_USERNAME_FIELD', None) or \
-                     getattr(user, 'USERNAME_FIELD', 'username')
+            getattr(user, 'USERNAME_FIELD', 'username')
         return str(getattr(user, user_field))
 
     def create_identity(self, user, sp_mapping, **extra_config):    # pylint: disable=no-self-use, unused-argument

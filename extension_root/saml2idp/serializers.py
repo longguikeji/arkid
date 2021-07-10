@@ -1,13 +1,18 @@
-from os import read
-from django.db.models import fields
+"""
+SAML2.0 SP注册序列器
+"""
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import AppBaseSerializer
-from django.conf import settings
 from api.v1.fields.custom import create_dowload_url_field
 
-class SAMLasIDPConfigSerializer(serializers.Serializer):
-    
+
+class SAMLasIDPConfigSerializer(serializers.Serializer): # pylint: disable=abstract-method
+    """
+    序列器
+    注意： 此处取名为IDP**意味着在arkid中IDP与SP是一对一匹配的(区别于单租户应用)
+    """
+
     entity_id = serializers.CharField(
         required=False
     )
@@ -39,10 +44,15 @@ class SAMLasIDPConfigSerializer(serializers.Serializer):
         label=_("登陆地址"),
     )
 
-class SAMLasIDPSerializer(AppBaseSerializer):
 
-    data = SAMLasIDPConfigSerializer(label=_('data'))
+class SAMLasIDPSerializer(AppBaseSerializer): # pylint: disable=abstract-method
+    """
+    APP序列器
+    """
 
+    data = SAMLasIDPConfigSerializer(label=_('SP配置'))
+
+    # 因存在自动生成登陆链接故此处设置为非必须
     url = serializers.CharField(
-        required = False
+        required=False
     )

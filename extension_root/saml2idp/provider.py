@@ -20,19 +20,21 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
     """
     SAML2协议 IDP server App
     """
-    def create(self, app: App, data: Dict) -> Dict: # pylint: disable=arguments-differ
+
+    def create(self, app: App, data: Dict) -> Dict:  # pylint: disable=arguments-differ
         """
         创建APP
         """
         try:
             idp_init(app.tenant.uuid, app.id)
-        except Exception as err: # pylint: disable=broad-except
-            logger.debug(f"idp初始化出错:{err}") # pylint: disable=logging-fstring-interpolation
+        except Exception as err:  # pylint: disable=broad-except
+            logger.debug(f"idp初始化出错:{err}")  # pylint: disable=logging-fstring-interpolation
             idpclear(app.tenant.uuid, app.id)
             raise err
 
         data["idp_metadata"] = get_app_config().get_host() + \
-             reverse("api:saml2idp:download_metadata", args=(app.tenant.uuid,app.id))
+            reverse("api:saml2idp:download_metadata",
+                    args=(app.tenant.uuid, app.id))
 
         filename = f"{app.tenant.uuid}_{app.id}"
         xmldata = data.get('xmldata', '')
@@ -54,7 +56,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                     sls=sls
                 )
             except CertificateError:
-                raise Exception({'msg': 'perm incorrect'}) # pylint: disable=raise-missing-from
+                raise Exception({'msg': 'perm incorrect'})  # pylint: disable=raise-missing-from
 
         if os.path.exists(BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename):
             os.remove(
@@ -64,19 +66,20 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
 
         return data
 
-    def update(self, app: App, data: Dict) -> Dict: # pylint: disable=arguments-differ
+    def update(self, app: App, data: Dict) -> Dict:  # pylint: disable=arguments-differ
         """
         更新APP
         """
         try:
             idp_init(app.tenant.uuid, app.id)
-        except Exception as err: # pylint: disable=broad-except
-            logger.debug(f"idp初始化出错:{err}") # pylint: disable=logging-fstring-interpolation
+        except Exception as err:  # pylint: disable=broad-except
+            logger.debug(f"idp初始化出错:{err}")  # pylint: disable=logging-fstring-interpolation
             idpclear(app.tenant.uuid, app.id)
             raise err
 
-        data["idp_metadata"] = get_app_config().get_host()+ \
-            reverse("api:saml2idp:download_metadata", args=(app.tenant.uuid,app.id))
+        data["idp_metadata"] = get_app_config().get_host() + \
+            reverse("api:saml2idp:download_metadata",
+                    args=(app.tenant.uuid, app.id))
 
         filename = f"{app.tenant.uuid}_{app.id}"
         xmldata = data.get('xmldata', '')
@@ -94,7 +97,8 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                 self.gen_xml(filename=filename,
                              entity_id=entity_id, acs=acs, sls=sls)
             except CertificateError:
-                raise Exception({'msg': 'perm incorrect'}) # pylint: disable=raise-missing-from
+                raise Exception({'msg': 'perm incorrect'}
+                                )  # pylint: disable=raise-missing-from
 
         if os.path.exists(BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename):
             os.remove(

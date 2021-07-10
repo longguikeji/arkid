@@ -25,7 +25,7 @@ class LoginProcess(LoginRequiredMixin, IdPHandlerViewMixin, View):
         The login_required decorator ensures the user authenticates first on the IdP using 'normal' ways.
     """
 
-    def get(self, request, tenant__uuid, app_id): # pylint: disable=unused-argument
+    def get(self, request, tenant__uuid, app_id):  # pylint: disable=unused-argument
         """SAML2.0协议登陆流程
         """
         binding = request.session.get('Binding', BINDING_HTTP_POST)
@@ -121,7 +121,8 @@ class LoginProcess(LoginRequiredMixin, IdPHandlerViewMixin, View):
                                            relay_state=request.session['RelayState'],
                                            response=True)
 
-        logger.debug('http args are: %s' % http_args)    # pylint: disable=logging-not-lazy
+        logger.debug('http args are: %s' %
+                     http_args)    # pylint: disable=logging-not-lazy
         return self.render_response(request, processor, http_args)
 
     def render_response(self, request, processor, http_args):    # pylint: disable=no-self-use

@@ -9,6 +9,7 @@ from saml2.metadata import entity_descriptor
 from six import text_type
 from djangosaml2idp import idpsettings
 
+
 @never_cache
 def metadata(request, tenant_uuid, app_id):    # pylint: disable=unused-argument
     """
