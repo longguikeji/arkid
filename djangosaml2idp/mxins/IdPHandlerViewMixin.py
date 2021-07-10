@@ -1,94 +1,70 @@
+import copy
+from django.utils.module_loading import import_string
+
+from saml2.server import Server
+from djangosaml2idp import idpsettings
+from saml2.config import IdPConfig
+import djangosaml2idp
 from djangosaml2idp.idp import IDP
 from typing import Optional
 import base64
 import logging
 
 from django.template.loader import get_template
-from django.template.exceptions import (TemplateDoesNotExist,TemplateSyntaxError)
+from django.template.exceptions import (
+    TemplateDoesNotExist, TemplateSyntaxError)
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.backends.django import Template
 from django.urls import reverse
 
 from saml2 import BINDING_HTTP_POST
 from djangosaml2idp.processors import BaseProcessor
+from djangosaml2idp.views import SAML2IDPError as error_cbv
 
 logger = logging.getLogger(__name__)
+
 
 class IdPHandlerViewMixin:
     """ Contains some methods used by multiple views """
 
-    def render_login_html_to_string(self, context=None, request=None, using=None):
-        """ Render the html response for the login action. Can be using a custom html template if set on the view. """
-        default_login_template_name = 'djangosaml2idp/login.html'
-        custom_login_template_name = getattr(self, 'login_html_template', None)
+    def handle_error(self, request, **kwargs):    # pylint: disable=missing-function-docstring
+        return error_cbv.as_view()(request, **kwargs)
 
-        if custom_login_template_name:
-            template = self._fetch_custom_template(custom_login_template_name, default_login_template_name, using)
-            return template.render(context, request)
-
-        template = get_template(default_login_template_name, using=using)
-        return template.render(context, request)
-
-    @staticmethod
-    def _fetch_custom_template(custom_name: str, default_name: str, using: Optional[str] = None) -> Template:
-        """ Grabs the custom login template. Falls back to default if issues arise. """
+    def dispatch(self, request, tenant__uuid, app_id, *args, **kwargs):
+        """
+        Construct IDP server with config from settings dict
+        """
+        conf = IdPConfig()
         try:
-            template = get_template(custom_name, using=using)
-        except (TemplateDoesNotExist, TemplateSyntaxError) as e:
-            logger.error(
-                'Specified template {} cannot be used due to: {}. Falling back to default login template {}'.format(
-                    custom_name, str(e), default_name))
-            template = get_template(default_name, using=using)
-        return template
 
-    def create_html_response(self, tenant__uuid, app_id, request: HttpRequest, binding, authn_resp, destination, relay_state):
-        """ Login form for SSO
+            conf.load(
+                copy.copy(idpsettings.get_saml_idp_config(tenant__uuid, app_id)))
+            self.IDP = Server(config=conf)    # pylint: disable=invalid-name
+        except Exception as e:    # pylint: disable=invalid-name, broad-except
+            return self.handle_error(request, exception=e)
+        return super(IdPHandlerViewMixin, self).dispatch(request, tenant__uuid, app_id, *args, **kwargs)
+
+    def get_processor(self, entity_id, sp_config):    # pylint: disable=no-self-use
         """
-        # if binding == BINDING_HTTP_POST:
-        #     context = {
-        #         "acs_url": destination,
-        #         "saml_response": base64.b64encode(str(authn_resp).encode()).decode(),
-        #         "relay_state": relay_state,
-        #     }
-        #     html_response = {
-        #         "data": self.render_login_html_to_string(context=context, request=request),
-        #         "type": "POST",
-        #     }
-        # else:
-        idp_server = IDP.load(tenant__uuid,app_id)
-        http_args = idp_server.apply_binding(
-            binding=binding,
-            msg_str=authn_resp,
-            destination=destination,
-            relay_state=relay_state,
-            response=True)
-
-        logger.debug('http args are: %s' % http_args)
-        html_response = {
-            "data": http_args['headers'][0][1],
-            "type": "REDIRECT",
-        }
-        return html_response
-
-    def render_response(self, request: HttpRequest, html_response, processor: BaseProcessor = None) -> HttpResponse:
-        """ Return either a response as redirect to MultiFactorView or as html with self-submitting form to log in.
+        Instantiate user-specified processor or default to an all-access base processor.
+        Raises an exception if the configured processor class can not be found or initialized.
         """
-        if not processor:
-            # In case of SLO, where processor isn't relevant
-            if html_response['type'] == 'POST':
-                return HttpResponse(html_response['data'])
-            else:
-                return HttpResponseRedirect(html_response['data'])
+        processor_string = sp_config.get('processor', None)
+        if processor_string:
+            try:
+                return import_string(processor_string)(entity_id)
+            except Exception as e:    # pylint: disable=invalid-name
+                logger.error("Failed to instantiate processor: {} - {}".format(processor_string,
+                             e), exc_info=True)    # pylint: disable=logging-format-interpolation
+                raise
+        return BaseProcessor(entity_id)
 
-        request.session['saml_data'] = html_response
-
-        if processor.enable_multifactor(request.user):
-            logger.debug("Redirecting to process_multi_factor")
-            return HttpResponseRedirect(reverse('djangosaml2idp:saml_multi_factor'))
-
-        # No multifactor
-        logger.debug("Performing SAML redirect")
-        if html_response['type'] == 'POST':
-            return HttpResponse(html_response['data'])
-        else:
-            return HttpResponseRedirect(html_response['data'])
+    def get_identity(self, processor, user, sp_config):    # pylint: disable=no-self-use
+        """
+        Create Identity dict (using SP-specific mapping)
+        """
+        sp_mapping = sp_config.get('attribute_mapping', {
+                                   'username': 'username'})
+        ret = processor.create_identity(
+            user, sp_mapping, **sp_config.get('extra_config', {}))
+        return ret
