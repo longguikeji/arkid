@@ -39,6 +39,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
         }
         if algorithm and app.type == 'OIDC':
             uniformed_data['algorithm'] = obj.algorithm
+            uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oauth-user-logout", args=[app.tenant.uuid])
         return uniformed_data
 
     def update(self, app, data: Dict) -> Dict:
@@ -66,4 +67,5 @@ class OAuth2AppTypeProvider(AppTypeProvider):
         }
         if algorithm and app.type == 'OIDC':
             uniformed_data['algorithm'] = obj.algorithm
+            uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oauth-user-logout", args=[app.tenant.uuid])
         return uniformed_data

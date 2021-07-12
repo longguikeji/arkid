@@ -1,6 +1,6 @@
 import json
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -10,7 +10,8 @@ from jwcrypto import jwk
 from ..models import get_application_model
 from ..settings import oauth2_settings
 from .mixins import OAuthLibMixin, OIDCOnlyMixin
-from oauth2_provider.models import AccessToken
+from oauth2_provider.models import AccessToken, IDToken
+from rest_framework.authtoken.models import Token
 
 
 Application = get_application_model()
@@ -124,4 +125,26 @@ class UserInfoExtendView(OIDCOnlyMixin, OAuthLibMixin, View):
                 return JsonResponse({"error": "access_token 不存在"})
         else:
             return JsonResponse({"error": "access_token 不能为空"})
-        
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class OIDCLogoutView(OIDCOnlyMixin, OAuthLibMixin, View):
+    """
+    View used to show Claims about the authenticated End-User
+    """
+
+    def get(self, request, *args, **kwargs):
+        id_token_hint = request.GET.get('id_token_hint', '')
+        url = request.GET.get('post_logout_redirect_uri', '')
+        id_token = IDToken.objects.filter(token=id_token_hint).first()
+        if id_token:
+            user = id_token.user
+            Token.objects.filter(
+                user=user
+            ).delete()
+            if url:
+                return HttpResponseRedirect(url)
+            else:
+                return JsonResponse({"error_code":0, 'error_msg':'logout success'})
+        else:
+            return JsonResponse({"error_code":1, "error_msg": "id_token error"})
