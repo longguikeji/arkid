@@ -1,3 +1,9 @@
+import base64
+import json
+import datetime
+from cryptography.fernet import Fernet, InvalidToken
+from django.utils import timezone
+from django.conf import settings
 from typing import List
 from django.db import models
 from django.db.models.fields import related
@@ -13,6 +19,7 @@ from django.contrib.auth.models import PermissionManager
 from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
 
+KEY = Fernet(base64.urlsafe_b64encode(settings.SECRET_KEY.encode()[:32]))
 
 class Permission(BaseModel):
 
@@ -221,3 +228,70 @@ class Group(BaseModel):
             owned_perms += list(self.parent.owned_perms(perm_codes))
 
         return owned_perms
+
+
+class Invitation(BaseModel):
+    '''
+    注册邀请
+
+    过期或接受邀请后进入invalid状态
+    '''
+    inviter = models.ForeignKey('inventory.User',
+                                related_name='inviter',
+                                verbose_name='发起邀请者',
+                                on_delete=models.CASCADE)
+    invitee = models.ForeignKey('inventory.User',
+                                related_name='invitee',
+                                verbose_name='被邀请者',
+                                on_delete=models.CASCADE)
+    duration = models.DurationField(default=datetime.timedelta(days=1), verbose_name='有效时长')
+    is_accepted = models.BooleanField(default=False, verbose_name='是否确认接受邀请')
+
+    # active_objects = InvitationActiveManager()
+
+    @property
+    def expired_time(self):
+        '''
+        过期时间
+        '''
+        return self.duration + self.created
+
+    @property
+    def is_expired(self):
+        '''
+        是否过期
+        '''
+        return self.expired_time < timezone.now()
+
+    @property
+    def key(self):
+        '''
+        :rtype: string
+        '''
+        payload = {
+            'uuid': self.uuid.hex,    # pylint: disable=no-member
+            'company': 'singleton',
+            'invitee_mobile': self.invitee.mobile,    # pylint: disable=no-member
+            'timestamp': self.created.strftime('%Y%m%d%H%M%s'),    # pylint: disable=no-member
+        }
+        return KEY.encrypt(json.dumps(payload).encode()).decode('utf-8')
+
+    @classmethod
+    def parse(cls, key):
+        '''
+        解析key以获取邀请记录
+        '''
+        try:
+            raw_paylod = KEY.decrypt(key.encode()).decode('utf-8')
+        except InvalidToken:
+            return None
+
+        try:
+            paylod = json.loads(raw_paylod)
+        except json.JSONDecodeError:
+            return None
+
+        return cls.active_objects.filter(
+            invitee__mobile=paylod.get('invitee_mobile', ''),
+            uuid=paylod.get('uuid', ''),
+        ).first()

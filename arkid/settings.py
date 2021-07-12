@@ -222,3 +222,8 @@ if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
 
 # 此处暂时徐保留
 ALIYUN_ROLE_SSO_LOGIN_URL=""
+
+FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'    # 邮件注册页面
+FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'    # 邮件重置密码页面
+FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'    # 邮件激活账号页面
+FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'    # 邮件重置邮箱页面

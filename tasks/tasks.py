@@ -9,6 +9,7 @@ from provisioning.utils import create_user, user_exists
 from inventory.models import User, Group
 from app.models import App
 from webhook.models import WebHook, WebHookTriggerHistory
+from common.utils import send_email as send_email_func
 import requests
 
 
@@ -67,4 +68,10 @@ def notify_webhook(tenant_uuid: int, event: Event):
     webhook: WebHook
     for webhook in webhooks:
         r = requests.post(webhook.url)
-        print(r.json())
+
+@app.task
+def send_email(addrs, subject, content):
+    '''
+    发送邮件
+    '''
+    send_email_func(addrs, subject, content)
