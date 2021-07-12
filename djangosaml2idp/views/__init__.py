@@ -9,6 +9,7 @@ from .MatadataDownloadView import download_metadata
 from .SsoHookView import SsoHook
 from .SAML2LoginProcessView import LoginProcess as SAML2LoginProcess
 from .FakeLoginView import FakeLogin
+from .SSOInitView import SSOInit
 
 __all__ = [
     "SSOEntry",
@@ -17,5 +18,6 @@ __all__ = [
     "download_metadata",
     "SsoHook",
     "SAML2LoginProcess",
-    "FakeLogin"
+    "FakeLogin",
+    "SSOInit"
 ]
