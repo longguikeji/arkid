@@ -13,7 +13,6 @@ class AuthCodeResponseSerializer(serializers.Serializer):
     key = serializers.CharField(label=_('图片名称'))
     base64 = serializers.CharField(label=_('图片base64'))
 
-
 class AuthCodeCheckResponseSerializer(serializers.Serializer):
 
     is_succeed = serializers.BooleanField(label=_('是否正确'))
