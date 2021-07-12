@@ -42,7 +42,7 @@ class ArkIDLoginView(APIView):
         else:
             next_url = ""
 
-        redirect_uri = "{}{}{}".format(c.get_host(), provider.callback_url, next_url)
+        redirect_uri = "{}{}".format(provider.callback_url, next_url)
         url = "{}?client_id={}&redirect_uri={}&response_type=code&scope=userinfo".format(
             provider.authorize_url,
             provider.client_id,
@@ -54,7 +54,7 @@ class ArkIDLoginView(APIView):
 @extend_schema(tags=["arkid"])
 class ArkIDBindAPIView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = ArkIDBindSerializer
@@ -92,6 +92,9 @@ class ArkIDCallbackView(APIView):
         code = request.GET["code"]
         token = request.GET["token"]
         next_url = request.GET.get("next", None)
+        frontend_host = get_app_config().get_frontend_host().replace('http://' , '').replace('https://' , '')
+        if "third_part_callback" not in next_url or frontend_host not in next_url:
+            return Response({'error_msg': '错误的跳转页面'}, HTTP_200_OK)
         if next_url is not None:
             next_url = "?next=" + urllib.parse.quote(next_url)
         else:
@@ -103,8 +106,7 @@ class ArkIDCallbackView(APIView):
                 user_id = ArkIDUserInfoManager(
                     provider.client_id,
                     provider.secret_id,
-                    "{}{}{}".format(
-                        get_app_config().get_host(),
+                    "{}{}".format(
                         provider.callback_url,
                         next_url,
                     ),
@@ -143,7 +145,7 @@ class ArkIDCallbackView(APIView):
 @extend_schema(tags=["arkid"])
 class ArkIDUnBindView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     def get(self, request, tenant_uuid):

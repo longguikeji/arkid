@@ -12,7 +12,7 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 from django.contrib.auth.models import User as DUser
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
-from tenant.models import Tenant
+from tenant.models import Tenant, TenantPasswordComplexity
 from inventory.models import User
 from inventory.resouces import UserResource
 from api.v1.serializers.user import (
@@ -27,7 +27,7 @@ from api.v1.serializers.user import (
     PasswordRequestSerializer,
     LogoutSerializer,
     UserManageTenantsSerializer,
-    
+    ResetPasswordRequestSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -42,6 +42,8 @@ from common.code import Code
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
+
+import re
 
 
 @extend_schema_view(
@@ -103,32 +105,34 @@ class UserViewSet(BaseViewSet):
         )
 
     def create(self, request, *args, **kwargs):
-        password = request.data.get('password')
-        if not password:
+        email = request.data.get('email')
+        if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
             return JsonResponse(data={
-                'error': Code.PASSWORD_NONE_ERROR.value,
-                'message': _('password is empty'),
+                'error': Code.EMAIL_FROMAT_ERROR.value,
+                'message': _('email format error'),
             })
-        if self.check_password(password) is False:
+        mobile = request.data.get('mobile')
+        if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
             return JsonResponse(data={
-                'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                'message': _('password strength not enough'),
+                'error': Code.MOBILE_FROMAT_ERROR.value,
+                'message': _('mobile format error'),
             })
         return super(UserViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        password = request.data.get('password')
-        if password and self.check_password(password) is False:
+        email = request.data.get('email')
+        if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
             return JsonResponse(data={
-                'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                'message': _('password strength not enough'),
+                'error': Code.EMAIL_FROMAT_ERROR.value,
+                'message': _('email format error'),
+            })
+        mobile = request.data.get('mobile')
+        if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
+            return JsonResponse(data={
+                'error': Code.MOBILE_FROMAT_ERROR.value,
+                'message': _('mobile format error'),
             })
         return super(UserViewSet, self).update(request, *args, **kwargs)
-
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True
 
     @extend_schema(
         roles=['tenant admin', 'global admin'],
@@ -164,6 +168,19 @@ class UserViewSet(BaseViewSet):
         result = user_resource.import_data(
             dataset, dry_run=True, tenant_id=tenant.id
         )  # Test the data import
+        for item in dataset:
+            email = str(item[2])
+            mobile = str(item[3])
+            if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
+                return JsonResponse(data={
+                    'error': Code.EMAIL_FROMAT_ERROR.value,
+                    'message': _('email format error:{}'.format(email)),
+                })
+            if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
+                return JsonResponse(data={
+                    'error': Code.MOBILE_FROMAT_ERROR.value,
+                    'message': _('mobile format error:{}'.format(mobile)),
+                })
         if not result.has_errors() and not result.has_validation_errors():
             user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
             return Response(
@@ -318,6 +335,11 @@ class UpdatePasswordView(generics.CreateAPIView):
                 'error': Code.OLD_PASSWORD_ERROR.value,
                 'message': _('old password error'),
             })
+        if password and user.valid_password(password) is True:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_CHECK_ERROR.value,
+                'message': _('password is already in use'),
+            })
         try:
             user.set_password(password)
             user.save()
@@ -331,6 +353,52 @@ class UpdatePasswordView(generics.CreateAPIView):
         return True
 
 
+@extend_schema(tags=['user'])
+class ResetPasswordView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = ResetPasswordRequestSerializer
+
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        responses=PasswordSerializer
+    )
+    def post(self, request):
+        uuid = request.data.get('uuid', '')
+        password = request.data.get('password', '')
+        tenant_uuid = request.data.get('tenant_uuid', '')
+        user = User.objects.filter(uuid=uuid).first()
+        is_succeed = True
+        if not user:
+            return JsonResponse(data={
+                'error': Code.USER_EXISTS_ERROR.value,
+                'message': _('user does not exist'),
+            })
+        if password and self.check_password(tenant_uuid, password) is False:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': _('password strength not enough'),
+            })
+        if password and user.valid_password(password) is True:
+            return JsonResponse(data={
+                'error': Code.PASSWORD_CHECK_ERROR.value,
+                'message': _('password is already in use'),
+            })
+        try:
+            user.set_password(password)
+            user.save()
+        except Exception as e:
+            is_succeed = False
+        return Response(is_succeed)
+
+    def check_password(self, tenant_uuid, pwd):
+        comlexity = TenantPasswordComplexity.active_objects.filter(tenant__uuid=tenant_uuid, is_apply=True).first()
+        if comlexity:
+            return comlexity.check_pwd(pwd)
+        return True
+
+
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
@@ -341,6 +409,20 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+    def update(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
+            return JsonResponse(data={
+                'error': Code.EMAIL_FROMAT_ERROR.value,
+                'message': _('email format error'),
+            })
+        mobile = request.data.get('mobile')
+        if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
+            return JsonResponse(data={
+                'error': Code.MOBILE_FROMAT_ERROR.value,
+                'message': _('mobile format error'),
+            })
+        return super(UserInfoView, self).update(request, *args, **kwargs)
 
 @extend_schema(tags=['user'])
 class UserBindInfoView(generics.RetrieveAPIView):
@@ -427,4 +509,5 @@ class UserManageTenantsView(generics.RetrieveAPIView):
             return Response({
                 "manage_tenants": user.manage_tenants(),
                 "is_global_admin": user.is_superuser,
+                "is_platform_user": user.is_platform_user,
             })

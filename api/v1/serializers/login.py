@@ -3,6 +3,7 @@ from rest_framework import serializers
 from common.serializer import BaseDynamicFieldModelSerializer
 from drf_spectacular.utils import extend_schema_field
 from .tenant import TenantSerializer
+from django.utils.translation import gettext_lazy as _
 
 
 class TSerializer(serializers.Serializer):
@@ -31,3 +32,16 @@ class LoginSerializer(serializers.Serializer):
             'username',
             'password',
         )
+
+
+class UserNameRegisterRequestSerializer(serializers.Serializer):
+
+    username = serializers.CharField(label=_('用户名'))
+    password = serializers.CharField(label=_('密码'))
+
+
+class MobileRegisterRequestSerializer(serializers.Serializer):
+
+    mobile = serializers.CharField(label=_('手机号'))
+    code = serializers.CharField(label=_('验证码'))
+    password = serializers.CharField(label=_('密码'))

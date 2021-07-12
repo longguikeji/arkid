@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'schema',
     'extension',
     'api',
+    'system',
     'extension_root.github',
     'extension_root.gitee',
     'extension_root.feishu',
@@ -71,7 +72,10 @@ INSTALLED_APPS = [
     'extension_root.arkid',
     'django_scim',
     'extension_root.miniprogram',
+    'djangosaml2idp'
 ]
+
+X_FRAME_OPTIONS = 'ALLOWALL'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -255,3 +259,7 @@ CELERY_BROKER_URL = 'redis://localhost'
 # CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 # CELERY_TASK_SERIALIZER = 'json'
+
+# 此处暂时徐保留
+ALIYUN_ROLE_SSO_LOGIN_URL=""
+

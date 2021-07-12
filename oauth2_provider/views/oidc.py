@@ -10,6 +10,7 @@ from jwcrypto import jwk
 from ..models import get_application_model
 from ..settings import oauth2_settings
 from .mixins import OAuthLibMixin, OIDCOnlyMixin
+from oauth2_provider.models import AccessToken
 
 
 Application = get_application_model()
@@ -113,7 +114,6 @@ class UserInfoExtendView(OIDCOnlyMixin, OAuthLibMixin, View):
         return self.get_user(access_token)
 
     def get_user(self, access_token):
-        from oauth2_provider.models import AccessToken
         if access_token:
             access_token = access_token.split(' ')[1]
             access_token = AccessToken.objects.filter(token=access_token).first()

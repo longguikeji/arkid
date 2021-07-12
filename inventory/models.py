@@ -83,6 +83,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         related_name="user_permission_set",
         related_query_name="user_permission",
     )
+    is_platform_user = models.BooleanField(default=False, verbose_name='是否是平台用户')
 
     _password = None
 
@@ -154,6 +155,20 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
         self._password = raw_password
+        UserPassword.valid_objects.get_or_create(user=self, password=self.md5_password(raw_password))
+
+
+    def valid_password(self, raw_password):
+        return UserPassword.valid_objects.filter(user=self, password=self.md5_password(raw_password)).exists()
+    
+    def md5_password(self, raw_password):
+        for i in range(3):
+            import hashlib
+            hl = hashlib.md5()
+            hl.update(raw_password.encode(encoding='utf-8'))
+            hex_password = hl.hexdigest()
+            raw_password = hex_password
+        return hex_password
 
     def check_password(self, raw_password):
         """
@@ -207,13 +222,21 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
                 uuids.append(tenant.uuid)
         return uuids
 
+      
+class UserPassword(BaseModel):
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    password = models.CharField(max_length=128, blank=False, null=True)
+
+    def __str__(self) -> str:
+        return f'{self.user.username} - {self.password}'
+
 
 class Group(AbstractSCIMGroupMixin, BaseModel):
 
     tenant = models.ForeignKey(
         'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
     )
-
 
     name = models.CharField(max_length=128, blank=False, null=True)
     parent = models.ForeignKey(
