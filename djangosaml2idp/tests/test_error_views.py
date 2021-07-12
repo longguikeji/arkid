@@ -2,13 +2,14 @@
 测试错误页面接口
 """
 from django.http import HttpRequest
+from django.test import TestCase
 from djangosaml2idp.views import SAML2IDPError
 
-class TestErrorView:
+class TestErrorView(TestCase):
     """
     测试错误页面接口
     """
-    def test_uses_correct_template(self, client): # pylint: disable=unused-argument
+    def test_uses_correct_template(self):
         """
         正确获取错误页面
         """

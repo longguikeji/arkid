@@ -52,5 +52,5 @@ def run(tenant_id, app_id):
             idpsettings.get_saml_idp_config(tenant_id, app_id)))
         meta_data = entity_descriptor(conf)    # pylint: disable=invalid-name
         content = text_type(meta_data).encode('utf-8')
-        with open(BASEDIR + f'/djangosaml2idp/saml2_config/{tenant_id}_idp_metadata.xml', 'wb') as f:
+        with open(BASEDIR + f'/djangosaml2idp/saml2_config/{tenant_id}_{app_id}_idp_metadata.xml', 'wb') as f:
             f.write(content)
