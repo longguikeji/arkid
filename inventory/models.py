@@ -10,7 +10,9 @@ from django.db.models.fields import related
 from tenant.models import Tenant
 from common.model import BaseModel
 from django.contrib.auth.hashers import (
-    check_password, is_password_usable, make_password,
+    check_password,
+    is_password_usable,
+    make_password,
 )
 from django.contrib.auth.models import AbstractUser
 from common.model import BaseModel
@@ -21,9 +23,12 @@ from rest_framework.authtoken.models import Token
 
 KEY = Fernet(base64.urlsafe_b64encode(settings.SECRET_KEY.encode()[:32]))
 
+
 class Permission(BaseModel):
 
-    tenant = models.ForeignKey('tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT)
+    tenant = models.ForeignKey(
+        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+    )
     name = models.CharField(_('name'), max_length=255)
     content_type = models.ForeignKey(
         ContentType,
@@ -92,6 +97,7 @@ class User(AbstractUser, BaseModel):
     @property
     def avatar_url(self):
         from runtime import get_app_runtime
+
         r = get_app_runtime()
         return r.storage_provider.resolve(self.avatar)
 
@@ -106,6 +112,7 @@ class User(AbstractUser, BaseModel):
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
         from extension_root.miniprogram.models import MiniProgramUser
+
         feishuusers = FeishuUser.valid_objects.filter(user=self).exists()
         giteeusers = GiteeUser.valid_objects.filter(user=self).exists()
         githubusers = GithubUser.valid_objects.filter(user=self).exists()
@@ -133,28 +140,29 @@ class User(AbstractUser, BaseModel):
 
     def refresh_token(self):
         import datetime
+
         self.last_login = datetime.datetime.now()
         self.save()
-        Token.objects.filter(
-            user=self
-        ).delete()
-        token, _ = Token.objects.get_or_create(
-            user=self
-        )
+        Token.objects.filter(user=self).delete()
+        token, _ = Token.objects.get_or_create(user=self)
         return token
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
         self._password = raw_password
-        UserPassword.valid_objects.get_or_create(user=self, password=self.md5_password(raw_password))
-
+        UserPassword.valid_objects.get_or_create(
+            user=self, password=self.md5_password(raw_password)
+        )
 
     def valid_password(self, raw_password):
-        return UserPassword.valid_objects.filter(user=self, password=self.md5_password(raw_password)).exists()
-    
+        return UserPassword.valid_objects.filter(
+            user=self, password=self.md5_password(raw_password)
+        ).exists()
+
     def md5_password(self, raw_password):
         for i in range(3):
             import hashlib
+
             hl = hashlib.md5()
             hl.update(raw_password.encode(encoding='utf-8'))
             hex_password = hl.hexdigest()
@@ -166,6 +174,7 @@ class User(AbstractUser, BaseModel):
         Return a boolean of whether the raw_password was correct. Handles
         hashing formats behind the scenes.
         """
+
         def setter(raw_password):
             self.set_password(raw_password)
             # Password hash upgrades shouldn't be considered password changes.
@@ -186,6 +195,7 @@ class User(AbstractUser, BaseModel):
 
     def manage_tenants(self):
         from tenant.models import Tenant
+
         tenants = Tenant.active_objects.all()
         uuids = []
         for tenant in tenants:
@@ -205,9 +215,17 @@ class UserPassword(BaseModel):
 
 class Group(BaseModel):
 
-    tenant = models.ForeignKey('tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT)
+    tenant = models.ForeignKey(
+        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+    )
     name = models.CharField(max_length=128, blank=False, null=True)
-    parent = models.ForeignKey('inventory.Group', null=True, blank=True, on_delete=models.PROTECT, related_name='children')
+    parent = models.ForeignKey(
+        'inventory.Group',
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name='children',
+    )
     permissions = models.ManyToManyField(
         'inventory.Permission',
         blank=True,
@@ -221,9 +239,11 @@ class Group(BaseModel):
         return Group.valid_objects.filter(parent=self).order_by('id')
 
     def owned_perms(self, perm_codes: List):
-        owned_perms = list(self.permissions.filter(
-            codename__in=perm_codes,
-        ))
+        owned_perms = list(
+            self.permissions.filter(
+                codename__in=perm_codes,
+            )
+        )
         if self.parent is not None:
             owned_perms += list(self.parent.owned_perms(perm_codes))
 
@@ -236,15 +256,22 @@ class Invitation(BaseModel):
 
     过期或接受邀请后进入invalid状态
     '''
-    inviter = models.ForeignKey('inventory.User',
-                                related_name='inviter',
-                                verbose_name='发起邀请者',
-                                on_delete=models.CASCADE)
-    invitee = models.ForeignKey('inventory.User',
-                                related_name='invitee',
-                                verbose_name='被邀请者',
-                                on_delete=models.CASCADE)
-    duration = models.DurationField(default=datetime.timedelta(days=1), verbose_name='有效时长')
+
+    inviter = models.ForeignKey(
+        'inventory.User',
+        related_name='inviter',
+        verbose_name='发起邀请者',
+        on_delete=models.CASCADE,
+    )
+    invitee = models.ForeignKey(
+        'inventory.User',
+        related_name='invitee',
+        verbose_name='被邀请者',
+        on_delete=models.CASCADE,
+    )
+    duration = models.DurationField(
+        default=datetime.timedelta(days=1), verbose_name='有效时长'
+    )
     is_accepted = models.BooleanField(default=False, verbose_name='是否确认接受邀请')
 
     # active_objects = InvitationActiveManager()
@@ -269,10 +296,12 @@ class Invitation(BaseModel):
         :rtype: string
         '''
         payload = {
-            'uuid': self.uuid.hex,    # pylint: disable=no-member
+            'uuid': self.uuid.hex,  # pylint: disable=no-member
             'company': 'singleton',
-            'invitee_mobile': self.invitee.mobile,    # pylint: disable=no-member
-            'timestamp': self.created.strftime('%Y%m%d%H%M%s'),    # pylint: disable=no-member
+            'invitee_mobile': self.invitee.mobile,  # pylint: disable=no-member
+            'timestamp': self.created.strftime(
+                '%Y%m%d%H%M%s'
+            ),  # pylint: disable=no-member
         }
         return KEY.encrypt(json.dumps(payload).encode()).decode('utf-8')
 
@@ -295,3 +324,16 @@ class Invitation(BaseModel):
             invitee__mobile=paylod.get('invitee_mobile', ''),
             uuid=paylod.get('uuid', ''),
         ).first()
+
+
+class I18NMobileConfig(BaseModel):
+    """
+    国际手机号码接入配置
+    """
+
+    state = models.CharField(max_length=128, unique=True, verbose_name='号码归属区域')
+    state_code = models.CharField(
+        max_length=32, blank=False, null=False, unique=True, verbose_name='国家区号'
+    )
+    number_length = models.IntegerField(null=True, default=None, verbose_name='号码固定长度')
+    start_digital = models.JSONField(default=[], blank=True, verbose_name='首位数字限制集')
