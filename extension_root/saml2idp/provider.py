@@ -5,6 +5,7 @@ import logging
 import os
 from typing import Dict
 from django.urls.base import reverse
+from saml2.mdstore import MetaDataFile
 from saml2.sigver import CertificateError
 from app.models import App
 from common.provider import AppTypeProvider
@@ -37,6 +38,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                     args=(app.tenant.uuid, app.id))
 
         filename = f"{app.tenant.uuid}_{app.id}"
+        filename=BASEDIR + '/djangosaml2idp/saml2_config/%s.xml' % filename
         xmldata = data.get('xmldata', '')
         entity_id = data.get('entity_id', '')
         cert = data.get('cert', '')
@@ -44,7 +46,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
         sls = data.get('sls', '')
 
         if xmldata not in ['', None]:
-            with open(BASEDIR + '/djangosaml2idp/saml2_config/%s.xml' % filename, 'w+') as f:
+            with open(filename, 'w+') as f:
                 f.write(xmldata)
         else:
             self.dump_cert(filename, cert)
@@ -57,6 +59,28 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                 )
             except CertificateError:
                 raise Exception({'msg': 'perm incorrect'})  # pylint: disable=raise-missing-from
+        
+        try:
+            sp_metadatafile = MetaDataFile(attrc=None,filename=filename)
+            sp_metadatafile.load()
+            sp_entity = sp_metadatafile.entity[list(sp_metadatafile.keys())[0]]
+
+            if entity_id in ["",None]:
+                data["entity_id"] = sp_entity["entity_id"]
+
+            spsso_descriptor = sp_entity["spsso_descriptor"][0]
+            if acs in ["",None]:
+                data["acs"] = spsso_descriptor["assertion_consumer_service"][0]["location"]
+            
+            if sls in ["",None]:
+                data["sls"] = spsso_descriptor["single_logout_service"][0]["location"]
+
+            if cert in ["",None]:
+                data["cert"] = spsso_descriptor["key_descriptor"][0]["key_info"]["x509_data"][0]["x509_certificate"]["text"]
+
+        except Exception as err: # pylint: disable=broad-except
+            print(err)
+            raise Exception({'msg': '元数据文件解析出错'})  # pylint: disable=raise-missing-from
 
         if os.path.exists(BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename):
             os.remove(
@@ -82,14 +106,15 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                     args=(app.tenant.uuid, app.id))
 
         filename = f"{app.tenant.uuid}_{app.id}"
+        filename=BASEDIR + '/djangosaml2idp/saml2_config/%s.xml' % filename
         xmldata = data.get('xmldata', '')
         entity_id = data.get('entity_id', '')
-        cert = data.get('cert', '')
-        acs = data.get('acs', '')
-        sls = data.get('sls', '')
+        cert = data.get('cert', "")
+        acs = data.get('acs', "")
+        sls = data.get('sls', "")
 
         if xmldata not in ['', None]:
-            with open(BASEDIR + '/djangosaml2idp/saml2_config/%s.xml' % filename, 'w+') as f:
+            with open(filename, 'w+') as f:
                 f.write(xmldata)
         else:
             self.dump_cert(filename, cert)
@@ -97,8 +122,29 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                 self.gen_xml(filename=filename,
                              entity_id=entity_id, acs=acs, sls=sls)
             except CertificateError:
-                raise Exception({'msg': 'perm incorrect'}
-                                )  # pylint: disable=raise-missing-from
+                raise Exception({'msg': 'perm incorrect'})  # pylint: disable=raise-missing-from
+
+        try:
+            sp_metadatafile = MetaDataFile(attrc=None,filename=filename)
+            sp_metadatafile.load()
+            sp_entity = sp_metadatafile.entity[list(sp_metadatafile.keys())[0]]
+
+            if entity_id in ["",None]:
+                data["entity_id"] = sp_entity["entity_id"]
+
+            spsso_descriptor = sp_entity["spsso_descriptor"][0]
+            if acs in ["",None]:
+                data["acs"] = spsso_descriptor["assertion_consumer_service"][0]["location"]
+            
+            if sls in ["",None]:
+                data["sls"] = spsso_descriptor["single_logout_service"][0]["location"]
+
+            if cert in ["",None]:
+                data["cert"] = spsso_descriptor["key_descriptor"][0]["key_info"]["x509_data"][0]["x509_certificate"]["text"]
+
+        except Exception as err: # pylint: disable=broad-except
+            print(err)
+            raise Exception({'msg': '元数据文件解析出错'})  # pylint: disable=raise-missing-from
 
         if os.path.exists(BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename):
             os.remove(
