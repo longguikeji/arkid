@@ -14,13 +14,6 @@ class AuthCodeIdpProvider(AuthCodeProvider):
     def __init__(self) -> None:
         super().__init__()
 
-        from extension.models import Extension
-        o = Extension.active_objects.filter(
-            type=KEY,
-        ).first()
-
-        assert o is not None
-
     def get_random_char(self):
         '''
         获取随机4个字符组合

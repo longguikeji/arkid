@@ -16,6 +16,14 @@ class LDAPExtension(InMemExtension):
 
         super().start(runtime=runtime, *args, **kwargs)
 
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        runtime.logout_app_type(
+            key='LDAP',
+            name='LDAP',
+            provider=LDAPAppTypeProvider,
+            serializer=LDAPAppSerializer,
+        )
+
 
 extension = LDAPExtension(
     name='ldap',

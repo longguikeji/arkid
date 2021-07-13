@@ -192,6 +192,8 @@ class TenantViewSet(BaseViewSet):
 
     def get_password_error_count(self, ip, check_str='login'):
         key = f'{ip}-{check_str}'
+        if self.runtime.cache_provider is None:
+            return 0
         data = self.runtime.cache_provider.get(key)
         if data is None:
             return 0

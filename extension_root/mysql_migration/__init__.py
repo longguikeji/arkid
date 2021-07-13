@@ -7,6 +7,7 @@ from .constants import KEY
 
 
 class MysqlMigrationExtension(InMemExtension):
+
     def start(self, runtime: Runtime, *args, **kwargs):
 
         from extension.models import Extension
@@ -28,6 +29,27 @@ class MysqlMigrationExtension(InMemExtension):
         )
 
         super().start(runtime=runtime, *args, **kwargs)
+
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        from extension.models import Extension
+
+        o = Extension.objects.filter(
+            type=KEY,
+        ).order_by('-id').first()
+
+        assert o is not None
+        host = o.data.get('host')
+        port = o.data.get('port')
+        user = o.data.get('user')
+        passwd = o.data.get('passwd')
+        db = o.data.get('db')
+
+        provider = MysqlMigrationProvider(host, port, user, passwd, db)
+        runtime.logout_migration_provider(
+            provider=provider,
+        )
+
+
 
 
 extension = MysqlMigrationExtension(

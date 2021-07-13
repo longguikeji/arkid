@@ -16,6 +16,7 @@ class ArkIDExternalIdpProvider(ExternalIdpProvider):
     login_url: str
     callback_url: str
     bind_url: str
+    scope: str
 
     def __init__(self) -> None:
         super().__init__()
@@ -32,6 +33,14 @@ class ArkIDExternalIdpProvider(ExternalIdpProvider):
 
         data = idp.data
 
+        from app.models import App
+        if App.active_objects.filter(
+            tenant__uuid=tenant_uuid,
+            type='OAuth2'
+        ).order_by('-id').exists():
+            self.scope = 'userinfo'
+        else:
+            self.scope = 'openid'
         self.client_id = data.get('client_id')
         self.secret_id = data.get('secret_id')
         self.authorize_url = data.get('authorize_url')
