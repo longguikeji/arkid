@@ -14,10 +14,12 @@ from app.models import App
 
 import json
 
+
 class ExtensionTestCase(TestCase):
     '''
     test extension
     '''
+
     def setUp(self):
         # create tenant
         self.tenant = Tenant.objects.create(name='first tenant')
@@ -35,7 +37,7 @@ class ExtensionTestCase(TestCase):
             type='oauth2_authorization_server',
         )
         self.client = Client(HTTP_AUTHORIZATION='Token {}'.format(self.token))
-    
+
     def test_extension_create(self):
         url = '/api/v1/tenant/{}/extension/'.format(self.tenant.uuid)
         body = {
@@ -49,7 +51,8 @@ class ExtensionTestCase(TestCase):
         self.assertIsNotNone(result.get('uuid'))
 
     def test_extension_register(self):
-        url = '/api/v1/tenant/{}/extension/{}/'.format(self.tenant.uuid, self.extension.uuid)
+        url = '/api/v1/tenant/{}/extension/{}/'.format(
+            self.tenant.uuid, self.extension.uuid)
         body = {
             'is_active': True,
             'type': 'arkid',
@@ -60,9 +63,10 @@ class ExtensionTestCase(TestCase):
         result = json.loads(resp.content.decode())
         is_active = result['is_active']
         self.assertEqual(True, is_active)
-    
+
     def test_extension_unregister(self):
-        url = '/api/v1/tenant/{}/extension/{}/'.format(self.tenant.uuid, self.extension.uuid)
+        url = '/api/v1/tenant/{}/extension/{}/'.format(
+            self.tenant.uuid, self.extension.uuid)
         body = {
             'is_active': False,
             'type': 'arkid',
@@ -73,8 +77,9 @@ class ExtensionTestCase(TestCase):
         result = json.loads(resp.content.decode())
         is_active = result['is_active']
         self.assertEqual(False, is_active)
-    
+
     def test_extension_delete(self):
-        url = '/api/v1/tenant/{}/extension/{}/'.format(self.tenant.uuid, self.extension.uuid)
+        url = '/api/v1/tenant/{}/extension/{}/'.format(
+            self.tenant.uuid, self.extension.uuid)
         resp = self.client.delete(url, content_type='application/json')
         self.assertEqual(resp.status_code, 204, resp.content.decode())
