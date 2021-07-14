@@ -45,6 +45,7 @@ class Config(object):
             port=data.get('email').get('port'),
             user=data.get('email').get('user'),
             password=data.get('email').get('password'),
+            nickname=data.get('email').get('nickname'),
         )
 
         # scan all extension configs

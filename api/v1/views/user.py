@@ -13,7 +13,7 @@ from django.contrib.auth.models import User as DUser
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from tenant.models import Tenant, TenantPasswordComplexity
-from inventory.models import User
+from inventory.models import User, Invitation
 from inventory.resouces import UserResource
 from api.v1.serializers.user import (
     UserSerializer,
@@ -42,6 +42,7 @@ from common.code import Code
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
+from rest_framework.exceptions import ValidationError
 
 import re
 
@@ -511,3 +512,42 @@ class UserManageTenantsView(generics.RetrieveAPIView):
                 "is_global_admin": user.is_superuser,
                 "is_platform_user": user.is_platform_user,
             })
+
+
+@extend_schema(tags=['user'])
+class InviteUserCreateAPIView(generics.CreateAPIView):
+    '''
+    invite user
+    '''
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+    def post(self, request, username):    # pylint: disable=arguments-differ
+        data = request.data if request.data else {}
+
+        inviter = request.user
+        invitee = User.valid_objects.filter(username=username).first()
+        if not invitee:
+            raise ValidationError({'invitee': ['this user not exists']})
+
+        # if invitee.is_settled:
+        #     raise ValidationError({'invitee': ['this user has been settled']})
+
+        # 之前的邀请即刻过期
+        invitations = Invitation.valid_objects.filter(invitee=invitee, inviter=inviter)
+        invitations.update(duration=datetime.timedelta(seconds=0))
+
+        invitation = Invitation.active_objects.create(invitee=invitee, inviter=inviter)
+
+        duration_minutes = data.get('duration_minutes', 0)
+        if duration_minutes:
+            invitation.duration = datetime.timedelta(minutes=duration_minutes)
+            invitation.save()
+
+        return Response({
+            'uuid': invitation.uuid.hex,
+            'inviter': inviter.username,
+            'invitee': invitee.username,
+            'key': invitation.key,
+            'expired_time': invitation.expired_time,
+        })
