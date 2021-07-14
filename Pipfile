@@ -36,6 +36,7 @@ django-scim2 = "*"
 aiohttp = "*"
 pysaml2 = "==7.0.1"
 pillow = "==8.2.0"
+mysqlclient = "*"
 
 [requires]
 python_version = "3.8"

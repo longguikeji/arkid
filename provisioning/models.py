@@ -6,8 +6,12 @@ import collections
 from django.db import models
 from common.model import BaseModel
 from app.models import App
-from .constants import ProvisioningMode, ProvisioningStatus, ProvisioningType, AuthenticationType
-from scim2_client.scim_service import ScimService
+from .constants import (
+    ProvisioningMode,
+    ProvisioningStatus,
+    ProvisioningType,
+    AuthenticationType,
+)
 from scim_client.async_client import AsyncSCIMClient
 from aiohttp import BasicAuth, ClientSession
 from scim2_filter_parser.attr_paths import AttrPath
@@ -34,9 +38,11 @@ class Config(BaseModel):
 
     app = models.ForeignKey(App, on_delete=models.PROTECT)
     sync_type = models.IntegerField(
-        max_length=32, choices=SYNC_TYPE, default=ProvisioningType.downstream.value)
+        max_length=32, choices=SYNC_TYPE, default=ProvisioningType.downstream.value
+    )
     auth_type = models.IntegerField(
-        max_length=32, choices=AUTH_TYPE, default=AuthenticationType.token.value)
+        max_length=32, choices=AUTH_TYPE, default=AuthenticationType.token.value
+    )
 
     base_url = models.CharField(max_length=1024, blank=False, null=True)
     token = models.CharField(max_length=256, blank=True, null=True)
@@ -57,16 +63,19 @@ class Config(BaseModel):
         if self.auth_type == AuthenticationType.basic.value:
             basic_auth = BasicAuth(login=self.username, password=self.password)
             client = AsyncSCIMClient(
-                '', base_url=self.base_url, auth=basic_auth, cookies=cookies)
+                '', base_url=self.base_url, auth=basic_auth, cookies=cookies
+            )
         else:
             client = AsyncSCIMClient(
-                self.token, base_url=self.base_url, cookies=cookies)
+                self.token, base_url=self.base_url, cookies=cookies
+            )
         return client
 
     def test_connection(self):
         client = self.get_scim_client()
-        resp = asyncio.run(client.api_call(
-            http_verb='GET', path='ServiceProviderConfig'))
+        resp = asyncio.run(
+            client.api_call(http_verb='GET', path='ServiceProviderConfig')
+        )
         if resp.status_code != 200:
             return False
         else:
@@ -151,9 +160,9 @@ class Config(BaseModel):
         filter=emails[type eq "work" and value co "@example.com"]
         emails[type eq "work"].value eq "@examples.com"
         """
-        match_mappings = self.app_profile_mappings.filter(is_used_matching=True).order_by(
-            'matching_precedence'
-        )
+        match_mappings = self.app_profile_mappings.filter(
+            is_used_matching=True
+        ).order_by('matching_precedence')
         if not match_mappings:
             return '''userName eq "{}"'''.format(user.username)
         filter_str_list = []
