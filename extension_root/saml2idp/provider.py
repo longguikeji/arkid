@@ -29,7 +29,8 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
         try:
             idp_init(app.tenant.uuid, app.id)
         except Exception as err:  # pylint: disable=broad-except
-            logger.debug(f"idp初始化出错:{err}")  # pylint: disable=logging-fstring-interpolation
+            logger.debug(
+                f"idp初始化出错:{err}")  # pylint: disable=logging-fstring-interpolation
             idpclear(app.tenant.uuid, app.id)
             raise err
 
@@ -44,7 +45,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
         cert = data.get('cert', '')
         acs = data.get('acs', '')
         sls = data.get('sls', '')
-        
+
         if xmldata not in ['', None]:
             with open(filename, 'w+') as f:
                 f.write(xmldata)
@@ -58,7 +59,8 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                     sls=sls
                 )
             except CertificateError:
-                raise Exception({'msg': 'perm incorrect'})  # pylint: disable=raise-missing-from
+                raise Exception({'msg': 'perm incorrect'}
+                                )  # pylint: disable=raise-missing-from
 
         try:
             sp_metadatafile = MetaDataFile(attrc=None, filename=filename)

@@ -196,7 +196,7 @@ def create_upload_url_field(field_cls):
     """
     @extend_schema_field(
         field={
-            'format': 'upload_file',
+            'format': 'upload_url',
         }
     )
     class UploadUrlField(field_cls):
