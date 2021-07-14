@@ -18,6 +18,7 @@ from provisioning.utils import (
 from inventory.models import User, Group
 from app.models import App
 from webhook.models import WebHook, WebHookTriggerHistory
+from common.utils import send_email as send_email_func
 import requests
 from scim2_client.scim_service import ScimService
 from provisioning.constants import ProvisioningType
@@ -197,6 +198,13 @@ def notify_webhook(tenant_uuid: int, event: Event):
     for webhook in webhooks:
         r = requests.post(webhook.url)
         print(r.json())
+
+@app.task
+def send_email(addrs, subject, content):
+    '''
+    发送邮件
+    '''
+    send_email_func(addrs, subject, content)
 
 @app.task
 def provision_tenant_app(tenant_uuid: str, app_id:int):
