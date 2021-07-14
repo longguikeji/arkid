@@ -13,6 +13,7 @@ base_urlpatterns = [
 oidc_urlpatterns = [
     url(r".well-known/openid-configuration/$", views.ConnectDiscoveryInfoView.as_view(), name="oidc-connect-discovery-info",),
     url(r"oauth/userinfo/$", views.UserInfoExtendView.as_view(), name="oauth-user-info"),
+    url(r"oidc/logout/$", views.OIDCLogoutView.as_view(), name="oauth-user-logout"),
     re_path(r".well-known/jwks.json$", views.JwksInfoView.as_view(), name="jwks-info"),
     re_path(r"userinfo/$", views.UserInfoView.as_view(), name="user-info"),
 ]

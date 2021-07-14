@@ -81,6 +81,25 @@ class AliyunExtension(InMemExtension):
         runtime.register_sms_provider(sms_provider)
 
         super().start(runtime=runtime, *args, **kwargs)
+    
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        from extension.models import Extension
+        o = Extension.objects.filter(
+            type=KEY,
+        ).order_by('-id').first()
+        assert o is not None
+        access_key = o.data.get('access_key')
+        secret_key = o.data.get('secret_key')
+        template = o.data.get('template')
+        signature = o.data.get('signature')
+
+        sms_provider = AliyunSMSProvider(
+            access_key=access_key,
+            secret_key=secret_key,
+            template=template,
+            signature=signature,
+        )
+        runtime.logout_sms_provider(sms_provider)
 
 
 extension = AliyunExtension(

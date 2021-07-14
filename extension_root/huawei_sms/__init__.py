@@ -57,6 +57,30 @@ class HuaWeiExtension(InMemExtension):
 
         super().start(runtime=runtime, *args, **kwargs)
 
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+
+        from extension.models import Extension
+        o = Extension.objects.filter(
+            type=KEY,
+        ).order_by('-id').first()
+
+        assert o is not None
+        access_key = o.data.get('access_key')
+        secret_key = o.data.get('secret_key')
+        template = o.data.get('template')
+        signature = o.data.get('signature')
+        sender = o.data.get('sender')
+
+        sms_provider = HuaWeiSMSProvider(
+            access_key=access_key,
+            secret_key=secret_key,
+            template=template,
+            signature=signature,
+            sender=sender,
+        )
+
+        runtime.logout_sms_provider(sms_provider)
+
 
 extension = HuaWeiExtension(
     name=KEY,
