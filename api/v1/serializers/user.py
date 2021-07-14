@@ -1,6 +1,6 @@
 from api.v1.serializers.permission import PermissionSerializer
 from common.serializer import BaseDynamicFieldModelSerializer
-from inventory.models import Group, Permission, User
+from inventory.models import Group, Permission, User, CustomUser
 from rest_framework import serializers
 from .group import GroupSerializer, GroupBaseSerializer
 from api.v1.fields.custom import (
@@ -9,6 +9,26 @@ from api.v1.fields.custom import (
 )
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
+
+class CustomUserSerializer(BaseDynamicFieldModelSerializer):
+    '''
+    custom user info
+    '''
+
+    pretty = serializers.SerializerMethodField()
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = CustomUser
+
+        fields = ('data', 'pretty')
+
+        extra_kwargs = {'pretty': {'read_only': True}}
+
+    def get_pretty(self, instance):    # pylint: disable=no-self-use
+        '''
+        前端友好的输出
+        '''
+        return instance.pretty(visible_only=True)
 
 
 class UserSerializer(BaseDynamicFieldModelSerializer):
@@ -40,6 +60,8 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         write_only=True,
     )
 
+    custom_user = CustomUserSerializer(many=False, required=False, allow_null=True)
+
     class Meta:
         model = User
 
@@ -60,6 +82,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'set_groups',
             'set_permissions',
             'bind_info',
+            'custom_user',
         )
 
         extra_kwargs = {
@@ -87,6 +110,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     def create(self, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
+        custom_user_data = validated_data.pop('custom_user', None)
 
         u: User = User.objects.create(
             **validated_data,
@@ -107,6 +131,12 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
                 p = Permission.objects.filter(uuid=p_uuid).first()
                 if p is not None:
                     u.user_permissions.add(p)
+
+        if custom_user_data:
+            custom_user_serializer = CustomUserSerializer(data=custom_user_data)
+            custom_user_serializer.is_valid(raise_exception=True)
+            custom_user_serializer.save(user=u)
+            
         u.save()
         return u
 
@@ -126,6 +156,17 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
                 p = Permission.objects.filter(uuid=p_uuid).first()
                 if p is not None:
                     instance.user_permissions.add(p)
+
+        if 'custom_user' in validated_data:
+            custom_user_data = validated_data.pop('custom_user')
+            if hasattr(instance, 'custom_user'):
+                custom_user_serializer = CustomUserSerializer(instance.custom_user, data=custom_user_data, partial=True)
+                custom_user_serializer.is_valid(raise_exception=True)
+                custom_user_serializer.save()
+            else:
+                custom_user_serializer = CustomUserSerializer(data=custom_user_data)
+                custom_user_serializer.is_valid(raise_exception=True)
+                custom_user_serializer.save(user=instance)
 
         for key, value in validated_data.items():
             setattr(instance, key, value)
