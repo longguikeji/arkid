@@ -20,6 +20,7 @@ extend_schema_tags(
             }
         },
         'item': {
+            'history': 'webhook_history',
             'update': {
                 'read': {
                     'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{id}/',

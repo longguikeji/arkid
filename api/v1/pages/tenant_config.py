@@ -13,7 +13,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{id}/',
             'method': 'get'
         },
-        'item': {
+        'page': {
             'update': {
                 'read': {
                     'path': '/api/v1/tenant/{id}/',
