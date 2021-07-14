@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'schema',
     'extension',
     'api',
+    'system',
     'extension_root.github',
     'extension_root.gitee',
     'extension_root.feishu',
@@ -69,6 +70,8 @@ INSTALLED_APPS = [
     'extension_root.miniprogram',
     'djangosaml2idp'
 ]
+
+X_FRAME_OPTIONS = 'ALLOWALL'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -139,7 +142,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/

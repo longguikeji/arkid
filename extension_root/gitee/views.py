@@ -43,7 +43,7 @@ class GiteeLoginView(APIView):
         else:
             next_url = ""
 
-        redirect_uri = "{}{}{}".format(c.get_host(), provider.callback_url, next_url)
+        redirect_uri = "{}{}".format(provider.callback_url, next_url)
 
         url = "{}?client_id={}&redirect_uri={}&response_type=code&scope=user_info".format(
             AUTHORIZE_URL,
@@ -57,7 +57,7 @@ class GiteeLoginView(APIView):
 @extend_schema(tags=["gitee"])
 class GiteeBindAPIView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = GiteeBindSerializer
 
@@ -93,6 +93,9 @@ class GiteeCallbackView(APIView):
         """
         code = request.GET["code"]
         next_url = request.GET.get("next", None)
+        frontend_host = get_app_config().get_frontend_host().replace('http://' , '').replace('https://' , '')
+        if "third_part_callback" not in next_url or frontend_host not in next_url:
+            return Response({'error_msg': '错误的跳转页面'}, HTTP_200_OK)
         if next_url is not None:
             next_url = "?next=" + urllib.parse.quote(next_url)
         else:
@@ -104,8 +107,7 @@ class GiteeCallbackView(APIView):
                 user_id, access_token, refresh_token = GiteeUserInfoManager(
                     provider.client_id,
                     provider.secret_id,
-                    "{}{}{}".format(
-                        get_app_config().get_host(),
+                    "{}{}".format(
                         provider.callback_url,
                         next_url,
                     )
@@ -159,7 +161,7 @@ class GiteeCallbackView(APIView):
 @extend_schema(tags=["gitee"])
 class GiteeUnBindView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     def get(self, request, tenant_uuid):
@@ -179,7 +181,7 @@ class GiteeUnBindView(GenericAPIView):
 @extend_schema(tags=["gitee"])
 class GiteeDataView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = GiteeDataSerializer
 

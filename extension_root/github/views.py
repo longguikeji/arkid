@@ -40,7 +40,7 @@ class GithubLoginView(APIView):
             next_url = "?next=" + next_url
         else:
             next_url = ""
-        redirect_uri = "{}{}{}".format(c.get_host(), provider.callback_url, next_url)
+        redirect_uri = "{}{}".format(provider.callback_url, next_url)
         url = "{}?client_id={}&redirect_uri={}".format(
             AUTHORIZE_URL,
             provider.client_id,
@@ -56,7 +56,7 @@ class GithubBindAPIView(GenericAPIView):
     Github账号绑定
     """
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = GithubBindSerializer
@@ -95,6 +95,9 @@ class GithubCallbackView(APIView):
         """
         code = request.GET["code"]
         next_url = request.GET.get("next", None)
+        frontend_host = get_app_config().get_frontend_host().replace('http://' , '').replace('https://' , '')
+        if "third_part_callback" not in next_url or frontend_host not in next_url:
+            return Response({'error_msg': '错误的跳转页面'}, HTTP_200_OK)
         if code:
             try:
                 provider = GithubExternalIdpProvider()
@@ -140,7 +143,7 @@ class GithubCallbackView(APIView):
 @extend_schema(tags=["github"])
 class GithubUnBindView(GenericAPIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
     def get(self, request, tenant_uuid):

@@ -1,11 +1,13 @@
 from common.extension import InMemExtension
 from .serializers import ArkIDExternalIdpSerializer
 from .provider import ArkIDExternalIdpProvider
+from runtime import Runtime
 from .constants import KEY
 
 
 class ArkIDExternalIdpExtension(InMemExtension):
-    def start(self, runtime, *args, **kwargs):
+
+    def start(self, runtime: Runtime, *args, **kwargs):
         runtime.register_external_idp(
             key=KEY,
             name="ArkID",
@@ -14,6 +16,16 @@ class ArkIDExternalIdpExtension(InMemExtension):
             serializer=ArkIDExternalIdpSerializer,
         )
         super().start(runtime=runtime, *args, **kwargs)
+    
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        runtime.logout_external_idp(
+            key=KEY,
+            name="ArkID",
+            description="ArkID External idP",
+            provider=ArkIDExternalIdpProvider,
+            serializer=ArkIDExternalIdpSerializer,
+        )
+
 
 
 extension = ArkIDExternalIdpExtension(

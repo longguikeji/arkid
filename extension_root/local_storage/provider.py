@@ -12,14 +12,6 @@ class LocalStorageProvider(StorageProvider):
     def __init__(self) -> None:
         super().__init__()
 
-        from extension.models import Extension
-        o = Extension.active_objects.filter(
-            type=KEY,
-        ).first()
-
-        assert o is not None
-        self.data_path = o.data.get('data_path')
-
     def upload(self, file: Any) -> str:
         key = self.generate_key(file)
 

@@ -16,6 +16,7 @@ class ArkIDExternalIdpProvider(ExternalIdpProvider):
     login_url: str
     callback_url: str
     bind_url: str
+    scope: str
 
     def __init__(self) -> None:
         super().__init__()
@@ -32,6 +33,14 @@ class ArkIDExternalIdpProvider(ExternalIdpProvider):
 
         data = idp.data
 
+        from app.models import App
+        if App.active_objects.filter(
+            tenant__uuid=tenant_uuid,
+            type='OAuth2'
+        ).order_by('-id').exists():
+            self.scope = 'userinfo'
+        else:
+            self.scope = 'openid'
         self.client_id = data.get('client_id')
         self.secret_id = data.get('secret_id')
         self.authorize_url = data.get('authorize_url')
@@ -42,7 +51,9 @@ class ArkIDExternalIdpProvider(ExternalIdpProvider):
         self.callback_url = data.get('callback_url')
         self.bind_url = data.get('bind_url')
 
+    
     def create(self, tenant_uuid, external_idp, data):
+        host = get_app_config().get_host()
         return {
             'client_id': data.get('client_id'),
             'secret_id': data.get('secret_id'),
@@ -50,10 +61,11 @@ class ArkIDExternalIdpProvider(ExternalIdpProvider):
             'token_url': data.get('token_url'),
             'userinfo_url': data.get('userinfo_url'),
             'img_url': data.get('img_url'),
-            'login_url': reverse("api:arkid:login", args=[tenant_uuid]),
-            'callback_url': reverse("api:arkid:callback", args=[tenant_uuid]),
-            'bind_url': reverse("api:arkid:bind", args=[tenant_uuid]),
+            'login_url': host+reverse("api:arkid:login", args=[tenant_uuid]),
+            'callback_url': host+reverse("api:arkid:callback", args=[tenant_uuid]),
+            'bind_url': host+reverse("api:arkid:bind", args=[tenant_uuid]),
         }
+
 
     def bind(self, user: any, data: Dict):
         from .models import ArkIDUser

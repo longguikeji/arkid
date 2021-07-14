@@ -8,13 +8,26 @@ from .serializers import LocalStorageSerializer
 class LocalStorageExtension(InMemExtension):
 
     def start(self, runtime: Runtime, *args, **kwargs):
+        from extension.models import Extension
+        o = Extension.active_objects.filter(
+            type=KEY,
+        ).first()
+        assert o is not None
+
         provider = LocalStorageProvider()
+        provider.data_path = o.data.get('data_path')
 
         runtime.register_storage_provider(
             provider=provider,
         )
 
         super().start(runtime=runtime, *args, **kwargs)
+
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        provider = LocalStorageProvider()
+        runtime.logout_storage_provider(
+            provider=provider,
+        )
 
 
 extension = LocalStorageExtension(

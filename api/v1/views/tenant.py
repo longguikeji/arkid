@@ -5,20 +5,20 @@ from rest_framework import generics
 from openapi.utils import extend_schema
 from rest_framework.response import Response
 from tenant.models import (
-    Tenant, TenantConfig,
+    Tenant, TenantConfig, TenantPasswordComplexity,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
     UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
     UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer, TenantConfigSerializer,
-    UserNameLoginRequestSerializer,
+    UserNameLoginRequestSerializer, TenantPasswordComplexitySerializer, 
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
-from inventory.models import Group, User
+from inventory.models import Group, User, UserPassword
 from common.code import Code
 from .base import BaseViewSet
 from app.models import App
@@ -173,7 +173,7 @@ class TenantViewSet(BaseViewSet):
         #     })
 
         token = user.refresh_token()
-
+        UserPassword.valid_objects.get_or_create(user=user, password=user.md5_password(password))
         return JsonResponse(data={
             'error': Code.OK.value,
             'data': {
@@ -192,6 +192,8 @@ class TenantViewSet(BaseViewSet):
 
     def get_password_error_count(self, ip, check_str='login'):
         key = f'{ip}-{check_str}'
+        if self.runtime.cache_provider is None:
+            return 0
         data = self.runtime.cache_provider.get(key)
         if data is None:
             return 0
@@ -294,7 +296,8 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) is False:
+        tenant = self.get_object()
+        if self.check_password(tenant.uuid, password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -311,7 +314,6 @@ class TenantViewSet(BaseViewSet):
                     'error': Code.REGISTER_FAST_ERROR.value,
                     'message': _('a large number of registrations in a short time'),
                 })
-        tenant = self.get_object()
         user, created = User.objects.get_or_create(
             is_del=False,
             is_active=True,
@@ -369,7 +371,8 @@ class TenantViewSet(BaseViewSet):
                 'error': Code.PASSWORD_NONE_ERROR.value,
                 'message': _('password is empty'),
             })
-        if self.check_password(password) is False:
+        tenant = self.get_object()
+        if self.check_password(tenant.uuid, password) is False:
             return JsonResponse(data={
                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
                 'message': _('password strength not enough'),
@@ -386,7 +389,6 @@ class TenantViewSet(BaseViewSet):
                     'error': Code.REGISTER_FAST_ERROR.value,
                     'message': _('a large number of registrations in a short time'),
                 })
-        tenant = self.get_object()
         user, created = User.objects.get_or_create(
             is_del=False,
             is_active=True,
@@ -406,9 +408,10 @@ class TenantViewSet(BaseViewSet):
             }
         })
 
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
+    def check_password(self, tenant_uuid, pwd):
+        comlexity = TenantPasswordComplexity.active_objects.filter(tenant__uuid=tenant_uuid, is_apply=True).first()
+        if comlexity:
+            return comlexity.check_pwd(pwd)
         return True
 
     @action(detail=True, methods=['GET'])
@@ -660,7 +663,8 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                     'is_open_register_limit': False,
                     'register_time_limit': 1,
                     'register_count_limit': 10,
-                    'upload_file_format': ['jpg','png','gif','jpeg']
+                    'upload_file_format': ['jpg','png','gif','jpeg'],
+                    'close_page_auto_logout': False
                 }
                 tenantconfig.save()
             else:
@@ -673,7 +677,59 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                     data['register_count_limit'] = 10
                 if 'upload_file_format' not in data:
                     data['upload_file_format'] = ['jpg','png','gif','jpeg']
+                if 'close_page_auto_logout' not in data:
+                    data['close_page_auto_logout'] = False
                 tenantconfig.save()
             return tenantconfig
         else:
             return []
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantPasswordComplexityView(generics.ListCreateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantPasswordComplexitySerializer
+
+    def get_queryset(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        return TenantPasswordComplexity.active_objects.filter(
+            tenant__uuid=tenant_uuid
+        ).order_by('-is_apply')
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantPasswordComplexityDetailView(generics.RetrieveUpdateDestroyAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantPasswordComplexitySerializer
+
+    def get_object(self):
+        uuid = self.kwargs['complexity_uuid']
+        return TenantPasswordComplexity.active_objects.filter(uuid=uuid).first()
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+class TenantCurrentPasswordComplexityView(generics.RetrieveAPIView):
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = TenantPasswordComplexitySerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        return TenantPasswordComplexity.active_objects.filter(tenant__uuid=tenant_uuid, is_apply=True).first()
+
+    
+    def get(self, request, tenant_uuid):
+        comlexity = TenantPasswordComplexity.active_objects.filter(tenant__uuid=tenant_uuid, is_apply=True).first()
+        if comlexity:
+            serializer = self.get_serializer(comlexity)
+            return Response(serializer.data)
+        else:
+            return Response({})

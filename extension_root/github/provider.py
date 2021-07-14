@@ -3,6 +3,7 @@ from .user_info_manager import GithubUserInfoManager
 from common.provider import ExternalIdpProvider
 from .constants import KEY, BIND_KEY, LOGIN_URL, IMG_URL
 from django.urls import reverse
+from config import get_app_config
 
 
 class GithubExternalIdpProvider(ExternalIdpProvider):
@@ -42,15 +43,16 @@ class GithubExternalIdpProvider(ExternalIdpProvider):
         self.bind_url = bind_url
 
     def create(self, tenant_uuid, external_idp, data):
+        host = get_app_config().get_host()
         client_id = data.get('client_id')
         secret_id = data.get('secret_id')
 
         return {
             'client_id': client_id,
             'secret_id': secret_id,
-            'login_url': reverse("api:github:login", args=[tenant_uuid]),
-            'callback_url': reverse("api:github:callback", args=[tenant_uuid]),
-            'bind_url': reverse("api:github:bind", args=[tenant_uuid]),
+            'login_url': host+reverse("api:github:login", args=[tenant_uuid]),
+            'callback_url': host+reverse("api:github:callback", args=[tenant_uuid]),
+            'bind_url': host+reverse("api:github:bind", args=[tenant_uuid]),
             'img_url': IMG_URL,
         }
 

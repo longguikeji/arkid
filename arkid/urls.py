@@ -26,5 +26,3 @@ urlpatterns = [
     path('superadmin/', admin.site.urls),
     url(r'^api/v1/', include(('api.v1.urls', 'api'), namespace='api')),
 ]
-
-

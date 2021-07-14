@@ -9,6 +9,7 @@ from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.utils.translation import gettext_lazy as _
+from extension.utils import reload_extension
 from common.code import Code
 
 
@@ -19,8 +20,8 @@ ExtensionPolymorphicProxySerializer = PolymorphicProxySerializer(
 )
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['global admin']),
+    partial_update=extend_schema(roles=['global admin']),
 )
 @extend_schema(tags = ['extension'])
 class ExtensionViewSet(BaseViewSet):
@@ -40,14 +41,14 @@ class ExtensionViewSet(BaseViewSet):
         return o
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['global admin'],
         responses=ExtensionListSerializer
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['global admin'],
         request=ExtensionPolymorphicProxySerializer,
         responses=ExtensionPolymorphicProxySerializer,
     )
@@ -63,22 +64,33 @@ class ExtensionViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
-    )
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-    @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['global admin'],
         request=ExtensionPolymorphicProxySerializer,
         responses=ExtensionPolymorphicProxySerializer,
     )
     def create(self, request, *args, **kwargs):
+        data = request.data.get('data','')
+        data_path = data.get('data_path', '')
+        if data_path:
+            if '../' in data_path or './' in data_path:
+                return JsonResponse(data={
+                    'error': Code.DATA_PATH_ERROR.value,
+                    'message': _('data_path format error'),
+                })
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['global admin'],
         responses=ExtensionPolymorphicProxySerializer
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['global admin'],
+    )
+    def destroy(self, request, *args, **kwargs):
+        o = self.get_object()
+        result = super(ExtensionViewSet, self).destroy(request, *args, **kwargs)
+        reload_extension(o.type, False)
+        return result
