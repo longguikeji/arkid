@@ -2,8 +2,9 @@ import json
 import aiohttp
 import asyncio
 from .models import Config
-from inventory.models import User,Group
+from inventory.models import User, Group
 from scim_client.async_client import AsyncSCIMClient
+
 
 def build_users_url(c: Config) -> str:
     return f'{c.endpoint}/Users'
@@ -22,7 +23,8 @@ def user_exists(client: AsyncSCIMClient, c: Config, user: User) -> bool:
     # 'emails[primary eq "true" and type eq "work" and value eq "test@qq.com"]'
     filter_str = c.get_match_filter(user)
     print(filter_str)
-    response = asyncio.run(client.search_users(start_index=1, count=100, filter=filter_str))
+    response = asyncio.run(client.search_users(
+        start_index=1, count=100, filter=filter_str))
     print(response)
     if response.status_code == 200:
         users = response.users
@@ -91,7 +93,7 @@ def update_user(client: AsyncSCIMClient, c: Config, user: User, user_id: str):
     print(response.user)
 
 
-def patch_user(client: AsyncSCIMClient, c: Config, user:User, user_id: str):
+def patch_user(client: AsyncSCIMClient, c: Config, user: User, user_id: str):
     """
     PATCH /Users/$user_id
 
@@ -122,9 +124,11 @@ def group_exists(client: AsyncSCIMClient, c: Config, group: Group) -> bool:
     200 OK
     404 NOT FOUND
     """
-    filter_str = 'externalId eq "{}" or displayName eq "{}"'.format(group.uuid.hex, group.name)
+    filter_str = 'externalId eq "{}" or displayName eq "{}"'.format(
+        group.uuid.hex, group.name)
     print(filter_str)
-    response = asyncio.run(client.search_groups(start_index=1, count=100, filter=filter_str))
+    response = asyncio.run(client.search_groups(
+        start_index=1, count=100, filter=filter_str))
     print(response)
     if response.status_code == 200:
         groups = response.groups
@@ -134,7 +138,8 @@ def group_exists(client: AsyncSCIMClient, c: Config, group: Group) -> bool:
             return False, None
     return False, None
 
-def create_group(client: AsyncSCIMClient, c: Config, group:Group):
+
+def create_group(client: AsyncSCIMClient, c: Config, group: Group):
     """
     POST /Groups
     """
@@ -164,7 +169,7 @@ def retrieve_group(c: Config):
     """
 
 
-def update_group(client: AsyncSCIMClient, c: Config, group: Group, group_id:str):
+def update_group(client: AsyncSCIMClient, c: Config, group: Group, group_id: str):
     """
     PUT /Groups/$group_id
     暂时只支持修改名字
@@ -180,7 +185,7 @@ def update_group(client: AsyncSCIMClient, c: Config, group: Group, group_id:str)
     print(response.group)
 
 
-def patch_group(client: AsyncSCIMClient, group_id:str, data:dict):
+def patch_group(client: AsyncSCIMClient, group_id: str, data: dict):
     """
     PATCH /Groups/$group_id
     """

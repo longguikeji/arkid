@@ -33,8 +33,10 @@ class Config(BaseModel):
     # MODE_CHOICES = ((ProvisioningMode.Automatic.value, 'Automatic'),)
 
     app = models.ForeignKey(App, on_delete=models.PROTECT)
-    sync_type = models.IntegerField(max_length=32, choices=SYNC_TYPE, default=ProvisioningType.downstream.value)
-    auth_type = models.IntegerField(max_length=32, choices=AUTH_TYPE, default=AuthenticationType.token.value)
+    sync_type = models.IntegerField(
+        max_length=32, choices=SYNC_TYPE, default=ProvisioningType.downstream.value)
+    auth_type = models.IntegerField(
+        max_length=32, choices=AUTH_TYPE, default=AuthenticationType.token.value)
 
     base_url = models.CharField(max_length=1024, blank=False, null=True)
     token = models.CharField(max_length=256, blank=True, null=True)
@@ -54,19 +56,21 @@ class Config(BaseModel):
     def get_scim_client(self, cookies=None):
         if self.auth_type == AuthenticationType.basic.value:
             basic_auth = BasicAuth(login=self.username, password=self.password)
-            client = AsyncSCIMClient('', base_url=self.base_url, auth=basic_auth, cookies=cookies)
+            client = AsyncSCIMClient(
+                '', base_url=self.base_url, auth=basic_auth, cookies=cookies)
         else:
-            client = AsyncSCIMClient(self.token, base_url=self.base_url, cookies=cookies)
+            client = AsyncSCIMClient(
+                self.token, base_url=self.base_url, cookies=cookies)
         return client
 
     def test_connection(self):
         client = self.get_scim_client()
-        resp = asyncio.run(client.api_call(http_verb='GET', path='ServiceProviderConfig'))
+        resp = asyncio.run(client.api_call(
+            http_verb='GET', path='ServiceProviderConfig'))
         if resp.status_code != 200:
             return False
         else:
             return True
-
 
     def get_user_mapped_data(self, user):
         """
@@ -83,21 +87,21 @@ class Config(BaseModel):
         """
         # TODO 支持复杂类型的映射: emails[type eq "work"].value
         attr_map = {
-        # attr, sub attr, uri
-        ('externalId', None, None): 'scim_external_id',
-        ('userName', None, None): 'username',
-        ('name', 'familyName', None): 'last_name',
-        ('familyName', None, None): 'last_name',
-        ('name', 'givenName', None): 'first_name',
-        ('givenName', None, None): 'first_name',
-        ('active', None, None): 'is_active',
-        ('nickName', None, None): 'nickname',
-        ('title', None, None): 'job_title',
-        ('emails', 'type', None): 'email',
-        ('emails', 'value', None): 'email',
-        ('phoneNumbers', 'value', None): 'mobile',
-        ('phoneNumbers', 'type', None): 'mobile',
-    }
+            # attr, sub attr, uri
+            ('externalId', None, None): 'scim_external_id',
+            ('userName', None, None): 'username',
+            ('name', 'familyName', None): 'last_name',
+            ('familyName', None, None): 'last_name',
+            ('name', 'givenName', None): 'first_name',
+            ('givenName', None, None): 'first_name',
+            ('active', None, None): 'is_active',
+            ('nickName', None, None): 'nickname',
+            ('title', None, None): 'job_title',
+            ('emails', 'type', None): 'email',
+            ('emails', 'value', None): 'email',
+            ('phoneNumbers', 'value', None): 'mobile',
+            ('phoneNumbers', 'type', None): 'mobile',
+        }
         data = {}
         mappings = self.app_profile_mappings.all()
         if not mappings:
