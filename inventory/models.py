@@ -20,6 +20,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import PermissionManager
 from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
+from django_scim.models import AbstractSCIMUserMixin, AbstractSCIMGroupMixin
 
 KEY = Fernet(base64.urlsafe_b64encode(settings.SECRET_KEY.encode()[:32]))
 
@@ -55,7 +56,7 @@ class Permission(BaseModel):
     natural_key.dependencies = ['contenttypes.contenttype']
 
 
-class User(AbstractUser, BaseModel):
+class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
 
     tenants = models.ManyToManyField(
         'tenant.Tenant',
@@ -93,6 +94,15 @@ class User(AbstractUser, BaseModel):
     is_platform_user = models.BooleanField(default=False, verbose_name='是否是平台用户')
 
     _password = None
+
+    @property
+    def scim_groups(self):
+        return self.groups
+
+    def set_scim_id(self, is_new):
+        if is_new:
+            self.__class__.objects.filter(id=self.id).update(scim_id=self.uuid)
+            self.scim_id = str(self.uuid)
 
     @property
     def avatar_url(self):
@@ -193,6 +203,25 @@ class User(AbstractUser, BaseModel):
         """
         return is_password_usable(self.password)
 
+    def as_dict(self):
+        groups = [g.uuid.hex for g in self.groups.all()]
+        return {
+            'uuid': self.uuid.hex,
+            'is_del': self.is_del,
+            'is_active': self.is_active,
+            'username': self.username,
+            'password': self.password,
+            'email': self.email,
+            'mobile': self.mobile,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'nickname': self.nickname,
+            'country': self.country,
+            'city': self.city,
+            'job_title': self.job_title,
+            'groups': groups,
+        }
+
     def manage_tenants(self):
         from tenant.models import Tenant
 
@@ -203,7 +232,7 @@ class User(AbstractUser, BaseModel):
                 uuids.append(tenant.uuid)
         return uuids
 
-
+      
 class UserPassword(BaseModel):
 
     user = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -213,7 +242,7 @@ class UserPassword(BaseModel):
         return f'{self.user.username} - {self.password}'
 
 
-class Group(BaseModel):
+class Group(AbstractSCIMGroupMixin, BaseModel):
 
     tenant = models.ForeignKey(
         'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
@@ -232,7 +261,7 @@ class Group(BaseModel):
     )
 
     def __str__(self) -> str:
-        return f'{self.tenant.name} - {self.name}'
+        return f'{self.name}'
 
     @property
     def children(self):
@@ -249,6 +278,20 @@ class Group(BaseModel):
 
         return owned_perms
 
+    def as_dict(self):
+        return {
+            'uuid': self.uuid.hex,
+            'is_del': self.is_del,
+            'is_active': self.is_active,
+            'name': self.name,
+            'parent': self.parent and self.parent.uuid.hex,
+        }
+
+    def set_scim_id(self, is_new):
+        if is_new:
+            self.__class__.objects.filter(id=self.id).update(scim_id=self.uuid)
+            self.scim_id = str(self.uuid)
+            
 
 class Invitation(BaseModel):
     '''
@@ -337,3 +380,77 @@ class I18NMobileConfig(BaseModel):
     )
     number_length = models.IntegerField(null=True, default=None, verbose_name='号码固定长度')
     start_digital = models.JSONField(default=[], blank=True, verbose_name='首位数字限制集')
+
+
+class CustomField(BaseModel):
+    '''
+    自定义字段
+    '''
+
+    SUBJECT_CHOICES = (
+        ('user', '内部联系人'),    # '^[a-z]{1,16}$'
+        ('extern_user', '外部联系人'),
+        ('node', '组'),
+    )
+
+    tenant = models.ForeignKey(
+        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+    )
+    name = models.CharField(max_length=128, verbose_name='字段名称')
+    subject = models.CharField(choices=SUBJECT_CHOICES, default='user', max_length=128, verbose_name='字段分类')
+    schema = models.JSONField(default={'type': 'string'}, verbose_name='字段定义')
+    is_visible = models.BooleanField(default=True, verbose_name='是否展示')
+
+
+class NativeField(BaseModel):
+    '''
+    原生字段
+    '''
+    SUBJECT_CHOICES = (
+        ('user', '内部联系人'),    # '^[a-z]{1,16}$'
+        ('extern_user', '外部联系人'),
+    )
+    name = models.CharField(max_length=128, verbose_name='字段名称')
+    key = models.CharField(max_length=256, verbose_name='内部字段名')
+    subject = models.CharField(choices=SUBJECT_CHOICES, default='user', max_length=128, verbose_name='字段分类')
+    schema = models.JSONField(default={'type': 'string'}, verbose_name='字段定义')
+    is_visible = models.BooleanField(default=True, verbose_name='是否展示')
+    is_visible_editable = models.BooleanField(default=True, verbose_name='对于`是否展示`，是否可以修改')
+
+
+class CustomUser(BaseModel):
+    '''
+    定制化用户信息
+    '''
+    DEFAULT_VALUE = ""
+
+    user = models.OneToOneField(User, verbose_name='用户', related_name='custom_user', on_delete=models.CASCADE)
+    data = models.JSONField(verbose_name='信息内容')
+
+    def update(self, **kwargs):
+        '''
+        更新数据
+        '''
+        self.data.update(**kwargs)    # pylint: disable=no-member
+        self.save()
+
+    def pretty(self, visible_only=True):
+        '''
+        前端友好的输出
+        '''
+        # pylint: disable=no-member
+        res = []
+        data = self.data
+
+        kwargs = {}
+        if visible_only:
+            kwargs.update(is_visible=True)
+
+        for field in CustomField.valid_objects.filter(**kwargs):
+            res.append({
+                'uuid': field.uuid.hex,
+                'name': field.name,
+                'value': data.get(field.uuid.hex, ''),
+            })
+        return res
+
