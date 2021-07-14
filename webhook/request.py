@@ -113,8 +113,8 @@ class Request(ThenableProxy):
         history = WebHookTriggerHistory.objects.create(
             tenant=webhook.tenant,
             webhook=webhook,
-            status=0,
-            request=json.loads(data),
+            status='waiting',
+            request=data,
             response=None,
         )
         return history.uuid.hex
@@ -148,10 +148,10 @@ class Request(ThenableProxy):
         except self.connection_errors as exc:
             self.handle_connection_error(exc, propagate=propagate)
         except Exception as exc:
-            self.set_history_state(self.history_id, 2, {'error': str(exc)})
+            self.set_history_state(self.history_id, 'failed', str(exc))
             self._p.throw(exc, propagate=propagate)
         else:
-            self.set_history_state(self.history_id, 1, {'status_code': self.response.status_code, 'response': self.response.text}) 
+            self.set_history_state(self.history_id, 'success', {'status_code': self.response.status_code, 'response': self.response.text}) 
             self._p()
 
     @contextmanager
@@ -201,7 +201,7 @@ class Request(ThenableProxy):
             exc_info=1,
             extra={'data': self.as_dict()},
         )
-        self.set_history_state(self.history_id, 2, {'error': str(exc)})
+        self.set_history_state(self.history_id, 'failed',  str(exc))
         if self.on_timeout:
             return self.on_timeout(self, exc)
         return self._p.throw(exc, propagate=propagate)
@@ -214,7 +214,7 @@ class Request(ThenableProxy):
             exc_info=1,
             extra={'data': self.as_dict()},
         )
-        self.set_history_state(self.history_id, 2, {'error': str(exc)})
+        self.set_history_state(self.history_id, 'failed',  str(exc))
         self._p.throw(exc, propagate=propagate)
 
     def as_dict(self):
