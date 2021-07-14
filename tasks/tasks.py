@@ -14,17 +14,17 @@ from provisioning.utils import (
     create_group,
     update_group,
     delete_group,
-    patch_group)
+    patch_group,
+)
 from inventory.models import User, Group
 from app.models import App
 from webhook.models import WebHook, WebHookTriggerHistory
 import requests
-from scim2_client.scim_service import ScimService
 from provisioning.constants import ProvisioningType
 
 
 @app.task
-def provision_user(tenant_uuid: str, user_id: int, is_del: bool=False):
+def provision_user(tenant_uuid: str, user_id: int, is_del: bool = False):
     apps = App.active_objects.filter(
         tenant__uuid=tenant_uuid,
     )
@@ -45,7 +45,6 @@ def provision_user(tenant_uuid: str, user_id: int, is_del: bool=False):
             deprovision_app_user(tenant_uuid, app.id, config.id, user_id)
         else:
             provision_app_user(tenant_uuid, app.id, config.id, user_id)
-
 
 
 @app.task
@@ -106,8 +105,9 @@ def deprovision_app_user(tenant_uuid: str, app_id: int, config_id: int, user_id:
     else:
         delete_user(scim_client, config, user_uuid)
 
+
 @app.task
-def provision_group(tenant_uuid: str, group_id: int, is_del: bool=False):
+def provision_group(tenant_uuid: str, group_id: int, is_del: bool = False):
     apps = App.active_objects.filter(
         tenant__uuid=tenant_uuid,
     )
@@ -128,7 +128,6 @@ def provision_group(tenant_uuid: str, group_id: int, is_del: bool=False):
             deprovision_app_group(tenant_uuid, app.id, config.id, group_id)
         else:
             provision_app_group(tenant_uuid, app.id, config.id, group_id)
-
 
 
 @app.task
@@ -159,6 +158,7 @@ def provision_app_group(tenant_uuid: str, app_id: int, config_id: int, group_id:
     else:
         update_group(scim_client, config, group, group_uuid)
 
+
 @app.task
 def deprovision_app_group(tenant_uuid: str, app_id: int, config_id: int, group_id: int):
     """
@@ -187,6 +187,7 @@ def deprovision_app_group(tenant_uuid: str, app_id: int, config_id: int, group_i
     else:
         delete_group(scim_client, config, group_uuid)
 
+
 @app.task
 def notify_webhook(tenant_uuid: int, event: Event):
     webhooks = WebHook.objects.filter(
@@ -198,12 +199,16 @@ def notify_webhook(tenant_uuid: int, event: Event):
         r = requests.post(webhook.url)
         print(r.json())
 
-@app.task
-def provision_tenant_app(tenant_uuid: str, app_id:int):
-    pass
 
 @app.task
-def provision_user_groups_changed(tenant_uuid: str, action: str, user_id: int, group_set: set):
+def provision_tenant_app(tenant_uuid: str, app_id: int):
+    pass
+
+
+@app.task
+def provision_user_groups_changed(
+    tenant_uuid: str, action: str, user_id: int, group_set: set
+):
     '''
     同步的前提是User和Group已经同步到服务端
     '''
@@ -241,6 +246,7 @@ def provision_user_groups_changed(tenant_uuid: str, action: str, user_id: int, g
                 grp = Group.objects.get(id=grp_id)
                 provision_update_group_members(config.id, user.id, grp.id, 'Remove')
 
+
 def get_user_group_uuid(scim_client, config, user_id, group_id):
     user: User = User.objects.get(id=user_id)
     group: Group = Group.objects.get(id=group_id)
@@ -253,11 +259,11 @@ def get_user_group_uuid(scim_client, config, user_id, group_id):
         print(f'Group Provisioning Skiped: {group_id}')
         return (None, None)
 
-
     _, user_uuid = user_exists(scim_client, config, user)
     _, group_uuid = group_exists(scim_client, config, group)
 
     return (user_uuid, group_uuid)
+
 
 @app.task
 def provision_update_group_members(config_id, user_id, group_id, operation):
@@ -271,14 +277,13 @@ def provision_update_group_members(config_id, user_id, group_id, operation):
         return
     data = {
         "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
-        "Operations": [{
-            "op": operation,
-            "path": "members",
-            "value": [{
-                "$ref": None,
-                "value": user_uuid
-            }]
-        }]
+        "Operations": [
+            {
+                "op": operation,
+                "path": "members",
+                "value": [{"$ref": None, "value": user_uuid}],
+            }
+        ],
     }
 
     ret = patch_group(scim_client, group_uuid, data)
