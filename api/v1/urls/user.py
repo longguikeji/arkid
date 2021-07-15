@@ -2,6 +2,7 @@ from api.v1.views import (
     user as views_user,
 )
 from django.urls import path
+from django.conf.urls import url, include
 
 from .tenant import tenant_router
 
@@ -20,4 +21,6 @@ urlpatterns = [
     path('user/reset_password/', views_user.ResetPasswordView.as_view(), name='user-update-password'),
     path('user/logout/', views_user.UserLogoutView.as_view(), name='user-logout'),
     path('user/manage_tenants/', views_user.UserManageTenantsView.as_view(), name='user-manage-tenants'),
+    path('user/manage_tenants/', views_user.UserManageTenantsView.as_view(), name='user-manage-tenants'),
+    url(r'^user/invitation/(?P<username>[\w]+)/', views_user.InviteUserCreateAPIView.as_view(), name='user-invite'),
 ]

@@ -47,13 +47,13 @@ class WebHook(BaseModel):
 class WebHookTriggerHistory(BaseModel):
 
     STATUS_CHOICES = (
-        (0, '等待发送'),
-        (1, '发送成功'),
-        (2, '发送异常'),
+        ('waiting', '等待发送'),
+        ('success', '发送成功'),
+        ('failed', '发送异常'),
     )
 
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT)
     webhook = models.ForeignKey(WebHook, on_delete=models.PROTECT)
-    status = models.IntegerField(choices=STATUS_CHOICES, default=0)
-    request = jsonfield.JSONField(null=True)  # Headers, Body/Payload ...
-    response = jsonfield.JSONField(null=True)  # Headers, StatusCode, Body ...
+    status = models.CharField(choices=STATUS_CHOICES, max_length=128, default='waiting')
+    request = models.TextField(null=True)  # Headers, Body/Payload ...
+    response = models.TextField(null=True)  # Headers, StatusCode, Body ...

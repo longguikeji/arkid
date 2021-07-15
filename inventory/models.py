@@ -1,3 +1,9 @@
+import base64
+import json
+import datetime
+from cryptography.fernet import Fernet, InvalidToken
+from django.utils import timezone
+from django.conf import settings
 from typing import List
 from django.db import models
 from django.db.models.fields import related
@@ -15,6 +21,8 @@ from django.contrib.auth.models import PermissionManager
 from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
 from django_scim.models import AbstractSCIMUserMixin, AbstractSCIMGroupMixin
+
+KEY = Fernet(base64.urlsafe_b64encode(settings.SECRET_KEY.encode()[:32]))
 
 
 class Permission(BaseModel):
@@ -142,28 +150,29 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
 
     def refresh_token(self):
         import datetime
+
         self.last_login = datetime.datetime.now()
         self.save()
-        Token.objects.filter(
-            user=self
-        ).delete()
-        token, _ = Token.objects.get_or_create(
-            user=self
-        )
+        Token.objects.filter(user=self).delete()
+        token, _ = Token.objects.get_or_create(user=self)
         return token
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
         self._password = raw_password
-        UserPassword.valid_objects.get_or_create(user=self, password=self.md5_password(raw_password))
-
+        UserPassword.valid_objects.get_or_create(
+            user=self, password=self.md5_password(raw_password)
+        )
 
     def valid_password(self, raw_password):
-        return UserPassword.valid_objects.filter(user=self, password=self.md5_password(raw_password)).exists()
-    
+        return UserPassword.valid_objects.filter(
+            user=self, password=self.md5_password(raw_password)
+        ).exists()
+
     def md5_password(self, raw_password):
         for i in range(3):
             import hashlib
+
             hl = hashlib.md5()
             hl.update(raw_password.encode(encoding='utf-8'))
             hex_password = hl.hexdigest()
@@ -215,6 +224,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
 
     def manage_tenants(self):
         from tenant.models import Tenant
+
         tenants = Tenant.active_objects.all()
         uuids = []
         for tenant in tenants:
@@ -237,7 +247,6 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
     tenant = models.ForeignKey(
         'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
     )
-
     name = models.CharField(max_length=128, blank=False, null=True)
     parent = models.ForeignKey(
         'inventory.Group',
@@ -282,6 +291,96 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
         if is_new:
             self.__class__.objects.filter(id=self.id).update(scim_id=self.uuid)
             self.scim_id = str(self.uuid)
+            
+
+class Invitation(BaseModel):
+    '''
+    注册邀请
+
+    过期或接受邀请后进入invalid状态
+    '''
+
+    inviter = models.ForeignKey(
+        'inventory.User',
+        related_name='inviter',
+        verbose_name='发起邀请者',
+        on_delete=models.CASCADE,
+    )
+    invitee = models.ForeignKey(
+        'inventory.User',
+        related_name='invitee',
+        verbose_name='被邀请者',
+        on_delete=models.CASCADE,
+    )
+    duration = models.DurationField(
+        default=datetime.timedelta(days=1), verbose_name='有效时长'
+    )
+    is_accepted = models.BooleanField(default=False, verbose_name='是否确认接受邀请')
+
+    # active_objects = InvitationActiveManager()
+
+    @property
+    def expired_time(self):
+        '''
+        过期时间
+        '''
+        return self.duration + self.created
+
+    @property
+    def is_expired(self):
+        '''
+        是否过期
+        '''
+        return self.expired_time < timezone.now()
+
+    @property
+    def key(self):
+        '''
+        :rtype: string
+        '''
+        payload = {
+            'uuid': self.uuid.hex,  # pylint: disable=no-member
+            'company': 'singleton',
+            'invitee_mobile': self.invitee.mobile,  # pylint: disable=no-member
+            'timestamp': self.created.strftime(
+                '%Y%m%d%H%M%s'
+            ),  # pylint: disable=no-member
+        }
+        return KEY.encrypt(json.dumps(payload).encode()).decode('utf-8')
+
+    @classmethod
+    def parse(cls, key):
+        '''
+        解析key以获取邀请记录
+        '''
+        try:
+            raw_paylod = KEY.decrypt(key.encode()).decode('utf-8')
+        except InvalidToken:
+            return None
+
+        try:
+            paylod = json.loads(raw_paylod)
+        except json.JSONDecodeError:
+            return None
+
+        return cls.active_objects.filter(
+            invitee__mobile=paylod.get('invitee_mobile', ''),
+            uuid=paylod.get('uuid', ''),
+        ).first()
+
+
+class I18NMobileConfig(BaseModel):
+    """
+    国际手机号码接入配置
+    """
+
+    state = models.CharField(max_length=128, unique=True, verbose_name='号码归属区域')
+    state_code = models.CharField(
+        max_length=32, blank=False, null=False, unique=True, verbose_name='国家区号'
+    )
+    number_length = models.IntegerField(null=True, default=None, verbose_name='号码固定长度')
+    start_digital = models.JSONField(default=[], blank=True, verbose_name='首位数字限制集')
+
 
 class CustomField(BaseModel):
     '''
@@ -354,3 +453,4 @@ class CustomUser(BaseModel):
                 'value': data.get(field.uuid.hex, ''),
             })
         return res
+
