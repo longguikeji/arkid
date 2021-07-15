@@ -2,11 +2,12 @@ from common.extension import InMemExtension
 from .constants import KEY
 from .provider import FeishuExternalIdpProvider
 from .serializers import FeishuExternalIdpSerializer
+from runtime import Runtime
 
 
 class FeishuExtension(InMemExtension):
 
-    def start(self, runtime, *args, **kwargs):
+    def start(self, runtime: Runtime, *args, **kwargs):
         runtime.register_external_idp(
             key=KEY,
             name='飞书',
@@ -15,6 +16,15 @@ class FeishuExtension(InMemExtension):
             serializer=FeishuExternalIdpSerializer,
         )
         super().start(runtime, *args, **kwargs)
+
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        runtime.logout_external_idp(
+            key=KEY,
+            name='飞书',
+            description='字节跳动出品的即时沟通工具',
+            provider=FeishuExternalIdpProvider,
+            serializer=FeishuExternalIdpSerializer,
+        )
 
 
 extension = FeishuExtension(

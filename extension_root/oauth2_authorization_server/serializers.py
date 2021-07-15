@@ -36,6 +36,7 @@ class OIDCConfigSerializer(serializers.Serializer):
     authorize = serializers.URLField(read_only=True)
     token = serializers.URLField(read_only=True)
     userinfo = serializers.URLField(read_only=True)
+    logout = serializers.URLField(read_only=True)
 
 
 class OIDCAppSerializer(AppBaseSerializer):

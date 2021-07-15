@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 import os
+import datetime
 from pathlib import Path
 import common.monkeypatch
 from arkid.spectacular_settings import SPECTACULAR_SETTINGS
@@ -27,6 +28,7 @@ SECRET_KEY = 'y)c6vgiyu#-yll0#&kn!c0^t#2pqx_45w-b#sg2)asv+j_5pro'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TESTING = False    # always False
 
 ALLOWED_HOSTS = ['*']
 
@@ -50,10 +52,12 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_expiring_authtoken',
     'drf_spectacular',
+    'common',
     'tenant',
     'inventory',
     'app',
     'oauth2_provider',
+    'tasks',
     'webhook',
     'siteadmin',
     'provisioning',
@@ -61,13 +65,18 @@ INSTALLED_APPS = [
     'schema',
     'extension',
     'api',
+    'system',
     'extension_root.github',
     'extension_root.gitee',
     'extension_root.feishu',
     'extension_root.mysql_migration',
     'extension_root.arkid',
+    'django_scim',
     'extension_root.miniprogram',
+    'djangosaml2idp'
 ]
+
+X_FRAME_OPTIONS = 'ALLOWALL'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -76,10 +85,18 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_scim.middleware.SCIMAuthCheckMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'oauth2_provider.backends.OAuth2Backend',
+    # Uncomment following if you want to access the admin
+    'django.contrib.auth.backends.ModelBackend'
+)
 
 ROOT_URLCONF = 'arkid.urls'
 
@@ -138,7 +155,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -215,3 +231,41 @@ import os
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
+
+# django-scim2
+SCIM_SERVICE_PROVIDER = {
+    'NETLOC': 'localhost',
+    'AUTHENTICATION_SCHEMES': [
+        {
+            'type': 'oauth2',
+            'name': 'OAuth 2',
+            'description': 'Oauth 2 implemented with bearer token',
+        },
+    ],
+    'GROUP_MODEL': 'inventory.models.Group',
+    'USER_ADAPTER': 'inventory.adapters.ArkidSCIMUser',
+    'GROUP_ADAPTER': 'inventory.adapters.ArkidSCIMGroup',
+    'GROUP_FILTER_PARSER': 'inventory.filters.GroupFilterQuery',
+    'USER_FILTER_PARSER': 'inventory.filters.UserFilterQuery'
+}
+
+
+# Celery settings
+
+CELERY_BROKER_URL = 'redis://localhost'
+
+#: Only add pickle to this list if your broker is secured
+#: from unwanted access (see userguide/security.html)
+# CELERY_ACCEPT_CONTENT = ['json']
+CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
+# CELERY_TASK_SERIALIZER = 'json'
+
+# 此处暂时徐保留
+ALIYUN_ROLE_SSO_LOGIN_URL=""
+
+FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'    # 邮件注册页面
+FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'    # 邮件重置密码页面
+FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'    # 邮件激活账号页面
+FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'    # 邮件重置邮箱页面
+
+SMS_LIFESPAN = datetime.timedelta(seconds=120)

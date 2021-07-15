@@ -45,6 +45,7 @@ class Config(object):
             port=data.get('email').get('port'),
             user=data.get('email').get('user'),
             password=data.get('email').get('password'),
+            nickname=data.get('email').get('nickname'),
         )
 
         # scan all extension configs
@@ -63,6 +64,11 @@ class Config(object):
         if schema:
             return '{}://{}'.format('https' if self.https_enabled else 'http', self.frontend_host)
 
+        return self.host
+
+    def get_slug_frontend_host(self, slug, schema=True):
+        if schema:
+            return '{}://{}.{}'.format('https' if self.https_enabled else 'http', slug, self.frontend_host)
         return self.host
 
 

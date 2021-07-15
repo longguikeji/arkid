@@ -6,7 +6,7 @@ from django.core.files import File
 
 class SMSProvider:
     @abstractmethod
-    def send_auth_code(self, mobile, code):
+    def send_auth_code(self, mobile, code, template):
         pass
 
 

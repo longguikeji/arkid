@@ -2,6 +2,7 @@ from extension.models import Extension
 from common.serializer import BaseDynamicFieldModelSerializer
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
+from extension.utils import reload_extension
 
 
 class ExtensionSerializer(BaseDynamicFieldModelSerializer):
@@ -34,44 +35,20 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
         assert extension_type is not None
 
         o, _ = Extension.objects.get_or_create(
+            is_del=False,
             type=extension_type
         )
         o.is_active = validated_data.get('is_active')
         o.is_del = False
         o.data = validated_data.get('data')
         o.save()
-
-        from extension.utils import load_installed_extensions
-        from runtime import get_app_runtime
-        app_runtime = get_app_runtime()
-        # 退出所有插件重新加载
-        app_runtime.quit_all_extension()
-        load_installed_extensions(app_runtime)
-        # from django.urls import clear_url_caches
-        # from extension.utils import load_extension
-        # from runtime import get_app_runtime
-        # from django.conf import settings
-
-        # clear_url_caches()
-        # load_extension(get_app_runtime(), f'extension_root.{extension_type}', f'{extension_type}', execute=True)
-
-        # from importlib import reload
-        # import api.v1.urls
-        # import arkid.urls
-        # reload(api.v1.urls)
-        # reload(arkid.urls)
-
+        reload_extension(o.type, o.is_active)
         return o
 
     def update(self, instance, validated_data):
-        from extension.utils import load_installed_extensions
-        from runtime import get_app_runtime
-        app_runtime = get_app_runtime()
         instance.__dict__.update(validated_data)
         instance.save()
-        # 退出所有插件重新加载
-        app_runtime.quit_all_extension()
-        load_installed_extensions(app_runtime)
+        reload_extension(instance.type, instance.is_active)
         return instance
 
 

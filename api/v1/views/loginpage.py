@@ -3,11 +3,15 @@ from ..serializers import loginpage as lp
 from common import loginpage as model
 from openapi.utils import extend_schema
 from django.http.response import JsonResponse
-from api.v1.views.login import LoginView, MobileLoginView
+from api.v1.views.login import(
+    LoginView, MobileLoginView, UserNameRegisterView,
+    MobileRegisterView,
+)
 from api.v1.views.tenant import TenantViewSet
 from tenant.models import Tenant, TenantConfig
 from external_idp.models import ExternalIdp
-from api.v1.serializers.tenant import TenantSerializer
+from api.v1.serializers.tenant import TenantExtendSerializer
+from system.models import SystemConfig
 
 
 @extend_schema(tags=['login page'])
@@ -22,7 +26,7 @@ class LoginPage(views.APIView):
 
         data = model.LoginPages()
         if tenant:
-            data.setTenant(TenantSerializer(instance=tenant).data)
+            data.setTenant(TenantExtendSerializer(instance=tenant).data)
 
             # 获取 tenant的登录注册配置
             tenant_config = TenantConfig.objects.get(
@@ -61,6 +65,11 @@ class LoginPage(views.APIView):
         else:
             data.addForm(model.LOGIN, LoginView().login_form())
             data.addForm(model.LOGIN, MobileLoginView().login_form())
+            system_config = self.get_system_config()
+            is_open_register = system_config.get('is_open_register', True)
+            if is_open_register == True:
+                data.addForm(model.REGISTER, UserNameRegisterView().username_register_form())
+                data.addForm(model.REGISTER, MobileRegisterView().mobile_register_form())
 
         if data.getPage(model.REGISTER):
             data.addBottom(model.LOGIN, model.Button(
@@ -83,3 +92,13 @@ class LoginPage(views.APIView):
         pages = lp.LoginPagesSerializer(data=data)
         pages.is_valid()
         return JsonResponse(pages.data)
+    
+    def get_system_config(self):
+        # 获取基础配置信息
+        result = {
+            'is_open_register': True
+        }
+        systemconfig = SystemConfig.active_objects.first()
+        if systemconfig:
+            result = systemconfig.data
+        return result
