@@ -6,7 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
-mama_cas/
+# mama_cas/
 
 # Distribution / packaging
 .Python
