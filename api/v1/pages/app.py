@@ -20,6 +20,7 @@ extend_schema_tags(
             }
         },
         'item': {
+            'provisioning': 'app_provisioning',
             'update': {
                 'read': {
                     'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',

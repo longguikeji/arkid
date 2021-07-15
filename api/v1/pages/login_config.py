@@ -13,7 +13,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/config/',
             'method': 'get'
         },
-        'item': {
+        'page': {
             'update': {
                 'write': {
                     'path': '/api/v1/tenant/{tenant_uuid}/config/',
