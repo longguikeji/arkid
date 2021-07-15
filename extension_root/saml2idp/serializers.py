@@ -49,7 +49,7 @@ class SAMLasIDPConfigSerializer(serializers.Serializer):  # pylint: disable=abst
     xmldata_file = create_upload_file_field(serializers.FileField)(
         hint=_("请选择上传metadat文件"),
         label=_("元数据文件上传"),
-        requird=False
+        required=False
     )
 
     attribute_mapping = create_custom_dict_field(serializers.JSONField)(
