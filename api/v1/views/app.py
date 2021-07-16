@@ -3,17 +3,22 @@ from .base import BaseViewSet
 from common.code import Code
 from rest_framework.response import Response
 
-from app.models import (
-    App
-)
+from app.models import App
 from api.v1.serializers.app import (
-    AppSerializer, AppListSerializer, AddAuthTmplSerializer
+    AppSerializer,
+    AppListSerializer,
+    AppProvisioningSerializer,
+    AppProvisioningMappingSerializer,
+    AppProvisioningProfileSerializer,
+    AddAuthTmplSerializer
 )
 from common.paginator import DefaultListPaginator
 from django.http.response import JsonResponse
 from openapi.utils import extend_schema
 from drf_spectacular.utils import PolymorphicProxySerializer
 from runtime import get_app_runtime
+from provisioning.models import Config
+from schema.models import Schema, AppProfile
 from rest_framework.decorators import action
 from oauth2_provider.models import Application
 from drf_spectacular.utils import extend_schema_view
@@ -26,7 +31,7 @@ from common.code import Code
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='AppPolymorphicProxySerializer',
     serializers=get_app_runtime().app_type_serializers,
-    resource_type_field_name='type'
+    resource_type_field_name='type',
 )
 
 @extend_schema_view(
@@ -34,7 +39,7 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     partial_update=extend_schema(roles=['tenant admin', 'global admin']),
 )
 @extend_schema(
-    tags = ['app'],
+    tags=['app'],
 )
 class AppViewSet(BaseViewSet):
 
@@ -47,20 +52,22 @@ class AppViewSet(BaseViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        qs = App.active_objects.filter(
-            tenant=tenant
-        ).order_by('id')
+        qs = App.active_objects.filter(tenant=tenant).order_by('id')
         return qs
-    
+
     def get_object(self):
         uuid = self.kwargs['pk']
         context = self.get_serializer_context()
         tenant = context['tenant']
-        
-        return App.active_objects.filter(
-            tenant=tenant,
-            uuid=uuid,
-        ).order_by('id').first()
+
+        return (
+            App.active_objects.filter(
+                tenant=tenant,
+                uuid=uuid,
+            )
+            .order_by('id')
+            .first()
+        )
 
     @extend_schema(
         roles=['tenant admin', 'global admin'],
@@ -114,7 +121,6 @@ class AppViewSet(BaseViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-
     @extend_schema(
         request=AddAuthTmplSerializer,
         responses=AddAuthTmplSerializer,
@@ -146,3 +152,75 @@ class AppViewSet(BaseViewSet):
         return Response({
             'error': Code.OK.value
         })
+
+@extend_schema(tags=['app'])
+class AppProvisioningViewSet(BaseViewSet):
+
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [ExpiringTokenAuthentication]
+
+    model = Config
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = AppProvisioningSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        app = context['app']
+        all_configs = Config.active_objects.filter(
+            app=app,
+        )
+        return all_configs
+
+
+@extend_schema(tags=['app'])
+class AppProvisioningMappingViewSet(BaseViewSet):
+
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [ExpiringTokenAuthentication]
+
+    model = Schema
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = AppProvisioningMappingSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        app = context['app']
+        provisioning = context.get('provisioning')
+        mapping = Schema.active_objects.filter(
+            provisioning_config=provisioning,
+        )
+        return mapping
+
+@extend_schema(tags=['app'])
+class AppProvisioningProfileViewSet(BaseViewSet):
+
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [ExpiringTokenAuthentication]
+
+    model = AppProfile
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = AppProvisioningProfileSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        app = context['app']
+        provisioning = context.get('provisioning')
+        mapping = AppProfile.active_objects.filter(
+            provisioning_config=provisioning,
+        )
+        return mapping

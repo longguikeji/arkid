@@ -1,5 +1,7 @@
 
 from rest_framework.permissions import IsAuthenticated
+
+# from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from drf_spectacular.utils import extend_schema_view
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
@@ -7,9 +9,27 @@ from webhook.models import (
     WebHook,
 )
 from api.v1.serializers.webhook import (
-    WebHookSerializer
+    WebHookSerializer,
+    WebHookListResponseSerializer,
+    WebhookCreateRequestSerializer,
 )
 from common.paginator import DefaultListPaginator
+# from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+
+
+# @extend_schema_view(
+#     list=extend_schema(
+#         responses=WebHookListResponseSerializer,
+#     ),
+#     retrieve=extend_schema(
+#         responses=WebHookListResponseSerializer,
+#     ),
+#     create=extend_schema(
+#         request=WebhookCreateRequestSerializer,
+#     ),
+#     update=extend_schema(
+#         request=WebhookCreateRequestSerializer,
+#     ),
 from openapi.utils import extend_schema
 from .base import BaseViewSet
 
