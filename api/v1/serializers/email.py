@@ -2,6 +2,8 @@
 serializers for email
 '''
 import uuid as uuid_utils
+import random
+import string  # pylint:disable=deprecated-module
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -9,18 +11,20 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 from tasks.tasks import send_email
+
 # from inventory.models import User, Invitation, CompanyConfig
 from inventory.models import User, Invitation
 from runtime import get_app_runtime
 from config import get_app_config
 
 
-class EmailClaimSerializer(serializers.Serializer):    # pylint: disable=abstract-method
+class EmailClaimSerializer(serializers.Serializer):  # pylint: disable=abstract-method
     '''
     Serializer for email Claim
     '''
 
     email = serializers.CharField()
+    verify_code = serializers.BooleanField(required=False)
 
     @staticmethod
     def runtime():
@@ -34,6 +38,13 @@ class EmailClaimSerializer(serializers.Serializer):    # pylint: disable=abstrac
         return uuid_utils.uuid4().hex
 
     @staticmethod
+    def gen_email_verify_code():
+        '''
+        生成email_token
+        '''
+        return ''.join(random.choice(string.digits) for _ in range(6))
+
+    @staticmethod
     def validate_email(value):
         '''
         校验邮箱格式合法性
@@ -45,10 +56,12 @@ class EmailClaimSerializer(serializers.Serializer):    # pylint: disable=abstrac
         send sms
         '''
         # send_email.delay(validated_data.get('email'), **self.gen_email())
-        send_email(validated_data.get('email'), **self.gen_email())
+        send_email(validated_data.get('email'), **self.gen_email(**validated_data))
         return '_'
 
-    def gen_email(self, *args, **kwargs):    # pylint: disable=unused-argument, no-self-use
+    def gen_email(
+        self, *args, **kwargs
+    ):  # pylint: disable=unused-argument, no-self-use
         '''
         定制邮件内容
         '''
@@ -84,6 +97,7 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
     '''
     发送注册验证邮件
     '''
+
     @staticmethod
     def gen_email_token_key(email_token):
         '''
@@ -113,14 +127,19 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
         link = host + settings.FE_EMAIL_REGISTER_URL + f'?email_token={email_token}'
         key = self.gen_email_token_key(email_token)
         # redis_conn.set(key, self.validated_data['email'], ex=60 * 60 * 24 * 3)
-        self.runtime().cache_provider.set(key, self.validated_data['email'], 60 * 60 * 24 * 3)
+        self.runtime().cache_provider.set(
+            key, self.validated_data['email'], 60 * 60 * 24 * 3
+        )
 
         content = f'点击以下链接完成验证，3天之内有效：</br><a href="{link}">{link}</a>'
-        html = render_to_string('email/common.html', {
-            # 'company': CompanyConfig.get_current().name_cn,
-            'company': '龙归科技',
-            'content': content
-        })
+        html = render_to_string(
+            'email/common.html',
+            {
+                # 'company': CompanyConfig.get_current().name_cn,
+                'company': '龙归科技',
+                'content': content,
+            },
+        )
 
         return {
             'subject': subject,
@@ -144,12 +163,20 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
     '''
     发送重置密码验证邮件
     '''
+
     @staticmethod
     def gen_email_token_key(email_token):
         '''
         生成email_token的key
         '''
         return f'email:reset_password:{email_token}'
+
+    @staticmethod
+    def gen_email_verify_code_key(email):
+        '''
+        生成email_token的key
+        '''
+        return f'email:reset_password:{email}'
 
     def validate_email(self, value):
         '''
@@ -166,19 +193,33 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
         生成重置密码邮件
         '''
         subject = '[ArkID] 您正在重置ArkID登录密码'
-        email_token = self.gen_email_token()
-        host = get_app_config().get_host()
-        link = host + settings.FE_EMAIL_RESET_PWD_URL + f'?email_token={email_token}'
-        key = self.gen_email_token_key(email_token)
-        # redis_conn.set(key, self.validated_data['email'], ex=60 * 60 * 24 * 3)
-        self.runtime().cache_provider.set(key, self.validated_data['email'], 60 * 60 * 24 * 3)
+        send_verify_code = kwargs.get('verify_code', False)
+        email = kwargs.get('email')
+        if send_verify_code:
+            code = self.gen_email_verify_code()
+            key = self.gen_email_verify_code_key(email)
+            content = f'您的密码更改确认码为: {code}, 5分钟内有效'
+            self.runtime().cache_provider.set(key, code, 60 * 5)
+        else:
+            email_token = self.gen_email_token()
+            host = get_app_config().get_host()
+            link = (
+                host + settings.FE_EMAIL_RESET_PWD_URL + f'?email_token={email_token}'
+            )
+            key = self.gen_email_token_key(email_token)
+            content = f'点击以下链接完成验证，3天之内有效：</br><a href="{link}">{link}</a>'
+            self.runtime().cache_provider.set(
+                key, self.validated_data['email'], 60 * 60 * 24 * 3
+            )
 
-        content = f'点击以下链接完成验证，3天之内有效：</br><a href="{link}">{link}</a>'
-        html = render_to_string('email/common.html', {
-            # 'company': CompanyConfig.get_current().name_cn,
-            'company': '龙归科技',
-            'content': content
-        })
+        html = render_to_string(
+            'email/common.html',
+            {
+                # 'company': CompanyConfig.get_current().name_cn,
+                'company': '龙归科技',
+                'content': content,
+            },
+        )
 
         return {
             'subject': subject,
@@ -202,6 +243,27 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
             if user:
                 return {'email': email, 'username': user.username}
         raise ValidationError({'email_token': ['invalid']})
+
+    @classmethod
+    def check_email_verify_code(cls, email, code):
+        '''
+        check sms code with mobile and code
+        '''
+        if not email:
+            raise ValidationError({'email': ['This field is required.']})
+
+        if not code:
+            raise ValidationError({'code': ['This field is required.']})
+
+        cache_key = cls.gen_email_verify_code_key(email)
+        res = cls.runtime().cache_provider.get(cache_key)
+        if res:
+            send_code = res
+            if isinstance(send_code, bytes):
+                send_code = send_code.decode('utf-8')
+            if send_code and code == send_code:
+                return True
+        raise ValidationError({'code': ['invalid']})
 
 
 class UserActivateEmailClaimSerializer(EmailClaimSerializer):
@@ -242,7 +304,9 @@ class UserActivateEmailClaimSerializer(EmailClaimSerializer):
         subject = '[ArkID] 您正在激活ArkID账号'
         email_token = self.gen_email_token()
         host = get_app_config().get_host()
-        link = host + settings.FE_EMAIL_ACTIVATE_USER_URL + f'?email_token={email_token}'
+        link = (
+            host + settings.FE_EMAIL_ACTIVATE_USER_URL + f'?email_token={email_token}'
+        )
         key = self.gen_email_token_key(email_token)
 
         # redis_conn.hset(key, 'email', self.validated_data['email'])
@@ -253,11 +317,14 @@ class UserActivateEmailClaimSerializer(EmailClaimSerializer):
         self.runtime().cache_provider.hset(key, 'key', self.validated_data['key'])
         self.runtime().cache_provider.expire(key, 60 * 60 * 24 * 3)
         content = f'点击以下链接完成验证，3天之内有效：</br><a href="{link}">{link}</a>'
-        html = render_to_string('email/common.html', {
-            # 'company': CompanyConfig.get_current().name_cn,
-            'company': '龙归科技',
-            'content': content
-        })
+        html = render_to_string(
+            'email/common.html',
+            {
+                # 'company': CompanyConfig.get_current().name_cn,
+                'company': '龙归科技',
+                'content': content,
+            },
+        )
 
         return {
             'subject': subject,
@@ -312,15 +379,20 @@ class UpdateEmailEmailClaimSerializer(EmailClaimSerializer):
         # redis_conn.hset(key, 'username', self.context['request'].user.username)
         # redis_conn.expire(key, 60 * 60 * 24 * 3)
         self.runtime().cache_provider.hset(key, 'email', self.validated_data['email'])
-        self.runtime().cache_provider.hset(key, 'username', self.context['request'].user.username)
+        self.runtime().cache_provider.hset(
+            key, 'username', self.context['request'].user.username
+        )
         self.runtime().cache_provider.expire(key, 60 * 60 * 24 * 3)
 
         content = f'点击以下链接完成验证，3天之内有效：</br><a href="{link}">{link}</a>'
-        html = render_to_string('email/common.html', {
-            # 'company': CompanyConfig.get_current().name_cn,
-            'company': '龙归科技',
-            'content': content
-        })
+        html = render_to_string(
+            'email/common.html',
+            {
+                # 'company': CompanyConfig.get_current().name_cn,
+                'company': '龙归科技',
+                'content': content,
+            },
+        )
 
         return {
             'subject': subject,
