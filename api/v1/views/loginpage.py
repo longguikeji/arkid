@@ -14,6 +14,7 @@ from tenant.models import Tenant, TenantConfig
 from external_idp.models import ExternalIdp
 from api.v1.serializers.tenant import TenantExtendSerializer
 from system.models import SystemConfig
+from django.urls import reverse
 
 
 @extend_schema(tags=['login page'])
@@ -109,6 +110,16 @@ class LoginPage(views.APIView):
 
         if data.getPage(model.LOGIN):
             data.addBottom(model.LOGIN, model.Button(label='忘记密码', gopage='password'))
+            data.addForm(model.PASSWORD, self.mobile_password_reset_form())
+            data.addForm(model.PASSWORD, self.email_password_reset_form())
+            data.addBottom(
+                model.PASSWORD,
+                model.Button(prepend='还没有账号，', label='立即注册', gopage=model.REGISTER),
+            )
+            data.addBottom(
+                model.PASSWORD,
+                model.Button(prepend='已有账号，', label='立即登录', gopage=model.LOGIN),
+            )
 
         pages = lp.LoginPagesSerializer(data=data)
         pages.is_valid()
@@ -121,3 +132,113 @@ class LoginPage(views.APIView):
         if systemconfig:
             result = systemconfig.data
         return result
+
+    def mobile_password_reset_form(self):
+        tenant_uuid = 'xxxx'
+        return model.LoginForm(
+            label='通过手机号修改密码',
+            items=[
+                model.LoginFormItem(
+                    type='text',
+                    name='mobile',
+                    placeholder='手机号',
+                ),
+                model.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='新密码',
+                ),
+                model.LoginFormItem(
+                    type='password',
+                    name='checkpassword',
+                    placeholder='新密码确认',
+                ),
+                model.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                    append=model.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=model.ButtonHttp(
+                            url=reverse('api:send-sms'),
+                            method='post',
+                            params={'mobile': 'mobile'},
+                        ),
+                    ),
+                ),
+            ],
+            submit=model.Button(
+                label='确认',
+                http=model.ButtonHttp(
+                    url=reverse(
+                        "api:tenant-mobile-register",
+                        args=[
+                            tenant_uuid,
+                        ],
+                    ),
+                    method='post',
+                    params={
+                        'mobile': 'mobile',
+                        'password': 'password',
+                        'code': 'code',
+                        'checkpassword': 'checkpassword',
+                    },
+                ),
+            ),
+        )
+
+    def email_password_reset_form(self):
+        tenant_uuid = 'xxxx'
+        return model.LoginForm(
+            label='通过邮箱修改密码',
+            items=[
+                model.LoginFormItem(
+                    type='text',
+                    name='email',
+                    placeholder='email账号',
+                ),
+                model.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='新密码',
+                ),
+                model.LoginFormItem(
+                    type='password',
+                    name='checkpassword',
+                    placeholder='新密码确认',
+                ),
+                model.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                    append=model.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=model.ButtonHttp(
+                            url=reverse('api:send-sms'),
+                            method='post',
+                            params={'email': 'email'},
+                        ),
+                    ),
+                ),
+            ],
+            submit=model.Button(
+                label='确认',
+                http=model.ButtonHttp(
+                    url=reverse(
+                        "api:tenant-mobile-register",
+                        args=[
+                            tenant_uuid,
+                        ],
+                    ),
+                    method='post',
+                    params={
+                        'email': 'email',
+                        'password': 'password',
+                        'code': 'code',
+                        'checkpassword': 'checkpassword',
+                    },
+                ),
+            ),
+        )
