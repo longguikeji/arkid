@@ -749,75 +749,6 @@ class TenantSlugView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-# @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
-# class TenantConfigView(generics.RetrieveUpdateAPIView):
-
-#     permission_classes = [IsAuthenticated]
-#     authentication_classes = [ExpiringTokenAuthentication]
-
-#     serializer_class = TenantConfigSerializer
-
-#     def get_object(self):
-#         tenant_uuid = self.kwargs['tenant_uuid']
-#         tenant = Tenant.active_objects.filter(uuid=tenant_uuid).order_by('id').first()
-#         if tenant:
-#             tenantconfig, is_created = TenantConfig.objects.get_or_create(
-#                 is_del=False,
-#                 tenant=tenant,
-#             )
-#             if is_created is True:
-#                 tenantconfig.data = {
-#                     'is_open_authcode': False,
-#                     'error_number_open_authcode': 0,
-#                     'is_open_register_limit': False,
-#                     'register_time_limit': 1,
-#                     'register_count_limit': 10,
-#                     'upload_file_format': ['jpg', 'png', 'gif', 'jpeg'],
-#                     'mobile_login_register_enabled': True,
-#                     'secret_login_register_enabled': True,
-#                     'secret_login_register_field_names': ['username', 'email'],
-#                     'custom_login_register_enabled': False,
-#                     'custom_login_register_field_uuids': [],
-#                     'need_complete_profile_after_register': True,
-#                     'can_skip_complete_profile': True,
-#                     'close_page_auto_logout': False,
-#                 }
-#                 tenantconfig.save()
-#             else:
-#                 data = tenantconfig.data
-#                 if 'is_open_register_limit' not in data:
-#                     data['is_open_register_limit'] = False
-#                 if 'register_time_limit' not in data:
-#                     data['register_time_limit'] = 1
-#                 if 'register_count_limit' not in data:
-#                     data['register_count_limit'] = 10
-#                 if 'upload_file_format' not in data:
-#                     data['upload_file_format'] = ['jpg', 'png', 'gif', 'jpeg']
-
-#                 if 'mobile_login_register_enabled' not in data:
-#                     data['mobile_login_register_enabled'] = True
-
-#                 if 'secret_login_register_enabled' not in data:
-#                     data['secret_login_register_enabled'] = True
-#                 if 'secret_login_register_field_names' not in data:
-#                     data['secret_login_register_field_names'] = ['username', 'email']
-
-#                 if 'custom_login_register_enabled' not in data:
-#                     data['custom_login_register_enabled'] = False
-#                 if 'custom_login_register_field_uuids' not in data:
-#                     data['custom_login_register_field_uuids'] = []
-
-#                 if 'need_complete_profile_after_register' not in data:
-#                     data['need_complete_profile_after_register'] = True
-#                 if 'can_skip_complete_profile' not in data:
-#                     data['can_skip_complete_profile'] = True
-#                 if 'close_page_auto_logout' not in data:
-#                     data['close_page_auto_logout'] = False
-#                 tenantconfig.save()
-#             return tenantconfig
-#         else:
-#             return []
-
 TenantConfigPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='TenantConfigPolymorphicProxySerializer',
     serializers={
@@ -828,18 +759,16 @@ TenantConfigPolymorphicProxySerializer = PolymorphicProxySerializer(
 )
 
 
-@extend_schema(tags=['tenant'],
-        roles=['tenant admin', 'global admin'],
-        request=TenantConfigPolymorphicProxySerializer,
-        responses=TenantConfigPolymorphicProxySerializer,
+@extend_schema(
+    tags=['tenant'],
+    roles=['tenant admin', 'global admin'],
+    request=TenantConfigPolymorphicProxySerializer,
+    responses=TenantConfigPolymorphicProxySerializer,
 )
 class TenantConfigSubjectView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
-
-    # serializer_class = TenantConfigSerializer
-    # queryset = TenantConfig.objects.none()
 
     def get_serializer_class(self):
         if 'subject' not in self.kwargs:
@@ -877,16 +806,16 @@ class TenantConfigSubjectView(generics.RetrieveUpdateAPIView):
         subject = self.kwargs.get('subject', '')
         if subject:
             data = data.get('data')
-            return Response({subject: data.get(subject)})
+            return Response(data.get(subject))
         else:
             return Response(data.get('data'))
 
     def update(self, request, *args, **kwargs):
+        subject = self.kwargs.get('subject', '')
         instance = self.get_object()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(instance=instance)
-        subject = self.kwargs.get('subject', '')
+        serializer.save(instance=instance, subject=subject)
         data = instance.data
         if subject:
             return Response(data.get(subject))

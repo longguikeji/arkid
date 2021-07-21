@@ -106,7 +106,25 @@ class UserNameLoginResponseSerializer(serializers.Serializer):
     )
 
 
-class LoginRegisterConfigSerializer(serializers.Serializer):
+class TenantConfigBaseSerializer(serializers.Serializer):
+    def create(self, validated_data):
+        instance = validated_data.pop('instance')
+        subject = validated_data.pop('subject')
+        # 去掉validated_data包含具有默认值的key
+        tmpl_data = validated_data.copy()
+        for key, value in validated_data.items():
+            if key not in self.initial_data:
+                tmpl_data.pop(key)
+        data = instance.data.get(subject)
+        if not data:
+            instance.data[subject] = tmpl_data
+        else:
+            data.update(tmpl_data)
+        instance.save()
+        return instance
+
+
+class LoginRegisterConfigSerializer(TenantConfigBaseSerializer):
     is_open_authcode = serializers.BooleanField(label=_('是否打开验证码'), default=False)
     error_number_open_authcode = serializers.IntegerField(
         label=_('错误几次提示输入验证码'), default=0
@@ -152,52 +170,19 @@ class LoginRegisterConfigSerializer(serializers.Serializer):
         label=_('是否关闭页面自动退出'), default=False
     )
 
-    # def to_representation(self, instance):
-    #     ret = super().to_representation(instance)
-    #     return ret
 
-    def create(self, validated_data):
-        instance = validated_data.pop('instance')
-        # 去掉validated_data中不在initial_data中的key
-        tmpl_data = validated_data.copy()
-        for key, value in validated_data.items():
-            if key not in self.initial_data:
-                tmpl_data.pop(key)
-        data = instance.data.get('login_register')
-        if not data:
-            instance.data['login_register'] = tmpl_data
-        else:
-            data.update(tmpl_data)
-        instance.save()
-        return instance
+class PrivacyNoticeConfigSerializer(TenantConfigBaseSerializer):
+    content = serializers.CharField(default='')
 
 
-class PrivacyNoticeConfigSerializer(serializers.Serializer):
-    privacy_notice = serializers.CharField(default='')
-
-    def create(self, validated_data):
-        instance = validated_data.pop('instance')
-        # 去掉validated_data中不在initial_data中的key
-        tmpl_data = validated_data.copy()
-        for key, value in validated_data.items():
-            if key not in self.initial_data:
-                tmpl_data.pop(key)
-        instance.data.update(tmpl_data)
-        instance.save()
-        return instance
-
-
-class ConfigSerializer(serializers.Serializer):
+class TenantConfigDataSerializer(serializers.Serializer):
     login_register = LoginRegisterConfigSerializer(default={})
-    privacy_notice = serializers.CharField(default='')
-
-    def create(self, validated_data):
-        pass
+    privacy_notice = PrivacyNoticeConfigSerializer(default={})
 
 
 class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
 
-    data = ConfigSerializer()
+    data = TenantConfigDataSerializer()
 
     class Meta:
         model = TenantConfig

@@ -70,7 +70,7 @@ class SystemConfigView(generics.RetrieveUpdateAPIView):
         subject = self.kwargs.get('subject', '')
         if subject:
             data = data.get('data')
-            return Response({subject: data.get(subject)})
+            return Response(data.get(subject))
         else:
             return Response(data.get('data'))
 

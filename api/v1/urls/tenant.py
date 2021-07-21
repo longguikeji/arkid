@@ -11,11 +11,6 @@ tenant_router = router.register(
 )
 
 urlpatterns = [
-    # re_path(
-    #     r'^tenant/(?P<tenant_uuid>[\w-]+)/config/$',
-    #     views_tenant.TenantConfigSubjectView.as_view(),
-    #     name='tenant-config',
-    # ),
     re_path(
         r'^tenant/(?P<tenant_uuid>[\w-]+)/config/(?P<subject>[\w-]+)/$',
         views_tenant.TenantConfigSubjectView.as_view(),
