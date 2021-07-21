@@ -1,9 +1,11 @@
-from django.urls import path
+from django.urls import path, re_path
 
-from api.v1.views import (
-    system as views_system
-)
+from api.v1.views import system as views_system
 
 urlpatterns = [
-    path('system/config', views_system.SystemConfigView.as_view(), name='system-config'),
+    re_path(
+        r'^system/config/(?P<subject>[\w-]+)/$',
+        views_system.SystemConfigView.as_view(),
+        name='system-config-subject',
+    ),
 ]
