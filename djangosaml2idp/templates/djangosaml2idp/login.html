@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>SAML 2.0 POST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <form method="post" action="{{ acs_url }}">
+        <input type="hidden" name="RelayState" value="{{ relay_state }}" />
+        <input type="hidden" name="SAMLResponse" value="{{ saml_response }}" />
+        <input type="submit" value="Submit" hidden/>
+    </form>
+    <script type="text/javascript">
+        window.onload = function () {
+            document.forms[0].submit();
+        }
+    </script>
+</body>
+
+</html>

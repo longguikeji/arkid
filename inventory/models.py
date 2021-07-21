@@ -160,9 +160,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
         self._password = raw_password
-        UserPassword.valid_objects.get_or_create(
-            user=self, password=self.md5_password(raw_password)
-        )
+        UserPassword.valid_objects.get_or_create(user=self, password=self.md5_password(raw_password))
 
     def valid_password(self, raw_password):
         return UserPassword.valid_objects.filter(

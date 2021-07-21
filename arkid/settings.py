@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'inventory',
     'app',
     'oauth2_provider',
+    'mama_cas',
     'tasks',
     'webhook',
     'siteadmin',
@@ -226,6 +227,8 @@ SLAPD_PASSWORD = 'admin'
 SLAPD_DOMAIN = 'dc=example,dc=org'
 AUTH_USER_MODEL = 'inventory.User'
 
+MAMA_CAS_ATTRIBUTE_CALLBACKS = ('mama_cas.callbacks.user_model_attributes',)
+
 import os
 
 # 引入settings_local.py 本地配置文件
@@ -259,9 +262,6 @@ CELERY_BROKER_URL = 'redis://localhost'
 # CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 # CELERY_TASK_SERIALIZER = 'json'
-
-# 此处暂时徐保留
-ALIYUN_ROLE_SSO_LOGIN_URL=""
 
 FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'    # 邮件注册页面
 FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'    # 邮件重置密码页面
