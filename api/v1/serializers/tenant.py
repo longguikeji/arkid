@@ -106,33 +106,93 @@ class UserNameLoginResponseSerializer(serializers.Serializer):
     )
 
 
-class ConfigSerializer(serializers.Serializer):
-    is_open_authcode = serializers.BooleanField(label=_('是否打开验证码'))
-    error_number_open_authcode = serializers.IntegerField(label=_('错误几次提示输入验证码'))
-    is_open_register_limit = serializers.BooleanField(label=_('是否限制注册用户'))
-    register_time_limit = serializers.IntegerField(label=_('用户注册时间限制(分钟)'))
-    register_count_limit = serializers.IntegerField(label=_('用户注册数量限制'))
+class LoginRegisterConfigSerializer(serializers.Serializer):
+    is_open_authcode = serializers.BooleanField(label=_('是否打开验证码'), default=False)
+    error_number_open_authcode = serializers.IntegerField(
+        label=_('错误几次提示输入验证码'), default=0
+    )
+    is_open_register_limit = serializers.BooleanField(
+        label=_('是否限制注册用户'), default=False
+    )
+    register_time_limit = serializers.IntegerField(label=_('用户注册时间限制(分钟)'), default=1)
+    register_count_limit = serializers.IntegerField(label=_('用户注册数量限制'), default=10)
     upload_file_format = serializers.ListField(
-        child=serializers.CharField(), label=_('允许上传的文件格式')
+        child=serializers.CharField(),
+        label=_('允许上传的文件格式'),
+        default=['jpg', 'png', 'gif', 'jpeg'],
     )
 
-    mobile_login_register_enabled = serializers.BooleanField(label=_('开启手机号登录注册'))
-    secret_login_register_enabled = serializers.BooleanField(label=_('开启密码登录注册'))
+    mobile_login_register_enabled = serializers.BooleanField(
+        label=_('开启手机号登录注册'), default=True
+    )
+    secret_login_register_enabled = serializers.BooleanField(
+        label=_('开启密码登录注册'), default=True
+    )
     secret_login_register_field_names = serializers.ListField(
-        child=serializers.CharField(), label=_('用于密码登录的基础字段')
+        child=serializers.CharField(),
+        label=_('用于密码登录的基础字段'),
+        default=['username', 'email'],
     )
 
     custom_login_register_field_uuids = serializers.ListField(
-        child=serializers.CharField(), label=_('用于登录的自定义字段UUID')
+        child=serializers.CharField(), label=_('用于登录的自定义字段UUID'), default=[]
     )
-    custom_login_register_enabled = serializers.BooleanField(label=_('开启自定义字段登录注册'))
+    custom_login_register_enabled = serializers.BooleanField(
+        label=_('开启自定义字段登录注册'), default=False
+    )
 
     need_complete_profile_after_register = serializers.BooleanField(
-        label=_('注册完成后跳转到完善用户资料页面')
+        label=_('注册完成后跳转到完善用户资料页面'), default=True
     )
-    can_skip_complete_profile = serializers.BooleanField(label=_('完善用户资料页面允许跳过'))
+    can_skip_complete_profile = serializers.BooleanField(
+        label=_('完善用户资料页面允许跳过'), default=True
+    )
 
-    close_page_auto_logout = serializers.BooleanField(label=_('是否关闭页面自动退出'))
+    close_page_auto_logout = serializers.BooleanField(
+        label=_('是否关闭页面自动退出'), default=False
+    )
+
+    # def to_representation(self, instance):
+    #     ret = super().to_representation(instance)
+    #     return ret
+
+    def create(self, validated_data):
+        instance = validated_data.pop('instance')
+        # 去掉validated_data中不在initial_data中的key
+        tmpl_data = validated_data.copy()
+        for key, value in validated_data.items():
+            if key not in self.initial_data:
+                tmpl_data.pop(key)
+        data = instance.data.get('login_register')
+        if not data:
+            instance.data['login_register'] = tmpl_data
+        else:
+            data.update(tmpl_data)
+        instance.save()
+        return instance
+
+
+class PrivacyNoticeConfigSerializer(serializers.Serializer):
+    privacy_notice = serializers.CharField(default='')
+
+    def create(self, validated_data):
+        instance = validated_data.pop('instance')
+        # 去掉validated_data中不在initial_data中的key
+        tmpl_data = validated_data.copy()
+        for key, value in validated_data.items():
+            if key not in self.initial_data:
+                tmpl_data.pop(key)
+        instance.data.update(tmpl_data)
+        instance.save()
+        return instance
+
+
+class ConfigSerializer(serializers.Serializer):
+    login_register = LoginRegisterConfigSerializer(default={})
+    privacy_notice = serializers.CharField(default='')
+
+    def create(self, validated_data):
+        pass
 
 
 class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
@@ -149,6 +209,9 @@ class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
         instance.data = data
         instance.save()
         return instance
+
+    def create(self, validated_data):
+        pass
 
 
 class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
