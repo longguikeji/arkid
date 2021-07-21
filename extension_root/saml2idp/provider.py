@@ -42,7 +42,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
 
         xmldata_file = data.get("xmldata_file", None)
         if xmldata_file not in ["", None]:
-            xmldata_file = xmldata_file.replace("data:text/xml;base64,","")
+            xmldata_file = xmldata_file.replace("data:text/xml;base64,", "")
             data["xmldata"] = base64.b64decode(xmldata_file)
             data["xmldata"] = data["xmldata"].decode()
 
@@ -93,7 +93,8 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
 
         except Exception as err:  # pylint: disable=broad-except
             print(err)
-            raise Exception({'msg': '元数据文件解析出错'})  # pylint: disable=raise-missing-from
+            raise Exception({'msg': '元数据文件解析出错'}
+                            )  # pylint: disable=raise-missing-from
 
         if os.path.exists(BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename):
             os.remove(
@@ -129,7 +130,7 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
 
         xmldata_file = data.get("xmldata_file", None)
         if xmldata_file not in ["", None]:
-            xmldata_file = xmldata_file.replace("data:text/xml;base64,","")
+            xmldata_file = xmldata_file.replace("data:text/xml;base64,", "")
             data["xmldata"] = base64.b64decode(xmldata_file)
             data["xmldata"] = data["xmldata"].decode()
 
@@ -142,7 +143,8 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                 self.gen_xml(filename=filename,
                              entity_id=entity_id, acs=acs, sls=sls)
             except CertificateError:
-                raise Exception({'msg': 'perm incorrect'})  # pylint: disable=raise-missing-from
+                raise Exception({'msg': 'perm incorrect'}
+                                )  # pylint: disable=raise-missing-from
 
         try:
             sp_metadatafile = MetaDataFile(attrc=None, filename=filename)
