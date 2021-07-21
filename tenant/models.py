@@ -62,3 +62,43 @@ class TenantPasswordComplexity(BaseModel):
             return True
         else:
             return False
+
+
+class TenantContactsConfig(BaseModel):
+
+    # 功能开关
+    # {
+    #     "is_open": true
+    # }
+    # 个人资料可见性
+    # visible_type 0 所有人可见 1 部分人可见
+    # visible_scope 0 组内成员可见 1 下属分组可见 2 指定分组与人员
+    # {
+    #     "visible_type": visible_type,
+    #     "visible_scope": [],
+    #     "assign_group": [],
+    #     "assign_user": []
+    # }
+    # 分组可见性
+    # visible_type 0 所有人可见 1 部分人可见
+    # visible_scope 0 组内成员 1 下属分组 2 指定分组与人员
+    # {
+    #     "visible_type": visible_type,
+    #     "visible_scope": [],
+    #     "assign_group": [],
+    #     "assign_user": []
+    # }
+
+    TYPE_CHOICES = (
+        (0, '功能开关'),
+        (1, '个人资料可见性'),
+        (2, '分组可见性'),
+    )
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    config_type = models.IntegerField(choices=TYPE_CHOICES, default=0, verbose_name='配置类型')
+    data = models.JSONField(blank=True, default=dict)
+
+    @property
+    def tenant_uuid(self):
+        return self.tenant.uuid
