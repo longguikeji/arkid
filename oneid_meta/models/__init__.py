@@ -39,7 +39,7 @@ from oneid_meta.models.app import (
 from oneid_meta.models.config import (CompanyConfig, AccountConfig, SMSConfig, DingConfig, CustomField, NativeField,
                                       EmailConfig, AlipayConfig, WorkWechatConfig, WechatConfig, QQConfig,
                                       StorageConfig, MinioConfig, PasswordComplexityConfig, I18NMobileConfig,
-                                      GithubConfig)
+                                      GithubConfig, ContactsConfig)
 
 from oneid_meta.models.event import (
     Invitation, )
