@@ -6,9 +6,12 @@ from django.contrib.sites.models import Site
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from oneid_meta.models import (CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
-                               AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QQConfig,
-                               StorageConfig, MinioConfig, PasswordComplexityConfig, I18NMobileConfig, GithubConfig)
+from oneid_meta.models import (
+    CompanyConfig, DingConfig, AlipayConfig, User, Dept, CustomField, NativeField,
+    AccountConfig, SMSConfig, EmailConfig, WorkWechatConfig, WechatConfig, QQConfig,
+    StorageConfig, MinioConfig, PasswordComplexityConfig, I18NMobileConfig, GithubConfig,
+    ContactsConfig,
+)
 from common.django.drf.serializer import DynamicFieldsModelSerializer
 from infrastructure.serializers.sms import SMSClaimSerializer
 from siteapi.v1.views.utils import gen_uid
@@ -169,6 +172,19 @@ class StorageConfigSerializer(DynamicFieldsModelSerializer):
         instance.refresh_from_db()
 
         return instance
+
+
+class ContactsConfigSerializer(DynamicFieldsModelSerializer):
+    '''
+    serializer for ContactsConfig
+    '''
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = ContactsConfig
+
+        fields = (
+            'is_show',
+        )
 
 
 class PublicAccountConfigSerializer(DynamicFieldsModelSerializer):
@@ -428,13 +444,14 @@ class MetaConfigSerializer(DynamicFieldsModelSerializer):
     qq_config = PublicQQConfigSerializer(many=False, required=False, read_only=True)
     work_wechat_config = PublicWorkWechatConfigSerializer(many=False, required=False, read_only=True)
     wechat_config = PublicWechatConfigSerializer(many=False, required=False, read_only=True)
+    contacts_config = ContactsConfigSerializer(many=False, required=False, read_only=True)
 
     class Meta:    # pylint: disable=missing-docstring
 
         model = Site
 
         fields = ('company_config', 'ding_config', 'account_config', 'alipay_config', 'work_wechat_config',
-                  'wechat_config', 'qq_config')
+                  'wechat_config', 'qq_config', 'contacts_config')
 
 
 class AlterAdminSerializer(serializers.Serializer):

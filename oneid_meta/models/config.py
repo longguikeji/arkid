@@ -507,6 +507,18 @@ class StorageConfig(BaseModel, SingletonConfigMixin):
         return f'Method[{self.id}]: {self.display_name}'    # pylint: disable=no-member
 
 
+class ContactsConfig(BaseModel, SingletonConfigMixin):
+    '''
+    通讯录配置
+    '''
+    site = models.OneToOneField(Site, related_name='contacts_config', on_delete=models.CASCADE)
+
+    is_show = models.BooleanField(max_length=225, blank=True, default=True, verbose_name='is_show')
+
+    def __str__(self):
+        return f'Show[{self.id}]: {self.is_show}'    # pylint: disable=no-member
+
+
 class MinioConfig(BaseModel, SingletonConfigMixin):
     '''
     Minio配置信息
