@@ -15,8 +15,10 @@ from siteapi.v1.serializers.config import (
     NativeFieldSerializer,
     StorageConfigSerializer,
     I18NMobileSerializer,
+    ContactsConfigSerializer,
 )
 from siteapi.v1.serializers.user import UserSerializer
+from oneid_meta.models.config import ContactsConfig
 
 from oneid.permissions import IsAdminUser, CustomPerm
 from oneid_meta.models import User, CustomField, NativeField, I18NMobileConfig
@@ -216,6 +218,21 @@ class StorageConfigAPIView(generics.RetrieveUpdateAPIView):
         """
         site = Site.objects.get_current()
         return site
+
+
+class ContactsConfigAPIView(generics.RetrieveUpdateAPIView):
+    '''
+    通讯录配置
+    '''
+    serializer_class = ContactsConfigSerializer
+    permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_config_write'))]
+
+    def get_object(self):
+        """
+        get contacts config
+        """
+        contactsconfig = ContactsConfig.valid_objects.first()
+        return contactsconfig
 
 
 class I18NMobileListCreateAPIView(generics.ListCreateAPIView):

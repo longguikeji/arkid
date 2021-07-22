@@ -18,6 +18,7 @@ from rest_framework.exceptions import (
 )
 
 from oneid_meta.models import Dept
+from oneid_meta.models.config import ContactsConfig
 from oneid.permissions import IsAdminUser, IsManagerUser, IsNodeManager, NodeEmployeeReadable, NodeManagerReadable
 from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
 from siteapi.v1.serializers.dept import (
@@ -361,5 +362,50 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
 
         return Response(UserListSerializer(dept).data)
 
-class UsercenterDeptChildUserAPIView(DeptChildUserAPIView):
+
+
+
+class UcenterDeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView):
+    '''
+    控制可见性
+    '''
+    serializer_class = UserSerializer
+    pagination_class = DefaultListPaginator
+
+    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsNodeManager | IsAdminUser )]
+    write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
+
+    def get_permissions(self):
+        '''
+        读写权限
+        '''
+        if self.request.method in SAFE_METHODS:
+            return [perm() for perm in self.read_permission_classes]
+        return [perm() for perm in self.write_permission_classes]
+
+    def get_object(self):
+        '''
+        find dept
+        '''
+        dept = Dept.valid_objects.filter(uid=self.kwargs['uid']).first()
+        if not dept:
+            raise NotFound
+        self.check_object_permissions(self.request, dept)
+        return dept
+
+    def get(self, request, *args, **kwargs):
+        contactsconfig = ContactsConfig.valid_objects.first()
+        is_show = contactsconfig.is_show
+        queryset = self.get_object().users
+        if is_show is False:
+            queryset = []
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class UsercenterDeptChildUserAPIView(UcenterDeptChildUserAPIView):
     read_permission_classes = [IsAuthenticated]

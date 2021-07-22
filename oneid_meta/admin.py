@@ -24,6 +24,7 @@ from oneid_meta.models import (
     NativeField,
     CustomUser,
     Invitation,
+    ContactsConfig,
 )
 
 
@@ -124,6 +125,10 @@ class InvitationAdmin(admin.ModelAdmin):
     pass
 
 
+class ContactsConfigAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(DingUser, DingUserAdmin)
 admin.site.register(PosixUser, PosixUserAdmin)
@@ -144,3 +149,4 @@ admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(CustomField, CustomFieldAdmin)
 admin.site.register(NativeField, NativeFieldAdmin)
 admin.site.register(Invitation, InvitationAdmin)
+admin.site.register(ContactsConfig, ContactsConfigAdmin)

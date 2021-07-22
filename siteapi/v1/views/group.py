@@ -356,7 +356,6 @@ class ManagerGroupListAPIView(generics.RetrieveAPIView):
 class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView):
     '''
     组下属成员信息
-
     普通用户在可见范围内可读
     管理员可见可编辑
     '''
