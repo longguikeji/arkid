@@ -387,7 +387,7 @@ class TenantViewSet(BaseViewSet):
             tenant__uuid=tenant_uuid
         ).first()
         if tenantconfig:
-            result = tenantconfig.data.get('login_register')
+            result = tenantconfig.data.get('login_register', result)
         return result
 
     def mobile_login_form(self, tenant_uuid):
