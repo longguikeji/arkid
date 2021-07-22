@@ -1,10 +1,10 @@
 from . import (
     group, 
     tenant, 
-    app, 
+    app,
     extension,
     maketplace,
-    webhook, 
+    webhook,
     external_idp, 
     authorization_server,
     authorization_agent,
@@ -25,7 +25,6 @@ from . import (
     app_permissions,
     permission_group,
     permission_manage,
-    third_login,
     scan_code,
     password_factor,
     other_factor,
@@ -159,10 +158,6 @@ root_add_routers([
                 icon='component',
                 children=[
                     PageRouter(
-                        page=external_idp,
-                        icon='wechat',
-                    ),
-                    PageRouter(
                         page=authorization_server,
                         icon='list',
                     ),
@@ -186,8 +181,8 @@ root_add_routers([
                         icon='setting'
                     ),
                     PageRouter(
-                        page=third_login,
-                        icon='wechat'
+                        page=external_idp,
+                        icon='wechat',
                     ),
                     PageRouter(
                         page=scan_code,
