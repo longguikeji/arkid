@@ -42,5 +42,5 @@ extension = SAML2SPExtension(
     version='1.0',
     homepage='https://www.longguikeji.com',
     logo='',
-    maintainer='北京龙归科技有限公司',
+    maintainer='北京龙归科技有限公司'
 )

@@ -73,7 +73,8 @@ INSTALLED_APPS = [
     'extension_root.arkid',
     'django_scim',
     'extension_root.miniprogram',
-    'djangosaml2idp'
+    'djangosaml2idp',
+    'djangosaml2sp'
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
