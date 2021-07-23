@@ -1,4 +1,4 @@
-from api.v1.serializers.webhook_trigger_history import WebHookTriggerHistorySerializer
+from api.v1.serializers.webhook_trigger_history import WebhookTriggerHistorySerializer
 from common.paginator import DefaultListPaginator
 from drf_spectacular.utils import extend_schema_view
 from openapi.utils import extend_schema
@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from tenant.models import Tenant
-from webhook.models import WebHook, WebHookTriggerHistory
+from webhook.models import Webhook, WebhookTriggerHistory
 
 from .base import BaseViewSet
 import requests
@@ -22,7 +22,7 @@ import requests
     destory=extend_schema(roles=['tenant admin', 'global admin']),
 )
 @extend_schema(tags=['webhook_histroy'])
-class WebHookTriggerHistoryViewSet(
+class WebhookTriggerHistoryViewSet(
     NestedViewSetMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -33,7 +33,7 @@ class WebHookTriggerHistoryViewSet(
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    serializer_class = WebHookTriggerHistorySerializer
+    serializer_class = WebhookTriggerHistorySerializer
     pagination_class = DefaultListPaginator
 
     def get_queryset(self):
@@ -52,7 +52,7 @@ class WebHookTriggerHistoryViewSet(
         tenant_uuid = query_dict.get('tenant')
         webhook_uuid = query_dict.get('webhook')
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-        webhook = WebHook.objects.filter(uuid=webhook_uuid).first()
+        webhook = Webhook.objects.filter(uuid=webhook_uuid).first()
 
         kwargs = {
             'tenant': tenant,
@@ -60,7 +60,7 @@ class WebHookTriggerHistoryViewSet(
             'uuid': self.kwargs['pk'],
         }
 
-        obj = WebHookTriggerHistory.valid_objects.filter(**kwargs).first()
+        obj = WebhookTriggerHistory.valid_objects.filter(**kwargs).first()
         return obj
 
     @extend_schema(

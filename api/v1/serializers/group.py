@@ -7,6 +7,7 @@ from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
 from .permission import PermissionSerializer
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
+from webhook.manager import WebhookManager
 
 
 class GroupBaseSerializer(serializers.ModelSerializer):
@@ -93,6 +94,7 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
                 if p is not None:
                     o.permissions.add(p)
 
+        WebhookManager.group_created(self.context['tenant'].uuid, o)
         return o
 
     def update(self, instance: Group, validated_data):
@@ -118,8 +120,8 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
             instance.permissions.clear()
 
         instance.save()
+        WebhookManager.group_updated(self.context['tenant'].uuid, instance)
         return instance
-
 
     def get_children(self, instance):
         qs = Group.valid_objects.filter(parent=instance).order_by('id')
@@ -136,7 +138,6 @@ class GroupListResponseSerializer(GroupSerializer):
 
 
 class GroupCreateRequestSerializer(GroupSerializer):
-    
     class Meta:
         model = Group
         fields = (

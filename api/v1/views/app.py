@@ -1,4 +1,3 @@
-
 from .base import BaseViewSet
 from common.code import Code
 from rest_framework.response import Response
@@ -10,7 +9,7 @@ from api.v1.serializers.app import (
     AppProvisioningSerializer,
     AppProvisioningMappingSerializer,
     AppProvisioningProfileSerializer,
-    AddAuthTmplSerializer
+    AddAuthTmplSerializer,
 )
 from common.paginator import DefaultListPaginator
 from django.http.response import JsonResponse
@@ -26,6 +25,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.utils.translation import gettext_lazy as _
 from common.code import Code
+from webhook.manager import WebhookManager
 
 
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
@@ -33,6 +33,7 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     serializers=get_app_runtime().app_type_serializers,
     resource_type_field_name='type',
 )
+
 
 @extend_schema_view(
     destroy=extend_schema(roles=['tenant admin', 'global admin']),
@@ -71,8 +72,16 @@ class AppViewSet(BaseViewSet):
 
     @extend_schema(
         roles=['tenant admin', 'global admin'],
-        responses=AppListSerializer
     )
+    def destroy(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        app = self.get_object()
+        ret = super().destroy(request, *args, **kwargs)
+        WebhookManager.app_deleted(tenant.uuid, app)
+        return ret
+
+    @extend_schema(roles=['tenant admin', 'global admin'], responses=AppListSerializer)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -82,17 +91,21 @@ class AppViewSet(BaseViewSet):
         responses=AppPolymorphicProxySerializer,
     )
     def update(self, request, *args, **kwargs):
-        data = request.data.get('data','')
+        data = request.data.get('data', '')
         if data:
             redirect_uris = data.get('redirect_uris', '')
             if redirect_uris:
-                if redirect_uris.startswith('http') or redirect_uris.startswith('https'):
+                if redirect_uris.startswith('http') or redirect_uris.startswith(
+                    'https'
+                ):
                     pass
                 else:
-                    return JsonResponse(data={
-                        'error': Code.URI_FROMAT_ERROR.value,
-                        'message': _('redirect_uris format error'),
-                    })
+                    return JsonResponse(
+                        data={
+                            'error': Code.URI_FROMAT_ERROR.value,
+                            'message': _('redirect_uris format error'),
+                        }
+                    )
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
@@ -101,22 +114,25 @@ class AppViewSet(BaseViewSet):
         responses=AppPolymorphicProxySerializer,
     )
     def create(self, request, *args, **kwargs):
-        data = request.data.get('data','')
+        data = request.data.get('data', '')
         if data:
             redirect_uris = data.get('redirect_uris', '')
             if redirect_uris:
-                if redirect_uris.startswith('http') or redirect_uris.startswith('https'):
+                if redirect_uris.startswith('http') or redirect_uris.startswith(
+                    'https'
+                ):
                     pass
                 else:
-                    return JsonResponse(data={
-                        'error': Code.URI_FROMAT_ERROR.value,
-                        'message': _('redirect_uris format error'),
-                    })
+                    return JsonResponse(
+                        data={
+                            'error': Code.URI_FROMAT_ERROR.value,
+                            'message': _('redirect_uris format error'),
+                        }
+                    )
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
-        responses=AppPolymorphicProxySerializer
+        roles=['tenant admin', 'global admin'], responses=AppPolymorphicProxySerializer
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
@@ -134,24 +150,17 @@ class AppViewSet(BaseViewSet):
         tmpl = request.data.get('html')
 
         if not app:
-            return {
-                'error': Code.ADD_AUTH_TMPL_ERROR,
-                'message': 'No app found'
-            }
+            return {'error': Code.ADD_AUTH_TMPL_ERROR, 'message': 'No app found'}
         app.auth_tmpl = tmpl
         app.save()
 
         auth_app = Application.objects.filter(name=app.id).first()
         if not auth_app:
-            return {
-                'error': Code.ADD_AUTH_TMPL_ERROR,
-                'message': 'No oauth app found'
-            }
+            return {'error': Code.ADD_AUTH_TMPL_ERROR, 'message': 'No oauth app found'}
         auth_app.custom_template = tmpl
         auth_app.save()
-        return Response({
-            'error': Code.OK.value
-        })
+        return Response({'error': Code.OK.value})
+
 
 @extend_schema(tags=['app'])
 class AppProvisioningViewSet(BaseViewSet):
@@ -200,6 +209,7 @@ class AppProvisioningMappingViewSet(BaseViewSet):
             provisioning_config=provisioning,
         )
         return mapping
+
 
 @extend_schema(tags=['app'])
 class AppProvisioningProfileViewSet(BaseViewSet):

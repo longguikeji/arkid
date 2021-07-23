@@ -43,12 +43,14 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.exceptions import ValidationError
-
 import re
+from webhook.manager import WebhookManager
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['tenant admin', 'global admin'], responses=UserListResponsesSerializer),
+    list=extend_schema(
+        roles=['tenant admin', 'global admin'], responses=UserListResponsesSerializer
+    ),
     retrieve=extend_schema(roles=['tenant admin', 'global admin']),
     create=extend_schema(roles=['tenant admin', 'global admin']),
     update=extend_schema(roles=['tenant admin', 'global admin']),
@@ -97,7 +99,11 @@ class UserViewSet(BaseViewSet):
         return User.valid_objects.filter(**kwargs).first()
 
     def destroy(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        user = self.get_object()
         self.get_object().kill()
+        WebhookManager.user_deleted(tenant.uuid, user)
         return Response(
             {
                 'error_code': 0,
@@ -107,32 +113,46 @@ class UserViewSet(BaseViewSet):
 
     def create(self, request, *args, **kwargs):
         email = request.data.get('email')
-        if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
-            return JsonResponse(data={
-                'error': Code.EMAIL_FROMAT_ERROR.value,
-                'message': _('email format error'),
-            })
+        if email and not re.match(
+            r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
+            email,
+        ):
+            return JsonResponse(
+                data={
+                    'error': Code.EMAIL_FROMAT_ERROR.value,
+                    'message': _('email format error'),
+                }
+            )
         mobile = request.data.get('mobile')
         if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
-            return JsonResponse(data={
-                'error': Code.MOBILE_FROMAT_ERROR.value,
-                'message': _('mobile format error'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.MOBILE_FROMAT_ERROR.value,
+                    'message': _('mobile format error'),
+                }
+            )
         return super(UserViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         email = request.data.get('email')
-        if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
-            return JsonResponse(data={
-                'error': Code.EMAIL_FROMAT_ERROR.value,
-                'message': _('email format error'),
-            })
+        if email and not re.match(
+            r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
+            email,
+        ):
+            return JsonResponse(
+                data={
+                    'error': Code.EMAIL_FROMAT_ERROR.value,
+                    'message': _('email format error'),
+                }
+            )
         mobile = request.data.get('mobile')
         if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
-            return JsonResponse(data={
-                'error': Code.MOBILE_FROMAT_ERROR.value,
-                'message': _('mobile format error'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.MOBILE_FROMAT_ERROR.value,
+                    'message': _('mobile format error'),
+                }
+            )
         return super(UserViewSet, self).update(request, *args, **kwargs)
 
     @extend_schema(
@@ -165,23 +185,32 @@ class UserViewSet(BaseViewSet):
             )
         user_resource = UserResource()
         dataset = Dataset()
-        imported_data = dataset.load(io.StringIO(upload.read().decode('utf-8')), format='csv')
+        imported_data = dataset.load(
+            io.StringIO(upload.read().decode('utf-8')), format='csv'
+        )
         result = user_resource.import_data(
             dataset, dry_run=True, tenant_id=tenant.id
         )  # Test the data import
         for item in dataset:
             email = str(item[2])
             mobile = str(item[3])
-            if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
-                return JsonResponse(data={
-                    'error': Code.EMAIL_FROMAT_ERROR.value,
-                    'message': _('email format error:{}'.format(email)),
-                })
+            if email and not re.match(
+                r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
+                email,
+            ):
+                return JsonResponse(
+                    data={
+                        'error': Code.EMAIL_FROMAT_ERROR.value,
+                        'message': _('email format error:{}'.format(email)),
+                    }
+                )
             if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
-                return JsonResponse(data={
-                    'error': Code.MOBILE_FROMAT_ERROR.value,
-                    'message': _('mobile format error:{}'.format(mobile)),
-                })
+                return JsonResponse(
+                    data={
+                        'error': Code.MOBILE_FROMAT_ERROR.value,
+                        'message': _('mobile format error:{}'.format(mobile)),
+                    }
+                )
         if not result.has_errors() and not result.has_validation_errors():
             user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
             return Response(
@@ -243,7 +272,9 @@ class UserViewSet(BaseViewSet):
     retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
     destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
     update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    partial_update=extend_schema(
+        roles=['general user', 'tenant admin', 'global admin']
+    ),
 )
 @extend_schema(tags=['user-app'])
 class UserAppViewSet(BaseViewSet):
@@ -313,7 +344,7 @@ class UpdatePasswordView(generics.CreateAPIView):
 
     @extend_schema(
         roles=['tenant admin', 'global admin', 'general user'],
-        responses=PasswordSerializer
+        responses=PasswordSerializer,
     )
     def post(self, request):
         uuid = request.data.get('uuid', '')
@@ -322,25 +353,33 @@ class UpdatePasswordView(generics.CreateAPIView):
         user = User.objects.filter(uuid=uuid).first()
         is_succeed = True
         if not user:
-            return JsonResponse(data={
-                'error': Code.USER_EXISTS_ERROR.value,
-                'message': _('user does not exist'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.USER_EXISTS_ERROR.value,
+                    'message': _('user does not exist'),
+                }
+            )
         if password and self.check_password(password) is False:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                'message': _('password strength not enough'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                    'message': _('password strength not enough'),
+                }
+            )
         if password and user.check_password(old_password) is False:
-            return JsonResponse(data={
-                'error': Code.OLD_PASSWORD_ERROR.value,
-                'message': _('old password error'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.OLD_PASSWORD_ERROR.value,
+                    'message': _('old password error'),
+                }
+            )
         if password and user.valid_password(password) is True:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_CHECK_ERROR.value,
-                'message': _('password is already in use'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_CHECK_ERROR.value,
+                    'message': _('password is already in use'),
+                }
+            )
         try:
             user.set_password(password)
             user.save()
@@ -361,10 +400,7 @@ class ResetPasswordView(generics.CreateAPIView):
 
     serializer_class = ResetPasswordRequestSerializer
 
-    @extend_schema(
-        roles=['tenant admin', 'global admin'],
-        responses=PasswordSerializer
-    )
+    @extend_schema(roles=['tenant admin', 'global admin'], responses=PasswordSerializer)
     def post(self, request):
         uuid = request.data.get('uuid', '')
         password = request.data.get('password', '')
@@ -372,20 +408,26 @@ class ResetPasswordView(generics.CreateAPIView):
         user = User.objects.filter(uuid=uuid).first()
         is_succeed = True
         if not user:
-            return JsonResponse(data={
-                'error': Code.USER_EXISTS_ERROR.value,
-                'message': _('user does not exist'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.USER_EXISTS_ERROR.value,
+                    'message': _('user does not exist'),
+                }
+            )
         if password and self.check_password(tenant_uuid, password) is False:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                'message': _('password strength not enough'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                    'message': _('password strength not enough'),
+                }
+            )
         if password and user.valid_password(password) is True:
-            return JsonResponse(data={
-                'error': Code.PASSWORD_CHECK_ERROR.value,
-                'message': _('password is already in use'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_CHECK_ERROR.value,
+                    'message': _('password is already in use'),
+                }
+            )
         try:
             user.set_password(password)
             user.save()
@@ -394,7 +436,9 @@ class ResetPasswordView(generics.CreateAPIView):
         return Response(is_succeed)
 
     def check_password(self, tenant_uuid, pwd):
-        comlexity = TenantPasswordComplexity.active_objects.filter(tenant__uuid=tenant_uuid, is_apply=True).first()
+        comlexity = TenantPasswordComplexity.active_objects.filter(
+            tenant__uuid=tenant_uuid, is_apply=True
+        ).first()
         if comlexity:
             return comlexity.check_pwd(pwd)
         return True
@@ -412,18 +456,26 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         email = request.data.get('email')
-        if email and not re.match(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', email):
-            return JsonResponse(data={
-                'error': Code.EMAIL_FROMAT_ERROR.value,
-                'message': _('email format error'),
-            })
+        if email and not re.match(
+            r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
+            email,
+        ):
+            return JsonResponse(
+                data={
+                    'error': Code.EMAIL_FROMAT_ERROR.value,
+                    'message': _('email format error'),
+                }
+            )
         mobile = request.data.get('mobile')
         if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
-            return JsonResponse(data={
-                'error': Code.MOBILE_FROMAT_ERROR.value,
-                'message': _('mobile format error'),
-            })
+            return JsonResponse(
+                data={
+                    'error': Code.MOBILE_FROMAT_ERROR.value,
+                    'message': _('mobile format error'),
+                }
+            )
         return super(UserInfoView, self).update(request, *args, **kwargs)
+
 
 @extend_schema(tags=['user'])
 class UserBindInfoView(generics.RetrieveAPIView):
@@ -431,13 +483,17 @@ class UserBindInfoView(generics.RetrieveAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserBindInfoSerializer
 
-    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserBindInfoSerializer)
+    @extend_schema(
+        roles=['general user', 'tenant admin', 'global admin'],
+        responses=UserBindInfoSerializer,
+    )
     def get(self, request):
         from extension_root.feishu.models import FeishuUser
         from extension_root.gitee.models import GiteeUser
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
         from extension_root.miniprogram.models import MiniProgramUser
+
         user = request.user
         feishuusers = FeishuUser.valid_objects.filter(user=request.user)
         giteeusers = GiteeUser.valid_objects.filter(user=request.user)
@@ -446,35 +502,51 @@ class UserBindInfoView(generics.RetrieveAPIView):
         miniprogramusers = MiniProgramUser.valid_objects.filter(user=request.user)
         result = []
         for item in feishuusers:
-            result.append({
-                'name': '飞书',
-                'tenant': item.tenant.uuid,
-                'unbind': '/api/v1/tenant/{}/feishu/unbind'.format(item.tenant.uuid),
-            })
+            result.append(
+                {
+                    'name': '飞书',
+                    'tenant': item.tenant.uuid,
+                    'unbind': '/api/v1/tenant/{}/feishu/unbind'.format(
+                        item.tenant.uuid
+                    ),
+                }
+            )
         for item in giteeusers:
-            result.append({
-                'name': 'gitee',
-                'tenant': item.tenant.uuid,
-                'unbind': '/api/v1/tenant/{}/gitee/unbind'.format(item.tenant.uuid),
-            })
+            result.append(
+                {
+                    'name': 'gitee',
+                    'tenant': item.tenant.uuid,
+                    'unbind': '/api/v1/tenant/{}/gitee/unbind'.format(item.tenant.uuid),
+                }
+            )
         for item in githubusers:
-            result.append({
-                'name': 'github',
-                'tenant': item.tenant.uuid,
-                'unbind': '/api/v1/tenant/{}/github/unbind'.format(item.tenant.uuid),
-            })
+            result.append(
+                {
+                    'name': 'github',
+                    'tenant': item.tenant.uuid,
+                    'unbind': '/api/v1/tenant/{}/github/unbind'.format(
+                        item.tenant.uuid
+                    ),
+                }
+            )
         for item in arkidusers:
-            result.append({
-                'name': 'arkid',
-                'tenant': item.tenant.uuid,
-                'unbind': '/api/v1/tenant/{}/arkid/unbind'.format(item.tenant.uuid),
-            })
+            result.append(
+                {
+                    'name': 'arkid',
+                    'tenant': item.tenant.uuid,
+                    'unbind': '/api/v1/tenant/{}/arkid/unbind'.format(item.tenant.uuid),
+                }
+            )
         for item in miniprogramusers:
-            result.append({
-                'name': '微信小程序',
-                'tenant': item.tenant.uuid,
-                'unbind': '/api/v1/tenant/{}/miniprogram/unbind'.format(item.tenant.uuid),
-            })
+            result.append(
+                {
+                    'name': '微信小程序',
+                    'tenant': item.tenant.uuid,
+                    'unbind': '/api/v1/tenant/{}/miniprogram/unbind'.format(
+                        item.tenant.uuid
+                    ),
+                }
+            )
         return JsonResponse({'data': result}, safe=False)
 
 
@@ -489,13 +561,10 @@ class UserLogoutView(generics.RetrieveAPIView):
         is_succeed = False
         if user and user.username:
             from rest_framework.authtoken.models import Token
-            Token.objects.filter(
-                user=user
-            ).delete()
+
+            Token.objects.filter(user=user).delete()
             is_succeed = True
-        return Response({
-            "is_succeed": is_succeed
-        })
+        return Response({"is_succeed": is_succeed})
 
 
 @extend_schema(tags=['user'])
@@ -503,15 +572,20 @@ class UserManageTenantsView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    @extend_schema(roles=['general user', 'tenant admin', 'global admin'], responses=UserManageTenantsSerializer)
+    @extend_schema(
+        roles=['general user', 'tenant admin', 'global admin'],
+        responses=UserManageTenantsSerializer,
+    )
     def get(self, request):
         user = request.user
         if user and user.username:
-            return Response({
-                "manage_tenants": user.manage_tenants(),
-                "is_global_admin": user.is_superuser,
-                "is_platform_user": user.is_platform_user,
-            })
+            return Response(
+                {
+                    "manage_tenants": user.manage_tenants(),
+                    "is_global_admin": user.is_superuser,
+                    "is_platform_user": user.is_platform_user,
+                }
+            )
 
 
 @extend_schema(tags=['user'])
@@ -522,7 +596,8 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
-    def post(self, request, username):    # pylint: disable=arguments-differ
+
+    def post(self, request, username):  # pylint: disable=arguments-differ
         data = request.data if request.data else {}
 
         inviter = request.user
@@ -544,10 +619,12 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
             invitation.duration = datetime.timedelta(minutes=duration_minutes)
             invitation.save()
 
-        return Response({
-            'uuid': invitation.uuid.hex,
-            'inviter': inviter.username,
-            'invitee': invitee.username,
-            'key': invitation.key,
-            'expired_time': invitation.expired_time,
-        })
+        return Response(
+            {
+                'uuid': invitation.uuid.hex,
+                'inviter': inviter.username,
+                'invitee': invitee.username,
+                'key': invitation.key,
+                'expired_time': invitation.expired_time,
+            }
+        )
