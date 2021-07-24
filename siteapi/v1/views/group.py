@@ -6,7 +6,7 @@ views about group
 '''
 import json
 import random
-import string    # pylint: disable=deprecated-module
+import string  # pylint: disable=deprecated-module
 import uuid as uuid_utils
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -21,7 +21,14 @@ from rest_framework.exceptions import (
 )
 
 from oneid_meta.models import Group, GroupMember, User
-from oneid.permissions import CustomPerm, IsAdminUser, IsManagerUser, IsNodeManager, NodeEmployeeReadable, NodeManagerReadable
+from oneid.permissions import (
+    CustomPerm,
+    IsAdminUser,
+    IsManagerUser,
+    IsNodeManager,
+    NodeEmployeeReadable,
+    NodeManagerReadable,
+)
 from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
 from siteapi.v1.serializers.group import (
     GroupSerializer,
@@ -40,6 +47,8 @@ from siteapi.v1.views.utils import (
 from executer.core import CLI
 from common.django.drf.paginator import DefaultListPaginator
 from common.django.drf.views import catch_json_load_error
+from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 class GroupListAPIView(generics.ListAPIView):
@@ -48,6 +57,7 @@ class GroupListAPIView(generics.ListAPIView):
 
     管理员可见
     '''
+
     permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
     serializer_class = GroupSerializer
     pagination_class = DefaultListPaginator
@@ -70,6 +80,7 @@ class GroupScopeListAPIView(generics.ListAPIView):
 
     管理员可见
     '''
+
     permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     serializer_class = GroupTreeSerializer
@@ -83,7 +94,7 @@ class GroupScopeListAPIView(generics.ListAPIView):
             raise NotFound
         return group
 
-    def get(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def get(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         以列表形式输出指定节点下属的所有节点
         '''
@@ -99,6 +110,7 @@ class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     '''
     组信息 [GET] [PATCH] [DELETE]
     '''
+
     serializer_class = GroupDetailSerializer
 
     read_permission_classes = [IsAuthenticated & (NodeManagerReadable | IsAdminUser)]
@@ -128,6 +140,7 @@ class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         group.refresh_visibility_scope()
         return group
 
+    @transaction.atomic()
     def perform_destroy(self, instance):
         '''
         删除组 [DELETE]
@@ -135,15 +148,18 @@ class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.query_params.get('ignore_user', '') in ('true', 'True'):
             CLI().delete_users_from_group(instance.users, instance)
         CLI().delete_group(instance)
+        transaction.on_commit(lambda: WebhookManager.group_deleted(instance))
 
     @catch_json_load_error
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    @transaction.atomic()
+    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         更新组信息  [PATCH]
         '''
         group = self.get_object()
         data = json.loads(request.body.decode('utf-8'))
         group = CLI().update_group(group, data)
+        transaction.on_commit(lambda: WebhookManager.group_updated(group))
         return Response(self.get_serializer(group).data)
 
 
@@ -151,6 +167,7 @@ class ManagerGroupTreeAPIView(APIView):
     '''
     管理员身份组结构树 [GET]
     '''
+
     def dispatch(self, request, *args, **kwargs):
         uid = kwargs['uid']
         node_uid = Group.NODE_PREFIX + uid
@@ -162,6 +179,7 @@ class UcenterGroupTreeAPIView(APIView):
     '''
     普通用户身份部门结构树 [GET]
     '''
+
     def dispatch(self, request, *args, **kwargs):
         uid = kwargs['uid']
         node_uid = Group.NODE_PREFIX + uid
@@ -186,9 +204,9 @@ def get_patch_scope(request):
 
 
 class GroupChildGroupAPIView(
-        mixins.UpdateModelMixin,
-        mixins.RetrieveModelMixin,
-        generics.ListCreateAPIView,
+    mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
+    generics.ListCreateAPIView,
 ):
     '''
     组下属子组信息 [GET], [POST], [PATCH]
@@ -196,11 +214,16 @@ class GroupChildGroupAPIView(
     管理员可见
     TODO: 权限校验需深入
     '''
+
     serializer_class = GroupListSerializer
 
-    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsAdminUser | NodeManagerReadable)]
+    read_permission_classes = [
+        IsAuthenticated & (NodeEmployeeReadable | IsAdminUser | NodeManagerReadable)
+    ]
     write_permission_classes = [IsAuthenticated & (IsAdminUser | IsNodeManager)]
-    create_category_permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_category_create'))]
+    create_category_permission_classes = [
+        IsAuthenticated & (IsAdminUser | CustomPerm('system_category_create'))
+    ]
 
     def dispatch(self, request, *args, **kwargs):
         '''
@@ -216,7 +239,7 @@ class GroupChildGroupAPIView(
         '''
         if self.request.method in SAFE_METHODS:
             permissions = self.read_permission_classes
-        elif self.kwargs['uid'] == 'intra' and self.request.method == 'POST':    # 新建大类
+        elif self.kwargs['uid'] == 'intra' and self.request.method == 'POST':  # 新建大类
             permissions = self.create_category_permission_classes
         else:
             permissions = self.write_permission_classes
@@ -233,7 +256,7 @@ class GroupChildGroupAPIView(
         self.check_object_permissions(self.request, group)
         return group
 
-    def get(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def get(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         获取组下属子组信息 [GET]
         '''
@@ -241,7 +264,8 @@ class GroupChildGroupAPIView(
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    def create(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    @transaction.atomic()
+    def create(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         添加子组,从无到有 [POST]
         '''
@@ -251,7 +275,9 @@ class GroupChildGroupAPIView(
         if 'manager_group' in group_data:
             if parent_group.uid == 'manager':
                 if not group_data.get('name', ''):
-                    name = "".join(random.choice(string.ascii_lowercase) for _ in range(8))
+                    name = "".join(
+                        random.choice(string.ascii_lowercase) for _ in range(8)
+                    )
                     group_data.update(name=name)
             else:
                 group_data.pop('manager_group')
@@ -269,10 +295,13 @@ class GroupChildGroupAPIView(
 
         if parent_group.uid == 'intra':
             self._auto_create_manager_group(request, child_group)
-        return Response(GroupDetailSerializer(child_group).data, status=status.HTTP_201_CREATED)
+        transaction.on_commit(lambda: WebhookManager.group_created(child_group))
+        return Response(
+            GroupDetailSerializer(child_group).data, status=status.HTTP_201_CREATED
+        )
 
     @catch_json_load_error
-    def patch(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def patch(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         调整子组 [PATCH]
         操作包括
@@ -292,7 +321,9 @@ class GroupChildGroupAPIView(
         group_uids = get_patch_scope(request)
 
         try:
-            groups = Group.get_from_pks(pks=group_uids, pk_name='uid', raise_exception=True, **filters)
+            groups = Group.get_from_pks(
+                pks=group_uids, pk_name='uid', raise_exception=True, **filters
+            )
         except ObjectDoesNotExist as error:
             bad_uid = error.args[0]
             raise ValidationError({'group_uids': ['group:{} invalid'.format(bad_uid)]})
@@ -319,7 +350,7 @@ class GroupChildGroupAPIView(
                 'nodes': [child_group.node_uid],
                 'users': [request.user.username],
                 'scope_subject': 2,
-            }
+            },
         }
         manager_group = cli.create_group(data)
         parent, _ = Group.valid_objects.get_or_create(uid='manager')
@@ -331,6 +362,7 @@ class ManagerGroupListAPIView(generics.RetrieveAPIView):
     '''
     get manager group in list
     '''
+
     permission_classes = [IsAuthenticated & IsAdminUser]
 
     serializer_class = ManagerGroupListSerializer
@@ -359,10 +391,13 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
     普通用户在可见范围内可读
     管理员可见可编辑
     '''
+
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsManagerUser | IsAdminUser)]
+    read_permission_classes = [
+        IsAuthenticated & (NodeEmployeeReadable | IsManagerUser | IsAdminUser)
+    ]
     write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_permissions(self):
@@ -398,10 +433,11 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         支持在查询条件中加上其他group的uid，做为附加限制取交集
         这些附加group uid同样不会考虑间接附属关系
         '''
-        user_ids = GroupMember.valid_objects. \
-            filter(owner__in=self.get_groups()). \
-            values('user__id'). \
-            distinct()
+        user_ids = (
+            GroupMember.valid_objects.filter(owner__in=self.get_groups())
+            .values('user__id')
+            .distinct()
+        )
         queryset = User.valid_objects.filter(id__in=user_ids).order_by('id')
 
         filter_params_mapper = {
@@ -429,7 +465,7 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         return Response(serializer.data)
 
     @catch_json_load_error
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         调整成员
         '''
@@ -438,9 +474,11 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
 
         subject = data.get('subject', '')
         if subject not in ['add', 'delete', 'sort', 'override', 'move_out']:
-            raise ValidationError({'subject': 'thid field must be one of add, delete, sort, override'})
+            raise ValidationError(
+                {'subject': 'thid field must be one of add, delete, sort, override'}
+            )
 
-        inplace = False    # 目标组是否包括自身
+        inplace = False  # 目标组是否包括自身
         group_uids = set(get_patch_scope(request))
         if kwargs['uid'] in group_uids:
             inplace = True
@@ -458,6 +496,7 @@ class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIVie
         update_users_of_owner(group, users, subject)
 
         return Response(UserListSerializer(group).data)
+
 
 class UsercenterGroupChildUserAPIView(GroupChildUserAPIView):
     read_permission_classes = [IsAuthenticated]
