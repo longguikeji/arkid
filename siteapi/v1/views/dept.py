@@ -19,7 +19,13 @@ from rest_framework.exceptions import (
 
 from oneid_meta.models import Dept
 from oneid_meta.models.config import ContactsConfig
-from oneid.permissions import IsAdminUser, IsManagerUser, IsNodeManager, NodeEmployeeReadable, NodeManagerReadable
+from oneid.permissions import (
+    IsAdminUser,
+    IsManagerUser,
+    IsNodeManager,
+    NodeEmployeeReadable,
+    NodeManagerReadable,
+)
 from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
 from siteapi.v1.serializers.dept import (
     DeptTreeSerializer,
@@ -37,6 +43,8 @@ from siteapi.v1.views import node as node_views
 from executer.core import CLI
 from common.django.drf.paginator import DefaultListPaginator
 from common.django.drf.views import catch_json_load_error
+from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 class DeptListAPIView(generics.ListAPIView):
@@ -68,6 +76,7 @@ class DeptScopeListAPIView(generics.ListAPIView):
 
     管理员可见
     '''
+
     permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     serializer_class = DeptTreeSerializer
@@ -81,7 +90,7 @@ class DeptScopeListAPIView(generics.ListAPIView):
             raise NotFound
         return dept
 
-    def get(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def get(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         以列表形式输出指定节点下属的所有节点
         '''
@@ -103,6 +112,7 @@ class DeptDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     普通用户有可能可读
     '''
+
     serializer_class = DeptDetailSerializer
     read_permission_classes = [IsAuthenticated & (NodeManagerReadable | IsAdminUser)]
     write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
@@ -131,6 +141,7 @@ class DeptDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         dept.refresh_visibility_scope()
         return dept
 
+    @transaction.atomic()
     def perform_destroy(self, instance):
         '''
         删除组
@@ -138,15 +149,18 @@ class DeptDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.query_params.get('ignore_user', '') in ('true', 'True'):
             CLI().delete_users_from_dept(instance.users, instance)
         CLI().delete_dept(instance)
+        transaction.on_commit(lambda: WebhookManager.dept_deleted(instance))
 
     @catch_json_load_error
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    @transaction.atomic()
+    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         更新部门信息
         '''
         dept = self.get_object()
         data = json.loads(request.body.decode('utf-8'))
         dept = CLI().update_dept(dept, data)
+        transaction.on_commit(lambda: WebhookManager.dept_updated(dept))
         return Response(self.get_serializer(dept).data)
 
 
@@ -154,6 +168,7 @@ class ManagerDeptTreeAPIView(APIView):
     '''
     管理员身份部门结构树 [GET]
     '''
+
     def dispatch(self, request, *args, **kwargs):
         uid = kwargs['uid']
         node_uid = Dept.NODE_PREFIX + uid
@@ -165,6 +180,7 @@ class UcenterDeptTreeAPIView(APIView):
     '''
     普通用户身份部门结构树 [GET]
     '''
+
     def dispatch(self, request, *args, **kwargs):
         uid = kwargs['uid']
         node_uid = Dept.NODE_PREFIX + uid
@@ -189,9 +205,9 @@ def get_patch_scope(request):
 
 
 class DeptChildDeptAPIView(
-        mixins.UpdateModelMixin,
-        mixins.RetrieveModelMixin,
-        generics.ListCreateAPIView,
+    mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
+    generics.ListCreateAPIView,
 ):
     '''
     部门下属子部门信息
@@ -199,9 +215,13 @@ class DeptChildDeptAPIView(
     管理员可见
     TODO: 权限校验需深入
     '''
+
     serializer_class = DeptListSerializer
 
-    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | NodeManagerReadable | IsManagerUser | IsAdminUser)]
+    read_permission_classes = [
+        IsAuthenticated
+        & (NodeEmployeeReadable | NodeManagerReadable | IsManagerUser | IsAdminUser)
+    ]
     write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_object(self):
@@ -231,7 +251,8 @@ class DeptChildDeptAPIView(
         return Response(serializer.data)
 
     @catch_json_load_error
-    def create(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    @transaction.atomic()
+    def create(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         添加子部门,从无到有 [POST]
         '''
@@ -246,10 +267,13 @@ class DeptChildDeptAPIView(
         cli = CLI()
         child_dept = cli.create_dept(dept_data)
         cli.add_dept_to_dept(child_dept, parent_dept)
-        return Response(DeptDetailSerializer(child_dept).data, status=status.HTTP_201_CREATED)
+        transaction.on_commit(lambda: WebhookManager.dept_created(child_dept))
+        return Response(
+            DeptDetailSerializer(child_dept).data, status=status.HTTP_201_CREATED
+        )
 
     @catch_json_load_error
-    def patch(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def patch(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         调整子部门 [PATCH]
         目前应只需要排序和移入
@@ -266,7 +290,9 @@ class DeptChildDeptAPIView(
 
         dept_uids = get_patch_scope(request)
         try:
-            depts = Dept.get_from_pks(pks=dept_uids, pk_name='uid', raise_exception=True, **filters)
+            depts = Dept.get_from_pks(
+                pks=dept_uids, pk_name='uid', raise_exception=True, **filters
+            )
         except ObjectDoesNotExist as error:
             bad_uid = error.args[0]
             raise ValidationError({'dept_uids': ['dept:{} invalid'.format(bad_uid)]})
@@ -288,10 +314,13 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
 
     仅拥有此管理范围的管理员可见可编辑
     '''
+
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsNodeManager | IsAdminUser )]
+    read_permission_classes = [
+        IsAuthenticated & (NodeEmployeeReadable | IsNodeManager | IsAdminUser)
+    ]
     write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_permissions(self):
@@ -322,7 +351,7 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
         return Response(serializer.data)
 
     @catch_json_load_error
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         调整成员
         - add
@@ -341,9 +370,13 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
 
         subject = data.get('subject', '')
         if subject not in ['add', 'delete', 'sort', 'override', 'move_out']:
-            raise ValidationError({'subject': 'thid field must be one of add, delete, sort, override, move_out'})
+            raise ValidationError(
+                {
+                    'subject': 'thid field must be one of add, delete, sort, override, move_out'
+                }
+            )
 
-        inplace = False    # 目标部门是否包括自身
+        inplace = False  # 目标部门是否包括自身
         dept_uids = set(get_patch_scope(request))
         if kwargs['uid'] in dept_uids:
             inplace = True
@@ -363,16 +396,19 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
         return Response(UserListSerializer(dept).data)
 
 
-
-
-class UcenterDeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView):
+class UcenterDeptChildUserAPIView(
+    mixins.ListModelMixin, generics.RetrieveUpdateAPIView
+):
     '''
     控制可见性
     '''
+
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
-    read_permission_classes = [IsAuthenticated & (NodeEmployeeReadable | IsNodeManager | IsAdminUser )]
+    read_permission_classes = [
+        IsAuthenticated & (NodeEmployeeReadable | IsNodeManager | IsAdminUser)
+    ]
     write_permission_classes = [IsAuthenticated & (IsNodeManager | IsAdminUser)]
 
     def get_permissions(self):
