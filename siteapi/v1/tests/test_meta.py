@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from siteapi.v1.tests import TestCase
 from oneid_meta.models import CompanyConfig, DingConfig, User, AccountConfig,\
-    AlipayConfig, WorkWechatConfig, WechatConfig, QQConfig
+    AlipayConfig, WorkWechatConfig, WechatConfig, QQConfig, ContactsConfig
 
 
 class MetaTestCase(TestCase):
@@ -29,10 +29,12 @@ class MetaTestCase(TestCase):
         ding_config.qr_app_id = 'qr_app_id'
         ding_config.qr_app_valid = True
         ding_config.save()
+
         alipay_config = AlipayConfig.get_current()
         alipay_config.app_id = 'test_app_id'
         alipay_config.qr_app_valid = True
         alipay_config.save()
+
         qq_config = QQConfig.get_current()
         qq_config.app_id = 'test_app_id'
         qq_config.redirect_uri = 'test_redirect_uri'
@@ -50,6 +52,10 @@ class MetaTestCase(TestCase):
         wechat_config.secret = 'test_secret'
         wechat_config.qr_app_valid = True
         wechat_config.save()
+
+        contactsconfig = ContactsConfig.get_current()
+        contactsconfig.is_show = True
+        contactsconfig.save()
 
         res = self.anonymous.get(reverse('siteapi:meta'))
         expect = {
@@ -93,6 +99,9 @@ class MetaTestCase(TestCase):
             'wechat_config': {
                 'appid': 'test_appid'
             },
+            "contacts_config":{
+                "is_show": True
+            }
         }
         self.assertEqual(res.json(), expect)
 
