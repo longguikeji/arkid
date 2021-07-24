@@ -27,13 +27,18 @@ from oneid.permissions import (
     UserManagerReadable,
     CustomPerm,
 )
-from siteapi.v1.serializers.user import UserSerializer, EmployeeSerializer, ResetUserPasswordSerializer
+from siteapi.v1.serializers.user import (
+    UserSerializer,
+    EmployeeSerializer,
+    ResetUserPasswordSerializer,
+)
 from siteapi.v1.serializers.group import GroupListSerializer, GroupSerializer
 from siteapi.v1.serializers.dept import DeptListSerializer, DeptSerializer
 from common.django.drf.paginator import DefaultListPaginator
 from executer.core import CLI
 from executer.utils import operation
 from tasksapp.tasks import update_users_cache
+from webhook.manager import WebhookManager
 
 
 class UserListCreateAPIView(generics.ListCreateAPIView):
@@ -46,11 +51,14 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
     - 主管理员可以创建用户
     - 拥有 system_user_create 权限的子管理员
     '''
+
     serializer_class = EmployeeSerializer
     pagination_class = DefaultListPaginator
 
     read_permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
-    write_permission_classes = [IsAuthenticated & (IsAdminUser | CustomPerm('system_user_create'))]
+    write_permission_classes = [
+        IsAuthenticated & (IsAdminUser | CustomPerm('system_user_create'))
+    ]
 
     def get_permissions(self):
         '''
@@ -70,17 +78,31 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         queryset = User.valid_objects.all()
         keyword = self.request.query_params.get('keyword', '')
         if keyword != '':
-            queryset = queryset.filter(Q(username__icontains=keyword) | Q(email__icontains=keyword) | \
-                                       Q(private_email__icontains=keyword) | Q(mobile__icontains=keyword) | Q(
-                name__icontains=keyword)). \
-                exclude(is_boss=True).exclude(username='admin').order_by('id')
+            queryset = (
+                queryset.filter(
+                    Q(username__icontains=keyword)
+                    | Q(email__icontains=keyword)
+                    | Q(private_email__icontains=keyword)
+                    | Q(mobile__icontains=keyword)
+                    | Q(name__icontains=keyword)
+                )
+                .exclude(is_boss=True)
+                .exclude(username='admin')
+                .order_by('id')
+            )
         else:
-            queryset = queryset.exclude(is_boss=True).exclude(username='admin').order_by('id')
+            queryset = (
+                queryset.exclude(is_boss=True).exclude(username='admin').order_by('id')
+            )
 
         # 支持通过 user_id 搜索
         # QueryString 中格式为 '&user_ids=id1 ... idn'
-        user_ids = self._get_user_ids(self.request.query_params.get('user_ids', ''), 'user')
-        queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+        user_ids = self._get_user_ids(
+            self.request.query_params.get('user_ids', ''), 'user'
+        )
+        queryset = (
+            queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+        )
 
         # 支持通过 usernames 搜索
         # QueryString 中格式为 '&usernames=username1 ... usernamen'
@@ -91,23 +113,39 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
 
         # 支持通过 group_uid 搜索 (保留属于group_uids[]的用户)
         # QueryString 中格式为 '&group_uids=uid1 ... uidn'
-        user_ids = self._get_user_ids(self.request.query_params.get('group_uids', ''), 'group')
-        queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+        user_ids = self._get_user_ids(
+            self.request.query_params.get('group_uids', ''), 'group'
+        )
+        queryset = (
+            queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+        )
 
         # 支持通过 -group_uid 搜索 (保留不属于group_uids[]的用户)
         # QueryString 中格式为 '&group_uids=uid1 ... uidn'
-        user_ids = self._get_user_ids(self.request.query_params.get('-group_uids', ''), 'group')
-        queryset = queryset.exclude(pk__in=user_ids) if user_ids is not None else queryset
+        user_ids = self._get_user_ids(
+            self.request.query_params.get('-group_uids', ''), 'group'
+        )
+        queryset = (
+            queryset.exclude(pk__in=user_ids) if user_ids is not None else queryset
+        )
 
         # 支持通过 perm_uid 搜索 (保留拥有perm_uids[]的用户)
         # QueryString 中格式为 '&perm_uids=uid1 ... uidn'
-        user_ids = self._get_user_ids(self.request.query_params.get('perm_uids', ''), 'perm')
-        queryset = queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+        user_ids = self._get_user_ids(
+            self.request.query_params.get('perm_uids', ''), 'perm'
+        )
+        queryset = (
+            queryset.filter(pk__in=user_ids) if user_ids is not None else queryset
+        )
 
         # 支持通过 -perm_uid 搜索 (保留未拥有perm_uids[]的用户)
         # QueryString 中格式为 '&perm_uids=uid1 ... uidn'
-        user_ids = self._get_user_ids(self.request.query_params.get('-perm_uids', ''), 'perm')
-        queryset = queryset.exclude(pk__in=user_ids) if user_ids is not None else queryset
+        user_ids = self._get_user_ids(
+            self.request.query_params.get('-perm_uids', ''), 'perm'
+        )
+        queryset = (
+            queryset.exclude(pk__in=user_ids) if user_ids is not None else queryset
+        )
 
         filter_params = (
             'wechat_unionid',
@@ -154,7 +192,11 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         for param in filter_params:
             value = self.request.query_params.get(param, None)
             # 用户关联账号相关搜索
-            if value is not None and param in boolean_params and value.lower() in _boolean_map.keys():
+            if (
+                value is not None
+                and param in boolean_params
+                and value.lower() in _boolean_map.keys()
+            ):
                 param = mapper.get(param)
                 queryset = queryset.filter(**{param: _boolean_map.get(value.lower())})
                 continue
@@ -164,12 +206,19 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
 
         # 获取 query string 中自定义字段（*__custom）
         # 支持 *__(lte, gte, lt, gt 等)__custom 形式,需进行范围搜索的字段在存储时保证传入的为string
-        suffixes = ['__lte__custom', '__lt__custom', '__gte__custom', '__gt__custom', '__custom']
+        suffixes = [
+            '__lte__custom',
+            '__lt__custom',
+            '__gte__custom',
+            '__gt__custom',
+            '__custom',
+        ]
         for key, value in self.request.query_params.items():
             for suffix in suffixes:
                 if key.endswith(suffix):
-                    _key = 'custom_user__data__"{custom_field}"{suffix}'.format(custom_field=key[:-1 * len(suffix)],
-                                                                                suffix=suffix[:-8])
+                    _key = 'custom_user__data__"{custom_field}"{suffix}'.format(
+                        custom_field=key[: -1 * len(suffix)], suffix=suffix[:-8]
+                    )
                     queryset = queryset.filter(**{_key: value})
                     break
         # 支持自定义排序
@@ -184,7 +233,9 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
                 # pylint: disable=protected-access
                 _ = User._meta.get_field(field_name)
             except FieldDoesNotExist:
-                raise ValidationError({'sort': f"Invalid order_by argument: '{field_name}'"})
+                raise ValidationError(
+                    {'sort': f"Invalid order_by argument: '{field_name}'"}
+                )
         queryset = queryset.order_by(*_sort)
 
         user = self.request.user
@@ -193,15 +244,17 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
 
         under_manage_user_ids = set()
 
-        for item in queryset:    # 这种遍历不能接受
+        for item in queryset:  # 这种遍历不能接受
             if item.is_visible_to_manager(user):
                 under_manage_user_ids.add(item.username)
 
-        under_manage_user_query_set = queryset.filter(username__in=under_manage_user_ids)
+        under_manage_user_query_set = queryset.filter(
+            username__in=under_manage_user_ids
+        )
         return under_manage_user_query_set
 
     @transaction.atomic()
-    def create(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def create(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         create user [POST]
         '''
@@ -217,10 +270,12 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
                 if node_uid.startswith(Dept.NODE_PREFIX):
                     dept_uids.append(node_uid.replace(Dept.NODE_PREFIX, '', 1))
                 elif node_uid.startswith(Group.NODE_PREFIX):
-                    group_uids.append(node_uid.replace(
-                        Group.NODE_PREFIX,
-                        '',
-                    ))
+                    group_uids.append(
+                        node_uid.replace(
+                            Group.NODE_PREFIX,
+                            '',
+                        )
+                    )
         else:
             group_uids = data.get('group_uids', [])
             dept_uids = data.get('dept_uids', [])
@@ -231,15 +286,18 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         if password:
             validate_password(password)
             cli.set_user_password(user, password)
-        user.origin = 1    # 管理员添加
+        user.origin = 1  # 管理员添加
         user.save()
 
         self.assign_user(user, dept_uids=dept_uids, group_uids=group_uids)
 
         user_serializer = EmployeeSerializer(user)
-        return Response(user_serializer.data,
-                        status=status.HTTP_201_CREATED,
-                        headers=self.get_success_headers(user_serializer.data))
+        transaction.on_commit(lambda: WebhookManager.user_created(user))
+        return Response(
+            user_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=self.get_success_headers(user_serializer.data),
+        )
 
     @staticmethod
     def assign_user(user, dept_uids, group_uids):
@@ -255,7 +313,9 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             try:
                 dept = Dept.valid_objects.get(uid=dept_uid)
             except ObjectDoesNotExist:
-                raise ValidationError({'dept_uids': ['dept:{} does not exist'.format(dept_uid)]})
+                raise ValidationError(
+                    {'dept_uids': ['dept:{} does not exist'.format(dept_uid)]}
+                )
             depts.append(dept)
 
         groups = []
@@ -263,7 +323,9 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             try:
                 group = Group.valid_objects.get(uid=group_uid)
             except ObjectDoesNotExist:
-                raise ValidationError({'group_uids': ['group:{} does not exist'.format(group_uid)]})
+                raise ValidationError(
+                    {'group_uids': ['group:{} does not exist'.format(group_uid)]}
+                )
             groups.append(group)
 
         cli = CLI()
@@ -281,15 +343,20 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         user_ids = None
         uids = uids.split(' ')
         if subject == 'group':
-            user_ids = GroupMember.valid_objects. \
-                filter(owner__uid__in=uids). \
-                values('user__id'). \
-                distinct()
+            user_ids = (
+                GroupMember.valid_objects.filter(owner__uid__in=uids)
+                .values('user__id')
+                .distinct()
+            )
         if subject == 'perm':
             user_perms = UserPerm.valid_objects.filter(perm__uid__in=uids)
-            for user_perm in user_perms:    # 校验权限是否在管辖范围之内
+            for user_perm in user_perms:  # 校验权限是否在管辖范围之内
                 if not user_perm.owner.under_manage(self.request.user):
-                    raise PermissionDenied({'perm_uids': f"Invalid perm_uids argument: '{user_perm.perm.uid}'"})
+                    raise PermissionDenied(
+                        {
+                            'perm_uids': f"Invalid perm_uids argument: '{user_perm.perm.uid}'"
+                        }
+                    )
             user_ids = user_perms.filter(value=True).values('owner__id').distinct()
         if subject == 'user':
             user_ids = uids
@@ -300,6 +367,7 @@ class UserIsolatedAPIView(generics.ListAPIView):
     '''
     独立用户列表
     '''
+
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
 
@@ -313,6 +381,7 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     '''
     特定用户信息 [GET],[PATCH],[DELETE]
     '''
+
     serializer_class = EmployeeSerializer
 
     read_permission_classes = [IsAuthenticated & (UserManagerReadable | IsAdminUser)]
@@ -342,21 +411,25 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             raise NotFound
         return user
 
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    @transaction.atomic()
+    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         update user detail [PATCH]
         '''
         user = self.get_object()
         data = request.data
         user = CLI().update_user(user, data)
+        transaction.on_commit(lambda: WebhookManager.user_updated(user))
         return Response(UserSerializer(user).data)
 
+    @transaction.atomic()
     def delete(self, request, *args, **kwargs):
         '''
         delete user [DELETE]
         '''
         user = self.get_object()
         CLI().delete_users([user])
+        transaction.on_commit(lambda: WebhookManager.user_deleted(user))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -410,6 +483,7 @@ class UserGroupView(generics.RetrieveUpdateAPIView):
     用户所属组信息 [GET],[PATCH]
     TODO: 交叉验证
     '''
+
     read_permission_classes = [IsAuthenticated & (UserManagerReadable | IsAdminUser)]
     write_permission_classess = [IsAuthenticated & (IsUserManager | IsAdminUser)]
 
@@ -440,7 +514,7 @@ class UserGroupView(generics.RetrieveUpdateAPIView):
         return user
 
     @transaction.atomic()
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         update user groups
         '''
@@ -448,7 +522,9 @@ class UserGroupView(generics.RetrieveUpdateAPIView):
         data = request.data
         uids = data.get('group_uids', [])
         subject = data.get('subject', '')
-        update_user_nodes(user, nodes=[], uids=uids, node_type='group', action_subject=subject)
+        update_user_nodes(
+            user, nodes=[], uids=uids, node_type='group', action_subject=subject
+        )
         return Response(GroupListSerializer(self.get_object()).data)
 
 
@@ -457,6 +533,7 @@ class UserDeptView(generics.RetrieveUpdateAPIView):
     用户所部门属信息 [GET],[PATCH]
     TODO: 交叉验证
     '''
+
     serializer_class = DeptListSerializer
 
     read_permission_classes = [IsAuthenticated & (UserManagerReadable | IsAdminUser)]
@@ -483,7 +560,7 @@ class UserDeptView(generics.RetrieveUpdateAPIView):
         return user
 
     @transaction.atomic()
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         update user depts
         '''
@@ -491,7 +568,9 @@ class UserDeptView(generics.RetrieveUpdateAPIView):
         data = request.data
         uids = data.get('dept_uids', [])
         subject = data.get('subject', '')
-        update_user_nodes(user, nodes=[], uids=uids, node_type='dept', action_subject=subject)
+        update_user_nodes(
+            user, nodes=[], uids=uids, node_type='dept', action_subject=subject
+        )
         return Response(DeptListSerializer(self.get_object()).data)
 
 
@@ -530,11 +609,13 @@ class UserNodeView(generics.RetrieveUpdateAPIView):
 
     def get(self, request, *args, **kwargs):
         user = self.get_object()
-        data = DeptSerializer(user.depts, many=True).data + \
-               GroupSerializer(user.groups, many=True).data
+        data = (
+            DeptSerializer(user.depts, many=True).data
+            + GroupSerializer(user.groups, many=True).data
+        )
         return Response({'nodes': data})
 
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         user = self.get_object()
         node_uids = request.data.get('node_uids', [])
         subject = request.data.get('subject', [])
@@ -546,14 +627,24 @@ class UserNodeView(generics.RetrieveUpdateAPIView):
             elif node_uid.startswith(Dept.NODE_PREFIX):
                 dept_uids.append(node_uid.replace(Dept.NODE_PREFIX, '', 1))
         with transaction.atomic():
-            update_user_nodes(user, nodes=[], uids=group_uids, node_type='group', action_subject=subject)
-            update_user_nodes(user, nodes=[], uids=dept_uids, node_type='dept', action_subject=subject)
+            update_user_nodes(
+                user,
+                nodes=[],
+                uids=group_uids,
+                node_type='group',
+                action_subject=subject,
+            )
+            update_user_nodes(
+                user, nodes=[], uids=dept_uids, node_type='dept', action_subject=subject
+            )
             # 可重复读事务提交后，更新缓存数据至最新版本
             transaction.on_commit(lambda: update_users_cache.delay([user.username]))
         return self.get(request)
 
 
-def update_user_nodes(user, nodes, uids, node_type, action_subject):    # pylint: disable=too-many-locals
+def update_user_nodes(
+    user, nodes, uids, node_type, action_subject
+):  # pylint: disable=too-many-locals
     '''
     :param oneid_meta.groups.User user:
     :param list nodes:
@@ -562,7 +653,9 @@ def update_user_nodes(user, nodes, uids, node_type, action_subject):    # pylint
     :param str action_subject: enum(['add', 'delete', 'override'])
     '''
     if action_subject not in ('add', 'delete', 'override'):
-        raise ValidationError({'subject': ['this field must be one of add, delete, override']})
+        raise ValidationError(
+            {'subject': ['this field must be one of add, delete, override']}
+        )
 
     if not nodes:
         nodes = []
@@ -578,7 +671,9 @@ def update_user_nodes(user, nodes, uids, node_type, action_subject):    # pylint
                 node = cls.valid_objects.get(uid=uid)
                 nodes.append(node)
             except ObjectDoesNotExist:
-                raise ValidationError({'node_uids': ['node:{} does not exist'.format(uid)]})
+                raise ValidationError(
+                    {'node_uids': ['node:{} does not exist'.format(uid)]}
+                )
 
     cli = CLI()
     if action_subject == 'add':
@@ -625,7 +720,7 @@ class UserIntra2ExternView(views.APIView):
 
         return user
 
-    def patch(self, request, username):    # pylint: disable=unused-argument
+    def patch(self, request, username):  # pylint: disable=unused-argument
         '''
         [PATCH]
         '''
@@ -670,7 +765,7 @@ class UserExtern2IntraView(views.APIView):
 
         return user
 
-    def patch(self, request, username):    # pylint: disable=unused-argument
+    def patch(self, request, username):  # pylint: disable=unused-argument
         '''
         [PATCH]
         '''

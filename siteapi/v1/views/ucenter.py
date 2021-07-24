@@ -24,12 +24,24 @@ from siteapi.v1.serializers.ucenter import (
     UserContactSerializer,
 )
 from siteapi.v1.serializers.user import (
-    SubAccountSerializer, )
+    SubAccountSerializer,
+)
 from executer.core import CLI
 from executer.log.rdb import LOG_CLI
-from oneid_meta.models import Perm, User, DingConfig, Invitation, Group, APP, OAuthAPP, UserPerm
+from oneid_meta.models import (
+    Perm,
+    User,
+    DingConfig,
+    Invitation,
+    Group,
+    APP,
+    OAuthAPP,
+    UserPerm,
+)
 from thirdparty_data_sdk.dingding.dingsdk.accesstoken_manager import AccessTokenManager
 from common.django.drf.paginator import DefaultListPaginator
+from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 class SetPasswordAPIView(generics.UpdateAPIView):
@@ -78,6 +90,7 @@ class TokenPermAuthView(generics.RetrieveAPIView):
     '''
     校验token所代表的用户是否有某特定权限
     '''
+
     permission_classes = [
         IsAuthenticated,
     ]
@@ -118,13 +131,17 @@ class TokenPermAuthView(generics.RetrieveAPIView):
         else:
             has_perm = user.has_perm(Perm.valid_objects.filter(uid=perm_uid).first())
 
-        return Response(self.get_serializer(user).data, status=HTTP_200_OK if has_perm else HTTP_403_FORBIDDEN)
+        return Response(
+            self.get_serializer(user).data,
+            status=HTTP_200_OK if has_perm else HTTP_403_FORBIDDEN,
+        )
 
 
 class InvitationKeyAuthView(generics.CreateAPIView):
     '''
     校验注册邀请码
     '''
+
     authentication_classes = []
     permission_classes = []
 
@@ -151,10 +168,12 @@ class InvitationKeyAuthView(generics.CreateAPIView):
             return Response({'mobile': ['invalid']}, status=status.HTTP_400_BAD_REQUEST)
 
         user = invitation.invitee
-        return Response({
-            'token': user.token,
-            **UserWithPermSerializer(user).data,
-        })
+        return Response(
+            {
+                'token': user.token,
+                **UserWithPermSerializer(user).data,
+            }
+        )
 
 
 class UcenterProfileInvitedAPIView(generics.RetrieveUpdateAPIView):
@@ -180,34 +199,41 @@ class UcenterProfileInvitedAPIView(generics.RetrieveUpdateAPIView):
             return Response({'key': ['expired']}, status=status.HTTP_400_BAD_REQUEST)
 
         user = invitation.invitee
-        return Response({
-        # 'token': user.token,
-            **UserWithPermSerializer(user).data,
-        })
+        return Response(
+            {
+                # 'token': user.token,
+                **UserWithPermSerializer(user).data,
+            }
+        )
 
-    def update(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
         user = validated_data.pop('user')
-        if user.is_settled:    # raise AuthenticationFailed return 403 ?
-            return Response('only for unsettled user', status=status.HTTP_401_UNAUTHORIZED)
+        if user.is_settled:  # raise AuthenticationFailed return 403 ?
+            return Response(
+                'only for unsettled user', status=status.HTTP_401_UNAUTHORIZED
+            )
         cli = CLI(user=user)
         user.__dict__.update(validated_data)
         user.save()
         cli.set_user_password(user, validated_data['password'])
         LOG_CLI(user).user_activate()
-        return Response({
-        # 'token': user.token,
-            **UserWithPermSerializer(user).data,
-        })
+        return Response(
+            {
+                # 'token': user.token,
+                **UserWithPermSerializer(user).data,
+            }
+        )
 
 
 class UserLoginAPIView(ObtainExpiringAuthToken):
     '''
     get token for user
     '''
+
     def attachment(self, token):
         user = token.user
         return UserWithPermSerializer(user).data
@@ -224,6 +250,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
     read_serializer_class = UserWithPermSerializer
 
+    @transaction.atomic()
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -238,6 +265,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         cli.add_users_to_group([user], Group.get_extern_root())
         data = self.read_serializer_class(user).data
         data.update(token=user.token)
+        transaction.on_commit(lambda: WebhookManager.user_registered(user))
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
@@ -255,7 +283,7 @@ class DingLoginAPIView(generics.GenericAPIView):
     authentication_classes = []
     permission_classes = []
 
-    def post(self, request):    # pylint: disable=no-self-use
+    def post(self, request):  # pylint: disable=no-self-use
         '''
         get oneid token by ding code
         '''
@@ -279,11 +307,13 @@ class DingLoginAPIView(generics.GenericAPIView):
         '''
         get ding_userid by ding code
         '''
-        res = requests.get("https://oapi.dingtalk.com/user/getuserinfo",
-                           params={
-                               "access_token": self.get_access_token(),
-                               "code": code,
-                           }).json()
+        res = requests.get(
+            "https://oapi.dingtalk.com/user/getuserinfo",
+            params={
+                "access_token": self.get_access_token(),
+                "code": code,
+            },
+        ).json()
         if res['errcode'] == 0:
             return res['userid']
 
@@ -333,9 +363,10 @@ class RevokeTokenView(APIView):
     '''
     revoke token
     '''
+
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):    # pylint: disable=no-self-use
+    def post(self, request):  # pylint: disable=no-self-use
         '''
         user logout
         delete token
