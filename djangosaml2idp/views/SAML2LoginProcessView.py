@@ -5,6 +5,7 @@ import logging
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls.base import reverse
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
@@ -13,6 +14,7 @@ from saml2.authn_context import PASSWORD, AuthnBroker, authn_context_class_ref
 from saml2.ident import NameID
 from saml2.md import entity_descriptor_from_string
 from saml2.s_utils import UnknownPrincipal, UnsupportedBinding
+from saml2.saml import NAMEID_FORMAT_UNSPECIFIED
 from djangosaml2idp.mxins import LoginRequiredMixin, IdPHandlerViewMixin
 from app.models import App
 
@@ -97,15 +99,24 @@ class LoginProcess(LoginRequiredMixin, IdPHandlerViewMixin, View):
 
             _spsso_descriptor = entity_descriptor_from_string(
                 app.data["xmldata"]).spsso_descriptor.pop()  # pylint: disable=no-member
+            
+            policy = resp_args.get('name_id_policy', None)
+            if policy is None:
+                name_id_format = NAMEID_FORMAT_UNSPECIFIED
+            else:
+                name_id_format = policy.format
+
+            idp_name_id_format_list = self.IDP.config.getattr("name_id_format", "idp") or [NAMEID_FORMAT_UNSPECIFIED]
+
+            if name_id_format not in idp_name_id_format_list:
+                raise ImproperlyConfigured(_('SP requested a name_id_format that is not supported in the IDP: {}').format(name_id_format))
+            
+            name_id = NameID(format=name_id_format, sp_name_qualifier=resp_args['sp_entity_id'], text=user_id)
+
             authn_resp = self.IDP.create_authn_response(
                 identity=identity,
                 userid=user_id,
-                name_id=NameID(format=resp_args['name_id_policy'].format,
-                               sp_name_qualifier=resp_args['sp_entity_id'],
-                               text=user_id),
-                # name_id=NameID(format=resp_args['name_id_policy'],
-                #                sp_name_qualifier=resp_args['sp_entity_id'],
-                #                text=user_id),
+                name_id=name_id,
                 authn=AUTHN_BROKER.get_authn_by_accr(req_authn_context),
                 sign_response=getattr(
                     _spsso_descriptor, 'want_response_signed', '') == 'true',

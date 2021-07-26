@@ -1,4 +1,7 @@
 import base64
+import copy
+
+from saml2.config import SPConfig
 from djangosaml2sp.mxins.SPConfigMixin import SPConfigViewMixin
 from djangosaml2sp.overrides import Saml2Client
 from djangosaml2sp.cache import IdentityCache, OutstandingQueriesCache
@@ -35,7 +38,7 @@ def _set_subject_id(session, subject_id):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class AssertionConsumerServiceView(SPConfigViewMixin, View):
+class AssertionConsumerService(SPConfigViewMixin, View):
     """ The IdP will send its response to this view, which will process it using pysaml2 and
         log the user in using whatever SAML authentication backend has been enabled in
         settings.py. The `djangosaml2.backends.Saml2Backend` can be used for this purpose,
@@ -86,11 +89,12 @@ class AssertionConsumerServiceView(SPConfigViewMixin, View):
             True
         )
 
-        conf = SP.construct_metadata(tenant_uuid)
+        conf = SPConfig()
+        conf.load(copy.deepcopy(SP.construct_metadata(tenant_uuid)))
 
-        identity_cache = IdentityCache(request.saml_session)
+        identity_cache = IdentityCache(request.session)
         client = Saml2Client(conf, identity_cache=identity_cache)
-        oq_cache = OutstandingQueriesCache(request.saml_session)
+        oq_cache = OutstandingQueriesCache(request.session)
         oq_cache.sync()
         outstanding_queries = oq_cache.outstanding_queries()
 
@@ -174,11 +178,13 @@ class AssertionConsumerServiceView(SPConfigViewMixin, View):
 
         logger.debug(
             'Trying to authenticate the user. Session info: %s', session_info)
-        user = auth.authenticate(request=request,
-                                 session_info=session_info,
-                                 attribute_mapping=attribute_mapping,
-                                 create_unknown_user=create_unknown_user,
-                                 assertion_info=assertion_info)
+        user = auth.authenticate(
+            request=request,
+            session_info=session_info,
+            attribute_mapping=attribute_mapping,
+            create_unknown_user=create_unknown_user,
+            assertion_info=assertion_info
+        )
         if user is None:
             logger.warning(
                 "Could not authenticate user received in SAML Assertion. Session info: %s", session_info)

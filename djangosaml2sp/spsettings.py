@@ -35,7 +35,7 @@ def get_saml_sp_config(tenant_uuid):
                         ('{}/ls/redirect'.format(baseurl),BINDING_HTTP_REDIRECT),
                     ],
                 },
-                'name_id_format': [NAMEID_FORMAT_EMAILADDRESS],
+                'name_id_format': [NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED, NAMEID_FORMAT_TRANSIENT],
                 'authn_requests_signed': True,
                 'want_assertions_signed': True,
                 'allow_unsolicited': True,

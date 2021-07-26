@@ -4,7 +4,7 @@ SAML2.0协议IDP 插件路由
 
 from django.urls import path
 
-from djangosaml2sp.views import metadata, download_metadata,Login
+from djangosaml2sp.views import metadata, download_metadata,Login,AssertionConsumerService
 
 urlpatterns = [
     path(
@@ -21,5 +21,10 @@ urlpatterns = [
         'sp_login/',
         Login.as_view(),
         name="sp_login"
+    ),
+    path(
+        'acs/',
+        AssertionConsumerService.as_view(),
+        name="sp_acs"
     ),
 ]
