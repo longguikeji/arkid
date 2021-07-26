@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'inventory',
     'app',
     'oauth2_provider',
+    'mama_cas',
     'tasks',
     'webhook',
     'siteadmin',
@@ -226,6 +227,8 @@ LDAP_PORT = 389
 SLAPD_PASSWORD = 'admin'
 SLAPD_DOMAIN = 'dc=example,dc=org'
 AUTH_USER_MODEL = 'inventory.User'
+
+MAMA_CAS_ATTRIBUTE_CALLBACKS = ('mama_cas.callbacks.user_model_attributes',)
 
 import os
 

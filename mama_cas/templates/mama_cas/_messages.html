@@ -1,0 +1,16 @@
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-info">{{ message|urlize }}</div>
+  {% endfor %}
+{% endif %}
+
+{% if form.errors %}
+  {% for error in form.non_field_errors %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endfor %}
+  {% for field in form %}
+    {% for error in field.errors %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endfor %}
+  {% endfor %}
+{% endif %}
