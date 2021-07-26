@@ -1,5 +1,6 @@
 import json
-from siteapi.v1.serializers.user import EmployeeSerializer, UserWithPermSerializer
+from siteapi.v1.serializers.user import EmployeeSerializer
+from siteapi.v1.serializers.ucenter import UserRegisterSerializer
 from siteapi.v1.serializers.group import GroupDetailSerializer
 from siteapi.v1.serializers.dept import DeptDetailSerializer
 
@@ -17,7 +18,7 @@ from siteapi.v1.serializers.dept import DeptDetailSerializer
 
 def generate_user_payload(user, from_register=False):
     if from_register:
-        data = UserWithPermSerializer(user).data
+        data = UserRegisterSerializer(user).data
     else:
         data = EmployeeSerializer(user).data
     return json.dumps(data)
