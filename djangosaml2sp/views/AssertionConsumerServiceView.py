@@ -38,7 +38,7 @@ def _set_subject_id(session, subject_id):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class AssertionConsumerService(SPConfigViewMixin, View):
+class AssertionConsumerService(View):
     """ The IdP will send its response to this view, which will process it using pysaml2 and
         log the user in using whatever SAML authentication backend has been enabled in
         settings.py. The `djangosaml2.backends.Saml2Backend` can be used for this purpose,
