@@ -17,13 +17,13 @@ class FakeLogin(View):
         """
         arkid login
         """
-        saml_login_process_url = reverse("api:saml2idp:saml_login_process", args=(tenant_uuid, app_id))
+        next = request.GET.get("next",None)
         if request.GET.get("token",None):
             token = request.GET.get("token")
             params=[f'{k}={request.GET[k]}' for k in request.GET.keys() if k != "token" ]
-            return redirect(f"{get_app_config().get_host()}{saml_login_process_url}?{'&'.join(params)}&spauthn={token}")
+            return redirect(f"{next}&spauthn={token}")
 
         params=[f'{k}={request.GET[k]}' for k in request.GET.keys() ]
         login_url = f"{get_app_config().get_frontend_host()}/login?next={request.get_full_path()}&{'&'.join(params)}"
         # login_url = urllib.parse.quote(login_url)
-        return render(request, 'djangosaml2idp/fake_login.html', context={'login_url': login_url, "next": saml_login_process_url})
+        return render(request, 'djangosaml2idp/fake_login.html', context={'login_url': login_url, "next": next})

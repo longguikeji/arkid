@@ -119,7 +119,7 @@ class SSOInit(LoginRequiredMixin, IdPHandlerViewMixin, View):
             binding=binding_out,
             msg_str="%s" % authn_resp,
             destination=destination,
-            relay_state=passed_data['RelayState'],
+            relay_state=passed_data.get('RelayState',None),
             response=True
         )
         return HttpResponse(http_args['data'])

@@ -102,6 +102,9 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
 
         app.url = f'{get_app_config().get_host()}{reverse("api:saml2idp:saml_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
 
+        if data["sso_url"] in ["",None]:
+            data["sso_url"] = f'{get_app_config().get_host()}{reverse("api:saml2idp:sso_init",args=(app.tenant.uuid,app.id))}'
+
         return data
 
     def update(self, app: App, data: Dict) -> Dict:  # pylint: disable=arguments-differ
@@ -178,7 +181,8 @@ class SAML2IDPAppTypeProvider(AppTypeProvider):
                 BASEDIR + '/djangosaml2idp/saml2_config/sp_cert/%s.pem' % filename)
 
         app.url = f'{get_app_config().get_host()}{reverse("api:saml2idp:saml_sso_hook",args=(app.tenant.uuid,app.id))}?spauthn='+'{token}'
-
+        if data["sso_url"] in ["",None]:
+            data["sso_url"] = f'{get_app_config().get_host()}{reverse("api:saml2idp:sso_init",args=(app.tenant.uuid,app.id))}'
         return data
 
     def delete(self):
