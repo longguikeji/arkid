@@ -45,7 +45,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='id',
-        page=group.group_tag,
+        page=group.tag,
         child=serializers.CharField(),
         write_only=True,
     )
