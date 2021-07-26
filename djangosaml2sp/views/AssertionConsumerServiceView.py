@@ -54,19 +54,7 @@ class AssertionConsumerService(View):
     def handle_acs_failure(self, request, exception=None, status=403, **kwargs):  # pylint: disable=no-self-use
         """ Error handler if the login attempt fails. Override this to customize the error response.
         """
-
-        # Backwards compatibility: if a custom setting was defined, use that one
-        custom_failure_function = getattr(
-            settings,
-            'SAML_ACS_FAILURE_RESPONSE_FUNCTION'
-        )
-        if custom_failure_function:
-            failure_function = custom_failure_function if callable(
-                custom_failure_function
-            ) else import_string(custom_failure_function)
-            return failure_function(request, exception, status, **kwargs)
-
-        return render(request, 'djangosaml2/login_error.html', {'exception': exception}, status=status)
+        return render(request, 'djangosaml2sp/login_error.html', {'exception': exception}, status=status)
 
     def post(self, request, tenant_uuid, attribute_mapping=None, create_unknown_user=None):
         """ SAML Authorization Response endpoint
