@@ -21,7 +21,7 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
     parent_uuid = create_foreign_key_field(serializers.UUIDField)(
         model_cls=Group,
         field_name='uuid',
-        page=group.tag,
+        page=group.group_tag,
         label='上级组织',
         source='parent.uuid',
         default=None,
@@ -30,7 +30,7 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
     parent_name = create_foreign_field(serializers.CharField)(
         model_cls=Group,
         field_name='name',
-        page=group.tag,
+        page=group.group_tag,
         label='上级组织',
         read_only=True,
         source='parent.name',

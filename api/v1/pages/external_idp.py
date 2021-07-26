@@ -15,8 +15,7 @@ extend_schema_tags(
         },
         'page': {
             'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
-                'method': 'post'
+                'tag': 'external_idp_create'
             }
         },
         'item': {
@@ -43,18 +42,54 @@ extend_schema_tags(
                 }
             },
             'update': {
-                'read': {
-                    'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
-                    'method': 'get'
-                },
-                'write': {
-                    'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
-                    'method': 'put'
-                }
+                'tag': 'external_idp_update'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
                 'method': 'delete'
+            }
+        }
+    }
+)
+
+
+external_idp_create_tag = 'external_idp_create'
+external_idp_create_name = '创建第三方登录'
+
+extend_schema_tags(
+    external_idp_create_tag,
+    external_idp_create_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
+            'method': 'post'
+        },
+        'page': {
+            'create': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
+                'method': 'post'
+            }
+        }
+    }
+)
+
+external_idp_update_tag = 'external_idp_update'
+external_idp_update_name = '编辑第三方登录'
+
+extend_schema_tags(
+    external_idp_update_tag,
+    external_idp_update_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
+            'method': 'get'
+        },
+        'page': {
+            'update': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
+                'method': 'put'
             }
         }
     }

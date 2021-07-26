@@ -10,19 +10,33 @@ extend_schema_tags(
     {
         'type':'form_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/config/',
+            'path': '/api/v1/tenant/{tenant_uuid}/config/{subject}/',
             'method': 'get'
         },
-        'item': {
+        'page': {
             'update': {
-                'write': {
-                    'path': '/api/v1/tenant/{tenant_uuid}/config/',
-                    'method': 'patch'
-                },
-                'read': {
-                    'path': '/api/v1/tenant/{tenant_uuid}/config/',
-                    'method': 'get'
-                }
+                'tag': 'lr_config_update'
+            }
+        }
+    }
+)
+
+lr_config_update_tag = 'lr_config_update'
+lr_config_update_name = '编辑登录注册配置信息'
+
+extend_schema_tags(
+    lr_config_update_tag,
+    lr_config_update_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/tenant/{tenant_uuid}/config/{subject}/',
+            'method': 'get'
+        },
+        'page': {
+            'update': {
+                'path': '/api/v1/tenant/{tenant_uuid}/config/{subject}/',
+                'method': 'patch'
             }
         }
     }
