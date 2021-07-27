@@ -23,4 +23,8 @@ class LoginRequiredMixin(AccessMixin):
         except Exception as err:    # pylint: disable=broad-except
             logger.debug(err)
             next = f"{get_app_config().get_host()}{request.path}?{'&'.join([f'{k}={request.GET[k]}'for k in request.GET.keys()])}"
+
+            if next.endswith("?"):
+                # 如无参数 则去掉？
+                next = next[:-1]
             return self.handle_no_permission(next, tenant_uuid, app_id)

@@ -53,7 +53,8 @@ class SAMLasIDPConfigSerializer(serializers.Serializer):  # pylint: disable=abst
     )
 
     attribute_mapping = create_custom_dict_field(serializers.JSONField)(
-        hint=_("清添加自定义属性"),
+        hint=_("请添加自定义属性"),
+        label=_("自定义属性"),
         required=False
     )
 

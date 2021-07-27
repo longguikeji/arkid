@@ -31,6 +31,9 @@ class LoginProcess(LoginRequiredMixin, IdPHandlerViewMixin, View):
         """SAML2.0协议登陆流程
         """
         binding = request.session.get('Binding', BINDING_HTTP_POST)
+
+        app = App.active_objects.get(id=app_id)
+
         # Parse incoming request
         try:
             req_info = self.IDP.parse_authn_request(
@@ -70,6 +73,7 @@ class LoginProcess(LoginRequiredMixin, IdPHandlerViewMixin, View):
                     'is_superuser': 'is_superuser',
                     'token': 'token',
                 },
+                'extra_config': app.data["attribute_mapping"]
             }
         except Exception:    # pylint: disable=broad-except
             return self.handle_error(request,
@@ -95,8 +99,6 @@ class LoginProcess(LoginRequiredMixin, IdPHandlerViewMixin, View):
         user_id = processor.get_user_id(cookie_user)
         # Construct SamlResponse message
         try:
-            app = App.active_objects.get(id=app_id)
-
             _spsso_descriptor = entity_descriptor_from_string(
                 app.data["xmldata"]).spsso_descriptor.pop()  # pylint: disable=no-member
             
