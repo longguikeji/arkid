@@ -10,10 +10,10 @@ from api.v1.views.login import (
     MobileRegisterView,
 )
 from api.v1.views.tenant import TenantViewSet
-from tenant.models import Tenant, TenantConfig
+from tenant.models import Tenant, TenantConfig, TenantPrivacyNotice
 from external_idp.models import ExternalIdp
 from api.v1.serializers.tenant import TenantExtendSerializer
-from system.models import SystemConfig
+from system.models import SystemConfig, SystemPrivacyNotice
 from django.urls import reverse
 
 
@@ -98,10 +98,30 @@ class LoginPage(views.APIView):
                     model.REGISTER, MobileRegisterView().mobile_register_form()
                 )
 
+        # 获取system和tenant中关于隐私声明的配置
+        if tenant:
+            privacy_notice = TenantPrivacyNotice.valid_objects.filter(
+                tenant=tenant
+            ).first()
+        else:
+            privacy_notice = SystemPrivacyNotice.valid_objects.filter().first()
+        if privacy_notice:
+            agreement = {
+                'title': privacy_notice.title,
+                'content': privacy_notice.content,
+            }
+        else:
+            agreement = {'title': '', 'content': ''}
+
         if data.getPage(model.REGISTER):
             data.addBottom(
                 model.LOGIN,
-                model.Button(prepend='还没有账号，', label='立即注册', gopage=model.REGISTER),
+                model.Button(
+                    prepend='还没有账号，',
+                    label='立即注册',
+                    gopage=model.REGISTER,
+                    agreement=agreement,
+                ),
             )
             data.addBottom(
                 model.REGISTER,
@@ -114,7 +134,12 @@ class LoginPage(views.APIView):
             data.addForm(model.PASSWORD, self.email_password_reset_form())
             data.addBottom(
                 model.PASSWORD,
-                model.Button(prepend='还没有账号，', label='立即注册', gopage=model.REGISTER),
+                model.Button(
+                    prepend='还没有账号，',
+                    label='立即注册',
+                    gopage=model.REGISTER,
+                    agreement=agreement,
+                ),
             )
             data.addBottom(
                 model.PASSWORD,
