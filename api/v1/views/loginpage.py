@@ -29,10 +29,10 @@ class LoginPage(views.APIView):
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
 
             # 获取 tenant的登录注册配置
-            tenant_config = TenantConfig.objects.get(
+            tenant_config = TenantConfig.objects.filter(
                 is_del=False,
                 tenant=tenant,
-            )
+            ).first()
             if not tenant_config:
                 mobile_login_register_enabled = (True,)
                 secret_login_register_enabled = (True,)
