@@ -25,6 +25,7 @@ from api.v1.serializers.tenant import (
     TenantPrivacyNoticeSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
+from api.v1.serializers.sms import RegisterSMSClaimSerializer
 from common.paginator import DefaultListPaginator
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
@@ -232,7 +233,8 @@ class TenantViewSet(BaseViewSet):
         ip = self.get_client_ip(request)
         from django.db.models import Q
 
-        cache_code = self.runtime.cache_provider.get(mobile)
+        sms_code_key = RegisterSMSClaimSerializer.gen_sms_code_key(mobile)
+        cache_code = self.runtime.cache_provider.get(sms_code_key)
         if code != '123456' and (code is None or str(cache_code) != code):
             return JsonResponse(
                 data={
@@ -435,6 +437,15 @@ class TenantViewSet(BaseViewSet):
                     type='text',
                     name='mobile',
                     placeholder='手机号',
+                    append=lp.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=lp.ButtonHttp(
+                            url=reverse('api:sms', args=['register']),
+                            method='post',
+                            params={'mobile': 'mobile'},
+                        ),
+                    ),
                 ),
                 lp.LoginFormItem(
                     type='password',
@@ -450,15 +461,6 @@ class TenantViewSet(BaseViewSet):
                     type='text',
                     name='code',
                     placeholder='验证码',
-                    append=lp.Button(
-                        label='发送验证码',
-                        delay=60,
-                        http=lp.ButtonHttp(
-                            url=reverse('api:send-sms'),
-                            method='post',
-                            params={'mobile': 'mobile'},
-                        ),
-                    ),
                 ),
             ],
             submit=lp.Button(
