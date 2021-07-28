@@ -5,13 +5,14 @@ from rest_framework import generics
 from openapi.utils import extend_schema
 from rest_framework.response import Response
 from tenant.models import (
-    Tenant, TenantConfig, TenantPasswordComplexity,
+    Tenant, TenantConfig, TenantPasswordComplexity, TenantContactsConfig,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
     UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
     UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer, TenantConfigSerializer,
-    UserNameLoginRequestSerializer, TenantPasswordComplexitySerializer, 
+    UserNameLoginRequestSerializer, TenantPasswordComplexitySerializer, TenantContactsConfigFunctionSwitchSerializer,
+    TenantContactsConfigInfoVisibilitySerializer, TenantContactsConfigGroupVisibilitySerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -733,3 +734,42 @@ class TenantCurrentPasswordComplexityView(generics.RetrieveAPIView):
             return Response(serializer.data)
         else:
             return Response({})
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantContactsConfigFunctionSwitchView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantContactsConfigFunctionSwitchSerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=0).first()
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantContactsConfigInfoVisibilityView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantContactsConfigInfoVisibilitySerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=1).first()
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantContactsConfigGroupVisibilityView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantContactsConfigGroupVisibilitySerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=2).first()

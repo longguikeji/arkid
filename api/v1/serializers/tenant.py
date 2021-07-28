@@ -1,11 +1,16 @@
-from tenant.models import Tenant, TenantConfig, TenantPasswordComplexity
+from tenant.models import(
+    Tenant, TenantConfig, TenantPasswordComplexity,
+    TenantContactsConfig,
+)
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
-from inventory.models import Permission
+from inventory.models import Permission, Group, User
 from api.v1.fields.custom import (
-    create_enum_field,
+    create_enum_field, create_choice_field,
+    create_foreign_key_field,
 )
+from ..pages import group, user
 
 
 class TenantSerializer(BaseDynamicFieldModelSerializer):
@@ -31,11 +36,45 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
         if permission:
             user.user_permissions.add(permission)
+        # 创建密码规则
         TenantPasswordComplexity.active_objects.get_or_create(
             is_apply=True,
             tenant=tenant,
             title='6-18位字母、数字、特殊字符组合',
             regular='^(?=.*[A-Za-z])(?=.*\d)(?=.*[~$@$!%*#?&])[A-Za-z\d~$@$!%*#?&]{6,18}$'
+        )
+        # 通讯录配置功能开关
+        TenantContactsConfig.objects.get_or_create(
+            is_del=False,
+            tenant=tenant,
+            config_type=0,
+            data={
+                "is_open": True
+            }
+        )
+        # 通讯录配置个人资料可见性
+        TenantContactsConfig.objects.get_or_create(
+            is_del=False,
+            tenant=tenant,
+            config_type=1,
+            data={
+                "visible_type": '所有人可见',
+                "visible_scope": [],
+                "assign_group": [],
+                "assign_user": []
+            }
+        )
+        # 通讯录配置分组可见性
+        TenantContactsConfig.objects.get_or_create(
+            is_del=False,
+            tenant=tenant,
+            config_type=2,
+            data={
+                "visible_type": '所有人可见',
+                "visible_scope": [],
+                "assign_group": [],
+                "assign_user": []
+            }
         )
         return tenant
 
@@ -150,7 +189,7 @@ class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
         extra_kwargs = {
             'uuid': {'read_only': True},
         }
-    
+
     def create(self, validated_data):
         tenant_uuid = self.context['request'].parser_context.get('kwargs').get('tenant_uuid')
         regular = validated_data.get('regular')
@@ -167,7 +206,6 @@ class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
             TenantPasswordComplexity.active_objects.filter(tenant=tenant).exclude(id=complexity.id).update(is_apply=False)
         return complexity
 
-
     def update(self, instance, validated_data):
         tenant_uuid = self.context['request'].parser_context.get('kwargs').get('tenant_uuid')
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
@@ -177,3 +215,92 @@ class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
         instance.__dict__.update(validated_data)
         instance.save()
         return instance
+
+
+class FunctionSwitchSerializer(serializers.Serializer):
+    is_open = serializers.BooleanField(label=_('是否打开通讯录'))
+
+
+class TenantContactsConfigFunctionSwitchSerializer(BaseDynamicFieldModelSerializer):
+    data = FunctionSwitchSerializer()
+
+    class Meta:
+        model = TenantContactsConfig
+
+        fields = (
+            'data',
+        )
+
+
+class InfoVisibilitySerializer(serializers.Serializer):
+    visible_type = serializers.ChoiceField(choices=(('所有人可见', '部分人可见')), label=_('可见类型'))
+    visible_scope = serializers.MultipleChoiceField(choices=(('本人可见', '管理员可见', '指定分组与人员')), label=_('可见范围'))
+    assign_group = create_foreign_key_field(serializers.ListField)(
+        model_cls=Group,
+        field_name='uuid',
+        page=group.tag,
+        child=serializers.CharField(),
+        required=False,
+        default=[],
+        label=_('指定的分组')
+    )
+
+    assign_user = create_foreign_key_field(serializers.ListField)(
+        model_cls=User,
+        field_name='uuid',
+        page=user.tag,
+        child=serializers.CharField(),
+        required=False,
+        default=[],
+        label=_('指定的人员')
+    )
+    # assign_group = serializers.ListField(child=serializers.CharField(), required=False, default=[], label=_('指定的分组'))
+    # assign_user = serializers.ListField(child=serializers.CharField(), required=False, default=[], label=_('指定的人员'))
+
+
+class TenantContactsConfigInfoVisibilitySerializer(BaseDynamicFieldModelSerializer):
+    data = InfoVisibilitySerializer()
+
+    class Meta:
+        model = TenantContactsConfig
+
+        fields = (
+            'data',
+        )
+
+
+class GroupVisibilitySerializer(serializers.Serializer):
+    visible_type = serializers.ChoiceField(choices=(('所有人可见', '部分人可见')), label=_('可见类型'))
+    visible_scope = serializers.MultipleChoiceField(choices=(('组内成员可见', '下属分组可见', '指定分组与人员')), label=_('可见范围'))
+    assign_group = create_foreign_key_field(serializers.ListField)(
+        model_cls=Group,
+        field_name='uuid',
+        page=group.tag,
+        child=serializers.CharField(),
+        required=False,
+        default=[],
+        label=_('指定的分组')
+    )
+
+    assign_user = create_foreign_key_field(serializers.ListField)(
+        model_cls=User,
+        field_name='uuid',
+        page=user.tag,
+        child=serializers.CharField(),
+        required=False,
+        default=[],
+        label=_('指定的人员')
+    )
+    # assign_group = serializers.ListField(child=serializers.CharField(), required=False, default=[], label=_('指定的分组'))
+    # assign_user = serializers.ListField(child=serializers.CharField(), required=False, default=[], label=_('指定的人员'))
+
+
+class TenantContactsConfigGroupVisibilitySerializer(BaseDynamicFieldModelSerializer):
+    data = GroupVisibilitySerializer()
+
+    class Meta:
+        model = TenantContactsConfig
+
+        fields = (
+            'data',
+        )
