@@ -167,6 +167,15 @@ class LoginPage(views.APIView):
                     type='text',
                     name='mobile',
                     placeholder='手机号',
+                    append=model.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=model.ButtonHttp(
+                            url=reverse('api:sms', args=['reset_password']),
+                            method='post',
+                            params={'mobile': 'mobile'},
+                        ),
+                    ),
                 ),
                 model.LoginFormItem(
                     type='password',
@@ -182,25 +191,13 @@ class LoginPage(views.APIView):
                     type='text',
                     name='code',
                     placeholder='验证码',
-                    append=model.Button(
-                        label='发送验证码',
-                        delay=60,
-                        http=model.ButtonHttp(
-                            url=reverse('api:send-sms'),
-                            method='post',
-                            params={'mobile': 'mobile'},
-                        ),
-                    ),
                 ),
             ],
             submit=model.Button(
                 label='确认',
                 http=model.ButtonHttp(
                     url=reverse(
-                        "api:tenant-mobile-register",
-                        args=[
-                            tenant_uuid,
-                        ],
+                        "api:user-mobile-reset-password",
                     ),
                     method='post',
                     params={
@@ -222,6 +219,15 @@ class LoginPage(views.APIView):
                     type='text',
                     name='email',
                     placeholder='email账号',
+                    append=model.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=model.ButtonHttp(
+                            url=reverse('api:send-sms'),
+                            method='post',
+                            params={'email': 'email'},
+                        ),
+                    ),
                 ),
                 model.LoginFormItem(
                     type='password',
@@ -237,25 +243,13 @@ class LoginPage(views.APIView):
                     type='text',
                     name='code',
                     placeholder='验证码',
-                    append=model.Button(
-                        label='发送验证码',
-                        delay=60,
-                        http=model.ButtonHttp(
-                            url=reverse('api:send-sms'),
-                            method='post',
-                            params={'email': 'email'},
-                        ),
-                    ),
                 ),
             ],
             submit=model.Button(
                 label='确认',
                 http=model.ButtonHttp(
                     url=reverse(
-                        "api:tenant-mobile-register",
-                        args=[
-                            tenant_uuid,
-                        ],
+                        "api:user-email-reset-password",
                     ),
                     method='post',
                     params={

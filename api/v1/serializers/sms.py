@@ -141,7 +141,7 @@ class ResetPWDSMSClaimSerializer(SMSClaimSerializer):
     重置密码发送短信时，需要该手机号、账号已存在且匹配
     '''
 
-    username = serializers.CharField(required=True)
+    # username = serializers.CharField(required=True)
 
     def get_template_id(self):
         '''
@@ -170,9 +170,10 @@ class ResetPWDSMSClaimSerializer(SMSClaimSerializer):
         validated_data = super().validate(attrs)
 
         mobile = validated_data['mobile']
-        username = validated_data['username']
-        if not User.valid_objects.filter(mobile=mobile, username=username).exists():
-            raise ValidationError({'mobile': ['invalid']})
+        # username = validated_data['username']
+        if not User.valid_objects.filter(mobile=mobile).exists():
+            # raise ValidationError({'mobile': ['invalid']})
+            raise ValidationError({'mobile': 'invalid'})
 
         return validated_data
 

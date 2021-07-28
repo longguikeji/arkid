@@ -459,10 +459,9 @@ class MobileResetPasswordView(generics.CreateAPIView):
     def post(self, request):
         mobile = request.data.get('mobile', '')
         password = request.data.get('password', '')
-        check_password = request.data.get('check_password', '')
         code = request.data.get('code', '')
         user = User.objects.filter(mobile=mobile).first()
-        # is_succeed = True
+        is_succeed = True
         if not user:
             return JsonResponse(
                 data={
@@ -479,7 +478,7 @@ class MobileResetPasswordView(generics.CreateAPIView):
             )
         # 检查验证码
         try:
-            sms_token, expire_time = ResetPWDSMSClaimSerializer.check_sms(mobile, code)
+            sms_token, expire_time = ResetPWDSMSClaimSerializer.check_sms({'mobile': mobile, 'code':code})
         except ValidationError:
             return JsonResponse(
                 data={
