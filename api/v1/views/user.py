@@ -47,6 +47,7 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 import re
 
@@ -478,7 +479,9 @@ class MobileResetPasswordView(generics.CreateAPIView):
             )
         # 检查验证码
         try:
-            sms_token, expire_time = ResetPWDSMSClaimSerializer.check_sms({'mobile': mobile, 'code':code})
+            sms_token, expire_time = ResetPWDSMSClaimSerializer.check_sms(
+                {'mobile': mobile, 'code': code}
+            )
         except ValidationError:
             return JsonResponse(
                 data={
@@ -512,9 +515,10 @@ class EmailResetPasswordView(generics.CreateAPIView):
 
     @extend_schema(responses=PasswordSerializer)
     def post(self, request):
+        is_succeed = True
         email = request.data.get('email', '')
         password = request.data.get('password', '')
-        check_password = request.data.get('check_password', '')
+        # checkpassword = request.data.get('checkpassword', '')
         code = request.data.get('code', '')
         user = User.objects.filter(email=email).first()
         if not user:
@@ -533,7 +537,7 @@ class EmailResetPasswordView(generics.CreateAPIView):
             )
         # 检查验证码
         try:
-            _ = ResetPWDEmailClaimSerializer.check_email_verify_code(email, code)
+            ret = ResetPWDEmailClaimSerializer.check_email_verify_code(email, code)
         except ValidationError:
             return JsonResponse(
                 data={

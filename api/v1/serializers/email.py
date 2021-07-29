@@ -55,8 +55,12 @@ class EmailClaimSerializer(serializers.Serializer):  # pylint: disable=abstract-
         '''
         send sms
         '''
-        # send_email.delay(validated_data.get('email'), **self.gen_email())
-        send_email(validated_data.get('email'), **self.gen_email(**validated_data))
+        request = self.context['request']
+        send_verify_code = request.query_params.get('send_verify_code')
+        send_email.delay(
+            validated_data.get('email'),
+            **self.gen_email(send_verify_code=send_verify_code),
+        )
         return '_'
 
     def gen_email(
@@ -193,12 +197,12 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
         生成重置密码邮件
         '''
         subject = '[ArkID] 您正在重置ArkID登录密码'
-        send_verify_code = kwargs.get('verify_code', False)
-        email = kwargs.get('email')
-        if send_verify_code:
+        send_verify_code = kwargs.get('send_verify_code', False)
+        email = self.validated_data.get('email')
+        if send_verify_code in ('True', 'true'):
             code = self.gen_email_verify_code()
             key = self.gen_email_verify_code_key(email)
-            content = f'您的密码更改确认码为: {code}, 5分钟内有效'
+            content = f'安全代码为: {code}, 5分钟内有效'
             self.runtime().cache_provider.set(key, code, 60 * 5)
         else:
             email_token = self.gen_email_token()

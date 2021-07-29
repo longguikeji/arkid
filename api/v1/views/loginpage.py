@@ -223,7 +223,8 @@ class LoginPage(views.APIView):
                         label='发送验证码',
                         delay=60,
                         http=model.ButtonHttp(
-                            url=reverse('api:send-sms'),
+                            url=reverse('api:email', args=['reset_password'])
+                            + '?send_verify_code=true',
                             method='post',
                             params={'email': 'email'},
                         ),
