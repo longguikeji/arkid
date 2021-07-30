@@ -28,10 +28,11 @@ from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
 from api.v1.serializers.email import RegisterEmailClaimSerializer
 from common.paginator import DefaultListPaginator
+from common.native_field import NativeFieldNames
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
-from inventory.models import CustomField, Group, User, UserPassword
+from inventory.models import CustomField, Group, User, UserPassword, CustomUser
 from common.code import Code
 from .base import BaseViewSet
 from app.models import App
@@ -631,17 +632,28 @@ class TenantViewSet(BaseViewSet):
             ),
         )
 
-    def native_field_login_form(self, request, tenant_uuid, native_field_names):
+    def secret_login_form(
+        self, request, tenant_uuid, native_field_names, custom_field_uuids
+    ):
+        """
+        原生和自定义字段的密码登录共用表单
+        """
         login_config = self.get_login_config(tenant_uuid)
         is_open_authcode = login_config.get('is_open_authcode', False)
         error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
         ip = self.get_client_ip(request)
         # 根据配置信息生成表单
+        names = []
+        for name in native_field_names:
+            names.append(NativeFieldNames.DISPLAY_LABELS.get(name))
+        for uuid in custom_field_uuids:
+            custom_field = CustomField.valid_objects.filter(uuid=uuid).first()
+            names.append(custom_field.name)
         items = [
             lp.LoginFormItem(
                 type='text',
                 name='username',
-                placeholder='用户名',
+                placeholder='/'.join(names),
             ),
             lp.LoginFormItem(
                 type='password',
@@ -663,9 +675,10 @@ class TenantViewSet(BaseViewSet):
                 params['code'] = 'code'
                 params['code_filename'] = 'code_filename'
         field_names = ','.join(native_field_names)
+        field_uuids = ','.join(custom_field_uuids)
         url = (
-            reverse("api:tenant-native-field-login", args=[tenant_uuid])
-            + f'?field_names={field_names}'
+            reverse("api:tenant-secret-login", args=[tenant_uuid])
+            + f'?field_names={field_names}&field_uuids={field_uuids}'
         )
         return lp.LoginForm(
             label='密码登录',
@@ -680,13 +693,14 @@ class TenantViewSet(BaseViewSet):
             return self.mobile_register_form(tenant_uuid)
         if native_field_name == 'email':
             return self.email_register_form(tenant_uuid)
+        name = NativeFieldNames.DISPLAY_LABELS.get(native_field_name)
         return lp.LoginForm(
-            label=f'{native_field_name}注册',
+            label=f'{name}注册',
             items=[
                 lp.LoginFormItem(
                     type='text',
                     name=native_field_name,
-                    placeholder=native_field_name,
+                    placeholder=name,
                 ),
                 lp.LoginFormItem(
                     type='password',
@@ -702,11 +716,48 @@ class TenantViewSet(BaseViewSet):
             submit=lp.Button(
                 label='注册',
                 http=lp.ButtonHttp(
-                    url=reverse("api:tenant-native-field-register", args=[tenant_uuid])
+                    url=reverse("api:tenant-secret-register", args=[tenant_uuid])
                     + f'?field_name={native_field_name}',
                     method='post',
                     params={
                         native_field_name: native_field_name,
+                        'password': 'password',
+                        'checkpassword': 'checkpassword',
+                    },
+                ),
+            ),
+        )
+
+    def custom_field_register_form(self, tenant_uuid, custom_field_uuid):
+        custom_field = CustomField.objects.filter(uuid=custom_field_uuid).first()
+        custom_field_name = custom_field.name
+        return lp.LoginForm(
+            label=f'{custom_field_name}注册',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name=custom_field_uuid,
+                    placeholder=custom_field_name,
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='密码',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='checkpassword',
+                    placeholder='密码确认',
+                ),
+            ],
+            submit=lp.Button(
+                label='注册',
+                http=lp.ButtonHttp(
+                    url=reverse("api:tenant-secret-register", args=[tenant_uuid])
+                    + f'?field_uuid={custom_field_uuid}&is_custom_field=true',
+                    method='post',
+                    params={
+                        custom_field_uuid: custom_field_uuid,
                         'password': 'password',
                         'checkpassword': 'checkpassword',
                     },
@@ -719,10 +770,14 @@ class TenantViewSet(BaseViewSet):
         responses=UserNameLoginResponseSerializer,
     )
     @action(detail=True, methods=['post'])
-    def native_field_login(self, request, pk):
+    def secret_login(self, request, pk):
+        """
+        原生字段和自定义字段的密码登录处理接口
+        """
         tenant: Tenant = self.get_object()
         # 账户信息
         field_names = request.query_params.get('field_names').split(',')
+        field_uuids = request.query_params.get('field_uuids').split(',')
         username = request.data.get('username')
         password = request.data.get('password')
         ip = self.get_client_ip(request)
@@ -735,6 +790,11 @@ class TenantViewSet(BaseViewSet):
             user = User.active_objects.filter(**{field_name: username}).first()
             if user:
                 break
+        # 自定义字段查找用户
+        for field_uuid in field_uuids:
+            custom_user = CustomUser.valid_objects.filter(data__uuid=field_uuid).first()
+            if custom_user:
+                user = custom_user.user
 
         if not user or not user.check_password(password):
             data = {
@@ -814,13 +874,25 @@ class TenantViewSet(BaseViewSet):
         responses=UserNameRegisterResponseSerializer,
     )
     @action(detail=True, methods=['post'])
-    def native_field_register(self, request, pk):
-        field_name = request.query_params.get('field_name')
-        field_value = request.data.get(field_name)
+    def secret_register(self, request, pk):
+        """
+        原生字段和自定义字段的密码注册处理接口
+        """
+        is_custom_field = request.query_params.get('is_custom_field')
+        user = None
+        if is_custom_field in ('True', 'true'):
+            field_uuid = request.query_params.get('field_uuid')
+            field_value = request.data.get(field_uuid)
+            custom_user = CustomUser.valid_objects.filter(data__uuid=field_uuid).first()
+            if custom_user:
+                user = custom_user.user
+        else:
+            field_name = request.query_params.get('field_name')
+            field_value = request.data.get(field_name)
+            user = User.active_objects.filter(**{field_name: field_value}).first()
         password = request.data.get('password')
         ip = self.get_client_ip(request)
 
-        user = User.active_objects.filter(**{field_name: field_value}).first()
         if user:
             return JsonResponse(
                 data={
@@ -835,7 +907,8 @@ class TenantViewSet(BaseViewSet):
                     'message': _('password is empty'),
                 }
             )
-        if self.check_password(password) is False:
+        tenant = self.get_object()
+        if self.check_password(tenant.uuid, password) is False:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_STRENGTH_ERROR.value,
@@ -856,15 +929,19 @@ class TenantViewSet(BaseViewSet):
                         'message': _('a large number of registrations in a short time'),
                     }
                 )
-        tenant = self.get_object()
-        kwargs = {field_name: field_value}
-        if field_name != 'username':
+        kwargs = {}
+        # username字段也填入默认值
+        if not is_custom_field:
+            kwargs = {field_name: field_value}
+        if is_custom_field or field_name != 'username':
             kwargs.update(username=field_value)
         user, created = User.objects.get_or_create(
             is_del=False,
             is_active=True,
             **kwargs,
         )
+        if is_custom_field:
+            CustomUser.objects.create(user=user, data={field_uuid: field_value})
         user.tenants.add(tenant)
         user.set_password(password)
         user.save()
@@ -963,8 +1040,12 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                     data['custom_login_register_field_uuids'] = []
                     data['custom_login_register_field_names'] = []
                 else:
-                    custom_fields = CustomField.valid_objects.filter(uuid__in=data.get('custom_login_register_field_uuids'))
-                    data['custom_login_register_field_names'] = [field.name for field in custom_fields]
+                    custom_fields = CustomField.valid_objects.filter(
+                        uuid__in=data.get('custom_login_register_field_uuids')
+                    )
+                    data['custom_login_register_field_names'] = [
+                        field.name for field in custom_fields
+                    ]
 
                 if 'need_complete_profile_after_register' not in data:
                     data['need_complete_profile_after_register'] = True

@@ -96,19 +96,29 @@ class LoginPage(views.APIView):
                 model.REGISTER,
                 TenantViewSet().native_field_register_form(tenant.uuid, field_name),
             )
+        # 自定义字段的注册表单
+        field_uuids = tenant_config.data.get('custom_login_register_field_uuids', [])
+        for uuid in field_uuids:
+            data.addForm(
+                model.REGISTER,
+                TenantViewSet().custom_field_register_form(tenant.uuid, uuid),
+            )
 
         if 'mobile' in field_names:
             data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant.uuid))
 
         # 除了mobile用验证码登录，其他字段包括email用密码登录
         field_names.remove('mobile')
-        if field_names:
+
+        # 除了mobile之外的原生字段，和自定义字段共用一个登录窗口, 用密码登录
+        if field_names or field_uuids:
             data.addForm(
                 model.LOGIN,
-                TenantViewSet().native_field_login_form(
-                    request, tenant.uuid, field_names
+                TenantViewSet().secret_login_form(
+                    request, tenant.uuid, field_names, field_uuids
                 ),
             )
+
         return data
 
     def add_tenant_idp_login_buttons(self, request, tenant, data):
@@ -234,7 +244,7 @@ class LoginPage(views.APIView):
                 model.LoginFormItem(
                     type='text',
                     name='email',
-                    placeholder='email账号',
+                    placeholder='邮箱账号',
                     append=model.Button(
                         label='发送验证码',
                         delay=60,
