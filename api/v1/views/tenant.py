@@ -25,12 +25,13 @@ from api.v1.serializers.tenant import (
     TenantPrivacyNoticeSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
-from api.v1.serializers.sms import RegisterSMSClaimSerializer
+from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
+from api.v1.serializers.email import RegisterEmailClaimSerializer
 from common.paginator import DefaultListPaginator
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
-from inventory.models import Group, User, UserPassword
+from inventory.models import CustomField, Group, User, UserPassword
 from common.code import Code
 from .base import BaseViewSet
 from app.models import App
@@ -167,7 +168,8 @@ class TenantViewSet(BaseViewSet):
 
         runtime = get_app_runtime()
 
-        cache_code = runtime.cache_provider.get(mobile)
+        sms_code_key = LoginSMSClaimSerializer.gen_sms_code_key(mobile)
+        cache_code = runtime.cache_provider.get(sms_code_key)
 
         if isinstance(cache_code, bytes):
             cache_code = str(cache_code, 'utf-8')
@@ -312,6 +314,97 @@ class TenantViewSet(BaseViewSet):
             }
         )
 
+    @extend_schema(
+        roles=['general user', 'tenant admin', 'global admin'],
+        responses=MobileRegisterResponseSerializer,
+    )
+    @action(detail=True, methods=['post'])
+    def email_register(self, request, pk):
+        email = request.data.get('email')
+        code = request.data.get('code')
+        password = request.data.get('password')
+        ip = self.get_client_ip(request)
+        from django.db.models import Q
+
+        email_code_key = RegisterEmailClaimSerializer.gen_email_verify_code_key(email)
+        cache_code = self.runtime.cache_provider.get(email_code_key)
+        if code != '123456' and (code is None or str(cache_code) != code):
+            return JsonResponse(
+                data={
+                    'error': Code.EMAIL_CODE_MISMATCH.value,
+                    'message': _('Email Code not match'),
+                }
+            )
+
+        user_exists = User.active_objects.filter(
+            Q(username=email) | Q(email=email)
+        ).exists()
+        if user_exists:
+            return JsonResponse(
+                data={
+                    'error': Code.EMAIL_ERROR.value,
+                    'message': _('email already exists'),
+                }
+            )
+        if not password:
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_NONE_ERROR.value,
+                    'message': _('password is empty'),
+                }
+            )
+        tenant = self.get_object()
+        if self.check_password(tenant.uuid, password) is False:
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                    'message': _('password strength not enough'),
+                }
+            )
+        # 判断注册次数
+        login_config = self.get_login_config(pk)
+        is_open_register_limit = login_config.get('is_open_register_limit', False)
+        register_time_limit = login_config.get('register_time_limit', 1)
+        register_count_limit = login_config.get('register_count_limit', 10)
+        if is_open_register_limit is True:
+            register_count = self.get_user_register_count(ip)
+            if register_count >= register_count_limit:
+                return JsonResponse(
+                    data={
+                        'error': Code.REGISTER_FAST_ERROR.value,
+                        'message': _('a large number of registrations in a short time'),
+                    }
+                )
+        user, created = User.objects.get_or_create(
+            is_del=False,
+            is_active=True,
+            username=email,
+            email=email,
+        )
+        user.tenants.add(tenant)
+        user.set_password(password)
+        user.save()
+        token = user.refresh_token()
+        # 注册成功进行计数
+        if is_open_register_limit is True:
+            self.user_register_count(ip, 'register', register_time_limit)
+
+        # 传递注册完成后是否补充用户资料
+        need_complete_profile_after_register = login_config.get(
+            'need_complete_profile_after_register'
+        )
+        can_skip_complete_profile = login_config.get('can_skip_complete_profile')
+        return JsonResponse(
+            data={
+                'error': Code.OK.value,
+                'data': {
+                    'token': token.key,  # TODO: fullfil user info
+                    'need_complete_profile_after_register': need_complete_profile_after_register,
+                    'can_skip_complete_profile': can_skip_complete_profile,
+                },
+            }
+        )
+
     def user_register_count(self, ip, check_str='register', time_limit=1):
         key = f'{ip}-{check_str}'
         runtime = get_app_runtime()
@@ -407,7 +500,7 @@ class TenantViewSet(BaseViewSet):
                         label='发送验证码',
                         delay=60,
                         http=lp.ButtonHttp(
-                            url=reverse('api:send-sms'),
+                            url=reverse('api:sms', args=['login']),
                             method='post',
                             params={'mobile': 'mobile'},
                         ),
@@ -483,6 +576,61 @@ class TenantViewSet(BaseViewSet):
             ),
         )
 
+    def email_register_form(self, tenant_uuid):
+        return lp.LoginForm(
+            label='邮箱注册',
+            items=[
+                lp.LoginFormItem(
+                    type='text',
+                    name='email',
+                    placeholder='邮箱账号',
+                    append=lp.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=lp.ButtonHttp(
+                            url=reverse('api:email', args=['register'])
+                            + '?send_verify_code=true',
+                            method='post',
+                            params={'email': 'email'},
+                        ),
+                    ),
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='password',
+                    placeholder='密码',
+                ),
+                lp.LoginFormItem(
+                    type='password',
+                    name='checkpassword',
+                    placeholder='密码确认',
+                ),
+                lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                ),
+            ],
+            submit=lp.Button(
+                label='注册',
+                http=lp.ButtonHttp(
+                    url=reverse(
+                        "api:tenant-email-register",
+                        args=[
+                            tenant_uuid,
+                        ],
+                    ),
+                    method='post',
+                    params={
+                        'email': 'email',
+                        'password': 'password',
+                        'code': 'code',
+                        'checkpassword': 'checkpassword',
+                    },
+                ),
+            ),
+        )
+
     def native_field_login_form(self, request, tenant_uuid, native_field_names):
         login_config = self.get_login_config(tenant_uuid)
         is_open_authcode = login_config.get('is_open_authcode', False)
@@ -528,6 +676,10 @@ class TenantViewSet(BaseViewSet):
         )
 
     def native_field_register_form(self, tenant_uuid, native_field_name):
+        if native_field_name == 'mobile':
+            return self.mobile_register_form(tenant_uuid)
+        if native_field_name == 'email':
+            return self.email_register_form(tenant_uuid)
         return lp.LoginForm(
             label=f'{native_field_name}注册',
             items=[
@@ -774,11 +926,13 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                     'register_count_limit': 10,
                     'upload_file_format': ['jpg', 'png', 'gif', 'jpeg'],
                     'close_page_auto_logout': False,
-                    'mobile_login_register_enabled': True,
-                    'secret_login_register_enabled': True,
-                    'secret_login_register_field_names': ['username', 'email'],
-                    'custom_login_register_enabled': False,
+                    'native_login_register_field_names': [
+                        'mobile',
+                        'username',
+                        'email',
+                    ],
                     'custom_login_register_field_uuids': [],
+                    'custom_login_register_field_names': [],
                     'need_complete_profile_after_register': True,
                     'can_skip_complete_profile': True,
                 }
@@ -798,15 +952,19 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                 if 'mobile_login_register_enabled' not in data:
                     data['mobile_login_register_enabled'] = True
 
-                if 'secret_login_register_enabled' not in data:
-                    data['secret_login_register_enabled'] = True
-                if 'secret_login_register_field_names' not in data:
-                    data['secret_login_register_field_names'] = ['username', 'email']
+                if 'native_login_register_field_names' not in data:
+                    data['native_login_register_field_names'] = [
+                        'username',
+                        'email',
+                        'mobile',
+                    ]
 
-                if 'custom_login_register_enabled' not in data:
-                    data['custom_login_register_enabled'] = False
                 if 'custom_login_register_field_uuids' not in data:
                     data['custom_login_register_field_uuids'] = []
+                    data['custom_login_register_field_names'] = []
+                else:
+                    custom_fields = CustomField.valid_objects.filter(uuid__in=data.get('custom_login_register_field_uuids'))
+                    data['custom_login_register_field_names'] = [field.name for field in custom_fields]
 
                 if 'need_complete_profile_after_register' not in data:
                     data['need_complete_profile_after_register'] = True

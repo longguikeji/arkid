@@ -96,6 +96,27 @@ class EmailClaimSerializer(serializers.Serializer):  # pylint: disable=abstract-
         override
         '''
 
+    @classmethod
+    def check_email_verify_code(cls, email, code):
+        '''
+        check sms code with mobile and code
+        '''
+        if not email:
+            raise ValidationError({'email': ['This field is required.']})
+
+        if not code:
+            raise ValidationError({'code': ['This field is required.']})
+
+        cache_key = cls.gen_email_verify_code_key(email)
+        res = cls.runtime().cache_provider.get(cache_key)
+        if res:
+            send_code = res
+            if isinstance(send_code, bytes):
+                send_code = send_code.decode('utf-8')
+            if send_code and code == send_code:
+                return True
+        raise ValidationError({'code': ['invalid']})
+
 
 class RegisterEmailClaimSerializer(EmailClaimSerializer):
     '''
@@ -108,6 +129,13 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
         生成email_token的key
         '''
         return f'email:register:{email_token}'
+
+    @staticmethod
+    def gen_email_verify_code_key(email):
+        '''
+        生成email_token的key
+        '''
+        return f'email:register:{email}'
 
     def validate_email(self, value):
         '''
@@ -125,17 +153,24 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
         生成注册验证邮件
         '''
         subject = '[ArkID] 欢迎注册使用ArkID'
+        send_verify_code = kwargs.get('send_verify_code', False)
+        email = self.validated_data.get('email')
+        if send_verify_code in ('True', 'true'):
+            code = self.gen_email_verify_code()
+            key = self.gen_email_verify_code_key(email)
+            content = f'安全代码为: {code}, 5分钟内有效'
+            self.runtime().cache_provider.set(key, code, 60 * 5)
+        else:
+            email_token = self.gen_email_token()
+            host = get_app_config().get_host()
+            link = host + settings.FE_EMAIL_REGISTER_URL + f'?email_token={email_token}'
+            key = self.gen_email_token_key(email_token)
+            # redis_conn.set(key, self.validated_data['email'], ex=60 * 60 * 24 * 3)
+            self.runtime().cache_provider.set(
+                key, self.validated_data['email'], 60 * 60 * 24 * 3
+            )
 
-        email_token = self.gen_email_token()
-        host = get_app_config().get_host()
-        link = host + settings.FE_EMAIL_REGISTER_URL + f'?email_token={email_token}'
-        key = self.gen_email_token_key(email_token)
-        # redis_conn.set(key, self.validated_data['email'], ex=60 * 60 * 24 * 3)
-        self.runtime().cache_provider.set(
-            key, self.validated_data['email'], 60 * 60 * 24 * 3
-        )
-
-        content = f'点击以下链接完成验证，3天之内有效：</br><a href="{link}">{link}</a>'
+            content = f'点击以下链接完成验证，3天之内有效：</br><a href="{link}">{link}</a>'
         html = render_to_string(
             'email/common.html',
             {
@@ -247,27 +282,6 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
             if user:
                 return {'email': email, 'username': user.username}
         raise ValidationError({'email_token': ['invalid']})
-
-    @classmethod
-    def check_email_verify_code(cls, email, code):
-        '''
-        check sms code with mobile and code
-        '''
-        if not email:
-            raise ValidationError({'email': ['This field is required.']})
-
-        if not code:
-            raise ValidationError({'code': ['This field is required.']})
-
-        cache_key = cls.gen_email_verify_code_key(email)
-        res = cls.runtime().cache_provider.get(cache_key)
-        if res:
-            send_code = res
-            if isinstance(send_code, bytes):
-                send_code = send_code.decode('utf-8')
-            if send_code and code == send_code:
-                return True
-        raise ValidationError({'code': ['invalid']})
 
 
 class UserActivateEmailClaimSerializer(EmailClaimSerializer):

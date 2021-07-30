@@ -1,10 +1,10 @@
 from . import (
     group, 
     tenant, 
-    app, 
+    app,
     extension,
     maketplace,
-    webhook, 
+    webhook,
     external_idp, 
     authorization_server,
     authorization_agent,
@@ -13,7 +13,7 @@ from . import (
     profile,
     third_party_account,
     desktop,
-    login_config,
+    login_register_config,
     book,
     desktop_config,
     book_config,
@@ -25,7 +25,6 @@ from . import (
     app_permissions,
     permission_group,
     permission_manage,
-    third_login,
     scan_code,
     password_factor,
     other_factor,
@@ -39,7 +38,8 @@ from . import (
     all_tenants,
     all_tenants_config,
     all_users,
-    all_users_config
+    all_users_config,
+    system_config
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter
@@ -159,10 +159,6 @@ root_add_routers([
                 icon='component',
                 children=[
                     PageRouter(
-                        page=external_idp,
-                        icon='wechat',
-                    ),
-                    PageRouter(
                         page=authorization_server,
                         icon='list',
                     ),
@@ -182,12 +178,12 @@ root_add_routers([
                 icon='lock',
                 children=[
                     PageRouter(
-                        page=login_config,
+                        page=login_register_config,
                         icon='setting'
                     ),
                     PageRouter(
-                        page=third_login,
-                        icon='wechat'
+                        page=external_idp,
+                        icon='wechat',
                     ),
                     PageRouter(
                         page=scan_code,
@@ -288,6 +284,10 @@ root_add_routers([
                         icon='setting'
                     )
                 ]
+            ),
+            PageRouter(
+                page=system_config,
+                icon='setting'
             ),
             Router(
                 path='extension',

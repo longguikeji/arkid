@@ -28,63 +28,12 @@ class LoginPage(views.APIView):
         if tenant:
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
 
-            # 获取 tenant的登录注册配置
-            tenant_config = TenantConfig.objects.filter(
-                is_del=False,
-                tenant=tenant,
-            ).first()
-            if not tenant_config:
-                mobile_login_register_enabled = (True,)
-                secret_login_register_enabled = (True,)
-                secret_login_register_field_names = ['username', 'email']
-            else:
-                mobile_login_register_enabled = tenant_config.data.get(
-                    'mobile_login_register_enabled', True
-                )
-                secret_login_register_enabled = tenant_config.data.get(
-                    'secret_login_register_enabled', True
-                )
-                secret_login_register_field_names = tenant_config.data.get(
-                    'secret_login_register_field_names', ['username', 'email']
-                )
+            # 添加 tenant的登录注册表单
+            self.add_tenant_login_register_form(request, tenant, data)
 
-            if mobile_login_register_enabled:
-                data.addForm(
-                    model.LOGIN, TenantViewSet().mobile_login_form(tenant_uuid)
-                )
-                data.addForm(
-                    model.REGISTER, TenantViewSet().mobile_register_form(tenant_uuid)
-                )
-            if secret_login_register_enabled:
-                data.addForm(
-                    model.LOGIN,
-                    TenantViewSet().native_field_login_form(
-                        request, tenant_uuid, secret_login_register_field_names
-                    ),
-                )
-            for field_name in secret_login_register_field_names:
-                data.addForm(
-                    model.REGISTER,
-                    TenantViewSet().native_field_register_form(tenant_uuid, field_name),
-                )
+            # 登录表单增加第三方登录按钮
+            self.add_tenant_idp_login_buttons(request, tenant, data)
 
-            external_idps = ExternalIdp.valid_objects.filter(tenant=tenant)
-            for idp in external_idps:
-                if idp.type not in ['miniprogram']:
-                    data.addExtendButton(
-                        model.LOGIN,
-                        model.Button(
-                            img=idp.data['img_url'],
-                            tooltip=idp.type,
-                            redirect=model.ButtonRedirect(
-                                url=idp.data['login_url'],
-                            ),
-                        ),
-                    )
-            if data.getPage(model.LOGIN) and data.getPage(model.LOGIN).get(
-                'extend', None
-            ):
-                data.setExtendTitle(model.LOGIN, '第三方登录')
         else:
             data.addForm(model.LOGIN, LoginView().login_form())
             data.addForm(model.LOGIN, MobileLoginView().login_form())
@@ -98,7 +47,20 @@ class LoginPage(views.APIView):
                     model.REGISTER, MobileRegisterView().mobile_register_form()
                 )
 
-        # 获取system和tenant中关于隐私声明的配置
+        # 获取隐私声明
+        agreement = self.get_privacy_notice(tenant)
+
+        # 如果存在注册表单，登录表单下方添加跳转注册按钮, 注册表单下方增加跳转登录按钮
+        self.add_login_register_button(data, agreement)
+
+        # 如果存在登录表单，登录表单上增加忘记密码按钮
+        self.add_reset_password_button(data, agreement)
+
+        pages = lp.LoginPagesSerializer(data=data)
+        pages.is_valid()
+        return JsonResponse(pages.data)
+
+    def get_privacy_notice(self, tenant):
         if tenant:
             privacy_notice = TenantPrivacyNotice.valid_objects.filter(
                 tenant=tenant
@@ -112,7 +74,62 @@ class LoginPage(views.APIView):
             }
         else:
             agreement = {'title': '', 'content': ''}
+        return agreement
 
+    def add_tenant_login_register_form(self, request, tenant, data):
+        tenant_config = TenantConfig.objects.filter(
+            is_del=False,
+            tenant=tenant,
+        ).first()
+        if tenant_config:
+            field_names = tenant_config.data.get(
+                'native_login_register_field_names'
+            ) or [
+                'mobile',
+                'email',
+            ]
+        else:
+            field_names = ['mobile', 'email']
+
+        for field_name in field_names:
+            data.addForm(
+                model.REGISTER,
+                TenantViewSet().native_field_register_form(tenant.uuid, field_name),
+            )
+
+        if 'mobile' in field_names:
+            data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant.uuid))
+
+        # 除了mobile用验证码登录，其他字段包括email用密码登录
+        field_names.remove('mobile')
+        if field_names:
+            data.addForm(
+                model.LOGIN,
+                TenantViewSet().native_field_login_form(
+                    request, tenant.uuid, field_names
+                ),
+            )
+        return data
+
+    def add_tenant_idp_login_buttons(self, request, tenant, data):
+        external_idps = ExternalIdp.valid_objects.filter(tenant=tenant)
+        for idp in external_idps:
+            if idp.type not in ['miniprogram']:
+                data.addExtendButton(
+                    model.LOGIN,
+                    model.Button(
+                        img=idp.data['img_url'],
+                        tooltip=idp.type,
+                        redirect=model.ButtonRedirect(
+                            url=idp.data['login_url'],
+                        ),
+                    ),
+                )
+        if data.getPage(model.LOGIN) and data.getPage(model.LOGIN).get('extend', None):
+            data.setExtendTitle(model.LOGIN, '第三方登录')
+        return data
+
+    def add_login_register_button(self, data, agreement):
         if data.getPage(model.REGISTER):
             data.addBottom(
                 model.LOGIN,
@@ -127,7 +144,9 @@ class LoginPage(views.APIView):
                 model.REGISTER,
                 model.Button(prepend='已有账号，', label='立即登录', gopage=model.LOGIN),
             )
+        return data
 
+    def add_reset_password_button(self, data, agreement):
         if data.getPage(model.LOGIN):
             data.addBottom(model.LOGIN, model.Button(label='忘记密码', gopage='password'))
             data.addForm(model.PASSWORD, self.mobile_password_reset_form())
@@ -145,10 +164,7 @@ class LoginPage(views.APIView):
                 model.PASSWORD,
                 model.Button(prepend='已有账号，', label='立即登录', gopage=model.LOGIN),
             )
-
-        pages = lp.LoginPagesSerializer(data=data)
-        pages.is_valid()
-        return JsonResponse(pages.data)
+        return data
 
     def get_system_config(self):
         # 获取基础配置信息

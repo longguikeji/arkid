@@ -130,16 +130,16 @@ class ConfigSerializer(serializers.Serializer):
     )
     close_page_auto_logout = serializers.BooleanField(label=_('是否关闭页面自动退出'))
 
-    mobile_login_register_enabled = serializers.BooleanField(label=_('开启手机号登录注册'))
-    secret_login_register_enabled = serializers.BooleanField(label=_('开启密码登录注册'))
-    secret_login_register_field_names = serializers.ListField(
+    native_login_register_field_names = serializers.ListField(
         child=serializers.CharField(), label=_('用于密码登录的基础字段')
     )
 
     custom_login_register_field_uuids = serializers.ListField(
         child=serializers.CharField(), label=_('用于登录的自定义字段UUID')
     )
-    custom_login_register_enabled = serializers.BooleanField(label=_('开启自定义字段登录注册'))
+    custom_login_register_field_names = serializers.ListField(
+        child=serializers.CharField(), label=_('用于登录的自定义字段名称')
+    )
 
     need_complete_profile_after_register = serializers.BooleanField(
         label=_('注册完成后跳转到完善用户资料页面')
