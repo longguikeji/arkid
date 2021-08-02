@@ -204,6 +204,11 @@ class LoginPage(views.APIView):
                     ),
                 ),
                 model.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                ),
+                model.LoginFormItem(
                     type='password',
                     name='password',
                     placeholder='新密码',
@@ -212,11 +217,6 @@ class LoginPage(views.APIView):
                     type='password',
                     name='checkpassword',
                     placeholder='新密码确认',
-                ),
-                model.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
                 ),
             ],
             submit=model.Button(
@@ -258,6 +258,11 @@ class LoginPage(views.APIView):
                     ),
                 ),
                 model.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                ),
+                model.LoginFormItem(
                     type='password',
                     name='password',
                     placeholder='新密码',
@@ -266,11 +271,6 @@ class LoginPage(views.APIView):
                     type='password',
                     name='checkpassword',
                     placeholder='新密码确认',
-                ),
-                model.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
                 ),
             ],
             submit=model.Button(

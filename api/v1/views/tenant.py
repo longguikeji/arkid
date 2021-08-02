@@ -542,6 +542,11 @@ class TenantViewSet(BaseViewSet):
                     ),
                 ),
                 lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                ),
+                lp.LoginFormItem(
                     type='password',
                     name='password',
                     placeholder='密码',
@@ -550,11 +555,6 @@ class TenantViewSet(BaseViewSet):
                     type='password',
                     name='checkpassword',
                     placeholder='密码确认',
-                ),
-                lp.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
                 ),
             ],
             submit=lp.Button(
@@ -597,6 +597,11 @@ class TenantViewSet(BaseViewSet):
                     ),
                 ),
                 lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
+                ),
+                lp.LoginFormItem(
                     type='password',
                     name='password',
                     placeholder='密码',
@@ -605,11 +610,6 @@ class TenantViewSet(BaseViewSet):
                     type='password',
                     name='checkpassword',
                     placeholder='密码确认',
-                ),
-                lp.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
                 ),
             ],
             submit=lp.Button(
