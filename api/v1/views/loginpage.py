@@ -91,25 +91,13 @@ class LoginPage(views.APIView):
         else:
             field_names = ['mobile', 'email']
 
-        for field_name in field_names:
-            data.addForm(
-                model.REGISTER,
-                TenantViewSet().native_field_register_form(tenant.uuid, field_name),
-            )
-        # 自定义字段的注册表单
-        field_uuids = tenant_config.data.get('custom_login_register_field_uuids', [])
-        for uuid in field_uuids:
-            data.addForm(
-                model.REGISTER,
-                TenantViewSet().custom_field_register_form(tenant.uuid, uuid),
-            )
-
         if 'mobile' in field_names:
             data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant.uuid))
 
         # 除了mobile用验证码登录，其他字段包括email用密码登录
         field_names.remove('mobile')
 
+        field_uuids = tenant_config.data.get('custom_login_register_field_uuids', [])
         # 除了mobile之外的原生字段，和自定义字段共用一个登录窗口, 用密码登录
         if field_names or field_uuids:
             data.addForm(
@@ -117,6 +105,17 @@ class LoginPage(views.APIView):
                 TenantViewSet().secret_login_form(
                     request, tenant.uuid, field_names, field_uuids
                 ),
+            )
+        for field_name in field_names:
+            data.addForm(
+                model.REGISTER,
+                TenantViewSet().native_field_register_form(tenant.uuid, field_name),
+            )
+        # 自定义字段的注册表单
+        for uuid in field_uuids:
+            data.addForm(
+                model.REGISTER,
+                TenantViewSet().custom_field_register_form(tenant.uuid, uuid),
             )
 
         return data
