@@ -492,11 +492,6 @@ class TenantViewSet(BaseViewSet):
                     type='text',
                     name='mobile',
                     placeholder='手机号',
-                ),
-                lp.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
                     append=lp.Button(
                         label='发送验证码',
                         delay=60,
@@ -506,6 +501,11 @@ class TenantViewSet(BaseViewSet):
                             params={'mobile': 'mobile'},
                         ),
                     ),
+                ),
+                lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
                 ),
             ],
             submit=lp.Button(
