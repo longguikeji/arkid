@@ -462,7 +462,6 @@ class MobileResetPasswordView(generics.CreateAPIView):
         password = request.data.get('password', '')
         code = request.data.get('code', '')
         user = User.objects.filter(mobile=mobile).first()
-        is_succeed = True
         if not user:
             return JsonResponse(
                 data={
@@ -489,12 +488,9 @@ class MobileResetPasswordView(generics.CreateAPIView):
                     'message': _('sms code mismatch'),
                 }
             )
-        try:
-            user.set_password(password)
-            user.save()
-        except Exception as e:
-            is_succeed = False
-        return Response(is_succeed)
+        user.set_password(password)
+        user.save()
+        return Response({'error': Code.OK.value, 'message': 'Reset password success'})
 
     def check_password(self, pwd):
         if pwd.isdigit() or len(pwd) < 8:
@@ -515,7 +511,6 @@ class EmailResetPasswordView(generics.CreateAPIView):
 
     @extend_schema(responses=PasswordSerializer)
     def post(self, request):
-        is_succeed = True
         email = request.data.get('email', '')
         password = request.data.get('password', '')
         # checkpassword = request.data.get('checkpassword', '')
@@ -545,12 +540,9 @@ class EmailResetPasswordView(generics.CreateAPIView):
                     'message': _('email code mismatch'),
                 }
             )
-        try:
-            user.set_password(password)
-            user.save()
-        except Exception as e:
-            is_succeed = False
-        return Response(is_succeed)
+        user.set_password(password)
+        user.save()
+        return Response({'error': Code.OK.value, 'message': 'Reset password success'})
 
     def check_password(self, pwd):
         if pwd.isdigit() or len(pwd) < 8:
