@@ -233,6 +233,7 @@ class LoginPage(views.APIView):
                         'checkpassword': 'checkpassword',
                     },
                 ),
+                gopage=model.LOGIN,
             ),
         )
 
@@ -286,5 +287,6 @@ class LoginPage(views.APIView):
                         'checkpassword': 'checkpassword',
                     },
                 ),
+                gopage=model.LOGIN,
             ),
         )
