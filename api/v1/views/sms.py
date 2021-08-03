@@ -68,6 +68,7 @@ class SMSClaimAPIView(GenericAPIView):
     未登录用户必须通过图片验证才能发短信
     已登录用户则无限制
     '''
+
     permission_classes = []
     authentication_classes = [ExpiringTokenAuthentication]
 
@@ -132,7 +133,8 @@ class SMSClaimAPIView(GenericAPIView):
 
         return Response(
             {
-                'isregister': User.valid_objects.filter(mobile=mobile).exists(),
+                # 'isregister': User.valid_objects.filter(mobile=mobile).exists(),
+                'error': Code.OK.value,
                 'message': 'sms has send',
             },
             status=status.HTTP_201_CREATED,
