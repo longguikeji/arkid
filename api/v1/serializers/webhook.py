@@ -1,6 +1,7 @@
 import json
 from lib.dynamic_fields_model_serializer import DynamicFieldsModelSerializer
 from webhook.models import Webhook, WebhookEvent
+from webhook.event_types import WebhookEventType
 from rest_framework import serializers
 from common.event import Event
 from api.v1.fields.custom import (
@@ -25,14 +26,7 @@ class WebhookEventSerializer(DynamicFieldsModelSerializer):
 
 
 class WebhookSerializer(DynamicFieldsModelSerializer):
-    events = serializers.SerializerMethodField()
-    set_events = create_foreign_key_field(serializers.ListField)(
-        model_cls=WebhookEvent,
-        field_name='event_type',
-        page=webhook.tag,
-        child=serializers.CharField(),
-        write_only=True,
-    )
+    events = serializers.MultipleChoiceField(choices=WebhookEventType.CHOICES)
     url = serializers.URLField()
 
     class Meta:
@@ -43,12 +37,10 @@ class WebhookSerializer(DynamicFieldsModelSerializer):
             'name',
             'url',
             'events',
-            'set_events',
             'secret',
         )
         extra_kwargs = {
             'uuid': {'read_only': True},
-            'events': {'read_only': True},
         }
 
     def create(self, validated_data):
@@ -56,22 +48,22 @@ class WebhookSerializer(DynamicFieldsModelSerializer):
         name = validated_data.get('name')
         url = validated_data.get('url')
         secret = validated_data.get('secret')
-        set_events = validated_data.pop('set_events', None)
+        events = validated_data.pop('events', None)
 
         hook = Webhook.valid_objects.create(
             tenant=tenant, name=name, url=url, secret=secret
         )
-        if set_events is not None:
-            for event_type in set_events:
+        if events is not None:
+            for event_type in events:
                 WebhookEvent.valid_objects.create(event_type=event_type, webhook=hook)
         hook.save()
         return hook
 
     def update(self, instance, validated_data):
-        set_events = validated_data.pop('set_events', None)
-        if set_events is not None:
+        events = validated_data.pop('events', None)
+        if events is not None:
             instance.events.all().delete()
-            for event_type in set_events:
+            for event_type in events:
                 WebhookEvent.valid_objects.create(
                     event_type=event_type, webhook=instance
                 )
@@ -80,13 +72,14 @@ class WebhookSerializer(DynamicFieldsModelSerializer):
         instance.save()
         return instance
 
-    def get_events(self, instance):
-        events = instance.events.all()
-        ret = []
-        for e in events:
-            ret.append(e.event_type)
-        return ret
-
+    def to_representation(self, instance):
+        return {
+            'uuid': instance.uuid.hex,
+            'name': instance.name,
+            'url': instance.url,
+            'secret': instance.secret,
+            'events': [e.event_type for e in instance.events.all()]
+        }
 
 # class WebhookListResponseSerializer(WebhookSerializer):
 #     class Meta:

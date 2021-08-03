@@ -11,9 +11,11 @@ from rest_framework.response import Response
 
 from tenant.models import Tenant
 from webhook.models import Webhook, WebhookTriggerHistory
+from common.code import Code
 
 from .base import BaseViewSet
 import requests
+import json
 
 
 @extend_schema_view(
@@ -41,8 +43,8 @@ class WebhookTriggerHistoryViewSet(
         tenant_uuid = query_dict.get('tenant')
         webhook_uuid = query_dict.get('webhook')
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-        webhook = WebHook.objects.filter(uuid=webhook_uuid).first()
-        objs = WebHookTriggerHistory.valid_objects.filter(
+        webhook = Webhook.objects.filter(uuid=webhook_uuid).first()
+        objs = WebhookTriggerHistory.valid_objects.filter(
             tenant=tenant, webhook=webhook
         ).order_by('-id')
         return objs
@@ -68,32 +70,34 @@ class WebhookTriggerHistoryViewSet(
     )
     @action(detail=True, methods=['get'])
     def retry(self, request, *args, **kwargs):
-        # context = self.get_serializer_context()
-        # tenant = context['tenant']
         history = self.get_object()
-        if not history:
-            return Response(
-                {'error': 'No webhook history find'}, status=status.HTTP_204_NO_CONTENT
+        webhook = history.webhook
+        url = webhook.url
+        request_data = json.loads(history.request)
+        request_headers = request_data.get('headers')
+        request_body = request_data.get('body')
+        response = None
+        try:
+            response = requests.post(
+                url, request_body, headers=request_headers, timeout=3
             )
-        else:
-            webhook = history.webhook
-            url = webhook.url
-            data = history.request
-            headers = {
-                'Arkid-Signature-256': webhook.sign(data),
-                'Arkid-Hook-UUID': str(webhook.uuid),
-            }
-            try:
-                res = requests.post(url, data, headers=headers, timeout=3)
-            except Exception as exc:
-                history.status = 'failed'
-                history.response = str(exc)
-                history.save()
+            response.raise_for_status()
+        except Exception as exc:
+            if response:
+                status_code = response.status_code
             else:
-                history.status = 'success'
-                history.response = {
-                    'status_code': res.status_code,
-                    'response': res.text,
+                status_code = None
+            history.status = 'failed'
+            response_data = json.dumps({'status_code': status_code, 'body': str(exc)})
+            history.response = response_data
+            history.save()
+        else:
+            history.status = 'success'
+            history.response = json.dumps(
+                {
+                    'status_code': response.status_code,
+                    'response': response.text,
                 }
-                history.save()
-            return Response(status=status.HTTP_200_OK)
+            )
+            history.save()
+        return Response(status=status.HTTP_200_OK)
