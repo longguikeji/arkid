@@ -16,6 +16,16 @@ from tasks.tasks import send_email
 from inventory.models import User, Invitation
 from runtime import get_app_runtime
 from config import get_app_config
+from rest_framework import status
+from rest_framework.exceptions import APIException
+from common.code import Code
+
+
+class ValidationErrorFailed(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, detail):
+        self.detail = detail
 
 
 class EmailClaimSerializer(serializers.Serializer):  # pylint: disable=abstract-method
@@ -102,10 +112,22 @@ class EmailClaimSerializer(serializers.Serializer):  # pylint: disable=abstract-
         check sms code with mobile and code
         '''
         if not email:
-            raise ValidationError({'email': ['This field is required.']})
+            # raise ValidationError({'email': ['This field is required.']})
+            raise ValidationErrorFailed(
+                {
+                    'error': Code.EMAIL_FROMAT_ERROR.value,
+                    'message': 'email field is required',
+                }
+            )
 
         if not code:
-            raise ValidationError({'code': ['This field is required.']})
+            # raise ValidationError({'code': ['This field is required.']})
+            raise ValidationErrorFailed(
+                {
+                    'error': Code.EMAIL_CODE_MISMATCH.value,
+                    'message': 'code field is required',
+                }
+            )
 
         cache_key = cls.gen_email_verify_code_key(email)
         res = cls.runtime().cache_provider.get(cache_key)
@@ -115,7 +137,13 @@ class EmailClaimSerializer(serializers.Serializer):  # pylint: disable=abstract-
                 send_code = send_code.decode('utf-8')
             if send_code and code == send_code:
                 return True
-        raise ValidationError({'code': ['invalid']})
+        # raise ValidationError({'code': ['invalid']})
+        raise ValidationErrorFailed(
+            {
+                'error': Code.EMAIL_CODE_MISMATCH.value,
+                'message': 'email code mismatch',
+            }
+        )
 
 
 class RegisterEmailClaimSerializer(EmailClaimSerializer):
@@ -144,7 +172,13 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
         private_email = super().validate_email(value)
 
         if User.valid_objects.filter(email=private_email).exists():
-            raise ValidationError({'email': ['existed']})
+            # raise ValidationError({'email': ['existed']})
+            raise ValidationErrorFailed(
+                {
+                    'error': Code.EMAIL_EXISTS_ERROR.value,
+                    'message': 'email exists already',
+                }
+            )
 
         return private_email
 
@@ -224,7 +258,13 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
         private_email = super().validate_email(value)
 
         if not User.valid_objects.filter(email=private_email).exists():
-            raise ValidationError({'email': ['invalid']})
+            # raise ValidationError({'email': ['invalid']})
+            raise ValidationErrorFailed(
+                {
+                    'error': Code.EMAIL_NOT_EXISTS_ERROR.value,
+                    'message': 'email not exists',
+                }
+            )
         return private_email
 
     def gen_email(self, *args, **kwargs):
