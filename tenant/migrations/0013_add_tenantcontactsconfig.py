@@ -17,23 +17,11 @@ class Migration(migrations.Migration):
                     "is_open": True
                 }
             )
-            # 个人资料可见性
-            TenantContactsConfig.objects.get_or_create(
-                is_del=False,
-                tenant=tenant,
-                config_type=1,
-                data={
-                    "visible_type": '所有人可见',
-                    "visible_scope": [],
-                    "assign_group": [],
-                    "assign_user": []
-                }
-            )
             # 分组可见性
             TenantContactsConfig.objects.get_or_create(
                 is_del=False,
                 tenant=tenant,
-                config_type=2,
+                config_type=1,
                 data={
                     "visible_type": '所有人可见',
                     "visible_scope": [],

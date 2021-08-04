@@ -70,15 +70,6 @@ class TenantContactsConfig(BaseModel):
     # {
     #     "is_open": true
     # }
-    # 个人资料可见性
-    # visible_type 所有人可见 部分人可见
-    # visible_scope 本人可见 管理员可见 指定分组与人员
-    # {
-    #     "visible_type": visible_type,
-    #     "visible_scope": [],
-    #     "assign_group": [],
-    #     "assign_user": []
-    # }
     # 分组可见性
     # visible_type 所有人可见 部分人可见
     # visible_scope 组内成员可见 下属分组可见 指定分组与人员
@@ -88,12 +79,11 @@ class TenantContactsConfig(BaseModel):
     #     "assign_group": [],
     #     "assign_user": []
     # }
-    # 每个租户会有3条相关的记录
+    # 每个租户会有2 条相关的记录
 
     TYPE_CHOICES = (
         (0, '功能开关'),
-        (1, '个人资料可见性'),
-        (2, '分组可见性'),
+        (1, '分组可见性'),
     )
 
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
@@ -103,3 +93,25 @@ class TenantContactsConfig(BaseModel):
     @property
     def tenant_uuid(self):
         return self.tenant.uuid
+
+
+class TenantContactsUserFieldConfig(BaseModel):
+    # 分组可见性
+    # visible_type 所有人可见 部分人可见
+    # visible_scope 本人可见 管理员可见 指定分组与人员
+    # {
+    #     "visible_type": visible_type,
+    #     "visible_scope": [],
+    #     "assign_group": [],
+    #     "assign_user": []
+    # }
+    # 每个租户会有1条相关的记录
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    name = models.CharField(verbose_name='字段名称', max_length=128, default='', null=True, blank=True)
+    data = models.JSONField(blank=True, default=dict)
+
+    @property
+    def tenant_uuid(self):
+        return self.tenant.uuid
+

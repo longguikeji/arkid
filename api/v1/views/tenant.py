@@ -5,14 +5,16 @@ from rest_framework import generics
 from openapi.utils import extend_schema
 from rest_framework.response import Response
 from tenant.models import (
-    Tenant, TenantConfig, TenantPasswordComplexity, TenantContactsConfig,
+    Tenant, TenantConfig, TenantPasswordComplexity,
+    TenantContactsConfig, TenantContactsUserFieldConfig,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
     UserNameRegisterRequestSerializer, MobileLoginResponseSerializer, MobileRegisterResponseSerializer,
     UserNameRegisterResponseSerializer, UserNameLoginResponseSerializer, TenantConfigSerializer,
     UserNameLoginRequestSerializer, TenantPasswordComplexitySerializer, TenantContactsConfigFunctionSwitchSerializer,
-    TenantContactsConfigInfoVisibilitySerializer, TenantContactsConfigGroupVisibilitySerializer,
+    TenantContactsConfigInfoVisibilitySerializer, TenantContactsConfigGroupVisibilitySerializer, ContactsGroupSerializer,
+    ContactsUserSerializer, TenantContactsUserTagsSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from common.paginator import DefaultListPaginator
@@ -750,7 +752,7 @@ class TenantContactsConfigFunctionSwitchView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
-class TenantContactsConfigInfoVisibilityView(generics.RetrieveUpdateAPIView):
+class TenantContactsConfigInfoVisibilityDetailView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
@@ -759,7 +761,22 @@ class TenantContactsConfigInfoVisibilityView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
-        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=1).first()
+        info_uuid = self.kwargs['info_uuid']
+        return TenantContactsUserFieldConfig.active_objects.filter(tenant__uuid=tenant_uuid, uuid=info_uuid).first()
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantContactsConfigInfoVisibilityView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantContactsConfigInfoVisibilitySerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        return TenantContactsUserFieldConfig.active_objects.filter(tenant__uuid=tenant_uuid).order_by('-id')
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
@@ -773,3 +790,258 @@ class TenantContactsConfigGroupVisibilityView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
         return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=2).first()
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+class TenantContactsGroupView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = ContactsGroupSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_switch(self, tenant_uuid):
+        # 功能开关
+        # {
+        #     "is_open": true
+        # }
+        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=0).first()
+        return config.data
+
+    def get_group_visible(self, tenant_uuid):
+        # 分组可见性
+        # visible_type 所有人可见 部分人可见
+        # visible_scope 组内成员可见 下属分组可见 指定分组与人员
+        # {
+        #     "visible_type": visible_type,
+        #     "visible_scope": [],
+        #     "assign_group": [],
+        #     "assign_user": []
+        # }
+        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=1).first()
+        return config.data
+
+    def get_queryset(self):
+
+        parent = self.request.query_params.get('parent', None)
+        user = self.request.user
+        tenant = Tenant.active_objects.filter(uuid=self.kwargs['tenant_uuid']).first()
+
+        kwargs = {
+            'tenant__uuid': self.kwargs['tenant_uuid'],
+        }
+        if tenant.has_admin_perm(user) is False:
+            # 功能开关
+            switch = self.get_switch(self.kwargs['tenant_uuid'])
+            is_open = switch.get('is_open', True)
+            if is_open is False:
+                return []
+            # 分组可见性
+            group_visible = self.get_group_visible(self.kwargs['tenant_uuid'])
+            visible_type = group_visible.get('visible_type', '所有人可见')
+            if visible_type == '部分人可见':
+                visible_scope = group_visible.get('visible_scope', [])
+                if visible_scope:
+                    # 组内成员可见 下属分组可见 指定分组与人员
+                    groups = user.groups
+                    uuids = []
+                    if '组内成员可见' in visible_scope:
+                        for group in groups:
+                            uuid = group.uuid_hex
+                            if uuid not in uuids:
+                                uuids.append(uuid)
+                    if '下属分组可见' in visible_scope:
+                        # 递归查询(下下级不筛选)
+                        if not parent:
+                            # 如果是一级，就只能看到下属分组
+                            child_groups = Group.valid_objects.filter(parent__in=groups)
+                            for child_group in child_groups:
+                                uuid = child_group.uuid_hex
+                                if uuid not in uuids:
+                                    uuids.append(uuid)
+                        else:
+                            # 如果是二级，就不进行筛选
+                            uuids = []
+                    if '指定分组与人员' in visible_scope:
+                        assign_group = group_visible.get('assign_group', [])
+                        for uuid in assign_group:
+                            if uuid not in uuids:
+                                uuids.append(uuid)
+                    if uuids:
+                        kwargs['uuid__in'] = uuids
+                else:
+                    if parent is None:
+                        if len(visible_scope) == 1 and '下属分组可见' in visible_scope:
+                            pass
+                        else:
+                            kwargs['parent'] = None
+                    else:
+                        kwargs['parent__uuid'] = parent
+            else:
+                if parent is None:
+                    kwargs['parent'] = None
+                else:
+                    kwargs['parent__uuid'] = parent
+        else:
+            if parent is None:
+                kwargs['parent'] = None
+            else:
+                kwargs['parent__uuid'] = parent
+
+        qs = Group.valid_objects.filter(**kwargs).order_by('id')
+        return qs
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+class TenantContactsUserView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = ContactsUserSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_switch(self, tenant_uuid):
+        # 功能开关
+        # {
+        #     "is_open": true
+        # }
+        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=0).first()
+        return config.data
+
+    def get_queryset(self):
+
+        group_uuid = self.request.query_params.get('group_uuid', None)
+        user = self.request.user
+        tenant = Tenant.active_objects.filter(uuid=self.kwargs['tenant_uuid']).first()
+        kwargs = {
+            'tenants__uuid': self.kwargs['tenant_uuid'],
+            'groups__uuid': group_uuid,
+        }
+        if tenant.has_admin_perm(user) is False:
+            # 功能开关
+            switch = self.get_switch(self.kwargs['tenant_uuid'])
+            is_open = switch.get('is_open', True)
+            if is_open is False:
+                return []
+        qs = User.valid_objects.filter(**kwargs).order_by('id')
+        # 需要对结果集进行一些处理
+        dict_item = {
+            '用户名': 'username',
+            '姓名': 'nickname',
+            '电话': 'mobile',
+            '邮箱': 'email',
+            '职位': 'job_title'
+        }
+        configs = TenantContactsUserFieldConfig.active_objects.filter(
+            tenant=tenant
+        )
+        myself_field = []
+        manager_field = []
+        part_field = []
+        current_user_field = []
+        all_user_field = []
+        for config in configs:
+            data = config.data
+            visible_type = data.get('visible_type')
+            visible_scope = data.get('visible_scope')
+            assign_user = data.get('assign_user')
+            assign_group = data.get('assign_group')
+            item_name = dict_item.get(config.name)
+            if visible_type == '所有人可见':
+                all_user_field.append(item_name)
+            else:
+                if visible_type == '部分人可见' and '本人可见' in visible_scope:
+                    myself_field.append(item_name)
+                if visible_type == '部分人可见' and '管理员可见' in visible_scope:
+                    manager_field.append(item_name)
+                    if tenant.has_admin_perm(user) is True and item_name not in current_user_field:
+                        current_user_field.append(item_name)
+                if visible_type == '部分人可见' and '指定分组与人员' in visible_scope:
+                    part_field.append(item_name)
+                    # 和用户身份挂钩
+                    if user.uuid_hex in assign_user:
+                        current_user_field.append(item_name)
+                    else:
+                        groups = user.groups
+                        for group in groups:
+                            uuid = group.uuid
+                            if uuid in assign_group and item_name not in current_user_field:
+                                current_user_field.append(item_name)
+        for item in qs:
+            if 'username' not in all_user_field and 'username' not in current_user_field:
+                if 'username' in myself_field and item.uuid_hex == user.uuid_hex:
+                    pass
+                else:
+                    item.username = ''
+            if 'nickname' not in all_user_field and 'nickname' not in current_user_field:
+                if 'nickname' in myself_field and item.uuid_hex == user.uuid_hex:
+                    pass
+                else:
+                    item.nickname = ''
+            if 'mobile' not in all_user_field and 'mobile' not in current_user_field:
+                if 'mobile' in myself_field and item.uuid_hex == user.uuid_hex:
+                    pass
+                else:
+                    item.mobile = ''
+            if 'email' not in all_user_field and 'email' not in current_user_field:
+                if 'email' in myself_field and item.uuid_hex == user.uuid_hex:
+                    pass
+                else:
+                    item.email = ''
+            if 'job_title' not in all_user_field and 'job_title' not in current_user_field:
+                if 'job_title' in myself_field and item.uuid_hex == user.uuid_hex:
+                    pass
+                else:
+                    item.job_title = ''
+        return qs
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+class TenantContactsUserTagsView(generics.RetrieveAPIView):
+
+    serializer_class = TenantContactsUserTagsSerializer
+
+    @extend_schema(
+        responses=TenantContactsUserTagsSerializer
+    )
+    def get(self, request, tenant_uuid):
+        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+        dict_item = {
+            '用户名': 'username',
+            '姓名': 'nickname',
+            '电话': 'mobile',
+            '邮箱': 'email',
+            '职位': 'job_title'
+        }
+        configs = TenantContactsUserFieldConfig.active_objects.filter(
+            tenant=tenant
+        )
+        myself_field = []
+        manager_field = []
+        part_field = []
+        all_user_field = []
+        for config in configs:
+            data = config.data
+            visible_type = data.get('visible_type')
+            visible_scope = data.get('visible_scope')
+            item_name = dict_item.get(config.name)
+            if visible_type == '所有人可见':
+                all_user_field.append(item_name)
+            else:
+                if visible_type == '部分人可见' and '本人可见' in visible_scope:
+                    myself_field.append(item_name)
+                if visible_type == '部分人可见' and '管理员可见' in visible_scope:
+                    manager_field.append(item_name)
+                if visible_type == '部分人可见' and '指定分组与人员' in visible_scope:
+                    part_field.append(item_name)
+
+        serializer = self.get_serializer({
+            'myself_field': myself_field,
+            'manager_field': manager_field,
+            'part_field': part_field,
+            'all_user_field': all_user_field
+        })
+        return Response(serializer.data)
+        

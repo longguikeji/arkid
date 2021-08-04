@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class GroupBaseSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Group
         fields = ('name', 'uuid')

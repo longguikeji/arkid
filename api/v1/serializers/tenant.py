@@ -1,6 +1,6 @@
 from tenant.models import(
     Tenant, TenantConfig, TenantPasswordComplexity,
-    TenantContactsConfig,
+    TenantContactsConfig, TenantContactsUserFieldConfig,
 )
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
@@ -52,7 +52,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
                 "is_open": True
             }
         )
-        # 通讯录配置个人资料可见性
+        # 通讯录配置分组可见性
         TenantContactsConfig.objects.get_or_create(
             is_del=False,
             tenant=tenant,
@@ -64,13 +64,57 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
                 "assign_user": []
             }
         )
-        # 通讯录配置分组可见性
-        TenantContactsConfig.objects.get_or_create(
+        # 字段可见性
+        TenantContactsUserFieldConfig.objects.get_or_create(
+                is_del=False,
+                tenant=tenant,
+                name="用户名",
+                data={
+                    "visible_type": "所有人可见",
+                    "visible_scope": [],
+                    "assign_group": [],
+                    "assign_user": []
+                }
+            )
+        TenantContactsUserFieldConfig.objects.get_or_create(
             is_del=False,
             tenant=tenant,
-            config_type=2,
+            name="姓名",
             data={
-                "visible_type": '所有人可见',
+                "visible_type": "所有人可见",
+                "visible_scope": [],
+                "assign_group": [],
+                "assign_user": []
+            }
+        )
+        TenantContactsUserFieldConfig.objects.get_or_create(
+            is_del=False,
+            tenant=tenant,
+            name="电话",
+            data={
+                "visible_type": "所有人可见",
+                "visible_scope": [],
+                "assign_group": [],
+                "assign_user": []
+            }
+        )
+        TenantContactsUserFieldConfig.objects.get_or_create(
+            is_del=False,
+            tenant=tenant,
+            name="邮箱",
+            data={
+                "visible_type": "所有人可见",
+                "visible_scope": [],
+                "assign_group": [],
+                "assign_user": []
+            }
+        )
+        TenantContactsUserFieldConfig.objects.get_or_create(
+            is_del=False,
+            tenant=tenant,
+            name="职位",
+            data={
+                "visible_type": "所有人可见",
                 "visible_scope": [],
                 "assign_group": [],
                 "assign_user": []
@@ -234,7 +278,7 @@ class TenantContactsConfigFunctionSwitchSerializer(BaseDynamicFieldModelSerializ
 
 class InfoVisibilitySerializer(serializers.Serializer):
     visible_type = serializers.ChoiceField(choices=(('所有人可见', '部分人可见')), label=_('可见类型'))
-    visible_scope = serializers.MultipleChoiceField(choices=(('本人可见', '管理员可见', '指定分组与人员')), label=_('可见范围'))
+    visible_scope = serializers.MultipleChoiceField(choices=(('本人可见', '管理员可见', '指定分组与人员')), label=_('可见范围'), required=False, default=[])
     assign_group = create_foreign_key_field(serializers.ListField)(
         model_cls=Group,
         field_name='uuid',
@@ -254,19 +298,32 @@ class InfoVisibilitySerializer(serializers.Serializer):
         default=[],
         label=_('指定的人员')
     )
-    # assign_group = serializers.ListField(child=serializers.CharField(), required=False, default=[], label=_('指定的分组'))
-    # assign_user = serializers.ListField(child=serializers.CharField(), required=False, default=[], label=_('指定的人员'))
 
 
 class TenantContactsConfigInfoVisibilitySerializer(BaseDynamicFieldModelSerializer):
+
+    name = serializers.CharField(read_only=True)
     data = InfoVisibilitySerializer()
 
     class Meta:
-        model = TenantContactsConfig
+        model = TenantContactsUserFieldConfig
 
         fields = (
+            'uuid',
             'data',
+            'name',
         )
+
+    def update(self, instance, validated_data):
+        data = validated_data.get('data')
+        instance.data = {
+            'visible_type': data.get('visible_type'),
+            'visible_scope': list(data.get('visible_scope')),
+            'assign_group': data.get('assign_group'),
+            'assign_user': data.get('assign_user'),
+        }
+        instance.save()
+        return instance
 
 
 class GroupVisibilitySerializer(serializers.Serializer):
@@ -291,8 +348,6 @@ class GroupVisibilitySerializer(serializers.Serializer):
         default=[],
         label=_('指定的人员')
     )
-    # assign_group = serializers.ListField(child=serializers.CharField(), required=False, default=[], label=_('指定的分组'))
-    # assign_user = serializers.ListField(child=serializers.CharField(), required=False, default=[], label=_('指定的人员'))
 
 
 class TenantContactsConfigGroupVisibilitySerializer(BaseDynamicFieldModelSerializer):
@@ -304,3 +359,37 @@ class TenantContactsConfigGroupVisibilitySerializer(BaseDynamicFieldModelSeriali
         fields = (
             'data',
         )
+
+    def update(self, instance, validated_data):
+        data = validated_data.get('data')
+        instance.data = {
+            'visible_type': data.get('visible_type'),
+            'visible_scope': list(data.get('visible_scope')),
+            'assign_group': data.get('assign_group'),
+            'assign_user': data.get('assign_user'),
+        }
+        instance.save()
+        return instance
+
+
+class ContactsGroupSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Group
+        fields = ('name', 'uuid')
+
+
+class ContactsUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'nickname', 'mobile', 'email', 'job_title')
+
+
+class TenantContactsUserTagsSerializer(serializers.Serializer):
+
+    myself_field = serializers.ListField(child=serializers.CharField(), label=_('本人可见字段'), default=[])
+    manager_field = serializers.ListField(child=serializers.CharField(), label=_('管理员可见字段'), default=[])
+    part_field = serializers.ListField(child=serializers.CharField(), label=_('部分人可见'), default=[])
+    all_user_field = serializers.ListField(child=serializers.CharField(), label=_('所有人可见字段'), default=[])
+
