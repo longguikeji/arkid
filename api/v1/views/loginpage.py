@@ -160,15 +160,16 @@ class LoginPage(views.APIView):
             data.addBottom(model.LOGIN, model.Button(label='忘记密码', gopage='password'))
             data.addForm(model.PASSWORD, self.mobile_password_reset_form())
             data.addForm(model.PASSWORD, self.email_password_reset_form())
-            data.addBottom(
-                model.PASSWORD,
-                model.Button(
-                    prepend='还没有账号，',
-                    label='立即注册',
-                    gopage=model.REGISTER,
-                    agreement=agreement,
-                ),
-            )
+            if data.getPage(model.REGISTER):
+                data.addBottom(
+                    model.PASSWORD,
+                    model.Button(
+                        prepend='还没有账号，',
+                        label='立即注册',
+                        gopage=model.REGISTER,
+                        agreement=agreement,
+                    ),
+                )
             data.addBottom(
                 model.PASSWORD,
                 model.Button(prepend='已有账号，', label='立即登录', gopage=model.LOGIN),
