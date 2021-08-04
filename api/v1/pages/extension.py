@@ -13,12 +13,12 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
                 'tag': 'extension.create'
             }
         },
-        'item': {
+        'local': {
             'update': {
                 'tag': 'extension.update'
             },
@@ -42,7 +42,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
                 'method': 'post'
@@ -63,7 +63,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/{id}/',
                 'method': 'put'
