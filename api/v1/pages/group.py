@@ -4,6 +4,27 @@ tag = [ 'group', 'group_user' ]
 path = 'gmanage'
 name = '分组管理'
 
+group_tree_tag = 'group_tree'
+group_tree_name = '选择分组'
+
+extend_schema_tags(
+    group_tree_tag,
+    group_tree_name,
+    {
+        'type': 'tree_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
+            'method': 'get'
+        },
+        'local': {
+            'children': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
+                'method': 'get'
+            }
+        }
+    }
+)
+
 group_tag = 'group'
 group_name = '分组'
 
@@ -16,7 +37,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
                 'tag': 'group.create'
             },
@@ -29,7 +50,7 @@ extend_schema_tags(
                 'method': 'get'
             }
         },
-        'item': {
+        'local': {
             'update': {
                 'tag': 'group.update'
             },
@@ -57,7 +78,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
                 'method': 'post'
@@ -78,7 +99,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
                 'method': 'put'
@@ -99,7 +120,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'export': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
                 'method': 'get'

@@ -49,7 +49,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='id',
-        page=group.tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
         write_only=True,
     )

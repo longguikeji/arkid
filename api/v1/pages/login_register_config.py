@@ -16,7 +16,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/config/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'tag': 'login_register_config.update'
             }
@@ -36,7 +36,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/config/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/config/',
                 'method': 'patch'
@@ -57,7 +57,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/privacy_notice/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'tag': 'tenant_register_privacy_notice.update'
             }
@@ -77,7 +77,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/privacy_notice/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/privacy_notice/',
                 'method': 'put'

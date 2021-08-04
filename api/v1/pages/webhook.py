@@ -13,12 +13,12 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
                 'tag': 'webhook.create'
             }
         },
-        'item': {
+        'local': {
             'history': {
                 'tag': 'webhook.history'
             },
@@ -45,7 +45,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/',
                 'method': 'post',
@@ -66,7 +66,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{id}/',
                 'method': 'put'
@@ -87,7 +87,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{parent_lookup_webhook}/history/',
             'method': 'get'
         },
-        'item': {
+        'local': {
             'retrieve': {
                 'tag': 'webhook.history.retrieve'
             },

@@ -11,7 +11,7 @@ from . import (
     user,
     permission,
     profile,
-    third_party_account,
+    third_part_account,
     desktop,
     login_register_config,
     book,
@@ -59,7 +59,7 @@ root_add_routers([
                 icon='edit'
             ),
             PageRouter(
-                page=third_party_account,
+                page=third_part_account,
                 icon='wechat'
             )
         ]

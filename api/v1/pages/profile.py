@@ -13,7 +13,7 @@ extend_schema_tags(
             'path': '/api/v1/user/info/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'tag': 'profile.update'
             },
@@ -37,7 +37,7 @@ extend_schema_tags(
             'path': '/api/v1/user/info/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/user/info/',
                 'method': 'patch'

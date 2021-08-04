@@ -13,12 +13,12 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
                 'tag': 'password.create'
             }
         },
-        'item': {
+        'local': {
             'update': {
                 'tag': 'password.update'
             },
@@ -42,7 +42,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/',
                 'method': 'post'
@@ -63,7 +63,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/{complexity_uuid}/detail/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/{complexity_uuid}/detail/',
                 'method': 'patch'

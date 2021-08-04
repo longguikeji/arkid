@@ -13,12 +13,12 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
                 'tag': 'app.create'
             }
         },
-        'item': {
+        'local': {
             'provisioning': {
                 'tag': 'app.provisioning'
             },
@@ -45,7 +45,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
                 'method': 'post'
@@ -66,7 +66,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
                 'method': 'put'
@@ -87,12 +87,12 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
                 'tag': 'app.provisioning.create'
             }
         },
-        'item': {
+        'local': {
             'mapping': {
                 'tag': 'app.provisioning.mapping'
             },
@@ -122,7 +122,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/',
                 'method': 'post'
@@ -143,7 +143,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{id}/',
                 'method': 'put'
@@ -164,12 +164,12 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
                 'tag': 'app.provisioning.mapping.create'
             }
         },
-        'item': {
+        'local': {
             'update': {
                 'tag': 'app.provisioning.mapping.update'
             },
@@ -193,7 +193,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/',
                 'method': 'post'
@@ -214,7 +214,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/{id}/',
                 'method': 'put'
@@ -235,12 +235,12 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
                 'tag': 'app.provisioning.profile.create'
             }
         },
-        'item': {
+        'local': {
             'update': {
                 'tag': 'app.provisioning.profile.update'
             },
@@ -264,7 +264,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/',
                 'method': 'post'
@@ -286,7 +286,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/{id}/',
                 'method': 'put'

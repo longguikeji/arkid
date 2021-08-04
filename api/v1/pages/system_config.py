@@ -16,7 +16,7 @@ extend_schema_tags(
             'path': '/api/v1/system/config',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'tag': 'system_config.update'
             }
@@ -34,9 +34,9 @@ extend_schema_tags(
         'type': 'form_page',
         'init': {
             'path': '/api/v1/system/config',
-            'method': 'put'
+            'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/system/config',
                 'method': 'put'
@@ -57,7 +57,7 @@ extend_schema_tags(
             'path': '/api/v1/system/config/privacy_notice/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'tag': 'system_register_privacy_notice.update'
             }
@@ -77,7 +77,7 @@ extend_schema_tags(
             'path': '/api/v1/system/config/privacy_notice/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/system/config/privacy_notice/',
                 'method': 'put'

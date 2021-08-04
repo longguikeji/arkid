@@ -21,7 +21,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
                 'tag': 'tenant.create'
             }
@@ -41,7 +41,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/',
                 'method': 'post'
