@@ -24,6 +24,7 @@ from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 @extend_schema_view(
@@ -101,12 +102,13 @@ class GroupViewSet(BaseViewSet):
         obj = Group.valid_objects.filter(**kwargs).first()
         return obj
 
+    @transaction.atomic()
     def destroy(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
         group = self.get_object()
         ret = super().destroy(request, *args, **kwargs)
-        WebhookManager.group_deleted(tenant.uuid, group)
+        transaction.on_commit(lambda: WebhookManager.group_deleted(tenant.uuid, group))
         return ret
 
     @extend_schema(

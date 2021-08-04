@@ -26,6 +26,7 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 from django.utils.translation import gettext_lazy as _
 from common.code import Code
 from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
@@ -73,12 +74,13 @@ class AppViewSet(BaseViewSet):
     @extend_schema(
         roles=['tenant admin', 'global admin'],
     )
+    @transaction.atomic()
     def destroy(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
         app = self.get_object()
         ret = super().destroy(request, *args, **kwargs)
-        WebhookManager.app_deleted(tenant.uuid, app)
+        transaction.on_commit(lambda: WebhookManager.app_deleted(tenant.uuid, app))
         return ret
 
     @extend_schema(roles=['tenant admin', 'global admin'], responses=AppListSerializer)

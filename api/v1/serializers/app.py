@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from provisioning.models import Config
 from schema.models import Schema, AppProfile
 from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
@@ -41,6 +42,7 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
             'uuid': {'read_only': True},
         }
 
+    @transaction.atomic()
     def create(self, validated_data):
         tenant = self.context['tenant']
 
@@ -67,9 +69,12 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
         if data is not None:
             app.data = data
             app.save()
-        WebhookManager.app_created(self.context['tenant'].uuid, app)
+        transaction.on_commit(
+            lambda: WebhookManager.app_created(self.context['tenant'].uuid, app)
+        )
         return app
 
+    @transaction.atomic()
     def update(self, instance, validated_data):
         protocol_type = validated_data.pop('type')
         protocol_data = validated_data.pop('data', None)
@@ -84,7 +89,9 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
             app.save()
         instance.__dict__.update(validated_data)
         instance.save()
-        WebhookManager.app_updated(self.context['tenant'].uuid, instance)
+        transaction.on_commit(
+            lambda: WebhookManager.app_updated(self.context['tenant'].uuid, instance)
+        )
         return instance
 
 

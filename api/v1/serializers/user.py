@@ -13,6 +13,7 @@ from api.v1.fields.custom import (
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
 from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 class CustomUserSerializer(BaseDynamicFieldModelSerializer):
@@ -112,6 +113,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             ret.append(o.data)
         return ret
 
+    @transaction.atomic()
     def create(self, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
@@ -143,9 +145,12 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             custom_user_serializer.save(user=u)
 
         u.save()
-        WebhookManager.user_created(self.context['tenant'].uuid, u)
+        transaction.on_commit(
+            lambda: WebhookManager.user_created(self.context['tenant'].uuid, u)
+        )
         return u
 
+    @transaction.atomic()
     def update(self, instance, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
@@ -179,7 +184,9 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         for key, value in validated_data.items():
             setattr(instance, key, value)
         instance.save()
-        WebhookManager.user_updated(self.context['tenant'].uuid, instance)
+        transaction.on_commit(
+            lambda: WebhookManager.user_updated(self.context['tenant'].uuid, instance)
+        )
         return instance
 
 

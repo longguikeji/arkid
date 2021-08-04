@@ -45,6 +45,7 @@ from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.exceptions import ValidationError
 import re
 from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 @extend_schema_view(
@@ -98,12 +99,14 @@ class UserViewSet(BaseViewSet):
 
         return User.valid_objects.filter(**kwargs).first()
 
+    @transaction.atomic()
     def destroy(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
         user = self.get_object()
         self.get_object().kill()
-        WebhookManager.user_deleted(tenant.uuid, user)
+        # WebhookManager.user_deleted(tenant.uuid, user)
+        transaction.on_commit(lambda: WebhookManager.user_deleted(tenant.uuid, user))
         return Response(
             {
                 'error_code': 0,

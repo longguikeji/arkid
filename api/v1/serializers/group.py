@@ -8,6 +8,7 @@ from .permission import PermissionSerializer
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
 from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 class GroupBaseSerializer(serializers.ModelSerializer):
@@ -76,6 +77,7 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
 
         return ret
 
+    @transaction.atomic()
     def create(self, validated_data):
         name = validated_data.get('name')
         parent_uuid = validated_data.get('parent').get('uuid')
@@ -94,9 +96,12 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
                 if p is not None:
                     o.permissions.add(p)
 
-        WebhookManager.group_created(self.context['tenant'].uuid, o)
+        transaction.on_commit(
+            lambda: WebhookManager.group_created(self.context['tenant'].uuid, o)
+        )
         return o
 
+    @transaction.atomic()
     def update(self, instance: Group, validated_data):
         name = validated_data.get('name', None)
         parent_uuid = validated_data.get('parent', {}).get('uuid', None)
@@ -120,7 +125,9 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
             instance.permissions.clear()
 
         instance.save()
-        WebhookManager.group_updated(self.context['tenant'].uuid, instance)
+        transaction.on_commit(
+            lambda: WebhookManager.group_updated(self.context['tenant'].uuid, instance)
+        )
         return instance
 
     def get_children(self, instance):

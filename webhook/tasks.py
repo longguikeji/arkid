@@ -24,7 +24,6 @@ class WebhookSchemes(str, Enum):
     HTTPS = "https"
 
 
-@shared_task(compression='zlib')
 def _get_webhooks_for_event(tenant_uuid, event_type, webhooks=None):
     """Get active webhooks from the database for an event."""
 
@@ -35,7 +34,7 @@ def _get_webhooks_for_event(tenant_uuid, event_type, webhooks=None):
         tenant__uuid=tenant_uuid,
         is_active=True,
         events__event_type__in=[event_type, WebhookEventType.ANY],
-    )
+    ).distinct()
     return webhooks
 
 
@@ -93,7 +92,7 @@ def send_webhook_using_http(webhook_uuid, target_url, message, signature, event_
 @shared_task(
     autoretry_for=(RequestException,),
     retry_backoff=10,
-    retry_kwargs={"max_retries": 5},
+    retry_kwargs={"max_retries": 2},
     compression="zlib",
 )
 def send_webhook_request(webhook_uuid, target_url, secret, event_type, data):
