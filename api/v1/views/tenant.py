@@ -789,7 +789,7 @@ class TenantContactsConfigGroupVisibilityView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
-        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=2).first()
+        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=1).first()
 
 
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
