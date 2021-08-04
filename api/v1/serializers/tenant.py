@@ -7,12 +7,17 @@ from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Permission, Group, User
 from api.v1.fields.custom import (
-    create_enum_field, create_foreign_key_field,
+    create_enum_field, create_foreign_key_field, create_upload_url_field,
 )
 from ..pages import group, user
 
 
 class TenantSerializer(BaseDynamicFieldModelSerializer):
+
+    icon = create_upload_url_field(serializers.URLField)(
+        hint=_("请选择图标"),
+        required=False
+    )
 
     class Meta:
         model = Tenant
@@ -32,7 +37,8 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         user = self.context['request'].user
         if user and user.username != "":
             user.tenants.add(tenant)
-        permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
+        permission = Permission.active_objects.filter(
+            codename=tenant.admin_perm_code).first()
         if permission:
             user.user_permissions.add(permission)
         # 创建密码规则
@@ -146,7 +152,8 @@ class MobileLoginRequestSerializer(serializers.Serializer):
 class MobileLoginResponseSerializer(serializers.Serializer):
 
     token = serializers.CharField(label=_('token'))
-    has_tenant_admin_perm = serializers.ListField(child=serializers.CharField(), label=_('权限列表'))
+    has_tenant_admin_perm = serializers.ListField(
+        child=serializers.CharField(), label=_('权限列表'))
 
 
 class MobileRegisterRequestSerializer(serializers.Serializer):
@@ -172,7 +179,8 @@ class UserNameLoginRequestSerializer(serializers.Serializer):
     username = serializers.CharField(label=_('用户名'))
     password = serializers.CharField(label=_('密码'))
     code = serializers.CharField(label=_('图片验证码'), required=False)
-    code_filename = serializers.CharField(label=_('图片验证码的文件名称'), required=False)
+    code_filename = serializers.CharField(
+        label=_('图片验证码的文件名称'), required=False)
 
 
 class UserNameRegisterResponseSerializer(serializers.Serializer):
@@ -183,16 +191,19 @@ class UserNameRegisterResponseSerializer(serializers.Serializer):
 class UserNameLoginResponseSerializer(serializers.Serializer):
 
     token = serializers.CharField(label=_('token'))
-    has_tenant_admin_perm = serializers.ListField(child=serializers.CharField(), label=_('权限列表'))
+    has_tenant_admin_perm = serializers.ListField(
+        child=serializers.CharField(), label=_('权限列表'))
 
 
 class ConfigSerializer(serializers.Serializer):
     is_open_authcode = serializers.BooleanField(label=_('是否打开验证码'))
-    error_number_open_authcode = serializers.IntegerField(label=_('错误几次提示输入验证码'))
+    error_number_open_authcode = serializers.IntegerField(
+        label=_('错误几次提示输入验证码'))
     is_open_register_limit = serializers.BooleanField(label=_('是否限制注册用户'))
     register_time_limit = serializers.IntegerField(label=_('用户注册时间限制(分钟)'))
     register_count_limit = serializers.IntegerField(label=_('用户注册数量限制'))
-    upload_file_format = serializers.ListField(child=serializers.CharField(), label=_('允许上传的文件格式'))
+    upload_file_format = serializers.ListField(
+        child=serializers.CharField(), label=_('允许上传的文件格式'))
     close_page_auto_logout = serializers.BooleanField(label=_('是否关闭页面自动退出'))
 
 
@@ -222,7 +233,7 @@ class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
     class Meta:
         model = TenantPasswordComplexity
 
-        fields = ( 
+        fields = (
             'uuid',
             'regular',
             'is_apply',
@@ -234,7 +245,8 @@ class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
         }
 
     def create(self, validated_data):
-        tenant_uuid = self.context['request'].parser_context.get('kwargs').get('tenant_uuid')
+        tenant_uuid = self.context['request'].parser_context.get(
+            'kwargs').get('tenant_uuid')
         regular = validated_data.get('regular')
         is_apply = validated_data.get('is_apply')
         title = validated_data.get('title')
@@ -246,15 +258,18 @@ class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
         complexity.title = title
         complexity.save()
         if is_apply is True:
-            TenantPasswordComplexity.active_objects.filter(tenant=tenant).exclude(id=complexity.id).update(is_apply=False)
+            TenantPasswordComplexity.active_objects.filter(
+                tenant=tenant).exclude(id=complexity.id).update(is_apply=False)
         return complexity
 
     def update(self, instance, validated_data):
-        tenant_uuid = self.context['request'].parser_context.get('kwargs').get('tenant_uuid')
+        tenant_uuid = self.context['request'].parser_context.get(
+            'kwargs').get('tenant_uuid')
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         is_apply = validated_data.get('is_apply')
         if is_apply is True:
-            TenantPasswordComplexity.active_objects.filter(tenant=tenant).exclude(id=instance.id).update(is_apply=False)
+            TenantPasswordComplexity.active_objects.filter(
+                tenant=tenant).exclude(id=instance.id).update(is_apply=False)
         instance.__dict__.update(validated_data)
         instance.save()
         return instance

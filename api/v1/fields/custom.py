@@ -2,10 +2,11 @@
 from drf_spectacular.drainage import set_override, get_override
 from drf_spectacular.utils import extend_schema_field
 
+
 def create_foreign_field(field_cls):
 
     @extend_schema_field(
-        field = {
+        field={
             'format': 'foreign',
         }
     )
@@ -21,7 +22,7 @@ def create_foreign_field(field_cls):
                 field['source'] = kwargs['source']
 
             for k, v in kwargs.items():
-                if isinstance (v,(str,int,list,bool,dict,float)):
+                if isinstance(v, (str, int, list, bool, dict, float)):
                     field[k] = v
 
             set_override(self, 'field', field)
@@ -34,7 +35,7 @@ def create_foreign_key_field(field_cls):
 
     @extend_schema_field(
         field={
-            'format':'foreign_key',
+            'format': 'foreign_key',
         }
     )
     class ForeignKeyField(create_foreign_field(field_cls)):
@@ -55,7 +56,7 @@ def create_hint_field(field_cls):
             field['hint'] = hint
 
             for k, v in kwargs.items():
-                if isinstance (v,(str,int,list,bool,dict,float)):
+                if isinstance(v, (str, int, list, bool, dict, float)):
                     field[k] = v
 
             set_override(self, 'field', field)
@@ -67,7 +68,7 @@ def create_hint_field(field_cls):
 def create_mobile_field(field_cls):
 
     @extend_schema_field(
-        field = {
+        field={
             'format': 'mobile',
         }
     )
@@ -79,7 +80,7 @@ def create_mobile_field(field_cls):
             field['hint'] = hint
 
             for k, v in kwargs.items():
-                if isinstance (v,(str,int,list,bool,dict,float)):
+                if isinstance(v, (str, int, list, bool, dict, float)):
                     field[k] = v
 
             set_override(self, 'field', field)
@@ -91,7 +92,7 @@ def create_mobile_field(field_cls):
 def create_password_field(field_cls):
 
     @extend_schema_field(
-        field = {
+        field={
             'format': 'password',
         }
     )
@@ -103,7 +104,7 @@ def create_password_field(field_cls):
             field['hint'] = hint
 
             for k, v in kwargs.items():
-                if isinstance (v,(str,int,list,bool,dict,float)):
+                if isinstance(v, (str, int, list, bool, dict, float)):
                     field[k] = v
 
             set_override(self, 'field', field)
@@ -122,7 +123,7 @@ def create_enum_field(field_cls):
             field['enum'] = enum
 
             for k, v in kwargs.items():
-                if isinstance (v,(str,int,list,bool,dict,float)):
+                if isinstance(v, (str, int, list, bool, dict, float)):
                     field[k] = v
 
             set_override(self, 'field', field)
@@ -130,13 +131,20 @@ def create_enum_field(field_cls):
 
     return EnumField
 
+
 def create_dowload_url_field(field_cls):
+    """
+    通过url下载数据
+    """
     @extend_schema_field(
-        field = {
+        field={
             'format': 'download_url',
         }
     )
     class DownloadUrlField(field_cls):
+        """
+        下载字段
+        """
         _field_meta = {}
 
         def __init__(self, hint, **kwargs):
@@ -144,7 +152,7 @@ def create_dowload_url_field(field_cls):
             field['hint'] = hint
 
             for k, v in kwargs.items():
-                if isinstance (v,(str,int,list,bool,dict,float)):
+                if isinstance(v, (str, int, list, bool, dict, float)):
                     field[k] = v
 
             set_override(self, 'field', field)
@@ -152,3 +160,88 @@ def create_dowload_url_field(field_cls):
 
     return DownloadUrlField
 
+
+def create_upload_file_field(field_cls):
+    """
+    文件上传字段
+    """
+    @extend_schema_field(
+        field={
+            'format': 'upload_file',
+        }
+    )
+    class UploadFileField(field_cls):
+        """
+        文件上传字段
+        """
+        _field_meta = {}
+
+        def __init__(self, hint, **kwargs):
+            field = get_override(self, 'field', {})
+            field['hint'] = hint
+
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, list, bool, dict, float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+    return UploadFileField
+
+
+def create_upload_url_field(field_cls):
+    """
+    文件上传字段(前端上传并写入返回结果中的url)
+    """
+    @extend_schema_field(
+        field={
+            'format': 'upload_url',
+        }
+    )
+    class UploadUrlField(field_cls):
+        """
+        文件上传字段
+        """
+        _field_meta = {}
+
+        def __init__(self, hint, **kwargs):
+            field = get_override(self, 'field', {})
+            field['hint'] = hint
+
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, list, bool, dict, float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+
+    return UploadUrlField
+
+
+def create_custom_dict_field(field_cls):
+    """
+    自定义字典字段
+    """
+    @extend_schema_field(
+        field={
+            'format': 'custom_dict',
+        }
+    )
+    class CustomDictField(field_cls):
+        """
+        自定义字典字段
+        """
+        _field_meta = {}
+
+        def __init__(self, hint, **kwargs):
+            field = get_override(self, 'field', {})
+            field['hint'] = hint
+
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, list, bool, dict, float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+    return CustomDictField
+>>>>>>> a1b7507df3668c0c8c34aa540da16835dc6ffa3d

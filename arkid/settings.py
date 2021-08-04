@@ -263,9 +263,6 @@ CELERY_BROKER_URL = 'redis://localhost'
 CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 # CELERY_TASK_SERIALIZER = 'json'
 
-# 此处暂时徐保留
-ALIYUN_ROLE_SSO_LOGIN_URL=""
-
 FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'    # 邮件注册页面
 FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'    # 邮件重置密码页面
 FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'    # 邮件激活账号页面
