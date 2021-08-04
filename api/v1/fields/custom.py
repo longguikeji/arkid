@@ -152,21 +152,3 @@ def create_dowload_url_field(field_cls):
 
     return DownloadUrlField
 
-
-def create_choice_field(field_cls):
-
-    class ChoiceField(field_cls):
-        _field_meta = {}
-
-        def __init__(self, hint, **kwargs):
-            field = get_override(self, 'field', {})
-            field['choice'] = hint
-
-            for k, v in kwargs.items():
-                if isinstance (v,(str,int,list,bool,dict,float)):
-                    field[k] = v
-
-            set_override(self, 'field', field)
-            super().__init__(**kwargs)
-
-    return ChoiceField

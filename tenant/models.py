@@ -79,7 +79,7 @@ class TenantContactsConfig(BaseModel):
     #     "assign_group": [],
     #     "assign_user": []
     # }
-    # 每个租户会有2 条相关的记录
+    # 每个租户会有2条相关的记录
 
     TYPE_CHOICES = (
         (0, '功能开关'),

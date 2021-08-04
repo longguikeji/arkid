@@ -7,8 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Permission, Group, User
 from api.v1.fields.custom import (
-    create_enum_field, create_choice_field,
-    create_foreign_key_field,
+    create_enum_field, create_foreign_key_field,
 )
 from ..pages import group, user
 
