@@ -80,7 +80,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
                     "assign_group": [],
                     "assign_user": []
                 }
-            )
+        )
         TenantContactsUserFieldConfig.objects.get_or_create(
             is_del=False,
             tenant=tenant,
