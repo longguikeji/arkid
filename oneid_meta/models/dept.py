@@ -191,9 +191,11 @@ class Dept(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         '''
         return self.detail_serializer_cls(self)
 
+
 class CustomDept(BaseModel):
     dept = models.OneToOneField(Dept, verbose_name='Dept', related_name='custom_dept', on_delete=models.CASCADE)
     data = JSONField(verbose_name='扩展信息')
+
 
 class DingDept(BaseOrderedModel):
     '''
