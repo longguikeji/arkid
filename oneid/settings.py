@@ -25,7 +25,7 @@ SECRET_KEY = 'pueg+1f_su-h_=wxz98+gr9#f5_49f-267^%j^ry^pbcd4+wio'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-TESTING = False    # always False
+TESTING = False  # always False
 
 ALLOWED_HOSTS = ['*']
 
@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'captcha',
     'djangosaml2idp',
     # 'ldap.sql_backend',
+    'webhook',
 ]
 
 REST_FRAMEWORK = {
@@ -66,12 +67,12 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
         'oneid.permissions.IsAdminUser',
-    )
+    ),
 }
 
 AUTHENTICATION_BACKENDS = (
     'rules.permissions.ObjectPermissionBackend',
-    'django.contrib.auth.backends.ModelBackend',    # 保留，用于登录django admin。注意：两个体系中账号密码一样会返回django_user
+    'django.contrib.auth.backends.ModelBackend',  # 保留，用于登录django admin。注意：两个体系中账号密码一样会返回django_user
     'oneid.auth_backend.OneIDBasicAuthBackend',
 )
 
@@ -177,7 +178,7 @@ TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
-USE_L10N = True    # pylint: disable=invalid-name
+USE_L10N = True  # pylint: disable=invalid-name
 
 USE_TZ = True
 
@@ -194,7 +195,7 @@ LANGUAGES = (
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = ('*', )
+CORS_ORIGIN_WHITELIST = ('*',)
 CORS_ALLOW_METHODS = (
     'GET',
     'POST',
@@ -204,7 +205,7 @@ CORS_ALLOW_METHODS = (
     'OPTIONS',
 )
 
-EXECUTERS = [    # 注意顺序
+EXECUTERS = [  # 注意顺序
     'executer.RDB.RDBExecuter',
     'executer.log.rdb.RDBLogExecuter',
     'executer.cache.default.CacheExecuter',
@@ -237,10 +238,18 @@ REDIS_CONFIG = {
     'PASSWORD': None,
 }
 
-REDIS_URL = 'redis://{}:{}/{}'.format(REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'],\
-    REDIS_CONFIG['DB']) if REDIS_CONFIG['PASSWORD'] is None \
-        else 'redis://:{}@{}:{}/{}'.format(REDIS_CONFIG['PASSWORD'],\
-            REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'], REDIS_CONFIG['DB'])
+REDIS_URL = (
+    'redis://{}:{}/{}'.format(
+        REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'], REDIS_CONFIG['DB']
+    )
+    if REDIS_CONFIG['PASSWORD'] is None
+    else 'redis://:{}@{}:{}/{}'.format(
+        REDIS_CONFIG['PASSWORD'],
+        REDIS_CONFIG['HOST'],
+        REDIS_CONFIG['PORT'],
+        REDIS_CONFIG['DB'],
+    )
+)
 
 
 CACHES = {
@@ -251,7 +260,7 @@ CACHES = {
         "OPTIONS": {
             "MAX_ENTRIES": None,
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        },
     }
 }
 
@@ -259,7 +268,8 @@ CACHES = {
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-from celery_app import app    # pylint: disable=wrong-import-position,unused-import
+from celery_app import app  # pylint: disable=wrong-import-position,unused-import
+
 CELERY_TASK_QUEUES = [
     Queue('default', Exchange('default'), routing_key='default'),
     Queue('perm', Exchange('perm'), routing_key='perm'),
@@ -292,10 +302,10 @@ SAML_LOGIN_URL = '/saml/fe/login/'
 ALIYUN_ROLE_SSO_LOGIN_URL = '/saml/aliyun/sso-role/fe/login/'
 
 # TODO
-FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'    # 邮件注册页面
-FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'    # 邮件重置密码页面
-FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'    # 邮件激活账号页面
-FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'    # 邮件重置邮箱页面
+FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'  # 邮件注册页面
+FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'  # 邮件重置密码页面
+FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'  # 邮件激活账号页面
+FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'  # 邮件重置邮箱页面
 LOGIN_URL = '/#/oneid/login'
 CREDIBLE_ARKERS = [
     'oneid_broker',
@@ -325,13 +335,13 @@ ACTIVE_USER_REDIS_KEY_PREFIX = 'active-'
 # 密码复杂度规则
 # 值表示至少需包含的相应元素的个数，默认全部为0
 PASSWORD_COMPLEXITY = {
-    "LENGTH": 0,       # 密码的长度
-    "UPPER": 0,        # 包含大写字母的个数
-    "LOWER": 0,        # 包含小写字母的个数
-    "LETTER": 0,      # 包含大写和小写字母的个数
-    "DIGIT": 0,       # 包含数字的个数
-    "SPECIAL": 0,      # 包含特殊字符的个数 (不是字母数字、空格或标点字符)
-    "WORD": 0,        # 包含单词的个数 (由空格或标点分隔的字母数字序列)
+    "LENGTH": 0,  # 密码的长度
+    "UPPER": 0,  # 包含大写字母的个数
+    "LOWER": 0,  # 包含小写字母的个数
+    "LETTER": 0,  # 包含大写和小写字母的个数
+    "DIGIT": 0,  # 包含数字的个数
+    "SPECIAL": 0,  # 包含特殊字符的个数 (不是字母数字、空格或标点字符)
+    "WORD": 0,  # 包含单词的个数 (由空格或标点分隔的字母数字序列)
 }
 
 WEB_ADMIN_PASSWORD = 'admin'
