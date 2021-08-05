@@ -71,7 +71,7 @@ DEFAULTS = {
     "REFRESH_TOKEN_MODEL": REFRESH_TOKEN_MODEL,
     "OIDC_REFRESH_TOKEN_MODEL": OIDC_REFRESH_TOKEN_MODEL,
     "OIDC_RSA_KEY_MODEL": OIDC_RSA_KEY_MODEL,
-    "REQUEST_APPROVAL_PROMPT": "force",
+    "REQUEST_APPROVAL_PROMPT": "auto",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
 
     # Special settings that will be evaluated at runtime
