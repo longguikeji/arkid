@@ -162,8 +162,3 @@ celerybeat.pid
 # supervisord
 supervisord.pid
 supervisord.log
-
-# 更新 package
-node_modules/
-package-lock.json
-package.json
