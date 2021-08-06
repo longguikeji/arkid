@@ -16,6 +16,7 @@ from webhook.manager import WebhookManager
 from django.db import transaction
 
 
+
 class CustomUserSerializer(BaseDynamicFieldModelSerializer):
     '''
     custom user info
@@ -51,7 +52,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='id',
-        page=group.tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
         write_only=True,
     )
@@ -245,6 +246,42 @@ class ResetPasswordRequestSerializer(serializers.Serializer):
         write_only=True,
         required=True,
     )
+
+
+class MobileResetPasswordRequestSerializer(serializers.Serializer):
+
+    mobile = serializers.CharField(label=_('手机号'), required=True)
+    password = create_password_field(serializers.CharField)(
+        label=_('新密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
+    )
+    check_password = create_password_field(serializers.CharField)(
+        label=_('确认密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
+    )
+    code = serializers.CharField(label=_('验证码'), required=True)
+
+
+class EmailResetPasswordRequestSerializer(serializers.Serializer):
+
+    email = serializers.CharField(label=_('邮箱账号'), required=True)
+    password = create_password_field(serializers.CharField)(
+        label=_('新密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
+    )
+    check_password = create_password_field(serializers.CharField)(
+        label=_('确认密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
+    )
+    code = serializers.CharField(label=_('验证码'), required=True)
 
 
 class PasswordSerializer(serializers.Serializer):

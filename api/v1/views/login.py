@@ -16,6 +16,7 @@ from common.code import Code
 from django.urls import reverse
 from common import loginpage as lp
 from django.db.models import Q
+from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
 
 
 @extend_schema(tags=['uc'])
@@ -58,7 +59,8 @@ class LoginView(generics.CreateAPIView):
         mobile = request.data.get('mobile')
         code = request.data.get('code')
 
-        cache_code = self.runtime.cache_provider.get(mobile)
+        sms_code_key = LoginSMSClaimSerializer.gen_sms_code_key(mobile)
+        cache_code = self.runtime.cache_provider.get(sms_code_key)
 
         if isinstance(cache_code, bytes):
             cache_code = str(cache_code, 'utf-8')
@@ -125,7 +127,8 @@ class MobileLoginView(LoginView):
         mobile = request.data.get('mobile')
         code = request.data.get('code')
 
-        cache_code = self.runtime.cache_provider.get(mobile)
+        sms_code_key = LoginSMSClaimSerializer.gen_sms_code_key(mobile)
+        cache_code = self.runtime.cache_provider.get(sms_code_key)
 
         if isinstance(cache_code, bytes):
             cache_code = str(cache_code, 'utf-8')
@@ -157,22 +160,22 @@ class MobileLoginView(LoginView):
                     type='text',
                     name='mobile',
                     placeholder='手机号',
-                ),
-                lp.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
                     append=lp.Button(
                         label='发送验证码',
                         delay=60,
                         http=lp.ButtonHttp(
-                            url=reverse('api:send-sms'),
+                            url=reverse('api:sms', args=['login']),
                             method='post',
                             params={
                                 'mobile': 'mobile'
                             }
                         )
                     )
+                ),
+                lp.LoginFormItem(
+                    type='text',
+                    name='code',
+                    placeholder='验证码',
                 )
             ],
             submit=lp.Button(
@@ -274,8 +277,9 @@ class MobileRegisterView(LoginView):
         mobile = request.data.get('mobile')
         code = request.data.get('code')
         password = request.data.get('password')
+        sms_code_key = RegisterSMSClaimSerializer.gen_sms_code_key(mobile)
+        cache_code = self.runtime.cache_provider.get(sms_code_key)
 
-        cache_code = self.runtime.cache_provider.get(mobile)
         if code != '123456' and (code is None or str(cache_code) != code):
             return JsonResponse(data={
                 'error': Code.SMS_CODE_MISMATCH.value,
@@ -320,6 +324,17 @@ class MobileRegisterView(LoginView):
                     type='text',
                     name='mobile',
                     placeholder='手机号',
+                    append=lp.Button(
+                        label='发送验证码',
+                        delay=60,
+                        http=lp.ButtonHttp(
+                            url=reverse('api:sms', args=['register']),
+                            method='post',
+                            params={
+                                'mobile': 'mobile'
+                            }
+                        )
+                    )
                 ),
                 lp.LoginFormItem(
                     type='password',
@@ -335,17 +350,6 @@ class MobileRegisterView(LoginView):
                     type='text',
                     name='code',
                     placeholder='验证码',
-                    append=lp.Button(
-                        label='发送验证码',
-                        delay=60,
-                        http=lp.ButtonHttp(
-                            url=reverse('api:send-sms'),
-                            method='post',
-                            params={
-                                'mobile': 'mobile'
-                            }
-                        )
-                    )
                 )
             ],
             submit=lp.Button(

@@ -16,7 +16,21 @@ class ButtonHttp(dict):
 
 
 class Button(dict):
-    def __init__(self, prepend: str = None, label: str = None, tooltip: str = None, long: bool = False, img: str = None, gopage: str = None, redirect: ButtonRedirect = None, http: ButtonHttp = None, delay: int = None, *args, **kwargs):
+    def __init__(
+        self,
+        prepend: str = None,
+        label: str = None,
+        tooltip: str = None,
+        long: bool = False,
+        img: str = None,
+        gopage: str = None,
+        redirect: ButtonRedirect = None,
+        http: ButtonHttp = None,
+        delay: int = None,
+        agreement: dict = {},
+        *args,
+        **kwargs
+    ):
         if prepend:
             self['prepend'] = prepend
         if label:
@@ -35,11 +49,21 @@ class Button(dict):
             self['http'] = http
         if delay:
             self['delay'] = delay
+        if agreement:
+            self['agreement'] = agreement
         super().__init__(*args, **kwargs)
 
 
 class LoginFormItem(dict):
-    def __init__(self, type: str, name: str, placeholder: str = None, append: Button = None, *args, **kwargs):
+    def __init__(
+        self,
+        type: str,
+        name: str,
+        placeholder: str = None,
+        append: Button = None,
+        *args,
+        **kwargs
+    ):
         self['type'] = type
         self['name'] = name
         if placeholder:
@@ -50,7 +74,9 @@ class LoginFormItem(dict):
 
 
 class LoginForm(dict):
-    def __init__(self, label: str, items: [LoginFormItem], submit: Button, *args, **kwargs):
+    def __init__(
+        self, label: str, items: [LoginFormItem], submit: Button, *args, **kwargs
+    ):
         self['label'] = label
         self['items'] = items
         self['submit'] = submit
@@ -78,7 +104,15 @@ class LoginPageExtend(dict):
 
 
 class LoginPage(dict):
-    def __init__(self, name: str, forms: [LoginForm] = None, bottoms: [Button] = None, extend: LoginPageExtend = None, *args, **kwargs):
+    def __init__(
+        self,
+        name: str,
+        forms: [LoginForm] = None,
+        bottoms: [Button] = None,
+        extend: LoginPageExtend = None,
+        *args,
+        **kwargs
+    ):
         self['name'] = name
         if forms:
             self['forms'] = forms
@@ -118,7 +152,6 @@ class LoginPage(dict):
 
 
 class LoginPages(dict):
-
     def __init__(self, *args, **kwargs):
         self['data'] = {}
         super().__init__(*args, **kwargs)
@@ -137,36 +170,23 @@ class LoginPages(dict):
 
     def addForm(self, page, form: LoginForm):
         if form:
-            self.addPage(LoginPage(
-                name=page,
-                forms=[form]
-            ))
+            self.addPage(LoginPage(name=page, forms=[form]))
 
     def addBottom(self, page, bottom: Button):
         if bottom:
-            self.addPage(LoginPage(
-                name=page,
-                bottoms=[bottom]
-            ))
+            self.addPage(LoginPage(name=page, bottoms=[bottom]))
 
     def addExtend(self, page, extend: LoginPageExtend):
         if extend:
-            self.addPage(LoginPage(
-                name=page,
-                extend=extend
-            ))
+            self.addPage(LoginPage(name=page, extend=extend))
 
     def addExtendButton(self, page, button: Button):
         if button:
-            self.addExtend(page, LoginPageExtend(
-                buttons=[button]
-            ))
+            self.addExtend(page, LoginPageExtend(buttons=[button]))
 
     def setExtendTitle(self, page, title):
         if title:
-            self.addExtend(page, LoginPageExtend(
-                title=title
-            ))
+            self.addExtend(page, LoginPageExtend(title=title))
 
     def getPage(self, page):
         return self.get('data').get(page, None)

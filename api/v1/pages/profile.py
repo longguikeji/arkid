@@ -13,20 +13,34 @@ extend_schema_tags(
             'path': '/api/v1/user/info/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
-                'write': {
-                    'path': '/api/v1/user/info/',
-                    'method': 'patch'
-                },
-                'read': {
-                    'path': '/api/v1/user/info/',
-                    'method': 'get'
-                }
+                'tag': 'profile.update'
             },
             'password': {
                 'path': '/api/v1/user/update_password/',
                 'method': 'post'
+            }
+        }
+    }
+)
+
+profile_update_tag = 'profile.update'
+profile_update_name = '编辑个人资料'
+
+extend_schema_tags(
+    profile_update_tag,
+    profile_update_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/user/info/',
+            'method': 'get'
+        },
+        'global': {
+            'update': {
+                'path': '/api/v1/user/info/',
+                'method': 'patch'
             }
         }
     }

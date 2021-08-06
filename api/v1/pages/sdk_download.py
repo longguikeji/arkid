@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'sdk_download'
+tag = 'sdk'
 path = tag
 name = 'SDK下载'
 
