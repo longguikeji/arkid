@@ -482,7 +482,7 @@ class APPWithAccessOwnerSerializer(APPWithAccessSerializer):
             "http_app",
             "index",
             "allow_any_user",
-            'access_perm',
+            # 'access_perm',
             'auth_protocols',
             'access_result',
         )
