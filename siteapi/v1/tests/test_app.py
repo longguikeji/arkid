@@ -408,29 +408,6 @@ class APPTestCase(TestCase):
                 'http_app': None,
                 'saml_app': None,
                 'allow_any_user': False,
-                'access_perm': {
-                    'perm_id': 3,
-                    'uid': 'app_demo_access',
-                    'name': '访问demo',
-                    'remark': '',
-                    'scope': 'demo',
-                    'action': 'access',
-                    'subject': 'app',
-                    'permit_owners': {
-                        'count': 1,
-                        'results': [{
-                            'uid': 'd_root',
-                            'name': 'root',
-                            'subject': 'dept'
-                        }],
-                        'has_more': False
-                    },
-                    'reject_owners': {
-                        'count': 0,
-                        'results': [],
-                        'has_more': False
-                    }
-                },
                 'auth_protocols': [],
                 'access_result': {
                     'node_uid': 'd_root',
