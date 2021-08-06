@@ -337,31 +337,12 @@ class APPTestCase(TestCase):
                     'client_type': 'confidential',
                     'authorization_grant_type': 'authorization-code'
                 },
-                'access_perm': {
-                    'perm_id': 4,
-                    'uid': 'app_test_uid_access',
-                    'name': '访问test_name',
-                    'remark': '',
-                    'scope': 'test_uid',
-                    'action': 'access',
-                    'subject': 'app',
-                    'permit_owners': {
-                        'count': 0,
-                        'results': [],
-                        'has_more': False
-                    },
-                    'reject_owners': {
-                        'count': 0,
-                        'results': [],
-                        'has_more': False
-                    },
-                },
                 'auth_protocols': ['OAuth 2.0'],
             }]
         }    # only for display
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['count'], MAX_APP_ID + 2 - 1)    # 不包括OneID
-        self.assertIn('access_perm', res.json()['results'][0])
+        # self.assertIn('access_perm', res.json()['results'][0])
 
         res = self.client.get(reverse('siteapi:app_list'), data={'page_size': 1, 'page': 2})
         self.assertEqual(res.status_code, 200)
