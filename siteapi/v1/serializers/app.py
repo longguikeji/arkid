@@ -31,10 +31,10 @@ from oneid_meta.models import (
 from siteapi.v1.views.utils import gen_uid
 from siteapi.v1.serializers.perm import PermWithOwnerSerializer
 
-if get_xmlsec_binary:
-    xmlsec_path = get_xmlsec_binary(["/opt/local/bin", "/usr/local/bin"])    # pylint: disable=invalid-name
-else:
-    xmlsec_path = '/usr/local/bin/xmlsec1'    # pylint: disable=invalid-name
+# if get_xmlsec_binary:
+#     xmlsec_path = get_xmlsec_binary(["/opt/local/bin", "/usr/local/bin"])    # pylint: disable=invalid-name
+# else:
+#     xmlsec_path = '/usr/local/bin/xmlsec1'    # pylint: disable=invalid-name
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 
@@ -482,7 +482,7 @@ class APPWithAccessOwnerSerializer(APPWithAccessSerializer):
             "http_app",
             "index",
             "allow_any_user",
-            'access_perm',
+            # 'access_perm',
             'auth_protocols',
             'access_result',
         )
