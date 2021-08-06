@@ -8,6 +8,8 @@ from inventory.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from provisioning.models import Config
 from schema.models import Schema, AppProfile
+from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
@@ -40,6 +42,7 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
             'uuid': {'read_only': True},
         }
 
+    @transaction.atomic()
     def create(self, validated_data):
         tenant = self.context['tenant']
 
@@ -66,9 +69,12 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
         if data is not None:
             app.data = data
             app.save()
-
+        transaction.on_commit(
+            lambda: WebhookManager.app_created(self.context['tenant'].uuid, app)
+        )
         return app
 
+    @transaction.atomic()
     def update(self, instance, validated_data):
         protocol_type = validated_data.pop('type')
         protocol_data = validated_data.pop('data', None)
@@ -83,6 +89,9 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
             app.save()
         instance.__dict__.update(validated_data)
         instance.save()
+        transaction.on_commit(
+            lambda: WebhookManager.app_updated(self.context['tenant'].uuid, instance)
+        )
         return instance
 
 
@@ -125,7 +134,6 @@ class AppProvisioningMappingSerializer(BaseDynamicFieldModelSerializer):
         constant_value = validated_data.pop('constant_value')
         apply_type = validated_data.pop('apply_type')
 
-
         mapping = Schema.objects.create(
             provisioning_config=provisioning,
             mapping_type=mapping_type,
@@ -134,9 +142,10 @@ class AppProvisioningMappingSerializer(BaseDynamicFieldModelSerializer):
             target_attribute=target_attribute,
             is_used_matching=is_used_matching,
             constant_value=constant_value,
-            apply_type=apply_type
+            apply_type=apply_type,
         )
         return mapping
+
 
 class AppProvisioningProfileSerializer(BaseDynamicFieldModelSerializer):
     class Meta:
@@ -161,7 +170,6 @@ class AppProvisioningProfileSerializer(BaseDynamicFieldModelSerializer):
         multi_value = validated_data.pop('multi_value')
         exact_case = validated_data.pop('exact_case')
 
-
         profile = AppProfile.objects.create(
             provisioning_config=provisioning,
             name=name,
@@ -172,6 +180,7 @@ class AppProvisioningProfileSerializer(BaseDynamicFieldModelSerializer):
             exact_case=exact_case,
         )
         return profile
+
 
 class AppProvisioningSerializer(BaseDynamicFieldModelSerializer):
     # app_profile_mappings = AppProvisioningMappingSerializer(many=True)
@@ -190,7 +199,7 @@ class AppProvisioningSerializer(BaseDynamicFieldModelSerializer):
             'username',
             'password',
             'sync_type',
-            'auth_type'
+            'auth_type',
         )
 
     def create(self, validated_data):
@@ -243,6 +252,7 @@ class AppProvisioningSerializer(BaseDynamicFieldModelSerializer):
         # provision.save()
 
         return provision
+
 
 class AddAuthTmplSerializer(serializers.Serializer):
 

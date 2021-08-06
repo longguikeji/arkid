@@ -50,6 +50,8 @@ from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 import re
+from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 @extend_schema_view(
@@ -105,8 +107,14 @@ class UserViewSet(BaseViewSet):
 
         return User.valid_objects.filter(**kwargs).first()
 
+    @transaction.atomic()
     def destroy(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        user = self.get_object()
         self.get_object().kill()
+        # WebhookManager.user_deleted(tenant.uuid, user)
+        transaction.on_commit(lambda: WebhookManager.user_deleted(tenant.uuid, user))
         return Response(
             {
                 'error_code': 0,
