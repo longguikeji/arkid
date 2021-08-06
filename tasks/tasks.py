@@ -18,7 +18,8 @@ from provisioning.utils import (
 )
 from inventory.models import User, Group
 from app.models import App
-from webhook.models import WebHook, WebHookTriggerHistory
+
+# from webhook.models import WebHook, WebHookTriggerHistory
 from common.utils import send_email as send_email_func
 import requests
 from provisioning.constants import ProvisioningType
@@ -189,16 +190,16 @@ def deprovision_app_group(tenant_uuid: str, app_id: int, config_id: int, group_i
         delete_group(scim_client, config, group_uuid)
 
 
-@app.task
-def notify_webhook(tenant_uuid: int, event: Event):
-    webhooks = WebHook.objects.filter(
-        tenant__uuid=tenant_uuid,
-    )
+# @app.task
+# def notify_webhook(tenant_uuid: int, event: Event):
+#     webhooks = WebHook.objects.filter(
+#         tenant__uuid=tenant_uuid,
+#     )
 
-    webhook: WebHook
-    for webhook in webhooks:
-        r = requests.post(webhook.url)
-        print(r.json())
+#     webhook: WebHook
+#     for webhook in webhooks:
+#         r = requests.post(webhook.url)
+#         print(r.json())
 
 
 @app.task
@@ -208,8 +209,9 @@ def send_email(addrs, subject, content):
     '''
     send_email_func(addrs, subject, content)
 
+
 @app.task
-def provision_tenant_app(tenant_uuid: str, app_id:int):
+def provision_tenant_app(tenant_uuid: str, app_id: int):
     pass
 
 
