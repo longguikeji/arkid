@@ -27,7 +27,8 @@ from django.utils.translation import gettext_lazy as _
 from common.code import Code
 from webhook.manager import WebhookManager
 from django.db import transaction
-
+from rest_framework import generics
+from tenant.models import Tenant
 
 AppPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='AppPolymorphicProxySerializer',
@@ -164,75 +165,82 @@ class AppViewSet(BaseViewSet):
         return Response({'error': Code.OK.value})
 
 
-@extend_schema(tags=['app'])
-class AppProvisioningViewSet(BaseViewSet):
-
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
-
-    model = Config
-
-    permission_classes = []
-    authentication_classes = []
-
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+class AppProvisioningView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = AppProvisioningSerializer
-    pagination_class = DefaultListPaginator
 
-    def get_queryset(self):
-        context = self.get_serializer_context()
-        tenant = context['tenant']
-        app = context['app']
-        all_configs = Config.active_objects.filter(
-            app=app,
-        )
-        return all_configs
+    def get_object(self):
+        app_uuid = self.kwargs['app_uuid']
+        app = App.objects.filter(uuid=app_uuid).first()
+        config, is_created = Config.valid_objects.get_or_create(app=app)
+        return config
 
 
-@extend_schema(tags=['app'])
-class AppProvisioningMappingViewSet(BaseViewSet):
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+class AppProvisioningMappingView(generics.ListCreateAPIView):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
-
-    model = Schema
-
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = AppProvisioningMappingSerializer
-    pagination_class = DefaultListPaginator
 
     def get_queryset(self):
-        context = self.get_serializer_context()
-        tenant = context['tenant']
-        app = context['app']
-        provisioning = context.get('provisioning')
+        app_uuid = self.kwargs['app_uuid']
+        app = App.objects.filter(uuid=app_uuid).first()
+        config = Config.valid_objects.filter(app=app).first()
         mapping = Schema.active_objects.filter(
-            provisioning_config=provisioning,
+            provisioning_config=config,
         )
         return mapping
 
 
-@extend_schema(tags=['app'])
-class AppProvisioningProfileViewSet(BaseViewSet):
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+class AppProvisioningMappingDetailView(generics.RetrieveUpdateDestroyAPIView):
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
-    model = AppProfile
+    serializer_class = AppProvisioningMappingSerializer
 
-    permission_classes = []
-    authentication_classes = []
+    def get_object(self):
+        uuid = self.kwargs['map_uuid']
+        map = Schema.active_objects.filter(
+            uuid=uuid,
+        ).first()
+        return map
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+class AppProvisioningProfileView(generics.ListCreateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = AppProvisioningProfileSerializer
-    pagination_class = DefaultListPaginator
 
     def get_queryset(self):
-        context = self.get_serializer_context()
-        tenant = context['tenant']
-        app = context['app']
-        provisioning = context.get('provisioning')
-        mapping = AppProfile.active_objects.filter(
-            provisioning_config=provisioning,
+        app_uuid = self.kwargs['app_uuid']
+        app = App.objects.filter(uuid=app_uuid).first()
+        config = Config.valid_objects.filter(app=app).first()
+        profile = AppProfile.active_objects.filter(
+            provisioning_config=config,
         )
-        return mapping
+        return profile
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+class AppProvisioningProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = AppProvisioningProfileSerializer
+
+    def get_object(self):
+        uuid = self.kwargs['profile_uuid']
+        profile = AppProfile.active_objects.filter(
+            uuid=uuid,
+        ).first()
+        return profile
