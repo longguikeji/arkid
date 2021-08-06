@@ -14,27 +14,27 @@ tenant_app_router = tenant_router.register(
 
 urlpatterns = [
     re_path(
-        r'^app/(?P<app_uuid>[\w-]+)/provisioning/$',
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/$',
         views_app.AppProvisioningView.as_view(),
         name='app-provisioning-config',
     ),
     re_path(
-        r'^app/(?P<app_uuid>[\w-]+)/provisioning/mapping/$',
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/mapping/$',
         views_app.AppProvisioningMappingView.as_view(),
         name='app-provisioning-config-mapping',
     ),
     re_path(
-        r'^app/(?P<app_uuid>[\w-]+)/provisioning/mapping/(?P<map_uuid>[\w-]+)/$',
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/mapping/(?P<map_uuid>[\w-]+)/$',
         views_app.AppProvisioningMappingDetailView.as_view(),
         name='app-provisioning-config-mapping-detail',
     ),
     re_path(
-        r'^app/(?P<app_uuid>[\w-]+)/provisioning/profile/$',
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/profile/$',
         views_app.AppProvisioningProfileView.as_view(),
         name='app-provisioning-config-profile',
     ),
     re_path(
-        r'^app/(?P<app_uuid>[\w-]+)/provisioning/profile/(?P<profile_uuid>[\w-]+)/$',
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/profile/(?P<profile_uuid>[\w-]+)/$',
         views_app.AppProvisioningProfileDetailView.as_view(),
         name='app-provisioning-config-profile-detail',
     ),

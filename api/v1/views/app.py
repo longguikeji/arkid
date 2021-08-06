@@ -173,7 +173,8 @@ class AppProvisioningView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         app_uuid = self.kwargs['app_uuid']
-        app = App.objects.filter(uuid=app_uuid).first()
+        tenant_uuid = self.kwargs['tenant_uuid']
+        app = App.objects.filter(uuid=app_uuid, tenant__uuid=tenant_uuid).first()
         config, is_created = Config.valid_objects.get_or_create(app=app)
         return config
 
@@ -188,7 +189,8 @@ class AppProvisioningMappingView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         app_uuid = self.kwargs['app_uuid']
-        app = App.objects.filter(uuid=app_uuid).first()
+        tenant_uuid = self.kwargs['tenant_uuid']
+        app = App.objects.filter(uuid=app_uuid, tenant__uuid=tenant_uuid).first()
         config = Config.valid_objects.filter(app=app).first()
         mapping = Schema.active_objects.filter(
             provisioning_config=config,
@@ -205,9 +207,13 @@ class AppProvisioningMappingDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AppProvisioningMappingSerializer
 
     def get_object(self):
-        uuid = self.kwargs['map_uuid']
+        app_uuid = self.kwargs['app_uuid']
+        tenant_uuid = self.kwargs['tenant_uuid']
+        app = App.objects.filter(uuid=app_uuid, tenant__uuid=tenant_uuid).first()
+        config = Config.valid_objects.filter(app=app).first()
+        map_uuid = self.kwargs['map_uuid']
         map = Schema.active_objects.filter(
-            uuid=uuid,
+            uuid=map_uuid, provisioning_config=config
         ).first()
         return map
 
@@ -221,8 +227,9 @@ class AppProvisioningProfileView(generics.ListCreateAPIView):
     serializer_class = AppProvisioningProfileSerializer
 
     def get_queryset(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
         app_uuid = self.kwargs['app_uuid']
-        app = App.objects.filter(uuid=app_uuid).first()
+        app = App.objects.filter(uuid=app_uuid, tenant__uuid=tenant_uuid).first()
         config = Config.valid_objects.filter(app=app).first()
         profile = AppProfile.active_objects.filter(
             provisioning_config=config,
@@ -239,8 +246,12 @@ class AppProvisioningProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AppProvisioningProfileSerializer
 
     def get_object(self):
-        uuid = self.kwargs['profile_uuid']
+        app_uuid = self.kwargs['app_uuid']
+        tenant_uuid = self.kwargs['tenant_uuid']
+        app = App.objects.filter(uuid=app_uuid, tenant__uuid=tenant_uuid).first()
+        config = Config.valid_objects.filter(app=app).first()
+        profile_uuid = self.kwargs['profile_uuid']
         profile = AppProfile.active_objects.filter(
-            uuid=uuid,
+            uuid=profile_uuid, provisioning_config=config
         ).first()
         return profile
