@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import WebHook, WebHookTriggerHistory
+from .models import Webhook, WebhookEvent, WebhookTriggerHistory
 
 
-admin.site.register(WebHook)
-admin.site.register(WebHookTriggerHistory)
+admin.site.register(Webhook)
+admin.site.register(WebhookEvent)
+admin.site.register(WebhookTriggerHistory)

@@ -4,11 +4,18 @@ from inventory.models import Group, Permission, User, CustomUser
 from rest_framework import serializers
 from .group import GroupSerializer, GroupBaseSerializer
 from api.v1.fields.custom import (
-    create_foreign_key_field, create_foreign_field, create_hint_field,
-    create_mobile_field, create_password_field,
+    create_foreign_key_field,
+    create_foreign_field,
+    create_hint_field,
+    create_mobile_field,
+    create_password_field,
 )
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
+from webhook.manager import WebhookManager
+from django.db import transaction
+
+
 
 class CustomUserSerializer(BaseDynamicFieldModelSerializer):
     '''
@@ -17,14 +24,14 @@ class CustomUserSerializer(BaseDynamicFieldModelSerializer):
 
     pretty = serializers.SerializerMethodField()
 
-    class Meta:    # pylint: disable=missing-docstring
+    class Meta:  # pylint: disable=missing-docstring
         model = CustomUser
 
         fields = ('data', 'pretty')
 
         extra_kwargs = {'pretty': {'read_only': True}}
 
-    def get_pretty(self, instance):    # pylint: disable=no-self-use
+    def get_pretty(self, instance):  # pylint: disable=no-self-use
         '''
         前端友好的输出
         '''
@@ -45,7 +52,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='id',
-        page=group.tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
         write_only=True,
     )
@@ -107,6 +114,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             ret.append(o.data)
         return ret
 
+    @transaction.atomic()
     def create(self, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
@@ -136,10 +144,14 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             custom_user_serializer = CustomUserSerializer(data=custom_user_data)
             custom_user_serializer.is_valid(raise_exception=True)
             custom_user_serializer.save(user=u)
-            
+
         u.save()
+        transaction.on_commit(
+            lambda: WebhookManager.user_created(self.context['tenant'].uuid, u)
+        )
         return u
 
+    @transaction.atomic()
     def update(self, instance, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
@@ -160,7 +172,9 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         if 'custom_user' in validated_data:
             custom_user_data = validated_data.pop('custom_user')
             if hasattr(instance, 'custom_user'):
-                custom_user_serializer = CustomUserSerializer(instance.custom_user, data=custom_user_data, partial=True)
+                custom_user_serializer = CustomUserSerializer(
+                    instance.custom_user, data=custom_user_data, partial=True
+                )
                 custom_user_serializer.is_valid(raise_exception=True)
                 custom_user_serializer.save()
             else:
@@ -171,6 +185,9 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         for key, value in validated_data.items():
             setattr(instance, key, value)
         instance.save()
+        transaction.on_commit(
+            lambda: WebhookManager.user_updated(self.context['tenant'].uuid, instance)
+        )
         return instance
 
 
@@ -231,6 +248,42 @@ class ResetPasswordRequestSerializer(serializers.Serializer):
     )
 
 
+class MobileResetPasswordRequestSerializer(serializers.Serializer):
+
+    mobile = serializers.CharField(label=_('手机号'), required=True)
+    password = create_password_field(serializers.CharField)(
+        label=_('新密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
+    )
+    check_password = create_password_field(serializers.CharField)(
+        label=_('确认密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
+    )
+    code = serializers.CharField(label=_('验证码'), required=True)
+
+
+class EmailResetPasswordRequestSerializer(serializers.Serializer):
+
+    email = serializers.CharField(label=_('邮箱账号'), required=True)
+    password = create_password_field(serializers.CharField)(
+        label=_('新密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
+    )
+    check_password = create_password_field(serializers.CharField)(
+        label=_('确认密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=True,
+    )
+    code = serializers.CharField(label=_('验证码'), required=True)
+
+
 class PasswordSerializer(serializers.Serializer):
 
     is_succeed = serializers.BooleanField(label=_('是否修改成功'))
@@ -282,7 +335,9 @@ class UserBindInfoBaseSerializer(serializers.Serializer):
 
 
 class UserBindInfoSerializer(serializers.Serializer):
-    data = serializers.ListField(child=UserBindInfoBaseSerializer(), label=_('绑定信息'), read_only=True)
+    data = serializers.ListField(
+        child=UserBindInfoBaseSerializer(), label=_('绑定信息'), read_only=True
+    )
 
 
 class LogoutSerializer(serializers.Serializer):
@@ -290,6 +345,8 @@ class LogoutSerializer(serializers.Serializer):
 
 
 class UserManageTenantsSerializer(serializers.Serializer):
-    manage_tenants = serializers.ListField(child=serializers.CharField(), label=_('管理的租户信息'), read_only=True)
+    manage_tenants = serializers.ListField(
+        child=serializers.CharField(), label=_('管理的租户信息'), read_only=True
+    )
     is_global_admin = serializers.BooleanField(label=_('是否是系统管理员'))
     is_platform_user = serializers.BooleanField(label=_('是否是平台用户'))

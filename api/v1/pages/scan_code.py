@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'scan_code'
+tag = 'scan'
 path = tag
 name = '扫码登录'
 
