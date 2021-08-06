@@ -68,16 +68,18 @@ class APP(BaseModel):
         '''
         支持的协议名称，展示用
         '''
+        items = []
         if hasattr(self, 'oauth_app'):
-            yield "OAuth 2.0"
+            items.append("OAuth 2.0")
         if hasattr(self, 'oidc_app'):
-            yield "OIDC"
+            items.append("OIDC")
         if hasattr(self, 'saml_app'):
-            yield "SAML"
+            items.append("SAML")
         if hasattr(self, 'ldap_app'):
-            yield "LDAP"
+            items.append("LDAP")
         if hasattr(self, 'http_app'):
-            yield "HTTP"
+            items.append("HTTP")
+        return items
 
     def delete(self, *args, **kwargs):    # pylint: disable=unused-argument
         '''
