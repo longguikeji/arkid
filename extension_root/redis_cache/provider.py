@@ -26,7 +26,8 @@ class RedisCacheProvider(CacheProvider):
             host=self.host, 
             port=self.port, 
             password=self.password,
-            db=self.db
+            db=self.db,
+            decode_responses=True
         )
         return conn.get(key)
 
@@ -35,6 +36,7 @@ class RedisCacheProvider(CacheProvider):
             host=self.host,
             port=self.port,
             password=self.password,
-            db=self.db
+            db=self.db,
+            decode_responses=True
         )
         return getattr(conn, key)
