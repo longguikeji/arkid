@@ -48,7 +48,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-
+from django_filters.rest_framework import DjangoFilterBackend
 import re
 
 
@@ -74,6 +74,8 @@ class UserViewSet(BaseViewSet):
 
     serializer_class = UserSerializer
     pagination_class = DefaultListPaginator
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['username', 'email']
 
     def get_queryset(self):
         context = self.get_serializer_context()

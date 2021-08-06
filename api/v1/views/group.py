@@ -23,7 +23,7 @@ from common.code import Code
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
-
+from django_filters.rest_framework import DjangoFilterBackend
 
 @extend_schema_view(
     list=extend_schema(
@@ -69,7 +69,8 @@ class GroupViewSet(BaseViewSet):
 
     serializer_class = GroupSerializer
     pagination_class = DefaultListPaginator
-
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['name', 'parent']
 
     def get_queryset(self):
         context = self.get_serializer_context()
