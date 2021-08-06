@@ -13,22 +13,22 @@ class SAMLasIDPConfigSerializer(serializers.Serializer):  # pylint: disable=abst
     注意： 此处取名为IDP**意味着在arkid中IDP与SP是一对一匹配的(区别于单租户应用)
     """
 
-    entity_id = serializers.CharField(
-        required=False
-    )
+    # entity_id = serializers.CharField(
+    #     required=False
+    # )
 
-    acs = serializers.URLField(
-        required=False
-    )
+    # acs = serializers.URLField(
+    #     required=False
+    # )
 
-    sls = serializers.URLField(
-        required=False
-    )
+    # sls = serializers.URLField(
+    #     required=False
+    # )
 
-    cert = serializers.CharField(
-        label=_("证书公钥"),
-        required=False
-    )
+    # cert = serializers.CharField(
+    #     label=_("证书公钥"),
+    #     required=False
+    # )
 
     xmldata = serializers.CharField(
         label=_("元数据文件"),
