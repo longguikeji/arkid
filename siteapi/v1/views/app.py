@@ -28,7 +28,11 @@ from siteapi.v1.serializers.app import (
 )
 from siteapi.v1.views.utils import gen_uid
 from common.django.drf.paginator import DefaultListPaginator
-from oneid_meta.models import APP, Perm, UserPerm, Dept, User, Group, OAuthAPP
+from oneid_meta.models import(
+    APP, Perm, UserPerm,
+    Dept, User, Group,
+    OAuthAPP, DeptPerm, DeptMember
+)
 from oneid.permissions import (
     IsAPPManager,
     IsAdminUser,
@@ -79,7 +83,6 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         if self.request.user.is_admin:
             kwargs.pop('uid__in')
             manager_app_uids = None
-
         # 筛选-对owner可访问
         owner = None
         access_app_uids = None
@@ -95,7 +98,6 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
             if not user:
                 raise ValidationError({'user_uid': ['not found']})
             owner = user
-
         if owner:
             owner_access = self.request.query_params.get('owner_access', None)
             if owner_access is not None:
@@ -115,9 +117,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
                         **scope_kwargs,
                     ).values('perm__scope')
                 ]
-
                 kwargs['uid__in'] = access_app_uids
-
         apps = APP.valid_objects.filter(**kwargs).exclude(uid='oneid').order_by('-created')
         return apps
 
@@ -191,22 +191,64 @@ class UcenterAPPListAPIView(generics.ListAPIView):
         name = self.request.query_params.get('name', '')
         if name:
             kwargs['name__icontains'] = name
-
-        uids = [
-            item['perm__scope'] for item in UserPerm.valid_objects.filter(
-                owner=self.request.user,
-                value=True,
-                perm__subject='app',
-                perm__action__startswith='access',
-            ).values('perm__scope')
-        ]
-
-        
+        data = []
+        if self.request.user.is_admin is False:
+            # 获取的是用户指定应用的权限
+            uids = [
+                item['perm__scope'] for item in UserPerm.valid_objects.filter(
+                    owner=self.request.user,
+                    value=True,
+                    perm__subject='app',
+                    perm__action__startswith='access',
+                ).values('perm__scope')
+            ]
+            # 获取的是指定应用部门的权限
+            dms = DeptMember.valid_objects.filter(
+                user=self.request.user
+            )
+            result = APP.valid_objects.filter(
+                **kwargs
+            ).order_by('-created')
+            for item in result:
+                uid = item.uid
+                if item.allow_any_user is True:
+                    if item.uuid not in data:
+                        data.append(item.uuid)
+                else:
+                    if uid in uids:
+                        if item.uuid not in data:
+                            data.append(item.uuid)
+                    else:
+                        # 取的当前分组的所拥有的部门和当前用户的部门进行比对
+                        perms = Perm.valid_objects.filter(
+                            scope=uid,
+                            subject='app',
+                            action__startswith='access'
+                        ).order_by('id')
+                        for perm in perms:
+                            deps = DeptPerm.valid_objects.filter(
+                                status=1,
+                                perm=perm
+                            )
+                            for dep in deps:
+                                owner = dep.owner
+                                # 用户的部门是否属于指定的部门
+                                for dm in dms:
+                                    dm_owner = dm.owner
+                                    if dm_owner == owner:
+                                        if item.uuid not in data:
+                                            data.append(item.uuid)
+                                    else:
+                                        if dm_owner.if_belong_to_dept(owner, True) is True:
+                                            if item.uuid not in data:
+                                                data.append(item.uuid)
+        # 原来的逻辑
         if self.request.user.is_admin:
             redata = APP.valid_objects.filter(**kwargs).order_by('-created')
         else:
-            redata = APP.valid_objects.filter(Q(uid__in=uids, allow_any_user=False)
-                                        | Q(allow_any_user=True), **kwargs).order_by('-created')
+            redata = APP.valid_objects.filter(uuid__in=data).order_by('-created')
+            # redata = APP.valid_objects.filter(Q(uid__in=uids, allow_any_user=False)
+            #                             | Q(allow_any_user=True), **kwargs).order_by('-created')
         return redata
 
 

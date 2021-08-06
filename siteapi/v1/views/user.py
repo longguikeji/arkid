@@ -279,7 +279,6 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         else:
             group_uids = data.get('group_uids', [])
             dept_uids = data.get('dept_uids', [])
-
         cli = CLI()
         password = user_info.pop('password', None)
         user = cli.create_user(user_info)
@@ -288,9 +287,7 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             cli.set_user_password(user, password)
         user.origin = 1  # 管理员添加
         user.save()
-
         self.assign_user(user, dept_uids=dept_uids, group_uids=group_uids)
-
         user_serializer = EmployeeSerializer(user)
         transaction.on_commit(lambda: WebhookManager.user_created(user))
         return Response(
