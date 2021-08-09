@@ -21,7 +21,7 @@ from . import (
     authcode,
     config,
     system,
-    email
+    email,
 )
 from runtime import get_app_runtime
 
@@ -71,3 +71,4 @@ urlpatterns += authcode.urlpatterns
 urlpatterns += config.urlpatterns
 urlpatterns += system.urlpatterns
 urlpatterns += email.urlpatterns
+urlpatterns += app.urlpatterns

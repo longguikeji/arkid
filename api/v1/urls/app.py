@@ -1,6 +1,9 @@
 from api.v1.views import app as views_app
-
+from django.urls import re_path
 from .tenant import tenant_router
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
 
 tenant_app_router = tenant_router.register(
     r'app',
@@ -9,23 +12,30 @@ tenant_app_router = tenant_router.register(
     parents_query_lookups=['tenant'],
 )
 
-app_provisioning_router = tenant_app_router.register(
-    r'provisioning',
-    views_app.AppProvisioningViewSet,
-    basename='tenant-app-provisioning',
-    parents_query_lookups=['tenant', 'app'],
-)
-
-app_provisioning_router.register(
-    r'mapping',
-    views_app.AppProvisioningMappingViewSet,
-    basename='tenant-app-provisioning-mapping',
-    parents_query_lookups=['tenant', 'app', 'provisioning'],
-)
-
-app_provisioning_router.register(
-    r'profile',
-    views_app.AppProvisioningProfileViewSet,
-    basename='tenant-app-provisioning-profile',
-    parents_query_lookups=['tenant', 'app', 'provisioning'],
-)
+urlpatterns = [
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/$',
+        views_app.AppProvisioningView.as_view(),
+        name='app-provisioning-config',
+    ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/mapping/$',
+        views_app.AppProvisioningMappingView.as_view(),
+        name='app-provisioning-config-mapping',
+    ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/mapping/(?P<map_uuid>[\w-]+)/$',
+        views_app.AppProvisioningMappingDetailView.as_view(),
+        name='app-provisioning-config-mapping-detail',
+    ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/profile/$',
+        views_app.AppProvisioningProfileView.as_view(),
+        name='app-provisioning-config-profile',
+    ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app/(?P<app_uuid>[\w-]+)/provisioning/profile/(?P<profile_uuid>[\w-]+)/$',
+        views_app.AppProvisioningProfileDetailView.as_view(),
+        name='app-provisioning-config-profile-detail',
+    ),
+]

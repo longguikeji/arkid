@@ -83,22 +83,24 @@ class LoginPage(views.APIView):
         ).first()
         if tenant_config:
             field_names = tenant_config.data.get(
-                'native_login_register_field_names'
-            ) or [
-                'mobile',
-                'email',
-            ]
+                'native_login_register_field_names', ['mobile', 'email']
+            )
+            field_uuids = tenant_config.data.get(
+                'custom_login_register_field_uuids', []
+            )  # 除了mobile之外的原生字段，和自定义字段共用一个登录窗口, 用密码登录
         else:
             field_names = ['mobile', 'email']
-
-        if 'mobile' in field_names:
-            data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant.uuid))
+            field_uuids = []
 
         # 除了mobile用验证码登录，其他字段包括email用密码登录
-        field_names.remove('mobile')
+        if 'mobile' in field_names:
+            data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant.uuid))
+            data.addForm(
+                model.REGISTER,
+                TenantViewSet().native_field_register_form(tenant.uuid, 'mobile'),
+            )
+            field_names.remove('mobile')
 
-        field_uuids = tenant_config.data.get('custom_login_register_field_uuids', [])
-        # 除了mobile之外的原生字段，和自定义字段共用一个登录窗口, 用密码登录
         if field_names or field_uuids:
             data.addForm(
                 model.LOGIN,
@@ -106,6 +108,8 @@ class LoginPage(views.APIView):
                     request, tenant.uuid, field_names, field_uuids
                 ),
             )
+
+        # 原生字段的注册表单
         for field_name in field_names:
             data.addForm(
                 model.REGISTER,
