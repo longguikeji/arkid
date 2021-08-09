@@ -12,7 +12,6 @@ from django.db import transaction
 
 
 class GroupBaseSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Group
         fields = ('name', 'uuid')

@@ -54,7 +54,8 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         field_name='id',
         page=group.group_tree_tag,
         child=serializers.CharField(),
-        write_only=True,
+        default=[],
+        link="groups",
     )
 
     permissions = serializers.SerializerMethodField()
@@ -64,7 +65,8 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         field_name='id',
         page=permission.tag,
         child=serializers.CharField(),
-        write_only=True,
+        default=[],
+        link="permissions",
     )
 
     custom_user = CustomUserSerializer(many=False, required=False, allow_null=True)
