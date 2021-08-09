@@ -3,7 +3,7 @@ import json
 
 def generate_app_payload(app):
     data = {
-        'uuid': app.uuid,
+        'uuid': app.uuid.hex,
         'name': app.name,
         'url': app.url,
         'description': app.description,
