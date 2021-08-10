@@ -27,6 +27,7 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         label='上级组织',
         source='parent.uuid',
         default=None,
+        link="parent",
     )
 
     parent_name = create_foreign_field(serializers.CharField)(
@@ -49,6 +50,7 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         child=serializers.CharField(),
         write_only=True,
         default=[],
+        link="permissions",
     )
 
     class Meta:

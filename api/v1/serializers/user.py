@@ -56,6 +56,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         child=serializers.CharField(),
         default=[],
         link="groups",
+        write_only=True,
     )
 
     permissions = serializers.SerializerMethodField()
@@ -67,6 +68,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         child=serializers.CharField(),
         default=[],
         link="permissions",
+        write_only=True,
     )
 
     custom_user = CustomUserSerializer(many=False, required=False, allow_null=True)
