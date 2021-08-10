@@ -1122,7 +1122,7 @@ class TenantPrivacyNoticeView(generics.RetrieveUpdateAPIView):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         privacy_notice, is_created = TenantPrivacyNotice.objects.get_or_create(
-            is_del=False, is_active=True, tenant=tenant
+            is_del=False, tenant=tenant
         )
         return privacy_notice
 

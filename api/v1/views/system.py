@@ -48,7 +48,7 @@ class SystemPrivacyNoticeView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         privacy_notice, is_created = SystemPrivacyNotice.objects.get_or_create(
-            is_del=False, is_active=True
+            is_del=False
         )
         return privacy_notice
 

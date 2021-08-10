@@ -33,10 +33,11 @@ class SystemPrivacyNoticeSerializer(BaseDynamicFieldModelSerializer):
     class Meta:
         model = SystemPrivacyNotice
 
-        fields = ('title', 'content')
+        fields = ('title', 'content', 'is_active')
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title')
         instance.content = validated_data.get('content')
+        instance.is_active = validated_data.get('is_active')
         instance.save()
         return instance
