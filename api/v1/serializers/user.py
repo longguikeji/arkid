@@ -1,6 +1,6 @@
 from api.v1.serializers.permission import PermissionSerializer
 from common.serializer import BaseDynamicFieldModelSerializer
-from inventory.models import Group, Permission, User, CustomUser
+from inventory.models import Group, Permission, User, CustomUser, CustomField
 from rest_framework import serializers
 from .group import GroupSerializer, GroupBaseSerializer
 from api.v1.fields.custom import (
@@ -16,26 +16,27 @@ from webhook.manager import WebhookManager
 from django.db import transaction
 
 
-
-class CustomUserSerializer(BaseDynamicFieldModelSerializer):
+class CustomUserSerializer(serializers.Serializer):
     '''
     custom user info
     '''
 
-    pretty = serializers.SerializerMethodField()
+    # pretty = serializers.SerializerMethodField()
 
-    class Meta:  # pylint: disable=missing-docstring
-        model = CustomUser
+    # class Meta:  # pylint: disable=missing-docstring
+    #     model = CustomUser
 
-        fields = ('data', 'pretty')
+    #     fields = ('data', 'pretty')
 
-        extra_kwargs = {'pretty': {'read_only': True}}
+    # extra_kwargs = {'pretty': {'read_only': True}}
 
-    def get_pretty(self, instance):  # pylint: disable=no-self-use
-        '''
-        前端友好的输出
-        '''
-        return instance.pretty(visible_only=True)
+    # def get_pretty(self, instance):  # pylint: disable=no-self-use
+    #     '''
+    #     前端友好的输出
+    #     '''
+    #     return instance.pretty(visible_only=True)
+
+    data = serializers.DictField(allow_empty=True)
 
 
 class UserSerializer(BaseDynamicFieldModelSerializer):
@@ -67,7 +68,15 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         write_only=True,
     )
 
-    custom_user = CustomUserSerializer(many=False, required=False, allow_null=True)
+    # custom_user = CustomUserSerializer(many=False, required=False, allow_null=True)
+    custom_user = create_foreign_key_field(serializers.DictField)(
+        allow_empty=True,
+        model_cls=CustomField,
+        field_name='id',
+        page=group.group_tree_tag,
+        # child=serializers.CharField(),
+        # write_only=True,
+    )
 
     class Meta:
         model = User
@@ -141,9 +150,10 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
                     u.user_permissions.add(p)
 
         if custom_user_data:
-            custom_user_serializer = CustomUserSerializer(data=custom_user_data)
-            custom_user_serializer.is_valid(raise_exception=True)
-            custom_user_serializer.save(user=u)
+            tenant = self.context['tenant']
+            CustomUser.active_objects.create(
+                user=u, tenant=tenant, data=custom_user_data
+            )
 
         u.save()
         transaction.on_commit(
@@ -171,16 +181,15 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
         if 'custom_user' in validated_data:
             custom_user_data = validated_data.pop('custom_user')
-            if hasattr(instance, 'custom_user'):
-                custom_user_serializer = CustomUserSerializer(
-                    instance.custom_user, data=custom_user_data, partial=True
-                )
-                custom_user_serializer.is_valid(raise_exception=True)
-                custom_user_serializer.save()
+            tenant = self.context['tenant']
+            custom_user = instance.custom_user.filter(tenant=tenant).first()
+            if custom_user:
+                custom_user.data.update(custom_user_data)
+                custom_user.save()
             else:
-                custom_user_serializer = CustomUserSerializer(data=custom_user_data)
-                custom_user_serializer.is_valid(raise_exception=True)
-                custom_user_serializer.save(user=instance)
+                CustomUser.active_objects.create(
+                    user=instance, tenant=tenant, data=custom_user_data
+                )
 
         for key, value in validated_data.items():
             setattr(instance, key, value)
@@ -189,6 +198,26 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             lambda: WebhookManager.user_updated(self.context['tenant'].uuid, instance)
         )
         return instance
+
+    def to_representation(self, instance):
+        if 'custom_user' in self.fields:
+            self.fields.pop('custom_user')
+        ret = super().to_representation(instance)
+        tenant = self.context['tenant']
+        custom_user = instance.custom_user.filter(tenant=tenant).first()
+        # 获取所有subject=user的自定义字段
+        all_custom_fields = CustomField.active_objects.filter(
+            tenant=tenant, subject='user'
+        )
+        all_fields_data = {}
+        if custom_user:
+            user_custom_data = custom_user.data
+        else:
+            user_custom_data = {}
+        for field in all_custom_fields:
+            all_fields_data[field.name] = user_custom_data.get(field.name, None)
+        ret['custom_user'] = all_fields_data
+        return ret
 
 
 class UserListResponsesSerializer(UserSerializer):

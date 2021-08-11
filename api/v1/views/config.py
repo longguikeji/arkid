@@ -8,16 +8,20 @@ from api.v1.serializers.config import (
     NativeFieldSerializer,
 )
 from common.paginator import DefaultListPaginator
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from openapi.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 
 @extend_schema(
-    tags=['config'],
+    tags=['tenant_config'],
+    roles=['general user', 'tenant admin', 'global admin'],
 )
 class CustomFieldViewSet(BaseViewSet):
     model = CustomField
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = CustomFieldSerailizer
     pagination_class = DefaultListPaginator
@@ -51,14 +55,16 @@ class CustomFieldViewSet(BaseViewSet):
 
 
 @extend_schema(
-    tags=['config'],
+    tags=['system_config'],
+    roles=['general user', 'tenant admin', 'global admin'],
 )
 class NativeFieldListAPIView(generics.ListAPIView):
     '''
     原生字段，不分页
     '''
-    permission_classes = []
-    authentication_classes = []
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = NativeFieldSerializer
 
     def get_queryset(self):
@@ -69,14 +75,16 @@ class NativeFieldListAPIView(generics.ListAPIView):
 
 
 @extend_schema(
-    tags=['config'],
+    tags=['system_config'],
+    roles=['general user', 'tenant admin', 'global admin'],
 )
 class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
     '''
     某原生字段
     '''
-    permission_classes = []
-    authentication_classes = []
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = NativeFieldSerializer
 
     def get_object(self):
