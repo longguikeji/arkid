@@ -130,13 +130,13 @@ class AppProvisioningMappingSerializer(BaseDynamicFieldModelSerializer):
         app = App.valid_objects.filter(uuid=app_uuid).first()
         config = Config.valid_objects.filter(app=app).first()
 
-        mapping_type = validated_data.pop('mapping_type')
-        default_value = validated_data.pop('default_value')
-        source_attribute = validated_data.pop('source_attribute')
-        target_attribute = validated_data.pop('target_attribute')
-        is_used_matching = validated_data.pop('is_used_matching')
-        constant_value = validated_data.pop('constant_value')
-        apply_type = validated_data.pop('apply_type')
+        mapping_type = validated_data.get('mapping_type', 'direct')
+        default_value = validated_data.get('default_value', '')
+        source_attribute = validated_data.get('source_attribute', '')
+        target_attribute = validated_data.get('target_attribute', '')
+        is_used_matching = validated_data.get('is_used_matching', False)
+        constant_value = validated_data.get('constant_value', '')
+        apply_type = validated_data.get('apply_type', 'always')
 
         mapping = Schema.valid_objects.create(
             provisioning_config=config,
@@ -171,12 +171,12 @@ class AppProvisioningProfileSerializer(BaseDynamicFieldModelSerializer):
         app = App.valid_objects.filter(uuid=app_uuid).first()
         config = Config.valid_objects.filter(app=app).first()
 
-        name = validated_data.pop('name')
-        type = validated_data.pop('type')
-        is_primary = validated_data.pop('is_primary')
-        is_required = validated_data.pop('is_required')
-        multi_value = validated_data.pop('multi_value')
-        exact_case = validated_data.pop('exact_case')
+        name = validated_data.get('name', '')
+        type = validated_data.get('type', 'string')
+        is_primary = validated_data.get('is_primary', False)
+        is_required = validated_data.get('is_required', False)
+        multi_value = validated_data.get('multi_value', False)
+        exact_case = validated_data.get('exact_case', False)
 
         profile = AppProfile.objects.create(
             provisioning_config=config,
@@ -205,31 +205,6 @@ class AppProvisioningSerializer(BaseDynamicFieldModelSerializer):
             'sync_type',
             'auth_type',
         )
-
-    def create(self, validated_data):
-        app = self.context['app']
-
-        base_url = validated_data.pop('base_url')
-        sync_type = validated_data.pop('sync_type')
-        auth_type = validated_data.pop('auth_type')
-        token = validated_data.pop('token')
-        # mode = validated_data.pop('mode', 0)
-        status = validated_data.pop('status', 1)
-        username = validated_data.pop('username')
-        password = validated_data.pop('password')
-
-        provision = Config.objects.create(
-            app=app,
-            sync_type=sync_type,
-            auth_type=auth_type,
-            base_url=base_url,
-            token=token,
-            status=status,
-            username=username,
-            password=password,
-        )
-
-        return provision
 
 
 class AddAuthTmplSerializer(serializers.Serializer):
