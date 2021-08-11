@@ -218,7 +218,7 @@ class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):
 
 
 class TenantPrivacyNoticeSerializer(BaseDynamicFieldModelSerializer):
-    content = create_html_field(serializers.CharField)(hint=_("隐私声明内容"), required=True)
+    content = create_html_field(serializers.CharField)(hint=_("隐私声明内容"))
 
     class Meta:
         model = TenantPrivacyNotice

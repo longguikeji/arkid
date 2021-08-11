@@ -67,13 +67,13 @@ class LoginPage(views.APIView):
             ).first()
         else:
             privacy_notice = SystemPrivacyNotice.valid_objects.filter().first()
-        if privacy_notice:
+        if privacy_notice and privacy_notice.is_active:
             agreement = {
                 'title': privacy_notice.title,
                 'content': privacy_notice.content,
             }
         else:
-            agreement = {'title': '', 'content': ''}
+            agreement = {}
         return agreement
 
     def add_tenant_login_register_form(self, request, tenant, data):
@@ -144,15 +144,25 @@ class LoginPage(views.APIView):
 
     def add_login_register_button(self, data, agreement):
         if data.getPage(model.REGISTER):
-            data.addBottom(
-                model.LOGIN,
-                model.Button(
-                    prepend='还没有账号，',
-                    label='立即注册',
-                    gopage=model.REGISTER,
-                    agreement=agreement,
-                ),
-            )
+            if agreement:
+                data.addBottom(
+                    model.LOGIN,
+                    model.Button(
+                        prepend='还没有账号，',
+                        label='立即注册',
+                        gopage=model.REGISTER,
+                        agreement=agreement,
+                    ),
+                )
+            else:
+                data.addBottom(
+                    model.LOGIN,
+                    model.Button(
+                        prepend='还没有账号，',
+                        label='立即注册',
+                        gopage=model.REGISTER,
+                    ),
+                )
             data.addBottom(
                 model.REGISTER,
                 model.Button(prepend='已有账号，', label='立即登录', gopage=model.LOGIN),
