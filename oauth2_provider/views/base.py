@@ -31,7 +31,7 @@ from ..signals import app_authorized
 from ..backends import OAuth2Backend
 from .mixins import OAuthLibMixin
 from oauth2_provider.models import OidcAccessToken
-from oneid_meta.models import APP, User
+from oneid_meta.models import APP, User, DeptPerm, DeptMember, Perm
 
 log = logging.getLogger("oauth2_provider")
 
@@ -55,13 +55,13 @@ class TokenRequiredMixin(AccessMixin):
         if not app:
             return HttpResponse("Can't find app, please contact your IT manager")
 
-        is_authenticated = self.check_token(request, None if app.allow_any_user else app.default_perm)
+        is_authenticated = self.check_token(request, app, None if app.allow_any_user else app.default_perm)
         if is_authenticated:
             return super().dispatch(request, *args, **kwargs)
         else:
             return self.handle_no_permission()
 
-    def check_token(self, request, required_perm):
+    def check_token(self, request, app, required_perm):
         '''
         此token指OneID内部自身登录状态与身份证明的标识
         '''
@@ -71,13 +71,49 @@ class TokenRequiredMixin(AccessMixin):
             res = ExpiringTokenAuthentication().authenticate(request)
             if res is not None:
                 user, _ = res
+                # if not user.has_perm_realtime(required_perm):
+                #     return False
                 if not user.has_perm_realtime(required_perm):
-                    return False
+                    if not self.check_app_dept_permission(app, user):
+                        return False
                 request.user = user
                 return True
             return False
         except AuthenticationFailed:
             return False
+
+    def check_app_dept_permission(item, user):
+        dms = DeptMember.valid_objects.filter(
+            user=user
+        )
+        uid = item.uid
+        if item.allow_any_user is True:
+            return True
+        else:
+            # 取的当前分组的所拥有的部门和当前用户的部门进行比对
+            perms = Perm.valid_objects.filter(
+                scope=uid,
+                subject='app',
+                action__startswith='access'
+            ).order_by('id')
+            for perm in perms:
+                deps = DeptPerm.valid_objects.filter(
+                    status=1,
+                    perm=perm
+                )
+                for dep in deps:
+                    owner = dep.owner
+                    # 用户的部门是否属于指定的部门
+                    for dm in dms:
+                        dm_owner = dm.owner
+                        if dm_owner == owner:
+                            # 当前部门
+                            return True
+                        else:
+                            if dm_owner.if_belong_to_dept(owner, True) is True:
+                                # 父级部门
+                                return True
+        return False
 
     def handle_no_permission(self):
         if self.raise_exception:
