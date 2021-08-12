@@ -1,5 +1,9 @@
 # 一账通
 
+**V2 版本**是我们目前主力研发的版本，请移步：https://github.com/longguikeji/arkid/tree/v2-dev
+
+V1 为稳定版本，并处在积极维护中，定期port v2的feature到v1中
+
 ArkID是全新一代企业单点登录解决方案, 彻底告别企业内多系统多账号的烦恼, 节省管理成本, 自带功能全面的WEB管理界面，提升管理效率。
 
 更多细节参见 [docs.arkid.longguikeji.com](https://www.yuque.com/longguikeji/arkid/)
