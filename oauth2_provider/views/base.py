@@ -82,7 +82,7 @@ class TokenRequiredMixin(AccessMixin):
         except AuthenticationFailed:
             return False
 
-    def check_app_dept_permission(item, user):
+    def check_app_dept_permission(self, item, user):
         dms = DeptMember.valid_objects.filter(
             user=user
         )
