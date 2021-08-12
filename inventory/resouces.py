@@ -45,6 +45,7 @@ class UserResource(resources.ModelResource):
         user.save()
         return super().after_import_row(row, row_result, row_number=row_number, **kwargs)
 
+
 class GroupResource(resources.ModelResource):
     class Meta:
         model = Group

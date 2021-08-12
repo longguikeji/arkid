@@ -1,4 +1,4 @@
-from django.http.response import JsonResponse
+from django.http.response import JsonResponse, HttpResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
 from rest_framework import generics
@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from tenant.models import (
     Tenant, TenantConfig, TenantPasswordComplexity,
     TenantContactsConfig, TenantContactsUserFieldConfig, TenantPrivacyNotice,
+    TenantDevice,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
@@ -15,23 +16,28 @@ from api.v1.serializers.tenant import (
     UserNameLoginRequestSerializer, TenantPasswordComplexitySerializer, TenantContactsConfigFunctionSwitchSerializer,
     TenantContactsConfigInfoVisibilitySerializer, TenantContactsConfigGroupVisibilitySerializer, ContactsGroupSerializer,
     ContactsUserSerializer, TenantContactsUserTagsSerializer, TenantPrivacyNoticeSerializer,
+    TenantDeviceSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
 from api.v1.serializers.email import RegisterEmailClaimSerializer
+from tenant.resouces import TenantDeviceResource
 from common.paginator import DefaultListPaginator
 from common.native_field import NativeFieldNames
+from drf_spectacular.openapi import OpenApiTypes
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
 from inventory.models import CustomField, Group, User, UserPassword, CustomUser
 from common.code import Code
-from .base import BaseViewSet
+from .base import BaseViewSet, BaseTenantViewSet
 from app.models import App
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema_view
 from django.urls import reverse
 from common import loginpage as lp
+
+import datetime
 
 
 @extend_schema_view(
@@ -1433,3 +1439,121 @@ class TenantPrivacyNoticeView(generics.RetrieveUpdateAPIView):
         serializer.is_valid()
         serializer.save(tenant=tenant)
         return Response(serializer.data)
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantDeviceListView(generics.ListCreateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantDeviceSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        device_type = self.request.query_params.get('device_type', None)
+        system_version = self.request.query_params.get('system_version', None)
+        browser_version = self.request.query_params.get('browser_version', None)
+        ip = self.request.query_params.get('ip', None)
+        mac_address = self.request.query_params.get('mac_address', None)
+        device_number = self.request.query_params.get('device_number', None)
+        device_id = self.request.query_params.get('device_id', None)
+        account_id = self.request.query_params.get('account_id', None)
+        kwargs = {
+            'tenant__uuid': tenant_uuid
+        }
+        if device_type is not None:
+            kwargs['device_type'] = device_type
+        if system_version is not None:
+            kwargs['system_version'] = system_version
+        if browser_version is not None:
+            kwargs['browser_version'] = browser_version
+        if ip is not None:
+            kwargs['ip'] = ip
+        if mac_address is not None:
+            kwargs['mac_address'] = mac_address
+        if device_number is not None:
+            kwargs['device_number'] = device_number
+        if device_id is not None:
+            kwargs['device_id'] = device_id
+        teanntdevices = TenantDevice.active_objects.filter(**kwargs).order_by('-id')
+        if account_id is not None:
+            uuids = []
+            for teanntdevice in teanntdevices:
+                account_ids = teanntdevice.account_ids
+                if account_id in account_ids:
+                    uuids.append(teanntdevice.uuid)
+            return TenantDevice.active_objects.filter(uuid__in=uuids).order_by('-id')
+        else:
+            return teanntdevices
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant'] = Tenant.objects.filter(uuid=self.kwargs['tenant_uuid']).first()
+        return context
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+class TenantDeviceDetailView(generics.RetrieveDestroyAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+    serializer_class = TenantDeviceSerializer
+
+    def get_object(self):
+        device_uuid = self.kwargs['device_uuid']
+        device = TenantDevice.active_objects.filter(uuid=device_uuid).first()
+        return device
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'], responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY})
+class TenantDeviceExportView(generics.RetrieveAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+    serializer_class = TenantDeviceSerializer
+
+    def get(self, request, tenant_uuid):
+        device_type = request.query_params.get('device_type', None)
+        system_version = request.query_params.get('system_version', None)
+        browser_version = request.query_params.get('browser_version', None)
+        ip = request.query_params.get('ip', None)
+        mac_address = request.query_params.get('mac_address', None)
+        device_number = request.query_params.get('device_number', None)
+        device_id = request.query_params.get('device_id', None)
+        account_id = request.query_params.get('account_id', None)
+        kwargs = {
+            'tenant__uuid': tenant_uuid
+        }
+        if device_type is not None:
+            kwargs['device_type'] = device_type
+        if system_version is not None:
+            kwargs['system_version'] = system_version
+        if browser_version is not None:
+            kwargs['browser_version'] = browser_version
+        if ip is not None:
+            kwargs['ip'] = ip
+        if mac_address is not None:
+            kwargs['mac_address'] = mac_address
+        if device_number is not None:
+            kwargs['device_number'] = device_number
+        if device_id is not None:
+            kwargs['device_id'] = device_id
+        teanntdevices = TenantDevice.active_objects.filter(**kwargs).order_by('-id')
+        if account_id is not None:
+            uuids = []
+            for teanntdevice in teanntdevices:
+                account_ids = teanntdevice.account_ids
+                if account_id in account_ids:
+                    uuids.append(teanntdevice.uuid)
+            teanntdevices = TenantDevice.active_objects.filter(uuid__in=uuids).order_by('-id')
+        # 导出
+        data = TenantDeviceResource().export(teanntdevices)
+        export_data = data.csv
+        content_type = 'application/octet-stream'
+        response = HttpResponse(export_data, content_type=content_type)
+        date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+        filename = '%s-%s.%s' % ('Device', date_str, 'csv')
+        response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
+        return response
