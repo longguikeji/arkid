@@ -74,7 +74,7 @@ class TokenRequiredMixin(AccessMixin):
                 # if not user.has_perm_realtime(required_perm):
                 #     return False
                 if not user.has_perm_realtime(required_perm):
-                    if not check_app_dept_permission(app, user):
+                    if not self.check_app_dept_permission(app, user):
                         return False
                 request.user = user
                 return True
