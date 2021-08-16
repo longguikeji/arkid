@@ -52,9 +52,19 @@ class Search(View):
             n_dn.extend(dn)
             dn = n_dn
 
-        match_params = re.findall("(.*)=(.*)", item)[0]
+        match_params = re.findall("(.*)=(.*)", item)
+        if match_params:
+            match_params = match_params[0]
         if match_params[0] == "ou":
             if match_params[1] == "people":
+                people_item = {
+                    "dn": "ou=people" + dc_suf,
+                    "attributes": {
+                        "objectClass": ["top", "organizationUnit"],
+                        "ou": "people"
+                    }
+                }
+                res.append(people_item)
                 dc_suf = f",{item}{dc_suf}"
                 res.extend(
                     self.user_search(
