@@ -22,6 +22,7 @@ from . import (
     config,
     system,
     email,
+    login_register_config,
 )
 from runtime import get_app_runtime
 

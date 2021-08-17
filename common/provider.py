@@ -18,10 +18,9 @@ class EmailProvider:
 
 class AuthCodeProvider:
     def generate_key(self):
-        key = '{}.png'.format(
-            uuid.uuid4().hex
-        )
+        key = '{}.png'.format(uuid.uuid4().hex)
         return key
+
     @abstractmethod
     def get_authcode_picture(self):
         pass
@@ -132,3 +131,17 @@ class MigrationProvider:
     @abstractmethod
     def migrate(self, tenant_uuid):
         raise NotImplementedError
+
+
+class LoginRegisterConfigProvider:
+    @abstractmethod
+    def login_form(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def register_form(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def reset_password_form(self, *args, **kwargs):
+        raise NotImplementedError()

@@ -28,7 +28,7 @@ SECRET_KEY = 'y)c6vgiyu#-yll0#&kn!c0^t#2pqx_45w-b#sg2)asv+j_5pro'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-TESTING = False    # always False
+TESTING = False  # always False
 
 ALLOWED_HOSTS = ['*']
 
@@ -74,7 +74,8 @@ INSTALLED_APPS = [
     'extension_root.arkid',
     'django_scim',
     'extension_root.miniprogram',
-    'djangosaml2idp'
+    'djangosaml2idp',
+    'login_register_config',
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -96,7 +97,7 @@ MIDDLEWARE = [
 AUTHENTICATION_BACKENDS = (
     'oauth2_provider.backends.OAuth2Backend',
     # Uncomment following if you want to access the admin
-    'django.contrib.auth.backends.ModelBackend'
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 ROOT_URLCONF = 'arkid.urls'
@@ -249,7 +250,7 @@ SCIM_SERVICE_PROVIDER = {
     'USER_ADAPTER': 'inventory.adapters.ArkidSCIMUser',
     'GROUP_ADAPTER': 'inventory.adapters.ArkidSCIMGroup',
     'GROUP_FILTER_PARSER': 'inventory.filters.GroupFilterQuery',
-    'USER_FILTER_PARSER': 'inventory.filters.UserFilterQuery'
+    'USER_FILTER_PARSER': 'inventory.filters.UserFilterQuery',
 }
 
 
@@ -263,9 +264,9 @@ CELERY_BROKER_URL = 'redis://localhost'
 CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 # CELERY_TASK_SERIALIZER = 'json'
 
-FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'    # 邮件注册页面
-FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'    # 邮件重置密码页面
-FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'    # 邮件激活账号页面
-FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'    # 邮件重置邮箱页面
+FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'  # 邮件注册页面
+FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'  # 邮件重置密码页面
+FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'  # 邮件激活账号页面
+FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'  # 邮件重置邮箱页面
 
 SMS_LIFESPAN = datetime.timedelta(seconds=300)
