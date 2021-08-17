@@ -2,6 +2,7 @@ from common.serializer import BaseDynamicFieldModelSerializer
 from login_register_config.models import LoginRegisterConfig
 from common.provider import LoginRegisterConfigProvider
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
 
 class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
@@ -78,6 +79,8 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
 
 
 class LoginRegisterConfigListSerializer(LoginRegisterConfigSerializer):
+    type = serializers.CharField(label=_('登录注册类型'))
+
     class Meta:
         model = LoginRegisterConfig
 

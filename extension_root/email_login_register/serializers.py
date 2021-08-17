@@ -6,8 +6,8 @@ from api.v1.fields.custom import create_password_field
 
 class EmailLoginRegisterConfigDataSerializer(serializers.Serializer):
 
-    register_enabled = serializers.BooleanField(default=True)
-    reset_password_enabled = serializers.BooleanField(default=True)
+    register_enabled = serializers.BooleanField(default=True, label=_('启用注册'))
+    reset_password_enabled = serializers.BooleanField(default=True, label=_('启用修改密码'))
 
 
 class EmailLoginRegisterConfigSerializer(LoginRegisterConfigBaseSerializer):

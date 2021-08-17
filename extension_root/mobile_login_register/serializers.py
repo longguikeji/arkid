@@ -6,9 +6,9 @@ from api.v1.fields.custom import create_password_field
 
 class MobileLoginRegisterConfigDataSerializer(serializers.Serializer):
 
-    login_enabled = serializers.BooleanField(default=True)
-    register_enabled = serializers.BooleanField(default=True)
-    reset_password_enabled = serializers.BooleanField(default=True)
+    login_enabled = serializers.BooleanField(default=True, label=_('启用登录'))
+    register_enabled = serializers.BooleanField(default=True, label=_('启用注册'))
+    reset_password_enabled = serializers.BooleanField(default=True, label=_('启用修改密码'))
 
 
 class MobileLoginRegisterConfigSerializer(LoginRegisterConfigBaseSerializer):
