@@ -1,4 +1,4 @@
-FROM python:3.8 as build_deps
+FROM python:3.8-buster as build_deps
 EXPOSE 80
 WORKDIR /var/arkid
 RUN set -eux; \
