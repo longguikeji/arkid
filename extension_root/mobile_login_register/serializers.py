@@ -45,3 +45,8 @@ class MobileResetPasswordRequestSerializer(serializers.Serializer):
         required=True,
     )
     code = serializers.CharField(label=_('验证码'), required=True)
+
+
+class PasswordSerializer(serializers.Serializer):
+
+    is_succeed = serializers.BooleanField(label=_('是否修改成功'))

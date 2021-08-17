@@ -1,1 +1,1 @@
-KEY = 'mobile-login-register'
+KEY = 'mobile_login_register'

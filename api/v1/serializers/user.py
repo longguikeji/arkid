@@ -16,7 +16,6 @@ from webhook.manager import WebhookManager
 from django.db import transaction
 
 
-
 class CustomUserSerializer(BaseDynamicFieldModelSerializer):
     '''
     custom user info

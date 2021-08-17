@@ -9,7 +9,7 @@ class MobileLoginRegisterConfigExtension(InMemExtension):
     def start(self, runtime: Runtime, *args, **kwargs):
         runtime.register_login_register_config(
             key=KEY,
-            name="mobile-login-register",
+            name="mobile_login_register",
             description="Mobile login and register",
             provider=MobileLoginRegisterConfigProvider,
             serializer=MobileLoginRegisterConfigSerializer,
@@ -19,7 +19,7 @@ class MobileLoginRegisterConfigExtension(InMemExtension):
     def teardown(self, runtime: Runtime, *args, **kwargs):
         runtime.logout_login_register_config(
             key=KEY,
-            name="mobile-login-register",
+            name="mobile_login_register",
             description="Mobile login register config",
             provider=MobileLoginRegisterConfigProvider,
             serializer=MobileLoginRegisterConfigSerializer,
@@ -27,7 +27,7 @@ class MobileLoginRegisterConfigExtension(InMemExtension):
 
 
 extension = MobileLoginRegisterConfigExtension(
-    name="mobile-login-register",
+    name=KEY,
     tags='login',
     scope='tenant',
     type='tenant',

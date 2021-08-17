@@ -14,7 +14,8 @@ import urllib.parse
 from django.urls import reverse
 from config import get_app_config
 from tenant.models import Tenant
-from drf_spectacular.utils import extend_schema
+from openapi.utils import extend_schema
+from rest_framework import generics
 from runtime import get_app_runtime
 from api.v1.serializers.sms import (
     RegisterSMSClaimSerializer,
@@ -27,6 +28,7 @@ from .serializers import (
     MobileLoginResponseSerializer,
     MobileRegisterResponseSerializer,
     MobileResetPasswordRequestSerializer,
+    PasswordSerializer,
 )
 from inventory.models import User
 
@@ -38,7 +40,8 @@ from inventory.models import User
 )
 class MobileLoginView(APIView):
     def post(self, request, pk):
-        tenant = self.get_object()
+        # uuid = self.kwargs['pk']
+        tenant = Tenant.active_objects.filter(uuid=pk).first()
         mobile = request.data.get('mobile')
         code = request.data.get('code')
         thirdparty_data = request.data.get('thirdparty', None)
