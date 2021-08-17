@@ -146,6 +146,7 @@ class DeviceExportView(generics.RetrieveAPIView):
                         uuids.append(device.uuid)
                         break
             devices = devices.filter(uuid__in=uuids)
+        devices = devices.order_by('-id')
         # 导出
         data = DeviceResource().export(devices)
         export_data = data.csv
