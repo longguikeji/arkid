@@ -31,6 +31,7 @@ from .serializers import (
     PasswordSerializer,
 )
 from inventory.models import User
+from django.utils.translation import gettext_lazy as _
 
 
 @extend_schema(
@@ -106,6 +107,7 @@ class MobileLoginView(APIView):
 )
 class MobileRegisterView(APIView):
     def post(self, request, pk):
+        tenant = Tenant.active_objects.filter(uuid=pk).first()
         mobile = request.data.get('mobile')
         code = request.data.get('code')
         password = request.data.get('password')
@@ -139,7 +141,6 @@ class MobileRegisterView(APIView):
                     'message': _('password is empty'),
                 }
             )
-        tenant = self.get_object()
         if self.check_password(tenant.uuid, password) is False:
             return JsonResponse(
                 data={
