@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'common',
     'tenant',
     'inventory',
+    'device',
     'app',
     'oauth2_provider',
     'mama_cas',

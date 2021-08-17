@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 from import_export import resources
-from tenant.models import TenantDevice
+from device.models import Device
 
 
-class TenantDeviceResource(resources.ModelResource):
+class DeviceResource(resources.ModelResource):
 
     class Meta:
-        model = TenantDevice
+        model = Device
         fields = (
             'device_type',
             'system_version',

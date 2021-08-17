@@ -3,7 +3,6 @@ from rest_framework.exceptions import ValidationError
 from tenant.models import (
     Tenant, TenantConfig, TenantPasswordComplexity,
     TenantPrivacyNotice, TenantContactsConfig, TenantContactsUserFieldConfig,
-    TenantDevice,
 )
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
@@ -443,45 +442,3 @@ class TenantPrivacyNoticeSerializer(BaseDynamicFieldModelSerializer):
         instance.content = validated_data.get('content')
         instance.save()
         return instance
-
-
-class TenantDeviceSerializer(BaseDynamicFieldModelSerializer):
-
-    account_ids = serializers.ListField(child=serializers.CharField(), label=_('用户账号ID'), default=[])
-
-    class Meta:
-        model = TenantDevice
-
-        fields = (
-            'uuid',
-            'device_type',
-            'system_version',
-            'browser_version',
-            'ip',
-            'mac_address',
-            'device_number',
-            'device_id',
-            'account_ids'
-        )
-
-    def create(self, validated_data):
-        tenant = self.context['tenant']
-        device_id = validated_data.get('device_id')
-        account_ids = validated_data.get('account_ids')
-        # 检查device
-        device = TenantDevice.active_objects.filter(
-            device_id=device_id
-        ).first()
-        if device:
-            temp_account_ids = device.account_ids
-            for account_id in account_ids:
-                if account_id not in temp_account_ids:
-                    temp_account_ids.append(account_id)
-            device.account_ids = temp_account_ids
-            device.save()
-        else:
-            validated_data['tenant'] = tenant
-            device = TenantDevice.objects.create(
-                **validated_data
-            )
-        return device
