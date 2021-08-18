@@ -9,7 +9,7 @@ from device.models import (
 from device.resouces import (
     DeviceResource,
 )
-from inventory.models import User
+from inventory.models import User, Permission
 from tenant.models import Tenant
 from common.paginator import DefaultListPaginator
 from drf_spectacular.openapi import OpenApiTypes
@@ -66,9 +66,15 @@ class DeviceListView(generics.ListCreateAPIView):
         if tenant_uuid is not None:
             uuids = []
             user_uuids = []
-            users = User.valid_objects.filter(tenants__uuid=tenant_uuid)
+            users = User.active_objects.filter(tenants__uuid=tenant_uuid)
+            # 租户管理员的
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+            permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
+            manage_users = permission.user_permission_set.all()
             for user in users:
                 user_uuids.append(str(user.uuid))
+            for manage_user in manage_users:
+                user_uuids.append(str(manage_user.uuid))
             for user_uuid in user_uuids:
                 for device in devices:
                     account_ids = device.account_ids

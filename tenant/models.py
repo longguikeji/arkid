@@ -105,7 +105,7 @@ class TenantContactsConfig(BaseModel):
 
 
 class TenantContactsUserFieldConfig(BaseModel):
-    # 分组可见性
+    # 个人字段可见性
     # visible_type 所有人可见 部分人可见
     # visible_scope 本人可见 管理员可见 指定分组与人员
     # {
@@ -140,21 +140,3 @@ class TenantPrivacyNotice(BaseModel):
 
     def __str__(self) -> str:
         return f'Privacy Notice: {self.title}'
-
-
-# class TenantDevice(BaseModel):
-
-#     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
-#     device_type = models.CharField(verbose_name='设备类型', max_length=128, default='', null=True, blank=True)
-#     system_version = models.CharField(verbose_name='操作系统及版本', max_length=216, default='', null=True, blank=True)
-#     browser_version = models.CharField(verbose_name='浏览器及版本', max_length=216, default='', null=True, blank=True)
-#     ip = models.CharField(verbose_name='IP地址', max_length=216, default='', null=True, blank=True)
-#     mac_address = models.CharField(verbose_name='mac地址', max_length=216, default='', null=True, blank=True)
-#     device_number = models.CharField(verbose_name='设备号', max_length=216, default='', null=True, blank=True)
-#     device_id = models.CharField(verbose_name='设备编号', max_length=216, default='', null=True, blank=True)
-#     account_ids = models.JSONField(verbose_name='用户账号ID', blank=True, default=dict)
-
-#     @property
-#     def tenant_uuid(self):
-#         return self.tenant.uuid
-
