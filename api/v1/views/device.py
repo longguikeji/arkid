@@ -74,7 +74,8 @@ class DeviceListView(generics.ListCreateAPIView):
             for user in users:
                 user_uuids.append(str(user.uuid))
             for manage_user in manage_users:
-                user_uuids.append(str(manage_user.uuid))
+                if str(manage_user.uuid) not in user_uuids:
+                    user_uuids.append(str(manage_user.uuid))
             for user_uuid in user_uuids:
                 for device in devices:
                     account_ids = device.account_ids
@@ -143,8 +144,15 @@ class DeviceExportView(generics.RetrieveAPIView):
             uuids = []
             user_uuids = []
             users = User.valid_objects.filter(tenants__uuid=tenant_uuid)
+            # 租户管理员的
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+            permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
+            manage_users = permission.user_permission_set.all()
             for user in users:
                 user_uuids.append(str(user.uuid))
+            for manage_user in manage_users:
+                if str(manage_user.uuid) not in user_uuids:
+                    user_uuids.append(str(manage_user.uuid))
             for user_uuid in user_uuids:
                 for device in devices:
                     account_ids = device.account_ids
