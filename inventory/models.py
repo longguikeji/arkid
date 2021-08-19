@@ -290,6 +290,16 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
         if is_new:
             self.__class__.objects.filter(id=self.id).update(scim_id=self.uuid)
             self.scim_id = str(self.uuid)
+    
+    def child_groups(self, uuids):
+        groups = Group.active_objects.filter(
+            parent=self
+        )
+        if groups.exists() is False:
+            return uuids
+        for group in groups:
+            uuids.append(str(group.uuid))
+            group.child_groups(uuids)
             
 
 class Invitation(BaseModel):

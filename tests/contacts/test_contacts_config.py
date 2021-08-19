@@ -32,20 +32,8 @@ class ContactsConfigCase(TestCase):
         TenantContactsConfig.objects.get_or_create(
             is_del=False,
             tenant=self.tenant,
-            config_type=0,
             data={
                 "is_open": True
-            }
-        )
-        TenantContactsConfig.objects.get_or_create(
-            is_del=False,
-            tenant=self.tenant,
-            config_type=1,
-            data={
-                "visible_type": '所有人可见',
-                "visible_scope": [],
-                "assign_group": [],
-                "assign_user": []
             }
         )
         tcufc, created = TenantContactsUserFieldConfig.objects.get_or_create(
@@ -72,14 +60,6 @@ class ContactsConfigCase(TestCase):
         is_open = content.get('data').get('is_open')
         self.assertTrue(is_open)
 
-    def test_group_visibility(self):
-        url = '{}/api/v1/tenant/{}/contactsconfig/group_visibility/'.format(self.service, self.tenant.uuid)
-        resp = self.client.get(url, content_type='application/json')
-        self.assertEqual(resp.status_code, 200)
-        content = json.loads(resp.content.decode())
-        visible_type = content.get('data').get('visible_type')
-        self.assertEqual(visible_type, '所有人可见')
-    
     def test_info_visibility(self):
         url = '{}/api/v1/tenant/{}/contactsconfig/info_visibility/'.format(self.service, self.tenant.uuid)
         resp = self.client.get(url, content_type='application/json')

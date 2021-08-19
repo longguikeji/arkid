@@ -36,20 +36,8 @@ class ContactsCase(TestCase):
         TenantContactsConfig.objects.get_or_create(
             is_del=False,
             tenant=self.tenant,
-            config_type=0,
             data={
                 "is_open": True
-            }
-        )
-        TenantContactsConfig.objects.get_or_create(
-            is_del=False,
-            tenant=self.tenant,
-            config_type=1,
-            data={
-                "visible_type": '所有人可见',
-                "visible_scope": [],
-                "assign_group": [],
-                "assign_user": []
             }
         )
         tcufc, created = TenantContactsUserFieldConfig.objects.get_or_create(

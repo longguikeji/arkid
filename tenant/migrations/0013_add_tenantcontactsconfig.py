@@ -5,30 +5,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     def add_default_data(apps, schema_editor):
-        from tenant.models import Tenant, TenantContactsConfig
-        tenants = Tenant.active_objects.all()
-        for tenant in tenants:
-            # 功能开关
-            TenantContactsConfig.objects.get_or_create(
-                is_del=False,
-                tenant=tenant,
-                config_type=0,
-                data={
-                    "is_open": True
-                }
-            )
-            # 分组可见性
-            TenantContactsConfig.objects.get_or_create(
-                is_del=False,
-                tenant=tenant,
-                config_type=1,
-                data={
-                    "visible_type": '所有人可见',
-                    "visible_scope": [],
-                    "assign_group": [],
-                    "assign_user": []
-                }
-            )
+        pass
+        # from tenant.models import Tenant, TenantContactsConfig
+        # tenants = Tenant.active_objects.all()
+        # for tenant in tenants:
+        #     # 功能开关
+        #     TenantContactsConfig.objects.get_or_create(
+        #         is_del=False,
+        #         tenant=tenant,
+        #         data={
+        #             "is_open": True
+        #         }
+        #     )
        
 
     dependencies = [
