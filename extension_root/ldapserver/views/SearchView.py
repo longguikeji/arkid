@@ -29,7 +29,7 @@ class Search(View):
         else:
             attributes = None
 
-        attribute_mappings = self.get_attribute_mappings()
+        # attribute_mappings = self.get_attribute_mappings()
 
         # 处理过滤条件：
         # type
@@ -121,19 +121,6 @@ class Search(View):
                 "error": 0,
                 "results": res
             }
-        )
-
-    def post(self, request, tenant_uuid):  # pylint: disable=unused-argument
-        """
-
-        POST
-        """
-        filters = request.POST
-        attribute_mappings = self.get_attribute_mappings()
-        res = self.user_search(filters, attribute_mappings)
-
-        return JsonResponse(
-            data=res
         )
 
     def user_search(self, filters, attribute_mappings, dc_suf=None):  # pylint: disable=no-self-use
@@ -240,6 +227,10 @@ class Search(View):
 
             if isinstance(filter_attribute, list) and isinstance(filter_value, list) and len(filter_attribute) == len(filter_value):
                 for i in range(len(filter_attribute)):
+                    if filter_attribute[i] == "givenname":
+                        filter_attribute[i] = "givenName"
+                    elif filter_attribute[i] == "telephonenumber":
+                        filter_attribute[i] = "telephoneNumber"
                     if filter_attribute[i] in attribute_mappings.keys():
                         filters[attribute_mappings[filter_attribute[i]]
                                 ] = filter_value[i]
