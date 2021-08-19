@@ -41,16 +41,12 @@ class Search(View):
         print(dn)
         # 处理dn
         item = dn[0]
-        dc_suf = ",".join(dn[1:])
-        if dc_suf:
-            dc_suf = ","+dc_suf
-
         if "," in item:
             items = item.split(",")
             item = items[0]
-            n_dn = items[1:]
-            n_dn.extend(dn)
-            dn = n_dn
+            dn = items[1:]
+
+        dc_suf = ","+",".join(dn)
 
         match_params = re.findall("(.*)=(.*)", item)
         if match_params:
@@ -153,7 +149,7 @@ class Search(View):
             for k in attribute_mappings.keys():
                 attributes[k] = getattr(user, attribute_mappings[k], None)
 
-            res["dn"] = f"cn={user.username}{dc_suf}"
+            res["dn"] = f"cn={user.username},ou=people{dc_suf}"
             attributes["objectClass"] = [
                 "top", "person", "organizationalPerson"]
             res["attributes"] = attributes
@@ -172,10 +168,10 @@ class Search(View):
             for k in attribute_mappings.keys():
                 attributes[k] = getattr(group, attribute_mappings[k], None)
 
-            res["dn"] = f"cn={group.name}{dc_suf}"
+            res["dn"] = f"cn={group.name},ou=group{dc_suf}"
             attributes["objectClass"] = ["top", "group", "groupOfNames"]
             attributes["member"] = []
-            for member in group.members.all():
+            for member in group.user_set.all():
                 attributes["member"].append(
                     f"cn={member.username},ou=people{dc_suf}"
                 )
@@ -214,7 +210,7 @@ class Search(View):
             }
         }
         res.append(people_item)
-        res.append(self.user_search(
+        res.extend(self.user_search(
             {}, self.get_attribute_mappings("people"), dc_suf))
 
         group_item = {
@@ -226,7 +222,7 @@ class Search(View):
 
         }
         res.append(group_item)
-        res.append(self.group_search(
+        res.extend(self.group_search(
             {}, self.get_attribute_mappings("group"), dc_suf))
 
         return res
