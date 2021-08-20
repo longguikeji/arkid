@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 from tenant.models import (
     Tenant, TenantConfig, TenantPasswordComplexity,
     TenantPrivacyNotice, TenantContactsConfig, TenantContactsUserFieldConfig,
+    TenantDesktopConfig,
 )
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
@@ -429,3 +430,26 @@ class TenantPrivacyNoticeSerializer(BaseDynamicFieldModelSerializer):
         instance.content = validated_data.get('content')
         instance.save()
         return instance
+
+
+class DesktopConfigSerializer(serializers.Serializer):
+    access_with_desktop = serializers.BooleanField(
+        label=_("用户是否能看到桌面")
+    )
+
+    icon_custom = serializers.BooleanField(
+        label=_("用户是否可以自主调整桌面图标的位置")
+    )
+
+
+class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
+    data = DesktopConfigSerializer(
+        label=_("设置")
+    )
+
+    class Meta:
+        model = TenantDesktopConfig
+
+        fields = (
+            'data',
+        )
