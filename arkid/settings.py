@@ -263,6 +263,7 @@ CELERY_BROKER_URL = 'redis://localhost'
 # CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 # CELERY_TASK_SERIALIZER = 'json'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'max_retries': 0}
 
 FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'  # 邮件注册页面
 FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'  # 邮件重置密码页面

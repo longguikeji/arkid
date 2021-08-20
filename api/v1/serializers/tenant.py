@@ -430,15 +430,16 @@ class TenantContactsUserTagsSerializer(serializers.Serializer):
 
 
 class TenantPrivacyNoticeSerializer(BaseDynamicFieldModelSerializer):
-    content = create_html_field(serializers.CharField)(hint=_("隐私声明内容"), required=True)
+    content = create_html_field(serializers.CharField)(hint=_("隐私声明内容"))
 
     class Meta:
         model = TenantPrivacyNotice
 
-        fields = ('title', 'content')
+        fields = ('title', 'content', 'is_active')
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title')
         instance.content = validated_data.get('content')
+        instance.is_active = validated_data.get('is_active')
         instance.save()
         return instance
