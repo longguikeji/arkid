@@ -463,3 +463,15 @@ class CustomUser(BaseModel):
             })
         return res
 
+
+class UserAppData(BaseModel):
+    '''
+    用户APP数据
+    '''
+    DEFAULT_VALUE = ""
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
+    data = models.JSONField(verbose_name='数据内容')
+
+    def __str__(self) -> str:
+        return f'User: {self.user.username}'

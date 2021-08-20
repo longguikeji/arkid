@@ -360,3 +360,11 @@ class UserManageTenantsSerializer(serializers.Serializer):
     )
     is_global_admin = serializers.BooleanField(label=_('是否是系统管理员'))
     is_platform_user = serializers.BooleanField(label=_('是否是平台用户'))
+
+
+class UserAppDataSerializer(serializers.ModelSerializer):
+    data = serializers.ListField(label=_('数据'))
+
+    class Meta:
+        model = User
+        fields = ['data']
