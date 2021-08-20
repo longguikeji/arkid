@@ -25,7 +25,7 @@ urlpatterns = [
             views_tenant.TenantContactsConfigInfoVisibilityDetailView.as_view(), name='tenant-contactsconfig-info-visibility-detail'),
     re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/contactsconfig/info_visibility/',
             views_tenant.TenantContactsConfigInfoVisibilityView.as_view(), name='tenant-contactsconfig-info-visibility'),
-    re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/contactsconfig/group_visibility/',
+    re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/contactsconfig/(?P<group_uuid>[\w-]+)/group_visibility/',
             views_tenant.TenantContactsConfigGroupVisibilityView.as_view(), name='tenant-contactsconfig-group-visibility'),
     re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/contacts/group/',
             views_tenant.TenantContactsGroupView.as_view(), name='tenant-contacts-group'),

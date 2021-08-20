@@ -55,21 +55,8 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         TenantContactsConfig.objects.get_or_create(
             is_del=False,
             tenant=tenant,
-            config_type=0,
             data={
                 "is_open": True
-            }
-        )
-        # 通讯录配置分组可见性
-        TenantContactsConfig.objects.get_or_create(
-            is_del=False,
-            tenant=tenant,
-            config_type=1,
-            data={
-                "visible_type": '所有人可见',
-                "visible_scope": [],
-                "assign_group": [],
-                "assign_user": []
             }
         )
         # 字段可见性

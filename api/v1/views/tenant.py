@@ -1,4 +1,4 @@
-from django.http.response import JsonResponse
+from django.http.response import JsonResponse, HttpResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
 from rest_framework import generics
@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from tenant.models import (
     Tenant, TenantConfig, TenantPasswordComplexity,
     TenantContactsConfig, TenantContactsUserFieldConfig, TenantPrivacyNotice,
+    TenantContactsGroupConfig,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
@@ -21,17 +22,20 @@ from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSeri
 from api.v1.serializers.email import RegisterEmailClaimSerializer
 from common.paginator import DefaultListPaginator
 from common.native_field import NativeFieldNames
+from drf_spectacular.openapi import OpenApiTypes
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
 from inventory.models import CustomField, Group, User, UserPassword, CustomUser
 from common.code import Code
-from .base import BaseViewSet
+from .base import BaseViewSet, BaseTenantViewSet
 from app.models import App
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema_view
 from django.urls import reverse
 from common import loginpage as lp
+
+import datetime
 
 
 @extend_schema_view(
@@ -1112,7 +1116,7 @@ class TenantContactsConfigFunctionSwitchView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
-        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=0).first()
+        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
@@ -1153,7 +1157,27 @@ class TenantContactsConfigGroupVisibilityView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
-        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=1).first()
+        group_uuid = self.kwargs['group_uuid']
+        group_config = TenantContactsGroupConfig.active_objects.filter(
+            tenant__uuid=tenant_uuid,
+            group__uuid=group_uuid
+        ).first()
+        if group_config:
+            return group_config
+        else:
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+            group = Group.active_objects.filter(uuid=group_uuid).first()
+            group_config = TenantContactsGroupConfig()
+            group_config.tenant = tenant
+            group_config.group = group
+            group_config.data = {
+                "visible_type": "所有人可见",
+                "visible_scope": [],
+                "assign_group": [],
+                "assign_user": []
+            }
+            group_config.save()
+            return group_config
 
 
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
@@ -1170,21 +1194,12 @@ class TenantContactsGroupView(generics.ListAPIView):
         # {
         #     "is_open": true
         # }
-        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=0).first()
+        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
         return config.data
 
     def get_group_visible(self, tenant_uuid):
-        # 分组可见性
-        # visible_type 所有人可见 部分人可见
-        # visible_scope 组内成员可见 下属分组可见 指定分组与人员
-        # {
-        #     "visible_type": visible_type,
-        #     "visible_scope": [],
-        #     "assign_group": [],
-        #     "assign_user": []
-        # }
-        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=1).first()
-        return config.data
+        configs = TenantContactsGroupConfig.active_objects.filter(tenant__uuid=tenant_uuid)
+        return configs
 
     def get_queryset(self):
 
@@ -1195,6 +1210,11 @@ class TenantContactsGroupView(generics.ListAPIView):
         kwargs = {
             'tenant__uuid': self.kwargs['tenant_uuid'],
         }
+        if parent is None:
+            kwargs['parent'] = None
+        else:
+            kwargs['parent__uuid'] = parent
+        qs = Group.valid_objects.filter(**kwargs).order_by('id')
         if tenant.has_admin_perm(user) is False:
             # 功能开关
             switch = self.get_switch(self.kwargs['tenant_uuid'])
@@ -1202,59 +1222,89 @@ class TenantContactsGroupView(generics.ListAPIView):
             if is_open is False:
                 return []
             # 分组可见性
-            group_visible = self.get_group_visible(self.kwargs['tenant_uuid'])
-            visible_type = group_visible.get('visible_type', '所有人可见')
-            if visible_type == '部分人可见':
-                visible_scope = group_visible.get('visible_scope', [])
-                if visible_scope:
-                    # 组内成员可见 下属分组可见 指定分组与人员
-                    groups = user.groups
-                    uuids = []
-                    if '组内成员可见' in visible_scope:
-                        for group in groups:
-                            uuid = group.uuid_hex
-                            if uuid not in uuids:
-                                uuids.append(uuid)
-                    if '下属分组可见' in visible_scope:
-                        # 递归查询(下下级不筛选)
-                        if not parent:
-                            # 如果是一级，就只能看到下属分组
-                            child_groups = Group.valid_objects.filter(parent__in=groups)
-                            for child_group in child_groups:
-                                uuid = child_group.uuid_hex
-                                if uuid not in uuids:
-                                    uuids.append(uuid)
-                        else:
-                            # 如果是二级，就不进行筛选
-                            uuids = []
-                    if '指定分组与人员' in visible_scope:
-                        assign_group = group_visible.get('assign_group', [])
-                        for uuid in assign_group:
-                            if uuid not in uuids:
-                                uuids.append(uuid)
-                    if uuids:
-                        kwargs['uuid__in'] = uuids
-                else:
-                    if parent is None:
-                        if len(visible_scope) == 1 and '下属分组可见' in visible_scope:
-                            pass
-                        else:
-                            kwargs['parent'] = None
+            configs = self.get_group_visible(self.kwargs['tenant_uuid'])
+            uuids = []
+            for group in qs:
+                group_config = configs.filter(group=group).first()
+                if group_config:
+                    group_visible = group_config.data
+                    visible_type = group_visible.get('visible_type', '所有人可见')
+                    if visible_type == '部分人可见':
+                        visible_scope = group_visible.get('visible_scope', [])
+                        if visible_scope:
+                            # 组内成员可见 下属分组可见 指定分组与人员
+                            if '组内成员可见' in visible_scope:
+                                if user.groups.filter(uuid=group.uuid).exists():
+                                    uuids.append(str(group.uuid))
+                                    continue
+                            if '下属分组可见' in visible_scope:
+                                # 取得当前分组的所有下属分组
+                                group_uuids = []
+                                group.child_groups(group_uuids)
+                                if user.groups.filter(uuid__in=group_uuids).exists():
+                                    uuids.append(str(group.uuid))
+                                    continue
+                            if '指定分组与人员' in visible_scope:
+                                assign_group = group_visible.get('assign_group', [])
+                                assign_user = group_visible.get('assign_user', [])
+                                if assign_group and user.groups.filter(uuid__in=assign_group).exists():
+                                    uuids.append(str(group.uuid))
+                                    continue
+                                elif assign_user and str(user.uuid) in assign_user:
+                                    uuids.append(str(group.uuid))
+                                    continue
                     else:
-                        kwargs['parent__uuid'] = parent
-            else:
-                if parent is None:
-                    kwargs['parent'] = None
+                        uuids.append(str(group.uuid))
                 else:
-                    kwargs['parent__uuid'] = parent
+                    uuids.append(str(group.uuid))
+            qs = qs.filter(uuid__in=uuids)
+            return qs
+            # visible_type = group_visible.get('visible_type', '所有人可见')
+            # if visible_type == '部分人可见':
+            #     visible_scope = group_visible.get('visible_scope', [])
+            #     if visible_scope:
+            #         # 组内成员可见 下属分组可见 指定分组与人员
+            #         groups = user.groups
+            #         uuids = []
+            #         if '组内成员可见' in visible_scope:
+            #             for group in groups:
+            #                 uuid = group.uuid_hex
+            #                 if uuid not in uuids:
+            #                     uuids.append(uuid)
+            #         if '下属分组可见' in visible_scope:
+            #             # 递归查询(下下级不筛选)
+            #             if not parent:
+            #                 # 如果是一级，就只能看到下属分组
+            #                 child_groups = Group.valid_objects.filter(parent__in=groups)
+            #                 for child_group in child_groups:
+            #                     uuid = child_group.uuid_hex
+            #                     if uuid not in uuids:
+            #                         uuids.append(uuid)
+            #             else:
+            #                 # 如果是二级，就不进行筛选
+            #                 uuids = []
+            #         if '指定分组与人员' in visible_scope:
+            #             assign_group = group_visible.get('assign_group', [])
+            #             for uuid in assign_group:
+            #                 if uuid not in uuids:
+            #                     uuids.append(uuid)
+            #         if uuids:
+            #             kwargs['uuid__in'] = uuids
+            #     else:
+            #         if parent is None:
+            #             if len(visible_scope) == 1 and '下属分组可见' in visible_scope:
+            #                 pass
+            #             else:
+            #                 kwargs['parent'] = None
+            #         else:
+            #             kwargs['parent__uuid'] = parent
+            # else:
+            #     if parent is None:
+            #         kwargs['parent'] = None
+            #     else:
+            #         kwargs['parent__uuid'] = parent
         else:
-            if parent is None:
-                kwargs['parent'] = None
-            else:
-                kwargs['parent__uuid'] = parent
-
-        qs = Group.valid_objects.filter(**kwargs).order_by('id')
-        return qs
+            return qs
 
 
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
@@ -1271,7 +1321,7 @@ class TenantContactsUserView(generics.ListAPIView):
         # {
         #     "is_open": true
         # }
-        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid, config_type=0).first()
+        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
         return config.data
 
     def get_queryset(self):
