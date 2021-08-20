@@ -34,6 +34,16 @@ from api.v1.serializers.email import (
     RegisterEmailClaimSerializer,
     ResetPWDEmailClaimSerializer,
 )
+from common.utils import (
+    get_client_ip,
+    check_password_complexity,
+    set_user_register_count,
+    get_user_register_count,
+)
+
+from runtime import get_app_runtime
+from login_register_config.models import LoginRegisterConfig
+from .constants import KEY
 
 
 @extend_schema(
@@ -42,16 +52,20 @@ from api.v1.serializers.email import (
     responses=EmailRegisterResponseSerializer,
 )
 class EmailRegisterView(APIView):
-    def post(self, request, pk):
-        tenant = Tenant.active_objects.filter(uuid=pk).first()
+    def post(self, request):
+        tenant = None
+        tenant_uuid = request.query_params.get('tenant', None)
+        if tenant_uuid:
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+
         email = request.data.get('email')
         code = request.data.get('code')
         password = request.data.get('password')
-        ip = self.get_client_ip(request)
-        from django.db.models import Q
+        ip = get_client_ip(request)
 
+        runtime = get_app_runtime()
         email_code_key = RegisterEmailClaimSerializer.gen_email_verify_code_key(email)
-        cache_code = self.runtime.cache_provider.get(email_code_key)
+        cache_code = runtime.cache_provider.get(email_code_key)
         if code != '123456' and (code is None or str(cache_code) != code):
             return JsonResponse(
                 data={
@@ -59,6 +73,8 @@ class EmailRegisterView(APIView):
                     'message': _('Email Code not match'),
                 }
             )
+
+        from django.db.models import Q
 
         user_exists = User.active_objects.filter(
             Q(username=email) | Q(email=email)
@@ -70,6 +86,7 @@ class EmailRegisterView(APIView):
                     'message': _('email already exists'),
                 }
             )
+
         if not password:
             return JsonResponse(
                 data={
@@ -77,21 +94,28 @@ class EmailRegisterView(APIView):
                     'message': _('password is empty'),
                 }
             )
-        # TODO 检查密码复杂度逻辑抽象
-        # if self.check_password(tenant.uuid, password) is False:
-        #     return JsonResponse(
-        #         data={
-        #             'error': Code.PASSWORD_STRENGTH_ERROR.value,
-        #             'message': _('password strength not enough'),
-        #         }
-        #     )
+        if check_password_complexity(password, tenant) is False:
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                    'message': _('password strength not enough'),
+                }
+            )
+
+        # 获取provider config data
+        config = LoginRegisterConfig.active_objects.filter(
+            tenant=tenant, type=KEY
+        ).first()
+        if config:
+            config_data = config.data
+        else:
+            config_data = {}
         # 判断注册次数
-        login_config = self.get_login_config(pk)
-        is_open_register_limit = login_config.get('is_open_register_limit', False)
-        register_time_limit = login_config.get('register_time_limit', 1)
-        register_count_limit = login_config.get('register_count_limit', 10)
+        is_open_register_limit = config_data.get('is_open_register_limit', False)
+        register_time_limit = config_data.get('register_time_limit', 1)
+        register_count_limit = config_data.get('register_count_limit', 10)
         if is_open_register_limit is True:
-            register_count = self.get_user_register_count(ip)
+            register_count = get_user_register_count(ip)
             if register_count >= register_count_limit:
                 return JsonResponse(
                     data={
@@ -99,6 +123,7 @@ class EmailRegisterView(APIView):
                         'message': _('a large number of registrations in a short time'),
                     }
                 )
+
         user, created = User.objects.get_or_create(
             is_del=False,
             is_active=True,
@@ -107,24 +132,21 @@ class EmailRegisterView(APIView):
         )
         user.tenants.add(tenant)
         user.set_password(password)
+        if not tenant:
+            user.is_platform_user = True
         user.save()
         token = user.refresh_token()
+
         # 注册成功进行计数
         if is_open_register_limit is True:
             self.user_register_count(ip, 'register', register_time_limit)
 
-        # 传递注册完成后是否补充用户资料
-        need_complete_profile_after_register = login_config.get(
-            'need_complete_profile_after_register'
-        )
-        can_skip_complete_profile = login_config.get('can_skip_complete_profile')
         return JsonResponse(
             data={
                 'error': Code.OK.value,
                 'data': {
                     'token': token.key,  # TODO: fullfil user info
-                    'need_complete_profile_after_register': need_complete_profile_after_register,
-                    'can_skip_complete_profile': can_skip_complete_profile,
+                    'user_uuid': user.uuid.hex,
                 },
             }
         )
@@ -146,10 +168,16 @@ class EmailResetPasswordView(generics.CreateAPIView):
 
     @extend_schema(responses=PasswordSerializer)
     def post(self, request):
+
+        tenant = None
+        tenant_uuid = request.query_params.get('tenant', None)
+        if tenant_uuid:
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+
         email = request.data.get('email', '')
         password = request.data.get('password', '')
-        # checkpassword = request.data.get('checkpassword', '')
         code = request.data.get('code', '')
+
         user = User.objects.filter(email=email).first()
         if not user:
             return JsonResponse(
@@ -158,7 +186,7 @@ class EmailResetPasswordView(generics.CreateAPIView):
                     'message': _('user does not exist'),
                 }
             )
-        if password and self.check_password(password) is False:
+        if password and check_password_complexity(password, tenant) is False:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_STRENGTH_ERROR.value,
@@ -178,8 +206,3 @@ class EmailResetPasswordView(generics.CreateAPIView):
         user.set_password(password)
         user.save()
         return Response({'error': Code.OK.value, 'message': 'Reset password success'})
-
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True

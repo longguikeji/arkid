@@ -10,13 +10,28 @@ from tenant.models import Tenant
 
 
 class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, data) -> None:
+        self.username_login_enabled = data.get('username_login_enabled', True)
+        self.username_register_enabled = data.get('username_register_enabled', True)
+        self.email_login_enabled = data.get('email_login_enabled', False)
+        self.login_enabled_custom_field_names = data.get(
+            'login_enabled_custom_field_names', []
+        )
+        self.register_enabled_custom_field_names = data.get(
+            'login_enabled_custom_field_names', []
+        )
+        self.is_open_authcode = data.get('is_open_authcode', False)
+        self.error_number_open_authcode = data.get('error_number_open_authcode', 0)
 
-    def login_form(self, request, tenant_uuid, native_field_names, custom_field_uuids):
+    def login_form(self, tenant_uuid=None, **kwargs):
         """
         原生和自定义字段的密码登录共用表单
         """
+        if not self.login_enabled:
+            return None
+        request = kwargs.get('request')
+        native_field_names = kwargs.get('native_field_names')
+        custom_field_uuids = kwargs.get('custom_field_uuids')
         login_config = self.get_login_config(tenant_uuid)
         is_open_authcode = login_config.get('is_open_authcode', False)
         error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
@@ -56,7 +71,7 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
         field_names = ','.join(native_field_names)
         field_uuids = ','.join(custom_field_uuids)
         url = (
-            reverse("api:tenant-secret-login", args=[tenant_uuid])
+            reverse("api:password_login_register:password_login")
             + f'?field_names={field_names}&field_uuids={field_uuids}'
         )
         return lp.LoginForm(
@@ -67,7 +82,11 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             ),
         )
 
-    def register_form(self, tenant_uuid, field_name, is_custom_field):
+    def register_form(self, tenant_uuid=None, **kwargs):
+        if not self.register_enabled:
+            return None
+        is_custom_field = kwargs.get('is_custom_field')
+        field_name = kwargs.get('field_name')
         # TODO 将原生字段的注册表单和自定义字段的注册表单统一起来
         tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         if is_custom_field:
@@ -99,7 +118,7 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             submit=lp.Button(
                 label='注册',
                 http=lp.ButtonHttp(
-                    url=reverse("api:tenant-secret-register", args=[tenant_uuid])
+                    url=reverse("api:password_login_register:password_register")
                     + f'?field_name={field_name}&is_custom_field={is_custom_field}',
                     method='post',
                     params={
@@ -110,3 +129,6 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
                 ),
             ),
         )
+
+    def reset_password_form(self, tenant_uuid=None, **kwargs):
+        return None

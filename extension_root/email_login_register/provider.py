@@ -7,10 +7,23 @@ from config import get_app_config
 
 
 class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, data) -> None:
+        self.register_enabled = data.get('register_enabled', True)
+        self.reset_password_enabled = data.get('reset_password_enabled', True)
 
-    def register_form(self, tenant_uuid):
+    def login_form(self, tenant_uuid=None, **kwargs):
+        return None
+
+    def register_form(self, tenant_uuid=None, **kwargs):
+        if not self.register_enabled:
+            return None
+
+        submit_url = reverse(
+            "api:email_login_register:email-register",
+        )
+        if tenant_uuid:
+            submit_url = submit_url + f'?tenant={tenant_uuid}'
+
         return lp.LoginForm(
             label='邮箱注册',
             items=[
@@ -48,12 +61,7 @@ class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             submit=lp.Button(
                 label='注册',
                 http=lp.ButtonHttp(
-                    url=reverse(
-                        "api:tenant-email-register",
-                        args=[
-                            tenant_uuid,
-                        ],
-                    ),
+                    url=submit_url,
                     method='post',
                     params={
                         'email': 'email',
@@ -65,7 +73,16 @@ class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             ),
         )
 
-    def reset_password_form(self):
+    def reset_password_form(self, tenant_uuid=None, **kwargs):
+        if not self.reset_password_enabled:
+            return None
+
+        submit_url = reverse(
+            "api:email_login_register:email-reset-password",
+        )
+        if tenant_uuid:
+            submit_url = submit_url + f'?tenant={tenant_uuid}'
+
         return lp.LoginForm(
             label='通过邮箱修改密码',
             items=[
@@ -103,9 +120,7 @@ class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             submit=lp.Button(
                 label='确认',
                 http=lp.ButtonHttp(
-                    url=reverse(
-                        "api:user-email-reset-password",
-                    ),
+                    url=submit_url,
                     method='post',
                     params={
                         'email': 'email',

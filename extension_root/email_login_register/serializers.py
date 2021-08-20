@@ -8,6 +8,9 @@ class EmailLoginRegisterConfigDataSerializer(serializers.Serializer):
 
     register_enabled = serializers.BooleanField(default=True, label=_('启用注册'))
     reset_password_enabled = serializers.BooleanField(default=True, label=_('启用修改密码'))
+    is_open_register_limit = serializers.BooleanField(default=False, label=('是否限制注册用户'))
+    register_time_limit = serializers.IntegerField(default=1, label=_('用户注册时间限制(分钟)'))
+    register_count_limit = serializers.IntegerField(default=10, label=_('用户注册数量限制'))
 
 
 class EmailLoginRegisterConfigSerializer(LoginRegisterConfigBaseSerializer):

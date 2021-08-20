@@ -1,5 +1,5 @@
 from typing import Any, Dict, Optional
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 import uuid
 from django.core.files import File
 
@@ -133,15 +133,15 @@ class MigrationProvider:
         raise NotImplementedError
 
 
-class LoginRegisterConfigProvider:
+class LoginRegisterConfigProvider(ABC):
     @abstractmethod
-    def login_form(self, *args, **kwargs):
-        raise NotImplementedError()
+    def login_form(self, tenant_uuid=None, **kwargs):
+        raise NotImplementedError
 
     @abstractmethod
-    def register_form(self, *args, **kwargs):
-        raise NotImplementedError()
+    def register_form(self, tenant_uuid=None, **kwargs):
+        raise NotImplementedError
 
     @abstractmethod
-    def reset_password_form(self, *args, **kwargs):
-        raise NotImplementedError()
+    def reset_password_form(self, tenant_uuid=None, **kwargs):
+        raise NotImplementedError

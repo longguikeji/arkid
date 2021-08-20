@@ -13,9 +13,4 @@ urlpatterns = [
         views.PasswordLoginView.as_view(),
         name="password-login",
     ),
-    # path(
-    #     "email_reset_password",
-    #     views.EmailResetPasswordView.as_view(),
-    #     name="email-reset-password",
-    # ),
 ]

@@ -15,6 +15,8 @@ from external_idp.models import ExternalIdp
 from api.v1.serializers.tenant import TenantExtendSerializer
 from system.models import SystemConfig, SystemPrivacyNotice
 from django.urls import reverse
+from runtime import get_app_runtime
+from login_register_config.models import LoginRegisterConfig
 
 
 @extend_schema(tags=['login page'])
@@ -29,7 +31,20 @@ class LoginPage(views.APIView):
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
 
             # 添加 tenant的登录注册表单
-            self.add_tenant_login_register_form(request, tenant, data)
+            # self.add_tenant_login_register_form(request, tenant, data)
+
+            # 加载注册登录插件
+            r = get_app_runtime()
+            configs = LoginRegisterConfig.active_objects.filter(tenant=tenant)
+            for config in configs:
+                provider_cls = r.login_register_config_providers.get(config.type, None)
+                assert provider_cls is not None
+
+                config_data = config.data
+                provider = provider_cls(config_data)
+                data.addForm(model.LOGIN, provider.login_form(tenant_uuid))
+                data.addForm(model.REGISTER, provider.register_form(tenant_uuid))
+                data.addForm(model.PASSWORD, provider.reset_password_form(tenant_uuid))
 
             # 登录表单增加第三方登录按钮
             self.add_tenant_idp_login_buttons(request, tenant, data)
@@ -143,7 +158,7 @@ class LoginPage(views.APIView):
         return data
 
     def add_login_register_button(self, data, agreement):
-        if data.getPage(model.REGISTER):
+        if data.getPage(model.REGISTER) and data.getPage(model.LOGIN):
             data.addBottom(
                 model.LOGIN,
                 model.Button(
@@ -160,10 +175,8 @@ class LoginPage(views.APIView):
         return data
 
     def add_reset_password_button(self, data, agreement):
-        if data.getPage(model.LOGIN):
+        if data.getPage(model.LOGIN) and data.getPage(model.PASSWORD):
             data.addBottom(model.LOGIN, model.Button(label='忘记密码', gopage='password'))
-            data.addForm(model.PASSWORD, self.mobile_password_reset_form())
-            data.addForm(model.PASSWORD, self.email_password_reset_form())
             if data.getPage(model.REGISTER):
                 data.addBottom(
                     model.PASSWORD,
@@ -188,109 +201,109 @@ class LoginPage(views.APIView):
             result = systemconfig.data
         return result
 
-    def mobile_password_reset_form(self):
-        tenant_uuid = 'xxxx'
-        return model.LoginForm(
-            label='通过手机号修改密码',
-            items=[
-                model.LoginFormItem(
-                    type='text',
-                    name='mobile',
-                    placeholder='手机号',
-                    append=model.Button(
-                        label='发送验证码',
-                        delay=60,
-                        http=model.ButtonHttp(
-                            url=reverse('api:sms', args=['reset_password']),
-                            method='post',
-                            params={'mobile': 'mobile'},
-                        ),
-                    ),
-                ),
-                model.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
-                ),
-                model.LoginFormItem(
-                    type='password',
-                    name='password',
-                    placeholder='新密码',
-                ),
-                model.LoginFormItem(
-                    type='password',
-                    name='checkpassword',
-                    placeholder='新密码确认',
-                ),
-            ],
-            submit=model.Button(
-                label='确认',
-                http=model.ButtonHttp(
-                    url=reverse(
-                        "api:user-mobile-reset-password",
-                    ),
-                    method='post',
-                    params={
-                        'mobile': 'mobile',
-                        'password': 'password',
-                        'code': 'code',
-                        'checkpassword': 'checkpassword',
-                    },
-                ),
-                gopage=model.LOGIN,
-            ),
-        )
+    # def mobile_password_reset_form(self):
+    #     tenant_uuid = 'xxxx'
+    #     return model.LoginForm(
+    #         label='通过手机号修改密码',
+    #         items=[
+    #             model.LoginFormItem(
+    #                 type='text',
+    #                 name='mobile',
+    #                 placeholder='手机号',
+    #                 append=model.Button(
+    #                     label='发送验证码',
+    #                     delay=60,
+    #                     http=model.ButtonHttp(
+    #                         url=reverse('api:sms', args=['reset_password']),
+    #                         method='post',
+    #                         params={'mobile': 'mobile'},
+    #                     ),
+    #                 ),
+    #             ),
+    #             model.LoginFormItem(
+    #                 type='text',
+    #                 name='code',
+    #                 placeholder='验证码',
+    #             ),
+    #             model.LoginFormItem(
+    #                 type='password',
+    #                 name='password',
+    #                 placeholder='新密码',
+    #             ),
+    #             model.LoginFormItem(
+    #                 type='password',
+    #                 name='checkpassword',
+    #                 placeholder='新密码确认',
+    #             ),
+    #         ],
+    #         submit=model.Button(
+    #             label='确认',
+    #             http=model.ButtonHttp(
+    #                 url=reverse(
+    #                     "api:user-mobile-reset-password",
+    #                 ),
+    #                 method='post',
+    #                 params={
+    #                     'mobile': 'mobile',
+    #                     'password': 'password',
+    #                     'code': 'code',
+    #                     'checkpassword': 'checkpassword',
+    #                 },
+    #             ),
+    #             gopage=model.LOGIN,
+    #         ),
+    #     )
 
-    def email_password_reset_form(self):
-        tenant_uuid = 'xxxx'
-        return model.LoginForm(
-            label='通过邮箱修改密码',
-            items=[
-                model.LoginFormItem(
-                    type='text',
-                    name='email',
-                    placeholder='邮箱账号',
-                    append=model.Button(
-                        label='发送验证码',
-                        delay=60,
-                        http=model.ButtonHttp(
-                            url=reverse('api:email', args=['reset_password'])
-                            + '?send_verify_code=true',
-                            method='post',
-                            params={'email': 'email'},
-                        ),
-                    ),
-                ),
-                model.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
-                ),
-                model.LoginFormItem(
-                    type='password',
-                    name='password',
-                    placeholder='新密码',
-                ),
-                model.LoginFormItem(
-                    type='password',
-                    name='checkpassword',
-                    placeholder='新密码确认',
-                ),
-            ],
-            submit=model.Button(
-                label='确认',
-                http=model.ButtonHttp(
-                    url=reverse(
-                        "api:user-email-reset-password",
-                    ),
-                    method='post',
-                    params={
-                        'email': 'email',
-                        'password': 'password',
-                        'code': 'code',
-                        'checkpassword': 'checkpassword',
-                    },
-                ),
-                gopage=model.LOGIN,
-            ),
-        )
+    # def email_password_reset_form(self):
+    #     tenant_uuid = 'xxxx'
+    #     return model.LoginForm(
+    #         label='通过邮箱修改密码',
+    #         items=[
+    #             model.LoginFormItem(
+    #                 type='text',
+    #                 name='email',
+    #                 placeholder='邮箱账号',
+    #                 append=model.Button(
+    #                     label='发送验证码',
+    #                     delay=60,
+    #                     http=model.ButtonHttp(
+    #                         url=reverse('api:email', args=['reset_password'])
+    #                         + '?send_verify_code=true',
+    #                         method='post',
+    #                         params={'email': 'email'},
+    #                     ),
+    #                 ),
+    #             ),
+    #             model.LoginFormItem(
+    #                 type='text',
+    #                 name='code',
+    #                 placeholder='验证码',
+    #             ),
+    #             model.LoginFormItem(
+    #                 type='password',
+    #                 name='password',
+    #                 placeholder='新密码',
+    #             ),
+    #             model.LoginFormItem(
+    #                 type='password',
+    #                 name='checkpassword',
+    #                 placeholder='新密码确认',
+    #             ),
+    #         ],
+    #         submit=model.Button(
+    #             label='确认',
+    #             http=model.ButtonHttp(
+    #                 url=reverse(
+    #                     "api:user-email-reset-password",
+    #                 ),
+    #                 method='post',
+    #                 params={
+    #                     'email': 'email',
+    #                     'password': 'password',
+    #                     'code': 'code',
+    #                     'checkpassword': 'checkpassword',
+    #                 },
+    #             ),
+    #             gopage=model.LOGIN,
+    #         ),
+    #     )

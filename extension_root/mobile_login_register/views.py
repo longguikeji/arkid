@@ -32,6 +32,16 @@ from .serializers import (
 )
 from inventory.models import User
 from django.utils.translation import gettext_lazy as _
+from common.utils import (
+    get_client_ip,
+    check_password_complexity,
+    set_user_register_count,
+    get_user_register_count,
+)
+from login_register_config.models import LoginRegisterConfig
+from .constants import KEY
+from runtime import get_app_runtime
+from api.v1.serializers.tenant import TenantSerializer
 
 
 @extend_schema(
@@ -40,9 +50,11 @@ from django.utils.translation import gettext_lazy as _
     responses=MobileLoginResponseSerializer,
 )
 class MobileLoginView(APIView):
-    def post(self, request, pk):
-        # uuid = self.kwargs['pk']
-        tenant = Tenant.active_objects.filter(uuid=pk).first()
+    def post(self, request):
+        tenant = None
+        tenant_uuid = request.query_params.get('tenant', None)
+        if tenant_uuid:
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         mobile = request.data.get('mobile')
         code = request.data.get('code')
         thirdparty_data = request.data.get('thirdparty', None)
@@ -51,9 +63,6 @@ class MobileLoginView(APIView):
 
         sms_code_key = LoginSMSClaimSerializer.gen_sms_code_key(mobile)
         cache_code = runtime.cache_provider.get(sms_code_key)
-
-        if isinstance(cache_code, bytes):
-            cache_code = str(cache_code, 'utf-8')
 
         if code != '123456' and (code is None or cache_code != code):
             return JsonResponse(
@@ -69,19 +78,24 @@ class MobileLoginView(APIView):
             return JsonResponse(
                 data={
                     'error': Code.USERNAME_EXISTS_ERROR.value,
-                    'message': _('username is not correct'),
+                    'message': _('mobile not exists'),
                 }
             )
 
         token = user.refresh_token()
-
-        has_tenant_admin_perm = tenant.has_admin_perm(user)
+        return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
+        if tenant:
+            return_data['has_tenant_admin_perm'] = tenant.has_admin_perm(user)
+        else:
+            return_data['tenants'] = [
+                TenantSerializer(o).data for o in user.tenants.all()
+            ]
 
         if thirdparty_data is not None:
             bind_key = thirdparty_data.pop('bind_key')
             assert bind_key is not None
 
-            for eidp in self.runtime.external_idps:
+            for eidp in runtime.external_idps:
                 provider = eidp.provider
                 if provider.bind_key == bind_key:
                     if hasattr(provider, 'bind'):
@@ -92,10 +106,7 @@ class MobileLoginView(APIView):
         return JsonResponse(
             data={
                 'error': Code.OK.value,
-                'data': {
-                    'token': token.key,
-                    'has_tenant_admin_perm': has_tenant_admin_perm,
-                },
+                'data': return_data,
             }
         )
 
@@ -106,16 +117,20 @@ class MobileLoginView(APIView):
     responses=MobileRegisterResponseSerializer,
 )
 class MobileRegisterView(APIView):
-    def post(self, request, pk):
-        tenant = Tenant.active_objects.filter(uuid=pk).first()
+    def post(self, request):
+        tenant = None
+        tenant_uuid = request.query_params.get('tenant', None)
+        if tenant_uuid:
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         mobile = request.data.get('mobile')
         code = request.data.get('code')
         password = request.data.get('password')
-        ip = self.get_client_ip(request)
+        ip = get_client_ip(request)
         from django.db.models import Q
 
         sms_code_key = RegisterSMSClaimSerializer.gen_sms_code_key(mobile)
-        cache_code = self.runtime.cache_provider.get(sms_code_key)
+        runtime = get_app_runtime()
+        cache_code = runtime.cache_provider.get(sms_code_key)
         if code != '123456' and (code is None or str(cache_code) != code):
             return JsonResponse(
                 data={
@@ -141,18 +156,26 @@ class MobileRegisterView(APIView):
                     'message': _('password is empty'),
                 }
             )
-        if self.check_password(tenant.uuid, password) is False:
+        if check_password_complexity(password, tenant) is False:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_STRENGTH_ERROR.value,
                     'message': _('password strength not enough'),
                 }
             )
+
+        # 获取provider config data
+        config = LoginRegisterConfig.active_objects.filter(
+            tenant=tenant, type=KEY
+        ).first()
+        if config:
+            config_data = config.data
+        else:
+            config_data = {}
         # 判断注册次数
-        login_config = self.get_login_config(pk)
-        is_open_register_limit = login_config.get('is_open_register_limit', False)
-        register_time_limit = login_config.get('register_time_limit', 1)
-        register_count_limit = login_config.get('register_count_limit', 10)
+        is_open_register_limit = config_data.get('is_open_register_limit', False)
+        register_time_limit = config_data.get('register_time_limit', 1)
+        register_count_limit = config_data.get('register_count_limit', 10)
         if is_open_register_limit is True:
             register_count = self.get_user_register_count(ip)
             if register_count >= register_count_limit:
@@ -170,24 +193,22 @@ class MobileRegisterView(APIView):
         )
         user.tenants.add(tenant)
         user.set_password(password)
+
+        if not tenant:
+            user.is_platform_user = True
+
         user.save()
         token = user.refresh_token()
         # 注册成功进行计数
         if is_open_register_limit is True:
-            self.user_register_count(ip, 'register', register_time_limit)
+            set_user_register_count(ip, 'register', register_time_limit)
 
-        # 传递注册完成后是否补充用户资料
-        need_complete_profile_after_register = login_config.get(
-            'need_complete_profile_after_register'
-        )
-        can_skip_complete_profile = login_config.get('can_skip_complete_profile')
         return JsonResponse(
             data={
                 'error': Code.OK.value,
                 'data': {
+                    'user_uuid': user.uuid.hex,
                     'token': token.key,  # TODO: fullfil user info
-                    'need_complete_profile_after_register': need_complete_profile_after_register,
-                    'can_skip_complete_profile': can_skip_complete_profile,
                 },
             }
         )
@@ -209,6 +230,10 @@ class MobileResetPasswordView(generics.CreateAPIView):
 
     @extend_schema(responses=PasswordSerializer)
     def post(self, request):
+        tenant = None
+        tenant_uuid = request.query_params.get('tenant', None)
+        if tenant_uuid:
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         mobile = request.data.get('mobile', '')
         password = request.data.get('password', '')
         code = request.data.get('code', '')
@@ -220,7 +245,7 @@ class MobileResetPasswordView(generics.CreateAPIView):
                     'message': _('user does not exist'),
                 }
             )
-        if password and self.check_password(password) is False:
+        if password and check_password_complexity(password, tenant) is False:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_STRENGTH_ERROR.value,
@@ -242,8 +267,3 @@ class MobileResetPasswordView(generics.CreateAPIView):
         user.set_password(password)
         user.save()
         return Response({'error': Code.OK.value, 'message': 'Reset password success'})
-
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True

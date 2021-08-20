@@ -7,10 +7,21 @@ from config import get_app_config
 
 
 class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, data) -> None:
+        self.login_enabled = data.get('login_enabled', True)
+        self.register_enabled = data.get('register_enabled', True)
+        self.reset_password_enabled = data.get('reset_password_enabled', True)
 
-    def login_form(self, tenant_uuid):
+    def login_form(self, tenant_uuid=None, **kwargs):
+        if not self.login_enabled:
+            return None
+
+        submit_url = reverse(
+            "api:mobile_login_register:mobile-login",
+        )
+        if tenant_uuid:
+            submit_url = submit_url + f'?tenant={tenant_uuid}'
+
         return lp.LoginForm(
             label='验证码登录',
             items=[
@@ -37,19 +48,23 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             submit=lp.Button(
                 label='登录',
                 http=lp.ButtonHttp(
-                    url=reverse(
-                        "api:mobile_login_register:mobile-login",
-                        args=[
-                            tenant_uuid,
-                        ],
-                    ),
+                    url=submit_url,
                     method='post',
                     params={'mobile': 'mobile', 'code': 'code'},
                 ),
             ),
         )
 
-    def register_form(self, tenant_uuid):
+    def register_form(self, tenant_uuid=None, **kwargs):
+        if not self.register_enabled:
+            return None
+
+        submit_url = reverse(
+            "api:mobile_login_register:mobile-register",
+        )
+        if tenant_uuid:
+            submit_url = submit_url + f'?tenant={tenant_uuid}'
+
         return lp.LoginForm(
             label='手机号注册',
             items=[
@@ -86,12 +101,7 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             submit=lp.Button(
                 label='注册',
                 http=lp.ButtonHttp(
-                    url=reverse(
-                        "api:mobile_login_register:mobile-register",
-                        args=[
-                            tenant_uuid,
-                        ],
-                    ),
+                    url=submit_url,
                     method='post',
                     params={
                         'mobile': 'mobile',
@@ -103,7 +113,16 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             ),
         )
 
-    def reset_password_form(self):
+    def reset_password_form(self, tenant_uuid=None, **kwargs):
+        if not self.reset_password_enabled:
+            return None
+
+        submit_url = reverse(
+            "api:mobile_login_register:mobile-reset-password",
+        )
+        if tenant_uuid:
+            submit_url = submit_url + f'?tenant={tenant_uuid}'
+
         return lp.LoginForm(
             label='通过手机号修改密码',
             items=[
@@ -140,9 +159,7 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             submit=lp.Button(
                 label='确认',
                 http=lp.ButtonHttp(
-                    url=reverse(
-                        "api:mobile_login_register:mobile-reset-password",
-                    ),
+                    url=submit_url,
                     method='post',
                     params={
                         'mobile': 'mobile',
