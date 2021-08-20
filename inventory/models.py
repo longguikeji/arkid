@@ -231,7 +231,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
                 uuids.append(tenant.uuid)
         return uuids
 
-      
+
 class UserPassword(BaseModel):
 
     user = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -397,7 +397,7 @@ class CustomField(BaseModel):
     '''
 
     SUBJECT_CHOICES = (
-        ('user', '内部联系人'),    # '^[a-z]{1,16}$'
+        ('user', '内部联系人'),  # '^[a-z]{1,16}$'
         ('extern_user', '外部联系人'),
         ('node', '组'),
     )
@@ -406,7 +406,9 @@ class CustomField(BaseModel):
         'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
     )
     name = models.CharField(max_length=128, verbose_name='字段名称')
-    subject = models.CharField(choices=SUBJECT_CHOICES, default='user', max_length=128, verbose_name='字段分类')
+    subject = models.CharField(
+        choices=SUBJECT_CHOICES, default='user', max_length=128, verbose_name='字段分类'
+    )
     schema = models.JSONField(default={'type': 'string'}, verbose_name='字段定义')
     is_visible = models.BooleanField(default=True, verbose_name='是否展示')
 
@@ -415,53 +417,65 @@ class NativeField(BaseModel):
     '''
     原生字段
     '''
+
     SUBJECT_CHOICES = (
-        ('user', '内部联系人'),    # '^[a-z]{1,16}$'
+        ('user', '内部联系人'),  # '^[a-z]{1,16}$'
         ('extern_user', '外部联系人'),
     )
     name = models.CharField(max_length=128, verbose_name='字段名称')
     key = models.CharField(max_length=256, verbose_name='内部字段名')
-    subject = models.CharField(choices=SUBJECT_CHOICES, default='user', max_length=128, verbose_name='字段分类')
+    subject = models.CharField(
+        choices=SUBJECT_CHOICES, default='user', max_length=128, verbose_name='字段分类'
+    )
     schema = models.JSONField(default={'type': 'string'}, verbose_name='字段定义')
     is_visible = models.BooleanField(default=True, verbose_name='是否展示')
-    is_visible_editable = models.BooleanField(default=True, verbose_name='对于`是否展示`，是否可以修改')
+    is_visible_editable = models.BooleanField(
+        default=True, verbose_name='对于`是否展示`，是否可以修改'
+    )
 
 
 class CustomUser(BaseModel):
     '''
     定制化用户信息
     '''
-    DEFAULT_VALUE = ""
 
-    user = models.OneToOneField(User, verbose_name='用户', related_name='custom_user', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        'inventory.User',
+        verbose_name='用户',
+        related_name='custom_user',
+        on_delete=models.CASCADE,
+    )
+    tenant = models.ForeignKey(
+        'tenant.Tenant', blank=True, null=True, on_delete=models.CASCADE
+    )
     data = models.JSONField(verbose_name='信息内容')
 
-    def update(self, **kwargs):
-        '''
-        更新数据
-        '''
-        self.data.update(**kwargs)    # pylint: disable=no-member
-        self.save()
+    # def update(self, **kwargs):
+    #     '''
+    #     更新数据
+    #     '''
+    #     self.data.update(**kwargs)    # pylint: disable=no-member
+    #     self.save()
 
-    def pretty(self, visible_only=True):
-        '''
-        前端友好的输出
-        '''
-        # pylint: disable=no-member
-        res = []
-        data = self.data
+    # def pretty(self, visible_only=True):
+    #     '''
+    #     前端友好的输出
+    #     '''
+    #     # pylint: disable=no-member
+    #     res = []
+    #     data = self.data
 
-        kwargs = {}
-        if visible_only:
-            kwargs.update(is_visible=True)
+    #     kwargs = {}
+    #     if visible_only:
+    #         kwargs.update(is_visible=True)
 
-        for field in CustomField.valid_objects.filter(**kwargs):
-            res.append({
-                'uuid': field.uuid.hex,
-                'name': field.name,
-                'value': data.get(field.uuid.hex, ''),
-            })
-        return res
+    #     for field in CustomField.valid_objects.filter(**kwargs):
+    #         res.append({
+    #             'uuid': field.uuid.hex,
+    #             'name': field.name,
+    #             'value': data.get(field.uuid.hex, ''),
+    #         })
+    #     return res
 
 
 class UserAppData(BaseModel):

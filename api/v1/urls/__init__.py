@@ -23,6 +23,7 @@ from . import (
     system,
     email,
     device,
+    login_register_config,
 )
 from runtime import get_app_runtime
 

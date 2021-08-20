@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = [ 'login_register_config', 'tenant_register_privacy_notice' ]
+tag = ['login_register_config', 'tenant_register_privacy_notice']
 path = 'login_register_config'
 name = '登录注册配置'
 
@@ -11,17 +11,34 @@ extend_schema_tags(
     login_register_config_tag,
     login_register_config_name,
     {
-        'type':'form_page',
+        'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/config/',
-            'method': 'get'
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/',
+            'method': 'get',
+        },
+        'global': {'create': {'tag': 'login_register_config.create'}},
+    },
+)
+
+login_register_config_create_tag = 'login_register_config.create'
+login_register_config_create_name = '创建登录注册配置信息'
+
+extend_schema_tags(
+    login_register_config_create_tag,
+    login_register_config_create_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/',
+            'method': 'post',
         },
         'global': {
-            'update': {
-                'tag': 'login_register_config.update'
+            'create': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/',
+                'method': 'post',
             }
-        }
-    }
+        },
+    },
 )
 
 login_register_config_update_tag = 'login_register_config.update'
@@ -33,16 +50,16 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/config/',
-            'method': 'get'
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/{id}/',
+            'method': 'get',
         },
         'global': {
             'update': {
-                'path': '/api/v1/tenant/{tenant_uuid}/config/',
-                'method': 'patch'
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/{id}/',
+                'method': 'put',
             }
-        }
-    }
+        },
+    },
 )
 
 tenant_register_privacy_notice_tag = 'tenant_register_privacy_notice'
@@ -55,14 +72,10 @@ extend_schema_tags(
         'type': 'form_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/privacy_notice/',
-            'method': 'get'
+            'method': 'get',
         },
-        'global': {
-            'update': {
-                'tag': 'tenant_register_privacy_notice.update'
-            }
-        }
-    }
+        'global': {'update': {'tag': 'tenant_register_privacy_notice.update'}},
+    },
 )
 
 tenant_register_privacy_notice_update_tag = 'tenant_register_privacy_notice.update'
@@ -75,13 +88,13 @@ extend_schema_tags(
         'type': 'form_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/privacy_notice/',
-            'method': 'get'
+            'method': 'get',
         },
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/privacy_notice/',
-                'method': 'put'
+                'method': 'put',
             }
-        }
-    }
+        },
+    },
 )
