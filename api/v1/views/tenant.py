@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from tenant.models import (
     Tenant, TenantConfig, TenantPasswordComplexity,
     TenantContactsConfig, TenantContactsUserFieldConfig, TenantPrivacyNotice,
-    TenantContactsGroupConfig,
+    TenantContactsGroupConfig, TenantDesktopConfig,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer, MobileLoginRequestSerializer, MobileRegisterRequestSerializer,
@@ -16,6 +16,7 @@ from api.v1.serializers.tenant import (
     UserNameLoginRequestSerializer, TenantPasswordComplexitySerializer, TenantContactsConfigFunctionSwitchSerializer,
     TenantContactsConfigInfoVisibilitySerializer, TenantContactsConfigGroupVisibilitySerializer, ContactsGroupSerializer,
     ContactsUserSerializer, TenantContactsUserTagsSerializer, TenantPrivacyNoticeSerializer,
+    TenantDesktopConfigSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
@@ -1483,3 +1484,28 @@ class TenantPrivacyNoticeView(generics.RetrieveUpdateAPIView):
         serializer.is_valid()
         serializer.save(tenant=tenant)
         return Response(serializer.data)
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantDesktopConfigSerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        config = TenantDesktopConfig.active_objects.filter(
+            tenant=tenant
+        ).first()
+        if config is None:
+            config = TenantDesktopConfig()
+            config.tenant = tenant
+            config.data = {
+                'access_with_desktop': True,
+                'icon_custom': True
+            }
+            config.save()
+        return config
