@@ -66,8 +66,6 @@ class OAuthAPPSerializer(DynamicFieldsModelSerializer):
             **validated_data
         )
         return instance
-        
-
 
     def update(self, instance, validated_data):
         validated_data['skip_authorization'] = True
