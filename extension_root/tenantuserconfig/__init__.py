@@ -1,8 +1,7 @@
 from common.extension import InMemExtension
 from .constants import KEY
 from runtime import Runtime
-from .provider import TenantUserConfigIdpProvider
-from .serializers import MiniProgramExternalIdpSerializer
+from extension_root.tenantuserconfig.provider import TenantUserConfigIdpProvider
 
 
 class TenantUserConfigExtension(InMemExtension):

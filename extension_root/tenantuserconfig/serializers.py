@@ -1,46 +1,35 @@
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
-from common.serializer import ExternalIdpBaseSerializer
+from common.serializer import BaseDynamicFieldModelSerializer
+from extension_root.tenantuserconfig.models import TenantUserConfig
+from tenant.models import Tenant
 
 
-class MiniProgramExternalIdpConfigSerializer(serializers.Serializer):
-
-    app_id = serializers.CharField()
-    secret_id = serializers.CharField()
-
-    login_url = serializers.URLField(read_only=True)
-    bind_url = serializers.URLField(read_only=True)
+class TenantUserConfigEditFieldSerializer(serializers.Serializer):
+    name = serializers.CharField(label=_('字段名称'))
+    is_edit = serializers.BooleanField(label=_("是否可以编辑"))
 
 
-class MiniProgramBindSerializer(serializers.Serializer):
-
-    user_id = serializers.CharField()
-    name = serializers.CharField()
-    avatar = serializers.CharField()
-
-
-class MiniProgramExternalIdpSerializer(ExternalIdpBaseSerializer):
-
-    data = MiniProgramExternalIdpConfigSerializer(label=_('data'))
-
-
-class MiniProgramLoginSerializer(serializers.Serializer):
-
-    code = serializers.CharField()
-    name = serializers.CharField()
-    avatar = serializers.CharField()
+class TenantUserConfigSetSerializer(serializers.Serializer):
+    is_edit_fields = serializers.ListField(
+        child=TenantUserConfigEditFieldSerializer(), label=_('用户编辑字段设置')
+    )
+    is_logout = serializers.BooleanField(label=_("是否允许用户注销自己的账号"))
+    is_look_token = serializers.BooleanField(label=_("设置是否允许用户查看自己当前Token"))
+    is_manual_overdue_token = serializers.BooleanField(
+        label=_("设置是否允许用户手动让Token过期"))
+    is_logging_ip = serializers.BooleanField(label=_("设置是否记录用户的IP地址"))
+    is_logging_device = serializers.BooleanField(label=_("设置是否记录用户的设备信息"))
 
 
-class MiniProgramLoginResponseSerializer(serializers.Serializer):
+class TenantUserConfigSerializer(BaseDynamicFieldModelSerializer):
+    data = TenantUserConfigSetSerializer(
+        label=_("设置")
+    )
 
-    token = serializers.CharField(label=_('token，只会在已绑定出'))
-    user_id = serializers.CharField(label=_('user_id，只会在未绑定出'))
-    name = serializers.CharField(label=_('名称，只会在未绑定出'))
-    avatar = serializers.CharField(label=_('头像，只会在未绑定出'))
-    tenant_uuid = serializers.CharField(label=_('租户uuid，只会在未绑定出'))
-    bind = serializers.CharField(label=_('绑定的url，只会在未绑定出'))
+    class Meta:
+        model = TenantUserConfig
 
-
-class MiniProgramBindResponseSerializer(serializers.Serializer):
-
-    token = serializers.CharField(label=_('token'))
+        fields = (
+            'data',
+        )
