@@ -60,6 +60,18 @@ class OAuthAPPSerializer(DynamicFieldsModelSerializer):
             'more_detail',
         )
 
+    def create(self, validated_data):
+        validated_data['skip_authorization'] = True
+        instance = OAuthAPP.objects.create(
+            **validated_data
+        )
+        return instance
+
+    def update(self, instance, validated_data):
+        validated_data['skip_authorization'] = True
+        instance.__dict__.update(validated_data)
+        instance.save()
+        return instance
 
 class OIDCAPPSerializer(DynamicFieldsModelSerializer):
     '''Serializer for OIDCAPP
