@@ -31,10 +31,10 @@ from oneid_meta.models import (
 from siteapi.v1.views.utils import gen_uid
 from siteapi.v1.serializers.perm import PermWithOwnerSerializer
 
-if get_xmlsec_binary:
-    xmlsec_path = get_xmlsec_binary(["/opt/local/bin", "/usr/local/bin"])    # pylint: disable=invalid-name
-else:
-    xmlsec_path = '/usr/local/bin/xmlsec1'    # pylint: disable=invalid-name
+# if get_xmlsec_binary:
+#     xmlsec_path = get_xmlsec_binary(["/opt/local/bin", "/usr/local/bin"])    # pylint: disable=invalid-name
+# else:
+#     xmlsec_path = '/usr/local/bin/xmlsec1'    # pylint: disable=invalid-name
 BASEDIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 
@@ -60,6 +60,20 @@ class OAuthAPPSerializer(DynamicFieldsModelSerializer):
             'more_detail',
         )
 
+    def create(self, validated_data):
+        validated_data['skip_authorization'] = True
+        instance = OAuthAPP.objects.create(
+            **validated_data
+        )
+        return instance
+        
+
+
+    def update(self, instance, validated_data):
+        validated_data['skip_authorization'] = True
+        instance.__dict__.update(validated_data)
+        instance.save()
+        return instance
 
 class OIDCAPPSerializer(DynamicFieldsModelSerializer):
     '''Serializer for OIDCAPP
