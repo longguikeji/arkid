@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'extension_root.feishu',
     'extension_root.mysql_migration',
     'extension_root.arkid',
+    'extension_root.tenantuserconfig',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',
