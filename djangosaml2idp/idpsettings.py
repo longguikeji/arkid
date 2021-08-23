@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAML_IDP_CONFIG = {
     'debug':
     settings.DEBUG,
-    # 'xmlsec_binary':get_xmlsec_binary(['/opt/local/bin', '/usr/bin/xmlsec1']),
+    'xmlsec_binary':get_xmlsec_binary(['/opt/local/bin', '/usr/bin/xmlsec1']),
     'entityid':
     '%s/saml/metadata/' % settings.BASE_URL,
     'description':

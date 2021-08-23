@@ -19,8 +19,8 @@ def run():
         create_self_signed_cert()
 
     conf = IdPConfig()    # pylint: disable=invalid-name
-    # conf.load(copy.deepcopy(idpsettings.SAML_IDP_CONFIG))
-    # meta_data = entity_descriptor(conf)    # pylint: disable=invalid-name
-    # content = text_type(meta_data).encode('utf-8')
-    # with open(BASEDIR + '/djangosaml2idp/saml2_config/idp_metadata.xml', 'wb') as f:
-    #     f.write(content)
+    conf.load(copy.deepcopy(idpsettings.SAML_IDP_CONFIG))
+    meta_data = entity_descriptor(conf)    # pylint: disable=invalid-name
+    content = text_type(meta_data).encode('utf-8')
+    with open(BASEDIR + '/djangosaml2idp/saml2_config/idp_metadata.xml', 'wb') as f:
+        f.write(content)
