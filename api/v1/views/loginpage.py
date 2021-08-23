@@ -42,9 +42,16 @@ class LoginPage(views.APIView):
 
                 config_data = config.data
                 provider = provider_cls(config_data)
-                data.addForm(model.LOGIN, provider.login_form(tenant_uuid))
-                data.addForm(model.REGISTER, provider.register_form(tenant_uuid))
-                data.addForm(model.PASSWORD, provider.reset_password_form(tenant_uuid))
+                data.addForm(
+                    model.LOGIN, provider.login_form(tenant_uuid, request=request)
+                )
+                data.addForm(
+                    model.REGISTER, provider.register_form(tenant_uuid, request=request)
+                )
+                data.addForm(
+                    model.PASSWORD,
+                    provider.reset_password_form(tenant_uuid, request=request),
+                )
 
             # 登录表单增加第三方登录按钮
             self.add_tenant_idp_login_buttons(request, tenant, data)

@@ -169,7 +169,11 @@ class LoginPages(dict):
             _page.merge(page)
 
     def addForm(self, page, form: LoginForm):
-        if form:
+        if not form:
+            return
+        if type(form) == list:
+            self.addPage(LoginPage(name=page, forms=form))
+        else:
             self.addPage(LoginPage(name=page, forms=[form]))
 
     def addBottom(self, page, bottom: Button):

@@ -17,6 +17,7 @@ from tenant.models import Tenant
 from openapi.utils import extend_schema
 from rest_framework import generics
 from runtime import get_app_runtime
+from django.utils.translation import gettext_lazy as _
 from api.v1.serializers.sms import (
     RegisterSMSClaimSerializer,
     LoginSMSClaimSerializer,
