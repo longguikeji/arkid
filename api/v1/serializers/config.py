@@ -4,13 +4,15 @@ from inventory.models import CustomField, NativeField
 from rest_framework.exceptions import ValidationError
 from common.serializer import BaseDynamicFieldModelSerializer
 
+
 class CustomFieldSerailizer(BaseDynamicFieldModelSerializer):
     '''
     serializer for CustomField
     '''
+
     uuid = serializers.UUIDField(format='hex', read_only=True)
 
-    class Meta:    # pylint: disable=missing-docstring
+    class Meta:  # pylint: disable=missing-docstring
 
         model = CustomField
 
@@ -21,18 +23,27 @@ class CustomFieldSerailizer(BaseDynamicFieldModelSerializer):
             'schema',
             'is_visible',
         )
+        extra_kwargs = {
+            'uuid': {'read_only': True},
+            'subject': {'read_only': True},
+        }
+
     def create(self, validated_data):
+        request = self.context['request']
+        subject = request.query_params.get('subject')
         name = validated_data.get('name')
-        subject = validated_data.get('subject')
         schema = validated_data.get('schema')
         is_visible = validated_data.get('is_visible')
 
         tenant = self.context['tenant']
 
-
         o: CustomField = CustomField.valid_objects.create(
-            tenant=tenant, name=name, subject=subject, schema=schema, is_visible=is_visible)
-
+            tenant=tenant,
+            name=name,
+            subject=subject,
+            schema=schema,
+            is_visible=is_visible,
+        )
 
         return o
 
@@ -44,7 +55,7 @@ class NativeFieldSerializer(BaseDynamicFieldModelSerializer):
 
     uuid = serializers.UUIDField(format='hex', read_only=True)
 
-    class Meta:    # pylint: disable=missing-docstring
+    class Meta:  # pylint: disable=missing-docstring
 
         model = NativeField
 
@@ -74,6 +85,12 @@ class NativeFieldSerializer(BaseDynamicFieldModelSerializer):
         if 'is_visible' in validated_data:
             if not instance.is_visible_editable:
                 if validated_data['is_visible'] != instance.is_visible:
-                    raise ValidationError({'is_visible': [f"this file can't be changed for `{instance.name}`"]})
+                    raise ValidationError(
+                        {
+                            'is_visible': [
+                                f"this file can't be changed for `{instance.name}`"
+                            ]
+                        }
+                    )
 
         return super().update(instance, validated_data)

@@ -388,9 +388,8 @@ class CustomField(BaseModel):
     '''
 
     SUBJECT_CHOICES = (
-        ('user', '内部联系人'),  # '^[a-z]{1,16}$'
-        ('extern_user', '外部联系人'),
-        ('node', '组'),
+        ('user', '用户'),  # '^[a-z]{1,16}$'
+        ('group', '组'),
     )
 
     tenant = models.ForeignKey(
