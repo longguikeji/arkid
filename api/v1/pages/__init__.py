@@ -8,13 +8,15 @@ from . import (
     authorization_agent,
     agent_rules,
     auth_rules,
-    app_permissions,
-    book,
-    book_config,
+    contacts,
+    contacts_switch,
+    contacts_group_config,
+    contacts_user_config,
     desktop,
     custom_process,
-    desktop_config,
     data_synchronism,
+    desktop_config,
+    device,
     extension,
     external_idp, 
     group, 
@@ -29,12 +31,11 @@ from . import (
     profile_config,
     permission_group,
     permission_manage,
-    sub_admin_config,
-    scan_code,
     sdk_download,
     system_config,
     statistics,
     subuser,
+    sub_admin_config,
     tenant, 
     tenant_config,
     third_part_account,
@@ -46,7 +47,7 @@ from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
 
 root_add_routers([
     PageRouter(
-        page=book,
+        page=contacts,
         icon='education'
     ),
     Router(
@@ -82,9 +83,24 @@ root_add_routers([
                         page=desktop_config,
                         icon='desktop'
                     ),
-                    PageRouter(
-                        page=book_config,
-                        icon='education'
+                    Router(
+                        path='contacts_config',
+                        name='通讯录设置',
+                        icon='education',
+                        children=[
+                            PageRouter(
+                                page=contacts_switch,
+                                icon='setting'
+                            ),
+                            PageRouter(
+                                page=contacts_group_config,
+                                icon='peoples'
+                            ),
+                            PageRouter(
+                                page=contacts_user_config,
+                                icon='people'
+                            )
+                        ]
                     ),
                     PageRouter(
                         page=profile_config,
@@ -116,10 +132,6 @@ root_add_routers([
                     PageRouter(
                         page=auth_rules,
                         icon='lock'
-                    ),
-                    PageRouter(
-                        page=app_permissions,
-                        icon='form'
                     )
                 ]
             ),
@@ -135,6 +147,10 @@ root_add_routers([
                     PageRouter(
                         page=group,
                         icon='tree-table',
+                    ),
+                    PageRouter(
+                        page=device,
+                        icon='developer'
                     )
                 ]
             ),
@@ -188,10 +204,6 @@ root_add_routers([
                     PageRouter(
                         page=external_idp,
                         icon='wechat',
-                    ),
-                    PageRouter(
-                        page=scan_code,
-                        icon='scan'
                     )
                 ]
             ),

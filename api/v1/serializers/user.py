@@ -9,6 +9,7 @@ from api.v1.fields.custom import (
     create_hint_field,
     create_mobile_field,
     create_password_field,
+    create_init_field,
 )
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
@@ -72,15 +73,14 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         write_only=True,
     )
 
-    # custom_user = CustomUserSerializer(many=False, required=False, allow_null=True)
-    # custom_user = create_foreign_key_field(serializers.DictField)(
-    #     allow_empty=True,
-    #     model_cls=CustomField,
-    #     field_name='uuid',
-    #     page=group.group_tree_tag,
-    #     # child=serializers.CharField(),
-    #     # write_only=True,
-    # )
+    custom_user = create_init_field(serializers.DictField)(
+        model_cls=CustomField,
+        allow_empty=True,
+        init={
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/',
+            'method': 'get'
+        }
+    )
 
     class Meta:
         model = User
@@ -102,7 +102,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'set_groups',
             'set_permissions',
             'bind_info',
-            # 'custom_user',
+            'custom_user',
         )
 
         extra_kwargs = {
