@@ -7,6 +7,13 @@ from config import get_app_config
 from common.native_field import NativeFieldNames
 from inventory.models import CustomField, Group, User, UserPassword, CustomUser
 from tenant.models import Tenant
+from common.utils import (
+    get_client_ip,
+    check_password_complexity,
+    set_user_register_count,
+    get_user_register_count,
+    get_password_error_count,
+)
 
 
 class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
@@ -18,7 +25,7 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             'login_enabled_custom_field_names', []
         )
         self.register_enabled_custom_field_names = data.get(
-            'login_enabled_custom_field_names', []
+            'register_enabled_custom_field_names', []
         )
         self.is_open_authcode = data.get('is_open_authcode', False)
         self.error_number_open_authcode = data.get('error_number_open_authcode', 0)
@@ -27,27 +34,24 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
         """
         原生和自定义字段的密码登录共用表单
         """
-        if not self.login_enabled:
-            return None
         request = kwargs.get('request')
-        native_field_names = kwargs.get('native_field_names')
-        custom_field_uuids = kwargs.get('custom_field_uuids')
-        login_config = self.get_login_config(tenant_uuid)
-        is_open_authcode = login_config.get('is_open_authcode', False)
-        error_number_open_authcode = login_config.get('error_number_open_authcode', 0)
-        ip = self.get_client_ip(request)
-        # 根据配置信息生成表单
-        names = []
-        for name in native_field_names:
-            names.append(NativeFieldNames.DISPLAY_LABELS.get(name))
-        for uuid in custom_field_uuids:
-            custom_field = CustomField.valid_objects.filter(uuid=uuid).first()
-            names.append(custom_field.name)
+        ip = get_client_ip(request)
+
+        account_names = []
+        if self.username_login_enabled:
+            account_names.append(NativeFieldNames.DISPLAY_LABELS.get('username'))
+        if self.email_login_enabled:
+            account_names.append(NativeFieldNames.DISPLAY_LABELS.get('email'))
+
+        account_names.extend(self.login_enabled_custom_field_names)
+        if not account_names:
+            return None
+
         items = [
             lp.LoginFormItem(
                 type='text',
                 name='username',
-                placeholder='/'.join(names),
+                placeholder='/'.join(account_names),
             ),
             lp.LoginFormItem(
                 type='password',
@@ -56,9 +60,9 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             ),
         ]
         params = {'username': 'username', 'password': 'password'}
-        if is_open_authcode is True:
-            password_error_count = self.get_password_error_count(ip)
-            if password_error_count >= error_number_open_authcode:
+        if self.is_open_authcode is True:
+            password_error_count = get_password_error_count(ip)
+            if password_error_count >= self.error_number_open_authcode:
                 items.append(
                     lp.LoginFormItem(
                         type='text',
@@ -68,34 +72,39 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
                 )
                 params['code'] = 'code'
                 params['code_filename'] = 'code_filename'
-        field_names = ','.join(native_field_names)
-        field_uuids = ','.join(custom_field_uuids)
-        url = (
-            reverse("api:password_login_register:password_login")
-            + f'?field_names={field_names}&field_uuids={field_uuids}'
-        )
+        submit_url = reverse("api:password_login_register:password-login")
+        if tenant_uuid:
+            submit_url = submit_url + f'?tenant={tenant_uuid}'
         return lp.LoginForm(
             label='密码登录',
             items=items,
             submit=lp.Button(
-                label='登录', http=lp.ButtonHttp(url=url, method='post', params=params)
+                label='登录',
+                http=lp.ButtonHttp(url=submit_url, method='post', params=params),
             ),
         )
 
     def register_form(self, tenant_uuid=None, **kwargs):
-        if not self.register_enabled:
-            return None
-        is_custom_field = kwargs.get('is_custom_field')
-        field_name = kwargs.get('field_name')
-        # TODO 将原生字段的注册表单和自定义字段的注册表单统一起来
-        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
-        if is_custom_field:
-            custom_field = CustomField.objects.filter(
-                name=field_name, tenant=tenant
-            ).first()
-            display_name = custom_field.name
-        else:
-            display_name = NativeFieldNames.DISPLAY_LABELS.get(field_name)
+        result = []
+        if self.username_login_enabled:
+            display_name = NativeFieldNames.DISPLAY_LABELS.get('username')
+            result.append(
+                self._register_form(tenant_uuid, 'username', display_name, False)
+            )
+
+        for custom_field in self.register_enabled_custom_field_names:
+            result.append(
+                self._register_form(tenant_uuid, custom_field, custom_field, True)
+            )
+        return result
+
+    def _register_form(self, tenant_uuid, field_name, display_name, is_custom_field):
+        submit_url = (
+            reverse("api:password_login_register:password-register")
+            + f'?field_name={field_name}&is_custom_field={is_custom_field}'
+        )
+        if tenant_uuid:
+            submit_url = submit_url + f'?tenant={tenant_uuid}'
         return lp.LoginForm(
             label=f'{display_name}注册',
             items=[
@@ -118,7 +127,7 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             submit=lp.Button(
                 label='注册',
                 http=lp.ButtonHttp(
-                    url=reverse("api:password_login_register:password_register")
+                    url=reverse("api:password_login_register:password-register")
                     + f'?field_name={field_name}&is_custom_field={is_custom_field}',
                     method='post',
                     params={
