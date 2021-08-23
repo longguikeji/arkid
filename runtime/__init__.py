@@ -10,6 +10,7 @@ from common.provider import (
     StorageProvider,
     MigrationProvider,
     AuthCodeProvider,
+    TenantUserConfigProvider,
 )
 from common.serializer import AppBaseSerializer, ExternalIdpBaseSerializer
 from authorization_server.models import AuthorizationServer
@@ -25,6 +26,7 @@ class Runtime:
     cache_provider: CacheProvider = None
     storage_provider: StorageProvider = None
     authcode_provider: AuthCodeProvider = None
+    tenantuserconfig_provider: TenantUserConfigProvider = None
     migration_provider: MigrationProvider = None
 
     external_idps: List
@@ -235,6 +237,13 @@ class Runtime:
     def logout_cache_provider(self, cache_provider: CacheProvider):
         self.cache_provider = None
         print('logout_cache_provider')
+
+    def register_tenantuserconfig_provider(self, tenantuserconfig_provider: TenantUserConfigProvider):
+        self.tenantuserconfig_provider = tenantuserconfig_provider
+
+    def logout_tenantuserconfig_provider(self, tenantuserconfig_provider: TenantUserConfigProvider):
+        self.tenantuserconfig_provider = None
+        print('logout_tenantuserconfig_provider')
 
     def register_authcode_provider(self, authcode_provider: AuthCodeProvider):
         self.authcode_provider = authcode_provider
