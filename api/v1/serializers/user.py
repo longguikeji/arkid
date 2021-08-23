@@ -79,7 +79,8 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         init={
             'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/',
             'method': 'get'
-        }
+        },
+        label=_('用户自定义字段')
     )
 
     class Meta:
@@ -107,7 +108,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
         extra_kwargs = {
             'uuid': {'read_only': True},
-            'bind_info': {'read_only': True},
+            'bind_info': {'read_only': True}
         }
 
     def get_groups(self, instance):
