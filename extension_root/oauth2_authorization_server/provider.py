@@ -14,6 +14,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
         '''
 
         client_type = data.get('client_type')
+        skip_authorization = data.get('skip_authorization')
         redirect_uris = data.get('redirect_uris')
         authorization_grant_type = data.get('grant_type')
         algorithm = data.get('algorithm')
@@ -21,6 +22,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
         obj = Application()
         obj.name = app.id
         obj.client_type = client_type
+        obj.skip_authorization = skip_authorization
         obj.redirect_uris = redirect_uris
         if algorithm and app.type == 'OIDC':
             obj.algorithm = algorithm
@@ -33,6 +35,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             'grant_type': authorization_grant_type,
             'client_id': obj.client_id,
             'client_secret': obj.client_secret,
+            'skip_authorization': obj.skip_authorization,
             'userinfo': host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[app.tenant.uuid]),
             'authorize': host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
             'token': host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
@@ -45,12 +48,14 @@ class OAuth2AppTypeProvider(AppTypeProvider):
     def update(self, app, data: Dict) -> Dict:
         client_type = data.get('client_type')
         redirect_uris = data.get('redirect_uris')
+        skip_authorization = data.get('skip_authorization')
         authorization_grant_type = data.get('grant_type')
         algorithm = data.get('algorithm')
         host = get_app_config().get_host()
         obj = Application.objects.filter(name=app.id).first()
         obj.client_type = client_type
         obj.redirect_uris = redirect_uris
+        obj.skip_authorization = skip_authorization
         obj.authorization_grant_type = authorization_grant_type
         if algorithm and app.type == 'OIDC':
             obj.algorithm = algorithm
@@ -61,6 +66,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             'grant_type': authorization_grant_type,
             'client_id': obj.client_id,
             'client_secret': obj.client_secret,
+            'skip_authorization': obj.skip_authorization,
             'userinfo': host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[app.tenant.uuid]),
             'authorize': host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid]),
             'token': host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid]),
