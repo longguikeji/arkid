@@ -52,7 +52,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     )
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
-        field_name='id',
+        field_name='uuid',
         page=group.group_tree_tag,
         child=serializers.CharField(),
         default=[],
@@ -64,7 +64,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
     set_permissions = create_foreign_key_field(serializers.ListField)(
         model_cls=Permission,
-        field_name='id',
+        field_name='uuid',
         page=permission.tag,
         child=serializers.CharField(),
         default=[],
@@ -73,14 +73,14 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     )
 
     # custom_user = CustomUserSerializer(many=False, required=False, allow_null=True)
-    custom_user = create_foreign_key_field(serializers.DictField)(
-        allow_empty=True,
-        model_cls=CustomField,
-        field_name='id',
-        page=group.group_tree_tag,
-        # child=serializers.CharField(),
-        # write_only=True,
-    )
+    # custom_user = create_foreign_key_field(serializers.DictField)(
+    #     allow_empty=True,
+    #     model_cls=CustomField,
+    #     field_name='uuid',
+    #     page=group.group_tree_tag,
+    #     # child=serializers.CharField(),
+    #     # write_only=True,
+    # )
 
     class Meta:
         model = User
@@ -102,7 +102,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'set_groups',
             'set_permissions',
             'bind_info',
-            'custom_user',
+            # 'custom_user',
         )
 
         extra_kwargs = {

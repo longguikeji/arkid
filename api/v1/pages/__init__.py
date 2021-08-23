@@ -1,48 +1,48 @@
 from . import (
-    group, 
-    tenant, 
-    app,
-    extension,
-    maketplace,
-    webhook,
-    external_idp, 
-    authorization_server,
-    authorization_agent,
-    user,
-    permission,
-    profile,
-    third_part_account,
-    desktop,
-    login_register_config,
-    book,
-    desktop_config,
-    book_config,
-    profile_config,
-    tenant_config,
-    sub_admin_config,
-    agent_rules,
-    auth_rules,
-    app_permissions,
-    permission_group,
-    permission_manage,
-    scan_code,
-    password_factor,
-    other_factor,
-    data_synchronism,
-    custom_process,
-    api_document,
-    sdk_download,
-    log,
-    log_config,
-    statistics,
     all_tenants,
     all_tenants_config,
     all_users,
     all_users_config,
-    system_config
+    app,
+    authorization_server,
+    authorization_agent,
+    agent_rules,
+    auth_rules,
+    app_permissions,
+    book,
+    book_config,
+    desktop,
+    custom_process,
+    desktop_config,
+    data_synchronism,
+    extension,
+    external_idp, 
+    group, 
+    login_register_config,
+    log,
+    log_config,
+    maketplace,
+    other_factor,
+    password_factor,
+    permission,
+    profile,
+    profile_config,
+    permission_group,
+    permission_manage,
+    sub_admin_config,
+    scan_code,
+    sdk_download,
+    system_config,
+    statistics,
+    subuser,
+    tenant, 
+    tenant_config,
+    third_part_account,
+    user,
+    webhook
 )
 
-from openapi.routers import root_add_routers, Router, PageRouter
+from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
 
 root_add_routers([
     PageRouter(
@@ -61,6 +61,10 @@ root_add_routers([
             PageRouter(
                 page=third_part_account,
                 icon='wechat'
+            ),
+            PageRouter(
+                page=subuser,
+                icon='user'
             )
         ]
     ),
@@ -173,7 +177,7 @@ root_add_routers([
                 ]
             ),
             Router(
-                path='login_register_config',
+                path='lrconfig',
                 name='登录注册配置',
                 icon='lock',
                 children=[
@@ -219,8 +223,10 @@ root_add_routers([
                         page=custom_process,
                         icon='process'
                     ),
-                    PageRouter(
-                        page=api_document,
+                    UrlRouter(
+                        path='document',
+                        name='API文档',
+                        url='/api/schema/redoc/',
                         icon='connect'
                     ),
                     PageRouter(

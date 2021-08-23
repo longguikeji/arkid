@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'api_document'
+tag = 'subuser'
 path = tag
-name = 'API文档'
+name = '子账号管理'
 
 extend_schema_tags(
     tag,
