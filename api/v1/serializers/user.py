@@ -314,6 +314,17 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
         hint="请填写正确的email格式",
         required=False,
     )
+    token = serializers.SerializerMethodField()
+
+    def get_token(self, instance):  # pylint: disable=no-self-use
+        '''
+        获取token
+        '''
+        tenant_uuid = self.context['tenant_uuid']
+        if tenant_uuid:
+            return instance.check_token(tenant_uuid)
+        else:
+            return ""
 
 
     class Meta:
@@ -331,10 +342,12 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
             'city',
             'job_title',
             'bind_info',
+            'token',
         )
 
         extra_kwargs = {
             'bind_info': {'read_only': True},
+            'token': {'read_only': True},
         }
 
 

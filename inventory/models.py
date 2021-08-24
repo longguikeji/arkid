@@ -147,6 +147,22 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
             user=self,
         )
         return token.key
+    
+    def check_token(self, tenant_uuid):
+        from extension_root.tenantuserconfig.models import TenantUserConfig
+        tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        config = TenantUserConfig.active_objects.filter(
+            tenant=tenant
+        ).first()
+        if config:
+            data = config.data
+            is_look_token = data['is_look_token']
+            if is_look_token is True:
+                return self.token
+            else:
+                return ""
+        else:
+            return ""
 
     def refresh_token(self):
         import datetime

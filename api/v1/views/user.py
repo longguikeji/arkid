@@ -39,7 +39,7 @@ from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from app.models import App
 from openapi.utils import extend_schema
-from drf_spectacular.utils import extend_schema_view
+from drf_spectacular.utils import extend_schema_view, OpenApiParameter
 from rest_framework.decorators import action
 from tablib import Dataset
 from collections import defaultdict
@@ -577,7 +577,18 @@ class EmailResetPasswordView(generics.CreateAPIView):
         return True
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+@extend_schema(
+    roles=['general user', 'tenant admin', 'global admin'],
+    tags=['tenant_uuid'],
+    parameters=[
+        OpenApiParameter(
+            name='subject',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        )
+    ],
+)
 class UserInfoView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
@@ -586,6 +597,11 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
     @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant_uuid'] = self.request.query_params.get('tenant_uuid', '')
+        return context
 
     def update(self, request, *args, **kwargs):
         email = request.data.get('email')
