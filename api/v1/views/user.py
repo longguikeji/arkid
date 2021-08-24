@@ -585,7 +585,7 @@ class EmailResetPasswordView(generics.CreateAPIView):
             name='subject',
             type={'type': 'string'},
             location=OpenApiParameter.QUERY,
-            required=True,
+            required=False,
         )
     ],
 )
