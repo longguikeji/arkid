@@ -104,7 +104,10 @@ extend_schema_tags(
         'type': 'table_page',
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/',
-            'method': 'get'
+            'method': 'get',
+            'parameters': {
+                'subject': 'user'
+            }
         },
         'global': {
             'create': {
@@ -114,12 +117,14 @@ extend_schema_tags(
         },
         'local': {
             'update': {
-                'tag': 'user.custom_fields.update',
-                'description': '自定义字段'
+                'tag': 'user.custom_fields.update'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'parameters': {
+                    'subject': 'user'
+                }
             }
         }
     }
@@ -140,7 +145,10 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/',
-                'method': 'post'
+                'method': 'post',
+                'parameters': {
+                    'subject': 'user'
+                }
             }
         }
     }
@@ -156,13 +164,34 @@ extend_schema_tags(
         'type': 'form_page',
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/',
-            'method': 'get'
+            'method': 'get',
+            'parameters': {
+                'subject': 'user'
+            }
         },
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'parameters': {
+                    'subject': 'user'
+                }
             }
+        }
+    }
+)
+
+user_table_tag = 'user_table'
+user_table_name = '用户列表'
+
+extend_schema_tags(
+    user_table_tag,
+    user_table_name,
+    {
+        'type': 'table_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
+            'method': 'get'
         }
     }
 )

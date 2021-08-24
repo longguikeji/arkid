@@ -35,12 +35,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/contactsconfig/group_visibility/',
+            'path': '/api/v1/tenant/{tenant_uuid}/contactsconfig/{group_uuid}/group_visibility/',
             'method': 'get'
         },
         'global': {
             'update': {
-                'path': '/api/v1/tenant/{tenant_uuid}/contactsconfig/group_visibility/',
+                'path': '/api/v1/tenant/{tenant_uuid}/contactsconfig/{group_uuid}/group_visibility/',
                 'method': 'put'
             }
         }

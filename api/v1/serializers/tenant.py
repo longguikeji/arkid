@@ -305,7 +305,7 @@ class InfoVisibilitySerializer(serializers.Serializer):
     assign_group = create_foreign_key_field(serializers.ListField)(
         model_cls=Group,
         field_name='uuid',
-        page=group.tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -315,7 +315,7 @@ class InfoVisibilitySerializer(serializers.Serializer):
     assign_user = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='uuid',
-        page=user.tag,
+        page=user.user_table_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -355,7 +355,7 @@ class GroupVisibilitySerializer(serializers.Serializer):
     assign_group = create_foreign_key_field(serializers.ListField)(
         model_cls=Group,
         field_name='uuid',
-        page=group.tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -365,7 +365,7 @@ class GroupVisibilitySerializer(serializers.Serializer):
     assign_user = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='uuid',
-        page=user.tag,
+        page=user.user_table_tag,
         child=serializers.CharField(),
         required=False,
         default=[],

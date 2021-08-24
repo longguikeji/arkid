@@ -1,4 +1,5 @@
 from . import (
+    admin_log,
     all_tenants,
     all_tenants_config,
     all_users,
@@ -21,7 +22,6 @@ from . import (
     external_idp, 
     group, 
     login_register_config,
-    log,
     log_config,
     maketplace,
     other_factor,
@@ -40,6 +40,7 @@ from . import (
     tenant_config,
     third_part_account,
     user,
+    user_log,
     webhook
 )
 
@@ -80,39 +81,46 @@ root_add_routers([
                 icon='setting',
                 children=[
                     PageRouter(
-                        page=desktop_config,
-                        icon='desktop'
+                        page=tenant_config,
+                        icon='peoples'
                     ),
                     Router(
-                        path='contacts_config',
-                        name='通讯录设置',
-                        icon='education',
+                        path='umanage',
+                        name='用户管理配置',
+                        icon='people',
                         children=[
                             PageRouter(
-                                page=contacts_switch,
+                                page=desktop_config,
+                                icon='desktop'
+                            ),
+                            Router(
+                                path='contacts_config',
+                                name='通讯录设置',
+                                icon='education',
+                                children=[
+                                    PageRouter(
+                                        page=contacts_switch,
+                                        icon='setting'
+                                    ),
+                                    PageRouter(
+                                        page=contacts_group_config,
+                                        icon='peoples'
+                                    ),
+                                    PageRouter(
+                                        page=contacts_user_config,
+                                        icon='people'
+                                    )
+                                ]
+                            ),
+                            PageRouter(
+                                page=profile_config,
                                 icon='setting'
-                            ),
-                            PageRouter(
-                                page=contacts_group_config,
-                                icon='peoples'
-                            ),
-                            PageRouter(
-                                page=contacts_user_config,
-                                icon='people'
                             )
                         ]
                     ),
                     PageRouter(
-                        page=profile_config,
-                        icon='people'
-                    ),
-                    PageRouter(
                         page=sub_admin_config,
                         icon='user'
-                    ),
-                    PageRouter(
-                        page=tenant_config,
-                        icon='peoples'
                     )
                 ]
             ),
@@ -253,7 +261,11 @@ root_add_routers([
                 icon='edit',
                 children=[
                     PageRouter(
-                        page=log,
+                        page=user_log,
+                        icon='list',
+                    ),
+                    PageRouter(
+                        page=admin_log,
                         icon='list',
                     ),
                     PageRouter(
