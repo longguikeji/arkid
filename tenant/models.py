@@ -75,11 +75,16 @@ class TenantPasswordComplexity(BaseModel):
 
 class TenantContactsConfig(BaseModel):
 
-    # 功能开关
-    # {
-    #     "is_open": true
-    # }
-    # 分组可见性
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    data = models.JSONField(blank=True, default=dict)
+
+    def __str__(self) -> str:
+        return f'Tenant: {self.tenant.name}'
+
+from inventory.models import Group
+
+class TenantContactsGroupConfig(BaseModel):
+    # 通讯录分组可见性
     # visible_type 所有人可见 部分人可见
     # visible_scope 组内成员可见 下属分组可见 指定分组与人员
     # {
@@ -88,24 +93,17 @@ class TenantContactsConfig(BaseModel):
     #     "assign_group": [],
     #     "assign_user": []
     # }
-    # 每个租户会有2条相关的记录
-
-    TYPE_CHOICES = (
-        (0, '功能开关'),
-        (1, '分组可见性'),
-    )
 
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
-    config_type = models.IntegerField(choices=TYPE_CHOICES, default=0, verbose_name='配置类型')
+    group = models.ForeignKey(Group, blank=False, null=True, default=None, on_delete=models.PROTECT, verbose_name='分组')
     data = models.JSONField(blank=True, default=dict)
 
-    @property
-    def tenant_uuid(self):
-        return self.tenant.uuid
+    def __str__(self) -> str:
+        return f'Tenant: {self.tenant.name}'
 
 
 class TenantContactsUserFieldConfig(BaseModel):
-    # 分组可见性
+    # 个人字段可见性
     # visible_type 所有人可见 部分人可见
     # visible_scope 本人可见 管理员可见 指定分组与人员
     # {
@@ -120,9 +118,8 @@ class TenantContactsUserFieldConfig(BaseModel):
     name = models.CharField(verbose_name='字段名称', max_length=128, default='', null=True, blank=True)
     data = models.JSONField(blank=True, default=dict)
 
-    @property
-    def tenant_uuid(self):
-        return self.tenant.uuid
+    def __str__(self) -> str:
+        return f'Tenant: {self.tenant.name}'
 
 
 class TenantPrivacyNotice(BaseModel):
@@ -140,3 +137,13 @@ class TenantPrivacyNotice(BaseModel):
 
     def __str__(self) -> str:
         return f'Privacy Notice: {self.title}'
+
+
+class TenantDesktopConfig(BaseModel):
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    data = models.JSONField(blank=True, default=dict)
+
+    def __str__(self) -> str:
+        return f'Tenant: {self.tenant.name}'
+

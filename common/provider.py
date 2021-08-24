@@ -80,6 +80,10 @@ class ExternalIdpProvider:
         pass
 
 
+class TenantUserConfigProvider:
+    pass
+
+
 class AuthorizationServerProvider:
 
     id: Optional[str] = None

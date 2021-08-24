@@ -23,6 +23,7 @@ tenant_user_router.register(
 urlpatterns = [
     path('user/token/', views_user.UserTokenView.as_view(), name='user-token'),
     path('user/info/', views_user.UserInfoView.as_view(), name='user-info'),
+    path('user/appdata/', views_user.UserAppDataView.as_view(), name='user-appdata'),
     path(
         'user/bind_info/', views_user.UserBindInfoView.as_view(), name='user-bind-info'
     ),

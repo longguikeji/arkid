@@ -13,7 +13,7 @@ from django.contrib.auth.models import User as DUser
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from tenant.models import Tenant, TenantPasswordComplexity
-from inventory.models import User, Invitation
+from inventory.models import User, Invitation, UserAppData
 from inventory.resouces import UserResource
 from api.v1.serializers.user import (
     UserSerializer,
@@ -30,6 +30,7 @@ from api.v1.serializers.user import (
     ResetPasswordRequestSerializer,
     MobileResetPasswordRequestSerializer,
     EmailResetPasswordRequestSerializer,
+    UserAppDataSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import ResetPWDSMSClaimSerializer
@@ -342,6 +343,24 @@ class UserTokenView(generics.CreateAPIView):
         except Exception as e:
             is_valid = False
         return Response(is_valid)
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+class UserAppDataView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = UserAppDataSerializer
+
+    def get_object(self):
+        userAppData = UserAppData.active_objects.filter(user=self.request.user).first()
+        if not userAppData:
+            userAppData = UserAppData()
+            userAppData.user = self.request.user
+            userAppData.data = []
+            userAppData.save()
+        return userAppData
 
 
 @extend_schema(tags=['user'])

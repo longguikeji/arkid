@@ -25,7 +25,7 @@ urlpatterns = [
             views_tenant.TenantContactsConfigInfoVisibilityDetailView.as_view(), name='tenant-contactsconfig-info-visibility-detail'),
     re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/contactsconfig/info_visibility/',
             views_tenant.TenantContactsConfigInfoVisibilityView.as_view(), name='tenant-contactsconfig-info-visibility'),
-    re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/contactsconfig/group_visibility/',
+    re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/contactsconfig/(?P<group_uuid>[\w-]+)/group_visibility/',
             views_tenant.TenantContactsConfigGroupVisibilityView.as_view(), name='tenant-contactsconfig-group-visibility'),
     re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/contacts/group/',
             views_tenant.TenantContactsGroupView.as_view(), name='tenant-contacts-group'),
@@ -35,6 +35,8 @@ urlpatterns = [
             views_tenant.TenantContactsUserTagsView.as_view(), name='tenant-contacts-user-tags'),
     re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/privacy_notice/',
             views_tenant.TenantPrivacyNoticeView.as_view(), name='tenant-privacy_notice'),
+    re_path(r'^tenant/(?P<tenant_uuid>[\w-]+)/desktopconfig/',
+            views_tenant.TenantDesktopConfigView.as_view(), name='tenant-desktop-config'),
     re_path(r'^tenant/(?P<slug>[\w-]+)/slug/$',
         views_tenant.TenantSlugView.as_view(), name='tenant-slug'),
 ]

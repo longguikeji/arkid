@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 from tenant.models import (
     Tenant, TenantConfig, TenantPasswordComplexity,
     TenantPrivacyNotice, TenantContactsConfig, TenantContactsUserFieldConfig,
+    TenantDesktopConfig,
 )
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
@@ -55,21 +56,8 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         TenantContactsConfig.objects.get_or_create(
             is_del=False,
             tenant=tenant,
-            config_type=0,
             data={
                 "is_open": True
-            }
-        )
-        # 通讯录配置分组可见性
-        TenantContactsConfig.objects.get_or_create(
-            is_del=False,
-            tenant=tenant,
-            config_type=1,
-            data={
-                "visible_type": '所有人可见',
-                "visible_scope": [],
-                "assign_group": [],
-                "assign_user": []
             }
         )
         # 字段可见性
@@ -317,7 +305,7 @@ class InfoVisibilitySerializer(serializers.Serializer):
     assign_group = create_foreign_key_field(serializers.ListField)(
         model_cls=Group,
         field_name='uuid',
-        page=group.tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -327,7 +315,7 @@ class InfoVisibilitySerializer(serializers.Serializer):
     assign_user = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='uuid',
-        page=user.tag,
+        page=user.user_table_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -367,7 +355,7 @@ class GroupVisibilitySerializer(serializers.Serializer):
     assign_group = create_foreign_key_field(serializers.ListField)(
         model_cls=Group,
         field_name='uuid',
-        page=group.tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -377,7 +365,7 @@ class GroupVisibilitySerializer(serializers.Serializer):
     assign_user = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='uuid',
-        page=user.tag,
+        page=user.user_table_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -443,3 +431,26 @@ class TenantPrivacyNoticeSerializer(BaseDynamicFieldModelSerializer):
         instance.is_active = validated_data.get('is_active')
         instance.save()
         return instance
+
+
+class DesktopConfigSerializer(serializers.Serializer):
+    access_with_desktop = serializers.BooleanField(
+        label=_("用户是否能看到桌面")
+    )
+
+    icon_custom = serializers.BooleanField(
+        label=_("用户是否可以自主调整桌面图标的位置")
+    )
+
+
+class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
+    data = DesktopConfigSerializer(
+        label=_("设置")
+    )
+
+    class Meta:
+        model = TenantDesktopConfig
+
+        fields = (
+            'data',
+        )

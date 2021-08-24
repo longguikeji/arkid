@@ -1,52 +1,54 @@
 from . import (
-    group, 
-    tenant, 
-    app,
-    extension,
-    maketplace,
-    webhook,
-    external_idp, 
-    authorization_server,
-    authorization_agent,
-    user,
-    permission,
-    profile,
-    third_part_account,
-    desktop,
-    login_register_config,
-    book,
-    desktop_config,
-    book_config,
-    profile_config,
-    tenant_config,
-    sub_admin_config,
-    agent_rules,
-    auth_rules,
-    app_permissions,
-    permission_group,
-    permission_manage,
-    scan_code,
-    password_factor,
-    other_factor,
-    data_synchronism,
-    custom_process,
-    api_document,
-    sdk_download,
-    log,
-    log_config,
-    statistics,
+    admin_log,
     all_tenants,
     all_tenants_config,
     all_users,
     all_users_config,
-    system_config
+    app,
+    authorization_server,
+    authorization_agent,
+    agent_rules,
+    auth_rules,
+    contacts,
+    contacts_switch,
+    contacts_group_config,
+    contacts_user_config,
+    desktop,
+    custom_process,
+    data_synchronism,
+    desktop_config,
+    device,
+    extension,
+    external_idp, 
+    group, 
+    login_register_config,
+    log_config,
+    maketplace,
+    other_factor,
+    password_factor,
+    permission,
+    profile,
+    profile_config,
+    permission_group,
+    permission_manage,
+    sdk_download,
+    system_config,
+    statistics,
+    subuser,
+    sub_admin_config,
+    tenant, 
+    tenant_config,
+    third_part_account,
+    user,
+    user_log,
+    webhook
 )
 
-from openapi.routers import root_add_routers, Router, PageRouter
+from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
 
 root_add_routers([
     PageRouter(
-        page=book,
+        page=contacts,
         icon='education'
     ),
     Router(
@@ -61,6 +63,10 @@ root_add_routers([
             PageRouter(
                 page=third_part_account,
                 icon='wechat'
+            ),
+            PageRouter(
+                page=subuser,
+                icon='user'
             )
         ]
     ),
@@ -75,24 +81,46 @@ root_add_routers([
                 icon='setting',
                 children=[
                     PageRouter(
-                        page=desktop_config,
-                        icon='desktop'
+                        page=tenant_config,
+                        icon='peoples'
                     ),
-                    PageRouter(
-                        page=book_config,
-                        icon='education'
-                    ),
-                    PageRouter(
-                        page=profile_config,
-                        icon='people'
+                    Router(
+                        path='umanage',
+                        name='用户管理配置',
+                        icon='people',
+                        children=[
+                            PageRouter(
+                                page=desktop_config,
+                                icon='desktop'
+                            ),
+                            Router(
+                                path='contacts_config',
+                                name='通讯录设置',
+                                icon='education',
+                                children=[
+                                    PageRouter(
+                                        page=contacts_switch,
+                                        icon='setting'
+                                    ),
+                                    PageRouter(
+                                        page=contacts_group_config,
+                                        icon='peoples'
+                                    ),
+                                    PageRouter(
+                                        page=contacts_user_config,
+                                        icon='people'
+                                    )
+                                ]
+                            ),
+                            PageRouter(
+                                page=profile_config,
+                                icon='setting'
+                            )
+                        ]
                     ),
                     PageRouter(
                         page=sub_admin_config,
                         icon='user'
-                    ),
-                    PageRouter(
-                        page=tenant_config,
-                        icon='peoples'
                     )
                 ]
             ),
@@ -112,10 +140,6 @@ root_add_routers([
                     PageRouter(
                         page=auth_rules,
                         icon='lock'
-                    ),
-                    PageRouter(
-                        page=app_permissions,
-                        icon='form'
                     )
                 ]
             ),
@@ -131,6 +155,10 @@ root_add_routers([
                     PageRouter(
                         page=group,
                         icon='tree-table',
+                    ),
+                    PageRouter(
+                        page=device,
+                        icon='developer'
                     )
                 ]
             ),
@@ -173,7 +201,7 @@ root_add_routers([
                 ]
             ),
             Router(
-                path='login_register_config',
+                path='lrconfig',
                 name='登录注册配置',
                 icon='lock',
                 children=[
@@ -184,10 +212,6 @@ root_add_routers([
                     PageRouter(
                         page=external_idp,
                         icon='wechat',
-                    ),
-                    PageRouter(
-                        page=scan_code,
-                        icon='scan'
                     )
                 ]
             ),
@@ -219,8 +243,10 @@ root_add_routers([
                         page=custom_process,
                         icon='process'
                     ),
-                    PageRouter(
-                        page=api_document,
+                    UrlRouter(
+                        path='document',
+                        name='API文档',
+                        url='/api/schema/redoc/',
                         icon='connect'
                     ),
                     PageRouter(
@@ -235,7 +261,11 @@ root_add_routers([
                 icon='edit',
                 children=[
                     PageRouter(
-                        page=log,
+                        page=user_log,
+                        icon='list',
+                    ),
+                    PageRouter(
+                        page=admin_log,
                         icon='list',
                     ),
                     PageRouter(

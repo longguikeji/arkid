@@ -9,6 +9,7 @@ from api.v1.fields.custom import (
     create_hint_field,
     create_mobile_field,
     create_password_field,
+    create_init_field,
 )
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
@@ -52,7 +53,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     )
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
-        field_name='id',
+        field_name='uuid',
         page=group.group_tree_tag,
         child=serializers.CharField(),
         default=[],
@@ -64,7 +65,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
     set_permissions = create_foreign_key_field(serializers.ListField)(
         model_cls=Permission,
-        field_name='id',
+        field_name='uuid',
         page=permission.tag,
         child=serializers.CharField(),
         default=[],
@@ -72,14 +73,14 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         write_only=True,
     )
 
-    # custom_user = CustomUserSerializer(many=False, required=False, allow_null=True)
-    custom_user = create_foreign_key_field(serializers.DictField)(
-        allow_empty=True,
+    custom_user = create_init_field(serializers.DictField)(
         model_cls=CustomField,
-        field_name='id',
-        page=group.group_tree_tag,
-        # child=serializers.CharField(),
-        # write_only=True,
+        allow_empty=True,
+        init={
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/',
+            'method': 'get'
+        },
+        label=_('用户自定义字段')
     )
 
     class Meta:
@@ -107,7 +108,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
         extra_kwargs = {
             'uuid': {'read_only': True},
-            'bind_info': {'read_only': True},
+            'bind_info': {'read_only': True}
         }
 
     def get_groups(self, instance):
@@ -339,6 +340,11 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
         required=False,
         allow_blank=True,
     )
+    email = create_hint_field(serializers.EmailField)(
+        hint="请填写正确的email格式",
+        required=False,
+    )
+
 
     class Meta:
         model = User
@@ -346,19 +352,20 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
         fields = (
             'uuid',
             'username',
-            'nickname',
+            'email',
             'mobile',
+            'first_name',
+            'last_name',
+            'nickname',
+            'country',
+            'city',
+            'job_title',
+            'bind_info',
         )
 
-    def update(self, instance, validated_data):
-        nickname = validated_data.pop('nickname', None)
-        if nickname:
-            instance.nickname = nickname
-        mobile = validated_data.pop('mobile', None)
-        if mobile:
-            instance.mobile = mobile
-        instance.save()
-        return instance
+        extra_kwargs = {
+            'bind_info': {'read_only': True},
+        }
 
 
 class UserBindInfoBaseSerializer(serializers.Serializer):
@@ -383,3 +390,11 @@ class UserManageTenantsSerializer(serializers.Serializer):
     )
     is_global_admin = serializers.BooleanField(label=_('是否是系统管理员'))
     is_platform_user = serializers.BooleanField(label=_('是否是平台用户'))
+
+
+class UserAppDataSerializer(serializers.ModelSerializer):
+    data = serializers.ListField(label=_('数据'))
+
+    class Meta:
+        model = User
+        fields = ['data']

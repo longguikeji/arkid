@@ -22,6 +22,7 @@ from . import (
     config,
     system,
     email,
+    device,
     login_register_config,
 )
 from runtime import get_app_runtime
@@ -74,3 +75,4 @@ urlpatterns += system.urlpatterns
 urlpatterns += email.urlpatterns
 urlpatterns += app.urlpatterns
 urlpatterns += login_register_config.router.urls
+urlpatterns += device.urlpatterns
