@@ -15,6 +15,8 @@ from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from common.code import Code
+from drf_spectacular.utils import extend_schema_view, OpenApiParameter
+from tenant.models import Tenant
 
 LoginRegisterConfigPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='LoginRegisterConfigPolymorphicProxySerializer',
@@ -27,7 +29,18 @@ LoginRegisterConfigPolymorphicProxySerializer = PolymorphicProxySerializer(
     destroy=extend_schema(roles=['tenant admin', 'global admin']),
     partial_update=extend_schema(roles=['tenant admin', 'global admin']),
 )
-@extend_schema(tags=['login_register_config'])
+@extend_schema(
+    tags=['login_register_config'],
+    roles=['tenant admin', 'global admin'],
+    parameters=[
+        OpenApiParameter(
+            name='tenant',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        )
+    ],
+)
 class LoginRegisterConfigViewSet(BaseViewSet):
 
     model = LoginRegisterConfig
@@ -35,12 +48,14 @@ class LoginRegisterConfigViewSet(BaseViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = LoginRegisterConfigSerializer
-    pagination_class = DefaultListPaginator
 
     def get_queryset(self):
-        context = self.get_serializer_context()
-        tenant = context['tenant']
 
+        tenant_uuid = self.request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
         kwargs = {
             'tenant': tenant,
         }
@@ -48,8 +63,11 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         return LoginRegisterConfig.valid_objects.filter(**kwargs)
 
     def get_object(self):
-        context = self.get_serializer_context()
-        tenant = context['tenant']
+        tenant_uuid = self.request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant_uuid = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
 
         kwargs = {
             'tenant': tenant,

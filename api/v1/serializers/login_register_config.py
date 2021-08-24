@@ -3,6 +3,7 @@ from login_register_config.models import LoginRegisterConfig
 from common.provider import LoginRegisterConfigProvider
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
+from tenant.models import Tenant
 
 
 class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
@@ -19,7 +20,12 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
     def create(self, validated_data):
         from runtime import get_app_runtime, Runtime
 
-        tenant = self.context['tenant']
+        request = self.context['request']
+        tenant_uuid = request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
 
         config_type = validated_data.pop('type')
         data = validated_data.pop('data', None)
@@ -53,10 +59,16 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
     def update(self, instance, validated_data):
         from runtime import get_app_runtime
 
+        request = self.context['request']
+        tenant_uuid = request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
+
         config_type = validated_data.pop('type')
         data = validated_data.pop('data', None)
 
-        tenant = self.context['tenant']
         r = get_app_runtime()
 
         provider_cls: LoginRegisterConfigProvider = (
@@ -64,7 +76,6 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
         )
         assert provider_cls is not None
         provider = provider_cls()
-        print(data)
         # data = provider.create(
         #     tenant_uuid=tenant.uuid, external_idp=instance, data=data
         # )
