@@ -579,10 +579,10 @@ class EmailResetPasswordView(generics.CreateAPIView):
 
 @extend_schema(
     roles=['general user', 'tenant admin', 'global admin'],
-    tags=['tenant_uuid'],
+    tags=['user'],
     parameters=[
         OpenApiParameter(
-            name='subject',
+            name='tenant_uuid',
             type={'type': 'string'},
             location=OpenApiParameter.QUERY,
             required=False,
