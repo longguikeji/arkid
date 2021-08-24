@@ -27,47 +27,45 @@ class LoginPage(views.APIView):
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
 
         data = model.LoginPages()
+
+        # 添加 tenant的登录注册表单
+        # self.add_tenant_login_register_form(request, tenant, data)
+
+        # 加载注册登录插件
+        r = get_app_runtime()
+        configs = LoginRegisterConfig.active_objects.filter(tenant=tenant)
+        for config in configs:
+            provider_cls = r.login_register_config_providers.get(config.type, None)
+            assert provider_cls is not None
+
+            config_data = config.data
+            provider = provider_cls(config_data)
+            data.addForm(model.LOGIN, provider.login_form(tenant_uuid, request=request))
+            data.addForm(
+                model.REGISTER, provider.register_form(tenant_uuid, request=request)
+            )
+            data.addForm(
+                model.PASSWORD,
+                provider.reset_password_form(tenant_uuid, request=request),
+            )
         if tenant:
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
-
-            # 添加 tenant的登录注册表单
-            # self.add_tenant_login_register_form(request, tenant, data)
-
-            # 加载注册登录插件
-            r = get_app_runtime()
-            configs = LoginRegisterConfig.active_objects.filter(tenant=tenant)
-            for config in configs:
-                provider_cls = r.login_register_config_providers.get(config.type, None)
-                assert provider_cls is not None
-
-                config_data = config.data
-                provider = provider_cls(config_data)
-                data.addForm(
-                    model.LOGIN, provider.login_form(tenant_uuid, request=request)
-                )
-                data.addForm(
-                    model.REGISTER, provider.register_form(tenant_uuid, request=request)
-                )
-                data.addForm(
-                    model.PASSWORD,
-                    provider.reset_password_form(tenant_uuid, request=request),
-                )
 
             # 登录表单增加第三方登录按钮
             self.add_tenant_idp_login_buttons(request, tenant, data)
 
-        else:
-            data.addForm(model.LOGIN, LoginView().login_form())
-            data.addForm(model.LOGIN, MobileLoginView().login_form())
-            system_config = self.get_system_config()
-            is_open_register = system_config.get('is_open_register', True)
-            if is_open_register == True:
-                data.addForm(
-                    model.REGISTER, UserNameRegisterView().username_register_form()
-                )
-                data.addForm(
-                    model.REGISTER, MobileRegisterView().mobile_register_form()
-                )
+        # else:
+        #     data.addForm(model.LOGIN, LoginView().login_form())
+        #     data.addForm(model.LOGIN, MobileLoginView().login_form())
+        #     system_config = self.get_system_config()
+        #     is_open_register = system_config.get('is_open_register', True)
+        #     if is_open_register == True:
+        #         data.addForm(
+        #             model.REGISTER, UserNameRegisterView().username_register_form()
+        #         )
+        #         data.addForm(
+        #             model.REGISTER, MobileRegisterView().mobile_register_form()
+        #         )
 
         # 获取隐私声明
         agreement = self.get_privacy_notice(tenant)

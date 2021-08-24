@@ -44,6 +44,7 @@ from common.utils import (
     get_user_register_count,
     get_password_error_count,
 )
+from api.v1.serializers.tenant import TenantSerializer
 
 
 @extend_schema(
@@ -59,7 +60,9 @@ class PasswordLoginView(APIView):
             tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
 
         # 获取登录注册配置
-        config = LoginRegisterConfig.valid_objects.filter(tenant=tenant, type=KEY).first()
+        config = LoginRegisterConfig.valid_objects.filter(
+            tenant=tenant, type=KEY
+        ).first()
         if not config:
             username_login_enabled = True
             email_login_enabled = True
@@ -150,27 +153,18 @@ class PasswordLoginView(APIView):
                             'is_need_refresh': False,
                         }
                     )
-        # 获取权限
-        has_tenant_admin_perm = tenant.has_admin_perm(user)
-
-        # if not has_tenant_admin_perm:
-        #     return JsonResponse(data={
-        #         'error': Code.TENANT_NO_ACCESS.value,
-        #         'message': _('tenant no access permission'),
-        #     })
 
         token = user.refresh_token()
 
-        return JsonResponse(
-            data={
-                'error': Code.OK.value,
-                'data': {
-                    'token': token.key,
-                    'user_uuid': user.uuid.hex,
-                    'has_tenant_admin_perm': has_tenant_admin_perm,
-                },
-            }
-        )
+        return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
+        if tenant:
+            return_data['has_tenant_admin_perm'] = tenant.has_admin_perm(user)
+        else:
+            return_data['tenants'] = [
+                TenantSerializer(o).data for o in user.tenants.all()
+            ]
+
+        return JsonResponse(data={'error': Code.OK.value, 'data': return_data})
 
 
 @extend_schema(
@@ -232,7 +226,9 @@ class PasswordRegisterView(APIView):
             )
 
         # 获取登录注册配置
-        config = LoginRegisterConfig.valid_objects.filter(tenant=tenant, type=KEY).first()
+        config = LoginRegisterConfig.valid_objects.filter(
+            tenant=tenant, type=KEY
+        ).first()
         if not config:
             is_open_register_limit = False
             register_time_limit = 1
@@ -270,6 +266,10 @@ class PasswordRegisterView(APIView):
             CustomUser.objects.create(user=user, data={field_name: field_value})
         user.tenants.add(tenant)
         user.set_password(password)
+
+        if not tenant:
+            user.is_platform_user = True
+
         user.save()
         token = user.refresh_token()
         # 注册成功进行计数
