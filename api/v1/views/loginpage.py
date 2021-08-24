@@ -18,6 +18,8 @@ from django.urls import reverse
 from runtime import get_app_runtime
 from login_register_config.models import LoginRegisterConfig
 
+DEFAULT_LOGIN_REGISTER_EXTENSION = 'password_login_register'
+
 
 @extend_schema(tags=['login page'])
 class LoginPage(views.APIView):
@@ -34,6 +36,15 @@ class LoginPage(views.APIView):
         # 加载注册登录插件
         r = get_app_runtime()
         configs = LoginRegisterConfig.active_objects.filter(tenant=tenant)
+        if not configs:
+            config_data = {
+                'username_login_enabled': True,
+                'username_register_enabled': True,
+            }
+            config, _ = LoginRegisterConfig.objects.get_or_create(
+                tenant=tenant, type=DEFAULT_LOGIN_REGISTER_EXTENSION, data=config_data
+            )
+            configs = [config]
         for config in configs:
             provider_cls = r.login_register_config_providers.get(config.type, None)
             assert provider_cls is not None
