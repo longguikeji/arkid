@@ -75,8 +75,7 @@ INSTALLED_APPS = [
     'extension_root.arkid',
     'django_scim',
     'extension_root.miniprogram',
-    'djangosaml2idp',
-    'djangosaml2sp'
+    'djangosaml2idp'
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -92,7 +91,7 @@ MIDDLEWARE = [
     'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_scim.middleware.SCIMAuthCheckMiddleware'
+    'django_scim.middleware.SCIMAuthCheckMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = (
