@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='webhook',
             name='secret',
-            field=models.CharField(blank=True, default=webhook.models.random_secret64, max_length=128, null=True),
+            field=models.CharField(blank=True, max_length=128, null=True),
         ),
         migrations.AlterField(
             model_name='webhooktriggerhistory',

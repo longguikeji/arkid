@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'common',
     'tenant',
     'inventory',
+    'device',
     'app',
     'oauth2_provider',
     'mama_cas',
@@ -269,4 +270,4 @@ FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'    # 邮件重置密码页面
 FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'    # 邮件激活账号页面
 FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'    # 邮件重置邮箱页面
 
-SMS_LIFESPAN = datetime.timedelta(seconds=120)
+SMS_LIFESPAN = datetime.timedelta(seconds=300)

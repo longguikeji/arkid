@@ -13,9 +13,9 @@ extend_schema_tags(
             'path': '/api/v1/user/info/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
-                'tag': 'profile_update'
+                'tag': 'profile.update'
             },
             'password': {
                 'path': '/api/v1/user/update_password/',
@@ -25,7 +25,7 @@ extend_schema_tags(
     }
 )
 
-profile_update_tag = 'profile_update'
+profile_update_tag = 'profile.update'
 profile_update_name = '编辑个人资料'
 
 extend_schema_tags(
@@ -37,7 +37,7 @@ extend_schema_tags(
             'path': '/api/v1/user/info/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/user/info/',
                 'method': 'patch'

@@ -13,7 +13,7 @@ from django.contrib.auth.models import User as DUser
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from tenant.models import Tenant, TenantPasswordComplexity
-from inventory.models import User, Invitation
+from inventory.models import User, Invitation, UserAppData
 from inventory.resouces import UserResource
 from api.v1.serializers.user import (
     UserSerializer,
@@ -30,6 +30,7 @@ from api.v1.serializers.user import (
     ResetPasswordRequestSerializer,
     MobileResetPasswordRequestSerializer,
     EmailResetPasswordRequestSerializer,
+    UserAppDataSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import ResetPWDSMSClaimSerializer
@@ -47,8 +48,11 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 import re
+from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 @extend_schema_view(
@@ -102,8 +106,14 @@ class UserViewSet(BaseViewSet):
 
         return User.valid_objects.filter(**kwargs).first()
 
+    @transaction.atomic()
     def destroy(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        user = self.get_object()
         self.get_object().kill()
+        # WebhookManager.user_deleted(tenant.uuid, user)
+        transaction.on_commit(lambda: WebhookManager.user_deleted(tenant.uuid, user))
         return Response(
             {
                 'error_code': 0,
@@ -335,6 +345,24 @@ class UserTokenView(generics.CreateAPIView):
         return Response(is_valid)
 
 
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+class UserAppDataView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = UserAppDataSerializer
+
+    def get_object(self):
+        userAppData = UserAppData.active_objects.filter(user=self.request.user).first()
+        if not userAppData:
+            userAppData = UserAppData()
+            userAppData.user = self.request.user
+            userAppData.data = []
+            userAppData.save()
+        return userAppData
+
+
 @extend_schema(tags=['user'])
 class UpdatePasswordView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -459,10 +487,8 @@ class MobileResetPasswordView(generics.CreateAPIView):
     def post(self, request):
         mobile = request.data.get('mobile', '')
         password = request.data.get('password', '')
-        check_password = request.data.get('check_password', '')
         code = request.data.get('code', '')
         user = User.objects.filter(mobile=mobile).first()
-        # is_succeed = True
         if not user:
             return JsonResponse(
                 data={
@@ -479,7 +505,9 @@ class MobileResetPasswordView(generics.CreateAPIView):
             )
         # 检查验证码
         try:
-            sms_token, expire_time = ResetPWDSMSClaimSerializer.check_sms(mobile, code)
+            sms_token, expire_time = ResetPWDSMSClaimSerializer.check_sms(
+                {'mobile': mobile, 'code': code}
+            )
         except ValidationError:
             return JsonResponse(
                 data={
@@ -487,12 +515,9 @@ class MobileResetPasswordView(generics.CreateAPIView):
                     'message': _('sms code mismatch'),
                 }
             )
-        try:
-            user.set_password(password)
-            user.save()
-        except Exception as e:
-            is_succeed = False
-        return Response(is_succeed)
+        user.set_password(password)
+        user.save()
+        return Response({'error': Code.OK.value, 'message': 'Reset password success'})
 
     def check_password(self, pwd):
         if pwd.isdigit() or len(pwd) < 8:
@@ -515,7 +540,7 @@ class EmailResetPasswordView(generics.CreateAPIView):
     def post(self, request):
         email = request.data.get('email', '')
         password = request.data.get('password', '')
-        check_password = request.data.get('check_password', '')
+        # checkpassword = request.data.get('checkpassword', '')
         code = request.data.get('code', '')
         user = User.objects.filter(email=email).first()
         if not user:
@@ -534,7 +559,7 @@ class EmailResetPasswordView(generics.CreateAPIView):
             )
         # 检查验证码
         try:
-            _ = ResetPWDEmailClaimSerializer.check_email_verify_code(email, code)
+            ret = ResetPWDEmailClaimSerializer.check_email_verify_code(email, code)
         except ValidationError:
             return JsonResponse(
                 data={
@@ -542,12 +567,9 @@ class EmailResetPasswordView(generics.CreateAPIView):
                     'message': _('email code mismatch'),
                 }
             )
-        try:
-            user.set_password(password)
-            user.save()
-        except Exception as e:
-            is_succeed = False
-        return Response(is_succeed)
+        user.set_password(password)
+        user.save()
+        return Response({'error': Code.OK.value, 'message': 'Reset password success'})
 
     def check_password(self, pwd):
         if pwd.isdigit() or len(pwd) < 8:

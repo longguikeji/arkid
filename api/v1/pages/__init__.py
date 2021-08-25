@@ -11,9 +11,9 @@ from . import (
     user,
     permission,
     profile,
-    third_party_account,
+    third_part_account,
     desktop,
-    login_config,
+    login_register_config,
     book,
     desktop_config,
     book_config,
@@ -38,7 +38,8 @@ from . import (
     all_tenants,
     all_tenants_config,
     all_users,
-    all_users_config
+    all_users_config,
+    system_config
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter
@@ -58,7 +59,7 @@ root_add_routers([
                 icon='edit'
             ),
             PageRouter(
-                page=third_party_account,
+                page=third_part_account,
                 icon='wechat'
             )
         ]
@@ -177,7 +178,7 @@ root_add_routers([
                 icon='lock',
                 children=[
                     PageRouter(
-                        page=login_config,
+                        page=login_register_config,
                         icon='setting'
                     ),
                     PageRouter(
@@ -283,6 +284,10 @@ root_add_routers([
                         icon='setting'
                     )
                 ]
+            ),
+            PageRouter(
+                page=system_config,
+                icon='setting'
             ),
             Router(
                 path='extension',

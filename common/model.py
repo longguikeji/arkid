@@ -52,3 +52,7 @@ class BaseModel(models.Model):
     def offline(self, *args, **kwargs):
         self.is_active = False
         self.save()
+
+    @property
+    def uuid_hex(self):
+        return self.uuid.hex

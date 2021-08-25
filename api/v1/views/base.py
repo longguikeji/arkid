@@ -16,17 +16,16 @@ class BaseTenantViewSet(NestedViewSetMixin):
         u: str = (
             extensions_api_settings.DEFAULT_PARENT_LOOKUP_KWARG_NAME_PREFIX + 'user'
         )
-        a: str = extensions_api_settings.DEFAULT_PARENT_LOOKUP_KWARG_NAME_PREFIX + 'app'
-        p: str = extensions_api_settings.DEFAULT_PARENT_LOOKUP_KWARG_NAME_PREFIX + 'provisioning'
-
+        # a: str = extensions_api_settings.DEFAULT_PARENT_LOOKUP_KWARG_NAME_PREFIX + 'app'
+        # p: str = extensions_api_settings.DEFAULT_PARENT_LOOKUP_KWARG_NAME_PREFIX + 'provisioning'
         if k in self.kwargs:
             context['tenant'] = Tenant.objects.filter(uuid=self.kwargs[k]).first()
         if u in self.kwargs:
             context['user'] = User.objects.filter(uuid=self.kwargs[u]).first()
-        if a in self.kwargs:
-            context['app'] = App.objects.filter(uuid=self.kwargs[a]).first()
-        if p in self.kwargs:
-            context['provisioning'] = Config.objects.filter(uuid=self.kwargs[p]).first()
+        # if a in self.kwargs:
+        #     context['app'] = App.objects.filter(uuid=self.kwargs[a]).first()
+        # if p in self.kwargs:
+        #     context['provisioning'] = Config.objects.filter(uuid=self.kwargs[p]).first()
 
         return context
 

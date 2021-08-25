@@ -6,6 +6,7 @@ from django.db.models import Max
 
 
 class ExternalIdpSerializer(BaseDynamicFieldModelSerializer):
+
     class Meta:
 
         model = ExternalIdp

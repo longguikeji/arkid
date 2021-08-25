@@ -1,11 +1,10 @@
 from lib.dynamic_fields_model_serializer import DynamicFieldsModelSerializer
-from webhook.models import WebHookTriggerHistory
+from webhook.models import WebhookTriggerHistory
 
 
-class WebHookTriggerHistorySerializer(DynamicFieldsModelSerializer):
-
+class WebhookTriggerHistorySerializer(DynamicFieldsModelSerializer):
     class Meta:
-        model = WebHookTriggerHistory
+        model = WebhookTriggerHistory
 
         fields = (
             'id',

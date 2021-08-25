@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'password_factor'
+tag = 'password'
 path = tag
 name = '密码管理'
 
@@ -13,14 +13,14 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
-                'tag': 'password_create'
+                'tag': 'password.create'
             }
         },
-        'item': {
+        'local': {
             'update': {
-                'tag': 'password_update'
+                'tag': 'password.update'
             },
             'delete': {
                 'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/{complexity_uuid}/detail/',
@@ -30,7 +30,7 @@ extend_schema_tags(
     }
 )
 
-password_create_tag = 'password_create'
+password_create_tag = 'password.create'
 password_create_name = '创建新密码规则'
 
 extend_schema_tags(
@@ -42,7 +42,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/',
                 'method': 'post'
@@ -51,7 +51,7 @@ extend_schema_tags(
     }
 )
 
-password_update_tag = 'password_update'
+password_update_tag = 'password.update'
 password_update_name = '编辑密码规则'
 
 extend_schema_tags(
@@ -63,7 +63,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/{complexity_uuid}/detail/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/{complexity_uuid}/detail/',
                 'method': 'patch'

@@ -13,9 +13,9 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
-                'tag': 'user_create'
+                'tag': 'user.create'
             },
             'export': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
@@ -26,7 +26,7 @@ extend_schema_tags(
                 'method': 'post'
             }
         },
-        'item': {
+        'local': {
             'password': {
                 'read': {
                     'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
@@ -38,7 +38,7 @@ extend_schema_tags(
                 }
             },
             'update': {
-                'tag': 'user_update'
+                'tag': 'user.update'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
@@ -48,7 +48,7 @@ extend_schema_tags(
     }
 )
 
-user_create_tag = 'user_create'
+user_create_tag = 'user.create'
 user_create_name = '创建用户'
 
 extend_schema_tags(
@@ -60,7 +60,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
                 'method': 'post'
@@ -69,7 +69,7 @@ extend_schema_tags(
     }
 )
 
-user_update_tag = 'user_update'
+user_update_tag = 'user.update'
 user_update_name = '编辑用户'
 
 extend_schema_tags(
@@ -81,7 +81,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
                 'method': 'put'

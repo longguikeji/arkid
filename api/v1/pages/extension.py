@@ -13,14 +13,14 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
-                'tag': 'extension_create'
+                'tag': 'extension.create'
             }
         },
-        'item': {
+        'local': {
             'update': {
-                'tag': 'extension_update'
+                'tag': 'extension.update'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/{id}/',
@@ -30,7 +30,7 @@ extend_schema_tags(
     }
 )
 
-extension_create_tag = 'extension_create'
+extension_create_tag = 'extension.create'
 extension_create_name = '创建插件'
 
 extend_schema_tags(
@@ -42,7 +42,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
                 'method': 'post'
@@ -51,7 +51,7 @@ extend_schema_tags(
     }
 )
 
-extension_update_tag = 'extension_update'
+extension_update_tag = 'extension.update'
 extension_update_name = '编辑插件'
 
 extend_schema_tags(
@@ -63,7 +63,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/{id}/',
                 'method': 'put'

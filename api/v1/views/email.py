@@ -17,6 +17,8 @@ from api.v1.serializers.email import (
     UpdateEmailEmailClaimSerializer,
 )
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from common.code import Code
+
 # from oneid_meta.models import AccountConfig
 
 
@@ -41,7 +43,7 @@ class EmailClaimAPIView(GenericAPIView):
         '''
         仅当重置私人邮箱时需要登录
         '''
-        if self.kwargs.get('subject', '') in ('update_email', ):
+        if self.kwargs.get('subject', '') in ('update_email',):
             return super().get_authenticators()
         return []
 
@@ -71,16 +73,19 @@ class EmailClaimAPIView(GenericAPIView):
 
         raise NotFound
 
-    def post(self, request, *args, **kwargs):    # pylint: disable=unused-argument
+    def post(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         send email
         '''
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response('email has send', status=status.HTTP_201_CREATED)
+        return Response(
+            {'error': Code.OK.value, 'message': 'email has send'},
+            status=status.HTTP_201_CREATED,
+        )
 
-    def get(self, request, *args, **kwarg):    # pylint: disable=unused-argument
+    def get(self, request, *args, **kwarg):  # pylint: disable=unused-argument
         '''
         check email token
         '''

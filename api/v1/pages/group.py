@@ -1,13 +1,28 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'gmanager'
-path = tag
+tag = [ 'group', 'group_user' ]
+path = 'gmanage'
 name = '分组管理'
 
+group_tree_tag = 'group_tree'
+group_tree_name = '选择分组'
+
 extend_schema_tags(
-    tag,
-    name,
-    [ 'group', 'group_user' ]
+    group_tree_tag,
+    group_tree_name,
+    {
+        'type': 'tree_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
+            'method': 'get'
+        },
+        'local': {
+            'children': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
+                'method': 'get'
+            }
+        }
+    }
 )
 
 group_tag = 'group'
@@ -22,9 +37,9 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
-                'tag': 'group_create'
+                'tag': 'group.create'
             },
             'import': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/group_import/',
@@ -35,9 +50,9 @@ extend_schema_tags(
                 'method': 'get'
             }
         },
-        'item': {
+        'local': {
             'update': {
-                'tag': 'group_update'
+                'tag': 'group.update'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
@@ -51,7 +66,7 @@ extend_schema_tags(
     }
 )
 
-group_create_tag = 'group_create'
+group_create_tag = 'group.create'
 group_create_name = '创建组'
 
 extend_schema_tags(
@@ -63,7 +78,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
                 'method': 'post'
@@ -72,7 +87,7 @@ extend_schema_tags(
     }
 )
 
-group_update_tag = 'group_update'
+group_update_tag = 'group.update'
 group_update_name = '编辑组'
 
 extend_schema_tags(
@@ -84,7 +99,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
                 'method': 'put'
@@ -105,7 +120,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'export': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
                 'method': 'get'
@@ -114,6 +129,21 @@ extend_schema_tags(
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_import/',
                 'method': 'post'
             }
+        }
+    }
+)
+
+group_tree_tag = 'group_tree'
+group_tree_name = '分组'
+
+extend_schema_tags(
+    group_tree_tag,
+    group_tree_name,
+    {
+        'type': 'tree_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
+            'method': 'get'
         }
     }
 )

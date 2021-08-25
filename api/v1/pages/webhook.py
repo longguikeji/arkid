@@ -13,17 +13,17 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
-                'tag': 'webhook_create'
+                'tag': 'webhook.create'
             }
         },
-        'item': {
+        'local': {
             'history': {
-                'tag': 'webhook_history'
+                'tag': 'webhook.history'
             },
             'update': {
-                'tag': 'webhook_update'
+                'tag': 'webhook.update'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{id}/',
@@ -33,7 +33,7 @@ extend_schema_tags(
     }
 )
 
-webhook_create_tag = 'webhook_create'
+webhook_create_tag = 'webhook.create'
 webhook_create_name = '创建webhook'
 
 extend_schema_tags(
@@ -45,7 +45,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/',
                 'method': 'post',
@@ -54,7 +54,7 @@ extend_schema_tags(
     }
 )
 
-webhook_update_tag = 'webhook_update'
+webhook_update_tag = 'webhook.update'
 webhook_update_name = '编辑更新webhook'
 
 extend_schema_tags(
@@ -66,16 +66,16 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{id}/',
-                'method': 'get'
+                'method': 'put'
             }
         }
     }
 )
 
-webhook_history_tag = 'webhook_history'
+webhook_history_tag = 'webhook.history'
 webhook_history_name = 'webhook历史记录'
 
 extend_schema_tags(
@@ -87,9 +87,9 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{parent_lookup_webhook}/history/',
             'method': 'get'
         },
-        'item': {
+        'local': {
             'retrieve': {
-                'tag': 'webhook_history_retrieve'
+                'tag': 'webhook.history.retrieve'
             },
             'retry': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{parent_lookup_webhook}/history/{id}/retry/',
@@ -103,7 +103,7 @@ extend_schema_tags(
     }
 )
 
-webhook_history_retrieve_tag = 'webhook_history_retrieve'
+webhook_history_retrieve_tag = 'webhook.history.retrieve'
 webhook_history_retrieve_name = 'webhook历史记录查阅'
 
 extend_schema_tags(

@@ -2,7 +2,7 @@
 serializers for SMS
 '''
 import random
-import string    # pylint:disable=deprecated-module
+import string  # pylint:disable=deprecated-module
 import time
 
 from rest_framework import serializers
@@ -12,6 +12,17 @@ from django.conf import settings
 from inventory.models import User, Invitation
 from common.utils import is_mobile, is_cn_mobile
 from runtime import get_app_runtime
+from rest_framework import status
+from rest_framework.exceptions import APIException
+from common.code import Code
+
+
+class ValidationErrorFailed(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, detail):
+        self.detail = detail
+
 
 def gen_code():
     '''
@@ -25,6 +36,7 @@ class SMSClaimSerializer(serializers.Serializer):
     Serializer for SMS Claim
     - 对于已登录用户，发送短信无需验证码
     '''
+
     captcha = serializers.CharField(required=False)
     captcha_key = serializers.CharField(required=False)
     mobile = serializers.CharField()
@@ -35,22 +47,28 @@ class SMSClaimSerializer(serializers.Serializer):
     def runtime():
         return get_app_runtime()
 
-    def get_template_id(self):    # pylint: disable=no-self-use
+    def get_template_id(self):  # pylint: disable=no-self-use
         '''
         读取模板id
         '''
         sms_provider = self.runtime().sms_provider
-        i18n = not is_cn_mobile(self.validated_data['mobile'])    # 国内号码即使加上区号，也无法使用国际模板
+        i18n = not is_cn_mobile(self.validated_data['mobile'])  # 国内号码即使加上区号，也无法使用国际模板
         return sms_provider.get_template_code("code", i18n)
 
-    def validate_mobile(self, value):    # pylint: disable=no-self-use
+    def validate_mobile(self, value):  # pylint: disable=no-self-use
         '''
         校验手机
         '''
         if is_mobile(value):
             return value
 
-        raise ValidationError('invalid')
+        # raise ValidationError('invalid')
+        raise ValidationErrorFailed(
+            {
+                'error': Code.MOBILE_FROMAT_ERROR.value,
+                'message': 'Invalid mobile number',
+            }
+        )
 
     def validate(self, attrs):
         '''
@@ -97,11 +115,23 @@ class SMSClaimSerializer(serializers.Serializer):
         '''
         mobile = data.get('mobile', None)
         if not mobile:
-            raise ValidationError({'mobile': ['This field is required.']})
+            # raise ValidationError({'mobile': ['This field is required.']})
+            raise ValidationErrorFailed(
+                {
+                    'error': Code.MOBILE_FROMAT_ERROR.value,
+                    'message': 'mobile field is required',
+                }
+            )
 
         code = data.get('code', None)
         if not code:
-            raise ValidationError({'code': ['This field is required.']})
+            # raise ValidationError({'code': ['This field is required.']})
+            raise ValidationErrorFailed(
+                {
+                    'error': Code.SMS_CODE_MISMATCH.value.value,
+                    'message': 'code field is required',
+                }
+            )
 
         cache_key = cls.gen_sms_code_key(mobile)
         res = cls.runtime().cache_provider.get(cache_key)
@@ -110,11 +140,21 @@ class SMSClaimSerializer(serializers.Serializer):
             if isinstance(send_code, bytes):
                 send_code = send_code.decode('utf-8')
             if send_code and code == send_code:
-                sms_token = "".join(random.choice(string.ascii_letters + string.digits) for _ in range(24))
-                cls.runtime().cache_provider.set(cls.gen_sms_token_key(sms_token), mobile, settings.SMS_LIFESPAN.seconds * 10)
+                sms_token = "".join(
+                    random.choice(string.ascii_letters + string.digits)
+                    for _ in range(24)
+                )
+                cls.runtime().cache_provider.set(
+                    cls.gen_sms_token_key(sms_token),
+                    mobile,
+                    settings.SMS_LIFESPAN.seconds * 10,
+                )
                 cls.runtime().cache_provider.delete(cls.gen_sms_code_key(mobile))
                 return sms_token, int(time.time()) + settings.SMS_LIFESPAN.seconds * 10
-        raise ValidationError({'code': ['invalid']})
+        # raise ValidationError({'code': ['invalid']})
+        raise ValidationErrorFailed(
+            {'error': Code.SMS_CODE_MISMATCH.value, 'message': 'sms code mismatch'}
+        )
 
     @classmethod
     def check_sms_token(cls, sms_token):
@@ -125,7 +165,7 @@ class SMSClaimSerializer(serializers.Serializer):
         key = cls.gen_sms_token_key(sms_token)
         res = cls.runtime().cache_provider.get(key)
         if res:
-            return {'mobile': res}    # mobile
+            return {'mobile': res}  # mobile
         raise ValidationError({'sms_token': ['invalid']})
 
     @classmethod
@@ -141,7 +181,7 @@ class ResetPWDSMSClaimSerializer(SMSClaimSerializer):
     重置密码发送短信时，需要该手机号、账号已存在且匹配
     '''
 
-    username = serializers.CharField(required=True)
+    # username = serializers.CharField(required=True)
 
     def get_template_id(self):
         '''
@@ -149,8 +189,9 @@ class ResetPWDSMSClaimSerializer(SMSClaimSerializer):
         '''
         sms_provider = self.runtime().sms_provider
         i18n = not is_cn_mobile(self.validated_data['mobile'])
-        return sms_provider.get_template_code("reset_pwd", i18n) or \
-            sms_provider.get_template_code("code", i18n)
+        return sms_provider.get_template_code(
+            "reset_pwd", i18n
+        ) or sms_provider.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):
@@ -170,9 +211,15 @@ class ResetPWDSMSClaimSerializer(SMSClaimSerializer):
         validated_data = super().validate(attrs)
 
         mobile = validated_data['mobile']
-        username = validated_data['username']
-        if not User.valid_objects.filter(mobile=mobile, username=username).exists():
-            raise ValidationError({'mobile': ['invalid']})
+        # username = validated_data['username']
+        if not User.valid_objects.filter(mobile=mobile).exists():
+            # raise ValidationError({'mobile': 'invalid'})
+            raise ValidationErrorFailed(
+                {
+                    'error': Code.MOBILE_NOT_EXISTS_ERROR.value,
+                    'message': 'mobile not exists',
+                }
+            )
 
         return validated_data
 
@@ -181,14 +228,16 @@ class RegisterSMSClaimSerializer(SMSClaimSerializer):
     '''
     用户注册时发短信，需要该手机号不存在
     '''
+
     def get_template_id(self):
         '''
         读取模板ID
         '''
         sms_provider = self.runtime().sms_provider
         i18n = not is_cn_mobile(self.validated_data['mobile'])
-        return sms_provider.get_template_code("register", i18n) or \
-            sms_provider.get_template_code("code", i18n)
+        return sms_provider.get_template_code(
+            "register", i18n
+        ) or sms_provider.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):
@@ -209,7 +258,13 @@ class RegisterSMSClaimSerializer(SMSClaimSerializer):
 
         mobile = validated_data['mobile']
         if User.valid_objects.filter(mobile=mobile).exists():
-            raise ValidationError({'mobile': 'existed'})
+            # raise ValidationError({'mobile': 'existed'})
+            raise ValidationErrorFailed(
+                {
+                    'error': Code.MOBILE_EXISTS_ERROR.value,
+                    'message': 'mobile exists already',
+                }
+            )
         return validated_data
 
 
@@ -217,14 +272,16 @@ class LoginSMSClaimSerializer(SMSClaimSerializer):
     '''
     用户登录时发短信，需要该手机号存在
     '''
+
     def get_template_id(self):
         '''
         读取模板ID
         '''
         sms_provider = self.runtime().sms_provider
         i18n = not is_cn_mobile(self.validated_data['mobile'])
-        return sms_provider.get_template_code("login", i18n) or \
-            sms_provider.get_template_code("code", i18n)
+        return sms_provider.get_template_code(
+            "login", i18n
+        ) or sms_provider.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):
@@ -245,7 +302,13 @@ class LoginSMSClaimSerializer(SMSClaimSerializer):
 
         mobile = validated_data['mobile']
         if not User.valid_objects.filter(mobile=mobile).exists():
-            raise ValidationError({'mobile': 'invalid'})
+            # raise ValidationError({'mobile': 'invalid'})
+            raise ValidationErrorFailed(
+                {
+                    'error': Code.MOBILE_NOT_EXISTS_ERROR.value,
+                    'message': 'mobile not exists',
+                }
+            )
         return validated_data
 
 
@@ -263,8 +326,9 @@ class UserActivateSMSClaimSerializer(SMSClaimSerializer):
         '''
         sms_provider = self.runtime().sms_provider
         i18n = not is_cn_mobile(self.validated_data['mobile'])
-        return sms_provider.get_template_code("activate", i18n) or \
-            sms_provider.get_template_code("code", i18n)
+        return sms_provider.get_template_code(
+            "activate", i18n
+        ) or sms_provider.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):
@@ -315,8 +379,9 @@ class UpdateMobileSMSClaimSerializer(SMSClaimSerializer):
         '''
         sms_provider = self.runtime().sms_provider
         i18n = not is_cn_mobile(self.validated_data['mobile'])
-        return sms_provider.get_template_code("reset_mobile", i18n) or \
-            sms_provider.get_template_code("code", i18n)
+        return sms_provider.get_template_code(
+            "reset_mobile", i18n
+        ) or sms_provider.get_template_code("code", i18n)
 
     @staticmethod
     def gen_sms_code_key(mobile):

@@ -13,12 +13,12 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'create': {
-                'tag': 'external_idp_create'
+                'tag': 'external_idp.create'
             }
         },
-        'item': {
+        'local': {
             'sort': {
                 'up': {
                     'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/move_up/',
@@ -42,7 +42,7 @@ extend_schema_tags(
                 }
             },
             'update': {
-                'tag': 'external_idp_update'
+                'tag': 'external_idp.update'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
@@ -53,7 +53,7 @@ extend_schema_tags(
 )
 
 
-external_idp_create_tag = 'external_idp_create'
+external_idp_create_tag = 'external_idp.create'
 external_idp_create_name = '创建第三方登录'
 
 extend_schema_tags(
@@ -65,7 +65,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
             'method': 'post'
         },
-        'page': {
+        'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
                 'method': 'post'
@@ -74,7 +74,7 @@ extend_schema_tags(
     }
 )
 
-external_idp_update_tag = 'external_idp_update'
+external_idp_update_tag = 'external_idp.update'
 external_idp_update_name = '编辑第三方登录'
 
 extend_schema_tags(
@@ -86,7 +86,7 @@ extend_schema_tags(
             'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
             'method': 'get'
         },
-        'page': {
+        'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
                 'method': 'put'

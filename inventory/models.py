@@ -160,7 +160,8 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
         self._password = raw_password
-        UserPassword.valid_objects.get_or_create(user=self, password=self.md5_password(raw_password))
+        if self.id:
+            UserPassword.valid_objects.get_or_create(user=self, password=self.md5_password(raw_password))
 
     def valid_password(self, raw_password):
         return UserPassword.valid_objects.filter(
@@ -289,6 +290,16 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
         if is_new:
             self.__class__.objects.filter(id=self.id).update(scim_id=self.uuid)
             self.scim_id = str(self.uuid)
+    
+    def child_groups(self, uuids):
+        groups = Group.active_objects.filter(
+            parent=self
+        )
+        if groups.exists() is False:
+            return uuids
+        for group in groups:
+            uuids.append(str(group.uuid))
+            group.child_groups(uuids)
             
 
 class Invitation(BaseModel):
@@ -452,3 +463,15 @@ class CustomUser(BaseModel):
             })
         return res
 
+
+class UserAppData(BaseModel):
+    '''
+    用户APP数据
+    '''
+    DEFAULT_VALUE = ""
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
+    data = models.JSONField(verbose_name='数据内容')
+
+    def __str__(self) -> str:
+        return f'User: {self.user.username}'

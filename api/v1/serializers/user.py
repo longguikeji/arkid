@@ -12,6 +12,10 @@ from api.v1.fields.custom import (
 )
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
+from webhook.manager import WebhookManager
+from django.db import transaction
+
+
 
 
 class CustomUserSerializer(BaseDynamicFieldModelSerializer):
@@ -49,8 +53,10 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     set_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='id',
-        page=group.group_tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
+        default=[],
+        link="groups",
         write_only=True,
     )
 
@@ -61,6 +67,8 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         field_name='id',
         page=permission.tag,
         child=serializers.CharField(),
+        default=[],
+        link="permissions",
         write_only=True,
     )
 
@@ -111,6 +119,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             ret.append(o.data)
         return ret
 
+    @transaction.atomic()
     def create(self, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
@@ -142,8 +151,12 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             custom_user_serializer.save(user=u)
 
         u.save()
+        transaction.on_commit(
+            lambda: WebhookManager.user_created(self.context['tenant'].uuid, u)
+        )
         return u
 
+    @transaction.atomic()
     def update(self, instance, validated_data):
         set_groups = validated_data.pop('set_groups', None)
         set_permissions = validated_data.pop('set_permissions', None)
@@ -177,6 +190,9 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         for key, value in validated_data.items():
             setattr(instance, key, value)
         instance.save()
+        transaction.on_commit(
+            lambda: WebhookManager.user_updated(self.context['tenant'].uuid, instance)
+        )
         return instance
 
 
@@ -295,6 +311,11 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
         required=False,
         allow_blank=True,
     )
+    email = create_hint_field(serializers.EmailField)(
+        hint="请填写正确的email格式",
+        required=False,
+    )
+
 
     class Meta:
         model = User
@@ -302,19 +323,20 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
         fields = (
             'uuid',
             'username',
-            'nickname',
+            'email',
             'mobile',
+            'first_name',
+            'last_name',
+            'nickname',
+            'country',
+            'city',
+            'job_title',
+            'bind_info',
         )
 
-    def update(self, instance, validated_data):
-        nickname = validated_data.pop('nickname', None)
-        if nickname:
-            instance.nickname = nickname
-        mobile = validated_data.pop('mobile', None)
-        if mobile:
-            instance.mobile = mobile
-        instance.save()
-        return instance
+        extra_kwargs = {
+            'bind_info': {'read_only': True},
+        }
 
 
 class UserBindInfoBaseSerializer(serializers.Serializer):
@@ -339,3 +361,11 @@ class UserManageTenantsSerializer(serializers.Serializer):
     )
     is_global_admin = serializers.BooleanField(label=_('是否是系统管理员'))
     is_platform_user = serializers.BooleanField(label=_('是否是平台用户'))
+
+
+class UserAppDataSerializer(serializers.ModelSerializer):
+    data = serializers.ListField(label=_('数据'))
+
+    class Meta:
+        model = User
+        fields = ['data']
