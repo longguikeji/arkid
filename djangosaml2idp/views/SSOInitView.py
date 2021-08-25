@@ -56,7 +56,8 @@ class SSOInit(LoginRequiredMixin, IdPHandlerViewMixin, View):
                 'name': 'first_name',
                 'is_boss': 'is_admin',
                 'token': 'token',
-            }
+            },
+            'extra_config': app.data["attribute_mapping"]
         }
 
         idp_server = IDP.load(tenant__uuid, app_id)
@@ -95,10 +96,10 @@ class SSOInit(LoginRequiredMixin, IdPHandlerViewMixin, View):
             authn = AUTHN_BROKER.get_authn_by_accr(req_authn_context)
             sign_response = self.IDP.config.getattr(
                 "sign_response", "idp"
-            ) or False
+            ) or True
             sign_assertion = self.IDP.config.getattr(
                 "sign_assertion", "idp"
-            ) or False
+            ) or True
             authn_resp = self.IDP.create_authn_response(
                 identity=identity,
                 in_response_to=None,
@@ -119,7 +120,7 @@ class SSOInit(LoginRequiredMixin, IdPHandlerViewMixin, View):
             binding=binding_out,
             msg_str="%s" % authn_resp,
             destination=destination,
-            relay_state=passed_data['RelayState'],
+            relay_state=passed_data.get('RelayState',None),
             response=True
         )
         return HttpResponse(http_args['data'])
