@@ -381,3 +381,7 @@ class UserAppDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['data']
+
+
+class UserLogoffSerializer(serializers.Serializer):
+    is_succeed = serializers.BooleanField(label=_('是否注销成功'))
