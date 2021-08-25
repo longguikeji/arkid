@@ -65,7 +65,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
     def get_object(self):
         tenant_uuid = self.request.query_params.get('tenant')
         if not tenant_uuid:
-            tenant_uuid = None
+            tenant = None
         else:
             tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
 
