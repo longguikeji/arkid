@@ -17,6 +17,7 @@ from django.db import transaction
 
 
 
+
 class CustomUserSerializer(BaseDynamicFieldModelSerializer):
     '''
     custom user info

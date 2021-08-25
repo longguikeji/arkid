@@ -215,7 +215,7 @@ class ConfigSerializer(serializers.Serializer):
 
 class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
 
-    data = ConfigSerializer()
+    data = TenantConfigDataSerializer()
 
     class Meta:
         model = TenantConfig
@@ -227,6 +227,9 @@ class TenantConfigSerializer(BaseDynamicFieldModelSerializer):
         instance.data = data
         instance.save()
         return instance
+
+    def create(self, validated_data):
+        pass
 
 
 class TenantPasswordComplexitySerializer(BaseDynamicFieldModelSerializer):

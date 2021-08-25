@@ -43,6 +43,26 @@ extend_schema_tags(
         },
         'global': {
             'create': {
+                'tag': 'tenant_create'
+            }
+        }
+    }
+)
+
+tenant_create_tag = 'tenant_create'
+tenant_create_name = '创建租户'
+
+extend_schema_tags(
+    tenant_create_tag,
+    tenant_create_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/tenant/',
+            'method': 'post'
+        },
+        'page': {
+            'create': {
                 'path': '/api/v1/tenant/',
                 'method': 'post'
             }

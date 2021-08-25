@@ -27,7 +27,6 @@ class ValidationErrorFailed(APIException):
     def __init__(self, detail):
         self.detail = detail
 
-
 class EmailClaimSerializer(serializers.Serializer):  # pylint: disable=abstract-method
     '''
     Serializer for email Claim
@@ -322,6 +321,27 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
             if user:
                 return {'email': email, 'username': user.username}
         raise ValidationError({'email_token': ['invalid']})
+
+    @classmethod
+    def check_email_verify_code(cls, email, code):
+        '''
+        check sms code with mobile and code
+        '''
+        if not email:
+            raise ValidationError({'email': ['This field is required.']})
+
+        if not code:
+            raise ValidationError({'code': ['This field is required.']})
+
+        cache_key = cls.gen_email_verify_code_key(email)
+        res = cls.runtime().cache_provider.get(cache_key)
+        if res:
+            send_code = res
+            if isinstance(send_code, bytes):
+                send_code = send_code.decode('utf-8')
+            if send_code and code == send_code:
+                return True
+        raise ValidationError({'code': ['invalid']})
 
 
 class UserActivateEmailClaimSerializer(EmailClaimSerializer):
