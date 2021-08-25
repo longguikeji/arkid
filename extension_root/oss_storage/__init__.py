@@ -21,6 +21,18 @@ class OSSStorageExtension(InMemExtension):
 
         super().start(runtime=runtime, *args, **kwargs)
 
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        provider = OSSStorageProvider()
+        provider.domain = self.config('domain')
+        provider.bucket = self.config('bucket')
+        provider.access_key = self.config('access_key')
+        provider.secret_key = self.config('secret_key')
+        provider.endpoint = self.config('endpoint', 'https://oss-cn-beijing.aliyuncs.com')
+
+        runtime.logout_storage_provider(
+            provider=provider,
+        )
+
 
 extension = OSSStorageExtension(
     name='oss_storage',

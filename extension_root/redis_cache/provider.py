@@ -16,7 +16,8 @@ class RedisCacheProvider(CacheProvider):
             host=self.host, 
             port=self.port, 
             password=self.password,
-            db=self.db
+            db=self.db,
+            decode_responses=True
         )
         conn.set(key, value, ex=expired)
 
@@ -25,6 +26,17 @@ class RedisCacheProvider(CacheProvider):
             host=self.host, 
             port=self.port, 
             password=self.password,
-            db=self.db
+            db=self.db,
+            decode_responses=True
         )
         return conn.get(key)
+
+    def __getattr__(self, key):
+        conn = redis.StrictRedis(
+            host=self.host,
+            port=self.port,
+            password=self.password,
+            db=self.db,
+            decode_responses=True
+        )
+        return getattr(conn, key)

@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+# mama_cas/
+
 # Distribution / packaging
 .Python
 build/
@@ -171,3 +173,4 @@ package-lock.json
 
 db.sqlite3-journal
 djangosaml2idp/saml2_config/*.xml
+

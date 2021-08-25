@@ -1,11 +1,13 @@
 from common.extension import InMemExtension
 from .serializers import GiteeExternalIdpSerializer
 from .provider import GiteeExternalIdpProvider
+from runtime import Runtime
 from .constants import KEY
 
 
 class GiteeExternalIdpExtension(InMemExtension):
-    def start(self, runtime, *args, **kwargs):
+
+    def start(self, runtime: Runtime, *args, **kwargs):
         runtime.register_external_idp(
             key=KEY,
             name="Gitee",
@@ -14,6 +16,15 @@ class GiteeExternalIdpExtension(InMemExtension):
             serializer=GiteeExternalIdpSerializer,
         )
         super().start(runtime=runtime, *args, **kwargs)
+    
+    def teardown(self, runtime: Runtime, *args, **kwargs):
+        runtime.logout_external_idp(
+            key=KEY,
+            name="Gitee",
+            description="Gitee External idP",
+            provider=GiteeExternalIdpProvider,
+            serializer=GiteeExternalIdpSerializer,
+        )
 
 
 extension = GiteeExternalIdpExtension(

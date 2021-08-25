@@ -23,6 +23,8 @@ from common.code import Code
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from webhook.manager import WebhookManager
+from django.db import transaction
 
 
 @extend_schema_view(
@@ -70,7 +72,6 @@ class GroupViewSet(BaseViewSet):
     serializer_class = GroupSerializer
     pagination_class = DefaultListPaginator
 
-
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
@@ -89,7 +90,6 @@ class GroupViewSet(BaseViewSet):
         qs = Group.valid_objects.filter(**kwargs).order_by('id')
         return qs
 
-
     def get_object(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
@@ -101,6 +101,15 @@ class GroupViewSet(BaseViewSet):
 
         obj = Group.valid_objects.filter(**kwargs).first()
         return obj
+
+    @transaction.atomic()
+    def destroy(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        group = self.get_object()
+        ret = super().destroy(request, *args, **kwargs)
+        transaction.on_commit(lambda: WebhookManager.group_deleted(tenant.uuid, group))
+        return ret
 
     @extend_schema(
         roles=['tenant admin', 'global admin'],
@@ -132,7 +141,9 @@ class GroupViewSet(BaseViewSet):
             )
         group_resource = GroupResource()
         dataset = Dataset()
-        imported_data = dataset.load(io.StringIO(upload.read().decode('utf-8')), format='csv')
+        imported_data = dataset.load(
+            io.StringIO(upload.read().decode('utf-8')), format='csv'
+        )
         result = group_resource.import_data(
             dataset, dry_run=True, tenant_id=tenant.id
         )  # Test the data import

@@ -6,9 +6,10 @@ https_enabled = 0
 
 [email]
 host = "smtp.qq.com"
-port = 25
-user = ""
-password = ""
+port = 465
+user = "fanhe1234@qq.com"
+password = "wnoidlspqwzfcebb"
+nickname = "longguikeji"
 
 
 [extension]

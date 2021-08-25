@@ -19,7 +19,10 @@ from . import (
     migration,
     setup,
     authcode,
+    config,
     system,
+    email,
+    device,
 )
 from runtime import get_app_runtime
 
@@ -66,4 +69,8 @@ urlpatterns += marketplace.router.urls
 urlpatterns += user.urlpatterns
 urlpatterns += marketplace.urlpatterns
 urlpatterns += authcode.urlpatterns
+urlpatterns += config.urlpatterns
 urlpatterns += system.urlpatterns
+urlpatterns += email.urlpatterns
+urlpatterns += app.urlpatterns
+urlpatterns += device.urlpatterns

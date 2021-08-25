@@ -35,7 +35,7 @@ jobs:
         data: |
           {"msg_type":"post","content":{"post":{"zh_cn":{"title":"${{ github.event.repository.name }}流水线状态通知",
           "content":[[{"tag":"text","text":"${{ github.event.repository.name }} 项目流水线有更新: "},
-          {"tag":"a","text":"ci构建失败","href":"https://github.com/${{ github.repository }}/actions/workflows/status.yml"}]]}}}}
+          {"tag":"a","text":"${{ github.event.ref }}分支 ci构建失败","href":"https://github.com/${{ github.repository }}/actions/workflows/status.yml"}]]}}}}
     - name: Feishu 报喜
       if: ${{ success() }}
       uses: wangsijie/feishu-bot@v1
@@ -44,4 +44,4 @@ jobs:
         data: |
           {"msg_type":"post","content":{"post":{"zh_cn":{"title": "${{ github.event.repository.name }}流水线状态通知",
           "content":[[{"tag":"text","text":"${{ github.event.repository.name }} 项目流水线有更新: "},
-          {"tag":"a","text":"ci构建成功","href":"http://arkid.vtwo.longguikeji.com/"}]]}}}}
+          {"tag":"a","text":"${{ github.event.ref }}分支 ci构建成功","href":"http://arkid.vtwo.longguikeji.com/"}]]}}}}

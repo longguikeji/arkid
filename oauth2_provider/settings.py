@@ -66,7 +66,7 @@ DEFAULTS = {
     "GRANT_ADMIN_CLASS": "oauth2_provider.admin.GrantAdmin",
     "ID_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.IDTokenAdmin",
     "REFRESH_TOKEN_ADMIN_CLASS": "oauth2_provider.admin.RefreshTokenAdmin",
-    "REQUEST_APPROVAL_PROMPT": "force",
+    "REQUEST_APPROVAL_PROMPT": "auto",
     "ALLOWED_REDIRECT_URI_SCHEMES": ["http", "https"],
     "OIDC_ENABLED": False,
     "OIDC_ISS_ENDPOINT": "",
