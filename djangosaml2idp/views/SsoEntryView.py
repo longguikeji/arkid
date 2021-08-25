@@ -47,6 +47,6 @@ class SSOEntry(View):
     def post(self, request, tenant_uuid, app_id):
         """ POST 方法
         """
-        passed_data = request.POST
+        passed_data = request.GET
         binding = BINDING_HTTP_POST
         return sso_entry(request, tenant_uuid, app_id, passed_data, binding)

@@ -34,9 +34,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema_view
 from django.urls import reverse
 from common import loginpage as lp
-from rest_framework.exceptions import NotFound, ValidationError
-from drf_spectacular.utils import PolymorphicProxySerializer
-
 
 import datetime
 
@@ -480,7 +477,7 @@ class TenantViewSet(BaseViewSet):
             tenant__uuid=tenant_uuid
         ).first()
         if tenantconfig:
-            result = tenantconfig.data.get('login_register', result)
+            result = tenantconfig.data
         return result
 
     def mobile_login_form(self, tenant_uuid):
@@ -977,46 +974,19 @@ class TenantSlugView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-TenantConfigPolymorphicProxySerializer = PolymorphicProxySerializer(
-    component_name='TenantConfigPolymorphicProxySerializer',
-    serializers={
-        'login_register': LoginRegisterConfigSerializer,
-        'privacy_notice': PrivacyNoticeConfigSerializer,
-    },
-    resource_type_field_name='subject',
-)
-
-
-@extend_schema(
-    tags=['tenant'],
-    roles=['tenant admin', 'global admin'],
-    request=TenantConfigPolymorphicProxySerializer,
-    responses=TenantConfigPolymorphicProxySerializer,
-)
-class TenantConfigSubjectView(generics.RetrieveUpdateAPIView):
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    def get_serializer_class(self):
-        if 'subject' not in self.kwargs:
-            return TenantConfigSerializer
-
-        subject = self.kwargs.get('subject')
-
-        if subject == 'login_register':
-            return LoginRegisterConfigSerializer
-
-        if subject == 'privacy_notice':
-            return PrivacyNoticeConfigSerializer
-
-        raise NotFound
+    serializer_class = TenantConfigSerializer
 
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.active_objects.filter(uuid=tenant_uuid).order_by('id').first()
         if tenant:
-            config, is_created = TenantConfig.objects.get_or_create(
+            tenantconfig, is_created = TenantConfig.objects.get_or_create(
                 is_del=False,
                 tenant=tenant,
             )
@@ -1081,29 +1051,6 @@ class TenantConfigSubjectView(generics.RetrieveUpdateAPIView):
             return tenantconfig
         else:
             return []
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = TenantConfigSerializer(instance)
-        data = serializer.data
-        subject = self.kwargs.get('subject', '')
-        if subject:
-            data = data.get('data')
-            return Response(data.get(subject))
-        else:
-            return Response(data.get('data'))
-
-    def update(self, request, *args, **kwargs):
-        subject = self.kwargs.get('subject', '')
-        instance = self.get_object()
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(instance=instance, subject=subject)
-        data = instance.data
-        if subject:
-            return Response(data.get(subject))
-        else:
-            return Response(data)
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])

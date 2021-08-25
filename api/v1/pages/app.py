@@ -47,38 +47,6 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'app_create'
-            }
-        },
-        'item': {
-            'provisioning': {
-                'tag': 'app_provisioning'
-            },
-            'update': {
-                'tag': 'app_update'
-            },
-            'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
-                'method': 'delete'
-            }
-        },
-    }
-)
-
-app_create_tag = 'app_create'
-app_create_name = '创建应用'
-
-extend_schema_tags(
-    app_create_tag,
-    app_create_name,
-    {
-        'type': 'form_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
-            'method': 'post'
-        },
-        'page': {
-            'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
                 'method': 'post'
             }
