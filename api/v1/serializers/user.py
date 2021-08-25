@@ -77,7 +77,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         model_cls=CustomField,
         allow_empty=True,
         init={
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/',
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/?subject=user',
             'method': 'get'
         },
         label=_('用户自定义字段')

@@ -103,11 +103,8 @@ extend_schema_tags(
     {
         'type': 'table_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/',
-            'method': 'get',
-            'parameters': {
-                'subject': 'user'
-            }
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/?subject=user',
+            'method': 'get'
         },
         'global': {
             'create': {
@@ -120,11 +117,8 @@ extend_schema_tags(
                 'tag': 'user.custom_fields.update'
             },
             'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/',
-                'method': 'delete',
-                'parameters': {
-                    'subject': 'user'
-                }
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/?subject=user',
+                'method': 'delete'
             }
         }
     }
@@ -144,11 +138,8 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/',
-                'method': 'post',
-                'parameters': {
-                    'subject': 'user'
-                }
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/?subject=user',
+                'method': 'post'
             }
         }
     }
@@ -163,19 +154,13 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/',
-            'method': 'get',
-            'parameters': {
-                'subject': 'user'
-            }
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/?subject=user',
+            'method': 'get'
         },
         'global': {
             'update': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/',
-                'method': 'put',
-                'parameters': {
-                    'subject': 'user'
-                }
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/?subject=user',
+                'method': 'put'
             }
         }
     }

@@ -13,7 +13,7 @@ extend_schema_tags(
     {
         'type': 'table_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/',
+            'path': '/api/v1/login_register_config/?tenant={parent_lookup_tenant}',
             'method': 'get'
         },
         'global': {
@@ -26,7 +26,7 @@ extend_schema_tags(
                 'tag': 'login_register_extension_config.update'
             },
             'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/{id}/',
+                'path': '/api/v1/login_register_config/{id}/?tenant={parent_lookup_tenant}',
                 'method': 'delete'
             }
         }
@@ -42,12 +42,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/',
+            'path': '/api/v1/login_register_config/?tenant={parent_lookup_tenant}',
             'method': 'post'
         },
         'global': {
             'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/',
+                'path': '/api/v1/login_register_config/?tenant={parent_lookup_tenant}',
                 'method': 'post'
             }
         }
@@ -63,12 +63,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/{id}/',
+            'path': '/api/v1/login_register_config/{id}/?tenant={parent_lookup_tenant}',
             'method': 'get',
         },
         'global': {
             'update': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/login_register_config/{id}/',
+                'path': '/api/v1/login_register_config/{id}/?tenant={parent_lookup_tenant}',
                 'method': 'put'
             }
         }
