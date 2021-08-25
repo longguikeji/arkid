@@ -72,10 +72,10 @@ class DeviceListView(generics.ListCreateAPIView):
             permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
             manage_users = permission.user_permission_set.all()
             for user in users:
-                user_uuids.append(str(user.uuid))
+                user_uuids.append(user.uuid_hex)
             for manage_user in manage_users:
                 if str(manage_user.uuid) not in user_uuids:
-                    user_uuids.append(str(manage_user.uuid))
+                    user_uuids.append(manage_user.uuid_hex)
             for user_uuid in user_uuids:
                 for device in devices:
                     account_ids = device.account_ids
@@ -149,10 +149,10 @@ class DeviceExportView(generics.RetrieveAPIView):
             permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
             manage_users = permission.user_permission_set.all()
             for user in users:
-                user_uuids.append(str(user.uuid))
+                user_uuids.append(user.uuid_hex)
             for manage_user in manage_users:
                 if str(manage_user.uuid) not in user_uuids:
-                    user_uuids.append(str(manage_user.uuid))
+                    user_uuids.append(manage_user.uuid_hex)
             for user_uuid in user_uuids:
                 for device in devices:
                     account_ids = device.account_ids
