@@ -6,5 +6,5 @@ name = '认证规则'
 
 extend_schema_tags(
     tag,
-    name
+    name,
 )
