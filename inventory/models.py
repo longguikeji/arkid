@@ -172,6 +172,12 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         Token.objects.filter(user=self).delete()
         token, _ = Token.objects.get_or_create(user=self)
         return token
+    
+    @property
+    def new_token(self):
+        Token.objects.filter(user=self).delete()
+        token, _ = Token.objects.get_or_create(user=self)
+        return token.key
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

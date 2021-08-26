@@ -385,3 +385,7 @@ class UserAppDataSerializer(serializers.ModelSerializer):
 
 class UserLogoffSerializer(serializers.Serializer):
     is_succeed = serializers.BooleanField(label=_('是否注销成功'))
+
+
+class UserTokenExpireSerializer(serializers.Serializer):
+    token = serializers.CharField(label=_('token'))

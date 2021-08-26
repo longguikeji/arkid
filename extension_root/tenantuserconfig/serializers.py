@@ -12,7 +12,7 @@ class TenantUserConfigSetSerializer(serializers.Serializer):
     is_logout = serializers.BooleanField(label=_("是否允许用户注销自己的账号"))
     is_look_token = serializers.BooleanField(label=_("设置是否允许用户查看自己当前Token"))
     is_manual_overdue_token = serializers.BooleanField(
-        label=_("设置是否允许用户手动让Token过期"))
+        label=_("设置是否允许用户手动让Token重置"))
     is_logging_ip = serializers.BooleanField(label=_("设置是否记录用户的IP地址"))
     is_logging_device = serializers.BooleanField(label=_("设置是否记录用户的设备信息"))
 

@@ -30,13 +30,28 @@ class DeviceSerializer(BaseDynamicFieldModelSerializer):
         device_id = validated_data.get('device_id')
         account_ids = validated_data.get('account_ids')
         request = self.context['request']
-        ip = self.get_client_ip(request)
+        tenant_uuid = self.context['tenant_uuid']
+        ip = ''
+        if tenant_uuid:
+            from tenant.models import Tenant
+            from extension_root.tenantuserconfig.models import TenantUserConfig
+            tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+            config = TenantUserConfig.active_objects.filter(
+                tenant=tenant
+            ).first()
+            if config:
+                data = config.data
+                is_logging_ip = data['is_logging_ip']
+                if is_logging_ip is True:
+                    ip = self.get_client_ip(request)
+        else:
+            ip = self.get_client_ip(request)
         validated_data['ip'] = ip
         # 检查device
         device = Device.active_objects.filter(
             device_id=device_id
         ).first()
-        if device:
+        if device and device_id:
             temp_account_ids = device.account_ids
             for account_id in account_ids:
                 if account_id not in temp_account_ids:

@@ -85,6 +85,11 @@ class DeviceListView(generics.ListCreateAPIView):
             devices = devices.filter(uuid__in=uuids)
         return devices.order_by('-id')
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant_uuid'] = self.request.query_params.get('tenant_uuid', '')
+        return context
+
 
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
 class DeviceDetailView(generics.RetrieveDestroyAPIView):

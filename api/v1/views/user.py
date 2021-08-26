@@ -32,6 +32,7 @@ from api.v1.serializers.user import (
     EmailResetPasswordRequestSerializer,
     UserAppDataSerializer,
     UserLogoffSerializer,
+    UserTokenExpireSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import ResetPWDSMSClaimSerializer
@@ -727,6 +728,17 @@ class UserLogoffView(generics.RetrieveAPIView):
         user = request.user
         User.objects.filter(id=user.id).delete()
         return Response({"is_succeed": True})
+
+
+@extend_schema(tags=['user'])
+class UserTokenExpireView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    @extend_schema(responses=UserTokenExpireSerializer)
+    def get(self, request):
+        user = request.user
+        return Response({"token": user.new_token})
 
 
 @extend_schema(tags=['user'])
