@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'siteadmin',
     'provisioning',
     'external_idp',
+    'authorization_agent',
     'schema',
     'extension',
     'api',
