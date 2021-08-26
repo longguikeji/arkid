@@ -8,16 +8,31 @@ from api.v1.serializers.config import (
     NativeFieldSerializer,
 )
 from common.paginator import DefaultListPaginator
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from openapi.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view, OpenApiParameter
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from django.http.response import JsonResponse
+from common.code import Code
+from django.utils.translation import gettext_lazy as _
 
 
 @extend_schema(
-    tags=['config'],
+    tags=['tenant_config'],
+    roles=['general user', 'tenant admin', 'global admin'],
+    parameters=[
+        OpenApiParameter(
+            name='subject',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        )
+    ],
 )
 class CustomFieldViewSet(BaseViewSet):
     model = CustomField
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = CustomFieldSerailizer
     pagination_class = DefaultListPaginator
@@ -49,16 +64,68 @@ class CustomFieldViewSet(BaseViewSet):
 
         return CustomField.valid_objects.filter(**kwargs).first()
 
+    def create(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        subject = request.query_params.get('subject')
+        if subject not in ('user', 'group'):
+            return JsonResponse(
+                data={
+                    'error': Code.QUERY_PARAM_ERROR.value,
+                    'message': _('Wrong query param subject'),
+                }
+            )
+        name = request.data.get('name')
+        is_duplicate = CustomField.valid_objects.filter(
+            tenant=tenant, subject=subject, name=name
+        ).exists()
+        if is_duplicate:
+            return JsonResponse(
+                data={
+                    'error': Code.DUPLICATED_RECORD_ERROR.value,
+                    'message': _('Duplicated custom field found'),
+                }
+            )
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        subject = request.query_params.get('subject')
+        if subject not in ('user', 'group'):
+            return JsonResponse(
+                data={
+                    'error': Code.QUERY_PARAM_ERROR.value,
+                    'message': _('Wrong query param subject'),
+                }
+            )
+        name = request.data.get('name')
+        is_duplicate = (
+            CustomField.valid_objects.filter(tenant=tenant, subject=subject, name=name)
+            .exclude(uuid=kwargs.get('pk'))
+            .exists()
+        )
+        if is_duplicate:
+            return JsonResponse(
+                data={
+                    'error': Code.DUPLICATED_RECORD_ERROR.value,
+                    'message': _('Duplicated custom field found'),
+                }
+            )
+        return super().update(request, *args, **kwargs)
+
 
 @extend_schema(
-    tags=['config'],
+    tags=['system_config'],
+    roles=['general user', 'tenant admin', 'global admin'],
 )
 class NativeFieldListAPIView(generics.ListAPIView):
     '''
     原生字段，不分页
     '''
-    permission_classes = []
-    authentication_classes = []
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = NativeFieldSerializer
 
     def get_queryset(self):
@@ -69,14 +136,16 @@ class NativeFieldListAPIView(generics.ListAPIView):
 
 
 @extend_schema(
-    tags=['config'],
+    tags=['system_config'],
+    roles=['general user', 'tenant admin', 'global admin'],
 )
 class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
     '''
     某原生字段
     '''
-    permission_classes = []
-    authentication_classes = []
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = NativeFieldSerializer
 
     def get_object(self):

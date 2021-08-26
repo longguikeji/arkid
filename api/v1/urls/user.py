@@ -37,16 +37,6 @@ urlpatterns = [
         views_user.ResetPasswordView.as_view(),
         name='user-reset-password',
     ),
-    path(
-        'user/mobile_reset_password/',
-        views_user.MobileResetPasswordView.as_view(),
-        name='user-mobile-reset-password',
-    ),
-    path(
-        'user/email_reset_password/',
-        views_user.EmailResetPasswordView.as_view(),
-        name='user-email-reset-password',
-    ),
     path('user/logout/', views_user.UserLogoutView.as_view(), name='user-logout'),
     path(
         'user/manage_tenants/',

@@ -31,3 +31,9 @@ class ExtensionBaseSerializer(serializers.Serializer):
     data = serializers.JSONField()
     uuid = serializers.UUIDField(read_only=True)
     is_active = serializers.BooleanField(label=_('是否启用'))
+
+
+class LoginRegisterConfigBaseSerializer(serializers.Serializer):
+    type = serializers.CharField(label=_('登录注册类型'))
+    data = serializers.JSONField()
+    uuid = serializers.UUIDField(read_only=True)

@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 from tenant.models import (
     Tenant, TenantConfig, TenantPasswordComplexity,
     TenantPrivacyNotice, TenantContactsConfig, TenantContactsUserFieldConfig,
+    TenantDesktopConfig,
 )
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
@@ -304,7 +305,7 @@ class InfoVisibilitySerializer(serializers.Serializer):
     assign_group = create_foreign_key_field(serializers.ListField)(
         model_cls=Group,
         field_name='uuid',
-        page=group.tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -314,7 +315,7 @@ class InfoVisibilitySerializer(serializers.Serializer):
     assign_user = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='uuid',
-        page=user.tag,
+        page=user.user_table_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -354,7 +355,7 @@ class GroupVisibilitySerializer(serializers.Serializer):
     assign_group = create_foreign_key_field(serializers.ListField)(
         model_cls=Group,
         field_name='uuid',
-        page=group.tag,
+        page=group.group_tree_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -364,7 +365,7 @@ class GroupVisibilitySerializer(serializers.Serializer):
     assign_user = create_foreign_key_field(serializers.ListField)(
         model_cls=User,
         field_name='uuid',
-        page=user.tag,
+        page=user.user_table_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
@@ -417,15 +418,39 @@ class TenantContactsUserTagsSerializer(serializers.Serializer):
 
 
 class TenantPrivacyNoticeSerializer(BaseDynamicFieldModelSerializer):
-    content = create_html_field(serializers.CharField)(hint=_("隐私声明内容"), required=True)
+    content = create_html_field(serializers.CharField)(hint=_("隐私声明内容"))
 
     class Meta:
         model = TenantPrivacyNotice
 
-        fields = ('title', 'content')
+        fields = ('title', 'content', 'is_active')
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title')
         instance.content = validated_data.get('content')
+        instance.is_active = validated_data.get('is_active')
         instance.save()
         return instance
+
+
+class DesktopConfigSerializer(serializers.Serializer):
+    access_with_desktop = serializers.BooleanField(
+        label=_("用户是否能看到桌面")
+    )
+
+    icon_custom = serializers.BooleanField(
+        label=_("用户是否可以自主调整桌面图标的位置")
+    )
+
+
+class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
+    data = DesktopConfigSerializer(
+        label=_("设置")
+    )
+
+    class Meta:
+        model = TenantDesktopConfig
+
+        fields = (
+            'data',
+        )
