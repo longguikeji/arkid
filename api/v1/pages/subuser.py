@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'scan'
+tag = 'subuser'
 path = tag
-name = '扫码登录'
+name = '子账号管理'
 
 extend_schema_tags(
     tag,

@@ -1,8 +1,8 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'app_permissions'
+tag = 'user_log'
 path = tag
-name = '应用权限管理'
+name = '用户行为日志'
 
 extend_schema_tags(
     tag,

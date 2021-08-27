@@ -1,7 +1,6 @@
 from drf_spectacular.drainage import set_override, get_override
 from drf_spectacular.utils import extend_schema_field
 
-
 def create_foreign_field(field_cls):
     @extend_schema_field(
         field={
@@ -272,3 +271,34 @@ def create_html_field(field_cls):
 
     return HtmlField
 
+
+def create_init_field(field_cls):
+    """
+    事件驱动生成组件
+    """
+
+    @extend_schema_field(
+        field={
+            'format': 'html',
+        }
+    )
+    class InitField(field_cls):
+        """
+        事件驱动生成组件
+        """
+
+        _field_meta = {}
+
+        def __init__(self, model_cls, init, **kwargs):
+            field = get_override(self, 'field', {})
+            field['model'] = model_cls.__name__
+            field['init'] = init
+
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, list, bool, dict, float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+
+    return InitField

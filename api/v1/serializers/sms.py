@@ -234,6 +234,7 @@ class RegisterSMSClaimSerializer(SMSClaimSerializer):
         读取模板ID
         '''
         sms_provider = self.runtime().sms_provider
+        assert sms_provider is not None
         i18n = not is_cn_mobile(self.validated_data['mobile'])
         return sms_provider.get_template_code(
             "register", i18n

@@ -11,8 +11,13 @@ from common.provider import (
     MigrationProvider,
     AuthCodeProvider,
     TenantUserConfigProvider,
+    LoginRegisterConfigProvider,
 )
-from common.serializer import AppBaseSerializer, ExternalIdpBaseSerializer
+from common.serializer import (
+    AppBaseSerializer,
+    ExternalIdpBaseSerializer,
+    LoginRegisterConfigBaseSerializer,
+)
 from authorization_server.models import AuthorizationServer
 from mfa.models import MFA
 from common.exception import DuplicatedIdException
@@ -32,6 +37,10 @@ class Runtime:
     external_idps: List
     external_idp_providers: Dict[str, ExternalIdpProvider]
     external_idp_serializers: Dict[str, ExternalIdpBaseSerializer]
+
+    login_register_configs: List
+    login_register_config_providers: Dict[str, LoginRegisterConfigProvider]
+    login_register_config_serializers: Dict[str, LoginRegisterConfigBaseSerializer]
 
     authorization_servers: List[AuthorizationServer] = []
 
@@ -55,6 +64,10 @@ class Runtime:
             cls._instance.external_idp_providers = {}
             cls._instance.external_idp_serializers = {}
 
+            cls._instance.login_register_configs = []
+            cls._instance.login_register_config_providers = {}
+            cls._instance.login_register_config_serializers = {}
+
         return cls._instance
 
     def quit_all_extension(self):
@@ -68,6 +81,9 @@ class Runtime:
         self.external_idps = []
         self.external_idp_providers = {}
         self.external_idp_serializers = {}
+        self.login_register_configs = []
+        self.login_register_config_providers = {}
+        self.login_register_config_serializers = {}
         self.authorization_servers = []
         self.sms_provider = None
         self.cache_provider = None
@@ -118,6 +134,38 @@ class Runtime:
         if serializer is not None and key in self.external_idp_serializers:
             self.external_idp_serializers.pop(key)
         print('logout_external_idp:', name)
+
+    def register_login_register_config(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: LoginRegisterConfigProvider,
+        serializer: LoginRegisterConfigBaseSerializer = None,
+    ):
+        if (key, name, description) not in self.login_register_configs:
+            self.login_register_configs.append((key, name, description))
+        if provider is not None:
+            self.login_register_config_providers[key] = provider
+
+        if serializer is not None:
+            self.login_register_config_serializers[key] = serializer
+
+    def logout_login_register_config(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: LoginRegisterConfigProvider,
+        serializer: LoginRegisterConfigBaseSerializer = None,
+    ):
+        if (key, name, description) in self.login_register_configs:
+            self.login_register_configs.remove((key, name, description))
+        if provider is not None and key in self.login_register_config_providers:
+            self.login_register_config_providers.pop(key)
+        if serializer is not None and key in self.login_register_config_serializers:
+            self.login_register_config_serializers.pop(key)
+        print('logout_login_register_config:', name)
 
     def register_mfa_provider(self, name: str, provider: MFAProvider):
         pass
@@ -197,7 +245,7 @@ class Runtime:
         provider: AppTypeProvider,
         serializer: AppBaseSerializer,
     ) -> None:
-        if (key,name) not in self.app_types:
+        if (key, name) not in self.app_types:
             self.app_types.append((key, name))
 
         if provider is not None and key not in self.app_type_providers:
@@ -213,7 +261,7 @@ class Runtime:
         provider: AppTypeProvider,
         serializer: AppBaseSerializer,
     ) -> None:
-        if (key,name) in self.app_types:
+        if (key, name) in self.app_types:
             self.app_types.remove((key, name))
 
         if provider is not None and key in self.app_type_providers:

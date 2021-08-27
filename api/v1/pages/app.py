@@ -82,17 +82,12 @@ extend_schema_tags(
     app_provisioning_tag,
     app_provisioning_name,
     {
-        'type':'table_page',
+        'type':'form_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/',
+            'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/',
             'method': 'get'
         },
         'global': {
-            'create': {
-                'tag': 'app.provisioning.create'
-            }
-        },
-        'local': {
             'mapping': {
                 'tag': 'app.provisioning.mapping'
             },
@@ -100,52 +95,7 @@ extend_schema_tags(
                 'tag': 'app.provisioning.profile'
             },
             'update': {
-                'tag': 'app.provisioning.update'
-            },
-            'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{id}/',
-                'method': 'delete'
-            }
-        },
-    }
-)
-
-app_provisioning_create_tag = 'app.provisioning.create'
-app_provisioning_create_name = '创建应用同步配置'
-
-extend_schema_tags(
-    app_provisioning_create_tag,
-    app_provisioning_create_name,
-    {
-        'type': 'form_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/',
-            'method': 'post'
-        },
-        'global': {
-            'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/',
-                'method': 'post'
-            }
-        }
-    }
-)
-
-app_provisioning_update_tag = 'app.provisioning.update'
-app_provisioning_update_name = '编辑应用同步配置'
-
-extend_schema_tags(
-    app_provisioning_update_tag,
-    app_provisioning_update_name,
-    {
-        'type': 'form_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{id}/',
-            'method': 'get'
-        },
-        'global': {
-            'update': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{id}/',
+                'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/',
                 'method': 'put'
             }
         }
@@ -161,7 +111,7 @@ extend_schema_tags(
     {
         'type':'table_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/',
+            'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/',
             'method': 'get'
         },
         'global': {
@@ -174,7 +124,7 @@ extend_schema_tags(
                 'tag': 'app.provisioning.mapping.update'
             },
             'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/{id}/',
+                'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/{map_uuid}/',
                 'method': 'delete'
             }
         }
@@ -190,12 +140,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/',
+            'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/',
             'method': 'post'
         },
         'global': {
             'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/',
+                'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/',
                 'method': 'post'
             }
         }
@@ -211,12 +161,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/{id}/',
+            'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/{map_uuid}/',
             'method': 'get'
         },
         'global': {
             'update': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/mapping/{id}/',
+                'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/{map_uuid}/',
                 'method': 'put'
             }
         }
@@ -224,7 +174,7 @@ extend_schema_tags(
 )
 
 app_provisioning_profile_tag = 'app.provisioning.profile'
-app_provisioning_profile_name = '应用同步配置概述'
+app_provisioning_profile_name = '应用同步配置属性'
 
 extend_schema_tags(
     app_provisioning_profile_tag,
@@ -232,7 +182,7 @@ extend_schema_tags(
     {
         'type':'table_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/',
+            'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/',
             'method': 'get'
         },
         'global': {
@@ -245,7 +195,7 @@ extend_schema_tags(
                 'tag': 'app.provisioning.profile.update'
             },
             'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/{id}/',
+                'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/{profile_uuid}/',
                 'method': 'delete'
             }
         }
@@ -253,7 +203,7 @@ extend_schema_tags(
 )
 
 app_provisioning_profile_create_tag = 'app.provisioning.profile.create'
-app_provisioning_profile_create_name = '创建应用同步配置概述'
+app_provisioning_profile_create_name = '创建应用同步配置属性'
 
 extend_schema_tags(
     app_provisioning_profile_create_tag,
@@ -261,12 +211,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/',
+            'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/',
             'method': 'post'
         },
         'global': {
             'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/',
+                'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/',
                 'method': 'post'
             }
         }
@@ -275,7 +225,7 @@ extend_schema_tags(
 
 
 app_provisioning_profile_update_tag = 'app.provisioning.profile.update'
-app_provisioning_profile_update_name = '编辑应用同步配置概述'
+app_provisioning_profile_update_name = '编辑应用同步配置属性'
 
 extend_schema_tags(
     app_provisioning_profile_update_tag,
@@ -283,12 +233,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/{id}/',
+            'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/{profile_uuid}/',
             'method': 'get'
         },
         'global': {
             'update': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{parent_lookup_app}/provisioning/{parent_lookup_provisioning}/profile/{id}/',
+                'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/{profile_uuid}/',
                 'method': 'put'
             }
         }

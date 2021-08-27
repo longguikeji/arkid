@@ -591,6 +591,7 @@ class EmailResetPasswordView(generics.CreateAPIView):
         )
     ],
 )
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]

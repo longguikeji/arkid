@@ -20,35 +20,31 @@ from scim2_filter_parser.attr_paths import AttrPath
 class Config(BaseModel):
 
     STATUS_CHOICES = (
-        (ProvisioningStatus.Enabled.value, 'Enabled'),
-        (ProvisioningStatus.Disabled.value, 'Disabled'),
+        ('enabled', 'Enabled'),
+        ('disabled', 'Disabled'),
     )
 
     SYNC_TYPE = (
-        (ProvisioningType.upstream.value, 'Upstream'),
-        (ProvisioningType.downstream.value, 'Downstream'),
+        ('upstream', 'Upstream'),
+        ('downstream', 'Downstream'),
     )
 
     AUTH_TYPE = (
-        (AuthenticationType.basic.value, 'Basic Auth'),
-        (AuthenticationType.token.value, 'Token Auth'),
+        ('basic', 'Basic Auth'),
+        ('token', 'Token Auth'),
     )
 
     # MODE_CHOICES = ((ProvisioningMode.Automatic.value, 'Automatic'),)
 
     app = models.ForeignKey(App, on_delete=models.PROTECT)
-    sync_type = models.IntegerField(
-        max_length=32, choices=SYNC_TYPE, default=ProvisioningType.downstream.value
-    )
-    auth_type = models.IntegerField(
-        max_length=32, choices=AUTH_TYPE, default=AuthenticationType.token.value
-    )
+    sync_type = models.CharField(max_length=32, choices=SYNC_TYPE, default='downstream')
+    auth_type = models.CharField(max_length=32, choices=AUTH_TYPE, default='token')
 
     base_url = models.CharField(max_length=1024, blank=False, null=True)
     token = models.CharField(max_length=256, blank=True, null=True)
 
     # mode = models.IntegerField(choices=MODE_CHOICES, default=0)
-    status = models.IntegerField(choices=STATUS_CHOICES, default=1)
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='disabled')
 
     username = models.CharField(max_length=256, blank=True, null=True)
     password = models.CharField(max_length=256, blank=True, null=True)

@@ -3,18 +3,16 @@ from ..serializers import loginpage as lp
 from common import loginpage as model
 from openapi.utils import extend_schema
 from django.http.response import JsonResponse
-from api.v1.views.login import (
-    LoginView,
-    MobileLoginView,
-    UserNameRegisterView,
-    MobileRegisterView,
-)
 from api.v1.views.tenant import TenantViewSet
 from tenant.models import Tenant, TenantConfig, TenantPrivacyNotice
 from external_idp.models import ExternalIdp
 from api.v1.serializers.tenant import TenantExtendSerializer
 from system.models import SystemConfig, SystemPrivacyNotice
 from django.urls import reverse
+from runtime import get_app_runtime
+from login_register_config.models import LoginRegisterConfig
+
+DEFAULT_LOGIN_REGISTER_EXTENSION = 'password_login_register'
 
 
 @extend_schema(tags=['login page'])
@@ -25,27 +23,38 @@ class LoginPage(views.APIView):
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
 
         data = model.LoginPages()
+
+        # 加载注册登录插件
+        r = get_app_runtime()
+        configs = LoginRegisterConfig.active_objects.filter(tenant=tenant)
+        if not configs:
+            config_data = {
+                'username_login_enabled': True,
+                'username_register_enabled': True,
+            }
+            config, _ = LoginRegisterConfig.objects.get_or_create(
+                tenant=tenant, type=DEFAULT_LOGIN_REGISTER_EXTENSION, data=config_data
+            )
+            configs = [config]
+        for config in configs:
+            provider_cls = r.login_register_config_providers.get(config.type, None)
+            assert provider_cls is not None
+
+            config_data = config.data
+            provider = provider_cls(config_data)
+            data.addForm(model.LOGIN, provider.login_form(tenant_uuid, request=request))
+            data.addForm(
+                model.REGISTER, provider.register_form(tenant_uuid, request=request)
+            )
+            data.addForm(
+                model.PASSWORD,
+                provider.reset_password_form(tenant_uuid, request=request),
+            )
         if tenant:
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
 
-            # 添加 tenant的登录注册表单
-            self.add_tenant_login_register_form(request, tenant, data)
-
             # 登录表单增加第三方登录按钮
             self.add_tenant_idp_login_buttons(request, tenant, data)
-
-        else:
-            data.addForm(model.LOGIN, LoginView().login_form())
-            data.addForm(model.LOGIN, MobileLoginView().login_form())
-            system_config = self.get_system_config()
-            is_open_register = system_config.get('is_open_register', True)
-            if is_open_register == True:
-                data.addForm(
-                    model.REGISTER, UserNameRegisterView().username_register_form()
-                )
-                data.addForm(
-                    model.REGISTER, MobileRegisterView().mobile_register_form()
-                )
 
         # 获取隐私声明
         agreement = self.get_privacy_notice(tenant)
@@ -67,62 +76,14 @@ class LoginPage(views.APIView):
             ).first()
         else:
             privacy_notice = SystemPrivacyNotice.valid_objects.filter().first()
-        if privacy_notice:
+        if privacy_notice and privacy_notice.is_active:
             agreement = {
                 'title': privacy_notice.title,
                 'content': privacy_notice.content,
             }
         else:
-            agreement = {'title': '', 'content': ''}
+            agreement = {}
         return agreement
-
-    def add_tenant_login_register_form(self, request, tenant, data):
-        tenant_config = TenantConfig.objects.filter(
-            is_del=False,
-            tenant=tenant,
-        ).first()
-        if tenant_config:
-            field_names = tenant_config.data.get(
-                'native_login_register_field_names', ['mobile', 'email']
-            )
-            field_uuids = tenant_config.data.get(
-                'custom_login_register_field_uuids', []
-            )  # 除了mobile之外的原生字段，和自定义字段共用一个登录窗口, 用密码登录
-        else:
-            field_names = ['mobile', 'email']
-            field_uuids = []
-
-        # 除了mobile用验证码登录，其他字段包括email用密码登录
-        if 'mobile' in field_names:
-            data.addForm(model.LOGIN, TenantViewSet().mobile_login_form(tenant.uuid))
-            data.addForm(
-                model.REGISTER,
-                TenantViewSet().native_field_register_form(tenant.uuid, 'mobile'),
-            )
-            field_names.remove('mobile')
-
-        if field_names or field_uuids:
-            data.addForm(
-                model.LOGIN,
-                TenantViewSet().secret_login_form(
-                    request, tenant.uuid, field_names, field_uuids
-                ),
-            )
-
-        # 原生字段的注册表单
-        for field_name in field_names:
-            data.addForm(
-                model.REGISTER,
-                TenantViewSet().native_field_register_form(tenant.uuid, field_name),
-            )
-        # 自定义字段的注册表单
-        for uuid in field_uuids:
-            data.addForm(
-                model.REGISTER,
-                TenantViewSet().custom_field_register_form(tenant.uuid, uuid),
-            )
-
-        return data
 
     def add_tenant_idp_login_buttons(self, request, tenant, data):
         external_idps = ExternalIdp.valid_objects.filter(tenant=tenant)
@@ -143,16 +104,26 @@ class LoginPage(views.APIView):
         return data
 
     def add_login_register_button(self, data, agreement):
-        if data.getPage(model.REGISTER):
-            data.addBottom(
-                model.LOGIN,
-                model.Button(
-                    prepend='还没有账号，',
-                    label='立即注册',
-                    gopage=model.REGISTER,
-                    agreement=agreement,
-                ),
-            )
+        if data.getPage(model.REGISTER) and data.getPage(model.LOGIN):
+            if agreement:
+                data.addBottom(
+                    model.LOGIN,
+                    model.Button(
+                        prepend='还没有账号，',
+                        label='立即注册',
+                        gopage=model.REGISTER,
+                        agreement=agreement,
+                    ),
+                )
+            else:
+                data.addBottom(
+                    model.LOGIN,
+                    model.Button(
+                        prepend='还没有账号，',
+                        label='立即注册',
+                        gopage=model.REGISTER,
+                    ),
+                )
             data.addBottom(
                 model.REGISTER,
                 model.Button(prepend='已有账号，', label='立即登录', gopage=model.LOGIN),
@@ -160,10 +131,8 @@ class LoginPage(views.APIView):
         return data
 
     def add_reset_password_button(self, data, agreement):
-        if data.getPage(model.LOGIN):
+        if data.getPage(model.LOGIN) and data.getPage(model.PASSWORD):
             data.addBottom(model.LOGIN, model.Button(label='忘记密码', gopage='password'))
-            data.addForm(model.PASSWORD, self.mobile_password_reset_form())
-            data.addForm(model.PASSWORD, self.email_password_reset_form())
             if data.getPage(model.REGISTER):
                 data.addBottom(
                     model.PASSWORD,
@@ -179,118 +148,3 @@ class LoginPage(views.APIView):
                 model.Button(prepend='已有账号，', label='立即登录', gopage=model.LOGIN),
             )
         return data
-
-    def get_system_config(self):
-        # 获取基础配置信息
-        result = {'is_open_register': True}
-        systemconfig = SystemConfig.active_objects.first()
-        if systemconfig:
-            result = systemconfig.data
-        return result
-
-    def mobile_password_reset_form(self):
-        tenant_uuid = 'xxxx'
-        return model.LoginForm(
-            label='通过手机号修改密码',
-            items=[
-                model.LoginFormItem(
-                    type='text',
-                    name='mobile',
-                    placeholder='手机号',
-                    append=model.Button(
-                        label='发送验证码',
-                        delay=60,
-                        http=model.ButtonHttp(
-                            url=reverse('api:sms', args=['reset_password']),
-                            method='post',
-                            params={'mobile': 'mobile'},
-                        ),
-                    ),
-                ),
-                model.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
-                ),
-                model.LoginFormItem(
-                    type='password',
-                    name='password',
-                    placeholder='新密码',
-                ),
-                model.LoginFormItem(
-                    type='password',
-                    name='checkpassword',
-                    placeholder='新密码确认',
-                ),
-            ],
-            submit=model.Button(
-                label='确认',
-                http=model.ButtonHttp(
-                    url=reverse(
-                        "api:user-mobile-reset-password",
-                    ),
-                    method='post',
-                    params={
-                        'mobile': 'mobile',
-                        'password': 'password',
-                        'code': 'code',
-                        'checkpassword': 'checkpassword',
-                    },
-                ),
-                gopage=model.LOGIN,
-            ),
-        )
-
-    def email_password_reset_form(self):
-        tenant_uuid = 'xxxx'
-        return model.LoginForm(
-            label='通过邮箱修改密码',
-            items=[
-                model.LoginFormItem(
-                    type='text',
-                    name='email',
-                    placeholder='邮箱账号',
-                    append=model.Button(
-                        label='发送验证码',
-                        delay=60,
-                        http=model.ButtonHttp(
-                            url=reverse('api:email', args=['reset_password'])
-                            + '?send_verify_code=true',
-                            method='post',
-                            params={'email': 'email'},
-                        ),
-                    ),
-                ),
-                model.LoginFormItem(
-                    type='text',
-                    name='code',
-                    placeholder='验证码',
-                ),
-                model.LoginFormItem(
-                    type='password',
-                    name='password',
-                    placeholder='新密码',
-                ),
-                model.LoginFormItem(
-                    type='password',
-                    name='checkpassword',
-                    placeholder='新密码确认',
-                ),
-            ],
-            submit=model.Button(
-                label='确认',
-                http=model.ButtonHttp(
-                    url=reverse(
-                        "api:user-email-reset-password",
-                    ),
-                    method='post',
-                    params={
-                        'email': 'email',
-                        'password': 'password',
-                        'code': 'code',
-                        'checkpassword': 'checkpassword',
-                    },
-                ),
-                gopage=model.LOGIN,
-            ),
-        )

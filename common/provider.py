@@ -1,5 +1,5 @@
 from typing import Any, Dict, Optional
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 import uuid
 from django.core.files import File
 
@@ -18,10 +18,9 @@ class EmailProvider:
 
 class AuthCodeProvider:
     def generate_key(self):
-        key = '{}.png'.format(
-            uuid.uuid4().hex
-        )
+        key = '{}.png'.format(uuid.uuid4().hex)
         return key
+
     @abstractmethod
     def get_authcode_picture(self):
         pass
@@ -135,4 +134,18 @@ class AppTypeProvider:
 class MigrationProvider:
     @abstractmethod
     def migrate(self, tenant_uuid):
+        raise NotImplementedError
+
+
+class LoginRegisterConfigProvider(ABC):
+    @abstractmethod
+    def login_form(self, tenant_uuid=None, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def register_form(self, tenant_uuid=None, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def reset_password_form(self, tenant_uuid=None, **kwargs):
         raise NotImplementedError
