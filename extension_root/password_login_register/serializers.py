@@ -13,10 +13,10 @@ class PasswordLoginRegisterConfigDataSerializer(serializers.Serializer):
     email_login_enabled = serializers.BooleanField(default=False, label=_('启用邮箱账号登录'))
 
     login_enabled_custom_field_names = serializers.ListField(
-        child=serializers.CharField(), label=_('启用密码登录的自定义字段')
+        child=serializers.CharField(), label=_('启用密码登录的自定义字段'), default=[]
     )
     register_enabled_custom_field_names = serializers.ListField(
-        child=serializers.CharField(), label=_('启用密码注册的自定义字段')
+        child=serializers.CharField(), label=_('启用密码注册的自定义字段'), default=[]
     )
 
     is_open_register_limit = serializers.BooleanField(default=False, label=('是否限制注册用户'))
