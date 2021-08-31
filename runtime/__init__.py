@@ -38,6 +38,10 @@ class Runtime:
     external_idp_providers: Dict[str, ExternalIdpProvider]
     external_idp_serializers: Dict[str, ExternalIdpBaseSerializer]
 
+    authorization_agents: List
+    authorization_agent_providers: Dict[str, ExternalIdpProvider]
+    authorization_agent_serializers: Dict[str, ExternalIdpBaseSerializer]
+
     login_register_configs: List
     login_register_config_providers: Dict[str, LoginRegisterConfigProvider]
     login_register_config_serializers: Dict[str, LoginRegisterConfigBaseSerializer]
@@ -64,6 +68,10 @@ class Runtime:
             cls._instance.external_idp_providers = {}
             cls._instance.external_idp_serializers = {}
 
+            cls._instance.authorization_agents = []
+            cls._instance.authorization_agent_providers = {}
+            cls._instance.authorization_agent_serializers = {}
+
             cls._instance.login_register_configs = []
             cls._instance.login_register_config_providers = {}
             cls._instance.login_register_config_serializers = {}
@@ -81,6 +89,9 @@ class Runtime:
         self.external_idps = []
         self.external_idp_providers = {}
         self.external_idp_serializers = {}
+        self.authorization_agents = []
+        self.authorization_agent_providers = {}
+        self.authorization_agent_serializers = {}
         self.login_register_configs = []
         self.login_register_config_providers = {}
         self.login_register_config_serializers = {}
@@ -134,6 +145,38 @@ class Runtime:
         if serializer is not None and key in self.external_idp_serializers:
             self.external_idp_serializers.pop(key)
         print('logout_external_idp:', name)
+
+    def register_authorization_agent(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: ExternalIdpProvider,
+        serializer: ExternalIdpBaseSerializer = None,
+    ):
+        if (key, name, description) not in self.authorization_agents:
+            self.authorization_agents.append((key, name, description))
+        if provider is not None:
+            self.authorization_agent_providers[key] = provider
+
+        if serializer is not None:
+            self.authorization_agent_serializers[key] = serializer
+
+    def logout_authorization_agent(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: ExternalIdpProvider,
+        serializer: ExternalIdpBaseSerializer = None,
+    ):
+        if (key, name, description) in self.authorization_agents:
+            self.authorization_agents.remove((key, name, description))
+        if provider is not None and key in self.authorization_agent_providers:
+            self.authorization_agent_providers.pop(key)
+        if serializer is not None and key in self.authorization_agent_serializers:
+            self.authorization_agent_serializers.pop(key)
+        print('logout_authorization_agent:', name)
 
     def register_login_register_config(
         self,
