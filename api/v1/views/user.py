@@ -31,6 +31,8 @@ from api.v1.serializers.user import (
     MobileResetPasswordRequestSerializer,
     EmailResetPasswordRequestSerializer,
     UserAppDataSerializer,
+    UserLogoffSerializer,
+    UserTokenExpireSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import ResetPWDSMSClaimSerializer
@@ -39,7 +41,7 @@ from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from app.models import App
 from openapi.utils import extend_schema
-from drf_spectacular.utils import extend_schema_view
+from drf_spectacular.utils import extend_schema_view, OpenApiParameter
 from rest_framework.decorators import action
 from tablib import Dataset
 from collections import defaultdict
@@ -472,6 +474,123 @@ class ResetPasswordView(generics.CreateAPIView):
         return True
 
 
+@extend_schema(tags=['user'])
+class MobileResetPasswordView(generics.CreateAPIView):
+    '''
+    user forget password reset api
+    '''
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = MobileResetPasswordRequestSerializer
+
+    @extend_schema(responses=PasswordSerializer)
+    def post(self, request):
+        mobile = request.data.get('mobile', '')
+        password = request.data.get('password', '')
+        code = request.data.get('code', '')
+        user = User.objects.filter(mobile=mobile).first()
+        if not user:
+            return JsonResponse(
+                data={
+                    'error': Code.USER_EXISTS_ERROR.value,
+                    'message': _('user does not exist'),
+                }
+            )
+        if password and self.check_password(password) is False:
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                    'message': _('password strength not enough'),
+                }
+            )
+        # 检查验证码
+        try:
+            sms_token, expire_time = ResetPWDSMSClaimSerializer.check_sms(
+                {'mobile': mobile, 'code': code}
+            )
+        except ValidationError:
+            return JsonResponse(
+                data={
+                    'error': Code.SMS_CODE_MISMATCH.value,
+                    'message': _('sms code mismatch'),
+                }
+            )
+        user.set_password(password)
+        user.save()
+        return Response({'error': Code.OK.value, 'message': 'Reset password success'})
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
+
+
+@extend_schema(tags=['user'])
+class EmailResetPasswordView(generics.CreateAPIView):
+    '''
+    user forget password reset api
+    '''
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = EmailResetPasswordRequestSerializer
+
+    @extend_schema(responses=PasswordSerializer)
+    def post(self, request):
+        email = request.data.get('email', '')
+        password = request.data.get('password', '')
+        # checkpassword = request.data.get('checkpassword', '')
+        code = request.data.get('code', '')
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return JsonResponse(
+                data={
+                    'error': Code.USER_EXISTS_ERROR.value,
+                    'message': _('user does not exist'),
+                }
+            )
+        if password and self.check_password(password) is False:
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                    'message': _('password strength not enough'),
+                }
+            )
+        # 检查验证码
+        try:
+            ret = ResetPWDEmailClaimSerializer.check_email_verify_code(email, code)
+        except ValidationError:
+            return JsonResponse(
+                data={
+                    'error': Code.EMAIL_CODE_MISMATCH.value,
+                    'message': _('email code mismatch'),
+                }
+            )
+        user.set_password(password)
+        user.save()
+        return Response({'error': Code.OK.value, 'message': 'Reset password success'})
+
+    def check_password(self, pwd):
+        if pwd.isdigit() or len(pwd) < 8:
+            return False
+        return True
+
+
+@extend_schema(
+    roles=['general user', 'tenant admin', 'global admin'],
+    tags=['user'],
+    parameters=[
+        OpenApiParameter(
+            name='tenant_uuid',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        )
+    ],
+)
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
@@ -481,6 +600,11 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
     @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant_uuid'] = self.request.query_params.get('tenant_uuid', '')
+        return context
 
     def update(self, request, *args, **kwargs):
         email = request.data.get('email')
@@ -593,6 +717,29 @@ class UserLogoutView(generics.RetrieveAPIView):
             Token.objects.filter(user=user).delete()
             is_succeed = True
         return Response({"is_succeed": is_succeed})
+
+
+@extend_schema(tags=['user'])
+class UserLogoffView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    @extend_schema(responses=UserLogoffSerializer)
+    def get(self, request):
+        user = request.user
+        User.objects.filter(id=user.id).delete()
+        return Response({"is_succeed": True})
+
+
+@extend_schema(tags=['user'])
+class UserTokenExpireView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    @extend_schema(responses=UserTokenExpireSerializer)
+    def get(self, request):
+        user = request.user
+        return Response({"token": user.new_token})
 
 
 @extend_schema(tags=['user'])
