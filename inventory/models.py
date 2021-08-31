@@ -76,7 +76,14 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
     city = models.CharField(max_length=128, blank=True)
     job_title = models.CharField(max_length=128, blank=True)
     last_login = models.DateTimeField(blank=True, null=True)
-
+    parent = models.ForeignKey(
+        'self',
+        default=None,
+        null=True,
+        blank=True,
+        verbose_name='父账号',
+        on_delete=models.PROTECT
+    )
     avatar = models.CharField(blank=True, max_length=256)
 
     groups = models.ManyToManyField(

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from common.serializer import BaseDynamicFieldModelSerializer
+from common.utils import get_client_ip
 from django.utils.translation import gettext_lazy as _
 from device.models import (
     Device,
@@ -43,9 +44,9 @@ class DeviceSerializer(BaseDynamicFieldModelSerializer):
                 data = config.data
                 is_logging_ip = data['is_logging_ip']
                 if is_logging_ip is True:
-                    ip = self.get_client_ip(request)
+                    ip = get_client_ip(request)
         else:
-            ip = self.get_client_ip(request)
+            ip = get_client_ip(request)
         validated_data['ip'] = ip
         # 检查device
         device = Device.active_objects.filter(
@@ -63,11 +64,3 @@ class DeviceSerializer(BaseDynamicFieldModelSerializer):
                 **validated_data
             )
         return device
-
-    def get_client_ip(self, request):
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip
