@@ -137,15 +137,23 @@ class MigrationProvider:
         raise NotImplementedError
 
 
-class LoginRegisterConfigProvider(ABC):
-    @abstractmethod
-    def login_form(self, tenant_uuid=None, **kwargs):
-        raise NotImplementedError
+class LoginRegisterConfigProvider:
+    @property
+    def login_form(self):
+        return None
 
-    @abstractmethod
-    def register_form(self, tenant_uuid=None, **kwargs):
-        raise NotImplementedError
+    @property
+    def register_form(self):
+        return None
 
-    @abstractmethod
-    def reset_password_form(self, tenant_uuid=None, **kwargs):
-        raise NotImplementedError
+    @property
+    def reset_password_form(self):
+        return None
+
+    def authenticate(self):
+        '''login'''
+        pass
+
+    def register_user(self, form_data):
+        '''register'''
+        pass

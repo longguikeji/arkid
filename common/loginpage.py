@@ -1,3 +1,6 @@
+from collections import namedtuple
+
+
 class ButtonRedirect(dict):
     def __init__(self, url: str, params: dict = None, *args, **kwargs):
         self['url'] = url
@@ -200,3 +203,44 @@ LOGIN = 'login'
 REGISTER = 'register'
 PASSWORD = 'password'
 BIND = 'bind'
+
+
+FormItem = namedtuple('FormItem', ['name', 'type', 'placeholder'])
+
+
+class BaseForm:
+    form_items = []
+    form_label = ''
+
+    def __init__(self, provider):
+        self.provider = provider
+
+    def get_form(self):
+        label = self.get_form_label()
+        items = self.get_form_items()
+        return LoginForm(label=label, items=items, submit={})
+
+    def get_form_label(self):
+        return self.form_label
+
+    def get_form_items(self):
+        items = []
+        for item in self.form_items:
+            login_form_item = LoginFormItem(
+                name=item.name, type=item.type, placeholder=item.placeholder
+            )
+            self.set_form_item_type(login_form_item)
+            self.set_form_item_placeholder(login_form_item)
+            self.set_form_item_button(login_form_item)
+            items.append(login_form_item)
+
+        return items
+
+    def set_form_item_type(self, login_form_item):
+        pass
+
+    def set_form_item_placeholder(self, login_form_item):
+        pass
+
+    def set_form_item_button(self, login_form_item):
+        pass

@@ -36,20 +36,17 @@ class LoginPage(views.APIView):
                 tenant=tenant, type=DEFAULT_LOGIN_REGISTER_EXTENSION, data=config_data
             )
             configs = [config]
+
         for config in configs:
             provider_cls = r.login_register_config_providers.get(config.type, None)
             assert provider_cls is not None
 
             config_data = config.data
             provider = provider_cls(config_data)
-            data.addForm(model.LOGIN, provider.login_form(tenant_uuid, request=request))
-            data.addForm(
-                model.REGISTER, provider.register_form(tenant_uuid, request=request)
-            )
-            data.addForm(
-                model.PASSWORD,
-                provider.reset_password_form(tenant_uuid, request=request),
-            )
+            self.add_login_form(data, provider, config.type, tenant_uuid)
+            self.add_register_form(data, provider, config.type, tenant_uuid)
+            self.add_reset_password_form(data, provider, config.type, tenant_uuid)
+
         if tenant:
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
 
@@ -68,6 +65,76 @@ class LoginPage(views.APIView):
         pages = lp.LoginPagesSerializer(data=data)
         pages.is_valid()
         return JsonResponse(pages.data)
+
+    def append_extension_type_form_item(self, form, extension_type):
+        items = form.get('items')
+        items.append(
+            model.LoginFormItem(type='hidden', name='extension', value=extension_type)
+        )
+
+    def add_login_form(self, data, provider, extension_type, tenant_uuid=None):
+        form = provider.login_form
+        if not form:
+            return
+
+        url = reverse('api:login')
+        if tenant_uuid:
+            url += '?tenant=tenant_uuid'
+        if type(form) != list:
+            forms = [form]
+        else:
+            forms = form
+
+        for form in forms:
+            form['submit'] = model.Button(
+                label='login', http=model.ButtonHttp(url=url, method='post')
+            )
+
+            self.append_extension_type_form_item(form, extension_type)
+        data.addForm(model.LOGIN, form)
+
+    def add_register_form(self, data, provider, extension_type, tenant_uuid=None):
+        form = provider.register_form
+        if not form:
+            return
+
+        url = reverse('api:register')
+        if tenant_uuid:
+            url += '?tenant=tenant_uuid'
+
+        if type(form) != list:
+            forms = [form]
+        else:
+            forms = form
+
+        for form in forms:
+            form['submit'] = model.Button(
+                label='register', http=model.ButtonHttp(url=url, method='post')
+            )
+            self.append_extension_type_form_item(form, extension_type)
+        data.addForm(model.REGISTER, form)
+
+    def add_reset_password_form(self, data, provider, extension_type, tenant_uuid=None):
+        form = provider.reset_password_form
+        if not form:
+            return
+
+        url = reverse('api:reset_password')
+        if tenant_uuid:
+            url += '?tenant=tenant_uuid'
+
+        if type(form) != list:
+            forms = [form]
+        else:
+            forms = form
+
+        for form in forms:
+            form['submit'] = model.Button(
+                label='register', http=model.ButtonHttp(url=url, method='post')
+            )
+
+            self.append_extension_type_form_item(form, extension_type)
+        data.addForm(model.RESET_PASSWORD, form)
 
     def get_privacy_notice(self, tenant):
         if tenant:

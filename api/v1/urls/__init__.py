@@ -13,7 +13,7 @@ from . import (
     external_idp,
     authorization_server,
     jsonp,
-    login,
+    login_page,
     storage,
     sms,
     migration,
@@ -24,6 +24,8 @@ from . import (
     email,
     device,
     login_register_config,
+    login,
+    register,
 )
 from runtime import get_app_runtime
 
@@ -57,7 +59,7 @@ if local_urlpatterns is not None:
     urlpatterns += local_urlpatterns
 
 
-urlpatterns += login.urlpatterns
+urlpatterns += login_page.urlpatterns
 urlpatterns += tenant.router.urls
 urlpatterns += jsonp.urlpatterns
 urlpatterns += storage.urlpatterns
@@ -76,3 +78,5 @@ urlpatterns += email.urlpatterns
 urlpatterns += app.urlpatterns
 urlpatterns += login_register_config.router.urls
 urlpatterns += device.urlpatterns
+urlpatterns += login.urlpatterns
+urlpatterns += register.urlpatterns
