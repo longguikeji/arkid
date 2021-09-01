@@ -153,6 +153,9 @@ class PasswordLoginView(APIView):
                             'is_need_refresh': False,
                         }
                     )
+        # 如果是子账户，要自动转为主账户 
+        if user.parent:
+            user = user.parent
 
         token = user.refresh_token()
 

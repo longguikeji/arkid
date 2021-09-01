@@ -155,6 +155,12 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         )
         return token.key
     
+    def account_type(self):
+        if self.parent:
+            return '子账号'
+        else:
+            return '主账号'
+    
     def check_token(self, tenant_uuid):
         from extension_root.tenantuserconfig.models import TenantUserConfig
         tenant = Tenant.active_objects.get(uuid=tenant_uuid)
