@@ -130,7 +130,9 @@ class LoginPage(views.APIView):
 
         for form in forms:
             form['submit'] = model.Button(
-                label='确认', http=model.ButtonHttp(url=url, method='post')
+                label='确认',
+                http=model.ButtonHttp(url=url, method='post'),
+                gopage=model.LOGIN,
             )
 
             self.append_extension_type_form_item(form, extension_type)
