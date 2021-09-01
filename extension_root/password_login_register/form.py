@@ -2,11 +2,9 @@
 
 from common.loginpage import BaseForm, FormItem, Button, ButtonHttp
 from django.urls import reverse
-from .constants import KEY
 
 
 class PasswordLoginForm(BaseForm):
-    extention_name = KEY
     form_label = '密码登录'
     form_items = [
         FormItem('username', 'text', '用户名'),
@@ -26,8 +24,6 @@ class PasswordLoginForm(BaseForm):
 
 
 class PasswordRegisterForm(BaseForm):
-    extention_name = KEY
-
     def __init__(self, provider, field_name, field_label):
         super().__init__(provider)
         self.field_name = field_name

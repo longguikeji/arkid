@@ -150,10 +150,13 @@ class LoginRegisterConfigProvider:
     def reset_password_form(self):
         return None
 
-    def authenticate(self):
+    def authenticate(self, request):
         '''login'''
         pass
 
-    def register_user(self, form_data):
+    def register_user(self, request):
         '''register'''
+        pass
+
+    def reset_password(self, request):
         pass

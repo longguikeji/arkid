@@ -87,7 +87,7 @@ class LoginPage(views.APIView):
 
         for form in forms:
             form['submit'] = model.Button(
-                label='login', http=model.ButtonHttp(url=url, method='post')
+                label='登录', http=model.ButtonHttp(url=url, method='post')
             )
 
             self.append_extension_type_form_item(form, extension_type)
@@ -109,7 +109,7 @@ class LoginPage(views.APIView):
 
         for form in forms:
             form['submit'] = model.Button(
-                label='register', http=model.ButtonHttp(url=url, method='post')
+                label='注册', http=model.ButtonHttp(url=url, method='post')
             )
             self.append_extension_type_form_item(form, extension_type)
         data.addForm(model.REGISTER, form)
@@ -119,7 +119,7 @@ class LoginPage(views.APIView):
         if not form:
             return
 
-        url = reverse('api:reset_password')
+        url = reverse('api:reset-password')
         if tenant_uuid:
             url += '?tenant=tenant_uuid'
 
@@ -130,11 +130,11 @@ class LoginPage(views.APIView):
 
         for form in forms:
             form['submit'] = model.Button(
-                label='register', http=model.ButtonHttp(url=url, method='post')
+                label='确认', http=model.ButtonHttp(url=url, method='post')
             )
 
             self.append_extension_type_form_item(form, extension_type)
-        data.addForm(model.RESET_PASSWORD, form)
+        data.addForm(model.PASSWORD, form)
 
     def get_privacy_notice(self, tenant):
         if tenant:

@@ -26,6 +26,7 @@ from . import (
     login_register_config,
     login,
     register,
+    reset_password,
 )
 from runtime import get_app_runtime
 
@@ -80,3 +81,4 @@ urlpatterns += login_register_config.router.urls
 urlpatterns += device.urlpatterns
 urlpatterns += login.urlpatterns
 urlpatterns += register.urlpatterns
+urlpatterns += reset_password.urlpatterns

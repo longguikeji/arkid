@@ -11,11 +11,11 @@ from rest_framework.views import APIView
 
 
 @extend_schema(
-    tags=['register-api'],
+    tags=['reset-password-api'],
     roles=['general user', 'tenant admin', 'global admin'],
     # responses=PasswordLoginResponseSerializer,
 )
-class RegisterView(APIView):
+class ResetPWDView(APIView):
     def post(self, request):
         tenant = self.get_tenant(request)
         # TODO password complexity check
@@ -34,22 +34,13 @@ class RegisterView(APIView):
             }
 
         # 获取登录注册配置
-        ret = provider.register_user(request)
+        ret = provider.reset_password(request)
         if ret.get('error') != Code.OK.value:
             return JsonResponse(ret)
 
-        user = ret.get('user')
-
-        if not tenant:
-            user.is_platform_user = True
-        else:
-            user.tenants.add(tenant)
-        user.save()
-
-        token = user.refresh_token()
-        return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
-
-        return JsonResponse(data={'error': Code.OK.value, 'data': return_data})
+        return JsonResponse(
+            {'error': Code.OK.value, 'message': 'Reset password success'}
+        )
 
     def get_tenant(self, request):
         tenant = None
