@@ -114,7 +114,7 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
         code = request.data.get('code')
         password = request.data.get('password')
 
-        sms_code_key = RegisterSMSClaimSerializer.gen_sms_code_key(mobile)
+        sms_code_key = ResetPWDSMSClaimSerializer.gen_sms_code_key(mobile)
         runtime = get_app_runtime()
         cache_code = runtime.cache_provider.get(sms_code_key)
         if not code or cache_code != code:
