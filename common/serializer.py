@@ -19,6 +19,22 @@ class AppBaseSerializer(serializers.Serializer):
     description = serializers.CharField()
 
 
+class AuthRuleBaseSerializer(serializers.Serializer):
+
+    title = serializers.CharField(
+        label=_("标题")
+    )
+
+    type = serializers.CharField(
+        label=_("类型")
+    )
+
+    data = serializers.JSONField(
+        label=_("配置数据")
+    )
+
+    uuid = serializers.UUIDField(read_only=True)
+
 class ExternalIdpBaseSerializer(serializers.Serializer):
     # order_no = serializers.IntegerField()
     type = serializers.CharField()

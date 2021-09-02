@@ -1,3 +1,4 @@
+import auth_rules
 import copy
 from django.urls.resolvers import URLPattern
 from django.urls.resolvers import RoutePattern, URLResolver
@@ -24,6 +25,7 @@ from . import (
     email,
     device,
     login_register_config,
+    auth_rule
 )
 from runtime import get_app_runtime
 
@@ -76,3 +78,5 @@ urlpatterns += email.urlpatterns
 urlpatterns += app.urlpatterns
 urlpatterns += login_register_config.router.urls
 urlpatterns += device.urlpatterns
+urlpatterns += auth_rule.urlpatterns
+

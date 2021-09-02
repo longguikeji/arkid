@@ -740,3 +740,4 @@ class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
             }
             config.save()
         return config
+

@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'extension',
     'api',
     'system',
+    'auth_rules',
     'extension_root.github',
     'extension_root.gitee',
     'extension_root.feishu',

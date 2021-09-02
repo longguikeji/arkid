@@ -149,3 +149,21 @@ class LoginRegisterConfigProvider(ABC):
     @abstractmethod
     def reset_password_form(self, tenant_uuid=None, **kwargs):
         raise NotImplementedError
+
+class BaseAuthRuleProvider:
+    @abstractmethod
+    def create(self, auth_rule, data) -> Dict:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def update(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def delete(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def run(self, *args, **kwargs):
+        raise NotImplementedError()
+        
