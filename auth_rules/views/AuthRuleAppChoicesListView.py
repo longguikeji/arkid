@@ -1,9 +1,9 @@
-from tenant.models import Tenant
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from common.paginator import DefaultListPaginator
 from app.models import App
+from ..serializers import ChoiceSerializer
 
 class AuthRuleAppChoicesListView(generics.ListAPIView):
 
@@ -11,6 +11,7 @@ class AuthRuleAppChoicesListView(generics.ListAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
 
     pagination_class = DefaultListPaginator
+    serializer_class = ChoiceSerializer
 
     def get_queryset(self):
 
