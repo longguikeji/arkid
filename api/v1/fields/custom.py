@@ -329,9 +329,9 @@ def create_dynamic_choice_field(field_cls):
 
     return ChoiceField
 
-def create_dynamic_choice_field(field_cls):
+def create_multiple_dynamic_choice_field(field_cls):
     """
-    带动态选项的单选框
+    带动态选项的多选框
     """
     @extend_schema_field(
         field={
