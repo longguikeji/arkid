@@ -1,7 +1,6 @@
 """
 插件处理
 """
-from extension_root.auth_rules import serializers
 from common.extension import InMemExtension
 from runtime import Runtime
 from .serializers import FirstLoginRuleSerializer
@@ -33,8 +32,8 @@ class AuthRulesExtension(InMemExtension):
 
 
 extension = AuthRulesExtension(
-    tags='auth_rules',
-    name="基础认证规则",
+    tags='auth_rules_example',
+    name="auth_rules_example",
     scope='tenant',
     type='tenant',
     description="基础认证规则",

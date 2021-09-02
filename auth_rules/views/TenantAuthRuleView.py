@@ -1,5 +1,4 @@
 from common.paginator import DefaultListPaginator
-from extension_root.auth_rules.serializers.TenantAuthRuleDataSerializer import TenantAuthRuleDataSerializer
 from api.v1.views.base import BaseViewSet
 from runtime import get_app_runtime
 from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema_view

@@ -315,11 +315,10 @@ def create_dynamic_choice_field(field_cls):
     class ChoiceField(field_cls):
         _field_meta = {}
 
-        def __init__(self, url, form_params, **kwargs):
+        def __init__(self, url, **kwargs):
             kwargs["choices"] = []
             field = get_override(self, 'field', {})
             field['url'] = url
-            field['form_params'] = form_params
 
             for k, v in kwargs.items():
                 if isinstance(v, (str, int, list, bool, dict, float)):
@@ -342,11 +341,10 @@ def create_dynamic_choice_field(field_cls):
     class MultipleChoiceField(field_cls):
         _field_meta = {}
 
-        def __init__(self, url, form_params, **kwargs):
+        def __init__(self, url, **kwargs):
             kwargs["choices"] = []
             field = get_override(self, 'field', {})
             field['url'] = url
-            field['form_params'] = form_params
 
             for k, v in kwargs.items():
                 if isinstance(v, (str, int, list, bool, dict, float)):
