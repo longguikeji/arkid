@@ -31,9 +31,13 @@ class TenantUserConfigSerializer(BaseDynamicFieldModelSerializer):
             'data',
         )
 
+class TenantUserConfigItemSerializer(serializers.Serializer):
+    name = serializers.CharField(label=_('名称'))
+    value = serializers.CharField(label=_('取值'))
+
 
 class TenantUserConfigFieldSerializer(serializers.Serializer):
 
-    fields = serializers.ListField(
-        child=serializers.CharField(), label=_('字段列表')
+    results = serializers.ListField(
+        child=TenantUserConfigItemSerializer(), label=_('字段列表')
     )
