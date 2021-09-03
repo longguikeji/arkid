@@ -4,10 +4,11 @@ from common import loginpage as model
 from openapi.utils import extend_schema
 from django.http.response import JsonResponse
 from api.v1.views.tenant import TenantViewSet
-from tenant.models import Tenant, TenantConfig, TenantPrivacyNotice
+from tenant.models import Tenant, TenantConfig
+from config.models import PrivacyNotice
 from external_idp.models import ExternalIdp
 from api.v1.serializers.tenant import TenantExtendSerializer
-from system.models import SystemConfig, SystemPrivacyNotice
+from system.models import SystemConfig
 from django.urls import reverse
 from runtime import get_app_runtime
 from login_register_config.models import LoginRegisterConfig

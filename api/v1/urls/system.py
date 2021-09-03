@@ -6,9 +6,9 @@ urlpatterns = [
     path(
         'system/config', views_system.SystemConfigView.as_view(), name='system-config'
     ),
-    re_path(
-        r'^system/config/privacy_notice/$',
-        views_system.SystemPrivacyNoticeView.as_view(),
-        name='system-privacy_notice',
-    ),
+    # re_path(
+    #     r'^system/config/privacy_notice/$',
+    #     views_system.SystemPrivacyNoticeView.as_view(),
+    #     name='system-privacy_notice',
+    # ),
 ]

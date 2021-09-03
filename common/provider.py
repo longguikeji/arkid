@@ -160,3 +160,9 @@ class LoginRegisterConfigProvider:
 
     def reset_password(self, request):
         pass
+
+
+class PrivacyNoticeProvider:
+    @classmethod
+    def load_privacy(cls, request):
+        raise NotImplementedError

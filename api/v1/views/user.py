@@ -12,7 +12,8 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 from django.contrib.auth.models import User as DUser
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
-from tenant.models import Tenant, TenantPasswordComplexity
+from tenant.models import Tenant
+from config.models import PasswordComplexity
 from inventory.models import User, Invitation, UserAppData
 from inventory.resouces import UserResource
 from api.v1.serializers.user import (
@@ -464,7 +465,7 @@ class ResetPasswordView(generics.CreateAPIView):
         return Response(is_succeed)
 
     def check_password(self, tenant_uuid, pwd):
-        comlexity = TenantPasswordComplexity.active_objects.filter(
+        comlexity = PasswordComplexity.active_objects.filter(
             tenant__uuid=tenant_uuid, is_apply=True
         ).first()
         if comlexity:

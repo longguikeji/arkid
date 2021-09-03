@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from system.models import SystemConfig, SystemPrivacyNotice
+from system.models import SystemConfig
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from api.v1.fields.custom import (
@@ -27,17 +27,17 @@ class SystemConfigSerializer(BaseDynamicFieldModelSerializer):
         return instance
 
 
-class SystemPrivacyNoticeSerializer(BaseDynamicFieldModelSerializer):
-    content = create_html_field(serializers.CharField)(hint=_("隐私声明内容"), required=True)
+# class SystemPrivacyNoticeSerializer(BaseDynamicFieldModelSerializer):
+#     content = create_html_field(serializers.CharField)(hint=_("隐私声明内容"), required=True)
 
-    class Meta:
-        model = SystemPrivacyNotice
+#     class Meta:
+#         model = SystemPrivacyNotice
 
-        fields = ('title', 'content', 'is_active')
+#         fields = ('title', 'content', 'is_active')
 
-    def update(self, instance, validated_data):
-        instance.title = validated_data.get('title')
-        instance.content = validated_data.get('content')
-        instance.is_active = validated_data.get('is_active')
-        instance.save()
-        return instance
+#     def update(self, instance, validated_data):
+#         instance.title = validated_data.get('title')
+#         instance.content = validated_data.get('content')
+#         instance.is_active = validated_data.get('is_active')
+#         instance.save()
+#         return instance

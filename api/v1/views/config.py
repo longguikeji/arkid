@@ -15,6 +15,14 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 from django.http.response import JsonResponse
 from common.code import Code
 from django.utils.translation import gettext_lazy as _
+from api.v1.serializers.config import (
+    PrivacyNoticeSerializer,
+    PasswordComplexitySerializer,
+)
+from tenant.models import Tenant
+from config.models import PrivacyNotice, PasswordComplexity
+from rest_framework.response import Response
+from runtime import get_app_runtime
 
 
 @extend_schema(
@@ -156,3 +164,143 @@ class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
         if not field:
             raise NotFound
         return field
+
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['config'],
+    parameters=[
+        OpenApiParameter(
+            name='tenant',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        )
+    ],
+)
+class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+    serializer_class = PrivacyNoticeSerializer
+
+    def get_object(self):
+        # tenant_uuid = self.request.query_params.get('tenant')
+        # if not tenant_uuid:
+        #     tenant = None
+        # else:
+        #     tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
+        # privacy_notice, is_created = PrivacyNotice.objects.get_or_create(
+        #     is_del=False, tenant=tenant
+        # )
+        # return privacy_notice
+        r = get_app_runtime()
+        privacy_notice_provider = r.privacy_notice_provider
+        assert privacy_notice_provider is not None
+        return privacy_notice_provider.load_privacy(self.request)
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = PrivacyNoticeSerializer(instance, data=request.data)
+        serializer.is_valid()
+        serializer.save()
+        return Response(serializer.data)
+
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['config'],
+    parameters=[
+        OpenApiParameter(
+            name='tenant',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        )
+    ],
+)
+class PasswordComplexityView(generics.ListCreateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = PasswordComplexitySerializer
+
+    def get_queryset(self):
+        tenant_uuid = self.request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
+        return PasswordComplexity.active_objects.filter(tenant=tenant).order_by(
+            '-is_apply'
+        )
+
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['config'],
+    parameters=[
+        OpenApiParameter(
+            name='tenant',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        )
+    ],
+)
+class PasswordComplexityDetailView(generics.RetrieveUpdateDestroyAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = PasswordComplexitySerializer
+
+    def get_object(self):
+        uuid = self.kwargs['complexity_uuid']
+        tenant_uuid = self.request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
+        return PasswordComplexity.active_objects.filter(
+            uuid=uuid, tenant=tenant
+        ).first()
+
+
+@extend_schema(
+    roles=['general user', 'tenant admin', 'global admin'],
+    tags=['config'],
+    parameters=[
+        OpenApiParameter(
+            name='tenant',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        )
+    ],
+)
+class CurrentPasswordComplexityView(generics.RetrieveAPIView):
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = PasswordComplexitySerializer
+
+    def get_object(self):
+        tenant_uuid = self.request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
+        return PasswordComplexity.active_objects.filter(
+            tenant=tenant, is_apply=True
+        ).first()
+
+    def get(self, request, tenant_uuid):
+        comlexity = self.get_object()
+        if comlexity:
+            serializer = self.get_serializer(comlexity)
+            return Response(serializer.data)
+        else:
+            return Response({})
