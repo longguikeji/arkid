@@ -297,7 +297,7 @@ class CurrentPasswordComplexityView(generics.RetrieveAPIView):
             tenant=tenant, is_apply=True
         ).first()
 
-    def get(self, request, tenant_uuid):
+    def get(self, request):
         comlexity = self.get_object()
         if comlexity:
             serializer = self.get_serializer(comlexity)
