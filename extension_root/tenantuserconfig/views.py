@@ -57,6 +57,11 @@ class TenantUserConfigFieldView(generics.RetrieveAPIView):
     def get(self, request, tenant_uuid):
         items = ['nickname', 'mobile', 'email', 'job_title']
         serializer = self.get_serializer({
-            'fields': items
+            'results': [
+                {'name':'昵称' , 'value':'nickname'},
+                {'name':'电话' , 'value':'mobile'},
+                {'name':'邮箱' , 'value':'email'},
+                {'name':'职称' , 'value':'job_title'}
+            ]
         })
         return Response(serializer.data)

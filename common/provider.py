@@ -80,6 +80,10 @@ class ExternalIdpProvider:
         pass
 
 
+class ChildAccountConfigProvider:
+    pass
+
+
 class TenantUserConfigProvider:
     pass
 

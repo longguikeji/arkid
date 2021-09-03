@@ -2,12 +2,14 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from extension_root.tenantuserconfig.models import TenantUserConfig
+from api.v1.fields.custom import create_multiple_dynamic_choice_field
 from tenant.models import Tenant
 
 
 class TenantUserConfigSetSerializer(serializers.Serializer):
-    is_edit_fields = serializers.ListField(
-        child=serializers.CharField(), label=_('用户编辑字段设置')
+    is_edit_fields = create_multiple_dynamic_choice_field(serializers.MultipleChoiceField)(
+        label=_("用户编辑字段设置"),
+        url='/api/v1/tenant/{tenant_uuid}/userfields'
     )
     is_logout = serializers.BooleanField(label=_("是否允许用户注销自己的账号"))
     is_look_token = serializers.BooleanField(label=_("设置是否允许用户查看自己当前Token"))
@@ -29,9 +31,13 @@ class TenantUserConfigSerializer(BaseDynamicFieldModelSerializer):
             'data',
         )
 
+class TenantUserConfigItemSerializer(serializers.Serializer):
+    name = serializers.CharField(label=_('名称'))
+    value = serializers.CharField(label=_('取值'))
+
 
 class TenantUserConfigFieldSerializer(serializers.Serializer):
 
-    fields = serializers.ListField(
-        child=serializers.CharField(), label=_('字段列表')
+    results = serializers.ListField(
+        child=TenantUserConfigItemSerializer(), label=_('字段列表')
     )

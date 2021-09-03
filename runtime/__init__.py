@@ -12,6 +12,7 @@ from common.provider import (
     AuthCodeProvider,
     TenantUserConfigProvider,
     LoginRegisterConfigProvider,
+    ChildAccountConfigProvider,
 )
 from common.serializer import (
     AppBaseSerializer,
@@ -32,6 +33,7 @@ class Runtime:
     storage_provider: StorageProvider = None
     authcode_provider: AuthCodeProvider = None
     tenantuserconfig_provider: TenantUserConfigProvider = None
+    childaccountconfig_provider: ChildAccountConfigProvider = None
     migration_provider: MigrationProvider = None
 
     external_idps: List
@@ -335,6 +337,13 @@ class Runtime:
     def logout_tenantuserconfig_provider(self, tenantuserconfig_provider: TenantUserConfigProvider):
         self.tenantuserconfig_provider = None
         print('logout_tenantuserconfig_provider')
+
+    def register_childaccountconfig_provider(self, childaccountconfig_provider: ChildAccountConfigProvider):
+        self.childaccountconfig_provider = childaccountconfig_provider
+
+    def logout_childaccountconfig_provider(self, childaccountconfig_provider: ChildAccountConfigProvider):
+        self.childaccountconfig_provider = None
+        print('logout_childaccountconfig_provider')
 
     def register_authcode_provider(self, authcode_provider: AuthCodeProvider):
         self.authcode_provider = authcode_provider

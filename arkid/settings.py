@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'extension_root.mysql_migration',
     'extension_root.arkid',
     'extension_root.tenantuserconfig',
+    'extension_root.childaccount',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',
