@@ -27,8 +27,9 @@ class Tenant(BaseModel):
 
     @property
     def password_complexity(self):
+        from config.models import PasswordComplexity
         result = {}
-        comlexity = TenantPasswordComplexity.active_objects.filter(
+        comlexity = PasswordComplexity.active_objects.filter(
             tenant=self, is_apply=True
         ).first()
         if comlexity:

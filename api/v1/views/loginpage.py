@@ -140,12 +140,9 @@ class LoginPage(views.APIView):
         data.addForm(model.PASSWORD, form)
 
     def get_privacy_notice(self, tenant):
-        if tenant:
-            privacy_notice = TenantPrivacyNotice.valid_objects.filter(
-                tenant=tenant
-            ).first()
-        else:
-            privacy_notice = SystemPrivacyNotice.valid_objects.filter().first()
+        privacy_notice = PrivacyNotice.valid_objects.filter(
+            tenant=tenant
+        ).first()
         if privacy_notice and privacy_notice.is_active:
             agreement = {
                 'title': privacy_notice.title,

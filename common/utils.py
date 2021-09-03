@@ -126,19 +126,20 @@ def get_client_ip(request):
 
 
 def check_password_complexity(pwd, tenant):
-    if tenant:
-        from tenant.models import TenantPasswordComplexity
+    from config.models import PasswordComplexity
 
-        comlexity = TenantPasswordComplexity.active_objects.filter(
-            tenant=tenant, is_apply=True
-        ).first()
-        if comlexity:
-            return comlexity.check_pwd(pwd)
-        return True
-    else:
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True
+    if not pwd:
+        return False, 'No password provide'
+
+    complexity = PasswordComplexity.active_objects.filter(
+        tenant=tenant, is_apply=True
+    ).first()
+    if complexity:
+        if complexity.check_pwd(pwd):
+            return True, None
+        else:
+            return False, complexity.title
+    return True, None
 
 
 def set_user_register_count(ip, check_str='register', time_limit=1):
