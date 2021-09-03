@@ -72,10 +72,10 @@ class DeviceListView(generics.ListCreateAPIView):
             permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
             manage_users = permission.user_permission_set.all()
             for user in users:
-                user_uuids.append(str(user.uuid))
+                user_uuids.append(user.uuid_hex)
             for manage_user in manage_users:
                 if str(manage_user.uuid) not in user_uuids:
-                    user_uuids.append(str(manage_user.uuid))
+                    user_uuids.append(manage_user.uuid_hex)
             for user_uuid in user_uuids:
                 for device in devices:
                     account_ids = device.account_ids
@@ -84,6 +84,11 @@ class DeviceListView(generics.ListCreateAPIView):
                         break
             devices = devices.filter(uuid__in=uuids)
         return devices.order_by('-id')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant_uuid'] = self.request.query_params.get('tenant_uuid', '')
+        return context
 
 
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
@@ -149,10 +154,10 @@ class DeviceExportView(generics.RetrieveAPIView):
             permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
             manage_users = permission.user_permission_set.all()
             for user in users:
-                user_uuids.append(str(user.uuid))
+                user_uuids.append(user.uuid_hex)
             for manage_user in manage_users:
                 if str(manage_user.uuid) not in user_uuids:
-                    user_uuids.append(str(manage_user.uuid))
+                    user_uuids.append(manage_user.uuid_hex)
             for user_uuid in user_uuids:
                 for device in devices:
                     account_ids = device.account_ids

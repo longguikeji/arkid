@@ -25,6 +25,11 @@ class ExternalIdpBaseSerializer(serializers.Serializer):
     data = serializers.JSONField()
     uuid = serializers.UUIDField(read_only=True)
 
+class AuthorizationAgentBaseSerializer(serializers.Serializer):
+    # order_no = serializers.IntegerField()
+    type = serializers.CharField()
+    data = serializers.JSONField()
+    uuid = serializers.UUIDField(read_only=True)
 
 class ExtensionBaseSerializer(serializers.Serializer):
     type = serializers.CharField()

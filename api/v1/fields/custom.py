@@ -302,3 +302,28 @@ def create_init_field(field_cls):
             super().__init__(**kwargs)
 
     return InitField
+
+def create_custom_list_field(field_cls):
+    """
+    自定义列表字段
+    """
+
+    @extend_schema_field(
+        field={
+            'format': 'custom_list',
+        }
+    )
+    class CustomListField(field_cls):
+        _field_meta = {}
+
+        def __init__(self, url, **kwargs):
+            field = get_override(self, 'field', {})
+            field['url'] = url
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, list, bool, dict, float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+
+    return CustomListField

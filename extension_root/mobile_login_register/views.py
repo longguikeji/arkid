@@ -81,7 +81,9 @@ class MobileLoginView(APIView):
                     'message': _('mobile not exists'),
                 }
             )
-
+        # 如果是子账户，要自动转为主账户 
+        if user.parent:
+            user = user.parent
         token = user.refresh_token()
         return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
         if tenant:

@@ -80,8 +80,32 @@ class ExternalIdpProvider:
         pass
 
 
+class ChildAccountConfigProvider:
+    pass
+
+
 class TenantUserConfigProvider:
     pass
+
+
+class AuthorizationAgentProvider:
+
+    name: Optional[str]
+    bind_key: str
+
+    def __init__(self) -> None:
+        self.name = None
+
+    @abstractmethod
+    def create(self, tenant_uuid, external_idp) -> Dict:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def authenticate(self):
+        """
+        ExternalIDP => ArkID
+        """
+        pass
 
 
 class AuthorizationServerProvider:

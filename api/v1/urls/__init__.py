@@ -11,6 +11,7 @@ from . import (
     marketplace,
     extension,
     external_idp,
+    authorization_agent,
     authorization_server,
     jsonp,
     login_page,
