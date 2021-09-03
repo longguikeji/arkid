@@ -33,6 +33,7 @@ from . import (
     permission_manage,
     sdk_download,
     system_config,
+    system_password,
     statistics,
     subuser,
     sub_admin_config,
@@ -41,12 +42,17 @@ from . import (
     third_part_account,
     user,
     user_log,
+    user_login_log,
     webhook
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
 
 root_add_routers([
+    PageRouter(
+        page=desktop,
+        icon='desktop'
+    ),
     PageRouter(
         page=contacts,
         icon='education'
@@ -67,6 +73,10 @@ root_add_routers([
             PageRouter(
                 page=subuser,
                 icon='user'
+            ),
+            PageRouter(
+                page=user_login_log,
+                icon='lock'
             )
         ]
     ),
@@ -315,9 +325,20 @@ root_add_routers([
                     )
                 ]
             ),
-            PageRouter(
-                page=system_config,
-                icon='setting'
+            Router(
+                path='system_config',
+                name='系统配置',
+                icon='setting',
+                children=[
+                    PageRouter(
+                        page=system_config,
+                        icon='setting'
+                    ),
+                    PageRouter(
+                        page=system_password,
+                        icon='lock'
+                    )
+                ]
             ),
             Router(
                 path='extension',

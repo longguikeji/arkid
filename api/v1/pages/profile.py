@@ -20,6 +20,11 @@ extend_schema_tags(
             'password': {
                 'path': '/api/v1/user/update_password/',
                 'method': 'post'
+            },
+            'logoff': {
+                'path': '/api/v1/user/logoff/',
+                'method': 'get',
+                'description': '注销'
             }
         }
     }

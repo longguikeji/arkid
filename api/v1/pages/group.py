@@ -4,6 +4,22 @@ tag = [ 'group', 'group_user' ]
 path = 'gmanage'
 name = '分组管理'
 
+meta_group_tag = 'meta_group'
+meta_group_name = '默认分组类型'
+
+extend_schema_tags(
+    meta_group_tag,
+    meta_group_name
+)
+
+custom_group_tag = 'custom_group'
+custom_group_name = '自定义分组类型'
+
+extend_schema_tags(
+    custom_group_tag,
+    custom_group_name
+)
+
 group_tree_tag = 'group_tree'
 group_tree_name = '选择分组'
 
@@ -35,7 +51,8 @@ extend_schema_tags(
         'type':'tree_page',
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
-            'method': 'get'
+            'method': 'get',
+            'next': ''
         },
         'global': {
             'create': {
