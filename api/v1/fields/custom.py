@@ -303,23 +303,22 @@ def create_init_field(field_cls):
 
     return InitField
 
-def create_multiple_dynamic_choice_field(field_cls):
+def create_custom_list_field(field_cls):
     """
-    带动态选项的多选框
+    自定义列表字段
     """
+
     @extend_schema_field(
         field={
-            'format': 'multiple_dynamic_choice',
+            'format': 'custom_list',
         }
     )
-    class MultipleChoiceField(field_cls):
+    class CustomListField(field_cls):
         _field_meta = {}
 
         def __init__(self, url, **kwargs):
-            kwargs["choices"] = []
             field = get_override(self, 'field', {})
             field['url'] = url
-
             for k, v in kwargs.items():
                 if isinstance(v, (str, int, list, bool, dict, float)):
                     field[k] = v
@@ -327,4 +326,4 @@ def create_multiple_dynamic_choice_field(field_cls):
             set_override(self, 'field', field)
             super().__init__(**kwargs)
 
-    return MultipleChoiceField
+    return CustomListField

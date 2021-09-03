@@ -36,7 +36,9 @@ class TenantUserConfigView(generics.RetrieveUpdateAPIView):
             config.tenant = tenant
             config.data = {
                 'is_edit_fields': [
-                    'nickname', 'mobile', 'email', 'job_title',
+                    'nickname', 'mobile', 'email',
+                    'job_title', 'first_name', 'last_name',
+                    'country', 'city'
                 ],
                 'is_logout': False,
                 'is_look_token': False,
@@ -61,7 +63,11 @@ class TenantUserConfigFieldView(generics.RetrieveAPIView):
                 {'name':'昵称' , 'value':'nickname'},
                 {'name':'电话' , 'value':'mobile'},
                 {'name':'邮箱' , 'value':'email'},
-                {'name':'职称' , 'value':'job_title'}
+                {'name':'职称' , 'value':'job_title'},
+                {'name':'姓' , 'value':'first_name'},
+                {'name':'名' , 'value':'last_name'},
+                {'name':'国家' , 'value':'country'},
+                {'name':'城市' , 'value':'city'},
             ]
         })
         return Response(serializer.data)
