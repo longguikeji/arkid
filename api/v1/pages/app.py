@@ -19,7 +19,7 @@ extend_schema_tags(
             }
         },
         'local': {
-            'provisioning': {
+            'sync': {
                 'tag': 'app.provisioning'
             },
             'update': {

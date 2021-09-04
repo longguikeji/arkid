@@ -13,9 +13,7 @@ class TSerializer(serializers.Serializer):
 
     class Meta:
 
-        fields = (
-            'token',
-        )
+        fields = ('token',)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -45,3 +43,11 @@ class MobileRegisterRequestSerializer(serializers.Serializer):
     mobile = serializers.CharField(label=_('手机号'))
     code = serializers.CharField(label=_('验证码'))
     password = serializers.CharField(label=_('密码'))
+
+
+class UserNameLoginRequestSerializer(serializers.Serializer):
+
+    username = serializers.CharField(label=_('用户名'))
+    password = serializers.CharField(label=_('密码'))
+    code = serializers.CharField(label=_('图片验证码'), required=False)
+    code_filename = serializers.CharField(label=_('图片验证码的文件名称'), required=False)

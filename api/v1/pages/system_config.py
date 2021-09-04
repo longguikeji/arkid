@@ -1,7 +1,7 @@
 from openapi.utils import extend_schema_tags
 
 tag = [ 'system_login_register_extension', 'system_config', 'system_register_privacy_notice' ]
-path = 'system_config'
+path = 'system_lrconfig'
 name = '系统配置'
 
 system_login_register_extension_tag = 'system_login_register_extension'
@@ -125,7 +125,7 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/system/config/privacy_notice/',
+            'path': '/api/v1/config/privacy_notice/',
             'method': 'get'
         },
         'global': {
@@ -145,12 +145,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/system/config/privacy_notice/',
+            'path': '/api/v1/config/privacy_notice/',
             'method': 'get'
         },
         'global': {
             'update': {
-                'path': '/api/v1/system/config/privacy_notice/',
+                'path': '/api/v1/config/privacy_notice/',
                 'method': 'put'
             }
         }

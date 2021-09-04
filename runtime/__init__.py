@@ -12,6 +12,7 @@ from common.provider import (
     AuthCodeProvider,
     TenantUserConfigProvider,
     LoginRegisterConfigProvider,
+    PrivacyNoticeProvider,
     ChildAccountConfigProvider,
 )
 from common.serializer import (
@@ -103,6 +104,7 @@ class Runtime:
         self.storage_provider = None
         self.authcode_provider = None
         self.migration_provider = None
+        self.privacy_notice_provider = None
 
     def register_task(self):
         """
@@ -331,10 +333,14 @@ class Runtime:
         self.cache_provider = None
         print('logout_cache_provider')
 
-    def register_tenantuserconfig_provider(self, tenantuserconfig_provider: TenantUserConfigProvider):
+    def register_tenantuserconfig_provider(
+        self, tenantuserconfig_provider: TenantUserConfigProvider
+    ):
         self.tenantuserconfig_provider = tenantuserconfig_provider
 
-    def logout_tenantuserconfig_provider(self, tenantuserconfig_provider: TenantUserConfigProvider):
+    def logout_tenantuserconfig_provider(
+        self, tenantuserconfig_provider: TenantUserConfigProvider
+    ):
         self.tenantuserconfig_provider = None
         print('logout_tenantuserconfig_provider')
 
@@ -352,6 +358,18 @@ class Runtime:
         # if self.authcode_provider and authcode_provider == self.authcode_provider:
         #     self.authcode_provider = None
         self.authcode_provider = None
+        print('logout_authcode_provider')
+
+    def register_privacy_notice_provider(
+        self,
+        privacy_notice_provider: PrivacyNoticeProvider,
+    ):
+        self.privacy_notice_provider = privacy_notice_provider
+
+    def logout_privacy_notice_provider(
+        self, privacy_notice_provider: PrivacyNoticeProvider
+    ):
+        self.privacy_notice_provider = None
         print('logout_authcode_provider')
 
     @property

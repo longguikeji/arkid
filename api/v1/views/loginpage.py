@@ -4,10 +4,11 @@ from common import loginpage as model
 from openapi.utils import extend_schema
 from django.http.response import JsonResponse
 from api.v1.views.tenant import TenantViewSet
-from tenant.models import Tenant, TenantConfig, TenantPrivacyNotice
+from tenant.models import Tenant, TenantConfig
+from config.models import PrivacyNotice
 from external_idp.models import ExternalIdp
 from api.v1.serializers.tenant import TenantExtendSerializer
-from system.models import SystemConfig, SystemPrivacyNotice
+from system.models import SystemConfig
 from django.urls import reverse
 from runtime import get_app_runtime
 from login_register_config.models import LoginRegisterConfig
@@ -36,20 +37,17 @@ class LoginPage(views.APIView):
                 tenant=tenant, type=DEFAULT_LOGIN_REGISTER_EXTENSION, data=config_data
             )
             configs = [config]
+
         for config in configs:
             provider_cls = r.login_register_config_providers.get(config.type, None)
             assert provider_cls is not None
 
             config_data = config.data
             provider = provider_cls(config_data)
-            data.addForm(model.LOGIN, provider.login_form(tenant_uuid, request=request))
-            data.addForm(
-                model.REGISTER, provider.register_form(tenant_uuid, request=request)
-            )
-            data.addForm(
-                model.PASSWORD,
-                provider.reset_password_form(tenant_uuid, request=request),
-            )
+            self.add_login_form(data, provider, config.type, tenant_uuid)
+            self.add_register_form(data, provider, config.type, tenant_uuid)
+            self.add_reset_password_form(data, provider, config.type, tenant_uuid)
+
         if tenant:
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
 
@@ -69,13 +67,82 @@ class LoginPage(views.APIView):
         pages.is_valid()
         return JsonResponse(pages.data)
 
-    def get_privacy_notice(self, tenant):
-        if tenant:
-            privacy_notice = TenantPrivacyNotice.valid_objects.filter(
-                tenant=tenant
-            ).first()
+    def append_extension_type_form_item(self, form, extension_type):
+        items = form.get('items')
+        items.append(
+            model.LoginFormItem(type='hidden', name='extension', value=extension_type)
+        )
+
+    def add_login_form(self, data, provider, extension_type, tenant_uuid=None):
+        form = provider.login_form
+        if not form:
+            return
+
+        url = reverse('api:login')
+        if tenant_uuid:
+            url += '?tenant=tenant_uuid'
+        if type(form) != list:
+            forms = [form]
         else:
-            privacy_notice = SystemPrivacyNotice.valid_objects.filter().first()
+            forms = form
+
+        for form in forms:
+            form['submit'] = model.Button(
+                label='登录', http=model.ButtonHttp(url=url, method='post')
+            )
+
+            self.append_extension_type_form_item(form, extension_type)
+        data.addForm(model.LOGIN, form)
+
+    def add_register_form(self, data, provider, extension_type, tenant_uuid=None):
+        form = provider.register_form
+        if not form:
+            return
+
+        url = reverse('api:register')
+        if tenant_uuid:
+            url += '?tenant=tenant_uuid'
+
+        if type(form) != list:
+            forms = [form]
+        else:
+            forms = form
+
+        for form in forms:
+            form['submit'] = model.Button(
+                label='注册', http=model.ButtonHttp(url=url, method='post')
+            )
+            self.append_extension_type_form_item(form, extension_type)
+        data.addForm(model.REGISTER, form)
+
+    def add_reset_password_form(self, data, provider, extension_type, tenant_uuid=None):
+        form = provider.reset_password_form
+        if not form:
+            return
+
+        url = reverse('api:reset-password')
+        if tenant_uuid:
+            url += '?tenant=tenant_uuid'
+
+        if type(form) != list:
+            forms = [form]
+        else:
+            forms = form
+
+        for form in forms:
+            form['submit'] = model.Button(
+                label='确认',
+                http=model.ButtonHttp(url=url, method='post'),
+                gopage=model.LOGIN,
+            )
+
+            self.append_extension_type_form_item(form, extension_type)
+        data.addForm(model.PASSWORD, form)
+
+    def get_privacy_notice(self, tenant):
+        privacy_notice = PrivacyNotice.valid_objects.filter(
+            tenant=tenant
+        ).first()
         if privacy_notice and privacy_notice.is_active:
             agreement = {
                 'title': privacy_notice.title,

@@ -84,7 +84,7 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/privacy_notice/',
+            'path': '/api/v1/config/privacy_notice/?tenant={tenant_uuid}',
             'method': 'get',
         },
         'global': {
@@ -104,12 +104,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/privacy_notice/',
+            'path': '/api/v1/config/privacy_notice/?tenant={tenant_uuid}',
             'method': 'get',
         },
         'global': {
             'update': {
-                'path': '/api/v1/tenant/{tenant_uuid}/privacy_notice/',
+                'path': '/api/v1/config/privacy_notice/?tenant={tenant_uuid}',
                 'method': 'put',
             }
         },

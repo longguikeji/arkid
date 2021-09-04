@@ -5,15 +5,22 @@ from rest_framework import generics
 from openapi.utils import extend_schema
 from rest_framework.response import Response
 from tenant.models import (
-    Tenant, TenantConfig, TenantPasswordComplexity,
-    TenantContactsConfig, TenantContactsUserFieldConfig, TenantPrivacyNotice,
-    TenantContactsGroupConfig, TenantDesktopConfig,
+    Tenant,
+    TenantConfig,
+    TenantContactsConfig,
+    TenantContactsUserFieldConfig,
+    TenantContactsGroupConfig,
+    TenantDesktopConfig,
 )
 from api.v1.serializers.tenant import (
-    TenantSerializer,  TenantConfigSerializer,
-    TenantPasswordComplexitySerializer, TenantContactsConfigFunctionSwitchSerializer,
-    TenantContactsConfigInfoVisibilitySerializer, TenantContactsConfigGroupVisibilitySerializer, ContactsGroupSerializer,
-    ContactsUserSerializer, TenantContactsUserTagsSerializer, TenantPrivacyNoticeSerializer,
+    TenantSerializer,
+    TenantConfigSerializer,
+    TenantContactsConfigFunctionSwitchSerializer,
+    TenantContactsConfigInfoVisibilitySerializer,
+    TenantContactsConfigGroupVisibilitySerializer,
+    ContactsGroupSerializer,
+    ContactsUserSerializer,
+    TenantContactsUserTagsSerializer,
     TenantDesktopConfigSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
@@ -209,22 +216,13 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
             )
             if is_created is True:
                 tenantconfig.data = {
-                    'is_open_authcode': False,
-                    'error_number_open_authcode': 0,
+                    # 'is_open_authcode': False,
+                    # 'error_number_open_authcode': 0,
                     'is_open_register_limit': False,
                     'register_time_limit': 1,
                     'register_count_limit': 10,
                     'upload_file_format': ['jpg', 'png', 'gif', 'jpeg'],
                     'close_page_auto_logout': False,
-                    'native_login_register_field_names': [
-                        'mobile',
-                        'username',
-                        'email',
-                    ],
-                    'custom_login_register_field_uuids': [],
-                    'custom_login_register_field_names': [],
-                    'need_complete_profile_after_register': True,
-                    'can_skip_complete_profile': True,
                 }
                 tenantconfig.save()
             else:
@@ -239,88 +237,10 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                     data['upload_file_format'] = ['jpg', 'png', 'gif', 'jpeg']
                 if 'close_page_auto_logout' not in data:
                     data['close_page_auto_logout'] = False
-                if 'mobile_login_register_enabled' not in data:
-                    data['mobile_login_register_enabled'] = True
-
-                if 'native_login_register_field_names' not in data:
-                    data['native_login_register_field_names'] = [
-                        'username',
-                        'email',
-                        'mobile',
-                    ]
-
-                if 'custom_login_register_field_uuids' not in data:
-                    data['custom_login_register_field_uuids'] = []
-                    data['custom_login_register_field_names'] = []
-                else:
-                    custom_fields = CustomField.valid_objects.filter(
-                        uuid__in=data.get('custom_login_register_field_uuids')
-                    )
-                    data['custom_login_register_field_names'] = [
-                        field.name for field in custom_fields
-                    ]
-
-                if 'need_complete_profile_after_register' not in data:
-                    data['need_complete_profile_after_register'] = True
-                if 'can_skip_complete_profile' not in data:
-                    data['can_skip_complete_profile'] = True
                 tenantconfig.save()
             return tenantconfig
         else:
             return []
-
-
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
-class TenantPasswordComplexityView(generics.ListCreateAPIView):
-
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [ExpiringTokenAuthentication]
-
-    serializer_class = TenantPasswordComplexitySerializer
-
-    def get_queryset(self):
-        tenant_uuid = self.kwargs['tenant_uuid']
-        return TenantPasswordComplexity.active_objects.filter(
-            tenant__uuid=tenant_uuid
-        ).order_by('-is_apply')
-
-
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
-class TenantPasswordComplexityDetailView(generics.RetrieveUpdateDestroyAPIView):
-
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [ExpiringTokenAuthentication]
-
-    serializer_class = TenantPasswordComplexitySerializer
-
-    def get_object(self):
-        uuid = self.kwargs['complexity_uuid']
-        return TenantPasswordComplexity.active_objects.filter(uuid=uuid).first()
-
-
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
-class TenantCurrentPasswordComplexityView(generics.RetrieveAPIView):
-
-    permission_classes = []
-    authentication_classes = []
-
-    serializer_class = TenantPasswordComplexitySerializer
-
-    def get_object(self):
-        tenant_uuid = self.kwargs['tenant_uuid']
-        return TenantPasswordComplexity.active_objects.filter(
-            tenant__uuid=tenant_uuid, is_apply=True
-        ).first()
-
-    def get(self, request, tenant_uuid):
-        comlexity = TenantPasswordComplexity.active_objects.filter(
-            tenant__uuid=tenant_uuid, is_apply=True
-        ).first()
-        if comlexity:
-            serializer = self.get_serializer(comlexity)
-            return Response(serializer.data)
-        else:
-            return Response({})
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
@@ -333,7 +253,9 @@ class TenantContactsConfigFunctionSwitchView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
-        return TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
+        return TenantContactsConfig.active_objects.filter(
+            tenant__uuid=tenant_uuid
+        ).first()
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
@@ -380,8 +302,7 @@ class TenantContactsConfigGroupVisibilityView(generics.RetrieveUpdateAPIView):
         tenant_uuid = self.kwargs['tenant_uuid']
         group_uuid = self.kwargs['group_uuid']
         group_config = TenantContactsGroupConfig.active_objects.filter(
-            tenant__uuid=tenant_uuid,
-            group__uuid=group_uuid
+            tenant__uuid=tenant_uuid, group__uuid=group_uuid
         ).first()
         if group_config:
             return group_config
@@ -395,7 +316,7 @@ class TenantContactsConfigGroupVisibilityView(generics.RetrieveUpdateAPIView):
                 "visible_type": "所有人可见",
                 "visible_scope": [],
                 "assign_group": [],
-                "assign_user": []
+                "assign_user": [],
             }
             group_config.save()
             return group_config
@@ -415,11 +336,15 @@ class TenantContactsGroupView(generics.ListAPIView):
         # {
         #     "is_open": true
         # }
-        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
+        config = TenantContactsConfig.active_objects.filter(
+            tenant__uuid=tenant_uuid
+        ).first()
         return config.data
 
     def get_group_visible(self, tenant_uuid):
-        configs = TenantContactsGroupConfig.active_objects.filter(tenant__uuid=tenant_uuid)
+        configs = TenantContactsGroupConfig.active_objects.filter(
+            tenant__uuid=tenant_uuid
+        )
         return configs
 
     def get_queryset(self):
@@ -468,7 +393,12 @@ class TenantContactsGroupView(generics.ListAPIView):
                             if '指定分组与人员' in visible_scope:
                                 assign_group = group_visible.get('assign_group', [])
                                 assign_user = group_visible.get('assign_user', [])
-                                if assign_group and user.groups.filter(uuid__in=assign_group).exists():
+                                if (
+                                    assign_group
+                                    and user.groups.filter(
+                                        uuid__in=assign_group
+                                    ).exists()
+                                ):
                                     uuids.append(str(group.uuid))
                                     continue
                                 elif assign_user and str(user.uuid) in assign_user:
@@ -542,7 +472,9 @@ class TenantContactsUserView(generics.ListAPIView):
         # {
         #     "is_open": true
         # }
-        config = TenantContactsConfig.active_objects.filter(tenant__uuid=tenant_uuid).first()
+        config = TenantContactsConfig.active_objects.filter(
+            tenant__uuid=tenant_uuid
+        ).first()
         return config.data
 
     def get_queryset(self):
@@ -692,31 +624,6 @@ class TenantContactsUserTagsView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
-class TenantPrivacyNoticeView(generics.RetrieveUpdateAPIView):
-
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [ExpiringTokenAuthentication]
-    serializer_class = TenantPrivacyNoticeSerializer
-
-    def get_object(self):
-        tenant_uuid = self.kwargs['tenant_uuid']
-        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-        privacy_notice, is_created = TenantPrivacyNotice.objects.get_or_create(
-            is_del=False, tenant=tenant
-        )
-        return privacy_notice
-
-    def put(self, request, *args, **kwargs):
-        tenant_uuid = self.kwargs['tenant_uuid']
-        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-        instance = self.get_object()
-        serializer = TenantPrivacyNoticeSerializer(instance, data=request.data)
-        serializer.is_valid()
-        serializer.save(tenant=tenant)
-        return Response(serializer.data)
-
-
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
 class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
 
@@ -728,15 +635,10 @@ class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.active_objects.get(uuid=tenant_uuid)
-        config = TenantDesktopConfig.active_objects.filter(
-            tenant=tenant
-        ).first()
+        config = TenantDesktopConfig.active_objects.filter(tenant=tenant).first()
         if config is None:
             config = TenantDesktopConfig()
             config.tenant = tenant
-            config.data = {
-                'access_with_desktop': True,
-                'icon_custom': True
-            }
+            config.data = {'access_with_desktop': True, 'icon_custom': True}
             config.save()
         return config

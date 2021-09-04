@@ -27,8 +27,9 @@ class Tenant(BaseModel):
 
     @property
     def password_complexity(self):
+        from config.models import PasswordComplexity
         result = {}
-        comlexity = TenantPasswordComplexity.active_objects.filter(
+        comlexity = PasswordComplexity.active_objects.filter(
             tenant=self, is_apply=True
         ).first()
         if comlexity:
@@ -50,27 +51,27 @@ class TenantConfig(BaseModel):
         return self.tenant.uuid
 
 
-class TenantPasswordComplexity(BaseModel):
+# class TenantPasswordComplexity(BaseModel):
 
-    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
-    regular = models.CharField(verbose_name='正则表达式', max_length=512)
-    is_apply = models.BooleanField(default=False, verbose_name='是否启用')
-    title = models.CharField(
-        verbose_name='标题', max_length=128, default='', null=True, blank=True
-    )
+#     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+#     regular = models.CharField(verbose_name='正则表达式', max_length=512)
+#     is_apply = models.BooleanField(default=False, verbose_name='是否启用')
+#     title = models.CharField(
+#         verbose_name='标题', max_length=128, default='', null=True, blank=True
+#     )
 
-    @property
-    def tenant_uuid(self):
-        return self.tenant.uuid
+#     @property
+#     def tenant_uuid(self):
+#         return self.tenant.uuid
 
-    def check_pwd(self, pwd):
-        import re
+#     def check_pwd(self, pwd):
+#         import re
 
-        result = re.match(self.regular, pwd)
-        if result:
-            return True
-        else:
-            return False
+#         result = re.match(self.regular, pwd)
+#         if result:
+#             return True
+#         else:
+#             return False
 
 
 class TenantContactsConfig(BaseModel):
@@ -81,7 +82,9 @@ class TenantContactsConfig(BaseModel):
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}'
 
+
 from inventory.models import Group
+
 
 class TenantContactsGroupConfig(BaseModel):
     # 通讯录分组可见性
@@ -95,7 +98,14 @@ class TenantContactsGroupConfig(BaseModel):
     # }
 
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
-    group = models.ForeignKey(Group, blank=False, null=True, default=None, on_delete=models.PROTECT, verbose_name='分组')
+    group = models.ForeignKey(
+        Group,
+        blank=False,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT,
+        verbose_name='分组',
+    )
     data = models.JSONField(blank=True, default=dict)
 
     def __str__(self) -> str:
@@ -115,28 +125,30 @@ class TenantContactsUserFieldConfig(BaseModel):
     # 每个租户会有1条相关的记录
 
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
-    name = models.CharField(verbose_name='字段名称', max_length=128, default='', null=True, blank=True)
+    name = models.CharField(
+        verbose_name='字段名称', max_length=128, default='', null=True, blank=True
+    )
     data = models.JSONField(blank=True, default=dict)
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}'
 
 
-class TenantPrivacyNotice(BaseModel):
+# class TenantPrivacyNotice(BaseModel):
 
-    tenant = models.OneToOneField(
-        Tenant,
-        on_delete=models.CASCADE,
-        verbose_name='租户',
-        related_name='privacy_notice',
-    )
-    title = models.CharField(
-        verbose_name='标题', max_length=128, blank=True, null=True, default=''
-    )
-    content = models.TextField(verbose_name='内容', blank=True, null=True, default='')
+#     tenant = models.OneToOneField(
+#         Tenant,
+#         on_delete=models.CASCADE,
+#         verbose_name='租户',
+#         related_name='privacy_notice',
+#     )
+#     title = models.CharField(
+#         verbose_name='标题', max_length=128, blank=True, null=True, default=''
+#     )
+#     content = models.TextField(verbose_name='内容', blank=True, null=True, default='')
 
-    def __str__(self) -> str:
-        return f'Privacy Notice: {self.title}'
+#     def __str__(self) -> str:
+#         return f'Privacy Notice: {self.title}'
 
 
 class TenantDesktopConfig(BaseModel):
@@ -146,4 +158,3 @@ class TenantDesktopConfig(BaseModel):
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}'
-

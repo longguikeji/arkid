@@ -5,11 +5,11 @@ from django.utils.translation import gettext_lazy as _
 from openapi.utils import extend_schema
 from api.v1.serializers.system import (
     SystemConfigSerializer,
-    SystemPrivacyNoticeSerializer,
+    # SystemPrivacyNoticeSerializer,
 )
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from system.models import SystemConfig, SystemPrivacyNotice
+from system.models import SystemConfig
 from system.permission import IsSuperAdmin
 from runtime import get_app_runtime
 from common.code import Code
@@ -38,23 +38,23 @@ class SystemConfigView(generics.RetrieveUpdateAPIView):
         return systemconfig
 
 
-@extend_schema(roles=['global admin'], tags=['system'])
-class SystemPrivacyNoticeView(generics.RetrieveUpdateAPIView):
+# @extend_schema(roles=['global admin'], tags=['system'])
+# class SystemPrivacyNoticeView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated, IsSuperAdmin]
-    authentication_classes = [ExpiringTokenAuthentication]
+#     permission_classes = [IsAuthenticated, IsSuperAdmin]
+#     authentication_classes = [ExpiringTokenAuthentication]
 
-    serializer_class = SystemPrivacyNoticeSerializer
+#     serializer_class = SystemPrivacyNoticeSerializer
 
-    def get_object(self):
-        privacy_notice, is_created = SystemPrivacyNotice.objects.get_or_create(
-            is_del=False
-        )
-        return privacy_notice
+#     def get_object(self):
+#         privacy_notice, is_created = SystemPrivacyNotice.objects.get_or_create(
+#             is_del=False
+#         )
+#         return privacy_notice
 
-    def put(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = SystemPrivacyNoticeSerializer(instance, data=request.data)
-        serializer.is_valid()
-        serializer.save()
-        return Response(serializer.data)
+#     def put(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         serializer = SystemPrivacyNoticeSerializer(instance, data=request.data)
+#         serializer.is_valid()
+#         serializer.save()
+#         return Response(serializer.data)

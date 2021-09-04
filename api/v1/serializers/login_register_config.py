@@ -75,7 +75,7 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
             r.login_register_config_providers.get(config_type, None)
         )
         assert provider_cls is not None
-        provider = provider_cls()
+        # provider = provider_cls()
         # data = provider.create(
         #     tenant_uuid=tenant.uuid, external_idp=instance, data=data
         # )
