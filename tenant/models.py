@@ -28,6 +28,7 @@ class Tenant(BaseModel):
     @property
     def password_complexity(self):
         from config.models import PasswordComplexity
+
         result = {}
         comlexity = PasswordComplexity.active_objects.filter(
             tenant=self, is_apply=True
@@ -49,29 +50,6 @@ class TenantConfig(BaseModel):
     @property
     def tenant_uuid(self):
         return self.tenant.uuid
-
-
-# class TenantPasswordComplexity(BaseModel):
-
-#     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
-#     regular = models.CharField(verbose_name='正则表达式', max_length=512)
-#     is_apply = models.BooleanField(default=False, verbose_name='是否启用')
-#     title = models.CharField(
-#         verbose_name='标题', max_length=128, default='', null=True, blank=True
-#     )
-
-#     @property
-#     def tenant_uuid(self):
-#         return self.tenant.uuid
-
-#     def check_pwd(self, pwd):
-#         import re
-
-#         result = re.match(self.regular, pwd)
-#         if result:
-#             return True
-#         else:
-#             return False
 
 
 class TenantContactsConfig(BaseModel):
