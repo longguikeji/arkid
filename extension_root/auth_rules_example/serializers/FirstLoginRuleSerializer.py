@@ -19,7 +19,8 @@ class FirstLoginRuleDataSerializer(serializers.Serializer):
 
     second_auth = create_multiple_dynamic_choice_field(serializers.MultipleChoiceField)(
         label=_("主要认证因素"),
-        url=f'/api/v1/auth_rule/auth_factor_choices_list/?{"tenant={tenant_uuid}"}&{"exclude={major_auth}"}'
+        url=f'/api/v1/auth_rule/auth_factor_choices_list/?{"tenant={tenant_uuid}"}&{"exclude={major_auth}"}',
+        required=False
     )
 
     apps = create_multiple_dynamic_choice_field(serializers.MultipleChoiceField)(

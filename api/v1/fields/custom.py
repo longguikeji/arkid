@@ -345,6 +345,12 @@ def create_multiple_dynamic_choice_field(field_cls):
             kwargs["choices"] = []
             field = get_override(self, 'field', {})
             field['url'] = url
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, list, bool, dict, float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
 
     return MultipleChoiceField
 
