@@ -341,6 +341,29 @@ class UserSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         return value
 
 
+class UserChannelListSerializer(DynamicFieldsModelSerializer):
+    '''
+    lite Serializer for User
+    '''
+    class Meta:    # pylint: disable=missing-docstring
+
+        model = User
+
+        fields = (
+            'id',
+            'username',
+            'name',
+            'email',
+            'mobile',
+            'is_active',
+            'is_del',
+            'created',
+            'updated',
+            'last_active_time',
+        )
+
+
+
 class UserWithPermSerializer(UserSerializer):
     '''
     user info with perms
