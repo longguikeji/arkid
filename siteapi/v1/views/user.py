@@ -27,16 +27,9 @@ from oneid.permissions import (
     UserManagerReadable,
     CustomPerm,
 )
-<<<<<<< Updated upstream
-from siteapi.v1.serializers.user import (
-    UserSerializer,
-    EmployeeSerializer,
-    ResetUserPasswordSerializer,
-=======
 from siteapi.v1.serializers.user import(
     UserSerializer, EmployeeSerializer, ResetUserPasswordSerializer,
     UserChannelListSerializer,
->>>>>>> Stashed changes
 )
 from siteapi.v1.serializers.group import GroupListSerializer, GroupSerializer
 from siteapi.v1.serializers.dept import DeptListSerializer, DeptSerializer

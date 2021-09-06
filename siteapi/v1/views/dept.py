@@ -17,8 +17,7 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 
-<<<<<<< Updated upstream
-from oneid_meta.models import Dept
+from oneid_meta.models import Dept, DeptMember
 from oneid_meta.models.config import ContactsConfig
 from oneid.permissions import (
     IsAdminUser,
@@ -27,10 +26,6 @@ from oneid.permissions import (
     NodeEmployeeReadable,
     NodeManagerReadable,
 )
-=======
-from oneid_meta.models import Dept, DeptMember
-from oneid.permissions import IsAdminUser, IsManagerUser, IsNodeManager, NodeEmployeeReadable, NodeManagerReadable
->>>>>>> Stashed changes
 from siteapi.v1.serializers.user import UserListSerializer, UserSerializer
 from siteapi.v1.serializers.dept import (
     DeptTreeSerializer,
