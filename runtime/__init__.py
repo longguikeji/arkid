@@ -13,6 +13,8 @@ from common.provider import (
     AuthCodeProvider,
     TenantUserConfigProvider,
     LoginRegisterConfigProvider,
+    PrivacyNoticeProvider,
+    ChildAccountConfigProvider,
 )
 from common.serializer import (
     AppBaseSerializer,
@@ -33,11 +35,16 @@ class Runtime:
     storage_provider: StorageProvider = None
     authcode_provider: AuthCodeProvider = None
     tenantuserconfig_provider: TenantUserConfigProvider = None
+    childaccountconfig_provider: ChildAccountConfigProvider = None
     migration_provider: MigrationProvider = None
 
     external_idps: List
     external_idp_providers: Dict[str, ExternalIdpProvider]
     external_idp_serializers: Dict[str, ExternalIdpBaseSerializer]
+
+    authorization_agents: List
+    authorization_agent_providers: Dict[str, ExternalIdpProvider]
+    authorization_agent_serializers: Dict[str, ExternalIdpBaseSerializer]
 
     login_register_configs: List
     login_register_config_providers: Dict[str, LoginRegisterConfigProvider]
@@ -69,6 +76,10 @@ class Runtime:
             cls._instance.external_idp_providers = {}
             cls._instance.external_idp_serializers = {}
 
+            cls._instance.authorization_agents = []
+            cls._instance.authorization_agent_providers = {}
+            cls._instance.authorization_agent_serializers = {}
+
             cls._instance.login_register_configs = []
             cls._instance.login_register_config_providers = {}
             cls._instance.login_register_config_serializers = {}
@@ -90,6 +101,9 @@ class Runtime:
         self.external_idps = []
         self.external_idp_providers = {}
         self.external_idp_serializers = {}
+        self.authorization_agents = []
+        self.authorization_agent_providers = {}
+        self.authorization_agent_serializers = {}
         self.login_register_configs = []
         self.login_register_config_providers = {}
         self.login_register_config_serializers = {}
@@ -99,6 +113,7 @@ class Runtime:
         self.storage_provider = None
         self.authcode_provider = None
         self.migration_provider = None
+        self.privacy_notice_provider = None
 
         self.auth_rule_types = []
         self.auth_rule_type_providers = {}
@@ -147,6 +162,38 @@ class Runtime:
         if serializer is not None and key in self.external_idp_serializers:
             self.external_idp_serializers.pop(key)
         print('logout_external_idp:', name)
+
+    def register_authorization_agent(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: ExternalIdpProvider,
+        serializer: ExternalIdpBaseSerializer = None,
+    ):
+        if (key, name, description) not in self.authorization_agents:
+            self.authorization_agents.append((key, name, description))
+        if provider is not None:
+            self.authorization_agent_providers[key] = provider
+
+        if serializer is not None:
+            self.authorization_agent_serializers[key] = serializer
+
+    def logout_authorization_agent(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: ExternalIdpProvider,
+        serializer: ExternalIdpBaseSerializer = None,
+    ):
+        if (key, name, description) in self.authorization_agents:
+            self.authorization_agents.remove((key, name, description))
+        if provider is not None and key in self.authorization_agent_providers:
+            self.authorization_agent_providers.pop(key)
+        if serializer is not None and key in self.authorization_agent_serializers:
+            self.authorization_agent_serializers.pop(key)
+        print('logout_authorization_agent:', name)
 
     def register_login_register_config(
         self,
@@ -332,12 +379,23 @@ class Runtime:
         self.cache_provider = None
         print('logout_cache_provider')
 
-    def register_tenantuserconfig_provider(self, tenantuserconfig_provider: TenantUserConfigProvider):
+    def register_tenantuserconfig_provider(
+        self, tenantuserconfig_provider: TenantUserConfigProvider
+    ):
         self.tenantuserconfig_provider = tenantuserconfig_provider
 
-    def logout_tenantuserconfig_provider(self, tenantuserconfig_provider: TenantUserConfigProvider):
+    def logout_tenantuserconfig_provider(
+        self, tenantuserconfig_provider: TenantUserConfigProvider
+    ):
         self.tenantuserconfig_provider = None
         print('logout_tenantuserconfig_provider')
+
+    def register_childaccountconfig_provider(self, childaccountconfig_provider: ChildAccountConfigProvider):
+        self.childaccountconfig_provider = childaccountconfig_provider
+
+    def logout_childaccountconfig_provider(self, childaccountconfig_provider: ChildAccountConfigProvider):
+        self.childaccountconfig_provider = None
+        print('logout_childaccountconfig_provider')
 
     def register_authcode_provider(self, authcode_provider: AuthCodeProvider):
         self.authcode_provider = authcode_provider
@@ -346,6 +404,18 @@ class Runtime:
         # if self.authcode_provider and authcode_provider == self.authcode_provider:
         #     self.authcode_provider = None
         self.authcode_provider = None
+        print('logout_authcode_provider')
+
+    def register_privacy_notice_provider(
+        self,
+        privacy_notice_provider: PrivacyNoticeProvider,
+    ):
+        self.privacy_notice_provider = privacy_notice_provider
+
+    def logout_privacy_notice_provider(
+        self, privacy_notice_provider: PrivacyNoticeProvider
+    ):
+        self.privacy_notice_provider = None
         print('logout_authcode_provider')
 
     @property

@@ -76,7 +76,14 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
     city = models.CharField(max_length=128, blank=True)
     job_title = models.CharField(max_length=128, blank=True)
     last_login = models.DateTimeField(blank=True, null=True)
-
+    parent = models.ForeignKey(
+        'self',
+        default=None,
+        null=True,
+        blank=True,
+        verbose_name='父账号',
+        on_delete=models.PROTECT
+    )
     avatar = models.CharField(blank=True, max_length=256)
 
     groups = models.ManyToManyField(
@@ -147,6 +154,28 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
             user=self,
         )
         return token.key
+    
+    def account_type(self):
+        if self.parent:
+            return '子账号'
+        else:
+            return '主账号'
+    
+    def check_token(self, tenant_uuid):
+        from extension_root.tenantuserconfig.models import TenantUserConfig
+        tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        config = TenantUserConfig.active_objects.filter(
+            tenant=tenant
+        ).first()
+        if config:
+            data = config.data
+            is_look_token = data['is_look_token']
+            if is_look_token is True:
+                return self.token
+            else:
+                return ""
+        else:
+            return ""
 
     def refresh_token(self):
         import datetime
@@ -156,6 +185,12 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         Token.objects.filter(user=self).delete()
         token, _ = Token.objects.get_or_create(user=self)
         return token
+    
+    @property
+    def new_token(self):
+        Token.objects.filter(user=self).delete()
+        token, _ = Token.objects.get_or_create(user=self)
+        return token.key
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

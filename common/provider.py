@@ -80,8 +80,32 @@ class ExternalIdpProvider:
         pass
 
 
+class ChildAccountConfigProvider:
+    pass
+
+
 class TenantUserConfigProvider:
     pass
+
+
+class AuthorizationAgentProvider:
+
+    name: Optional[str]
+    bind_key: str
+
+    def __init__(self) -> None:
+        self.name = None
+
+    @abstractmethod
+    def create(self, tenant_uuid, external_idp) -> Dict:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def authenticate(self):
+        """
+        ExternalIDP => ArkID
+        """
+        pass
 
 
 class AuthorizationServerProvider:
@@ -137,17 +161,34 @@ class MigrationProvider:
         raise NotImplementedError
 
 
-class LoginRegisterConfigProvider(ABC):
-    @abstractmethod
-    def login_form(self, tenant_uuid=None, **kwargs):
-        raise NotImplementedError
+class LoginRegisterConfigProvider:
+    @property
+    def login_form(self):
+        return None
 
-    @abstractmethod
-    def register_form(self, tenant_uuid=None, **kwargs):
-        raise NotImplementedError
+    @property
+    def register_form(self):
+        return None
 
-    @abstractmethod
-    def reset_password_form(self, tenant_uuid=None, **kwargs):
+    @property
+    def reset_password_form(self):
+        return None
+
+    def authenticate(self, request):
+        '''login'''
+        pass
+
+    def register_user(self, request):
+        '''register'''
+        pass
+
+    def reset_password(self, request):
+        pass
+
+
+class PrivacyNoticeProvider:
+    @classmethod
+    def load_privacy(cls, request):
         raise NotImplementedError
 
 class BaseAuthRuleProvider:

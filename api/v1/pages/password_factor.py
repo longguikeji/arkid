@@ -10,7 +10,7 @@ extend_schema_tags(
     {
         'type': 'table_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/',
+            'path': '/api/v1/config/password_complexity/?tenant={tenant_uuid}',
             'method': 'get'
         },
         'global': {
@@ -23,7 +23,7 @@ extend_schema_tags(
                 'tag': 'password.update'
             },
             'delete': {
-                'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/{complexity_uuid}/detail/',
+                'path': '/api/v1/config/password_complexity/{complexity_uuid}/?tenant={tenant_uuid}',
                 'method': 'delete'
             }
         }
@@ -39,12 +39,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/',
+            'path': '/api/v1/config/password_complexity/?tenant={tenant_uuid}',
             'method': 'post'
         },
         'global': {
             'create': {
-                'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/',
+                'path': '/api/v1/config/password_complexity/?tenant={tenant_uuid}',
                 'method': 'post'
             }
         }
@@ -60,12 +60,12 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/{complexity_uuid}/detail/',
+            'path': '/api/v1/config/password_complexity/{complexity_uuid}/?tenant={tenant_uuid}',
             'method': 'get'
         },
         'global': {
             'update': {
-                'path': '/api/v1/tenant/{tenant_uuid}/password_complexity/{complexity_uuid}/detail/',
+                'path': '/api/v1/config/password_complexity/{complexity_uuid}/?tenant={tenant_uuid}',
                 'method': 'patch'
             }
         }

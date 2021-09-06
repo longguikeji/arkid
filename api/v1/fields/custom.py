@@ -346,6 +346,24 @@ def create_multiple_dynamic_choice_field(field_cls):
             field = get_override(self, 'field', {})
             field['url'] = url
 
+    return MultipleChoiceField
+
+def create_custom_list_field(field_cls):
+    """
+    自定义列表字段
+    """
+
+    @extend_schema_field(
+        field={
+            'format': 'custom_list',
+        }
+    )
+    class CustomListField(field_cls):
+        _field_meta = {}
+
+        def __init__(self, url, **kwargs):
+            field = get_override(self, 'field', {})
+            field['url'] = url
             for k, v in kwargs.items():
                 if isinstance(v, (str, int, list, bool, dict, float)):
                     field[k] = v
@@ -353,4 +371,4 @@ def create_multiple_dynamic_choice_field(field_cls):
             set_override(self, 'field', field)
             super().__init__(**kwargs)
 
-    return MultipleChoiceField
+    return CustomListField

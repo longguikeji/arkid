@@ -11,7 +11,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from openapi.utils import extend_schema
 from extension_root.tenantuserconfig.serializers import(
-    TenantUserConfigSerializer,
+    TenantUserConfigSerializer, TenantUserConfigFieldSerializer,
 )
 from extension_root.tenantuserconfig.models import TenantUserConfig
 from tenant.models import Tenant
@@ -36,11 +36,9 @@ class TenantUserConfigView(generics.RetrieveUpdateAPIView):
             config.tenant = tenant
             config.data = {
                 'is_edit_fields': [
-                    {'name':'用户名', 'is_edit': True},
-                    {'name':'姓名', 'is_edit': True},
-                    {'name':'电话', 'is_edit': True},
-                    {'name':'邮箱', 'is_edit': True},
-                    {'name':'职位', 'is_edit': True},
+                    'nickname', 'mobile', 'email',
+                    'job_title', 'first_name', 'last_name',
+                    'country', 'city'
                 ],
                 'is_logout': False,
                 'is_look_token': False,
@@ -50,3 +48,26 @@ class TenantUserConfigView(generics.RetrieveUpdateAPIView):
             }
             config.save()
         return config
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantUserConfigFieldView(generics.RetrieveAPIView):
+
+    serializer_class = TenantUserConfigFieldSerializer
+
+    @extend_schema(responses=TenantUserConfigFieldSerializer)
+    def get(self, request, tenant_uuid):
+        items = ['nickname', 'mobile', 'email', 'job_title']
+        serializer = self.get_serializer({
+            'results': [
+                {'name':'昵称' , 'value':'nickname'},
+                {'name':'电话' , 'value':'mobile'},
+                {'name':'邮箱' , 'value':'email'},
+                {'name':'职称' , 'value':'job_title'},
+                {'name':'姓' , 'value':'first_name'},
+                {'name':'名' , 'value':'last_name'},
+                {'name':'国家' , 'value':'country'},
+                {'name':'城市' , 'value':'city'},
+            ]
+        })
+        return Response(serializer.data)
