@@ -38,6 +38,7 @@ urlpatterns = [
     # user
     url(r'^user/$', user_views.UserListCreateAPIView.as_view(), name='user_list'),
     url(r'^user/isolated/$', user_views.UserIsolatedAPIView.as_view(), name='isolated_user_list'),    # FIX
+    url(r'^user/channel/$', user_views.UserChannelListAPIView.as_view(), name='user_channel_list'),
     url(r'^user/(?P<username>[\w]+)/convert/intra/$',
         user_views.UserExtern2IntraView.as_view(),
         name='user_convert_to_intra'),
@@ -71,6 +72,8 @@ urlpatterns = [
     url(r'^group/(?P<uid>[\w|-]+)/user/$', group_views.GroupChildUserAPIView.as_view(), name='group_child_user'),
     # dept
     url(r'^dept/$', dept_views.DeptListAPIView.as_view(), name='dept_list'),
+    url(r'^dept/channel/$', dept_views.DeptListChannelAPIView.as_view(), name='dept_channel_list'),
+    url(r'^dept/user/channel/$', dept_views.DeptUserListChannelAPIView.as_view(), name='dept_user_channel_list'),
     url(r'^dept/(?P<uid>[\w|-]+)/$', dept_views.DeptDetailAPIView.as_view(), name='dept_detail'),
     url(r'^dept/(?P<uid>[\w|-]+)/list/$', dept_views.DeptScopeListAPIView.as_view(), name='dept_scope_list'),
     url(r'^dept/(?P<uid>[\w|-]+)/tree/$', dept_views.ManagerDeptTreeAPIView.as_view(), name='dept_tree'),

@@ -17,7 +17,7 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 
-from oneid_meta.models import Dept
+from oneid_meta.models import Dept, DeptMember
 from oneid_meta.models.config import ContactsConfig
 from oneid.permissions import (
     IsAdminUser,
@@ -32,6 +32,8 @@ from siteapi.v1.serializers.dept import (
     DeptListSerializer,
     DeptSerializer,
     DeptDetailSerializer,
+    DeptListChannelSerializer,
+    DeptMemberListChannelSerializer,
 )
 from siteapi.v1.views.utils import (
     get_users_from_uids,
@@ -68,6 +70,23 @@ class DeptListAPIView(generics.ListAPIView):
             kwargs.update(name__icontains=name)
 
         return Dept.valid_objects.filter(**kwargs).exclude(uid='root').order_by('id')
+
+
+class DeptListChannelAPIView(generics.ListAPIView):
+    '''
+    提供给用户获取部门数据
+    '''
+
+    permission_classes = []
+    serializer_class = DeptListChannelSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        parent = self.request.query_params.get('parent', None)
+        kwargs = {}
+        if parent:
+            kwargs.update(parent_id=parent)
+        return Dept.obs.filter(**kwargs).order_by('id')
 
 
 class DeptScopeListAPIView(generics.ListAPIView):
@@ -445,3 +464,20 @@ class UcenterDeptChildUserAPIView(
 
 class UsercenterDeptChildUserAPIView(UcenterDeptChildUserAPIView):
     read_permission_classes = [IsAuthenticated]
+
+
+class DeptUserListChannelAPIView(generics.ListAPIView):
+    '''
+    提供给用户使用部门用户数据
+    '''
+    permission_classes = []
+    serializer_class = DeptMemberListChannelSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        kwargs = {}
+        dept = self.request.query_params.get('dept', None)
+        if dept:
+            kwargs['owner_id'] = dept
+        queryset = DeptMember.obs.filter(**kwargs).order_by()
+        return queryset
