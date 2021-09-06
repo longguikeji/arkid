@@ -77,6 +77,26 @@ class DeptSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
         )
 
 
+class DeptListChannelSerializer(DynamicFieldsModelSerializer):
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = Dept
+
+        fields = (
+            'id',
+            'uuid',
+            'uid',
+            'name',
+            'remark',
+            'parent',
+            'order_no',
+            'is_active',
+            'is_del',
+            'created',
+            'updated',
+        )
+
+
 class DeptDetailSerializer(DeptSerializer):
     '''
     dept info with parent_uid
@@ -404,3 +424,21 @@ class DeptTreeSerializer(DynamicFieldsModelSerializer, NodeSerialzierMixin):
         下属节点
         '''
         return self.get_depts(instance)
+
+
+class DeptMemberListChannelSerializer(DynamicFieldsModelSerializer):
+
+    class Meta:    # pylint: disable=missing-docstring
+        model = DeptMember
+
+        fields = (
+            'id',
+            'uuid',
+            'owner_id',
+            'user_id',
+            'order_no',
+            'is_active',
+            'is_del',
+            'created',
+            'updated',
+        )

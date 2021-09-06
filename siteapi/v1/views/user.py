@@ -27,10 +27,16 @@ from oneid.permissions import (
     UserManagerReadable,
     CustomPerm,
 )
+<<<<<<< Updated upstream
 from siteapi.v1.serializers.user import (
     UserSerializer,
     EmployeeSerializer,
     ResetUserPasswordSerializer,
+=======
+from siteapi.v1.serializers.user import(
+    UserSerializer, EmployeeSerializer, ResetUserPasswordSerializer,
+    UserChannelListSerializer,
+>>>>>>> Stashed changes
 )
 from siteapi.v1.serializers.group import GroupListSerializer, GroupSerializer
 from siteapi.v1.serializers.dept import DeptListSerializer, DeptSerializer
@@ -371,6 +377,21 @@ class UserIsolatedAPIView(generics.ListAPIView):
     def get_queryset(self):
         kwargs = {}
         queryset = User.isolated_objects.filter(**kwargs).order_by()
+        return queryset
+
+
+class UserChannelListAPIView(generics.ListAPIView):
+    '''
+    提供给用户使用用户数据
+    '''
+
+    permission_classes = []
+    serializer_class = UserChannelListSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        kwargs = {}
+        queryset = User.obs.filter(**kwargs).order_by()
         return queryset
 
 
