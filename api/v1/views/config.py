@@ -23,6 +23,7 @@ from tenant.models import Tenant
 from config.models import PrivacyNotice, PasswordComplexity
 from rest_framework.response import Response
 from runtime import get_app_runtime
+from rest_framework import status
 
 
 @extend_schema(
@@ -184,27 +185,42 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = PrivacyNoticeSerializer
 
-    def get_object(self):
-        # tenant_uuid = self.request.query_params.get('tenant')
-        # if not tenant_uuid:
-        #     tenant = None
-        # else:
-        #     tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
-        # privacy_notice, is_created = PrivacyNotice.objects.get_or_create(
-        #     is_del=False, tenant=tenant
-        # )
-        # return privacy_notice
+    def get_provider(self):
         r = get_app_runtime()
         privacy_notice_provider = r.privacy_notice_provider
-        assert privacy_notice_provider is not None
-        return privacy_notice_provider.load_privacy(self.request)
+        if not privacy_notice_provider:
+            return None
+        return privacy_notice_provider
 
     def put(self, request, *args, **kwargs):
-        instance = self.get_object()
+        provider = self.get_provider()
+        if not provider:
+            return JsonResponse(
+                data={
+                    'error': Code.PROVIDER_NOT_EXISTS_ERROR.value,
+                    'message': _('configure privacy_notice extension first'),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        instance = provider.load_privacy(request)
         serializer = PrivacyNoticeSerializer(instance, data=request.data)
         serializer.is_valid()
         serializer.save()
         return Response(serializer.data)
+
+    def get(self, request, *args, **kwargs):
+        provider = self.get_provider()
+        if not provider:
+            return JsonResponse(
+                data={
+                    'error': Code.PROVIDER_NOT_EXISTS_ERROR.value,
+                    'message': _('configure privacy_notice extension first'),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        instance = provider.load_privacy(request)
+        data = PrivacyNoticeSerializer(instance).data
+        return JsonResponse(data=data)
 
 
 @extend_schema(

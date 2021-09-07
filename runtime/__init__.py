@@ -36,6 +36,7 @@ class Runtime:
     tenantuserconfig_provider: TenantUserConfigProvider = None
     childaccountconfig_provider: ChildAccountConfigProvider = None
     migration_provider: MigrationProvider = None
+    privacy_notice_provider: PrivacyNoticeProvider = None
 
     external_idps: List
     external_idp_providers: Dict[str, ExternalIdpProvider]
@@ -344,10 +345,14 @@ class Runtime:
         self.tenantuserconfig_provider = None
         print('logout_tenantuserconfig_provider')
 
-    def register_childaccountconfig_provider(self, childaccountconfig_provider: ChildAccountConfigProvider):
+    def register_childaccountconfig_provider(
+        self, childaccountconfig_provider: ChildAccountConfigProvider
+    ):
         self.childaccountconfig_provider = childaccountconfig_provider
 
-    def logout_childaccountconfig_provider(self, childaccountconfig_provider: ChildAccountConfigProvider):
+    def logout_childaccountconfig_provider(
+        self, childaccountconfig_provider: ChildAccountConfigProvider
+    ):
         self.childaccountconfig_provider = None
         print('logout_childaccountconfig_provider')
 
