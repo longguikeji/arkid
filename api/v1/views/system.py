@@ -27,34 +27,8 @@ class SystemConfigView(generics.RetrieveUpdateAPIView):
         systemconfig, is_created = SystemConfig.objects.get_or_create(
             is_del=False,
         )
-        if is_created is True:
-            systemconfig.data = {'is_open_register': True}
-            systemconfig.save()
-        else:
-            data = systemconfig.data
-            if 'is_open_register' not in data:
-                data['is_open_register'] = True
+        if is_created:
+            default_data = SystemConfigSerializer(systemconfig).data
+            systemconfig.data = default_data.get('data')
             systemconfig.save()
         return systemconfig
-
-
-# @extend_schema(roles=['global admin'], tags=['system'])
-# class SystemPrivacyNoticeView(generics.RetrieveUpdateAPIView):
-
-#     permission_classes = [IsAuthenticated, IsSuperAdmin]
-#     authentication_classes = [ExpiringTokenAuthentication]
-
-#     serializer_class = SystemPrivacyNoticeSerializer
-
-#     def get_object(self):
-#         privacy_notice, is_created = SystemPrivacyNotice.objects.get_or_create(
-#             is_del=False
-#         )
-#         return privacy_notice
-
-#     def put(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         serializer = SystemPrivacyNoticeSerializer(instance, data=request.data)
-#         serializer.is_valid()
-#         serializer.save()
-#         return Response(serializer.data)

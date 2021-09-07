@@ -8,7 +8,7 @@ from django.http.response import JsonResponse
 from runtime import get_app_runtime
 from openapi.utils import extend_schema
 from rest_framework.views import APIView
-from common.utils import check_password_complexity
+from common.utils import check_password_complexity, get_request_tenant
 
 
 @extend_schema(
@@ -18,7 +18,7 @@ from common.utils import check_password_complexity
 )
 class RegisterView(APIView):
     def post(self, request):
-        tenant = self.get_tenant(request)
+        tenant = get_request_tenant(request)
         # TODO password complexity check
         if 'password' in request.data:
             ret, message = check_password_complexity(
@@ -63,14 +63,6 @@ class RegisterView(APIView):
         return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
 
         return JsonResponse(data={'error': Code.OK.value, 'data': return_data})
-
-    def get_tenant(self, request):
-        tenant = None
-        tenant_uuid = request.query_params.get('tenant', None)
-        if tenant_uuid:
-            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
-
-        return tenant
 
     def get_provider(self, tenant, extention_type):
 

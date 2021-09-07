@@ -13,6 +13,7 @@ from common.utils import (
     set_user_register_count,
     get_user_register_count,
     get_password_error_count,
+    get_request_tenant,
 )
 from rest_framework.exceptions import ValidationError
 
@@ -72,7 +73,16 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             return data
 
     def register_user(self, request):
-        # TODO password verify
+        tenant = get_request_tenant(request)
+        password = request.data.get('password')
+        ret, message = check_password_complexity(password, tenant)
+        if not ret:
+            data = {
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': message,
+            }
+            return data
+
         if 'username' in request.data:
             field_name = 'username'
         elif 'email' in request.data:
@@ -109,6 +119,8 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             )
             CustomUser.objects.create(user=user, data={field_name: field_value})
 
+        user.set_password(password)
+        user.save()
         data = {'error': Code.OK.value, 'user': user}
         return data
 
