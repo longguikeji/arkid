@@ -243,7 +243,7 @@ class User(BaseModel, PermOwnerMixin):
         判断是否有某权限
         '''
         if perm is None:
-            return True
+            return False
         if self.is_admin:
             return True
         return UserPerm.valid_objects.filter(owner=self, perm=perm, value=True).exists()
