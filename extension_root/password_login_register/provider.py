@@ -6,7 +6,8 @@ from django.urls import reverse
 from config import get_app_config
 from common.native_field import NativeFieldNames
 from inventory.models import CustomField, Group, User, UserPassword, CustomUser
-from tenant.models import Tenant
+from tenant.models import Tenant, TenantConfig
+from system.models import SystemConfig
 from common.utils import (
     get_client_ip,
     check_password_complexity,
@@ -21,6 +22,8 @@ from .form import PasswordLoginForm, PasswordRegisterForm
 from common.exception import ValidationFailed
 from common.code import Code
 from django.utils.translation import gettext_lazy as _
+import datetime
+from django.utils import timezone
 
 
 class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
@@ -52,6 +55,18 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             forms.append(PasswordRegisterForm(self, name, name).get_form())
         return forms
 
+    def _get_password_validity_period(self, request):
+        tenant = get_request_tenant(request)
+        config = None
+        if tenant:
+            config = TenantConfig.valid_objects.filter(tenant=tenant).first()
+        else:
+            config = SystemConfig.valid_objects.filter().first()
+        if not config:
+            return None
+        else:
+            return config.data.get('password_validity_period', None)
+
     def authenticate(self, request):
         ''' '''
 
@@ -65,12 +80,26 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             }
 
             return data
-        else:
-            data = {
-                'error': Code.OK.value,
-                'user': user,
-            }
-            return data
+
+        # check password validity
+        # now = datetime.datetime.now()
+        now = timezone.now()
+        last_update_pwd = user.last_update_pwd
+        if last_update_pwd:
+            password_validity_period = self._get_password_validity_period(request)
+            if password_validity_period:
+                interval = now - last_update_pwd
+                if interval.days >= password_validity_period:
+                    return {
+                        'error': Code.PASSWORD_EXPIRED_ERROR.value,
+                        'message': _('password expired, please reset password'),
+                    }
+
+        data = {
+            'error': Code.OK.value,
+            'user': user,
+        }
+        return data
 
     def register_user(self, request):
         tenant = get_request_tenant(request)
