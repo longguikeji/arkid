@@ -195,9 +195,6 @@ CORS_ALLOW_METHODS = (
 STATIC_URL = '/static/'
 
 
-CELERY_BROKER = 'redis://localhost:6379'
-
-
 AUTH_USER_MODEL = 'inventory.User'
 
 CONFIG_FILE = 'arkid.toml'
