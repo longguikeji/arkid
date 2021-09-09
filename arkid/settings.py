@@ -195,7 +195,7 @@ CORS_ALLOW_METHODS = (
 STATIC_URL = '/static/'
 
 
-
+AUTH_USER_MODEL = 'inventory.User'
 
 CONFIG_FILE = 'arkid.toml'
 CONFIG_LOCAL_FILE = 'arkid.local.toml'
