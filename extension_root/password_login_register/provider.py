@@ -168,7 +168,9 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
                 )
                 if not custom_field:
                     continue
-                custom_user = CustomUser.valid_objects.filter(data__name=name).first()
+                custom_user = CustomUser.valid_objects.filter(
+                    data__name=username
+                ).first()
                 if custom_user:
                     user = custom_user.user
         return user
