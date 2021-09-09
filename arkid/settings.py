@@ -195,9 +195,6 @@ CORS_ALLOW_METHODS = (
 STATIC_URL = '/static/'
 
 
-CELERY_BROKER = 'redis://localhost:6379'
-
-
 AUTH_USER_MODEL = 'inventory.User'
 
 CONFIG_FILE = 'arkid.toml'
@@ -228,18 +225,11 @@ g+gp5fQ4nmDrSNHjakzQCX2mKMsx/GLWZzoIDd7ECV9f
     # ... any other settings you want
 }
 
-LDAP_PORT = 389
-SLAPD_PASSWORD = 'admin'
-SLAPD_DOMAIN = 'dc=example,dc=org'
-AUTH_USER_MODEL = 'inventory.User'
+
 
 MAMA_CAS_ATTRIBUTE_CALLBACKS = ('mama_cas.callbacks.user_model_attributes',)
 
-import os
 
-# 引入settings_local.py 本地配置文件
-if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
-    exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
 
 # django-scim2
 SCIM_SERVICE_PROVIDER = {
@@ -260,8 +250,8 @@ SCIM_SERVICE_PROVIDER = {
 
 
 # Celery settings
-
-CELERY_BROKER_URL = 'redis://localhost'
+CELERY_BROKER = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379'
 
 #: Only add pickle to this list if your broker is secured
 #: from unwanted access (see userguide/security.html)
@@ -276,3 +266,8 @@ FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'  # 邮件激活账号页�
 FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'  # 邮件重置邮箱页面
 
 SMS_LIFESPAN = datetime.timedelta(seconds=300)
+
+
+# 引入settings_local.py 本地配置文件
+if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
+    exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
