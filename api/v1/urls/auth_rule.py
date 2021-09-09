@@ -1,7 +1,7 @@
 
 from django.urls import re_path
 from rest_framework.routers import DefaultRouter
-from auth_rules.views import TenantAuthRuleViewSet,AuthRuleAuthFactorChoicesListView,AuthRuleAppChoicesListView
+from auth_rules.views import TenantAuthRuleViewSet,AuthRuleAuthFactorChoicesListView,AuthRuleAppChoicesListView,AppLoginHookView
 from .tenant import tenant_router
 
 router = DefaultRouter()
@@ -23,5 +23,10 @@ urlpatterns = [
         r'^auth_rule/app_choices_list/$',
         AuthRuleAppChoicesListView.as_view(),
         name='auth-rule-app-choices-list',
+    ),
+    re_path(
+        r'^auth_rule/app_login_hook/$',
+        AppLoginHookView.as_view(),
+        name='auth-rule-app_login_hook',
     ),
 ]

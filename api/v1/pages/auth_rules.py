@@ -8,7 +8,7 @@ extend_schema_tags(
     tag,
     name,
     {
-        'type':'table_page',
+        'type': 'table_page',
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/auth_rule/',
             'method': 'get'
@@ -17,7 +17,16 @@ extend_schema_tags(
             'create': {
                 'tag': 'auth_rules.create'
             }
-        }
+        },
+        'local': {
+            'update': {
+                'tag': 'auth_rules.update'
+            },
+            'delete': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/auth_rule/{id}/',
+                'method': 'delete'
+            }
+        },
     }
 )
 
@@ -37,6 +46,28 @@ extend_schema_tags(
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/auth_rule/',
                 'method': 'post'
+            }
+        }
+    }
+)
+
+
+auth_rules_update_tag = 'auth_rules.update'
+auth_rules_update_name = '编辑认证规则'
+
+extend_schema_tags(
+    auth_rules_update_tag,
+    auth_rules_update_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/auth_rule/{id}/',
+            'method': 'get'
+        },
+        'global': {
+            'update': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/auth_rule/{id}/',
+                'method': 'put'
             }
         }
     }

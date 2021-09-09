@@ -62,3 +62,17 @@ class TenantAuthRuleViewSet(BaseViewSet):
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        request=TenantAuthRulePolymorphicProxySerializer,
+        responses=TenantAuthRulePolymorphicProxySerializer,
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenant admin', 'global admin'], responses=TenantAuthRulePolymorphicProxySerializer
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)

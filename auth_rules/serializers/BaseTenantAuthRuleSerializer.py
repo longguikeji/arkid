@@ -19,7 +19,11 @@ class BaseTenantAuthRuleSerializer(BaseDynamicFieldModelSerializer):
             "title",
             "data",
             "is_apply",
+            "uuid"
         ]
+        extra_kwargs = {
+            'uuid': {'read_only': True},
+        }
 
     @transaction.atomic()
     def create(self, validated_data):

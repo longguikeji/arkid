@@ -35,6 +35,10 @@ class AuthRuleBaseSerializer(serializers.Serializer):
 
     uuid = serializers.UUIDField(read_only=True)
 
+    is_apply = serializers.BooleanField(
+        label=_("是否启用")
+    )
+
 class ExternalIdpBaseSerializer(serializers.Serializer):
     # order_no = serializers.IntegerField()
     type = serializers.CharField()

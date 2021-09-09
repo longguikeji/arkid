@@ -10,7 +10,7 @@ from provisioning.models import Config
 from schema.models import Schema, AppProfile
 from webhook.manager import WebhookManager
 from django.db import transaction
-
+from django.utils.translation import ugettext_lazy as _
 
 class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
     class Meta:
@@ -96,6 +96,7 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
 
 
 class AppListSerializer(AppSerializer):
+
     class Meta:
         model = App
 
@@ -106,7 +107,6 @@ class AppListSerializer(AppSerializer):
             'description',
             'auth_tmpl',
         )
-
 
 class AppProvisioningMappingSerializer(BaseDynamicFieldModelSerializer):
     class Meta:

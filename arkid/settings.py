@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'device',
     'app',
     'oauth2_provider',
+    'auth_rules',
     'mama_cas',
     'tasks',
     'webhook',
@@ -69,7 +70,6 @@ INSTALLED_APPS = [
     'extension',
     'api',
     'system',
-    'auth_rules',
     'extension_root.github',
     'extension_root.gitee',
     'extension_root.feishu',
@@ -236,7 +236,6 @@ AUTH_USER_MODEL = 'inventory.User'
 
 MAMA_CAS_ATTRIBUTE_CALLBACKS = ('mama_cas.callbacks.user_model_attributes',)
 
-import os
 
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
