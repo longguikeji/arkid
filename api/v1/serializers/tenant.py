@@ -43,6 +43,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         if user and user.username != "":
             user.tenants.add(tenant)
         permission = Permission.active_objects.filter(
+            is_system_permission=True,
             codename=tenant.admin_perm_code
         ).first()
         if permission:

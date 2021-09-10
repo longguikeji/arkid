@@ -3,8 +3,17 @@ from api.v1.views import (
 )
 
 from .tenant import tenant_router
+from django.urls import re_path
 
 tenant_router.register(r'permission',
         views_permission.PermissionViewSet,
         basename='tenant-permission',
         parents_query_lookups=['tenant',])
+
+urlpatterns = [
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/permission/create',
+        views_permission.PermissionCreateView.as_view(),
+        name='tenant-permission-create',
+    ),
+]

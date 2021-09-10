@@ -15,6 +15,7 @@ from django.contrib.auth.hashers import (
     make_password,
 )
 from django.contrib.auth.models import AbstractUser
+from app.models import App
 from common.model import BaseModel
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import PermissionManager
@@ -27,9 +28,14 @@ KEY = Fernet(base64.urlsafe_b64encode(settings.SECRET_KEY.encode()[:32]))
 
 class Permission(BaseModel):
 
-    tenant = models.ForeignKey(
-        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+    TYPE_CHOICES = (
+        (0, '未知'),
+        (1, '入口'),
+        (2, 'API'),
+        (3, '数据'),
     )
+
+    # django 自带权限字段
     name = models.CharField(_('name'), max_length=255)
     content_type = models.ForeignKey(
         ContentType,
@@ -38,6 +44,26 @@ class Permission(BaseModel):
         related_name='upermission_content_type',
     )
     codename = models.CharField(_('codename'), max_length=100)
+    # 用户扩展的权限字段
+    tenant = models.ForeignKey(
+        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+    )
+    app = models.ForeignKey(
+        App,
+        models.CASCADE,
+        default=None,
+        null=True,
+        blank=True,
+    )
+    permission_type = models.IntegerField(
+        choices=TYPE_CHOICES,
+        default=0,
+        verbose_name='权限类型'
+    )
+    is_system_permission = models.BooleanField(
+        default=True,
+        verbose_name='是否是系统权限'
+    )
 
     objects = PermissionManager()
 

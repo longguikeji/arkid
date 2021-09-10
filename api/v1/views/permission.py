@@ -3,7 +3,10 @@ from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from api.v1.serializers.permission import (
-    PermissionSerializer
+    PermissionSerializer, PermissionCreateSerializer
+)
+from tenant.models import (
+    Tenant,
 )
 from common.paginator import DefaultListPaginator
 from openapi.utils import extend_schema
@@ -30,6 +33,7 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         tenant = context['tenant']
 
         objs = Permission.objects.filter(
+            is_system_permission=True,
             tenant=tenant,
         )
 
@@ -46,3 +50,20 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
         obj = Permission.valid_objects.filter(**kwargs).first()
         return obj
+
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags = ['permission']
+)
+class PermissionCreateView(generics.CreateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = PermissionCreateSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant'] = Tenant.objects.filter(uuid=self.kwargs['tenant_uuid']).first()
+        return context

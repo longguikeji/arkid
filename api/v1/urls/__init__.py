@@ -83,3 +83,4 @@ urlpatterns += device.urlpatterns
 urlpatterns += login.urlpatterns
 urlpatterns += register.urlpatterns
 urlpatterns += reset_password.urlpatterns
+urlpatterns += permission.urlpatterns
