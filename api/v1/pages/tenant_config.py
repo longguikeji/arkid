@@ -15,11 +15,13 @@ extend_schema_tags(
         },
         'global': {
             'update': {
-                'tag': 'tenant_config.update'
+                'tag': 'tenant_config.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '注销租户'
             } 
         }
     }
@@ -40,7 +42,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

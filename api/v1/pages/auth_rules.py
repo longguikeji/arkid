@@ -15,7 +15,8 @@ extend_schema_tags(
     #     },
     #     'global': {
     #         'create': {
-    #             'tag': 'auth_rules.create'
+    #             'tag': 'auth_rules.create',
+    #             'description': '添加认证规则'
     #         }
     #     }
     # }
@@ -37,6 +38,7 @@ extend_schema_tags(
 #             'create': {
 #                 'path': '/api/v1/tenant/{parent_lookup_tenant}/auth_rule/',
 #                 'method': 'post'
+                # 'description': '确定'
 #             }
 #         }
 #     }

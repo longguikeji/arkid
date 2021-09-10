@@ -15,7 +15,8 @@ extend_schema_tags(
         },
         'local': {
             'update': {
-                'tag': 'contacts_user_config.update'
+                'tag': 'contacts_user_config.update',
+                'description': '编辑'
             }
         }
     }
@@ -36,7 +37,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/contactsconfig/info_visibility/{info_uuid}/detail/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

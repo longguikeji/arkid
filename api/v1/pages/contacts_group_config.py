@@ -41,7 +41,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/contactsconfig/{group_uuid}/group_visibility/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

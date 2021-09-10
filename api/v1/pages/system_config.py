@@ -18,16 +18,19 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'system_login_register_extension.create'
+                'tag': 'system_login_register_extension.create',
+                'description': '添加系统登录注册插件'
             }
         },
         'local': {
             'update': {
-                'tag': 'system_login_register_extension.update'
+                'tag': 'system_login_register_extension.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/login_register_config/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
@@ -48,7 +51,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/login_register_config/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -69,7 +73,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/login_register_config/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }
@@ -89,7 +94,8 @@ extend_schema_tags(
         },
         'global': {
             'update': {
-                'tag': 'system_config.update'
+                'tag': 'system_config.update',
+                'description': '编辑'
             }
         }
     }
@@ -110,7 +116,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/system/config',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }
@@ -130,7 +137,8 @@ extend_schema_tags(
         },
         'global': {
             'update': {
-                'tag': 'system_register_privacy_notice.update'
+                'tag': 'system_register_privacy_notice.update',
+                'description': '编辑'
             }
         }
     }
@@ -151,7 +159,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/config/privacy_notice/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

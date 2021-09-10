@@ -15,11 +15,13 @@ extend_schema_tags(
         },
         'global': {
             'update': {
-                'tag': 'profile.update'
+                'tag': 'profile.update',
+                'description': '编辑'
             },
             'password': {
                 'path': '/api/v1/user/update_password/',
-                'method': 'post'
+                'method': 'post',
+                'description': '重置密码'
             },
             'logoff': {
                 'path': '/api/v1/user/logoff/',
@@ -45,7 +47,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/user/info/',
-                'method': 'patch'
+                'method': 'patch',
+                'description': '确定'
             }
         }
     }

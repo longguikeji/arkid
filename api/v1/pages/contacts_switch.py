@@ -15,7 +15,8 @@ extend_schema_tags(
         },
         'global': {
             'update': {
-                'tag': 'contacts_switch.update'
+                'tag': 'contacts_switch.update',
+                'description': '编辑'
             }
         }
     }
@@ -36,7 +37,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/contactsconfig/function_switch/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }
