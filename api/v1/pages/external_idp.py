@@ -15,7 +15,8 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'external_idp.create'
+                'tag': 'external_idp.create',
+                'description': '添加第三方登录'
             }
         },
         'local': {
@@ -42,11 +43,13 @@ extend_schema_tags(
                 }
             },
             'update': {
-                'tag': 'external_idp.update'
+                'tag': 'external_idp.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
@@ -68,7 +71,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -89,7 +93,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/external_idp/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

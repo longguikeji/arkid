@@ -182,3 +182,14 @@ def mark_user_login_failed(self, ip, check_str='login'):
     else:
         v = int(data) + 1
     runtime.cache_provider.set(key, v, 86400)
+
+
+def get_request_tenant(request):
+    from tenant.models import Tenant
+
+    tenant = None
+    tenant_uuid = request.query_params.get('tenant', None)
+    if tenant_uuid:
+        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+
+    return tenant

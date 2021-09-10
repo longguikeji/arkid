@@ -7,6 +7,7 @@ from django.http.response import JsonResponse
 from runtime import get_app_runtime
 from openapi.utils import extend_schema
 from rest_framework.views import APIView
+from django.utils.translation import gettext_lazy as _
 
 
 @extend_schema(
@@ -39,6 +40,13 @@ class LoginView(APIView):
 
         else:
             user = ret.get('user')
+
+        if tenant and not user.is_superuser:
+            if tenant not in user.tenants.all():
+                return {
+                    'error': Code.USERNAME_PASSWORD_MISMATCH.value,
+                    'message': _('username or password is not correct'),
+                }
 
         token = user.refresh_token()
         return_data = {'token': token.key, 'user_uuid': user.uuid.hex}

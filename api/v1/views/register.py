@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from tenant.models import Tenant
+from tenant.models import Tenant, TenantConfig
+from system.models import SystemConfig
 from common.code import Code
 from login_register_config.models import LoginRegisterConfig
 from api.v1.serializers.tenant import TenantSerializer
@@ -8,7 +9,14 @@ from django.http.response import JsonResponse
 from runtime import get_app_runtime
 from openapi.utils import extend_schema
 from rest_framework.views import APIView
-from common.utils import check_password_complexity
+from common.utils import (
+    check_password_complexity,
+    get_request_tenant,
+    get_client_ip,
+    set_user_register_count,
+    get_user_register_count,
+)
+from django.utils.translation import gettext_lazy as _
 
 
 @extend_schema(
@@ -18,19 +26,24 @@ from common.utils import check_password_complexity
 )
 class RegisterView(APIView):
     def post(self, request):
-        tenant = self.get_tenant(request)
-        # TODO password complexity check
-        if 'password' in request.data:
-            ret, message = check_password_complexity(
-                request.data.get('password'), tenant
-            )
-            if not ret:
+        tenant = get_request_tenant(request)
+
+        config = self.get_system_or_tenant_config(tenant)
+        is_open_register_limit = config.data.get('is_open_register_limit', False)
+        register_time_limit = config.data.get('register_time_limit', 1)
+        register_count_limit = config.data.get('register_count_limit', 10)
+
+        ip = get_client_ip(request)
+        if is_open_register_limit:
+            register_count = get_user_register_count(ip)
+            if register_count >= register_count_limit:
                 return JsonResponse(
                     data={
-                        'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                        'message': message,
+                        'error': Code.REGISTER_FAST_ERROR.value,
+                        'message': _('a large number of registrations in a short time'),
                     }
                 )
+
         extention_type = request.data.get('extension', None)
 
         if not extention_type:
@@ -62,15 +75,10 @@ class RegisterView(APIView):
         token = user.refresh_token()
         return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
 
+        if is_open_register_limit:
+            set_user_register_count(ip, 'register', register_time_limit)
+
         return JsonResponse(data={'error': Code.OK.value, 'data': return_data})
-
-    def get_tenant(self, request):
-        tenant = None
-        tenant_uuid = request.query_params.get('tenant', None)
-        if tenant_uuid:
-            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
-
-        return tenant
 
     def get_provider(self, tenant, extention_type):
 
@@ -89,3 +97,12 @@ class RegisterView(APIView):
 
         provider = provider_cls(config_data)
         return provider
+
+    def get_system_or_tenant_config(self, tenant):
+        config = None
+        if tenant:
+            config = TenantConfig.valid_objects.filter(tenant=tenant).first()
+        else:
+            config = SystemConfig.valid_objects.filter().first()
+
+        return config

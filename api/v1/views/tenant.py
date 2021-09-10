@@ -208,39 +208,17 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
-        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).order_by('id').first()
+        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         if tenant:
             tenantconfig, is_created = TenantConfig.objects.get_or_create(
                 is_del=False,
                 tenant=tenant,
             )
-            if is_created is True:
-                tenantconfig.data = {
-                    # 'is_open_authcode': False,
-                    # 'error_number_open_authcode': 0,
-                    'is_open_register_limit': False,
-                    'register_time_limit': 1,
-                    'register_count_limit': 10,
-                    'upload_file_format': ['jpg', 'png', 'gif', 'jpeg'],
-                    'close_page_auto_logout': False,
-                }
-                tenantconfig.save()
-            else:
-                data = tenantconfig.data
-                if 'is_open_register_limit' not in data:
-                    data['is_open_register_limit'] = False
-                if 'register_time_limit' not in data:
-                    data['register_time_limit'] = 1
-                if 'register_count_limit' not in data:
-                    data['register_count_limit'] = 10
-                if 'upload_file_format' not in data:
-                    data['upload_file_format'] = ['jpg', 'png', 'gif', 'jpeg']
-                if 'close_page_auto_logout' not in data:
-                    data['close_page_auto_logout'] = False
+            if is_created:
+                default_data = TenantConfigSerializer(tenantconfig).data
+                tenantconfig.data = default_data.get('data')
                 tenantconfig.save()
             return tenantconfig
-        else:
-            return []
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])

@@ -1,12 +1,15 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'desktop'
-path = tag
+tag = [ 'desktop', 'notice' ]
+path = 'desktop'
 name = '桌面'
 
+app_tag = 'desktop'
+app_name = '应用市集'
+
 extend_schema_tags(
-    tag,
-    name,
+    app_tag,
+    app_name,
     {
         'type':'dashboard_page',
         'init': {
@@ -14,4 +17,13 @@ extend_schema_tags(
             'method': 'get'
         }
     }
+)
+
+
+notice_tag = 'notice'
+notice_name = '通知列表'
+
+extend_schema_tags(
+    notice_tag,
+    notice_name
 )

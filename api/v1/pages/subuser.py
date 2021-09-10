@@ -32,7 +32,8 @@ extend_schema_tags(
             },
             'delete': {
                 'path': '/api/v1/childaccounts/{account_uuid}/detail/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
@@ -53,7 +54,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/childaccounts/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }

@@ -14,6 +14,10 @@ from common.code import Code
 from django.utils.translation import gettext_lazy as _
 from inventory.models import User
 from django.db.models import Q
+from common.utils import (
+    check_password_complexity,
+    get_request_tenant,
+)
 
 
 class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
@@ -38,6 +42,15 @@ class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
         email = request.data.get('email')
         code = request.data.get('code')
         password = request.data.get('password')
+
+        tenant = get_request_tenant(request)
+        ret, message = check_password_complexity(password, tenant)
+        if not ret:
+            data = {
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': message,
+            }
+            return data
 
         runtime = get_app_runtime()
         email_code_key = RegisterEmailClaimSerializer.gen_email_verify_code_key(email)
