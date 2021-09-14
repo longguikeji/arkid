@@ -21,4 +21,19 @@ urlpatterns = [
         views_permission.PermissionView.as_view(),
         name='tenant-permission-detail',
     ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/permission_group/create',
+        views_permission.PermissionGroupCreateView.as_view(),
+        name='tenant-permission-group-create',
+    ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/permission_group/(?P<permission_group_uuid>[\w-]+)/detail',
+        views_permission.PermissionGroupDetailView.as_view(),
+        name='tenant-permission-group-detail',
+    ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/permission_group/',
+        views_permission.PermissionGroupView.as_view(),
+        name='tenant-permission-group',
+    ),
 ]

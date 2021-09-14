@@ -77,6 +77,47 @@ class Permission(BaseModel):
     natural_key.dependencies = ['contenttypes.contenttype']
 
 
+class PermissionGroup(BaseModel):
+
+    name = models.CharField(_('name'), max_length=255)
+    permissions = models.ManyToManyField(
+        Permission,
+        blank=True,
+        related_name="permission_set",
+        related_query_name="permission",
+    )
+    is_system_group = models.BooleanField(
+        default=True,
+        verbose_name='是否是系统组'
+    )
+    tenant = models.ForeignKey(
+        Tenant,
+        blank=False,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT
+    )
+
+    @property
+    def permission_names(self):
+        permissions = self.permissions.all()
+        items = []
+        for permission in permissions:
+            items.append(permission.name)
+        return items
+
+    @property
+    def permission_uuids(self):
+        permissions = self.permissions.all()
+        items = []
+        for permission in permissions:
+            items.append(permission.uuid)
+        return items
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
 
     tenants = models.ManyToManyField(
