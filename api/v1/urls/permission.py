@@ -16,4 +16,9 @@ urlpatterns = [
         views_permission.PermissionCreateView.as_view(),
         name='tenant-permission-create',
     ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/permission/(?P<permission_uuid>[\w-]+)/detail',
+        views_permission.PermissionView.as_view(),
+        name='tenant-permission-detail',
+    ),
 ]

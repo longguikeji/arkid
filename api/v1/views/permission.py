@@ -32,10 +32,9 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         context = self.get_serializer_context()
         tenant = context['tenant']
 
-        objs = Permission.objects.filter(
-            is_system_permission=True,
+        objs = Permission.valid_objects.filter(
             tenant=tenant,
-        )
+        ).order_by('id')
 
         return objs
 
@@ -62,6 +61,33 @@ class PermissionCreateView(generics.CreateAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionCreateSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant'] = Tenant.objects.filter(uuid=self.kwargs['tenant_uuid']).first()
+        return context
+
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags = ['permission']
+)
+class PermissionView(generics.RetrieveUpdateDestroyAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = PermissionCreateSerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        kwargs = {
+            'tenant__uuid': tenant_uuid,
+            'uuid': self.kwargs['permission_uuid'],
+        }
+
+        obj = Permission.valid_objects.filter(**kwargs).first()
+        return obj
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

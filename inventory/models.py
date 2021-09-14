@@ -28,12 +28,11 @@ KEY = Fernet(base64.urlsafe_b64encode(settings.SECRET_KEY.encode()[:32]))
 
 class Permission(BaseModel):
 
-    TYPE_CHOICES = (
-        (0, '未知'),
-        (1, '入口'),
-        (2, 'API'),
-        (3, '数据'),
-    )
+    # TYPE_CHOICES = (
+    #     (0, '入口'),
+    #     (1, 'API'),
+    #     (2, '数据'),
+    # )
 
     # django 自带权限字段
     name = models.CharField(_('name'), max_length=255)
@@ -55,11 +54,7 @@ class Permission(BaseModel):
         null=True,
         blank=True,
     )
-    permission_type = models.IntegerField(
-        choices=TYPE_CHOICES,
-        default=0,
-        verbose_name='权限类型'
-    )
+    permission_category = models.CharField(_('权限类型'), blank=False, null=True, default='', max_length=64)
     is_system_permission = models.BooleanField(
         default=True,
         verbose_name='是否是系统权限'
