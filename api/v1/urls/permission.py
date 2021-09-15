@@ -36,6 +36,7 @@ urlpatterns = [
         views_permission.PermissionGroupView.as_view(),
         name='tenant-permission-group',
     ),
+    # user
     re_path(
         r'^tenant/(?P<tenant_uuid>[\w-]+)/user_permission/(?P<user_uuid>[\w-]+)/create',
         views_permission.UserPermissionCreateView.as_view(),
@@ -50,5 +51,21 @@ urlpatterns = [
         r'^tenant/(?P<tenant_uuid>[\w-]+)/user_permission/(?P<user_uuid>[\w-]+)/',
         views_permission.UserPermissionView.as_view(),
         name='tenant-user-permission',
+    ),
+    # group
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/group_permission/(?P<group_uuid>[\w-]+)/create',
+        views_permission.GroupPermissionCreateView.as_view(),
+        name='tenant-group-permission-create',
+    ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/group_permission/(?P<group_uuid>[\w-]+)/delete/',
+        views_permission.GroupPermissionDeleteView.as_view(),
+        name='tenant-group-permission-delete',
+    ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/group_permission/(?P<group_uuid>[\w-]+)/',
+        views_permission.GroupPermissionView.as_view(),
+        name='tenant-group-permission',
     ),
 ]

@@ -158,12 +158,13 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
         instance.save()
         return instance
 
-
+# user permission
 class UserPermissionSerializer(serializers.Serializer):
 
     uuid = serializers.CharField(label=_('UUID'))
     name = serializers.CharField(label=_('名称'))
     is_system = serializers.BooleanField(read_only=True, label=_('是否是系统权限'))
+    app_name = serializers.CharField(label=_('app'))
     source = serializers.CharField(label=_('来源'))
 
 
@@ -216,5 +217,68 @@ class UserPermissionCreateSerializer(serializers.Serializer):
 
 
 class UserPermissionDeleteSerializer(serializers.Serializer):
+
+    is_delete = serializers.BooleanField(label=_('是否成功删除'))
+
+
+# group permission
+class GroupPermissionSerializer(serializers.Serializer):
+
+    uuid = serializers.CharField(label=_('UUID'))
+    name = serializers.CharField(label=_('名称'))
+    is_system = serializers.BooleanField(read_only=True, label=_('是否是系统权限'))
+    app_name = serializers.CharField(label=_('app'))
+    source = serializers.CharField(label=_('来源'))
+
+
+class GroupPermissionListSerializer(serializers.Serializer):
+
+    items = serializers.ListField(
+        child=GroupPermissionSerializer(), label=_('数据')
+    )
+
+
+class GroupPermissionCreateSerializer(serializers.Serializer):
+
+    permissions = create_foreign_key_field(serializers.ListField)(
+        model_cls=Permission,
+        field_name='uuid',
+        page=permission.tag,
+        child=serializers.CharField(),
+        default=[],
+        required=False,
+        link="permissions",
+    )
+
+    permission_groups = create_foreign_key_field(serializers.ListField)(
+        model_cls=PermissionGroup,
+        field_name='uuid',
+        # 此处需要补入页面
+        page='',
+        child=serializers.CharField(),
+        default=[],
+        required=False,
+        link="permission_groups",
+    )
+
+    def create(self, validated_data):
+        group = self.context['group']
+
+        permissions = validated_data.get('permissions', None)
+        permission_groups = validated_data.get('permission_groups', None)
+
+        if permissions is not None:
+            permissions = Permission.valid_objects.filter(uuid__in=permissions)
+            for permission in permissions:
+                group.permissions.add(permission)
+        
+        if permission_groups is not None:
+            permission_groups = PermissionGroup.valid_objects.filter(uuid__in=permission_groups)
+            for permission_group in permission_groups:
+                group.permissions_groups.add(permission_group)
+        return validated_data
+
+
+class GroupPermissionDeleteSerializer(serializers.Serializer):
 
     is_delete = serializers.BooleanField(label=_('是否成功删除'))

@@ -73,6 +73,13 @@ class Permission(BaseModel):
 
     def natural_key(self):
         return (self.codename,) + self.content_type.natural_key()
+    
+    @property
+    def app_name(self):
+        if self.app:
+            return self.app.name
+        else:
+            return ''
 
     natural_key.dependencies = ['contenttypes.contenttype']
 
