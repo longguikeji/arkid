@@ -36,4 +36,9 @@ urlpatterns = [
         views_permission.PermissionGroupView.as_view(),
         name='tenant-permission-group',
     ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/user_permission/(?P<user_uuid>[\w-]+)/',
+        views_permission.UserPermissionView.as_view(),
+        name='tenant-user-permission',
+    ),
 ]

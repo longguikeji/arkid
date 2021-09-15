@@ -419,3 +419,14 @@ class UserLogoffSerializer(serializers.Serializer):
 
 class UserTokenExpireSerializer(serializers.Serializer):
     token = serializers.CharField(label=_('token'))
+
+
+class UserListSerializer(BaseDynamicFieldModelSerializer):
+
+    class Meta:
+        model = User
+
+        fields = (
+            'uuid',
+            'username',
+        )

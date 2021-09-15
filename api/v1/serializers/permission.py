@@ -1,6 +1,6 @@
 from lib.dynamic_fields_model_serializer import DynamicFieldsModelSerializer
 from django.contrib.contenttypes.models import ContentType
-from inventory.models import Permission, PermissionGroup
+from inventory.models import User, Permission, PermissionGroup
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from api.v1.fields.custom import create_foreign_key_field
@@ -113,7 +113,7 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
     uuid = serializers.CharField(read_only=True)
     is_system_group = serializers.BooleanField(read_only=True, label=_('是否是系统组'))
     permissions = create_foreign_key_field(serializers.ListField)(
-        model_cls=PermissionGroup,
+        model_cls=Permission,
         field_name='uuid',
         page=permission.tag,
         child=serializers.CharField(),
@@ -157,3 +157,40 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
         instance.__dict__.update(validated_data)
         instance.save()
         return instance
+
+
+class UserPermissionSerializer(serializers.Serializer):
+
+    uuid = serializers.CharField(label=_('UUID'))
+    name = serializers.CharField(label=_('名称'))
+    is_system = serializers.BooleanField(read_only=True, label=_('是否是系统权限'))
+    source = serializers.CharField(label=_('来源'))
+
+
+class UserPermissionListSerializer(serializers.Serializer):
+
+    items = serializers.ListField(
+        child=UserPermissionSerializer(), label=_('数据')
+    )
+
+
+class UserPermissionCreateSerializer(serializers.Serializer):
+
+    permissions = create_foreign_key_field(serializers.ListField)(
+        model_cls=Permission,
+        field_name='uuid',
+        page=permission.tag,
+        child=serializers.CharField(),
+        default=[],
+        link="permissions",
+    )
+
+    permission_groups = create_foreign_key_field(serializers.ListField)(
+        model_cls=PermissionGroup,
+        field_name='uuid',
+        # 此处需要补入页面
+        page='',
+        child=serializers.CharField(),
+        default=[],
+        link="permission_groups",
+    )

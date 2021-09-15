@@ -160,6 +160,12 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         related_name="user_permission_set",
         related_query_name="user_permission",
     )
+    user_permissions_group = models.ManyToManyField(
+        'inventory.PermissionGroup',
+        blank=True,
+        related_name="user_permission_groups_set",
+        related_query_name="user_permission_groups",
+    )
     is_platform_user = models.BooleanField(default=False, verbose_name='是否是平台用户')
 
     _password = None
@@ -354,6 +360,12 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
     permissions = models.ManyToManyField(
         'inventory.Permission',
         blank=True,
+    )
+    permissions_groups = models.ManyToManyField(
+        'inventory.PermissionGroup',
+        blank=True,
+        related_name="permission_groups_set",
+        related_query_name="permission_groups",
     )
 
     def __str__(self) -> str:

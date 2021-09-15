@@ -34,6 +34,7 @@ from api.v1.serializers.user import (
     UserAppDataSerializer,
     UserLogoffSerializer,
     UserTokenExpireSerializer,
+    UserListSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import ResetPWDSMSClaimSerializer
@@ -804,3 +805,31 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
                 'expired_time': invitation.expired_time,
             }
         )
+
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['user']
+)
+class UserListAPIView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = UserListSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+
+        group = self.request.query_params.get('group', None)
+
+        kwargs = {
+            'tenants__uuid': tenant_uuid,
+        }
+
+        if group is not None:
+            kwargs['groups__uuid__in'] = group.split(',')
+
+        qs = User.valid_objects.filter(**kwargs).order_by('id')
+        return qs
