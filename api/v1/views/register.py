@@ -44,19 +44,19 @@ class RegisterView(APIView):
                     }
                 )
 
-        extention_type = request.data.get('extension', None)
+        config_uuid = request.data.get('config_uuid', None)
 
-        if not extention_type:
+        if not config_uuid:
             return {
                 'error': Code.POST_DATA_ERROR.value,
-                'message': 'No extention in post data',
+                'message': 'No config uuid in post data',
             }
 
-        provider = self.get_provider(tenant, extention_type)
+        provider = self.get_provider(tenant, config_uuid)
         if not provider:
             return {
                 'error': Code.PROVIDER_NOT_EXISTS_ERROR.value,
-                'message': f'No provider: {extention_type} found',
+                'message': f'No provider found',
             }
 
         # 获取登录注册配置
@@ -80,20 +80,20 @@ class RegisterView(APIView):
 
         return JsonResponse(data={'error': Code.OK.value, 'data': return_data})
 
-    def get_provider(self, tenant, extention_type):
+    def get_provider(self, tenant, config_uuid):
 
-        r = get_app_runtime()
-        provider_cls = r.login_register_config_providers.get(extention_type)
-        if not provider_cls:
-            return None
         config = LoginRegisterConfig.valid_objects.filter(
-            tenant=tenant, type=extention_type
+            tenant=tenant, uuid=config_uuid
         ).first()
         if not config:
             config_data = {}
-
         else:
             config_data = config.data
+
+        r = get_app_runtime()
+        provider_cls = r.login_register_config_providers.get(config.type)
+        if not provider_cls:
+            return None
 
         provider = provider_cls(config_data)
         return provider
