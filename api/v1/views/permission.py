@@ -34,11 +34,9 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-
         objs = Permission.valid_objects.filter(
             tenant=tenant,
         ).order_by('id')
-
         return objs
 
     def get_object(self):
@@ -183,7 +181,7 @@ class UserPermissionView(generics.RetrieveAPIView):
     serializer_class = UserPermissionListSerializer
 
     def get(self, request, tenant_uuid, user_uuid):
-        name = self.request.query_params.get('name', '')
+        name = request.query_params.get('name', '')
         user = User.active_objects.filter(uuid=user_uuid).first()
         items = []
         # 当前用户拥有的权限
@@ -280,8 +278,8 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
     serializer_class = UserPermissionDeleteSerializer
 
     def get(self, request, tenant_uuid, user_uuid):
-        uuid = self.request.query_params.get('uuid', '')
-        source = self.request.query_params.get('source', '')
+        uuid = request.query_params.get('uuid', '')
+        source = request.query_params.get('source', '')
         user = User.objects.filter(uuid=user_uuid).first()
         serializer = self.get_serializer(
             {'is_delete': True}
