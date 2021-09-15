@@ -182,6 +182,7 @@ class UserPermissionCreateSerializer(serializers.Serializer):
         page=permission.tag,
         child=serializers.CharField(),
         default=[],
+        required=False,
         link="permissions",
     )
 
@@ -192,5 +193,28 @@ class UserPermissionCreateSerializer(serializers.Serializer):
         page='',
         child=serializers.CharField(),
         default=[],
+        required=False,
         link="permission_groups",
     )
+
+    def create(self, validated_data):
+        user = self.context['user']
+
+        permissions = validated_data.get('permissions', None)
+        permission_groups = validated_data.get('permission_groups', None)
+
+        if permissions is not None:
+            permissions = Permission.valid_objects.filter(uuid__in=permissions)
+            for permission in permissions:
+                user.user_permissions.add(permission)
+        
+        if permission_groups is not None:
+            permission_groups = PermissionGroup.valid_objects.filter(uuid__in=permission_groups)
+            for permission_group in permission_groups:
+                user.user_permissions_group.add(permission_group)
+        return validated_data
+
+
+class UserPermissionDeleteSerializer(serializers.Serializer):
+
+    is_delete = serializers.BooleanField(label=_('是否成功删除'))

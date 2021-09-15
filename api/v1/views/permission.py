@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from api.v1.serializers.permission import (
     PermissionSerializer, PermissionCreateSerializer, PermissionGroupListSerializer,
-    PermissionGroupCreateSerializer, UserPermissionListSerializer,
+    PermissionGroupCreateSerializer, UserPermissionListSerializer, UserPermissionCreateSerializer,
+    UserPermissionDeleteSerializer,
 )
 from tenant.models import (
     Tenant,
@@ -235,3 +236,79 @@ class UserPermissionView(generics.RetrieveAPIView):
         )
         return Response(serializer.data)
 
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['permission']
+)
+class UserPermissionCreateView(generics.CreateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = UserPermissionCreateSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['user'] = User.objects.filter(uuid=self.kwargs['user_uuid']).first()
+        return context
+
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['permission'],
+    parameters=[
+        OpenApiParameter(
+            name='uuid',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        ),
+        OpenApiParameter(
+            name='source',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        ),
+    ]
+)
+class UserPermissionDeleteView(generics.RetrieveAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = UserPermissionDeleteSerializer
+
+    def get(self, request, tenant_uuid, user_uuid):
+        uuid = self.request.query_params.get('uuid', '')
+        source = self.request.query_params.get('source', '')
+        user = User.objects.filter(uuid=user_uuid).first()
+        serializer = self.get_serializer(
+            {'is_delete': True}
+        )
+        if uuid and source:
+            if source == '用户权限':
+                permission = Permission.valid_objects.filter(uuid=uuid).first()
+                if permission and permission.is_system_permission is False:
+                    user.user_permissions.remove(permission)
+                else:
+                    serializer = self.get_serializer(
+                        {'is_delete': False}
+                    )
+            elif source == '用户权限组':
+                permission_group = PermissionGroup.valid_objects.filter(uuid=uuid).first()
+                if permission_group and permission_group.is_system_group is False:
+                    user.user_permissions_group.remove(permission_group)
+                else:
+                    serializer = self.get_serializer(
+                        {'is_delete': False}
+                    )
+            else:
+                serializer = self.get_serializer(
+                    {'is_delete': False}
+                )
+        else:
+            serializer = self.get_serializer(
+                {'is_delete': False}
+            )
+        return Response(serializer.data)
