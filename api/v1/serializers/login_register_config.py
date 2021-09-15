@@ -30,14 +30,10 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
         config_type = validated_data.pop('type')
         data = validated_data.pop('data', None)
 
-        config, _ = LoginRegisterConfig.objects.get_or_create(
+        config = LoginRegisterConfig.valid_objects.create(
             tenant=tenant,
             type=config_type,
         )
-
-        if config.is_del:
-            config.is_del = False
-            config.save()
 
         r: Runtime = get_app_runtime()
         provider_cls: LoginRegisterConfigProvider = (
