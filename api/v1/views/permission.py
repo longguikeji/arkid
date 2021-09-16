@@ -6,7 +6,7 @@ from api.v1.serializers.permission import (
     PermissionSerializer, PermissionCreateSerializer, PermissionGroupListSerializer,
     PermissionGroupCreateSerializer, UserPermissionListSerializer, UserPermissionCreateSerializer,
     UserPermissionDeleteSerializer, GroupPermissionListSerializer, GroupPermissionCreateSerializer,
-    GroupPermissionDeleteSerializer,
+    GroupPermissionDeleteSerializer, AppPermissionSerializer,
 )
 from tenant.models import (
     Tenant,
@@ -449,3 +449,40 @@ class GroupPermissionDeleteView(generics.RetrieveAPIView):
                 {'is_delete': False}
             )
         return Response(serializer.data)
+
+
+# app
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['permission'],
+    parameters=[
+        OpenApiParameter(
+            name='name',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        )
+    ]
+)
+class AppPermissionView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = AppPermissionSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        app_uuid = self.kwargs['app_uuid']
+        kwargs = {
+            'tenant__uuid': tenant_uuid,
+            'app__uuid': app_uuid,
+        }
+        name = self.request.query_params.get('name', '')
+        if name:
+            kwargs['name__in'] = name
+        objs = Permission.valid_objects.filter(
+            **kwargs
+        ).order_by('id')
+        return objs

@@ -1,4 +1,5 @@
 from lib.dynamic_fields_model_serializer import DynamicFieldsModelSerializer
+from common.serializer import BaseDynamicFieldModelSerializer
 from django.contrib.contenttypes.models import ContentType
 from inventory.models import User, Permission, PermissionGroup
 from rest_framework import serializers
@@ -282,3 +283,15 @@ class GroupPermissionCreateSerializer(serializers.Serializer):
 class GroupPermissionDeleteSerializer(serializers.Serializer):
 
     is_delete = serializers.BooleanField(label=_('是否成功删除'))
+
+
+class AppPermissionSerializer(BaseDynamicFieldModelSerializer):
+
+    class Meta:
+        model = Permission
+
+        fields = (
+            'uuid',
+            'name',
+            'is_system_permission',
+        )

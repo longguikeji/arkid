@@ -68,4 +68,10 @@ urlpatterns = [
         views_permission.GroupPermissionView.as_view(),
         name='tenant-group-permission',
     ),
+    # app
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app_permission/(?P<app_uuid>[\w-]+)/',
+        views_permission.AppPermissionView.as_view(),
+        name='tenant-app-permission',
+    ),
 ]
