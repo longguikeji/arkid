@@ -287,6 +287,8 @@ class GroupPermissionDeleteSerializer(serializers.Serializer):
 
 class AppPermissionSerializer(BaseDynamicFieldModelSerializer):
 
+    is_system_permission = serializers.BooleanField(read_only=True, label=_('是否是系统权限'))
+
     class Meta:
         model = Permission
 
