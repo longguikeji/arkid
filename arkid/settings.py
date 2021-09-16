@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'extension_root.arkid',
     'extension_root.tenantuserconfig',
     'extension_root.childaccount',
+    'extension_root.childmanager',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',

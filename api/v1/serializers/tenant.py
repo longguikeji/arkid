@@ -231,6 +231,7 @@ class TenantContactsConfigInfoVisibilitySerializer(BaseDynamicFieldModelSerializ
 
 
 class GroupVisibilitySerializer(serializers.Serializer):
+
     visible_type = serializers.ChoiceField(
         choices=(('所有人可见', '部分人可见')), label=_('可见类型')
     )

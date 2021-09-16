@@ -69,7 +69,7 @@ class PermissionCreateSerializer(DynamicFieldsModelSerializer):
         permission_category = validated_data.get('permission_category', '')
         content_type = ContentType.objects.get_for_model(App)
         app = App.active_objects.filter(uuid=app_uuid).first()
-        app = Permission.objects.create(
+        permission = Permission.objects.create(
             name=name,
             content_type=content_type,
             codename=codename,
@@ -78,7 +78,7 @@ class PermissionCreateSerializer(DynamicFieldsModelSerializer):
             permission_category=permission_category,
             is_system_permission=False
         )
-        return app
+        return permission
 
     def update(self, instance, validated_data):
         app_data = validated_data.pop('app', '')
