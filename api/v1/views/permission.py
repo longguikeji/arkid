@@ -481,7 +481,7 @@ class AppPermissionView(generics.ListAPIView):
         }
         name = self.request.query_params.get('name', '')
         if name:
-            kwargs['name__in'] = name
+            kwargs['name__icontains'] = name
         objs = Permission.valid_objects.filter(
             **kwargs
         ).order_by('id')

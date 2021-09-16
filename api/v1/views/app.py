@@ -10,6 +10,7 @@ from api.v1.serializers.app import (
     AppProvisioningMappingSerializer,
     AppProvisioningProfileSerializer,
     AddAuthTmplSerializer,
+    AppNewListSerializer,
 )
 from common.paginator import DefaultListPaginator
 from django.http.response import JsonResponse
@@ -255,3 +256,26 @@ class AppProvisioningProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
             uuid=profile_uuid, provisioning_config=config
         ).first()
         return profile
+
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['app']
+)
+class AppListAPIView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = AppNewListSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+
+        kwargs = {
+            'tenant__uuid': tenant_uuid,
+        }
+
+        qs = App.active_objects.filter(**kwargs).order_by('id')
+        return qs

@@ -38,4 +38,9 @@ urlpatterns = [
         views_app.AppProvisioningProfileDetailView.as_view(),
         name='app-provisioning-config-profile-detail',
     ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/app_list/',
+        views_app.AppListAPIView.as_view(),
+        name='tenant-app-list',
+    ),
 ]
