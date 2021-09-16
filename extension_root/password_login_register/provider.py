@@ -28,15 +28,10 @@ from django.utils import timezone
 
 class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
     def __init__(self, data=None, request=None, tenant=None) -> None:
-        self.username_login_enabled = data.get('username_login_enabled', True)
-        self.username_register_enabled = data.get('username_register_enabled', True)
-        self.email_login_enabled = data.get('email_login_enabled', False)
-        self.login_enabled_custom_field_names = data.get(
-            'login_enabled_custom_field_names', []
-        )
-        self.register_enabled_custom_field_names = data.get(
-            'register_enabled_custom_field_names', []
-        )
+        self.login_enabled = data.get('login_enabled', True)
+        self.register_enabled = data.get('register_enabled', True)
+        self.login_enabled_field_names = data.get('login_enabled_field_names', [])
+        self.register_enabled_field_names = data.get('register_enabled_field_names', [])
         # self.is_open_authcode = data.get('is_open_authcode', False)
         # self.error_number_open_authcode = data.get('error_number_open_authcode', 0)
         self.request = request
@@ -44,15 +39,19 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
 
     @property
     def login_form(self):
-        return PasswordLoginForm(self).get_form()
+        if self.login_enabled and self.login_enabled_field_names:
+            return PasswordLoginForm(self).get_form()
+        return None
 
     @property
     def register_form(self):
         forms = []
-        if self.username_register_enabled:
-            forms.append(PasswordRegisterForm(self, 'username', '用户名').get_form())
-        for name in self.register_enabled_custom_field_names:
-            forms.append(PasswordRegisterForm(self, name, name).get_form())
+        if self.register_enabled and self.register_enabled_field_names:
+            for name in self.register_enabled_field_names:
+                if name == 'username':
+                    forms.append(PasswordRegisterForm(self, name, '用户名').get_form())
+                else:
+                    forms.append(PasswordRegisterForm(self, name, name).get_form())
         return forms
 
     def _get_password_validity_period(self, request):
@@ -155,14 +154,16 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
 
     def _get_login_user(self, username):
         user = None
-        if self.username_login_enabled:
+        if 'username' in self.login_enabled_field_names:
             user = User.active_objects.filter(username=username).first()
-        if not user and self.email_login_enabled:
+            self.login_enabled_field_names.remove('username')
+        if not user and 'email' in self.login_enabled_field_names:
             user = User.active_objects.filter(email=username).first()
-        if not user and self.login_enabled_custom_field_names:
+            self.login_enabled_field_names.remove('email')
+        if not user and self.login_enabled_field_names:
 
             # 自定义字段查找用户
-            for name in self.login_enabled_custom_field_names:
+            for name in self.login_enabled_field_names:
                 custom_field = CustomField.valid_objects.filter(
                     name=name, subject='user'
                 )

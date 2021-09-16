@@ -30,8 +30,10 @@ class LoginPage(views.APIView):
         configs = LoginRegisterConfig.active_objects.filter(tenant=tenant)
         if not configs:
             config_data = {
-                'username_login_enabled': True,
-                'username_register_enabled': True,
+                'login_enabled': True,
+                'register_enabled': True,
+                'login_enabled_field_names': ['username'],
+                'register_enabled_field_names': ['username'],
             }
             config = LoginRegisterConfig.valid_objects.create(
                 tenant=tenant, type=DEFAULT_LOGIN_REGISTER_EXTENSION, data=config_data

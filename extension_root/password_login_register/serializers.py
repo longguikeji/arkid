@@ -6,17 +6,14 @@ from api.v1.fields.custom import create_password_field
 
 class PasswordLoginRegisterConfigDataSerializer(serializers.Serializer):
 
-    username_login_enabled = serializers.BooleanField(default=True, label=_('启用用户名登录'))
-    username_register_enabled = serializers.BooleanField(
-        default=True, label=_('启用用户名注册')
-    )
-    email_login_enabled = serializers.BooleanField(default=False, label=_('启用邮箱账号登录'))
+    login_enabled = serializers.BooleanField(default=True, label=_('启用登录'))
+    register_enabled = serializers.BooleanField(default=True, label=_('启用注册'))
 
-    login_enabled_custom_field_names = serializers.ListField(
-        child=serializers.CharField(), label=_('启用密码登录的自定义字段'), default=[]
+    login_enabled_field_names = serializers.ListField(
+        child=serializers.CharField(), label=_('启用密码登录的字段'), default=[]
     )
-    register_enabled_custom_field_names = serializers.ListField(
-        child=serializers.CharField(), label=_('启用密码注册的自定义字段'), default=[]
+    register_enabled_field_names = serializers.ListField(
+        child=serializers.CharField(), label=_('启用密码注册的字段'), default=[]
     )
 
     # is_open_register_limit = serializers.BooleanField(default=False, label=('是否限制注册用户'))
