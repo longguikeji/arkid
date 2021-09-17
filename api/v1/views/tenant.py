@@ -22,6 +22,7 @@ from api.v1.serializers.tenant import (
     ContactsUserSerializer,
     TenantContactsUserTagsSerializer,
     TenantDesktopConfigSerializer,
+    TenantUserPermissionSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
@@ -32,11 +33,12 @@ from drf_spectacular.openapi import OpenApiTypes
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
-from inventory.models import CustomField, Group, User, UserPassword, CustomUser
+from inventory.models import CustomField, Group, User, UserPassword, CustomUser, Permission
 from common.code import Code
 from .base import BaseViewSet, BaseTenantViewSet
 from app.models import App
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from extension_root.childmanager.models import ChildManager
 from drf_spectacular.utils import extend_schema_view
 from django.urls import reverse
 from common import loginpage as lp
@@ -642,3 +644,47 @@ class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
             config.data = {'access_with_desktop': True, 'icon_custom': True}
             config.save()
         return config
+
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+class TenantUserPermissionView(generics.RetrieveAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantUserPermissionSerializer
+
+    @extend_schema(responses=TenantUserPermissionSerializer)
+    def get(self, request, tenant_uuid):
+        user  = request.user
+        childmanager = ChildManager.valid_objects.filter(tenant__uuid=tenant_uuid, user=user).first()
+        result = {}
+        if childmanager:
+            result['is_childmanager'] = True
+            if childmanager.manager_permission == '全部权限':
+                result['is_all_show'] = True
+                result['permissions'] = []
+            else:
+                result['is_all_show'] = False
+                assign_permission = childmanager.assign_permission_uuid
+                if len(assign_permission) != 0:
+                    permissions = Permission.valid_objects.filter(uuid__in=assign_permission)
+                    items = []
+                    for permission in permissions:
+                        items.append({
+                            'uuid': permission.uuid_hex,
+                            'codename': permission.codename,
+                            'is_system_permission': permission.is_system_permission,
+                            'name': permission.name,
+                            'permission_category': permission.permission_category,
+                        })
+                    result['permissions'] = items
+                else:
+                    result['permissions'] = []
+        else:
+            result['is_childmanager'] = False
+            result['is_all_show'] = False
+            result['permissions'] = []
+        print(result)
+        serializer = self.get_serializer(result)
+        return Response(serializer.data)

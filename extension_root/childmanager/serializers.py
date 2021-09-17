@@ -42,7 +42,7 @@ class ChildManagerItemSerializer(serializers.Serializer):
         choices=(('所在分组', '所在分组的下级分组', '指定分组与账号')), label=_('管理分组范围')
     )
     manager_permission = serializers.ChoiceField(
-        choices=(('全部权限', 'ArkID所有权限', '所有应用权限', '指定权限')), label=_('允许管理哪些权限')
+        choices=(('全部权限', '指定权限', '所有应用权限')), label=_('允许管理哪些权限')
     )
     assign_group = create_foreign_key_field(serializers.ListField)(
         model_cls=Group,

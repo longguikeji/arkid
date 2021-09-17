@@ -7,7 +7,7 @@ from inventory.models import User, Permission
 class ChildManager(BaseModel):
     # 子管理员
     # manager_visible 所在分组 所在分组的下级分组 指定分组与账号
-    # manager_permission 全部权限 arkid所有权限 所有应用权限 指定权限
+    # manager_permission 全部权限 指定权限 所有应用权限
     # {
     #     "manager_visible": ["所在分组","指定分组与账号"],
     #     "manager_permission": "指定权限",
@@ -39,6 +39,12 @@ class ChildManager(BaseModel):
     def manager_permission(self):
         data = self.data
         return data.get('manager_permission')
+    
+    @property
+    def assign_permission_uuid(self):
+        data = self.data
+        assign_permission = data.get('assign_permission', [])
+        return assign_permission
 
     @property
     def assign_permission(self):
