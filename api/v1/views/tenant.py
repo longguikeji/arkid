@@ -663,9 +663,15 @@ class TenantUserPermissionView(generics.RetrieveAPIView):
             result['is_childmanager'] = True
             if childmanager.manager_permission == '全部权限':
                 result['is_all_show'] = True
+                result['is_all_application'] = False
+                result['permissions'] = []
+            elif childmanager.manager_permission == '所有应用权限':
+                result['is_all_show'] = False
+                result['is_all_application'] = True
                 result['permissions'] = []
             else:
                 result['is_all_show'] = False
+                result['is_all_application'] = False
                 assign_permission = childmanager.assign_permission_uuid
                 if len(assign_permission) != 0:
                     permissions = Permission.valid_objects.filter(uuid__in=assign_permission)
@@ -682,6 +688,7 @@ class TenantUserPermissionView(generics.RetrieveAPIView):
                 else:
                     result['permissions'] = []
         else:
+            result['is_all_application'] = False
             result['is_childmanager'] = False
             result['is_all_show'] = False
             result['permissions'] = []

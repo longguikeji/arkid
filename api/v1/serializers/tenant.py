@@ -350,5 +350,6 @@ class TenantUserPermissionItemSerializer(serializers.Serializer):
 
 class TenantUserPermissionSerializer(serializers.Serializer):
     is_childmanager = serializers.BooleanField(label=_("是否是子管理员"))
-    is_all_show = serializers.BooleanField(label=_("是否可以看到所有权限"))
+    is_all_show = serializers.BooleanField(label=_("是否可以看到所有"))
+    is_all_application = serializers.BooleanField(label=_("是否可以所有应用"))
     permissions = serializers.ListField(child=TenantUserPermissionItemSerializer(), label=_('权限'), default=[])
