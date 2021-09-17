@@ -36,6 +36,16 @@ class ChildManager(BaseModel):
         return data.get('manager_visible')
 
     @property
+    def assign_group(self):
+        data = self.data
+        return data.get('assign_group')
+
+    @property
+    def assign_user(self):
+        data = self.data
+        return data.get('assign_user')
+
+    @property
     def manager_permission(self):
         data = self.data
         return data.get('manager_permission')

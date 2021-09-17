@@ -362,7 +362,7 @@ class TenantContactsGroupView(generics.ListAPIView):
             kwargs['parent'] = None
         else:
             kwargs['parent__uuid'] = parent
-        qs = Group.valid_objects.filter(**kwargs).order_by('id')
+        qs = Group.valid_objects.filter(**kwargs)
         if tenant.has_admin_perm(user) is False:
             # 功能开关
             switch = self.get_switch(self.kwargs['tenant_uuid'])
@@ -382,36 +382,31 @@ class TenantContactsGroupView(generics.ListAPIView):
                         if visible_scope:
                             # 组内成员可见 下属分组可见 指定分组与人员
                             if '组内成员可见' in visible_scope:
-                                if user.groups.filter(uuid=group.uuid).exists():
-                                    uuids.append(str(group.uuid))
+                                if user.groups.filter(uuid=group.uuid_hex).exists():
+                                    uuids.append(str(group.uuid_hex))
                                     continue
                             if '下属分组可见' in visible_scope:
                                 # 取得当前分组的所有下属分组
                                 group_uuids = []
                                 group.child_groups(group_uuids)
                                 if user.groups.filter(uuid__in=group_uuids).exists():
-                                    uuids.append(str(group.uuid))
+                                    uuids.append(str(group.uuid_hex))
                                     continue
                             if '指定分组与人员' in visible_scope:
                                 assign_group = group_visible.get('assign_group', [])
                                 assign_user = group_visible.get('assign_user', [])
-                                if (
-                                    assign_group
-                                    and user.groups.filter(
-                                        uuid__in=assign_group
-                                    ).exists()
-                                ):
-                                    uuids.append(str(group.uuid))
+                                if assign_group and user.groups.filter(uuid__in=assign_group).exists():
+                                    uuids.append(str(group.uuid_hex))
                                     continue
-                                elif assign_user and str(user.uuid) in assign_user:
-                                    uuids.append(str(group.uuid))
+                                elif assign_user and str(user.uuid_hex) in assign_user:
+                                    uuids.append(str(group.uuid_hex))
                                     continue
                     else:
-                        uuids.append(str(group.uuid))
+                        uuids.append(str(group.uuid_hex))
                 else:
-                    uuids.append(str(group.uuid))
+                    uuids.append(str(group.uuid_hex))
             qs = qs.filter(uuid__in=uuids)
-            return qs
+            return qs.order_by('id')
             # visible_type = group_visible.get('visible_type', '所有人可见')
             # if visible_type == '部分人可见':
             #     visible_scope = group_visible.get('visible_scope', [])
