@@ -1,5 +1,5 @@
 from common.extension import InMemExtension
-
+from .serializers import AuthCodeConfigSerializer
 from .provider import AuthCodeProvider
 from runtime import Runtime
 from .constants import KEY
@@ -12,7 +12,7 @@ class AuthCodeExtension(InMemExtension):
             name="mobile_login_register",
             description="Mobile login and register",
             provider=AuthCodeProvider,
-            serializer=None,
+            serializer=AuthCodeConfigSerializer,
         )
         super().start(runtime=runtime, *args, **kwargs)
 
@@ -22,7 +22,7 @@ class AuthCodeExtension(InMemExtension):
             name="mobile_login_register",
             description="Mobile login register config",
             provider=AuthCodeProvider,
-            serializer=None,
+            serializer=AuthCodeConfigSerializer,
         )
 
 

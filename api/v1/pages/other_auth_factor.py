@@ -30,7 +30,7 @@ extend_schema_tags(
                 'description': '编辑',
             },
             'delete': {
-                'path': '/api/v1/other_auth_facotor/{id}/?tenant={parent_lookup_tenant}',
+                'path': '/api/v1/other_auth_factor/{id}/?tenant={parent_lookup_tenant}',
                 'method': 'delete',
                 'description': '删除',
             },
