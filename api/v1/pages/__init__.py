@@ -24,7 +24,7 @@ from . import (
     login_register_config,
     log_config,
     maketplace,
-    other_factor,
+    other_auth_factor,
     # password_factor,
     permission,
     profile,
@@ -165,7 +165,7 @@ root_add_routers(
                             icon='wechat',
                         ),
                         # PageRouter(page=password_factor, icon='lock'),
-                        PageRouter(page=other_factor, icon='example'),
+                        PageRouter(page=other_auth_factor, icon='example'),
                     ],
                 ),
                 Router(

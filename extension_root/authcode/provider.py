@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from common.provider import AuthCodeProvider
+from common.provider import AuthCodeBaseProvider
 from .constants import KEY
 from io import BytesIO
 
@@ -8,25 +8,27 @@ import string
 import base64
 
 
-class AuthCodeIdpProvider(AuthCodeProvider):
-
-
-    def __init__(self) -> None:
-        super().__init__()
+class AuthCodeProvider(AuthCodeBaseProvider):
+    def __init__(self, data) -> None:
+        self.auth_code_length = data.get('auth_code_length', 4)
 
     def get_random_char(self):
         '''
-        获取随机4个字符组合
+        获取随机字符组合
         '''
         chr_all = string.ascii_letters + string.digits
-        chr_4 = ''.join(random.sample(chr_all, 4))
-        return chr_4
+        str_random = ''.join(random.sample(chr_all, self.auth_code_length))
+        return str_random
 
     def get_random_color(self, low, high):
         '''
         获取随机颜色
         '''
-        return (random.randint(low, high), random.randint(low, high), random.randint(low, high))
+        return (
+            random.randint(low, high),
+            random.randint(low, high),
+            random.randint(low, high),
+        )
 
     def get_authcode_picture(self):
         '''
@@ -42,8 +44,13 @@ class AuthCodeIdpProvider(AuthCodeProvider):
         # 获取验证码
         char_4 = self.get_random_char()
         # 向画布上填写验证码
-        for i in range(4):
-            draw.text((40 * i + 10, 0), char_4[i], font=font, fill=self.get_random_color(100, 200))
+        for i in range(self.auth_code_length):
+            draw.text(
+                (40 * i + 10, 0),
+                char_4[i],
+                font=font,
+                fill=self.get_random_color(100, 200),
+            )
         # 绘制干扰点
         for x in range(random.randint(200, 600)):
             x = random.randint(1, width - 1)
