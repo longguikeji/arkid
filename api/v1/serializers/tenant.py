@@ -339,7 +339,7 @@ class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
         fields = ('data',)
 
 
-class TenantUserPermissionItemSerializer(serializers.Serializer):
+class TenantCheckPermissionItemSerializer(serializers.Serializer):
 
     uuid = serializers.CharField()
     codename = serializers.CharField(label=_("codename"))
@@ -348,8 +348,8 @@ class TenantUserPermissionItemSerializer(serializers.Serializer):
     permission_category = serializers.CharField(label=_("权限类型"))
 
 
-class TenantUserPermissionSerializer(serializers.Serializer):
+class TenantCheckPermissionSerializer(serializers.Serializer):
     is_childmanager = serializers.BooleanField(label=_("是否是子管理员"))
     is_all_show = serializers.BooleanField(label=_("是否可以看到所有"))
     is_all_application = serializers.BooleanField(label=_("是否可以所有应用"))
-    permissions = serializers.ListField(child=TenantUserPermissionItemSerializer(), label=_('权限'), default=[])
+    permissions = serializers.ListField(child=TenantCheckPermissionItemSerializer(), label=_('权限'), default=[])

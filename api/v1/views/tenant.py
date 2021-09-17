@@ -22,7 +22,7 @@ from api.v1.serializers.tenant import (
     ContactsUserSerializer,
     TenantContactsUserTagsSerializer,
     TenantDesktopConfigSerializer,
-    TenantUserPermissionSerializer,
+    TenantCheckPermissionSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
@@ -647,14 +647,14 @@ class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
-class TenantUserPermissionView(generics.RetrieveAPIView):
+class TenantCheckPermissionView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    serializer_class = TenantUserPermissionSerializer
+    serializer_class = TenantCheckPermissionSerializer
 
-    @extend_schema(responses=TenantUserPermissionSerializer)
+    @extend_schema(responses=TenantCheckPermissionSerializer)
     def get(self, request, tenant_uuid):
         user  = request.user
         childmanager = ChildManager.valid_objects.filter(tenant__uuid=tenant_uuid, user=user).first()
