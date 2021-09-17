@@ -7,6 +7,9 @@ from tenant.models import Tenant
 
 
 class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
+    login_enabled = serializers.SerializerMethodField(label=_('启用登录'))
+    register_enabled = serializers.SerializerMethodField(label=_('启用注册'))
+    reset_password_enabled = serializers.SerializerMethodField(label=_('启用重置密码'))
     class Meta:
 
         model = LoginRegisterConfig
@@ -15,7 +18,19 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
             'uuid',
             'type',
             'data',
+            'login_enabled',
+            'register_enabled',
+            'reset_password_enabled',
         )
+
+    def get_login_enabled(self, instance):
+        return instance.data.get('login_enabled')
+
+    def get_register_enabled(self, instance):
+        return instance.data.get('register_enabled')
+
+    def get_reset_password_enabled(self, instance):
+        return instance.data.get('reset_password_enabled')
 
     def create(self, validated_data):
         from runtime import get_app_runtime, Runtime
@@ -87,8 +102,11 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
 
 class LoginRegisterConfigListSerializer(LoginRegisterConfigSerializer):
     type = serializers.CharField(label=_('登录注册类型'))
+    login_enabled = serializers.BooleanField(label=_('启用登录'))
+    register_enabled = serializers.BooleanField(label=_('启用注册'))
+    reset_password_enabled = serializers.BooleanField(label=_('启用重置密码'))
 
     class Meta:
         model = LoginRegisterConfig
 
-        fields = ('type',)
+        fields = ('type', 'login_enabled', 'register_enabled', 'reset_password_enabled')
