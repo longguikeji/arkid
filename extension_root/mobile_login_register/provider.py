@@ -27,6 +27,7 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
         self.login_enabled = data.get('login_enabled', True)
         self.register_enabled = data.get('register_enabled', True)
         self.reset_password_enabled = data.get('reset_password_enabled', True)
+        self.auth_code_length = data.get('auth_code_length', '')
 
     @property
     def login_form(self):

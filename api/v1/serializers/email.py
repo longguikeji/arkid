@@ -35,6 +35,7 @@ class EmailClaimSerializer(serializers.Serializer):  # pylint: disable=abstract-
 
     email = serializers.CharField()
     verify_code = serializers.BooleanField(required=False)
+    auth_code_length = serializers.IntegerField(required=False)
 
     @staticmethod
     def runtime():
@@ -151,6 +152,8 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
     发送注册验证邮件
     '''
 
+    register_tmpl = serializers.CharField(required=False)
+
     @staticmethod
     def gen_email_token_key(email_token):
         '''
@@ -243,6 +246,8 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
     发送重置密码验证邮件
     '''
 
+    reset_pwd_tmpl = serializers.CharField(required=False)
+
     @staticmethod
     def gen_email_token_key(email_token):
         '''
@@ -284,7 +289,7 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
             auth_code_length = self.validated_data.get('auth_code_length', 6)
             code = self.gen_email_verify_code(auth_code_length)
             key = self.gen_email_verify_code_key(email)
-            tmpl = self.validated_data.get('register_tmpl')
+            tmpl = self.validated_data.get('reset_pwd_tmpl')
             if tmpl:
                 t = string.Template(tmpl)
                 content = t.substitute(code=code)
