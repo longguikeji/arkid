@@ -38,7 +38,13 @@ LoginRegisterConfigPolymorphicProxySerializer = PolymorphicProxySerializer(
             type={'type': 'string'},
             location=OpenApiParameter.QUERY,
             required=True,
-        )
+        ),
+        OpenApiParameter(
+            name='type',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
     ],
 )
 class LoginRegisterConfigViewSet(BaseViewSet):
@@ -52,6 +58,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
     def get_queryset(self):
 
         tenant_uuid = self.request.query_params.get('tenant')
+        type = self.request.query_params.get('type')
         if not tenant_uuid:
             tenant = None
         else:
@@ -59,6 +66,8 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         kwargs = {
             'tenant': tenant,
         }
+        if type:
+            kwargs.update(type=type)
 
         return LoginRegisterConfig.valid_objects.filter(**kwargs)
 
