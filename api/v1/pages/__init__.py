@@ -241,7 +241,7 @@ root_add_routers(
                     icon='setting',
                     children=[
                         PageRouter(page=system_config, icon='setting'),
-                        PageRouter(page=system_password, icon='lock'),
+                        # PageRouter(page=system_password, icon='lock'),
                     ],
                 ),
                 Router(

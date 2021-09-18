@@ -16,6 +16,10 @@ class PasswordLoginRegisterConfigDataSerializer(serializers.Serializer):
         child=serializers.CharField(), label=_('启用密码注册的字段'), default=[]
     )
 
+    is_apply = serializers.BooleanField(label=_('是否启用密码校验'), default=False)
+    regular = serializers.CharField(label=_('密码校验正则表达式'), default='')
+    title = serializers.CharField(label=_('密码校验提示信息'), default='')
+
     # is_open_register_limit = serializers.BooleanField(default=False, label=('是否限制注册用户'))
     # register_time_limit = serializers.IntegerField(default=1, label=_('用户注册时间限制(分钟)'))
     # register_count_limit = serializers.IntegerField(default=10, label=_('用户注册数量限制'))
