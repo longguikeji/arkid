@@ -42,7 +42,7 @@ urlpatterns = [
         views_permission.UserPermissionCreateView.as_view(),
         name='tenant-user-permission-create',
     ),
-        re_path(
+    re_path(
         r'^tenant/(?P<tenant_uuid>[\w-]+)/user_permission/(?P<user_uuid>[\w-]+)/delete/',
         views_permission.UserPermissionDeleteView.as_view(),
         name='tenant-user-permission-delete',
