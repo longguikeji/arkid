@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import LoginRegisterConfigBaseSerializer
 from api.v1.fields.custom import create_password_field
+from api.v1.fields.custom import create_custom_list_field
 
 
 class PasswordLoginRegisterConfigDataSerializer(serializers.Serializer):
@@ -9,11 +10,17 @@ class PasswordLoginRegisterConfigDataSerializer(serializers.Serializer):
     login_enabled = serializers.BooleanField(default=True, label=_('启用登录'))
     register_enabled = serializers.BooleanField(default=True, label=_('启用注册'))
 
-    login_enabled_field_names = serializers.ListField(
-        child=serializers.CharField(), label=_('启用密码登录的字段'), default=[]
+    login_enabled_field_names = create_custom_list_field(serializers.ListField)(
+        child=serializers.CharField(),
+        label=_('启用密码登录的字段'),
+        default=[],
+        url='/api/v1/login_fields?tenant={tenant_uuid}',
     )
-    register_enabled_field_names = serializers.ListField(
-        child=serializers.CharField(), label=_('启用密码注册的字段'), default=[]
+    register_enabled_field_names = create_custom_list_field(serializers.ListField)(
+        child=serializers.CharField(),
+        label=_('启用密码注册的字段'),
+        default=[],
+        url='/api/v1/register_fields?tenant={tenant_uuid}',
     )
 
     is_apply = serializers.BooleanField(label=_('是否启用密码校验'), default=False)
