@@ -48,11 +48,11 @@ class EmailClaimSerializer(serializers.Serializer):  # pylint: disable=abstract-
         return uuid_utils.uuid4().hex
 
     @staticmethod
-    def gen_email_verify_code():
+    def gen_email_verify_code(auth_code_length):
         '''
         生成email_token
         '''
-        return ''.join(random.choice(string.digits) for _ in range(6))
+        return ''.join(random.choice(string.digits) for _ in range(auth_code_length))
 
     @staticmethod
     def validate_email(value):
@@ -190,9 +190,15 @@ class RegisterEmailClaimSerializer(EmailClaimSerializer):
         send_verify_code = kwargs.get('send_verify_code', False)
         email = self.validated_data.get('email')
         if send_verify_code in ('True', 'true'):
-            code = self.gen_email_verify_code()
+            auth_code_length = self.validated_data.get('auth_code_length', 6)
+            code = self.gen_email_verify_code(auth_code_length)
             key = self.gen_email_verify_code_key(email)
-            content = f'安全代码为: {code}, 5分钟内有效'
+            tmpl = self.validated_data.get('register_tmpl')
+            if tmpl:
+                t = string.Template(tmpl)
+                content = t.substitute(code=code)
+            else:
+                content = f'安全代码为: {code}, 5分钟内有效'
             self.runtime().cache_provider.set(key, code, 60 * 5)
         else:
             email_token = self.gen_email_token()
@@ -275,9 +281,15 @@ class ResetPWDEmailClaimSerializer(EmailClaimSerializer):
         send_verify_code = kwargs.get('send_verify_code', False)
         email = self.validated_data.get('email')
         if send_verify_code in ('True', 'true'):
-            code = self.gen_email_verify_code()
+            auth_code_length = self.validated_data.get('auth_code_length', 6)
+            code = self.gen_email_verify_code(auth_code_length)
             key = self.gen_email_verify_code_key(email)
-            content = f'安全代码为: {code}, 5分钟内有效'
+            tmpl = self.validated_data.get('register_tmpl')
+            if tmpl:
+                t = string.Template(tmpl)
+                content = t.substitute(code=code)
+            else:
+                content = f'安全代码为: {code}, 5分钟内有效'
             self.runtime().cache_provider.set(key, code, 60 * 5)
         else:
             email_token = self.gen_email_token()

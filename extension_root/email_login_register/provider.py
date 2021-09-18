@@ -24,6 +24,9 @@ class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
     def __init__(self, data) -> None:
         self.register_enabled = data.get('register_enabled', False)
         self.reset_password_enabled = data.get('reset_password_enabled', False)
+        self.register_tmpl = data.get('register_tmpl', '')
+        self.reset_pwd_tmpl = data.get('reset_pwd_tmpl', '')
+        self.auth_code_length = data.get('auth_code_length', '')
 
     @property
     def register_form(self):

@@ -16,6 +16,10 @@ class EmailRegisterForm(BaseForm):
 
     def set_form_item_button(self, login_form_item):
         if login_form_item['name'] == 'email':
+            payload = {
+                'register_tmpl': self.provider.register_tmpl or '',
+                'auth_code_length': self.provider.auth_code_length or 6,
+            }
             login_form_item['append'] = Button(
                 label='发送验证码',
                 delay=60,
@@ -24,6 +28,7 @@ class EmailRegisterForm(BaseForm):
                     + '?send_verify_code=true',
                     method='post',
                     params={'email': 'email'},
+                    payload=payload,
                 ),
             )
 
@@ -40,6 +45,10 @@ class EmailResetPWDForm(BaseForm):
 
     def set_form_item_button(self, login_form_item):
         if login_form_item['name'] == 'email':
+            payload = {
+                'reset_pwd_tmpl': self.provider.reset_pwd_tmpl or '',
+                'auth_code_length': self.provider.auth_code_length or 6,
+            }
             login_form_item['append'] = Button(
                 label='发送验证码',
                 delay=60,
@@ -48,5 +57,6 @@ class EmailResetPWDForm(BaseForm):
                     + '?send_verify_code=true',
                     method='post',
                     params={'email': 'email'},
+                    payload=payload,
                 ),
             )
