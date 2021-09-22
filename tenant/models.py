@@ -11,6 +11,7 @@ class Tenant(BaseModel):
     name = models.CharField(verbose_name='名字', max_length=128)
     slug = models.SlugField(verbose_name='短链接标识')
     icon = models.URLField(verbose_name='图标', blank=True)
+    use_slug = models.BooleanField(default=True, verbose_name='是否使用Slug')
 
     def __str__(self) -> str:
         return f'Tenant: {self.name}'

@@ -28,6 +28,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
     icon = create_upload_url_field(serializers.URLField)(
         hint=_("请选择图标"), required=False
     )
+    use_slug = serializers.BooleanField(default=True, label=_('是否使用Slug'))
 
     class Meta:
         model = Tenant
@@ -37,6 +38,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
             'name',
             'slug',
             'icon',
+            'use_slug',
             'created',
         )
 
