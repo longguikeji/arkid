@@ -37,6 +37,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
             'name',
             'slug',
             'icon',
+            'use_slug',
             'created',
         )
 
