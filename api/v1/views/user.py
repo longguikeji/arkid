@@ -54,6 +54,7 @@ from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.exceptions import ValidationError
 from extension_root.childmanager.models import ChildManager
 from django.utils.translation import gettext_lazy as _
+from common.utils import check_password_complexity
 
 import re
 from webhook.manager import WebhookManager
@@ -397,7 +398,18 @@ class UserAppDataView(generics.RetrieveUpdateAPIView):
         return userAppData
 
 
-@extend_schema(tags=['user'])
+@extend_schema(
+    roles=['general user', 'tenant admin', 'global admin'],
+    tags=['user'],
+    parameters=[
+        OpenApiParameter(
+            name='tenant',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        )
+    ],
+)
 class UpdatePasswordView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
@@ -409,6 +421,11 @@ class UpdatePasswordView(generics.CreateAPIView):
         responses=PasswordSerializer,
     )
     def post(self, request):
+        tenant_uuid = self.request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
         uuid = request.data.get('uuid', '')
         password = request.data.get('password', '')
         old_password = request.data.get('old_password', '')
@@ -421,13 +438,16 @@ class UpdatePasswordView(generics.CreateAPIView):
                     'message': _('user does not exist'),
                 }
             )
-        if password and self.check_password(password) is False:
-            return JsonResponse(
-                data={
-                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                    'message': _('password strength not enough'),
-                }
-            )
+        if password:
+            ret, message = check_password_complexity(password, tenant)
+            if not ret:
+                return JsonResponse(
+                    data={
+                        'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                        'message': message,
+                    }
+                )
+
         if password and user.check_password(old_password) is False:
             return JsonResponse(
                 data={
@@ -449,13 +469,19 @@ class UpdatePasswordView(generics.CreateAPIView):
             is_succeed = False
         return Response(is_succeed)
 
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True
 
-
-@extend_schema(tags=['user'])
+@extend_schema(
+    roles=['general user', 'tenant admin', 'global admin'],
+    tags=['user'],
+    parameters=[
+        OpenApiParameter(
+            name='tenant',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        )
+    ],
+)
 class ResetPasswordView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
@@ -464,9 +490,13 @@ class ResetPasswordView(generics.CreateAPIView):
 
     @extend_schema(roles=['tenant admin', 'global admin'], responses=PasswordSerializer)
     def post(self, request):
+        tenant_uuid = self.request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
         uuid = request.data.get('uuid', '')
         password = request.data.get('password', '')
-        tenant_uuid = request.data.get('tenant_uuid', '')
         user = User.objects.filter(uuid=uuid).first()
         is_succeed = True
         if not user:
@@ -476,13 +506,15 @@ class ResetPasswordView(generics.CreateAPIView):
                     'message': _('user does not exist'),
                 }
             )
-        if password and self.check_password(tenant_uuid, password) is False:
-            return JsonResponse(
-                data={
-                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                    'message': _('password strength not enough'),
-                }
-            )
+        if password:
+            ret, message = check_password_complexity(password, tenant)
+            if not ret:
+                return JsonResponse(
+                    data={
+                        'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                        'message': message,
+                    }
+                )
         if password and user.valid_password(password) is True:
             return JsonResponse(
                 data={
@@ -496,119 +528,6 @@ class ResetPasswordView(generics.CreateAPIView):
         except Exception as e:
             is_succeed = False
         return Response(is_succeed)
-
-    def check_password(self, tenant_uuid, pwd):
-        comlexity = PasswordComplexity.active_objects.filter(
-            tenant__uuid=tenant_uuid, is_apply=True
-        ).first()
-        if comlexity:
-            return comlexity.check_pwd(pwd)
-        return True
-
-
-@extend_schema(tags=['user'])
-class MobileResetPasswordView(generics.CreateAPIView):
-    '''
-    user forget password reset api
-    '''
-
-    permission_classes = []
-    authentication_classes = []
-
-    serializer_class = MobileResetPasswordRequestSerializer
-
-    @extend_schema(responses=PasswordSerializer)
-    def post(self, request):
-        mobile = request.data.get('mobile', '')
-        password = request.data.get('password', '')
-        code = request.data.get('code', '')
-        user = User.objects.filter(mobile=mobile).first()
-        if not user:
-            return JsonResponse(
-                data={
-                    'error': Code.USER_EXISTS_ERROR.value,
-                    'message': _('user does not exist'),
-                }
-            )
-        if password and self.check_password(password) is False:
-            return JsonResponse(
-                data={
-                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                    'message': _('password strength not enough'),
-                }
-            )
-        # 检查验证码
-        try:
-            sms_token, expire_time = ResetPWDSMSClaimSerializer.check_sms(
-                {'mobile': mobile, 'code': code}
-            )
-        except ValidationError:
-            return JsonResponse(
-                data={
-                    'error': Code.SMS_CODE_MISMATCH.value,
-                    'message': _('sms code mismatch'),
-                }
-            )
-        user.set_password(password)
-        user.save()
-        return Response({'error': Code.OK.value, 'message': 'Reset password success'})
-
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True
-
-
-@extend_schema(tags=['user'])
-class EmailResetPasswordView(generics.CreateAPIView):
-    '''
-    user forget password reset api
-    '''
-
-    permission_classes = []
-    authentication_classes = []
-
-    serializer_class = EmailResetPasswordRequestSerializer
-
-    @extend_schema(responses=PasswordSerializer)
-    def post(self, request):
-        email = request.data.get('email', '')
-        password = request.data.get('password', '')
-        # checkpassword = request.data.get('checkpassword', '')
-        code = request.data.get('code', '')
-        user = User.objects.filter(email=email).first()
-        if not user:
-            return JsonResponse(
-                data={
-                    'error': Code.USER_EXISTS_ERROR.value,
-                    'message': _('user does not exist'),
-                }
-            )
-        if password and self.check_password(password) is False:
-            return JsonResponse(
-                data={
-                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                    'message': _('password strength not enough'),
-                }
-            )
-        # 检查验证码
-        try:
-            ret = ResetPWDEmailClaimSerializer.check_email_verify_code(email, code)
-        except ValidationError:
-            return JsonResponse(
-                data={
-                    'error': Code.EMAIL_CODE_MISMATCH.value,
-                    'message': _('email code mismatch'),
-                }
-            )
-        user.set_password(password)
-        user.save()
-        return Response({'error': Code.OK.value, 'message': 'Reset password success'})
-
-    def check_password(self, pwd):
-        if pwd.isdigit() or len(pwd) < 8:
-            return False
-        return True
 
 
 @extend_schema(
@@ -632,7 +551,7 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
     @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
-    
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['tenant_uuid'] = self.request.query_params.get('tenant_uuid', '')

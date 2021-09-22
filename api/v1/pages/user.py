@@ -15,15 +15,18 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'user.create'
+                'tag': 'user.create',
+                'description': '添加用户'
             },
             'export': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
-                'method': 'get'
+                'method': 'get',
+                'description': '全部导出'
             },
             'import': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_import/',
-                'method': 'post'
+                'method': 'post',
+                'description': '导入'
             },
             'custom': {
                 'tag': 'user.custom_fields',
@@ -34,19 +37,23 @@ extend_schema_tags(
             'password': {
                 'read': {
                     'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
-                    'method': 'get'
+                    'method': 'get',
+                    'description': '设置密码'
                 },
                 'write': {
                     'path': '/api/v1/user/reset_password/',
-                    'method': 'post'
+                    'method': 'post',
+                    'description': '设置密码'
                 }
             },
             'update': {
-                'tag': 'user.update'
+                'tag': 'user.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
@@ -67,7 +74,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -88,7 +96,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }
@@ -114,11 +123,13 @@ extend_schema_tags(
         },
         'local': {
             'update': {
-                'tag': 'user.custom_fields.update'
+                'tag': 'user.custom_fields.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/?subject=user',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
@@ -139,7 +150,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/?subject=user',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -160,7 +172,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/?subject=user',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

@@ -15,19 +15,23 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'app.create'
+                'tag': 'app.create',
+                'description': '添加应用'
             }
         },
         'local': {
             'sync': {
-                'tag': 'app.provisioning'
+                'tag': 'app.provisioning',
+                'description': '同步数据'
             },
             'update': {
-                'tag': 'app.update'
+                'tag': 'app.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         },
     }
@@ -48,7 +52,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -69,7 +74,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }
@@ -89,14 +95,17 @@ extend_schema_tags(
         },
         'global': {
             'mapping': {
-                'tag': 'app.provisioning.mapping'
+                'tag': 'app.provisioning.mapping',
+                'description': '同步配置映射'
             },
             'profile': {
-                'tag': 'app.provisioning.profile'
+                'tag': 'app.provisioning.profile',
+                'description': '同步配置概述'
             },
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/',
-                'method': 'put'
+                'method': 'put',
+                'description': '编辑'
             }
         }
     }
@@ -116,16 +125,19 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'app.provisioning.mapping.create'
+                'tag': 'app.provisioning.mapping.create',
+                'description': '新建'
             }
         },
         'local': {
             'update': {
-                'tag': 'app.provisioning.mapping.update'
+                'tag': 'app.provisioning.mapping.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/{map_uuid}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
@@ -146,7 +158,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/',
-                'method': 'post'
+                'method': 'post',
+                'description': '新建'
             }
         }
     }
@@ -167,14 +180,15 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/{map_uuid}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }
 )
 
 app_provisioning_profile_tag = 'app.provisioning.profile'
-app_provisioning_profile_name = '应用同步配置属性'
+app_provisioning_profile_name = '应用同步配置概述'
 
 extend_schema_tags(
     app_provisioning_profile_tag,
@@ -187,23 +201,26 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'app.provisioning.profile.create'
+                'tag': 'app.provisioning.profile.create',
+                'description': '新建'
             }
         },
         'local': {
             'update': {
-                'tag': 'app.provisioning.profile.update'
+                'tag': 'app.provisioning.profile.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/{profile_uuid}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
 )
 
 app_provisioning_profile_create_tag = 'app.provisioning.profile.create'
-app_provisioning_profile_create_name = '创建应用同步配置属性'
+app_provisioning_profile_create_name = '创建应用同步配置概述'
 
 extend_schema_tags(
     app_provisioning_profile_create_tag,
@@ -217,7 +234,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -225,7 +243,7 @@ extend_schema_tags(
 
 
 app_provisioning_profile_update_tag = 'app.provisioning.profile.update'
-app_provisioning_profile_update_name = '编辑应用同步配置属性'
+app_provisioning_profile_update_name = '编辑应用同步配置概述'
 
 extend_schema_tags(
     app_provisioning_profile_update_tag,
@@ -239,7 +257,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/{profile_uuid}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

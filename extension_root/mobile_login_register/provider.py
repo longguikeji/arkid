@@ -16,6 +16,10 @@ from api.v1.serializers.sms import (
 from django.utils.translation import gettext_lazy as _
 from inventory.models import User
 from django.db.models import Q
+from common.utils import (
+    check_password_complexity,
+    get_request_tenant,
+)
 
 
 class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
@@ -23,6 +27,7 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
         self.login_enabled = data.get('login_enabled', True)
         self.register_enabled = data.get('register_enabled', True)
         self.reset_password_enabled = data.get('reset_password_enabled', True)
+        self.auth_code_length = data.get('auth_code_length', '')
 
     @property
     def login_form(self):
@@ -76,6 +81,15 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
         mobile = request.data.get('mobile')
         code = request.data.get('code')
         password = request.data.get('password')
+
+        tenant = get_request_tenant(request)
+        ret, message = check_password_complexity(password, tenant)
+        if not ret:
+            data = {
+                'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                'message': message,
+            }
+            return data
 
         sms_code_key = RegisterSMSClaimSerializer.gen_sms_code_key(mobile)
         runtime = get_app_runtime()

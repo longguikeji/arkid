@@ -15,7 +15,8 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'authorization_agent.create'
+                'tag': 'authorization_agent.create',
+                'description': '添加身份源代理'
             }
         },
         'local': {
@@ -42,11 +43,13 @@ extend_schema_tags(
                 }
             },
             'update': {
-                'tag': 'authorization_agent.update'
+                'tag': 'authorization_agent.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/authorization_agent/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
@@ -54,7 +57,7 @@ extend_schema_tags(
 
 
 authorization_agent_create_tag = 'authorization_agent.create'
-authorization_agent_create_name = '创建身份源代理'
+authorization_agent_create_name = '添加身份源代理'
 
 extend_schema_tags(
     authorization_agent_create_tag,
@@ -68,7 +71,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/authorization_agent/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -89,7 +93,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/authorization_agent/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

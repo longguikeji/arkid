@@ -153,7 +153,7 @@ class PasswordLoginView(APIView):
                             'is_need_refresh': False,
                         }
                     )
-        # 如果是子账户，要自动转为主账户 
+        # 如果是子账户，要自动转为主账户
         if user.parent:
             user = user.parent
 
@@ -287,3 +287,50 @@ class PasswordRegisterView(APIView):
                 },
             }
         )
+
+
+@extend_schema(
+    tags=['password-login-register'],
+    roles=['general user', 'tenant admin', 'global admin'],
+)
+class LoginFieldsView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    def get(self, request):
+        data = []
+        data.append({'value': 'username', 'label': '用户名'})
+        data.append({'value': 'email', 'label': '邮箱账号'})
+        tenant = None
+        tenant_uuid = request.query_params.get('tenant', None)
+        if tenant_uuid:
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+
+        custom_fields = CustomField.valid_objects.filter(subject='user', tenant=tenant)
+        for field in custom_fields:
+            data.append({'value': field.name, 'label': field.name})
+
+        return JsonResponse(data=data, safe=False)
+
+
+@extend_schema(
+    tags=['password-login-register'],
+    roles=['general user', 'tenant admin', 'global admin'],
+)
+class RegisterFieldsView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    def get(self, request):
+        data = []
+        data.append({'value': 'username', 'label': '用户名'})
+        tenant = None
+        tenant_uuid = request.query_params.get('tenant', None)
+        if tenant_uuid:
+            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+
+        custom_fields = CustomField.valid_objects.filter(subject='user', tenant=tenant)
+        for field in custom_fields:
+            data.append({'value': field.name, 'label': field.name})
+
+        return JsonResponse(data=data, safe=False)

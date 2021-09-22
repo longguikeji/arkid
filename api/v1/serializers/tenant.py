@@ -154,13 +154,20 @@ class TenantExtendSerializer(BaseDynamicFieldModelSerializer):
 class ConfigSerializer(serializers.Serializer):
     # is_open_authcode = serializers.BooleanField(label=_('是否打开验证码'))
     # error_number_open_authcode = serializers.IntegerField(label=_('错误几次提示输入验证码'))
-    is_open_register_limit = serializers.BooleanField(label=_('是否限制注册用户'))
-    register_time_limit = serializers.IntegerField(label=_('用户注册时间限制(分钟)'))
-    register_count_limit = serializers.IntegerField(label=_('用户注册数量限制'))
-    upload_file_format = serializers.ListField(
-        child=serializers.CharField(), label=_('允许上传的文件格式')
+    is_open_register_limit = serializers.BooleanField(
+        label=_('是否限制注册用户'), default=False
     )
-    close_page_auto_logout = serializers.BooleanField(label=_('是否关闭页面自动退出'))
+    register_time_limit = serializers.IntegerField(label=_('用户注册时间限制(分钟)'), default=1)
+    register_count_limit = serializers.IntegerField(label=_('用户注册数量限制'), default=10)
+    upload_file_format = serializers.ListField(
+        child=serializers.CharField(),
+        label=_('允许上传的文件格式'),
+        default=['jpg', 'png', 'gif', 'jpeg'],
+    )
+    close_page_auto_logout = serializers.BooleanField(
+        label=_('是否关闭页面自动退出'), default=False
+    )
+    password_validity_period = serializers.IntegerField(label=_('密码有效期(天)'), default=60)
 
 
 class TenantConfigSerializer(BaseDynamicFieldModelSerializer):

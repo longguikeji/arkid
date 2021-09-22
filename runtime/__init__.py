@@ -9,17 +9,19 @@ from common.provider import (
     AppTypeProvider,
     StorageProvider,
     MigrationProvider,
-    AuthCodeProvider,
+    AuthCodeBaseProvider,
     TenantUserConfigProvider,
     LoginRegisterConfigProvider,
     PrivacyNoticeProvider,
     ChildAccountConfigProvider,
+    OtherAuthFactorProvider,
     ChildManagerConfigProvider,
 )
 from common.serializer import (
     AppBaseSerializer,
     ExternalIdpBaseSerializer,
     LoginRegisterConfigBaseSerializer,
+    OtherAuthFactorBaseSerializer,
 )
 from authorization_server.models import AuthorizationServer
 from mfa.models import MFA
@@ -33,11 +35,12 @@ class Runtime:
     sms_provider: SMSProvider = None
     cache_provider: CacheProvider = None
     storage_provider: StorageProvider = None
-    authcode_provider: AuthCodeProvider = None
+    authcode_provider: AuthCodeBaseProvider = None
     tenantuserconfig_provider: TenantUserConfigProvider = None
     childaccountconfig_provider: ChildAccountConfigProvider = None
     childmanagerconfig_provider: ChildManagerConfigProvider = None
     migration_provider: MigrationProvider = None
+    privacy_notice_provider: PrivacyNoticeProvider = None
 
     external_idps: List
     external_idp_providers: Dict[str, ExternalIdpProvider]
@@ -50,6 +53,10 @@ class Runtime:
     login_register_configs: List
     login_register_config_providers: Dict[str, LoginRegisterConfigProvider]
     login_register_config_serializers: Dict[str, LoginRegisterConfigBaseSerializer]
+
+    other_auth_factors: List
+    other_auth_factor_providers: Dict[str, OtherAuthFactorProvider]
+    other_auth_factor_serializers: Dict[str, OtherAuthFactorBaseSerializer]
 
     authorization_servers: List[AuthorizationServer] = []
 
@@ -81,6 +88,10 @@ class Runtime:
             cls._instance.login_register_config_providers = {}
             cls._instance.login_register_config_serializers = {}
 
+            cls._instance.other_auth_factors = []
+            cls._instance.other_auth_factor_providers = {}
+            cls._instance.other_auth_factor_serializers = {}
+
         return cls._instance
 
     def quit_all_extension(self):
@@ -107,6 +118,9 @@ class Runtime:
         self.authcode_provider = None
         self.migration_provider = None
         self.privacy_notice_provider = None
+        self.other_auth_factors = []
+        self.other_auth_factor_providers = {}
+        self.other_auth_factor_serializers = {}
 
     def register_task(self):
         """
@@ -215,6 +229,37 @@ class Runtime:
         if serializer is not None and key in self.login_register_config_serializers:
             self.login_register_config_serializers.pop(key)
         print('logout_login_register_config:', name)
+
+    def register_other_auth_factor(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: OtherAuthFactorProvider,
+        serializer: OtherAuthFactorBaseSerializer = None,
+    ):
+        if (key, name, description) not in self.other_auth_factors:
+            self.other_auth_factors.append((key, name, description))
+        if provider is not None:
+            self.other_auth_factor_providers[key] = provider
+
+        if serializer is not None:
+            self.other_auth_factor_serializers[key] = serializer
+
+    def logout_other_auth_factor(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: LoginRegisterConfigProvider,
+        serializer: LoginRegisterConfigBaseSerializer = None,
+    ):
+        if (key, name, description) in self.other_auth_factors:
+            self.other_auth_factors.remove((key, name, description))
+        if provider is not None and key in self.other_auth_factor_providers:
+            self.other_auth_factor_providers.pop(key)
+        if serializer is not None and key in self.other_auth_factor_serializers:
+            self.other_auth_factor_serializers.pop(key)
 
     def register_mfa_provider(self, name: str, provider: MFAProvider):
         pass
@@ -346,10 +391,14 @@ class Runtime:
         self.tenantuserconfig_provider = None
         print('logout_tenantuserconfig_provider')
 
-    def register_childaccountconfig_provider(self, childaccountconfig_provider: ChildAccountConfigProvider):
+    def register_childaccountconfig_provider(
+        self, childaccountconfig_provider: ChildAccountConfigProvider
+    ):
         self.childaccountconfig_provider = childaccountconfig_provider
 
-    def logout_childaccountconfig_provider(self, childaccountconfig_provider: ChildAccountConfigProvider):
+    def logout_childaccountconfig_provider(
+        self, childaccountconfig_provider: ChildAccountConfigProvider
+    ):
         self.childaccountconfig_provider = None
         print('logout_childaccountconfig_provider')
 
@@ -363,7 +412,7 @@ class Runtime:
     def register_authcode_provider(self, authcode_provider: AuthCodeProvider):
         self.authcode_provider = authcode_provider
 
-    def logout_authcode_provider(self, authcode_provider: AuthCodeProvider):
+    def logout_authcode_provider(self, authcode_provider: AuthCodeBaseProvider):
         # if self.authcode_provider and authcode_provider == self.authcode_provider:
         #     self.authcode_provider = None
         self.authcode_provider = None

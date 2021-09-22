@@ -37,6 +37,7 @@ jobs:
         push: true
         tags: |
           harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
+          longguikeji/arkid:v2dev-${{ github.run_number }}
           longguikeji/arkid:v2dev
     - name: deploy to cluster
       uses: steebchen/kubectl@v2.0.0
