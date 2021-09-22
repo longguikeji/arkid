@@ -409,7 +409,7 @@ class Runtime:
         self.childmanagerconfig_provider = None
         print('logout_childmanagerconfig_provider')
 
-    def register_authcode_provider(self, authcode_provider: AuthCodeProvider):
+    def register_authcode_provider(self, authcode_provider: AuthCodeBaseProvider):
         self.authcode_provider = authcode_provider
 
     def logout_authcode_provider(self, authcode_provider: AuthCodeBaseProvider):
