@@ -57,14 +57,17 @@ class FirstLoginRuleProvider(BaseAuthRuleProvider):
                             login_page_model.LoginFormItem(type='hidden', name='extension', value=auth_factor)
                         )
 
-                        form['submit'] = login_page_model.Button(
+                        login_form['submit'] = login_page_model.Button(
                             label='登录', http=login_page_model.ButtonHttp(url=url, method='post')
                         )
 
-                        if form.get("form_data",None):
-                            form["form_data"].extend(login_form)
+                        if not form.get("login",None):
+                            form["login"] = {}
+
+                        if form["login"].get("forms",None):
+                            form["login"]["forms"].extend(login_form)
                         else:
-                            form["form_data"] = [login_form]
+                            form["login"]["forms"] = [login_form]
 
                     
             else:
