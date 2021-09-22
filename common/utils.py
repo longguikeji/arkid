@@ -126,19 +126,21 @@ def get_client_ip(request):
 
 
 def check_password_complexity(pwd, tenant):
-    from config.models import PasswordComplexity
+    from login_register_config.models import LoginRegisterConfig
 
     if not pwd:
         return False, 'No password provide'
 
-    complexity = PasswordComplexity.active_objects.filter(
-        tenant=tenant, is_apply=True
+    config = LoginRegisterConfig.active_objects.filter(
+        tenant=tenant, data__is_apply=True
     ).first()
-    if complexity:
-        if complexity.check_pwd(pwd):
+    if config:
+        regular = config.data.get('regular')
+        title = config.data.get('title')
+        if re.match(regular, pwd):
             return True, None
         else:
-            return False, complexity.title
+            return False, title
     return True, None
 
 

@@ -1,8 +1,12 @@
 from openapi.utils import extend_schema_tags
 
-tag = ['login_register_extension_config', 'tenant_register_privacy_notice', 'login_register_config']
+tag = [
+    'login_register_extension_config',
+    'tenant_register_privacy_notice',
+    'login_register_config',
+]
 path = 'settings'
-name = '登录注册配置'
+name = '因素配置'
 
 login_register_extension_config_tag = 'login_register_extension_config'
 login_register_extension_config_name = '登录注册插件化配置'
@@ -14,26 +18,26 @@ extend_schema_tags(
         'type': 'table_page',
         'init': {
             'path': '/api/v1/login_register_config/?tenant={parent_lookup_tenant}',
-            'method': 'get'
+            'method': 'get',
         },
         'global': {
             'create': {
                 'tag': 'login_register_extension_config.create',
-                'description': '添加租户登录注册插件'
+                'description': '添加租户登录注册插件',
             }
         },
         'local': {
             'update': {
                 'tag': 'login_register_extension_config.update',
-                'description': '编辑'
+                'description': '编辑',
             },
             'delete': {
                 'path': '/api/v1/login_register_config/{id}/?tenant={parent_lookup_tenant}',
                 'method': 'delete',
-                'description': '删除'
-            }
-        }
-    }
+                'description': '删除',
+            },
+        },
+    },
 )
 
 login_register_extension_config_create_tag = 'login_register_extension_config.create'
@@ -46,16 +50,16 @@ extend_schema_tags(
         'type': 'form_page',
         'init': {
             'path': '/api/v1/login_register_config/?tenant={parent_lookup_tenant}',
-            'method': 'post'
+            'method': 'post',
         },
         'global': {
             'create': {
                 'path': '/api/v1/login_register_config/?tenant={parent_lookup_tenant}',
                 'method': 'post',
-                'description': '确定'
+                'description': '确定',
             }
-        }
-    }
+        },
+    },
 )
 
 login_register_extension_config_update_tag = 'login_register_extension_config.update'
@@ -74,10 +78,10 @@ extend_schema_tags(
             'update': {
                 'path': '/api/v1/login_register_config/{id}/?tenant={parent_lookup_tenant}',
                 'method': 'put',
-                'description': '确定'
+                'description': '确定',
             }
-        }
-    }
+        },
+    },
 )
 
 tenant_register_privacy_notice_tag = 'tenant_register_privacy_notice'
@@ -95,10 +99,10 @@ extend_schema_tags(
         'global': {
             'update': {
                 'tag': 'tenant_register_privacy_notice.update',
-                'description': '编辑'
+                'description': '编辑',
             }
-        }
-    }
+        },
+    },
 )
 
 tenant_register_privacy_notice_update_tag = 'tenant_register_privacy_notice.update'
@@ -117,7 +121,7 @@ extend_schema_tags(
             'update': {
                 'path': '/api/v1/config/privacy_notice/?tenant={tenant_uuid}',
                 'method': 'put',
-                'description': '确定'
+                'description': '确定',
             }
         },
     },
@@ -131,17 +135,11 @@ extend_schema_tags(
     login_register_config_name,
     {
         'type': 'form_page',
-        'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/config/',
-            'method': 'get'
-        },
+        'init': {'path': '/api/v1/tenant/{tenant_uuid}/config/', 'method': 'get'},
         'global': {
-            'update': {
-                'tag': 'login_register_config.update',
-                'description': '编辑'
-            }
-        }
-    }
+            'update': {'tag': 'login_register_config.update', 'description': '编辑'}
+        },
+    },
 )
 
 login_register_config_update_tag = 'login_register_config.update'
@@ -152,16 +150,13 @@ extend_schema_tags(
     login_register_config_update_name,
     {
         'type': 'form_page',
-        'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/config/',
-            'method': 'get'
-        },
+        'init': {'path': '/api/v1/tenant/{tenant_uuid}/config/', 'method': 'get'},
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/config/',
                 'method': 'patch',
-                'description': '确定'
+                'description': '确定',
             }
-        }
-    }
+        },
+    },
 )

@@ -30,16 +30,16 @@ urlpatterns = [
         views_config.PrivacyNoticeView.as_view(),
         name='privacy_notice',
     ),
-    re_path(
-        r'^config/password_complexity/(?P<complexity_uuid>[\w-]+)/',
-        views_config.PasswordComplexityDetailView.as_view(),
-        name='password-complexity-detail',
-    ),
-    re_path(
-        r'^config/password_complexity/',
-        views_config.PasswordComplexityView.as_view(),
-        name='password-complexity',
-    ),
+    # re_path(
+    #     r'^config/password_complexity/(?P<complexity_uuid>[\w-]+)/',
+    #     views_config.PasswordComplexityDetailView.as_view(),
+    #     name='password-complexity-detail',
+    # ),
+    # re_path(
+    #     r'^config/password_complexity/',
+    #     views_config.PasswordComplexityView.as_view(),
+    #     name='password-complexity',
+    # ),
     re_path(
         r'^config/current_password_complexity/',
         views_config.CurrentPasswordComplexityView.as_view(),

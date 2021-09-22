@@ -2,22 +2,30 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from common.serializer import LoginRegisterConfigBaseSerializer
 from api.v1.fields.custom import create_password_field
+from api.v1.fields.custom import create_custom_list_field
 
 
 class PasswordLoginRegisterConfigDataSerializer(serializers.Serializer):
 
-    username_login_enabled = serializers.BooleanField(default=True, label=_('启用用户名登录'))
-    username_register_enabled = serializers.BooleanField(
-        default=True, label=_('启用用户名注册')
-    )
-    email_login_enabled = serializers.BooleanField(default=False, label=_('启用邮箱账号登录'))
+    login_enabled = serializers.BooleanField(default=True, label=_('启用登录'))
+    register_enabled = serializers.BooleanField(default=True, label=_('启用注册'))
 
-    login_enabled_custom_field_names = serializers.ListField(
-        child=serializers.CharField(), label=_('启用密码登录的自定义字段'), default=[]
+    login_enabled_field_names = create_custom_list_field(serializers.ListField)(
+        child=serializers.CharField(),
+        label=_('启用密码登录的字段'),
+        default=[],
+        url='/api/v1/login_fields?tenant={tenant_uuid}',
     )
-    register_enabled_custom_field_names = serializers.ListField(
-        child=serializers.CharField(), label=_('启用密码注册的自定义字段'), default=[]
+    register_enabled_field_names = create_custom_list_field(serializers.ListField)(
+        child=serializers.CharField(),
+        label=_('启用密码注册的字段'),
+        default=[],
+        url='/api/v1/register_fields?tenant={tenant_uuid}',
     )
+
+    is_apply = serializers.BooleanField(label=_('是否启用密码校验'), default=False)
+    regular = serializers.CharField(label=_('密码校验正则表达式'), default='')
+    title = serializers.CharField(label=_('密码校验提示信息'), default='')
 
     # is_open_register_limit = serializers.BooleanField(default=False, label=('是否限制注册用户'))
     # register_time_limit = serializers.IntegerField(default=1, label=_('用户注册时间限制(分钟)'))

@@ -10,11 +10,21 @@ class ButtonRedirect(dict):
 
 
 class ButtonHttp(dict):
-    def __init__(self, url: str, method: str, params: dict = None, *args, **kwargs):
+    def __init__(
+        self,
+        url: str,
+        method: str,
+        params: dict = None,
+        payload: dict = None,
+        *args,
+        **kwargs
+    ):
         self['url'] = url
         self['method'] = method
         if params:
             self['params'] = params
+        if payload:
+            self['payload'] = payload
         super().__init__(*args, **kwargs)
 
 

@@ -13,6 +13,9 @@ class MobileLoginForm(BaseForm):
 
     def set_form_item_button(self, login_form_item):
         if login_form_item['name'] == 'mobile':
+            payload = {
+                'auth_code_length': self.provider.auth_code_length or 6,
+            }
             login_form_item['append'] = Button(
                 label='发送验证码',
                 delay=60,
@@ -20,6 +23,7 @@ class MobileLoginForm(BaseForm):
                     url=reverse('api:sms', args=['login']),
                     method='post',
                     params={'mobile': 'mobile'},
+                    payload=payload,
                 ),
             )
 
@@ -36,6 +40,9 @@ class MobileRegisterForm(BaseForm):
 
     def set_form_item_button(self, login_form_item):
         if login_form_item['name'] == 'mobile':
+            payload = {
+                'auth_code_length': self.provider.auth_code_length or 6,
+            }
             login_form_item['append'] = Button(
                 label='发送验证码',
                 delay=60,
@@ -43,6 +50,7 @@ class MobileRegisterForm(BaseForm):
                     url=reverse('api:sms', args=['register']),
                     method='post',
                     params={'mobile': 'mobile'},
+                    payload=payload,
                 ),
             )
 
@@ -59,6 +67,9 @@ class MobileResetPWDForm(BaseForm):
 
     def set_form_item_button(self, login_form_item):
         if login_form_item['name'] == 'mobile':
+            payload = {
+                'auth_code_length': self.provider.auth_code_length or 6,
+            }
             login_form_item['append'] = Button(
                 label='发送验证码',
                 delay=60,
@@ -66,5 +77,6 @@ class MobileResetPWDForm(BaseForm):
                     url=reverse('api:sms', args=['reset_password']),
                     method='post',
                     params={'mobile': 'mobile'},
+                    payload=payload,
                 ),
             )

@@ -16,7 +16,7 @@ class EmailProvider:
         raise NotImplementedError
 
 
-class AuthCodeProvider:
+class AuthCodeBaseProvider:
     def generate_key(self):
         key = '{}.png'.format(uuid.uuid4().hex)
         return key
@@ -194,3 +194,9 @@ class PrivacyNoticeProvider:
     @classmethod
     def load_privacy(cls, request):
         raise NotImplementedError
+
+
+class OtherAuthFactorProvider:
+    def authenticate(self, request):
+        '''login'''
+        pass
