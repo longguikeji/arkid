@@ -22,6 +22,7 @@ from api.v1.serializers.tenant import (
     ContactsUserSerializer,
     TenantContactsUserTagsSerializer,
     TenantDesktopConfigSerializer,
+    TenantCheckPermissionSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
@@ -32,11 +33,12 @@ from drf_spectacular.openapi import OpenApiTypes
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
-from inventory.models import CustomField, Group, User, UserPassword, CustomUser
+from inventory.models import CustomField, Group, User, UserPassword, CustomUser, Permission
 from common.code import Code
 from .base import BaseViewSet, BaseTenantViewSet
 from app.models import App
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from extension_root.childmanager.models import ChildManager
 from drf_spectacular.utils import extend_schema_view
 from django.urls import reverse
 from common import loginpage as lp
@@ -208,39 +210,17 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
-        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).order_by('id').first()
+        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         if tenant:
             tenantconfig, is_created = TenantConfig.objects.get_or_create(
                 is_del=False,
                 tenant=tenant,
             )
-            if is_created is True:
-                tenantconfig.data = {
-                    # 'is_open_authcode': False,
-                    # 'error_number_open_authcode': 0,
-                    'is_open_register_limit': False,
-                    'register_time_limit': 1,
-                    'register_count_limit': 10,
-                    'upload_file_format': ['jpg', 'png', 'gif', 'jpeg'],
-                    'close_page_auto_logout': False,
-                }
-                tenantconfig.save()
-            else:
-                data = tenantconfig.data
-                if 'is_open_register_limit' not in data:
-                    data['is_open_register_limit'] = False
-                if 'register_time_limit' not in data:
-                    data['register_time_limit'] = 1
-                if 'register_count_limit' not in data:
-                    data['register_count_limit'] = 10
-                if 'upload_file_format' not in data:
-                    data['upload_file_format'] = ['jpg', 'png', 'gif', 'jpeg']
-                if 'close_page_auto_logout' not in data:
-                    data['close_page_auto_logout'] = False
+            if is_created:
+                default_data = TenantConfigSerializer(tenantconfig).data
+                tenantconfig.data = default_data.get('data')
                 tenantconfig.save()
             return tenantconfig
-        else:
-            return []
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
@@ -360,7 +340,7 @@ class TenantContactsGroupView(generics.ListAPIView):
             kwargs['parent'] = None
         else:
             kwargs['parent__uuid'] = parent
-        qs = Group.valid_objects.filter(**kwargs).order_by('id')
+        qs = Group.valid_objects.filter(**kwargs)
         if tenant.has_admin_perm(user) is False:
             # 功能开关
             switch = self.get_switch(self.kwargs['tenant_uuid'])
@@ -380,36 +360,31 @@ class TenantContactsGroupView(generics.ListAPIView):
                         if visible_scope:
                             # 组内成员可见 下属分组可见 指定分组与人员
                             if '组内成员可见' in visible_scope:
-                                if user.groups.filter(uuid=group.uuid).exists():
-                                    uuids.append(str(group.uuid))
+                                if user.groups.filter(uuid=group.uuid_hex).exists():
+                                    uuids.append(str(group.uuid_hex))
                                     continue
                             if '下属分组可见' in visible_scope:
                                 # 取得当前分组的所有下属分组
                                 group_uuids = []
                                 group.child_groups(group_uuids)
                                 if user.groups.filter(uuid__in=group_uuids).exists():
-                                    uuids.append(str(group.uuid))
+                                    uuids.append(str(group.uuid_hex))
                                     continue
                             if '指定分组与人员' in visible_scope:
                                 assign_group = group_visible.get('assign_group', [])
                                 assign_user = group_visible.get('assign_user', [])
-                                if (
-                                    assign_group
-                                    and user.groups.filter(
-                                        uuid__in=assign_group
-                                    ).exists()
-                                ):
-                                    uuids.append(str(group.uuid))
+                                if assign_group and user.groups.filter(uuid__in=assign_group).exists():
+                                    uuids.append(str(group.uuid_hex))
                                     continue
-                                elif assign_user and str(user.uuid) in assign_user:
-                                    uuids.append(str(group.uuid))
+                                elif assign_user and str(user.uuid_hex) in assign_user:
+                                    uuids.append(str(group.uuid_hex))
                                     continue
                     else:
-                        uuids.append(str(group.uuid))
+                        uuids.append(str(group.uuid_hex))
                 else:
-                    uuids.append(str(group.uuid))
+                    uuids.append(str(group.uuid_hex))
             qs = qs.filter(uuid__in=uuids)
-            return qs
+            return qs.order_by('id')
             # visible_type = group_visible.get('visible_type', '所有人可见')
             # if visible_type == '部分人可见':
             #     visible_scope = group_visible.get('visible_scope', [])
@@ -643,3 +618,53 @@ class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
             config.save()
         return config
 
+
+@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+class TenantCheckPermissionView(generics.RetrieveAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantCheckPermissionSerializer
+
+    @extend_schema(responses=TenantCheckPermissionSerializer)
+    def get(self, request, tenant_uuid):
+        user  = request.user
+        childmanager = ChildManager.valid_objects.filter(tenant__uuid=tenant_uuid, user=user).first()
+        result = {}
+        if childmanager:
+            result['is_childmanager'] = True
+            if childmanager.manager_permission == '全部权限':
+                result['is_all_show'] = True
+                result['is_all_application'] = False
+                result['permissions'] = []
+            elif childmanager.manager_permission == '所有应用权限':
+                result['is_all_show'] = False
+                result['is_all_application'] = True
+                result['permissions'] = []
+            else:
+                result['is_all_show'] = False
+                result['is_all_application'] = False
+                assign_permission = childmanager.assign_permission_uuid
+                if len(assign_permission) != 0:
+                    permissions = Permission.valid_objects.filter(uuid__in=assign_permission)
+                    items = []
+                    for permission in permissions:
+                        items.append({
+                            'uuid': permission.uuid_hex,
+                            'codename': permission.codename,
+                            'is_system_permission': permission.is_system_permission,
+                            'name': permission.name,
+                            'permission_category': permission.permission_category,
+                        })
+                    result['permissions'] = items
+                else:
+                    result['permissions'] = []
+        else:
+            result['is_all_application'] = False
+            result['is_childmanager'] = False
+            result['is_all_show'] = False
+            result['permissions'] = []
+        print(result)
+        serializer = self.get_serializer(result)
+        return Response(serializer.data)

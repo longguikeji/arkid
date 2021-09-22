@@ -23,6 +23,7 @@ from common.code import Code
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from extension_root.childmanager.models import ChildManager
 from webhook.manager import WebhookManager
 from django.db import transaction
 
@@ -73,9 +74,10 @@ class GroupViewSet(BaseViewSet):
     pagination_class = DefaultListPaginator
 
     def get_queryset(self):
+        user = self.request.user
         context = self.get_serializer_context()
         tenant = context['tenant']
-
+        # 分组
         parent = self.request.query_params.get('parent', None)
 
         kwargs = {
@@ -86,9 +88,27 @@ class GroupViewSet(BaseViewSet):
             kwargs['parent'] = None
         else:
             kwargs['parent__uuid'] = parent
-
-        qs = Group.valid_objects.filter(**kwargs).order_by('id')
-        return qs
+        qs = Group.valid_objects.filter(**kwargs)
+        # 用户
+        if tenant.has_admin_perm(user) is False:
+            childmanager = ChildManager.valid_objects.filter(tenant=tenant, user=user).first()
+            if childmanager:
+                # 所在分组 所在分组的下级分组 指定分组与账号
+                manager_visible = childmanager.manager_visible
+                uuids = []
+                if '所在分组' in manager_visible:
+                    for group in user.groups.all():
+                        uuids.append(group.uuid_hex)
+                if '所在分组的下级分组' in manager_visible:
+                    for group in user.groups.all():
+                        group_uuids = []
+                        group.child_groups(group_uuids)
+                        uuids.extend(group_uuids)
+                if '指定分组与账号' in manager_visible:
+                    assign_group = childmanager.assign_group
+                    uuids.extend(assign_group)
+                qs = qs.filter(uuid__in=uuids)
+        return qs.order_by('id')
 
     def get_object(self):
         context = self.get_serializer_context()

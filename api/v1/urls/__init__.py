@@ -27,6 +27,7 @@ from . import (
     device,
     login_register_config,
     auth_rule,
+    other_auth_factor,
     login,
     register,
     reset_password,
@@ -81,9 +82,11 @@ urlpatterns += system.urlpatterns
 urlpatterns += email.urlpatterns
 urlpatterns += app.urlpatterns
 urlpatterns += login_register_config.router.urls
+urlpatterns += other_auth_factor.router.urls
 urlpatterns += device.urlpatterns
 urlpatterns += auth_rule.urlpatterns
 
 urlpatterns += login.urlpatterns
 urlpatterns += register.urlpatterns
 urlpatterns += reset_password.urlpatterns
+urlpatterns += permission.urlpatterns

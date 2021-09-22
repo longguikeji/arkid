@@ -15,18 +15,21 @@ extend_schema_tags(
         },
         'filter': {
             'path': '/api/v1/device/',
-            'method': 'get'
+            'method': 'get',
+            'description': '搜索设备'
         },
         'global': {
             'export': {
                 'path': '/api/v1/device_export/',
-                'method': 'get'
+                'method': 'get',
+                'description': '导出设备信息'
             }
         },
         'local': {
             'delete': {
                 'path': '/api/v1/device/{device_uuid}/detail/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }

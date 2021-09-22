@@ -61,17 +61,17 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         write_only=True,
     )
 
-    permissions = serializers.SerializerMethodField()
+    # permissions = serializers.SerializerMethodField()
 
-    set_permissions = create_foreign_key_field(serializers.ListField)(
-        model_cls=Permission,
-        field_name='uuid',
-        page=permission.tag,
-        child=serializers.CharField(),
-        default=[],
-        link="permissions",
-        write_only=True,
-    )
+    # set_permissions = create_foreign_key_field(serializers.ListField)(
+    #     model_cls=Permission,
+    #     field_name='uuid',
+    #     page=permission.tag,
+    #     child=serializers.CharField(),
+    #     default=[],
+    #     link="permissions",
+    #     write_only=True,
+    # )
 
     custom_user = create_init_field(serializers.DictField)(
         model_cls=CustomField,
@@ -99,9 +99,9 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'city',
             'job_title',
             'groups',
-            'permissions',
+            # 'permissions',
             'set_groups',
-            'set_permissions',
+            # 'set_permissions',
             'bind_info',
             'custom_user',
         )
@@ -120,18 +120,18 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
 
         return ret
 
-    def get_permissions(self, instance):
-        user_permissions = instance.user_permissions.all()
-        ret = []
-        for p in user_permissions:
-            o = PermissionSerializer(p)
-            ret.append(o.data)
-        return ret
+    # def get_permissions(self, instance):
+    #     user_permissions = instance.user_permissions.all()
+    #     ret = []
+    #     for p in user_permissions:
+    #         o = PermissionSerializer(p)
+    #         ret.append(o.data)
+    #     return ret
 
     @transaction.atomic()
     def create(self, validated_data):
         set_groups = validated_data.pop('set_groups', None)
-        set_permissions = validated_data.pop('set_permissions', None)
+        # set_permissions = validated_data.pop('set_permissions', None)
         custom_user_data = validated_data.pop('custom_user', None)
 
         u: User = User.objects.create(
@@ -147,12 +147,12 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
                 if g is not None:
                     u.groups.add(g)
 
-        if set_permissions is not None:
-            u.user_permissions.clear()
-            for p_uuid in set_permissions:
-                p = Permission.objects.filter(uuid=p_uuid).first()
-                if p is not None:
-                    u.user_permissions.add(p)
+        # if set_permissions is not None:
+        #     u.user_permissions.clear()
+        #     for p_uuid in set_permissions:
+        #         p = Permission.objects.filter(uuid=p_uuid).first()
+        #         if p is not None:
+        #             u.user_permissions.add(p)
 
         if custom_user_data:
             tenant = self.context['tenant']
@@ -169,7 +169,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
     @transaction.atomic()
     def update(self, instance, validated_data):
         set_groups = validated_data.pop('set_groups', None)
-        set_permissions = validated_data.pop('set_permissions', None)
+        # set_permissions = validated_data.pop('set_permissions', None)
         if set_groups is not None:
             instance.groups.clear()
             for g_uuid in set_groups:
@@ -177,12 +177,12 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
                 if g is not None:
                     instance.groups.add(g)
 
-        if set_permissions is not None:
-            instance.user_permissions.clear()
-            for p_uuid in set_permissions:
-                p = Permission.objects.filter(uuid=p_uuid).first()
-                if p is not None:
-                    instance.user_permissions.add(p)
+        # if set_permissions is not None:
+        #     instance.user_permissions.clear()
+        #     for p_uuid in set_permissions:
+        #         p = Permission.objects.filter(uuid=p_uuid).first()
+        #         if p is not None:
+        #             instance.user_permissions.add(p)
 
         if 'custom_user' in validated_data:
             custom_user_data = validated_data.pop('custom_user')
@@ -419,3 +419,14 @@ class UserLogoffSerializer(serializers.Serializer):
 
 class UserTokenExpireSerializer(serializers.Serializer):
     token = serializers.CharField(label=_('token'))
+
+
+class UserListSerializer(BaseDynamicFieldModelSerializer):
+
+    class Meta:
+        model = User
+
+        fields = (
+            'uuid',
+            'username',
+        )

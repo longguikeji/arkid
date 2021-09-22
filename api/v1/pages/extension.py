@@ -15,23 +15,26 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'extension.create'
+                'tag': 'extension.create',
+                'description': '添加系统插件'
             }
         },
         'local': {
             'update': {
-                'tag': 'extension.update'
+                'tag': 'extension.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
 )
 
 extension_create_tag = 'extension.create'
-extension_create_name = '创建插件'
+extension_create_name = '创建系统插件'
 
 extend_schema_tags(
     extension_create_tag,
@@ -45,14 +48,15 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
 )
 
 extension_update_tag = 'extension.update'
-extension_update_name = '编辑插件'
+extension_update_name = '编辑系统插件'
 
 extend_schema_tags(
     extension_update_tag,
@@ -66,7 +70,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

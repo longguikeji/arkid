@@ -16,7 +16,7 @@ class EmailProvider:
         raise NotImplementedError
 
 
-class AuthCodeProvider:
+class AuthCodeBaseProvider:
     def generate_key(self):
         key = '{}.png'.format(uuid.uuid4().hex)
         return key
@@ -81,6 +81,10 @@ class ExternalIdpProvider:
 
 
 class ChildAccountConfigProvider:
+    pass
+
+
+class ChildManagerConfigProvider:
     pass
 
 
@@ -221,3 +225,8 @@ class BaseAuthRuleProvider:
         print(form)
         return form
         
+
+class OtherAuthFactorProvider:
+    def authenticate(self, request):
+        '''login'''
+        pass

@@ -24,11 +24,11 @@ class ValidationErrorFailed(APIException):
         self.detail = detail
 
 
-def gen_code():
+def gen_code(auth_code_length):
     '''
     gen random code
     '''
-    return ''.join(random.choice(string.digits) for _ in range(6))
+    return ''.join(random.choice(string.digits) for _ in range(auth_code_length))
 
 
 class SMSClaimSerializer(serializers.Serializer):
@@ -42,6 +42,7 @@ class SMSClaimSerializer(serializers.Serializer):
     mobile = serializers.CharField()
 
     username = serializers.CharField(required=False)
+    auth_code_length = serializers.IntegerField(required=False)
 
     @staticmethod
     def runtime():
@@ -81,7 +82,8 @@ class SMSClaimSerializer(serializers.Serializer):
         '''
         send sms
         '''
-        code = gen_code()
+        auth_code_length = validated_data.get('auth_code_length') or 6
+        code = gen_code(auth_code_length)
         mobile = validated_data['mobile']
         template_id = self.get_template_id()
         self.runtime().sms_provider.send_auth_code(mobile, code, template_id)

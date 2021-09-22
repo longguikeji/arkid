@@ -18,23 +18,26 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'system_password_manage.create'
+                'tag': 'system_password_manage.create',
+                'description': '添加系统密码规则'
             }
         },
         'local': {
             'update': {
-                'tag': 'system_password_manage.update'
+                'tag': 'system_password_manage.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/config/password_complexity/{complexity_uuid}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
 )
 
 system_password_manage_create_tag = 'system_password_manage.create'
-system_password_manage_create_name = '创建平台密码复杂度'
+system_password_manage_create_name = '创建平台密码新规则'
 
 extend_schema_tags(
     system_password_manage_create_tag,
@@ -48,14 +51,15 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/config/password_complexity/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
 )
 
 system_password_manage_update_tag = 'system_password_manage.update'
-system_password_manage_update_name = '编辑平台密码复杂度'
+system_password_manage_update_name = '编辑平台密码规则'
 
 extend_schema_tags(
     system_password_manage_update_tag,
@@ -69,7 +73,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/config/password_complexity/{complexity_uuid}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

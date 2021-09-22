@@ -14,4 +14,6 @@ class GetFrontendUrlAPIView(APIView):
     @extend_schema(responses=FrontendUrlSerializer)
     def get(self, request):
         url = get_app_config().get_frontend_host()
-        return JsonResponse({'url': url}, safe=False)
+        return JsonResponse({
+            'url': url
+        }, safe=False)
