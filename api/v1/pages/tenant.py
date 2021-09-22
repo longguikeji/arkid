@@ -23,14 +23,15 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'tenant.create'
+                'tag': 'tenant.create',
+                'description': '新建租户'
             }
         }
     }
 )
 
 tenant_create_tag = 'tenant.create'
-tenant_create_name = '创建租户'
+tenant_create_name = '新建租户'
 
 extend_schema_tags(
     tenant_create_tag,
@@ -44,7 +45,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }

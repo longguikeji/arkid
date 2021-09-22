@@ -56,24 +56,29 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'group.create'
+                'tag': 'group.create',
+                'description': '新建'
             },
             'import': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/group_import/',
-                'method': 'post'
+                'method': 'post',
+                'description': '导入'
             },
             'export': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/group_export/',
-                'method': 'get'
+                'method': 'get',
+                'description': '导出'
             }
         },
         'local': {
             'update': {
-                'tag': 'group.update'
+                'tag': 'group.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             },
             'children': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
@@ -98,7 +103,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -119,7 +125,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }
@@ -140,11 +147,13 @@ extend_schema_tags(
         'global': {
             'export': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
-                'method': 'get'
+                'method': 'get',
+                'description': '导出该组用户'
             },
             'import': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_import/',
-                'method': 'post'
+                'method': 'post',
+                'description': '导入'
             }
         }
     }

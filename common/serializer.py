@@ -45,11 +45,13 @@ class ExternalIdpBaseSerializer(serializers.Serializer):
     data = serializers.JSONField()
     uuid = serializers.UUIDField(read_only=True)
 
+
 class AuthorizationAgentBaseSerializer(serializers.Serializer):
     # order_no = serializers.IntegerField()
     type = serializers.CharField()
     data = serializers.JSONField()
     uuid = serializers.UUIDField(read_only=True)
+
 
 class ExtensionBaseSerializer(serializers.Serializer):
     type = serializers.CharField()
@@ -60,5 +62,11 @@ class ExtensionBaseSerializer(serializers.Serializer):
 
 class LoginRegisterConfigBaseSerializer(serializers.Serializer):
     type = serializers.CharField(label=_('登录注册类型'))
+    data = serializers.JSONField()
+    uuid = serializers.UUIDField(read_only=True)
+
+
+class OtherAuthFactorBaseSerializer(serializers.Serializer):
+    type = serializers.CharField(label=_('认证类型'))
     data = serializers.JSONField()
     uuid = serializers.UUIDField(read_only=True)

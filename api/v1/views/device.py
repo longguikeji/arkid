@@ -69,7 +69,7 @@ class DeviceListView(generics.ListCreateAPIView):
             users = User.active_objects.filter(tenants__uuid=tenant_uuid)
             # 租户管理员的
             tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
-            permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
+            permission = Permission.active_objects.filter(is_system_permission=True, codename=tenant.admin_perm_code).first()
             manage_users = permission.user_permission_set.all()
             for user in users:
                 user_uuids.append(user.uuid_hex)
@@ -151,7 +151,7 @@ class DeviceExportView(generics.RetrieveAPIView):
             users = User.valid_objects.filter(tenants__uuid=tenant_uuid)
             # 租户管理员的
             tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
-            permission = Permission.active_objects.filter(codename=tenant.admin_perm_code).first()
+            permission = Permission.active_objects.filter(is_system_permission=True, codename=tenant.admin_perm_code).first()
             manage_users = permission.user_permission_set.all()
             for user in users:
                 user_uuids.append(user.uuid_hex)

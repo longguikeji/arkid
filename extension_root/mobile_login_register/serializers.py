@@ -11,6 +11,7 @@ class MobileLoginRegisterConfigDataSerializer(serializers.Serializer):
     reset_password_enabled = serializers.BooleanField(
         default=True, label=_('启用通过手机短信重置密码')
     )
+    auth_code_length = serializers.IntegerField(label=_('验证码位数'), default=6)
     # is_open_register_limit = serializers.BooleanField(default=False, label=('是否限制注册用户'))
     # register_time_limit = serializers.IntegerField(default=1, label=_('用户注册时间限制(分钟)'))
     # register_count_limit = serializers.IntegerField(default=10, label=_('用户注册数量限制'))

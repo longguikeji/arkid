@@ -2,8 +2,7 @@ from django.db import models
 from common.model import BaseModel
 from tenant.models import Tenant
 from django.utils.translation import gettext_lazy as _
-import string
-from urllib.parse import quote
+from oauth2_provider.generators import generate_client_secret
 
 
 class App(BaseModel):
@@ -16,6 +15,9 @@ class App(BaseModel):
     type = models.CharField(max_length=128, verbose_name=_('App Type'))
     data = models.JSONField(blank=True, default=dict)
     auth_tmpl = models.TextField(blank=True, null=True, default='')
+    token = models.CharField(
+        max_length=255, blank=True, null=True, default=generate_client_secret
+    )
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'

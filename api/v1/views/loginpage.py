@@ -30,10 +30,12 @@ class LoginPage(views.APIView):
         configs = LoginRegisterConfig.active_objects.filter(tenant=tenant)
         if not configs:
             config_data = {
-                'username_login_enabled': True,
-                'username_register_enabled': True,
+                'login_enabled': True,
+                'register_enabled': True,
+                'login_enabled_field_names': ['username'],
+                'register_enabled_field_names': ['username'],
             }
-            config, _ = LoginRegisterConfig.objects.get_or_create(
+            config = LoginRegisterConfig.valid_objects.create(
                 tenant=tenant, type=DEFAULT_LOGIN_REGISTER_EXTENSION, data=config_data
             )
             configs = [config]
@@ -44,9 +46,9 @@ class LoginPage(views.APIView):
 
             config_data = config.data
             provider = provider_cls(config_data)
-            self.add_login_form(data, provider, config.type, tenant_uuid)
-            self.add_register_form(data, provider, config.type, tenant_uuid)
-            self.add_reset_password_form(data, provider, config.type, tenant_uuid)
+            self.add_login_form(data, provider, config.uuid.hex, tenant_uuid)
+            self.add_register_form(data, provider, config.uuid.hex, tenant_uuid)
+            self.add_reset_password_form(data, provider, config.uuid.hex, tenant_uuid)
 
         if tenant:
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
@@ -71,13 +73,13 @@ class LoginPage(views.APIView):
         pages.is_valid()
         return JsonResponse(pages.data)
 
-    def append_extension_type_form_item(self, form, extension_type):
+    def append_config_uuid_form_item(self, form, config_uuid):
         items = form.get('items')
         items.append(
-            model.LoginFormItem(type='hidden', name='extension', value=extension_type)
+            model.LoginFormItem(type='hidden', name='config_uuid', value=config_uuid)
         )
 
-    def add_login_form(self, data, provider, extension_type, tenant_uuid=None):
+    def add_login_form(self, data, provider, config_uuid, tenant_uuid=None):
         form = provider.login_form
         if not form:
             return
@@ -95,10 +97,10 @@ class LoginPage(views.APIView):
                 label='登录', http=model.ButtonHttp(url=url, method='post')
             )
 
-            self.append_extension_type_form_item(form, extension_type)
+            self.append_config_uuid_form_item(form, config_uuid)
         data.addForm(model.LOGIN, form)
 
-    def add_register_form(self, data, provider, extension_type, tenant_uuid=None):
+    def add_register_form(self, data, provider, config_uuid, tenant_uuid=None):
         form = provider.register_form
         if not form:
             return
@@ -116,10 +118,10 @@ class LoginPage(views.APIView):
             form['submit'] = model.Button(
                 label='注册', http=model.ButtonHttp(url=url, method='post')
             )
-            self.append_extension_type_form_item(form, extension_type)
+            self.append_config_uuid_form_item(form, config_uuid)
         data.addForm(model.REGISTER, form)
 
-    def add_reset_password_form(self, data, provider, extension_type, tenant_uuid=None):
+    def add_reset_password_form(self, data, provider, config_uuid, tenant_uuid=None):
         form = provider.reset_password_form
         if not form:
             return
@@ -140,13 +142,11 @@ class LoginPage(views.APIView):
                 gopage=model.LOGIN,
             )
 
-            self.append_extension_type_form_item(form, extension_type)
+            self.append_config_uuid_form_item(form, config_uuid)
         data.addForm(model.PASSWORD, form)
 
     def get_privacy_notice(self, tenant):
-        privacy_notice = PrivacyNotice.valid_objects.filter(
-            tenant=tenant
-        ).first()
+        privacy_notice = PrivacyNotice.valid_objects.filter(tenant=tenant).first()
         if privacy_notice and privacy_notice.is_active:
             agreement = {
                 'title': privacy_notice.title,

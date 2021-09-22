@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'extension_root.arkid',
     'extension_root.tenantuserconfig',
     'extension_root.childaccount',
+    'extension_root.childmanager',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',
@@ -196,9 +197,6 @@ CORS_ALLOW_METHODS = (
 STATIC_URL = '/static/'
 
 
-CELERY_BROKER = 'redis://localhost:6379'
-
-
 AUTH_USER_MODEL = 'inventory.User'
 
 CONFIG_FILE = 'arkid.toml'
@@ -229,17 +227,11 @@ g+gp5fQ4nmDrSNHjakzQCX2mKMsx/GLWZzoIDd7ECV9f
     # ... any other settings you want
 }
 
-LDAP_PORT = 389
-SLAPD_PASSWORD = 'admin'
-SLAPD_DOMAIN = 'dc=example,dc=org'
-AUTH_USER_MODEL = 'inventory.User'
+
 
 MAMA_CAS_ATTRIBUTE_CALLBACKS = ('mama_cas.callbacks.user_model_attributes',)
 
 
-# 引入settings_local.py 本地配置文件
-if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
-    exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
 
 # django-scim2
 SCIM_SERVICE_PROVIDER = {
@@ -258,10 +250,44 @@ SCIM_SERVICE_PROVIDER = {
     'USER_FILTER_PARSER': 'inventory.filters.UserFilterQuery',
 }
 
+# 菜单
+MENU = [
+    '租户配置',
+    '桌面设置',
+    '通讯录开关',
+    '组的可见性',
+    '个人字段可见性',
+    '个人资料设置',
+    '子管理员设置',
+    '应用管理',
+    '代理规则',
+    '认证规则',
+    '用户列表',
+    '分组管理',
+    '设备管理',
+    '权限列表',
+    '权限分组',
+    '权限管理',
+    '身份源服务',
+    '身份源代理',
+    '数据同步',
+    '登录注册配置',
+    '第三方登录',
+    '密码管理',
+    '其它因素',
+    'Webhook',
+    '自定义流程',
+    'API文档',
+    'SDK下载',
+    '用户行为日志',
+    '管理员行为日志',
+    '日志设置',
+    '统计图表'
+]
 
 # Celery settings
-
-CELERY_BROKER_URL = 'redis://localhost'
+CELERY_BROKER = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379'
 
 #: Only add pickle to this list if your broker is secured
 #: from unwanted access (see userguide/security.html)
@@ -276,3 +302,8 @@ FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'  # 邮件激活账号页�
 FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'  # 邮件重置邮箱页面
 
 SMS_LIFESPAN = datetime.timedelta(seconds=300)
+
+
+# 引入settings_local.py 本地配置文件
+if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
+    exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())

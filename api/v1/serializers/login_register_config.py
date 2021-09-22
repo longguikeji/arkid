@@ -7,6 +7,10 @@ from tenant.models import Tenant
 
 
 class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
+    login_enabled = serializers.SerializerMethodField(label=_('启用登录'))
+    register_enabled = serializers.SerializerMethodField(label=_('启用注册'))
+    reset_password_enabled = serializers.SerializerMethodField(label=_('启用重置密码'))
+
     class Meta:
 
         model = LoginRegisterConfig
@@ -15,7 +19,19 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
             'uuid',
             'type',
             'data',
+            'login_enabled',
+            'register_enabled',
+            'reset_password_enabled',
         )
+
+    def get_login_enabled(self, instance):
+        return instance.data.get('login_enabled')
+
+    def get_register_enabled(self, instance):
+        return instance.data.get('register_enabled')
+
+    def get_reset_password_enabled(self, instance):
+        return instance.data.get('reset_password_enabled')
 
     def create(self, validated_data):
         from runtime import get_app_runtime, Runtime
@@ -30,14 +46,10 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
         config_type = validated_data.pop('type')
         data = validated_data.pop('data', None)
 
-        config, _ = LoginRegisterConfig.objects.get_or_create(
+        config = LoginRegisterConfig.valid_objects.create(
             tenant=tenant,
             type=config_type,
         )
-
-        if config.is_del:
-            config.is_del = False
-            config.save()
 
         r: Runtime = get_app_runtime()
         provider_cls: LoginRegisterConfigProvider = (
@@ -54,6 +66,14 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
         config.data = data
         config.save()
 
+        is_apply = data.get('is_apply')
+        if is_apply is True:
+            other_configs = LoginRegisterConfig.active_objects.filter(
+                tenant=tenant
+            ).exclude(id=config.id)
+            for o in other_configs:
+                o.data.update(is_apply=False)
+                o.save()
         return config
 
     def update(self, instance, validated_data):
@@ -86,13 +106,24 @@ class LoginRegisterConfigSerializer(BaseDynamicFieldModelSerializer):
         instance.type = config_type
         instance.data = data
         instance.save()
+        is_apply = data.get('is_apply')
+        if is_apply is True:
+            other_configs = LoginRegisterConfig.active_objects.filter(
+                tenant=tenant
+            ).exclude(id=instance.id)
+            for o in other_configs:
+                o.data.update(is_apply=False)
+                o.save()
         return instance
 
 
 class LoginRegisterConfigListSerializer(LoginRegisterConfigSerializer):
     type = serializers.CharField(label=_('登录注册类型'))
+    login_enabled = serializers.BooleanField(label=_('启用登录'))
+    register_enabled = serializers.BooleanField(label=_('启用注册'))
+    reset_password_enabled = serializers.BooleanField(label=_('启用重置密码'))
 
     class Meta:
         model = LoginRegisterConfig
 
-        fields = ('type',)
+        fields = ('type', 'login_enabled', 'register_enabled', 'reset_password_enabled')

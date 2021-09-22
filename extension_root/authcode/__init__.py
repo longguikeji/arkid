@@ -1,33 +1,32 @@
 from common.extension import InMemExtension
-
-from .provider import AuthCodeIdpProvider
+from .serializers import AuthCodeConfigSerializer
+from .provider import AuthCodeProvider
 from runtime import Runtime
 from .constants import KEY
 
 
-class AuthCodeExternalIdpExtension(InMemExtension):
-
+class AuthCodeExtension(InMemExtension):
     def start(self, runtime: Runtime, *args, **kwargs):
-        from extension.models import Extension
-        o = Extension.active_objects.filter(
-            type=KEY,
-        ).first()
-        assert o is not None
-
-        provider = AuthCodeIdpProvider()
-        runtime.register_authcode_provider(
-            authcode_provider=provider,
+        runtime.register_other_auth_factor(
+            key=KEY,
+            name="mobile_login_register",
+            description="Mobile login and register",
+            provider=AuthCodeProvider,
+            serializer=AuthCodeConfigSerializer,
         )
         super().start(runtime=runtime, *args, **kwargs)
 
     def teardown(self, runtime: Runtime, *args, **kwargs):
-        provider = AuthCodeIdpProvider()
-        runtime.logout_authcode_provider(
-            authcode_provider=provider,
+        runtime.logout_other_auth_factor(
+            key=KEY,
+            name="mobile_login_register",
+            description="Mobile login register config",
+            provider=AuthCodeProvider,
+            serializer=AuthCodeConfigSerializer,
         )
 
 
-extension = AuthCodeExternalIdpExtension(
+extension = AuthCodeExtension(
     name=KEY,
     tags='authcode',
     scope='global',

@@ -14,12 +14,17 @@ class PasswordLoginForm(BaseForm):
     def set_form_item_placeholder(self, login_form_item):
         if login_form_item['name'] == 'username':
             placeholders = []
-            if self.provider.username_login_enabled:
-                placeholders.append('用户名')
-            if self.provider.email_login_enabled:
-                placeholders.append('邮箱账号')
-            if self.provider.login_enabled_custom_field_names:
-                placeholders.extend(self.provider.login_enabled_custom_field_names)
+            # if self.provider.username_login_enabled:
+            #     placeholders.append('用户名')
+            # if self.provider.email_login_enabled:
+            #     placeholders.append('邮箱账号')
+            for name in self.provider.login_enabled_field_names:
+                if name == 'username':
+                    placeholders.append('用户名')
+                elif name == 'email':
+                    placeholders.append('邮箱账号')
+                else:
+                    placeholders.append(name)
             login_form_item['placeholder'] = '/'.join(placeholders)
 
 

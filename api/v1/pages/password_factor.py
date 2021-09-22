@@ -15,23 +15,26 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'password.create'
+                'tag': 'password.create',
+                'description': '添加租户密码规则'
             }
         },
         'local': {
             'update': {
-                'tag': 'password.update'
+                'tag': 'password.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/config/password_complexity/{complexity_uuid}/?tenant={tenant_uuid}',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
 )
 
 password_create_tag = 'password.create'
-password_create_name = '创建新密码规则'
+password_create_name = '添加租户密码规则'
 
 extend_schema_tags(
     password_create_tag,
@@ -45,7 +48,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/config/password_complexity/?tenant={tenant_uuid}',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -66,7 +70,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/config/password_complexity/{complexity_uuid}/?tenant={tenant_uuid}',
-                'method': 'patch'
+                'method': 'patch',
+                'description': '确定'
             }
         }
     }

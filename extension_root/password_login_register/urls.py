@@ -3,14 +3,24 @@ from . import views
 
 
 urlpatterns = [
+    # path(
+    #     "password_register",
+    #     views.PasswordRegisterView.as_view(),
+    #     name="password-register",
+    # ),
+    # path(
+    #     "password_login",
+    #     views.PasswordLoginView.as_view(),
+    #     name="password-login",
+    # ),
     path(
-        "password_register",
-        views.PasswordRegisterView.as_view(),
-        name="password-register",
+        "login_fields",
+        views.LoginFieldsView.as_view(),
+        name="login-fields",
     ),
     path(
-        "password_login",
-        views.PasswordLoginView.as_view(),
-        name="password-login",
+        "register_fields",
+        views.RegisterFieldsView.as_view(),
+        name="register-fields",
     ),
 ]

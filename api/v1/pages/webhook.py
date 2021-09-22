@@ -15,26 +15,30 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'webhook.create'
+                'tag': 'webhook.create',
+                'description': '添加Webhook'
             }
         },
         'local': {
             'history': {
-                'tag': 'webhook.history'
+                'tag': 'webhook.history',
+                'description': '历史记录'
             },
             'update': {
-                'tag': 'webhook.update'
+                'tag': 'webhook.update',
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }
 )
 
 webhook_create_tag = 'webhook.create'
-webhook_create_name = '创建webhook'
+webhook_create_name = '添加Webhook'
 
 extend_schema_tags(
     webhook_create_tag,
@@ -49,13 +53,14 @@ extend_schema_tags(
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/',
                 'method': 'post',
+                'description': '确定'
             }
         }
     }
 )
 
 webhook_update_tag = 'webhook.update'
-webhook_update_name = '编辑更新webhook'
+webhook_update_name = '编辑Webhook'
 
 extend_schema_tags(
     webhook_update_tag,
@@ -69,7 +74,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }
@@ -89,15 +95,18 @@ extend_schema_tags(
         },
         'local': {
             'retrieve': {
-                'tag': 'webhook.history.retrieve'
+                'tag': 'webhook.history.retrieve',
+                'description': '查阅'
             },
             'retry': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{parent_lookup_webhook}/history/{id}/retry/',
-                'method': 'get'
+                'method': 'get',
+                'description': '重复该操作'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{parent_lookup_webhook}/history/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除'
             }
         }
     }

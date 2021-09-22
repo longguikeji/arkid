@@ -1,7 +1,7 @@
 from api.v1.views import (
     user as views_user,
 )
-from django.urls import path
+from django.urls import path, re_path
 from django.conf.urls import url, include
 
 from .tenant import tenant_router
@@ -50,5 +50,10 @@ urlpatterns = [
         r'^user/invitation/(?P<username>[\w]+)/',
         views_user.InviteUserCreateAPIView.as_view(),
         name='user-invite',
+    ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/user_list/',
+        views_user.UserListAPIView.as_view(),
+        name='tenant-user-list',
     ),
 ]

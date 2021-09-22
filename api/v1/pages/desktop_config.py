@@ -15,7 +15,8 @@ extend_schema_tags(
         },
         'global': {
             'update': {
-                'tag': 'desktop_config.update'
+                'tag': 'desktop_config.update',
+                'description': '编辑'
             }
         }
     }
@@ -36,7 +37,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/desktopconfig/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }
