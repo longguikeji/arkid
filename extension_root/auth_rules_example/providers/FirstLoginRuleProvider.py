@@ -61,13 +61,16 @@ class FirstLoginRuleProvider(BaseAuthRuleProvider):
                             label='登录', http=login_page_model.ButtonHttp(url=url, method='post')
                         )
 
-                        if not form.get("login",None):
-                            form["login"] = {}
+                        if not form.get("data",None):
+                            form["data"] = {}
 
-                        if form["login"].get("forms",None):
-                            form["login"]["forms"].extend(login_form)
+                        if not form["data"].get("login",None):
+                            form["data"]["login"] = {}
+
+                        if form["data"]["login"].get("forms",None):
+                            form["data"]["login"]["forms"].extend(login_form)
                         else:
-                            form["login"]["forms"] = [login_form]
+                            form["data"]["login"]["forms"] = [login_form]
 
                     
             else:
