@@ -225,7 +225,6 @@ class BaseAuthRuleProvider:
         print(form)
         return form
         
-
 class OtherAuthFactorProvider:
     def authenticate(self, request):
         '''login'''
