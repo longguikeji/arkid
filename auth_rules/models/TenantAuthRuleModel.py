@@ -42,3 +42,13 @@ class TenantAuthRule(BaseModel):
     @property
     def tenant_uuid(self):
         return self.tenant.uuid
+
+    @property
+    def provider(self):
+        from runtime import get_app_runtime
+        return get_app_runtime().auth_rule_type_providers.get(self.type)()
+
+    def save(self,*args, **kwargs) -> None:
+        from runtime import get_app_runtime
+        get_app_runtime().auth_rules.append(self)
+        return super().save(*args, **kwargs)

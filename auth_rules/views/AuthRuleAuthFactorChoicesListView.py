@@ -17,7 +17,10 @@ class AuthRuleAuthFactorChoicesListView(generics.ListAPIView):
     def get_queryset(self):
         providers = get_app_runtime().login_register_config_providers
 
-        excludes = self.request.parser_context.get("exclude",[])
+        excludes = self.request.GET.get("exclude",[])
+
+        if not isinstance(excludes,list):
+            excludes = [excludes]
 
         return [
            {

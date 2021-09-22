@@ -14,7 +14,7 @@ class FirstLoginRuleDataSerializer(serializers.Serializer):
     )
 
     times = serializers.IntegerField(
-        label=_("次数")
+        label=_("失败次数")
     )
 
     second_auth = create_multiple_dynamic_choice_field(serializers.MultipleChoiceField)(
@@ -22,13 +22,6 @@ class FirstLoginRuleDataSerializer(serializers.Serializer):
         url=f'/api/v1/auth_rule/auth_factor_choices_list/?{"tenant={tenant_uuid}"}&{"exclude={major_auth}"}',
         required=False
     )
-
-    apps = create_multiple_dynamic_choice_field(serializers.MultipleChoiceField)(
-        label=_("应用"),
-         url=f'/api/v1/auth_rule/app_choices_list/?{"tenant={tenant_uuid}"}'
-    )
-
-
 class FirstLoginRuleSerializer(AuthRuleBaseSerializer):
 
     data = FirstLoginRuleDataSerializer(

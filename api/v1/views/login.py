@@ -34,11 +34,21 @@ class LoginView(APIView):
 
         # 获取登录注册配置
         ret = provider.authenticate(request)
+        r = get_app_runtime()
+
         if ret.get('error') != Code.OK.value:
+
+            # 失败后调用认证规则
+            for rule in r.auth_rules:
+                ret = rule.provider.authenticate_failed(rule, request, ret, tenant)
             return JsonResponse(ret)
 
         else:
             user = ret.get('user')
+
+        # 成功后调用认证规则
+        for rule in r.auth_rules:
+            ret = rule.provider.authenticate_success(rule, request, ret, user, tenant)
 
         token = user.refresh_token()
         return_data = {'token': token.key, 'user_uuid': user.uuid.hex}

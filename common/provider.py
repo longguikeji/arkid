@@ -207,4 +207,17 @@ class BaseAuthRuleProvider:
     @abstractmethod
     def run(self, *args, **kwargs):
         raise NotImplementedError()
+
+    @abstractmethod
+    def change_form(self,auth_rule,request,form, tenant):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def authenticate_failed(self,auth_rule,request,form,tenant):
+        return form
+
+    @abstractmethod
+    def authenticate_success(self,auth_rule,request,form, user, tenant):
+        print(form)
+        return form
         

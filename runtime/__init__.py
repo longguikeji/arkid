@@ -61,7 +61,7 @@ class Runtime:
     auth_rule_types: List
     auth_rule_type_providers: Dict[str, BaseAuthRuleProvider]
     auth_rule_type_serializers: Dict[str, AuthRuleBaseSerializer]
-    app_auth_rules = {}
+    auth_rules = []
 
     urlpatterns: Dict = {}
 
@@ -88,7 +88,7 @@ class Runtime:
             cls._instance.auth_rule_types = []
             cls._instance.auth_rule_type_providers = {}
             cls._instance.auth_rule_type_serializers = {}
-            cls._instance.app_auth_rules = {}
+            cls._instance.auth_rules = []
 
         return cls._instance
 
@@ -120,7 +120,7 @@ class Runtime:
         self.auth_rule_types = []
         self.auth_rule_type_providers = {}
         self.auth_rule_type_serializers = {}
-        self.app_auth_rules = {}
+        self.auth_rules = []
 
     def register_task(self):
         """
@@ -350,13 +350,8 @@ class Runtime:
             # 查找已经配置认证规则的应用写入运行时
             from auth_rules.models import TenantAuthRule
             rules = TenantAuthRule.active_objects.filter(type=key,is_apply=True).all()
-
-            for rule in rules:
-                app_ids = rule.data.get("apps",None)
-                for app_id in app_ids:
-                    app_auth_rules = self.app_auth_rules.get(app_id,[])
-                    app_auth_rules.append(provider)
-                    self.app_auth_rules[app_id] = app_auth_rules
+            if len(rules):
+                self.auth_rules.extend(rules)
         
         if serializer is not None and key not in self.auth_rule_type_serializers:
             self.auth_rule_type_serializers[key] = serializer
