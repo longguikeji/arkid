@@ -34,6 +34,7 @@ from api.v1.serializers.user import (
     UserAppDataSerializer,
     UserLogoffSerializer,
     UserTokenExpireSerializer,
+    UserListSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import ResetPWDSMSClaimSerializer
@@ -51,6 +52,7 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.exceptions import ValidationError
+from extension_root.childmanager.models import ChildManager
 from django.utils.translation import gettext_lazy as _
 from common.utils import check_password_complexity
 
@@ -83,11 +85,12 @@ class UserViewSet(BaseViewSet):
     pagination_class = DefaultListPaginator
 
     def get_queryset(self):
+        user = self.request.user
         context = self.get_serializer_context()
         tenant = context['tenant']
 
         group = self.request.query_params.get('group', None)
-
+        group1 = group
         kwargs = {
             'is_del': False,
             'tenants__in': [tenant],
@@ -96,8 +99,36 @@ class UserViewSet(BaseViewSet):
         if group is not None:
             kwargs['groups__uuid__in'] = group.split(',')
 
-        qs = User.objects.filter(**kwargs).order_by('id')
-        return qs
+        qs = User.objects.filter(**kwargs)
+        if tenant.has_admin_perm(user) is False:
+            childmanager = ChildManager.valid_objects.filter(tenant=tenant, user=user).first()
+            if childmanager:
+                # 所在分组 所在分组的下级分组 指定分组与账号
+                manager_visible = childmanager.manager_visible
+                uuids = []
+                assign_user = []
+                assign_group = []
+                if '所在分组' in manager_visible:
+                    for group in user.groups.all():
+                        uuids.append(group.uuid_hex)
+                if '所在分组的下级分组' in manager_visible:
+                    for group in user.groups.all():
+                        group_uuids = []
+                        group.child_groups(group_uuids)
+                        uuids.extend(group_uuids)
+                if '指定分组与账号' in manager_visible:
+                    assign_group = childmanager.assign_group
+                    assign_user = childmanager.assign_user
+                    uuids.extend(assign_group)
+                qs = qs.filter(groups__uuid__in=uuids)
+                # 取得指定账号
+                if '指定分组与账号' in manager_visible and len(assign_user) > 0 and group1 is not None:
+                    group1 = group1.split(',')
+                    for item in group1:
+                        if item in assign_group:
+                            qs = qs.filter(uuid__in=assign_user)
+                            break
+        return qs.order_by('id')
 
     def get_object(self):
         context = self.get_serializer_context()
@@ -723,3 +754,31 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
                 'expired_time': invitation.expired_time,
             }
         )
+
+
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['user']
+)
+class UserListAPIView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = UserListSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+
+        group = self.request.query_params.get('group', None)
+
+        kwargs = {
+            'tenants__uuid': tenant_uuid,
+        }
+
+        if group is not None:
+            kwargs['groups__uuid__in'] = group.split(',')
+
+        qs = User.valid_objects.filter(**kwargs).order_by('id')
+        return qs

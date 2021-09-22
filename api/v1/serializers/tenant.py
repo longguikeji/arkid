@@ -7,6 +7,7 @@ from tenant.models import (
     TenantDesktopConfig,
 )
 from rest_framework import serializers
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from inventory.models import Permission, Group, User
@@ -18,6 +19,8 @@ from api.v1.fields.custom import (
 )
 from ..pages import group, user
 from config.models import PasswordComplexity
+from arkid.settings import MENU
+import uuid
 
 
 class TenantSerializer(BaseDynamicFieldModelSerializer):
@@ -43,6 +46,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         if user and user.username != "":
             user.tenants.add(tenant)
         permission = Permission.active_objects.filter(
+            is_system_permission=True,
             codename=tenant.admin_perm_code
         ).first()
         if permission:
@@ -114,6 +118,20 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
                 "assign_user": [],
             },
         )
+        # 新建权限
+        content_type = ContentType.objects.get_for_model(Tenant)
+        items = MENU
+        for item in items:
+            codename = 'enter_{}'.format(uuid.uuid4())
+            Permission.objects.create(
+                name=item,
+                content_type=content_type,
+                codename=codename,
+                tenant=tenant,
+                app=None,
+                permission_category='入口',
+                is_system_permission=True
+            )
         return tenant
 
 
@@ -237,6 +255,7 @@ class TenantContactsConfigInfoVisibilitySerializer(BaseDynamicFieldModelSerializ
 
 
 class GroupVisibilitySerializer(serializers.Serializer):
+
     visible_type = serializers.ChoiceField(
         choices=(('所有人可见', '部分人可见')), label=_('可见类型')
     )
@@ -325,3 +344,19 @@ class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
         model = TenantDesktopConfig
 
         fields = ('data',)
+
+
+class TenantCheckPermissionItemSerializer(serializers.Serializer):
+
+    uuid = serializers.CharField()
+    codename = serializers.CharField(label=_("codename"))
+    is_system_permission = serializers.BooleanField(label=_("是否是系统权限"))
+    name = serializers.CharField(label=_("权限名称"))
+    permission_category = serializers.CharField(label=_("权限类型"))
+
+
+class TenantCheckPermissionSerializer(serializers.Serializer):
+    is_childmanager = serializers.BooleanField(label=_("是否是子管理员"))
+    is_all_show = serializers.BooleanField(label=_("是否可以看到所有"))
+    is_all_application = serializers.BooleanField(label=_("是否可以所有应用"))
+    permissions = serializers.ListField(child=TenantCheckPermissionItemSerializer(), label=_('权限'), default=[])

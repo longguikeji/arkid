@@ -213,3 +213,14 @@ class AddAuthTmplSerializer(serializers.Serializer):
     html = serializers.CharField(write_only=True)
     error = serializers.CharField(read_only=True)
     message = serializers.CharField(read_only=True)
+
+
+class AppNewListSerializer(BaseDynamicFieldModelSerializer):
+
+    class Meta:
+        model = App
+
+        fields = (
+            'uuid',
+            'name',
+        )

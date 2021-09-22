@@ -15,6 +15,7 @@ from common.provider import (
     PrivacyNoticeProvider,
     ChildAccountConfigProvider,
     OtherAuthFactorProvider,
+    ChildManagerConfigProvider,
 )
 from common.serializer import (
     AppBaseSerializer,
@@ -37,6 +38,7 @@ class Runtime:
     authcode_provider: AuthCodeBaseProvider = None
     tenantuserconfig_provider: TenantUserConfigProvider = None
     childaccountconfig_provider: ChildAccountConfigProvider = None
+    childmanagerconfig_provider: ChildManagerConfigProvider = None
     migration_provider: MigrationProvider = None
     privacy_notice_provider: PrivacyNoticeProvider = None
 
@@ -400,7 +402,14 @@ class Runtime:
         self.childaccountconfig_provider = None
         print('logout_childaccountconfig_provider')
 
-    def register_authcode_provider(self, authcode_provider: AuthCodeBaseProvider):
+    def register_childmanagerconfig_provider(self, childmanagerconfig_provider: ChildManagerConfigProvider):
+        self.childmanagerconfig_provider = childmanagerconfig_provider
+
+    def logout_childmanagerconfig_provider(self, childmanagerconfig_provider: ChildManagerConfigProvider):
+        self.childmanagerconfig_provider = None
+        print('logout_childmanagerconfig_provider')
+
+    def register_authcode_provider(self, authcode_provider: AuthCodeProvider):
         self.authcode_provider = authcode_provider
 
     def logout_authcode_provider(self, authcode_provider: AuthCodeBaseProvider):
