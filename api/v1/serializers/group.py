@@ -41,17 +41,17 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
     )
 
     children = serializers.SerializerMethodField()
-    permissions = serializers.SerializerMethodField()
+    # permissions = serializers.SerializerMethodField()
 
-    set_permissions = create_foreign_key_field(serializers.ListField)(
-        model_cls=Permission,
-        field_name='uuid',
-        page=permission.tag,
-        child=serializers.CharField(),
-        write_only=True,
-        default=[],
-        link="permissions",
-    )
+    # set_permissions = create_foreign_key_field(serializers.ListField)(
+    #     model_cls=Permission,
+    #     field_name='uuid',
+    #     page=permission.tag,
+    #     child=serializers.CharField(),
+    #     write_only=True,
+    #     default=[],
+    #     link="permissions",
+    # )
 
     class Meta:
         model = Group
@@ -63,21 +63,20 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
             'parent',
             'parent_uuid',
             'parent_name',
-            'permissions',
+            # 'permissions',
             'children',
-            'set_permissions',
+            # 'set_permissions',
         )
 
         extra_kwargs = {'parent_uuid': {'blank': True}}
 
-    def get_permissions(self, instance):
-        permissions = instance.permissions.all()
-        ret = []
-        for p in permissions:
-            o = PermissionSerializer(p)
-            ret.append(o.data)
-
-        return ret
+    # def get_permissions(self, instance):
+    #     permissions = instance.permissions.all()
+    #     ret = []
+    #     for p in permissions:
+    #         o = PermissionSerializer(p)
+    #         ret.append(o.data)
+    #     return ret
 
     @transaction.atomic()
     def create(self, validated_data):
@@ -85,18 +84,18 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         parent_uuid = validated_data.get('parent').get('uuid')
         tenant = self.context['tenant']
 
-        set_permissions = validated_data.pop('set_permissions', None)
+        # set_permissions = validated_data.pop('set_permissions', None)
 
         parent = Group.valid_objects.filter(uuid=parent_uuid).first()
 
         o: Group = Group.valid_objects.create(tenant=tenant, name=name, parent=parent)
 
-        if set_permissions is not None:
-            o.permissions.clear()
-            for p_uuid in set_permissions:
-                p = Permission.objects.filter(uuid=p_uuid).first()
-                if p is not None:
-                    o.permissions.add(p)
+        # if set_permissions is not None:
+        #     o.permissions.clear()
+        #     for p_uuid in set_permissions:
+        #         p = Permission.objects.filter(uuid=p_uuid).first()
+        #         if p is not None:
+        #             o.permissions.add(p)
 
         transaction.on_commit(
             lambda: WebhookManager.group_created(self.context['tenant'].uuid, o)
@@ -108,7 +107,7 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         name = validated_data.get('name', None)
         parent_uuid = validated_data.get('parent', {}).get('uuid', None)
 
-        set_permissions = validated_data.pop('set_permissions', None)
+        # set_permissions = validated_data.pop('set_permissions', None)
 
         if name is not None:
             instance.name = name
@@ -117,14 +116,14 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
             parent = Group.valid_objects.filter(uuid=parent_uuid).first()
             instance.parent = parent
 
-        if set_permissions is not None:
-            instance.permissions.clear()
-            for p_uuid in set_permissions:
-                p = Permission.objects.filter(uuid=p_uuid).first()
-                if p is not None:
-                    instance.permissions.add(p)
-        else:
-            instance.permissions.clear()
+        # if set_permissions is not None:
+        #     instance.permissions.clear()
+        #     for p_uuid in set_permissions:
+        #         p = Permission.objects.filter(uuid=p_uuid).first()
+        #         if p is not None:
+        #             instance.permissions.add(p)
+        # else:
+        #     instance.permissions.clear()
 
         instance.save()
         transaction.on_commit(
@@ -153,8 +152,8 @@ class GroupCreateRequestSerializer(GroupSerializer):
             'uuid',
             'name',
             'parent_uuid',
-            'permissions',
-            'set_permissions',
+            # 'permissions',
+            # 'set_permissions',
         )
 
 

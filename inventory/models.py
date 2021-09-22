@@ -15,6 +15,7 @@ from django.contrib.auth.hashers import (
     make_password,
 )
 from django.contrib.auth.models import AbstractUser
+from app.models import App
 from common.model import BaseModel
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import PermissionManager
@@ -27,9 +28,13 @@ KEY = Fernet(base64.urlsafe_b64encode(settings.SECRET_KEY.encode()[:32]))
 
 class Permission(BaseModel):
 
-    tenant = models.ForeignKey(
-        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
-    )
+    # TYPE_CHOICES = (
+    #     (0, '入口'),
+    #     (1, 'API'),
+    #     (2, '数据'),
+    # )
+
+    # django 自带权限字段
     name = models.CharField(_('name'), max_length=255)
     content_type = models.ForeignKey(
         ContentType,
@@ -38,6 +43,22 @@ class Permission(BaseModel):
         related_name='upermission_content_type',
     )
     codename = models.CharField(_('codename'), max_length=100)
+    # 用户扩展的权限字段
+    tenant = models.ForeignKey(
+        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+    )
+    app = models.ForeignKey(
+        App,
+        models.CASCADE,
+        default=None,
+        null=True,
+        blank=True,
+    )
+    permission_category = models.CharField(_('权限类型'), blank=False, null=True, default='', max_length=64)
+    is_system_permission = models.BooleanField(
+        default=True,
+        verbose_name='是否是系统权限'
+    )
 
     objects = PermissionManager()
 
@@ -52,8 +73,56 @@ class Permission(BaseModel):
 
     def natural_key(self):
         return (self.codename,) + self.content_type.natural_key()
+    
+    @property
+    def app_name(self):
+        if self.app:
+            return self.app.name
+        else:
+            return ''
 
     natural_key.dependencies = ['contenttypes.contenttype']
+
+
+class PermissionGroup(BaseModel):
+
+    name = models.CharField(_('name'), max_length=255)
+    permissions = models.ManyToManyField(
+        Permission,
+        blank=True,
+        related_name="permission_set",
+        related_query_name="permission",
+    )
+    is_system_group = models.BooleanField(
+        default=True,
+        verbose_name='是否是系统组'
+    )
+    tenant = models.ForeignKey(
+        Tenant,
+        blank=False,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT
+    )
+
+    @property
+    def permission_names(self):
+        permissions = self.permissions.all()
+        items = []
+        for permission in permissions:
+            items.append(permission.name)
+        return items
+
+    @property
+    def permission_uuids(self):
+        permissions = self.permissions.all()
+        items = []
+        for permission in permissions:
+            items.append(permission.uuid)
+        return items
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
@@ -98,6 +167,12 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         blank=True,
         related_name="user_permission_set",
         related_query_name="user_permission",
+    )
+    user_permissions_group = models.ManyToManyField(
+        'inventory.PermissionGroup',
+        blank=True,
+        related_name="user_permission_groups_set",
+        related_query_name="user_permission_groups",
     )
     is_platform_user = models.BooleanField(default=False, verbose_name='是否是平台用户')
 
@@ -295,6 +370,12 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
     permissions = models.ManyToManyField(
         'inventory.Permission',
         blank=True,
+    )
+    permissions_groups = models.ManyToManyField(
+        'inventory.PermissionGroup',
+        blank=True,
+        related_name="permission_groups_set",
+        related_query_name="permission_groups",
     )
 
     def __str__(self) -> str:

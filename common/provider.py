@@ -84,6 +84,10 @@ class ChildAccountConfigProvider:
     pass
 
 
+class ChildManagerConfigProvider:
+    pass
+
+
 class TenantUserConfigProvider:
     pass
 

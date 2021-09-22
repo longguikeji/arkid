@@ -71,17 +71,20 @@ def group_deleted(sender, instance: User, **kwargs):
 def app_saved(sender, instance: App, created: bool, **kwargs):
     if created:
         content_type = ContentType.objects.get_for_model(App)
-        Permission.objects.create(
+        permission = Permission.objects.create(
             tenant=instance.tenant,
             codename=f'app_access_{instance.uuid}',
             name=_('Can access app') + f' {instance.name}',
             content_type=content_type,
         )
+        permission.app = instance
+        permission.save()
     else:
         if instance.is_del:
             Permission.objects.filter(
                 tenant=instance.tenant,
                 codename=f'app_access_{instance.uuid}',
+                is_system_permission=True,
             ).delete()
 
 def user_groups_changed(sender, **kwargs):

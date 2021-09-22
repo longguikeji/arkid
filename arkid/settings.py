@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'extension_root.arkid',
     'extension_root.tenantuserconfig',
     'extension_root.childaccount',
+    'extension_root.childmanager',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',
@@ -248,6 +249,40 @@ SCIM_SERVICE_PROVIDER = {
     'USER_FILTER_PARSER': 'inventory.filters.UserFilterQuery',
 }
 
+# 菜单
+MENU = [
+    '租户配置',
+    '桌面设置',
+    '通讯录开关',
+    '组的可见性',
+    '个人字段可见性',
+    '个人资料设置',
+    '子管理员设置',
+    '应用管理',
+    '代理规则',
+    '认证规则',
+    '用户列表',
+    '分组管理',
+    '设备管理',
+    '权限列表',
+    '权限分组',
+    '权限管理',
+    '身份源服务',
+    '身份源代理',
+    '数据同步',
+    '登录注册配置',
+    '第三方登录',
+    '密码管理',
+    '其它因素',
+    'Webhook',
+    '自定义流程',
+    'API文档',
+    'SDK下载',
+    '用户行为日志',
+    '管理员行为日志',
+    '日志设置',
+    '统计图表'
+]
 
 # Celery settings
 CELERY_BROKER = 'redis://localhost:6379'
