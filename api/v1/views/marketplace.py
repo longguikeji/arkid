@@ -5,13 +5,37 @@ from extension.utils import find_available_extensions
 from api.v1.serializers.market_extension import MarketPlaceExtensionSerializer, MarketPlaceExtensionTagsSerializer
 from rest_framework.decorators import action
 from openapi.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter
 from rest_framework import generics
 from django.http.response import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 
-@extend_schema(roles=['global admin'], tags=['market-extension'])
+@extend_schema(
+    roles=['global admin'],
+    tags=['market-extension'],
+            parameters=[
+            OpenApiParameter(
+                name='tags',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='type',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='scope',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+        ]
+)
 class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
 
     permission_classes = [IsAuthenticated]
