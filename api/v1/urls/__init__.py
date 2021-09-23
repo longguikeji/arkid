@@ -30,6 +30,7 @@ from . import (
     register,
     reset_password,
     log,
+    statistics,
 )
 from runtime import get_app_runtime
 
