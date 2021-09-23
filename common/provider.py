@@ -217,11 +217,11 @@ class BaseAuthRuleProvider:
         raise NotImplementedError()
 
     @abstractmethod
-    def authenticate_failed(self,auth_rule,request,form,tenant):
+    def authenticate_failed(self,auth_rule,request,form,tenant, extension):
         return form
 
     @abstractmethod
-    def authenticate_success(self,auth_rule,request,form, user, tenant):
+    def authenticate_success(self,auth_rule,request,form, user, tenant, extension):
         print(form)
         return form
         

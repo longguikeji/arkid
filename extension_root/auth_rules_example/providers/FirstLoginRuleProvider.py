@@ -24,9 +24,7 @@ class FirstLoginRuleProvider(BaseAuthRuleProvider):
         print(request, form, tenant)
         return
 
-    def authenticate_failed(self, auth_rule, request, form, tenant):
-        extension = request.data.get("extension", None)
-
+    def authenticate_failed(self, auth_rule, request, form, tenant, extension):
         if extension in auth_rule.data["major_auth"]:
             login_fail_count = request.session.get(
                 f"{extension}_fail_count", 0)
@@ -76,9 +74,9 @@ class FirstLoginRuleProvider(BaseAuthRuleProvider):
             else:
                 request.session[f"{extension}_fail_count"] = login_fail_count+1
 
-        return super().authenticate_failed(auth_rule, request, form, tenant)
+        return super().authenticate_failed(auth_rule, request, form, tenant, extension)
 
-    def authenticate_success(self, auth_rule, request, form, user, tenant):
+    def authenticate_success(self, auth_rule, request, form, user, tenant, extension):
         extension = request.data.get("extension", None)
         request.session[f"{extension}_fail_count"] = 0
-        return super().authenticate_success(auth_rule, request, form, user, tenant)
+        return super().authenticate_success(auth_rule, request, form, user, tenant, extension)

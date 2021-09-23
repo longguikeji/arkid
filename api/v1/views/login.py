@@ -41,7 +41,7 @@ class LoginView(APIView):
 
             # 失败后调用认证规则
             for rule in r.auth_rules:
-                ret = rule.provider.authenticate_failed(rule, request, ret, tenant)
+                ret = rule.provider.authenticate_failed(rule, request, ret, tenant, provider.type)
             return JsonResponse(ret)
 
         else:
@@ -55,7 +55,7 @@ class LoginView(APIView):
                 }
               
         for rule in r.auth_rules:
-            ret = rule.provider.authenticate_success(rule, request, ret, user, tenant)
+            ret = rule.provider.authenticate_success(rule, request, ret, user, tenant, provider.type)
 
         token = user.refresh_token()
         return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
@@ -91,4 +91,5 @@ class LoginView(APIView):
             return None
 
         provider = provider_cls(config_data)
+        provider.type = config.type
         return provider
