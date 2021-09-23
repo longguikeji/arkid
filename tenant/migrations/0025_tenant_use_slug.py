@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # 如果有提示少use_slug,可以临时解开注释跑下
+        # 如果有提示少use_slug,可以临时解开注释跑下(hanbin)
         # migrations.AddField(
         #     model_name='tenant',
         #     name='use_slug',
