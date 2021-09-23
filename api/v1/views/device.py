@@ -13,6 +13,7 @@ from inventory.models import User, Permission
 from tenant.models import Tenant
 from common.paginator import DefaultListPaginator
 from drf_spectacular.openapi import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
 from django.http.response import JsonResponse, HttpResponse
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
@@ -20,7 +21,66 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 import datetime
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['tenant'],
+    parameters=[
+        OpenApiParameter(
+            name='tenant_uuid',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
+        OpenApiParameter(
+            name='device_type',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
+        OpenApiParameter(
+            name='system_version',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
+        OpenApiParameter(
+            name='browser_version',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
+        OpenApiParameter(
+            name='ip',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
+        OpenApiParameter(
+            name='mac_address',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
+        OpenApiParameter(
+            name='device_number',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
+        OpenApiParameter(
+            name='device_id',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
+        OpenApiParameter(
+            name='account_id',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=False,
+        ),
+    ]
+)
 class DeviceListView(generics.ListCreateAPIView):
 
     permission_classes = [IsAuthenticated]

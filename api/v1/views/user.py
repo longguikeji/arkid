@@ -63,7 +63,52 @@ from django.db import transaction
 
 @extend_schema_view(
     list=extend_schema(
-        roles=['tenant admin', 'global admin'], responses=UserListResponsesSerializer
+        roles=['tenant admin', 'global admin'],
+        responses=UserListResponsesSerializer,
+        parameters=[
+            OpenApiParameter(
+                name='name',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='username',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='mobile',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='email',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='country',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='city',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='job_title',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+        ]
     ),
     retrieve=extend_schema(roles=['tenant admin', 'global admin']),
     create=extend_schema(roles=['tenant admin', 'global admin']),
@@ -90,6 +135,13 @@ class UserViewSet(BaseViewSet):
         tenant = context['tenant']
 
         group = self.request.query_params.get('group', None)
+        name = self.request.query_params.get('name', None)
+        username = self.request.query_params.get('username', None)
+        mobile = self.request.query_params.get('mobile', None)
+        email = self.request.query_params.get('email', None)
+        country = self.request.query_params.get('country', None)
+        city = self.request.query_params.get('city', None)
+        job_title = self.request.query_params.get('job_title', None)
         group1 = group
         kwargs = {
             'is_del': False,
@@ -98,6 +150,20 @@ class UserViewSet(BaseViewSet):
 
         if group is not None:
             kwargs['groups__uuid__in'] = group.split(',')
+        if name is not None:
+            kwargs['nickname'] = name
+        if username is not None:
+            kwargs['username'] = username
+        if mobile is not None:
+            kwargs['mobile'] = mobile
+        if email is not None:
+            kwargs['email'] = email
+        if country is not None:
+            kwargs['country'] = email
+        if city is not None:
+            kwargs['city'] = email
+        if job_title is not None:
+            kwargs['job_title'] = job_title
 
         qs = User.objects.filter(**kwargs)
         if tenant.has_admin_perm(user) is False:

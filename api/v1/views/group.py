@@ -38,6 +38,13 @@ from django.db import transaction
                 OpenApiTypes.UUID,
                 OpenApiParameter.QUERY,
                 description='group.uuid',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='name',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
             ),
         ],
     ),
@@ -79,6 +86,7 @@ class GroupViewSet(BaseViewSet):
         tenant = context['tenant']
         # 分组
         parent = self.request.query_params.get('parent', None)
+        name = self.request.query_params.get('name', None)
 
         kwargs = {
             'tenant': tenant,
@@ -88,6 +96,10 @@ class GroupViewSet(BaseViewSet):
             kwargs['parent'] = None
         else:
             kwargs['parent__uuid'] = parent
+
+        if name is not None:
+            kwargs['name'] = name
+
         qs = Group.valid_objects.filter(**kwargs)
         # 用户
         if tenant.has_admin_perm(user) is False:
