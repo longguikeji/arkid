@@ -82,6 +82,8 @@ INSTALLED_APPS = [
     'djangosaml2idp',
     'login_register_config',
     'config',
+    'django_python3_ldap',
+    'log',
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -98,6 +100,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_scim.middleware.SCIMAuthCheckMiddleware',
+    'requestlogs.middleware.RequestLogsMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -143,6 +146,7 @@ REST_FRAMEWORK = {
     ),
     # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'requestlogs.views.exception_handler',
 }
 
 
@@ -247,6 +251,16 @@ SCIM_SERVICE_PROVIDER = {
     'GROUP_ADAPTER': 'inventory.adapters.ArkidSCIMGroup',
     'GROUP_FILTER_PARSER': 'inventory.filters.GroupFilterQuery',
     'USER_FILTER_PARSER': 'inventory.filters.UserFilterQuery',
+}
+
+# requestlogs
+REQUESTLOGS = {
+    'STORAGE_CLASS': 'log.storages.CustomLoggingStorage',
+    'ENTRY_CLASS': 'log.entries.CustomRequestLogEntry',
+    'SERIALIZER_CLASS': 'log.serializers.CustomEntrySerializer',
+    'SECRETS': ['password', 'token'],
+    'ATTRIBUTE_NAME': '_requestlog',
+    'METHODS': ('GET', 'PUT', 'PATCH', 'POST', 'DELETE'),
 }
 
 # 菜单

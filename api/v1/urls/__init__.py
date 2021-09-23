@@ -29,6 +29,7 @@ from . import (
     login,
     register,
     reset_password,
+    log,
 )
 from runtime import get_app_runtime
 

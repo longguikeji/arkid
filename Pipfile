@@ -40,6 +40,8 @@ pysaml2 = "==7.0.1"
 pillow = "==8.2.0"
 sqlalchemy = "*"
 ldap3 = "*"
+django-requestlogs = "*"
+django-ipware = "*"
 
 [requires]
 python_version = "3.8"

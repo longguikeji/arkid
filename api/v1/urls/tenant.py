@@ -66,4 +66,9 @@ urlpatterns = [
         views_tenant.TenantSlugView.as_view(),
         name='tenant-slug',
     ),
+    re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/log_config/',
+        views_tenant.TenantLogConfigView.as_view(),
+        name='tenant-log-config'
+    ),
 ]
