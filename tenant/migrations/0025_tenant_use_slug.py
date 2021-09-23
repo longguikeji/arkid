@@ -10,9 +10,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='tenant',
-            name='use_slug',
-            field=models.BooleanField(default=True, verbose_name='是否使用Slug'),
-        ),
     ]

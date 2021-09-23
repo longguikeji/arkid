@@ -23,6 +23,7 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True, null=True, verbose_name='创建时间')),
                 ('name', models.CharField(max_length=128)),
                 ('slug', models.CharField(max_length=128)),
+                ('use_slug', models.BooleanField(default=True, verbose_name='是否使用Slug')),
             ],
             options={
                 'abstract': False,
