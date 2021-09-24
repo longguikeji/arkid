@@ -16,7 +16,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'authorization_agent.create',
-                'description': '添加身份源代理'
+                'description': '添加身份源代理',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
@@ -44,12 +45,14 @@ extend_schema_tags(
             },
             'update': {
                 'tag': 'authorization_agent.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/authorization_agent/{id}/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }

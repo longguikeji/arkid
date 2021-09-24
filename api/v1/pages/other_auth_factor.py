@@ -22,17 +22,20 @@ extend_schema_tags(
             'create': {
                 'tag': 'other_auth_factor_config.create',
                 'description': '添加其他认证因素配置',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
                 'tag': 'other_auth_factor_config.update',
                 'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/other_auth_factor/{id}/?tenant={parent_lookup_tenant}',
                 'method': 'delete',
                 'description': '删除',
+                'icon': 'el-icon-delete'
             },
         },
     },

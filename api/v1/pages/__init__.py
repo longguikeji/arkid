@@ -5,6 +5,7 @@ from . import (
     all_users,
     all_users_config,
     app,
+    app_permission,
     authorization_server,
     authorization_agent,
     agent_rules,
@@ -19,8 +20,9 @@ from . import (
     desktop_config,
     device,
     extension,
-    external_idp,
+    external_idp, 
     group,
+    group_permission,
     login_register_config,
     log_config,
     maketplace,
@@ -30,7 +32,6 @@ from . import (
     profile,
     profile_config,
     permission_group,
-    permission_manage,
     sdk_download,
     system_config,
     system_password,
@@ -41,6 +42,7 @@ from . import (
     tenant_config,
     third_part_account,
     user,
+    user_permission,
     user_log,
     user_login_log,
     webhook,
@@ -131,11 +133,20 @@ root_add_routers(
                 Router(
                     path='permission',
                     name='授权管理',
-                    icon='list',
+                    icon='tree-table',
                     children=[
                         PageRouter(page=permission, icon='list'),
-                        PageRouter(page=permission_group, icon='tree-table'),
-                        PageRouter(page=permission_manage, icon='tree-table'),
+                        PageRouter(page=permission_group, icon='list'),
+                        Router(
+                            path='permission_manage',
+                            name='权限管理',
+                            icon='tree-table',
+                            children=[
+                                PageRouter(page=user_permission, icon='list'),
+                                PageRouter(page=group_permission, icon='list'),
+                                PageRouter(page=app_permission, icon='list')
+                            ]
+                        ),
                     ],
                 ),
                 Router(
@@ -160,10 +171,7 @@ root_add_routers(
                     icon='lock',
                     children=[
                         PageRouter(page=login_register_config, icon='setting'),
-                        PageRouter(
-                            page=external_idp,
-                            icon='wechat',
-                        ),
+                        PageRouter(page=external_idp,icon='wechat'),
                         # PageRouter(page=password_factor, icon='lock'),
                         PageRouter(page=other_auth_factor, icon='example'),
                     ],

@@ -24,17 +24,20 @@ extend_schema_tags(
             'create': {
                 'tag': 'login_register_extension_config.create',
                 'description': '添加租户登录注册插件',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
                 'tag': 'login_register_extension_config.update',
                 'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/login_register_config/{id}/?tenant={parent_lookup_tenant}',
                 'method': 'delete',
                 'description': '删除',
+                'icon': 'el-icon-delete'
             },
         },
     },

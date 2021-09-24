@@ -16,24 +16,28 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'subuser.create',
-                'description': '添加子账号'
+                'description': '添加子账号',
+                'icon': 'el-icon-plus',
             }
         },
         'local': {
             'switch': {
                 'path': '/api/v1/childaccounts/{account_uuid}/check_type/',
                 'method': 'get',
-                'description': '切换为主账号'
+                'description': '切换为主账号',
+                'icon': 'el-icon-switch-button'
             },
             'enter': {
                 'path': '/api/v1/childaccounts/{account_uuid}/get_token/',
                 'method': 'get',
-                'description': '进入该账号'
+                'description': '进入该账号',
+                'icon': 'el-icon-position'
             },
             'delete': {
                 'path': '/api/v1/childaccounts/{account_uuid}/detail/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }

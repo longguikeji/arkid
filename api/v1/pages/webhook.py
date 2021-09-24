@@ -16,22 +16,26 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'webhook.create',
-                'description': '添加Webhook'
+                'description': '添加Webhook',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'history': {
                 'tag': 'webhook.history',
-                'description': '历史记录'
+                'description': '历史记录',
+                'icon': 'el-icon-reading'
             },
             'update': {
                 'tag': 'webhook.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{id}/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }
@@ -96,17 +100,20 @@ extend_schema_tags(
         'local': {
             'retrieve': {
                 'tag': 'webhook.history.retrieve',
-                'description': '查阅'
+                'description': '查阅',
+                'icon': 'el-icon-tickets'
             },
             'retry': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{parent_lookup_webhook}/history/{id}/retry/',
                 'method': 'get',
-                'description': '重复该操作'
+                'description': '重复该操作',
+                'icon': 'el-icon-d-arrow-right'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/webhook/{parent_lookup_webhook}/history/{id}/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }
