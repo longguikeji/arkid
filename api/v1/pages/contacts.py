@@ -14,13 +14,13 @@ extend_schema_tags(
         'type': 'tree_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/contacts/group/',
-            'method': 'get'
+            'method': 'get',
+            'next': 'contacts_user'
         },
-        'local': {
-            'children': {
-                'path': '/api/v1/tenant/{tenant_uuid}/contacts/group/?parent={uuid}',
-                'method': 'get'
-            }
+        'node': {
+            'path': '/api/v1/tenant/{tenant_uuid}/contacts/group/?parent={uuid}',
+            'method': 'get',
+            'next': 'contacts_user'
         }
     }
 )
@@ -34,8 +34,9 @@ extend_schema_tags(
     {
         'type': 'table_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/contacts/user/',
-            'method': 'get'
+            'path': '/api/v1/tenant/{tenant_uuid}/contacts/user/?group_uuid={group_uuid}',
+            'method': 'get',
+            'from': 'contacts_group'
         }
     }
 )

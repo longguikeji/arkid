@@ -16,18 +16,21 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'password.create',
-                'description': '添加租户密码规则'
+                'description': '添加租户密码规则',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
                 'tag': 'password.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/config/password_complexity/{complexity_uuid}/?tenant={tenant_uuid}',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }

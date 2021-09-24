@@ -19,7 +19,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'tag': 'profile_config_editfields.update',
-                'description': '设置可编辑字段'
+                'description': '设置可编辑字段',
+                'icon': 'el-icon-setting'
             }
         }
     }
@@ -41,7 +42,8 @@ extend_schema_tags(
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/userconfig/editfield',
                 'method': 'put',
-                'description': '确定编辑'
+                'description': '确定编辑',
+                'icon': 'el-icon-thumb'
             }
         }
     }

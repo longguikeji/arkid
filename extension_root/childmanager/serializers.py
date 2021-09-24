@@ -65,7 +65,7 @@ class ChildManagerItemSerializer(serializers.Serializer):
     assign_permission = create_foreign_key_field(serializers.ListField)(
         model_cls=Permission,
         field_name='uuid',
-        page=permission.tag,
+        page=permission.permission_only_list_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
