@@ -15,7 +15,7 @@ def add_default_permission(apps, schema_editor):
     for tenant in tenants:
         for item in items:
             codename = 'enter_{}'.format(uuid.uuid4())
-            Permission.objects.create(
+            Permission.objects.get_or_create(
                 name=item,
                 content_type=content_type,
                 codename=codename,
