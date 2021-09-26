@@ -4,26 +4,27 @@ from django.db import migrations
 
 
 def add_default_permission(apps, schema_editor):
-    from tenant.models import Tenant
-    from inventory.models import Permission
-    from django.contrib.contenttypes.models import ContentType
-    from arkid.settings import MENU
-    import uuid
-    tenants = Tenant.active_objects.all()
-    content_type = ContentType.objects.get_for_model(Tenant)
-    items = MENU
-    for tenant in tenants:
-        for item in items:
-            codename = 'enter_{}'.format(uuid.uuid4())
-            Permission.objects.create(
-                name=item,
-                content_type=content_type,
-                codename=codename,
-                tenant=tenant,
-                app=None,
-                permission_category='入口',
-                is_system_permission=True
-            )
+    pass
+    # from tenant.models import Tenant
+    # from inventory.models import Permission
+    # from django.contrib.contenttypes.models import ContentType
+    # from arkid.settings import MENU
+    # import uuid
+    # tenants = Tenant.active_objects.all()
+    # content_type = ContentType.objects.get_for_model(Tenant)
+    # items = MENU
+    # for tenant in tenants:
+    #     for item in items:
+    #         codename = 'enter_{}'.format(uuid.uuid4())
+    #         Permission.objects.create(
+    #             name=item,
+    #             content_type=content_type,
+    #             codename=codename,
+    #             tenant=tenant,
+    #             app=None,
+    #             permission_category='入口',
+    #             is_system_permission=True
+    #         )
 
 class Migration(migrations.Migration):
 

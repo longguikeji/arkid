@@ -24,6 +24,7 @@ from oauth2_provider.models import Application
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from drf_spectacular.utils import OpenApiParameter
 from django.utils.translation import gettext_lazy as _
 from common.code import Code
 from webhook.manager import WebhookManager
@@ -39,6 +40,18 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
+    list=extend_schema(
+        roles=['tenant admin', 'global admin'],
+        responses=AppSerializer,
+        parameters=[
+            OpenApiParameter(
+                name='name',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+        ],
+    ),
     destroy=extend_schema(roles=['tenant admin', 'global admin']),
     partial_update=extend_schema(roles=['tenant admin', 'global admin']),
 )
@@ -55,8 +68,13 @@ class AppViewSet(BaseViewSet):
 
     def get_queryset(self):
         context = self.get_serializer_context()
+        name = self.request.query_params.get('name', None)
+        kwargs = {
+        }
         tenant = context['tenant']
-        qs = App.active_objects.filter(tenant=tenant).order_by('id')
+        if name is not None:
+            kwargs['name'] = name
+        qs = App.active_objects.filter(tenant=tenant).filter(**kwargs).order_by('id')
         return qs
 
     def get_object(self):

@@ -19,18 +19,21 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'system_password_manage.create',
-                'description': '添加系统密码规则'
+                'description': '添加系统密码规则',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
                 'tag': 'system_password_manage.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/config/password_complexity/{complexity_uuid}/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }

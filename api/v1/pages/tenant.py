@@ -24,7 +24,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'tenant.create',
-                'description': '新建租户'
+                'description': '新建租户',
+                'icon': 'el-icon-plus'
             }
         }
     }

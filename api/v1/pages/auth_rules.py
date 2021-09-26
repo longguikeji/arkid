@@ -15,16 +15,22 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'auth_rules.create'
+                'tag': 'auth_rules.create',
+                'description': '添加认证规则',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
-                'tag': 'auth_rules.update'
+                'tag': 'auth_rules.update',
+                'description': '编辑认证规则',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/auth_rule/{id}/',
-                'method': 'delete'
+                'method': 'delete',
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         },
     }
@@ -45,7 +51,8 @@ extend_schema_tags(
         'global': {
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/auth_rule/',
-                'method': 'post'
+                'method': 'post',
+                'description': '确定'
             }
         }
     }
@@ -67,7 +74,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/auth_rule/{id}/',
-                'method': 'put'
+                'method': 'put',
+                'description': '确定'
             }
         }
     }

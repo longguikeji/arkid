@@ -16,12 +16,13 @@ extend_schema_tags(
         'local': {
             'update': {
                 'tag': 'contacts_group_config.update',
-                'description': '设置可见性'
-            },
-            'children': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={uuid}',
-                'method': 'get'
+                'description': '设置可见性',
+                'icon': 'el-icon-setting'
             }
+        },
+        'node': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={uuid}',
+            'method': 'get'
         }
     }
 )
