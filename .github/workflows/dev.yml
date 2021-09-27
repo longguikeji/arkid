@@ -60,7 +60,7 @@ jobs:
         data: |
           {"msg_type":"post","content":{"post":{"zh_cn":{"title":"${{ github.event.repository.name }}流水线状态通知",
           "content":[[{"tag":"text","text":"${{ github.event.repository.name }} 项目流水线有更新: "},
-          {"tag":"a","text":"${{ github.event.ref }}分支构建失败，点击查看具体日志","href":"${{ github.event.commits.url }}"}]]}}}}
+          {"tag":"a","text":"${{ github.event.ref }}分支构建失败，点击查看具体日志","href":"https://github.com/${{ github.repository }}/actions/workflows/dev.yml"}]]}}}}
     - name: Feishu 报喜
       if: ${{ success() }}
       uses: wangsijie/feishu-bot@v1
