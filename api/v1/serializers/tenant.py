@@ -5,6 +5,7 @@ from tenant.models import (
     TenantContactsConfig,
     TenantContactsUserFieldConfig,
     TenantDesktopConfig,
+    TenantSwitch,
 )
 from rest_framework import serializers
 from django.contrib.contenttypes.models import ContentType
@@ -362,3 +363,12 @@ class TenantCheckPermissionSerializer(serializers.Serializer):
     is_all_show = serializers.BooleanField(label=_("是否可以看到所有"))
     is_all_application = serializers.BooleanField(label=_("是否可以所有应用"))
     permissions = serializers.ListField(child=TenantCheckPermissionItemSerializer(), label=_('权限'), default=[])
+
+
+class TenantSwitchSerializer(serializers.ModelSerializer):
+
+    switch = serializers.BooleanField(label=_("租户开关"), default=True)
+
+    class Meta:
+        model = TenantSwitch
+        fields = ('switch',)

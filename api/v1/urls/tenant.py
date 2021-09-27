@@ -62,8 +62,8 @@ urlpatterns = [
         name='tenant-check-permission',
     ),
     re_path(
-        r'^tenant/(?P<slug>[\w-]+)/slug/$',
-        views_tenant.TenantSlugView.as_view(),
-        name='tenant-slug',
+        r'^tenant_switch/$',
+        views_tenant.TenantSwitchView.as_view(),
+        name='tenant-switch',
     ),
 ]
