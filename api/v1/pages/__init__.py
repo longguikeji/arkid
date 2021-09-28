@@ -8,7 +8,6 @@ from . import (
     app_permission,
     authorization_server,
     authorization_agent,
-    agent_rules,
     auth_rules,
     contacts,
     contacts_switch,
@@ -110,7 +109,6 @@ root_add_routers(
                     name='应用管理',
                     children=[
                         PageRouter(page=app, icon='list'),
-                        PageRouter(page=agent_rules, icon='example'),
                         PageRouter(page=auth_rules, icon='lock'),
                     ],
                 ),

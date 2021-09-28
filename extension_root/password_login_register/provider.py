@@ -30,8 +30,8 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
     def __init__(self, data=None, request=None, tenant=None) -> None:
         self.login_enabled = data.get('login_enabled', True)
         self.register_enabled = data.get('register_enabled', True)
-        self.login_enabled_field_names = data.get('login_enabled_field_names', [])
-        self.register_enabled_field_names = data.get('register_enabled_field_names', [])
+        self.login_enabled_field_names = data.get('login_enabled_field_names', ["username"])
+        self.register_enabled_field_names = data.get('register_enabled_field_names', ["username"])
         # self.is_open_authcode = data.get('is_open_authcode', False)
         # self.error_number_open_authcode = data.get('error_number_open_authcode', 0)
         self.request = request

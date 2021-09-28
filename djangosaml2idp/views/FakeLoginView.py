@@ -9,6 +9,7 @@ from config import get_app_config
 import urllib
 
 class FakeLogin(View):
+    
     """
     模拟登录页面 无操作 获取前端登陆状态  如无则直接跳转登陆页面
     """
