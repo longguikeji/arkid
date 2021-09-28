@@ -314,6 +314,56 @@ def create_init_field(field_cls):
 
     return InitField
 
+def create_dynamic_choice_field(field_cls):
+    """
+    带动态选项的单选框
+    """
+    @extend_schema_field(
+        field={
+            'format': 'dynamic_choice',
+        }
+    )
+    class ChoiceField(field_cls):
+        _field_meta = {}
+
+        def __init__(self, url, **kwargs):
+            kwargs["choices"] = []
+            field = get_override(self, 'field', {})
+            field['url'] = url
+
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, list, bool, dict, float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+
+    return ChoiceField
+
+def create_multiple_dynamic_choice_field(field_cls):
+    """
+    带动态选项的多选框
+    """
+    @extend_schema_field(
+        field={
+            'format': 'multiple_dynamic_choice',
+        }
+    )
+    class MultipleChoiceField(field_cls):
+        _field_meta = {}
+
+        def __init__(self, url, **kwargs):
+            kwargs["choices"] = []
+            field = get_override(self, 'field', {})
+            field['url'] = url
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, list, bool, dict, float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+
+    return MultipleChoiceField
 
 def create_custom_list_field(field_cls):
     """
