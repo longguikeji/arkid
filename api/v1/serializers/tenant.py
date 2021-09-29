@@ -5,6 +5,7 @@ from tenant.models import (
     TenantContactsConfig,
     TenantContactsUserFieldConfig,
     TenantDesktopConfig,
+    TenantSwitch,
 )
 from rest_framework import serializers
 from django.contrib.contenttypes.models import ContentType
@@ -334,9 +335,8 @@ class TenantContactsUserTagsSerializer(serializers.Serializer):
 
 
 class DesktopConfigSerializer(serializers.Serializer):
-    access_with_desktop = serializers.BooleanField(label=_("用户是否能看到桌面"))
-
-    icon_custom = serializers.BooleanField(label=_("用户是否可以自主调整桌面图标的位置"))
+    access_with_desktop = serializers.BooleanField(label=_("用户是否能看到桌面"), required=False)
+    icon_custom = serializers.BooleanField(label=_("用户是否可以自主调整桌面图标的位置"), required=False)
 
 
 class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
@@ -346,6 +346,20 @@ class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
         model = TenantDesktopConfig
 
         fields = ('data',)
+
+    def update(self, instance, validated_data):
+        data = validated_data.get('data')
+        instance_data = instance.data
+        access_with_desktop = data.get('access_with_desktop', None)
+        icon_custom = data.get('icon_custom', None)
+        if access_with_desktop is not None or icon_custom is not None:
+            if access_with_desktop is not None:
+                instance_data['access_with_desktop'] = access_with_desktop
+            if icon_custom is not None:
+                instance_data['icon_custom'] = icon_custom
+            instance.data = instance_data
+            instance.save()
+        return instance
 
 
 class TenantCheckPermissionItemSerializer(serializers.Serializer):
@@ -362,3 +376,18 @@ class TenantCheckPermissionSerializer(serializers.Serializer):
     is_all_show = serializers.BooleanField(label=_("是否可以看到所有"))
     is_all_application = serializers.BooleanField(label=_("是否可以所有应用"))
     permissions = serializers.ListField(child=TenantCheckPermissionItemSerializer(), label=_('权限'), default=[])
+
+
+class TenantSwitchSerializer(serializers.ModelSerializer):
+
+    switch = serializers.BooleanField(label=_("租户开关"), default=True)
+
+    class Meta:
+        model = TenantSwitch
+        fields = ('switch',)
+
+
+class TenantSwitchInfoSerializer(serializers.Serializer):
+
+    switch = serializers.BooleanField(label=_("租户开关"))
+    platform_tenant_uuid = serializers.CharField(label=_("平台租户uuid"))

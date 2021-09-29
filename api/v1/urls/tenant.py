@@ -66,4 +66,14 @@ urlpatterns = [
         views_tenant.TenantSlugView.as_view(),
         name='tenant-slug',
     ),
+    re_path(
+        r'^tenant_switchinfo/$',
+        views_tenant.TenantSwitchInfoView.as_view(),
+        name='tenant-switchinfo',
+    ),
+    re_path(
+        r'^tenant_switch/$',
+        views_tenant.TenantSwitchView.as_view(),
+        name='tenant-switch',
+    ),
 ]

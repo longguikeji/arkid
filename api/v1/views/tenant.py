@@ -11,6 +11,7 @@ from tenant.models import (
     TenantContactsUserFieldConfig,
     TenantContactsGroupConfig,
     TenantDesktopConfig,
+    TenantSwitch,
 )
 from api.v1.serializers.tenant import (
     TenantSerializer,
@@ -23,6 +24,8 @@ from api.v1.serializers.tenant import (
     TenantContactsUserTagsSerializer,
     TenantDesktopConfigSerializer,
     TenantCheckPermissionSerializer,
+    TenantSwitchSerializer,
+    TenantSwitchInfoSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
@@ -667,4 +670,42 @@ class TenantCheckPermissionView(generics.RetrieveAPIView):
             result['permissions'] = []
         print(result)
         serializer = self.get_serializer(result)
+        return Response(serializer.data)
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantSwitchView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantSwitchSerializer
+
+    def get_object(self):
+        tenant_switch = TenantSwitch.active_objects.first()
+        return tenant_switch
+
+
+@extend_schema(roles=['general user','tenant admin', 'global admin'], tags=['tenant'])
+class TenantSwitchInfoView(generics.RetrieveAPIView):
+
+    permission_classes = []
+    authentication_classes = []
+
+    serializer_class = TenantSwitchInfoSerializer
+
+    def get(self, request):
+        # 开关信息
+        tenant_switch = TenantSwitch.active_objects.first()
+        switch = tenant_switch.switch
+        # default tenant
+        tenant = Tenant.objects.filter(id=1).first()
+        tenant_uuid = ''
+        if tenant:
+            tenant_uuid = tenant.uuid_hex
+        data = {
+            'switch': switch,
+            'platform_tenant_uuid': tenant_uuid
+        }
+        serializer = self.get_serializer(data)
         return Response(serializer.data)
