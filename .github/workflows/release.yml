@@ -1,4 +1,3 @@
-## 手工指定发布版本号
 name: release
 
 on:
