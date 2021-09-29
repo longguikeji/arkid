@@ -34,3 +34,21 @@ jobs:
         target_repository: "harbor.longguikeji.com/ark-releases/arkid:${{ github.event.inputs.prod_version }}"
         target_username: "${{ secrets.HARBORUSER }}"
         target_password: "${{ secrets.HARBORPWD }}"
+    - name: Feishu 报忧
+      if: ${{ failure() }}
+      uses: wangsijie/feishu-bot@v1
+      with:
+        uuid: ${{ secrets.FEISHU_UUID }}
+        data: |
+          {"msg_type":"post","content":{"post":{"zh_cn":{"title":"${{ github.event.repository.name }} 镜像版本 ${{ github.event.inputs.prod_version }} 发布失败",
+          "content":[[{"tag":"text","text":""},
+          {"tag":"a","text":"点击查看具体日志","href":"https://github.com/${{ github.repository }}/actions/workflows/release.yml"}]]}}}}
+    - name: Feishu 报喜
+      if: ${{ success() }}
+      uses: wangsijie/feishu-bot@v1
+      with:
+        uuid: ${{ secrets.FEISHU_UUID }}
+        data: |
+          {"msg_type":"post","content":{"post":{"zh_cn":{"title": "${{ github.event.repository.name }} 镜像版本 ${{ github.event.inputs.prod_version }} 发布成功",
+          "content":[[{"tag":"text","text":""},
+          {"tag":"a","text":"","href":""}]]}}}}
