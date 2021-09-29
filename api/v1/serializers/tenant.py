@@ -385,3 +385,9 @@ class TenantSwitchSerializer(serializers.ModelSerializer):
     class Meta:
         model = TenantSwitch
         fields = ('switch',)
+
+
+class TenantSwitchInfoSerializer(serializers.Serializer):
+
+    switch = serializers.BooleanField(label=_("租户开关"))
+    platform_tenant_uuid = serializers.CharField(label=_("平台租户uuid"))
