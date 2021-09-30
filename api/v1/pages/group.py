@@ -4,43 +4,6 @@ tag = [ 'group', 'group_user' ]
 path = 'gmanage'
 name = '分组管理'
 
-meta_group_tag = 'meta_group'
-meta_group_name = '默认分组类型'
-
-extend_schema_tags(
-    meta_group_tag,
-    meta_group_name
-)
-
-custom_group_tag = 'custom_group'
-custom_group_name = '自定义分组类型'
-
-extend_schema_tags(
-    custom_group_tag,
-    custom_group_name
-)
-
-group_tree_tag = 'group_tree'
-group_tree_name = '选择分组'
-
-extend_schema_tags(
-    group_tree_tag,
-    group_tree_name,
-    {
-        'type': 'tree_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
-            'method': 'get'
-        },
-        'local': {
-            'children': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
-                'method': 'get'
-            }
-        }
-    }
-)
-
 group_tag = 'group'
 group_name = '分组'
 
@@ -52,38 +15,44 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'get',
-            'next': ''
+            'next': 'group_user'
         },
         'global': {
             'create': {
                 'tag': 'group.create',
-                'description': '新建'
+                'description': '新建',
+                'icon': 'el-icon-plus'
             },
             'import': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/group_import/',
                 'method': 'post',
-                'description': '导入'
+                'description': '导入',
+                'icon': 'el-icon-upload2'
             },
             'export': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/group_export/',
                 'method': 'get',
-                'description': '导出'
+                'description': '导出',
+                'icon': 'el-icon-download'
             }
         },
         'local': {
             'update': {
                 'tag': 'group.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/group/{id}/',
                 'method': 'delete',
-                'description': '删除'
-            },
-            'children': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
-                'method': 'get'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
+        },
+        'node': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
+            'method': 'get',
+            'next': 'group_user'
         }
     }
 )
@@ -141,19 +110,22 @@ extend_schema_tags(
     {
         'type': 'table_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/',
-            'method': 'get'
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/?group={group_uuid}',
+            'method': 'get',
+            'from': 'group'
         },
         'global': {
             'export': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
                 'method': 'get',
-                'description': '导出该组用户'
+                'description': '导出该组用户',
+                'icon': 'el-icon-download'
             },
             'import': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_import/',
                 'method': 'post',
-                'description': '导入'
+                'description': '导入',
+                'icon': 'el-icon-upload2'
             }
         }
     }

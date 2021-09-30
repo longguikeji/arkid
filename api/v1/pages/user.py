@@ -16,21 +16,25 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'user.create',
-                'description': '添加用户'
+                'description': '添加用户',
+                'icon': 'el-icon-plus'
             },
             'export': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_export/',
                 'method': 'get',
-                'description': '全部导出'
+                'description': '全部导出',
+                'icon': 'el-icon-download'
             },
             'import': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/user_import/',
                 'method': 'post',
-                'description': '导入'
+                'description': '导入',
+                'icon': 'el-icon-upload2'
             },
             'custom': {
                 'tag': 'user.custom_fields',
-                'description': '自定义字段'
+                'description': '自定义字段',
+                'icon': 'el-icon-document-add'
             }
         },
         'local': {
@@ -38,22 +42,26 @@ extend_schema_tags(
                 'read': {
                     'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
                     'method': 'get',
-                    'description': '设置密码'
+                    'description': '设置密码',
+                    'icon': 'el-icon-lock'
                 },
                 'write': {
                     'path': '/api/v1/user/reset_password/',
                     'method': 'post',
-                    'description': '设置密码'
+                    'description': '设置密码',
+                    'icon': 'el-icon-lock'
                 }
             },
             'update': {
                 'tag': 'user.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }
@@ -118,18 +126,21 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'user.custom_fields.create',
-                'description': '添加自定义字段'
+                'description': '添加自定义字段',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
                 'tag': 'user.custom_fields.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/{id}/?subject=user',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }

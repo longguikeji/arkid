@@ -35,18 +35,27 @@ class LoginView(APIView):
 
         # 获取登录注册配置
         ret = provider.authenticate(request)
+        r = get_app_runtime()
+
         if ret.get('error') != Code.OK.value:
+
+            # 失败后调用认证规则
+            for rule in r.auth_rules:
+                ret = rule.provider.authenticate_failed(rule, request, ret, tenant, provider.type)
             return JsonResponse(ret)
 
         else:
             user = ret.get('user')
-
+            
         if tenant and not user.is_superuser:
             if tenant not in user.tenants.all():
                 return {
                     'error': Code.USERNAME_PASSWORD_MISMATCH.value,
                     'message': _('username or password is not correct'),
                 }
+              
+        for rule in r.auth_rules:
+            ret = rule.provider.authenticate_success(rule, request, ret, user, tenant, provider.type)
 
         token = user.refresh_token()
         return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
@@ -64,7 +73,6 @@ class LoginView(APIView):
         tenant_uuid = request.query_params.get('tenant', None)
         if tenant_uuid:
             tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
-
         return tenant
 
     def get_provider(self, tenant, config_uuid):
@@ -83,4 +91,5 @@ class LoginView(APIView):
             return None
 
         provider = provider_cls(config_data)
+        provider.type = config.type
         return provider

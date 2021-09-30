@@ -5,7 +5,7 @@ from inventory.models import User, Permission, PermissionGroup
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from api.v1.fields.custom import create_foreign_key_field
-from ..pages import app, permission
+from ..pages import app, permission, permission_group
 from app.models import App
 
 import uuid
@@ -44,7 +44,7 @@ class PermissionCreateSerializer(DynamicFieldsModelSerializer):
     app_uuid = create_foreign_key_field(serializers.CharField)(
         model_cls=App,
         field_name='uuid',
-        page=app.tag,
+        page=app.app_only_list_tag,
         label=_('应用'),
         source="app.uuid",
     )
@@ -116,7 +116,7 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
     permissions = create_foreign_key_field(serializers.ListField)(
         model_cls=Permission,
         field_name='uuid',
-        page=permission.tag,
+        page=permission.permission_only_list_tag,
         child=serializers.CharField(),
         default=[],
         link="permissions",
@@ -181,7 +181,7 @@ class UserPermissionCreateSerializer(serializers.Serializer):
     permissions = create_foreign_key_field(serializers.ListField)(
         model_cls=Permission,
         field_name='uuid',
-        page=permission.tag,
+        page=permission.permission_only_list_tag,
         child=serializers.CharField(),
         default=[],
         required=False,
@@ -191,8 +191,7 @@ class UserPermissionCreateSerializer(serializers.Serializer):
     permission_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=PermissionGroup,
         field_name='uuid',
-        # 此处需要补入页面
-        page='',
+        page=permission_group.permission_group_only_list_tag,
         child=serializers.CharField(),
         default=[],
         required=False,
@@ -244,7 +243,7 @@ class GroupPermissionCreateSerializer(serializers.Serializer):
     permissions = create_foreign_key_field(serializers.ListField)(
         model_cls=Permission,
         field_name='uuid',
-        page=permission.tag,
+        page=permission.permission_only_list_tag,
         child=serializers.CharField(),
         default=[],
         required=False,
@@ -254,8 +253,7 @@ class GroupPermissionCreateSerializer(serializers.Serializer):
     permission_groups = create_foreign_key_field(serializers.ListField)(
         model_cls=PermissionGroup,
         field_name='uuid',
-        # 此处需要补入页面
-        page='',
+        page=permission_group.permission_group_only_list_tag,
         child=serializers.CharField(),
         default=[],
         required=False,

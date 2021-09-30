@@ -16,7 +16,8 @@ extend_schema_tags(
         'local': {
             'update': {
                 'tag': 'contacts_user_config.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             }
         }
     }

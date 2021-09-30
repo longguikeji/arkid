@@ -13,23 +13,20 @@ extend_schema_tags(
             'path': '/api/v1/device/',
             'method': 'get'
         },
-        'filter': {
-            'path': '/api/v1/device/',
-            'method': 'get',
-            'description': '搜索设备'
-        },
         'global': {
             'export': {
                 'path': '/api/v1/device_export/',
                 'method': 'get',
-                'description': '导出设备信息'
+                'description': '导出设备信息',
+                'icon': 'el-icon-download'
             }
         },
         'local': {
             'delete': {
                 'path': '/api/v1/device/{device_uuid}/detail/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }

@@ -16,17 +16,20 @@ extend_schema_tags(
         'global': {
             'update': {
                 'tag': 'profile.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'password': {
                 'path': '/api/v1/user/update_password/',
                 'method': 'post',
-                'description': '重置密码'
+                'description': '重置密码',
+                'icon': 'el-icon-lock'
             },
             'logoff': {
                 'path': '/api/v1/user/logoff/',
                 'method': 'get',
-                'description': '注销'
+                'description': '注销',
+                'icon': 'el-icon-remove-outline'
             }
         }
     }

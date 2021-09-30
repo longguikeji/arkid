@@ -44,6 +44,7 @@ class ChildManagerItemSerializer(serializers.Serializer):
     manager_permission = serializers.ChoiceField(
         choices=(('全部权限', '指定权限', '所有应用权限')), label=_('允许管理哪些权限')
     )
+
     assign_group = create_foreign_key_field(serializers.ListField)(
         model_cls=Group,
         field_name='uuid',
@@ -51,6 +52,7 @@ class ChildManagerItemSerializer(serializers.Serializer):
         child=serializers.CharField(),
         required=False,
         default=[],
+        link="groups",
         label=_('指定的分组'),
     )
     assign_user = create_foreign_key_field(serializers.ListField)(
@@ -60,17 +62,57 @@ class ChildManagerItemSerializer(serializers.Serializer):
         child=serializers.CharField(),
         required=False,
         default=[],
+        link="users",
         label=_('指定的人员'),
     )
     assign_permission = create_foreign_key_field(serializers.ListField)(
         model_cls=Permission,
         field_name='uuid',
-        page=permission.tag,
+        page=permission.permission_only_list_tag,
         child=serializers.CharField(),
         required=False,
         default=[],
         label=_('指定的权限'),
+        link="permissions",
     )
+    groups = serializers.SerializerMethodField()
+    users = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
+
+    def get_groups(self, instance):
+        assign_group = instance.get('assign_group')
+        groups = Group.active_objects.filter(uuid__in=assign_group)
+        ret = []
+        for g in groups:
+            ret.append({
+                'uuid': g.uuid_hex,
+                'name': g.name,
+            })
+        return ret
+
+
+    def get_users(self, instance):
+        assign_user = instance.get('assign_user')
+        users = User.active_objects.filter(uuid__in=assign_user)
+        ret = []
+        for u in users:
+            ret.append({
+                'uuid': u.uuid_hex,
+                'name': u.username,
+            })
+        return ret
+
+
+    def get_permissions(self, instance):
+        assign_permission = instance.get('assign_permission')
+        permissions = Permission.active_objects.filter(uuid__in=assign_permission)
+        ret = []
+        for p in permissions:
+            ret.append({
+                'uuid': p.uuid_hex,
+                'name': p.name,
+            })
+        return ret
 
 
 class ChildManagerSerializer(BaseDynamicFieldModelSerializer):
