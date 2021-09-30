@@ -19,25 +19,20 @@ from . import (
     login_register_config,
     log_config,
     maketplace,
+    mine,
     other_auth_factor,
     permission,
-    profile,
     profile_config,
     permission_group,
     sdk_download,
-    system_config,
-    system_password,
     statistics,
-    subuser,
     sub_admin_config,
     tenant,
     tenant_config,
     tenant_switch,
-    third_part_account,
     user,
     user_permission,
     user_log,
-    user_login_log,
     webhook,
 )
 
@@ -47,50 +42,13 @@ root_add_routers(
     [
         PageRouter(page=desktop, icon='desktop'),
         PageRouter(page=contacts, icon='education'),
-        Router(
-            path='mine',
-            name='个人管理',
-            icon='people',
-            children=[
-                PageRouter(page=profile, icon='edit'),
-                PageRouter(page=third_part_account, icon='wechat'),
-                PageRouter(page=subuser, icon='user'),
-                PageRouter(page=user_login_log, icon='lock'),
-            ],
-        ),
+        PageRouter(page=mine, icon='people'),
         Router(
             path='tmanage',
             name='系统管理',
             icon='peoples',
             children=[
-                Router(
-                    path='tconfig',
-                    name='租户设置',
-                    icon='setting',
-                    children=[
-                        PageRouter(page=tenant_config, icon='peoples'),
-                        Router(
-                            path='umanage',
-                            name='用户管理配置',
-                            icon='people',
-                            children=[
-                                PageRouter(page=desktop_config, icon='desktop'),
-                                PageRouter(page=contacts_config, icon='education'),
-                                PageRouter(page=profile_config, icon='setting'),
-                            ],
-                        ),
-                        PageRouter(page=sub_admin_config, icon='user'),
-                    ],
-                ),
-                Router(
-                    path='app',
-                    icon='component',
-                    name='应用管理',
-                    children=[
-                        PageRouter(page=app, icon='list'),
-                        PageRouter(page=auth_rules, icon='lock'),
-                    ],
-                ),
+                PageRouter(page=app, icon='component'),
                 Router(
                     path='user',
                     name='用户管理',
@@ -129,7 +87,7 @@ root_add_routers(
                 Router(
                     path='source',
                     name='连接身份源',
-                    icon='component',
+                    icon='source',
                     children=[
                         PageRouter(
                             page=authorization_server,
@@ -150,6 +108,7 @@ root_add_routers(
                         PageRouter(page=login_register_config, icon='setting'),
                         PageRouter(page=external_idp,icon='wechat'),
                         PageRouter(page=other_auth_factor, icon='example'),
+                        PageRouter(page=auth_rules, icon='lock')
                     ],
                 ),
                 Router(
@@ -194,17 +153,32 @@ root_add_routers(
                     page=statistics,
                     icon='statistics',
                 ),
-            ],
+                Router(
+                    path='tconfig',
+                    name='租户设置',
+                    icon='setting',
+                    children=[
+                        PageRouter(page=tenant_config, icon='peoples'),
+                        PageRouter(page=sub_admin_config, icon='user')
+                    ]
+                ),
+                Router(
+                    path='umanage',
+                    name='用户设置',
+                    icon='people',
+                    children=[
+                        PageRouter(page=desktop_config, icon='desktop'),
+                        PageRouter(page=contacts_config, icon='education'),
+                        PageRouter(page=profile_config, icon='setting'),
+                    ]
+                )
+            ]
         ),
         Router(
             path='system',
             name='平台管理',
             icon='setting',
             children=[
-                PageRouter(
-                    page=tenant_switch,
-                    icon='setting',
-                ),
                 Router(
                     path='extension',
                     name='插件管理',
@@ -220,6 +194,10 @@ root_add_routers(
                         ),
                     ],
                 ),
+                PageRouter(
+                    page=tenant_switch,
+                    icon='setting',
+                )
             ],
         ),
     ]
