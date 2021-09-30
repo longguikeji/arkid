@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = [ 'desktop', 'notice' ]
+tag = [ 'desktop', 'notice', 'backlog' ]
 path = 'desktop'
 name = '桌面'
 
@@ -21,9 +21,17 @@ extend_schema_tags(
 
 
 notice_tag = 'notice'
-notice_name = '通知列表'
+notice_name = '通知公告'
 
 extend_schema_tags(
     notice_tag,
     notice_name
+)
+
+backlog_tag = 'backlog'
+backlog_name = '待办提醒'
+
+extend_schema_tags(
+    backlog_tag,
+    backlog_name
 )

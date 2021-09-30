@@ -88,7 +88,7 @@ extend_schema_tags(
 )
 
 tenant_register_privacy_notice_tag = 'tenant_register_privacy_notice'
-tenant_register_privacy_notice_name = '租户注册隐私声明'
+tenant_register_privacy_notice_name = '注册隐私声明配置'
 
 extend_schema_tags(
     tenant_register_privacy_notice_tag,
@@ -109,7 +109,7 @@ extend_schema_tags(
 )
 
 tenant_register_privacy_notice_update_tag = 'tenant_register_privacy_notice.update'
-tenant_register_privacy_notice_update_name = '编辑租户注册隐私声明'
+tenant_register_privacy_notice_update_name = '编辑注册隐私声明配置'
 
 extend_schema_tags(
     tenant_register_privacy_notice_update_tag,
@@ -131,7 +131,7 @@ extend_schema_tags(
 )
 
 login_register_config_tag = 'login_register_config'
-login_register_config_name = '登录注册配置信息'
+login_register_config_name = '其他登录注册配置'
 
 extend_schema_tags(
     login_register_config_tag,
@@ -146,7 +146,7 @@ extend_schema_tags(
 )
 
 login_register_config_update_tag = 'login_register_config.update'
-login_register_config_update_name = '编辑登录注册配置信息'
+login_register_config_update_name = '编辑登录注册配置'
 
 extend_schema_tags(
     login_register_config_update_tag,

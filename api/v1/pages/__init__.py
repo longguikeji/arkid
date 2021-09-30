@@ -1,18 +1,12 @@
 from . import (
     admin_log,
-    all_tenants,
-    all_tenants_config,
-    all_users,
-    all_users_config,
     app,
     app_permission,
     authorization_server,
     authorization_agent,
     auth_rules,
     contacts,
-    contacts_switch,
-    contacts_group_config,
-    contacts_user_config,
+    contacts_config,
     desktop,
     custom_process,
     data_synchronism,
@@ -26,7 +20,6 @@ from . import (
     log_config,
     maketplace,
     other_auth_factor,
-    # password_factor,
     permission,
     profile,
     profile_config,
@@ -39,6 +32,7 @@ from . import (
     sub_admin_config,
     tenant,
     tenant_config,
+    tenant_switch,
     third_part_account,
     user,
     user_permission,
@@ -66,7 +60,7 @@ root_add_routers(
         ),
         Router(
             path='tmanage',
-            name='租户管理',
+            name='系统管理',
             icon='peoples',
             children=[
                 Router(
@@ -81,22 +75,7 @@ root_add_routers(
                             icon='people',
                             children=[
                                 PageRouter(page=desktop_config, icon='desktop'),
-                                Router(
-                                    path='contacts_config',
-                                    name='通讯录设置',
-                                    icon='education',
-                                    children=[
-                                        PageRouter(
-                                            page=contacts_switch, icon='setting'
-                                        ),
-                                        PageRouter(
-                                            page=contacts_group_config, icon='peoples'
-                                        ),
-                                        PageRouter(
-                                            page=contacts_user_config, icon='people'
-                                        ),
-                                    ],
-                                ),
+                                PageRouter(page=contacts_config, icon='education'),
                                 PageRouter(page=profile_config, icon='setting'),
                             ],
                         ),
@@ -170,7 +149,6 @@ root_add_routers(
                     children=[
                         PageRouter(page=login_register_config, icon='setting'),
                         PageRouter(page=external_idp,icon='wechat'),
-                        # PageRouter(page=password_factor, icon='lock'),
                         PageRouter(page=other_auth_factor, icon='example'),
                     ],
                 ),
@@ -220,35 +198,12 @@ root_add_routers(
         ),
         Router(
             path='system',
-            name='系统管理',
+            name='平台管理',
             icon='setting',
             children=[
-                Router(
-                    path='all_tenants',
-                    name='租户信息',
-                    icon='peoples',
-                    children=[
-                        PageRouter(page=all_tenants, icon='list'),
-                        PageRouter(page=all_tenants_config, icon='setting'),
-                    ],
-                ),
-                Router(
-                    path='all_users',
-                    name='用户信息',
-                    icon='user',
-                    children=[
-                        PageRouter(page=all_users, icon='list'),
-                        PageRouter(page=all_users_config, icon='setting'),
-                    ],
-                ),
-                Router(
-                    path='system_config',
-                    name='系统配置',
+                PageRouter(
+                    page=tenant_switch,
                     icon='setting',
-                    children=[
-                        PageRouter(page=system_config, icon='setting'),
-                        # PageRouter(page=system_password, icon='lock'),
-                    ],
                 ),
                 Router(
                     path='extension',
