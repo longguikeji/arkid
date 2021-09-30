@@ -1,21 +1,21 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'desktop_config'
+tag = 'tenant_switch'
 path = tag
-name = '桌面设置'
+name = '平台配置'
 
 extend_schema_tags(
     tag,
     name,
     {
-        'type': 'form_page',
+        'type':'form_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/desktopconfig/',
+            'path': '/api/v1/tenant_switch/',
             'method': 'get'
         },
         'local': {
             'item': {
-                'path': '/api/v1/tenant/{tenant_uuid}/desktopconfig/',
+                'path': '/api/v1/tenant_switch/',
                 'method': 'put'
             }
         }

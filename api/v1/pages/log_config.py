@@ -13,7 +13,9 @@ extend_schema_tags(
         },
         'global': {
             'update': {
-                'tag': 'log_config.update'
+                'tag': 'log_config.update',
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             }
         }
     })
@@ -31,7 +33,8 @@ extend_schema_tags(
         'global': {
             'update': {
                 'path': '/api/v1/tenant/{tenant_uuid}/log_config/',
-                'method': 'patch'
+                'method': 'patch',
+                'description': '确定'
             }
         }
     })
