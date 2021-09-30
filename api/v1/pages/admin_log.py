@@ -6,5 +6,12 @@ name = '管理员行为日志'
 
 extend_schema_tags(
     tag,
-    name
+    name,
+    {
+        'type':'table_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/admin_log/',
+            'method': 'get'
+        }
+    }
 )
