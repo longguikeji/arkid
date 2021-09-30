@@ -25,7 +25,6 @@ class App(BaseModel):
     @property
     def app_type(self):
         from runtime import get_app_runtime
-
         r = get_app_runtime()
         return r.app_types
 

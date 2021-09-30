@@ -71,4 +71,14 @@ urlpatterns = [
         views_tenant.TenantLogConfigView.as_view(),
         name='tenant-log-config'
     ),
+    re_path(
+        r'^tenant_switchinfo/$',
+        views_tenant.TenantSwitchInfoView.as_view(),
+        name='tenant-switchinfo',
+    ),
+    re_path(
+        r'^tenant_switch/$',
+        views_tenant.TenantSwitchView.as_view(),
+        name='tenant-switch',
+    ),
 ]

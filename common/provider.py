@@ -195,7 +195,36 @@ class PrivacyNoticeProvider:
     def load_privacy(cls, request):
         raise NotImplementedError
 
+class BaseAuthRuleProvider:
+    @abstractmethod
+    def create(self, auth_rule, data) -> Dict:
+        raise NotImplementedError()
 
+    @abstractmethod
+    def update(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def delete(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def run(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def change_form(self,auth_rule,request,form, tenant):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def authenticate_failed(self,auth_rule,request,form,tenant, extension):
+        return form
+
+    @abstractmethod
+    def authenticate_success(self,auth_rule,request,form, user, tenant, extension):
+        print(form)
+        return form
+        
 class OtherAuthFactorProvider:
     def authenticate(self, request):
         '''login'''

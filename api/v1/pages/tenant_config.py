@@ -16,12 +16,14 @@ extend_schema_tags(
         'global': {
             'update': {
                 'tag': 'tenant_config.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{id}/',
                 'method': 'delete',
-                'description': '注销租户'
+                'description': '注销租户',
+                'icon': 'el-icon-circle-close'
             } 
         }
     }

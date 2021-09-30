@@ -146,3 +146,16 @@ class TenantLogConfig(BaseModel):
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}'
+
+
+class TenantSwitch(BaseModel):
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    switch = models.BooleanField(default=True, verbose_name='功能开关')
+
+    def __str__(self) -> str:
+        return f'Tenant: {self.tenant.name}'
+
+    @property
+    def tenant_uuid(self):
+        return self.tenant.uuid

@@ -59,6 +59,10 @@ class LoginPage(views.APIView):
         # 获取隐私声明
         agreement = self.get_privacy_notice(tenant)
 
+        # 添加认证规则判定
+        for rule in r.auth_rules:
+            rule.provider.change_form(auth_rule=rule,request=request,form=data, tenant=tenant)
+
         # 如果存在注册表单，登录表单下方添加跳转注册按钮, 注册表单下方增加跳转登录按钮
         self.add_login_register_button(data, agreement)
 
