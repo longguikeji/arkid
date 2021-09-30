@@ -193,5 +193,7 @@ def get_request_tenant(request):
     tenant_uuid = request.query_params.get('tenant', None)
     if tenant_uuid:
         tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
-
+    else:
+        # 能够注册平台用户了
+        tenant = Tenant.active_objects.filter(id=1).first()
     return tenant
