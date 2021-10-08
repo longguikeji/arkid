@@ -32,9 +32,9 @@ class LogSerializer(serializers.Serializer):
         data = super().to_representation(log)
         data['uuid'] = log.uuid
         data['timestamp'] = log.created.strftime("%Y-%m-%d %H:%M:%S")
-        data['user'] = log.data['user']['username']
+        data['user'] = log.data['user'].get('username', '')
         data['ip'] = log.data['ip_address']
-        data['action'] = log.data['request']['full_path']
+        data['action'] = log.data['request'].get('path', '')
         return data
 
 
