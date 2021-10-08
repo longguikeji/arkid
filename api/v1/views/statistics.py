@@ -1,24 +1,21 @@
 import copy
 import json
 import datetime
-from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-
 from openapi.utils import extend_schema
-from .base import BaseTenantViewSet
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 from log.models import Log
 from tenant.models import Tenant
-from inventory.models import User
 
 
 @extend_schema(
     roles=['tenant admin', 'global admin'],
-    tags=['log']
+    tags=['statistics']
 )
-class StatisticsView(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
+class StatisticsView(APIView):
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
@@ -45,16 +42,17 @@ class StatisticsView(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         },
     }
 
-    def gen_register_user_chart(self):
+    def gen_register_user_chart(self, tenant):
         sql = """
             SELECT COUNT(*) as id, cast(created as date) as date
             from log_log
-            where data->"$.request.full_path" like "_/api/v1/tenant/%%/user/_" 
-            and data->"$.response.status_code"=201
+            where data->"$.tenant.uuid" = %s
+            and data->"$.request.path" = "/api/v1/register/"
+            and data->"$.response.status_code"=200
             and DATEDIFF(NOW(), created)<30
             GROUP BY cast(created as date) order by date desc;
             """
-        query = Log.objects.raw(sql)
+        query = Log.objects.raw(sql, params=[tenant.uuid])
         res = {r.date: r.id for r in query}
 
         xAxis = []
@@ -76,16 +74,17 @@ class StatisticsView(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
         return chart
 
-    def gen_login_user_chart(self):
+    def gen_login_user_chart(self, tenant):
         sql = """
             SELECT COUNT(*) as id, cast(created as date) as date
             from log_log 
-            where data->"$.request.full_path" = "/api/v1/login/"
+            where data->"$.tenant.uuid" = %s 
+            and data->"$.request.path" = "/api/v1/login/"
             and data->"$.response.status_code"=200
             and DATEDIFF(NOW(), created)<30
             GROUP BY cast(created as date) order by date desc;
             """
-        query = Log.objects.raw(sql)
+        query = Log.objects.raw(sql, params=[tenant.uuid])
         res = {r.date: r.id for r in query}
 
         xAxis = []
@@ -107,17 +106,18 @@ class StatisticsView(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
         return chart
 
-    def gen_register_user_list(self):
+    def gen_register_user_list(self, tenant):
         sql = """
             select distinct id from(
-                SELECT data->"$.response.data" as id
+                SELECT data->"$.request.data" as id
                 from log_log
-                where data->"$.request.full_path" like "_/api/v1/tenant/%%/user/_"
-                and data->"$.response.status_code"=201
+                where data->"$.tenant.uuid" = %s
+                and data->"$.request.path" = "/api/v1/register/"
+                and data->"$.response.status_code"=200
                 order by created desc) as b
             limit 10;
             """
-        query = Log.objects.raw(sql)
+        query = Log.objects.raw(sql, params=[tenant.uuid])
         res = []
         for r in query:
             try:
@@ -138,24 +138,23 @@ class StatisticsView(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         }
         return chart
 
-    def gen_login_user_list(self):
+    def gen_login_user_list(self, tenant):
         sql = """
             select distinct id from(
                 SELECT data->"$.request.data" as id
                 from log_log
-                where data->"$.request.full_path" = "/api/v1/login/"
+                where data->"$.tenant.uuid" = %s
+                and data->"$.request.path" = "/api/v1/login/"
                 and data->"$.response.status_code"=200
                 order by created desc) as b
             limit 10;
             """
-        query = Log.objects.raw(sql)
+        query = Log.objects.raw(sql, params=[tenant.uuid])
         res = []
         for r in query:
             try:
                 d = json.loads(json.loads(r.id))
-                user_uuid = d["data"]["user_uuid"]
-                user = User.objects.filter(uuid=user_uuid).first()
-                username = user.username
+                username = d["username"]
                 if username not in res:
                     res.append(username)
             except:
@@ -171,10 +170,12 @@ class StatisticsView(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         }
         return chart
 
-    def list(self, request, parent_lookup_tenant):
+    def get(self, request, *args, **kwargs):
+        tenant_uuid = kwargs.get('tenant_uuid')
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         charts = []
-        charts.append(self.gen_register_user_chart())
-        charts.append(self.gen_login_user_chart())
-        charts.append(self.gen_register_user_list())
-        charts.append(self.gen_login_user_list())
+        charts.append(self.gen_register_user_chart(tenant))
+        charts.append(self.gen_login_user_chart(tenant))
+        charts.append(self.gen_register_user_list(tenant))
+        charts.append(self.gen_login_user_list(tenant))
         return Response(charts)
