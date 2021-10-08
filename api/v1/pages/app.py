@@ -16,22 +16,26 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'app.create',
-                'description': '添加应用'
+                'description': '添加应用',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'sync': {
                 'tag': 'app.provisioning',
-                'description': '同步数据'
+                'description': '同步数据',
+                'icon': 'el-icon-refresh'
             },
             'update': {
                 'tag': 'app.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         },
     }
@@ -126,18 +130,21 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'app.provisioning.mapping.create',
-                'description': '新建'
+                'description': '新建',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
                 'tag': 'app.provisioning.mapping.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/{map_uuid}/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }
@@ -202,18 +209,21 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'app.provisioning.profile.create',
-                'description': '新建'
+                'description': '新建',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
                 'tag': 'app.provisioning.profile.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/{profile_uuid}/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }
@@ -260,6 +270,21 @@ extend_schema_tags(
                 'method': 'put',
                 'description': '确定'
             }
+        }
+    }
+)
+
+app_only_list_tag = 'app_only_list'
+app_only_list_name = '应用列表'
+
+extend_schema_tags(
+    app_only_list_tag,
+    app_only_list_name,
+    {
+        'type': 'table_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
+            'method': 'get'
         }
     }
 )

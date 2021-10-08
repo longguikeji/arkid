@@ -10,7 +10,8 @@ class LogSerializer(serializers.Serializer):
         read_only=True,
         label=_("唯一标识符")
     )
-    timestamp = serializers.CharField(
+    timestamp = serializers.DateTimeField(
+        format="%Y-%m-%d %H:%M:%S",
         read_only=True,
         label=_("时间")
     )
@@ -26,6 +27,15 @@ class LogSerializer(serializers.Serializer):
         read_only=True,
         label=_("操作")
     )
+
+    def to_representation(self, log):
+        data = super().to_representation(log)
+        data['uuid'] = log.uuid
+        data['timestamp'] = log.created.strftime("%Y-%m-%d %H:%M:%S")
+        data['user'] = log.data['user'].get('username', '')
+        data['ip'] = log.data['ip_address']
+        data['action'] = log.data['request'].get('path', '')
+        return data
 
 
 class LogDetailSerializer(BaseDynamicFieldModelSerializer):

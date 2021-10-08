@@ -1,6 +1,7 @@
 from typing import Optional, List, Dict, TypeVar, Generic
 from collections import OrderedDict
 from common.provider import (
+    BaseAuthRuleProvider,
     SMSProvider,
     CacheProvider,
     ExternalIdpProvider,
@@ -19,6 +20,7 @@ from common.provider import (
 )
 from common.serializer import (
     AppBaseSerializer,
+    AuthRuleBaseSerializer,
     ExternalIdpBaseSerializer,
     LoginRegisterConfigBaseSerializer,
     OtherAuthFactorBaseSerializer,
@@ -26,7 +28,6 @@ from common.serializer import (
 from authorization_server.models import AuthorizationServer
 from mfa.models import MFA
 from common.exception import DuplicatedIdException
-
 
 class Runtime:
 
@@ -66,6 +67,11 @@ class Runtime:
     app_type_providers: Dict[str, AppTypeProvider]
     app_type_serializers: Dict[str, AppBaseSerializer]
 
+    auth_rule_types: List
+    auth_rule_type_providers: Dict[str, BaseAuthRuleProvider]
+    auth_rule_type_serializers: Dict[str, AuthRuleBaseSerializer]
+    auth_rules = []
+
     urlpatterns: Dict = {}
 
     def __new__(cls, *args, **kwargs):
@@ -88,6 +94,11 @@ class Runtime:
             cls._instance.login_register_config_providers = {}
             cls._instance.login_register_config_serializers = {}
 
+            cls._instance.auth_rule_types = []
+            cls._instance.auth_rule_type_providers = {}
+            cls._instance.auth_rule_type_serializers = {}
+            cls._instance.auth_rules = []
+            
             cls._instance.other_auth_factors = []
             cls._instance.other_auth_factor_providers = {}
             cls._instance.other_auth_factor_serializers = {}
@@ -121,6 +132,11 @@ class Runtime:
         self.other_auth_factors = []
         self.other_auth_factor_providers = {}
         self.other_auth_factor_serializers = {}
+
+        self.auth_rule_types = []
+        self.auth_rule_type_providers = {}
+        self.auth_rule_type_serializers = {}
+        self.auth_rules = []
 
     def register_task(self):
         """
@@ -364,6 +380,45 @@ class Runtime:
         if serializer is not None and key in self.app_type_serializers:
             self.app_type_serializers.pop(key)
         print('logout_app_type:', key)
+
+    def register_auth_rule_type(
+        self,
+        key: str,
+        name: str,
+        provider: BaseAuthRuleProvider,
+        serializer: AuthRuleBaseSerializer,
+    ) -> None:
+        if (key, name) not in self.auth_rule_types:
+            self.auth_rule_types.append((key, name))
+
+        if provider is not None and key not in self.auth_rule_type_providers:
+            self.auth_rule_type_providers[key] = provider
+
+            # 查找已经配置认证规则的应用写入运行时
+            from auth_rules.models import TenantAuthRule
+            rules = TenantAuthRule.active_objects.filter(type=key,is_apply=True).all()
+            if len(rules):
+                self.auth_rules.extend(rules)
+        
+        if serializer is not None and key not in self.auth_rule_type_serializers:
+            self.auth_rule_type_serializers[key] = serializer
+
+    def logout_auth_rule_type(
+        self,
+        key: str,
+        name: str,
+        provider: BaseAuthRuleProvider,
+        serializer: AuthRuleBaseSerializer,
+    ) -> None:
+        if (key, name) in self.auth_rule_types:
+            self.auth_rule_types.remove((key, name))
+
+        if provider is not None and key in self.auth_rule_type_providers:
+            self.auth_rule_type_providers.pop(key)
+
+        if serializer is not None and key in self.auth_rule_type_serializers:
+            self.auth_rule_type_serializers.pop(key)
+        print('logout_auth_rule_type:', key)
 
     def register_sms_provider(self, sms_provider: SMSProvider):
         self.sms_provider = sms_provider

@@ -1,13 +1,21 @@
+import datetime
+from re import T
 from api.v1.serializers.log import LogSerializer, LogDetailSerializer
 from common.paginator import DefaultListPaginator
 from openapi.utils import extend_schema
 from .base import BaseTenantViewSet
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import DjangoObjectPermissions, IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
-
-from collections import OrderedDict
 from log.models import Log
+from tenant.models import TenantLogConfig
+
+
+def get_log_retention_date(tenant):
+    tenant = TenantLogConfig.valid_objects.filter(tenant=tenant).first()
+    log_retention_period = tenant.data.get('log_retention_period', 30)
+    log_retention_date = datetime.datetime.now() - datetime.timedelta(days=log_retention_period)
+    return log_retention_date
 
 
 @extend_schema(
@@ -22,17 +30,6 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     serializer_class = LogSerializer
     pagination_class = DefaultListPaginator
 
-    @staticmethod
-    def get_log_data(log):
-        obj = OrderedDict()
-        data = log.data
-        obj['uuid'] = log.uuid
-        obj['timestamp'] = log.created
-        obj['user'] = data['user']['username']
-        obj['ip'] = data['ip_address']
-        obj['action'] = data['request']['full_path']
-        return obj
-
     def get_object(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
@@ -40,11 +37,11 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         kwargs = {
             'tenant': tenant,
             'uuid': self.kwargs['pk'],
+            'created__gt': get_log_retention_date(tenant),
         }
 
         log = Log.valid_objects.filter(**kwargs).first()
-        obj = self.get_log_data(log)
-        return obj
+        return log
 
     def get_queryset(self):
         context = self.get_serializer_context()
@@ -53,13 +50,10 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         kwargs = {
             'tenant': tenant,
             'data__user__admin': False,
+            'created__gt': get_log_retention_date(tenant),
         }
 
-        logs = Log.valid_objects.filter(**kwargs).order_by('id')
-        qs = []
-        for log in logs:
-            obj = self.get_log_data(log)
-            qs.append(obj)
+        qs = Log.valid_objects.filter(**kwargs).order_by('-id')
         return qs
 
 
@@ -75,17 +69,6 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     serializer_class = LogSerializer
     pagination_class = DefaultListPaginator
 
-    @staticmethod
-    def get_log_data(log):
-        obj = OrderedDict()
-        data = log.data
-        obj['uuid'] = log.uuid
-        obj['timestamp'] = log.created
-        obj['user'] = data['user']['username']
-        obj['ip'] = data['ip_address']
-        obj['action'] = data['request']['full_path']
-        return obj
-
     def get_object(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
@@ -93,11 +76,11 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         kwargs = {
             'tenant': tenant,
             'uuid': self.kwargs['pk'],
+            'created__gt': get_log_retention_date(tenant),
         }
 
         log = Log.valid_objects.filter(**kwargs).first()
-        obj = self.get_log_data(log)
-        return obj
+        return log
 
     def get_queryset(self):
         context = self.get_serializer_context()
@@ -106,13 +89,10 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         kwargs = {
             'tenant': tenant,
             'data__user__admin': True,
+            'created__gt': get_log_retention_date(tenant),
         }
 
-        logs = Log.valid_objects.filter(**kwargs).order_by('id')
-        qs = []
-        for log in logs:
-            obj = self.get_log_data(log)
-            qs.append(obj)
+        qs = Log.valid_objects.filter(**kwargs).order_by('-id')
         return qs
 
 
@@ -134,6 +114,7 @@ class LogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         kwargs = {
             'tenant': tenant,
             'uuid': self.kwargs['pk'],
+            'created__gt': get_log_retention_date(tenant),
         }
 
         log = Log.valid_objects.filter(**kwargs).first()

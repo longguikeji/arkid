@@ -16,18 +16,21 @@ extend_schema_tags(
         'global': {
             'create': {
                 'tag': 'extension.create',
-                'description': '添加系统插件'
+                'description': '添加系统插件',
+                'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
                 'tag': 'extension.update',
-                'description': '编辑'
+                'description': '编辑',
+                'icon': 'el-icon-edit'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/{id}/',
                 'method': 'delete',
-                'description': '删除'
+                'description': '删除',
+                'icon': 'el-icon-delete'
             }
         }
     }

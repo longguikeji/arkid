@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'device',
     'app',
     'oauth2_provider',
+    'auth_rules',
     'mama_cas',
     'tasks',
     'webhook',
