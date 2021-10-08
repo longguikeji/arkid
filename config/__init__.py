@@ -63,7 +63,6 @@ class Config(object):
     def get_frontend_host(self, schema=True):
         if schema:
             return '{}://{}'.format('https' if self.https_enabled else 'http', self.frontend_host)
-
         return self.host
 
     def get_slug_frontend_host(self, slug, schema=True):
