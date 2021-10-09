@@ -1,0 +1,22 @@
+name: pr actions
+on:
+  pull_request:
+    types: [opened]
+jobs:
+  createprjobs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: set PR_INFO
+        run: |
+          echo PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }') >> $GITHUB_ENV
+          echo PR_TITLE=$(jq --raw-output .pull_request.title "$GITHUB_EVENT_PATH") >> $GITHUB_ENV
+          echo PR_URL=$(jq --raw-output .pull_request.html_url "$GITHUB_EVENT_PATH") >> $GITHUB_ENV
+          echo PR_USER=$(jq --raw-output .pull_request.user.login "$GITHUB_EVENT_PATH") >> $GITHUB_ENV
+      - name: Feishu 通知review
+        uses: wangsijie/feishu-bot@v1
+        with:
+          uuid: ${{ secrets.FEISHU_UUID }}
+          data: |
+            {"msg_type":"post","content":{"post":{"zh_cn":{"title":"${{ env.PR_USER }} 发起PR：(${{ env.PR_TITLE }})",
+            "content":[[{"tag":"text","text":"😃请大家帮忙review: "},
+            {"tag":"a","text":"🔗链接${{ env.PR_URL}}","href":"${{ env.PR_URL}}"}]]}}}}
