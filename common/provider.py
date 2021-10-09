@@ -229,3 +229,9 @@ class OtherAuthFactorProvider:
     def authenticate(self, request):
         '''login'''
         pass
+
+
+class StatisticsProvider:
+    @abstractmethod
+    def get_charts(self, tenant) -> any:
+        pass

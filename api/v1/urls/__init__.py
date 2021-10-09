@@ -32,6 +32,7 @@ from . import (
     register,
     reset_password,
     log,
+    statistics,
 )
 from runtime import get_app_runtime
 
@@ -91,3 +92,4 @@ urlpatterns += login.urlpatterns
 urlpatterns += register.urlpatterns
 urlpatterns += reset_password.urlpatterns
 urlpatterns += permission.urlpatterns
+urlpatterns += statistics.urlpatterns

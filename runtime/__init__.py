@@ -17,6 +17,7 @@ from common.provider import (
     ChildAccountConfigProvider,
     OtherAuthFactorProvider,
     ChildManagerConfigProvider,
+    StatisticsProvider,
 )
 from common.serializer import (
     AppBaseSerializer,
@@ -42,6 +43,7 @@ class Runtime:
     childmanagerconfig_provider: ChildManagerConfigProvider = None
     migration_provider: MigrationProvider = None
     privacy_notice_provider: PrivacyNoticeProvider = None
+    statistics_provider: StatisticsProvider = None
 
     external_idps: List
     external_idp_providers: Dict[str, ExternalIdpProvider]
@@ -129,6 +131,7 @@ class Runtime:
         self.authcode_provider = None
         self.migration_provider = None
         self.privacy_notice_provider = None
+        self.statistics_provider = None
         self.other_auth_factors = []
         self.other_auth_factor_providers = {}
         self.other_auth_factor_serializers = {}
@@ -484,6 +487,13 @@ class Runtime:
     ):
         self.privacy_notice_provider = None
         print('logout_authcode_provider')
+
+    def register_statistics_provider(self, statistics_provider: StatisticsProvider):
+        self.statistics_provider = statistics_provider
+
+    def logout_statistics_provider(self, statistics_provider: StatisticsProvider):
+        self.statistics_provider = None
+        print('logout_statistics_provider')
 
     @property
     def extension_serializers(self):
