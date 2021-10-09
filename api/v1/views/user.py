@@ -108,6 +108,12 @@ from django.db import transaction
                 location=OpenApiParameter.QUERY,
                 required=False,
             ),
+            OpenApiParameter(
+                name='tenant_uuid',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
         ]
     ),
     retrieve=extend_schema(roles=['tenant admin', 'global admin']),
@@ -142,11 +148,15 @@ class UserViewSet(BaseViewSet):
         country = self.request.query_params.get('country', None)
         city = self.request.query_params.get('city', None)
         job_title = self.request.query_params.get('job_title', None)
+        tenant_uuid = self.request.query_params.get('tenant_uuid', None)
         group1 = group
         kwargs = {
             'is_del': False,
-            'tenants__in': [tenant],
         }
+        if tenant_uuid:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
+
+        kwargs['tenants__in'] = [tenant]
 
         if group is not None:
             kwargs['groups__uuid__in'] = group.split(',')
