@@ -7,8 +7,14 @@ from rest_framework.permissions import IsAuthenticated
 from openapi.utils import extend_schema
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 from log.models import Log
 from tenant.models import Tenant
+
+
+CACHE_SECONDS = 60*2
 
 
 @extend_schema(
@@ -170,6 +176,7 @@ class StatisticsView(APIView):
         }
         return chart
 
+    @method_decorator(cache_page(CACHE_SECONDS))
     def get(self, request, *args, **kwargs):
         tenant_uuid = kwargs.get('tenant_uuid')
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
