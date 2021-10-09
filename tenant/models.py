@@ -139,6 +139,15 @@ class TenantDesktopConfig(BaseModel):
         return f'Tenant: {self.tenant.name}'
 
 
+class TenantLogConfig(BaseModel):
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    data = models.JSONField(blank=True, default=dict)
+
+    def __str__(self) -> str:
+        return f'Tenant: {self.tenant.name}'
+
+
 class TenantSwitch(BaseModel):
 
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')

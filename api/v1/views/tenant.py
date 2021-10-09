@@ -1,3 +1,4 @@
+import urllib
 from django.http.response import JsonResponse, HttpResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
@@ -11,6 +12,7 @@ from tenant.models import (
     TenantContactsUserFieldConfig,
     TenantContactsGroupConfig,
     TenantDesktopConfig,
+    TenantLogConfig,
     TenantSwitch,
 )
 from api.v1.serializers.tenant import (
@@ -24,6 +26,7 @@ from api.v1.serializers.tenant import (
     TenantContactsUserTagsSerializer,
     TenantDesktopConfigSerializer,
     TenantCheckPermissionSerializer,
+    TenantLogConfigSerializer,
     TenantSwitchSerializer,
     TenantSwitchInfoSerializer,
 )
@@ -45,8 +48,7 @@ from extension_root.childmanager.models import ChildManager
 from drf_spectacular.utils import extend_schema_view
 from django.urls import reverse
 from common import loginpage as lp
-
-import datetime
+from config import get_app_config
 
 
 @extend_schema_view(
@@ -674,6 +676,38 @@ class TenantCheckPermissionView(generics.RetrieveAPIView):
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantLogConfigView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantLogConfigSerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        log_config, is_created = TenantLogConfig.objects.get_or_create(
+            is_del=False,
+            tenant=tenant,
+        )
+        frontend_host = get_app_config().get_frontend_host()
+        path = f'/api/v1/tenant/{tenant_uuid}/log'
+        url = urllib.parse.urljoin(frontend_host, path)
+
+        data = log_config.data
+        if is_created is True:
+            data['log_api'] = url
+            data['log_retention_period'] = 30
+        else:
+            data['log_api'] = url
+            if 'log_retention_period' not in data:
+                data['log_retention_period'] = 30
+
+        log_config.save()
+        return log_config
+
+
+@extend_schema(roles=['general user','tenant admin', 'global admin'], tags=['tenant'])
 class TenantSwitchView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]

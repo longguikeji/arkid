@@ -5,6 +5,7 @@ from tenant.models import (
     TenantContactsConfig,
     TenantContactsUserFieldConfig,
     TenantDesktopConfig,
+    TenantLogConfig,
     TenantSwitch,
 )
 from rest_framework import serializers
@@ -376,6 +377,35 @@ class TenantCheckPermissionSerializer(serializers.Serializer):
     is_all_show = serializers.BooleanField(label=_("是否可以看到所有"))
     is_all_application = serializers.BooleanField(label=_("是否可以所有应用"))
     permissions = serializers.ListField(child=TenantCheckPermissionItemSerializer(), label=_('权限'), default=[])
+
+
+class LogConfigSerializer(serializers.Serializer):
+    log_api = serializers.CharField(label=_('日志读取API'), read_only=True)
+    log_retention_period = serializers.IntegerField(label=_('日志保留时间(天)'))
+
+    # account_ids = serializers.ListField(
+    #     child=serializers.CharField(), label=_('用户账号ID'), default=[])
+
+
+class TenantLogConfigSerializer(BaseDynamicFieldModelSerializer):
+
+    data = LogConfigSerializer(
+        label=_("设置数据")
+    )
+
+    class Meta:
+        model = TenantLogConfig
+
+        fields = ('data', )
+
+    def update(self, instance, validated_data):
+        data = validated_data.get('data')
+        instance.data = {
+            'log_api': data.get('log_api'),
+            'log_retention_period': data.get('log_retention_period'),
+        }
+        instance.save()
+        return instance
 
 
 class TenantSwitchSerializer(serializers.ModelSerializer):
