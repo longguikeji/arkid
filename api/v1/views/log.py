@@ -13,7 +13,10 @@ from tenant.models import TenantLogConfig
 
 def get_log_retention_date(tenant):
     tenant = TenantLogConfig.valid_objects.filter(tenant=tenant).first()
-    log_retention_period = tenant.data.get('log_retention_period', 30)
+    if tenant:
+        log_retention_period = tenant.data.get('log_retention_period', 30)
+    else:
+        log_retention_period = 30
     log_retention_date = datetime.datetime.now() - datetime.timedelta(days=log_retention_period)
     return log_retention_date
 
