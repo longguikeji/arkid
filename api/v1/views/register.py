@@ -69,6 +69,8 @@ class RegisterView(APIView):
         if not tenant:
             user.is_platform_user = True
         else:
+            if tenant.id == 1:
+                user.is_platform_user = True
             user.tenants.add(tenant)
         user.save()
 
