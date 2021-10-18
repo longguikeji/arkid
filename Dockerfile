@@ -13,7 +13,7 @@ RUN set -eux; \
     sed -i "s@http://security.debian.org/debian-security@$DEBIANSRT@g" /etc/apt/sources.list ; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        gettext xmlsec1 \
+        gettext xmlsec1 supervisor \
         python-dev default-libmysqlclient-dev tini gosu; \
     # verify that the binary works
     gosu nobody true; \
