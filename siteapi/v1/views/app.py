@@ -109,9 +109,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
                 else:
                     raise ValidationError({'owner_access': ['must be a boolean']})
                 scope_kwargs = {} if manager_app_uids is None else {'perm__scope__in': manager_app_uids}
-                if value is True:
-                    print(123)
-                    print(scope_kwargs)
+                if value is True and not user_uid is None:
                     # 获取的是用户指定应用的权限
                     uids = [
                         item['perm__scope'] for item in UserPerm.valid_objects.filter(
