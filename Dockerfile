@@ -1,4 +1,4 @@
-FROM python:3.6 as build_deps
+FROM python:3.6-buster as build_deps
 EXPOSE 80
 WORKDIR /var/oneid
 RUN echo 'deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \n\
