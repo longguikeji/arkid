@@ -101,6 +101,7 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
         if owner:
             owner_access = self.request.query_params.get('owner_access', None)
             if owner_access is not None:
+                # 一些基础的access判断
                 if owner_access in (True, 'true', 'True'):
                     value = True
                 elif owner_access in (False, 'false', 'False'):
@@ -108,16 +109,71 @@ class APPListCreateAPIView(generics.ListCreateAPIView):
                 else:
                     raise ValidationError({'owner_access': ['must be a boolean']})
                 scope_kwargs = {} if manager_app_uids is None else {'perm__scope__in': manager_app_uids}
-                access_app_uids = [
-                    item['perm__scope'] for item in owner.owner_perm_cls.valid_objects.filter(
-                        owner=owner,
-                        perm__subject='app',
-                        perm__action='access',
-                        value=value,
-                        **scope_kwargs,
-                    ).values('perm__scope')
-                ]
-                kwargs['uid__in'] = access_app_uids
+                if value is True:
+                    print(123)
+                    print(scope_kwargs)
+                    # 获取的是用户指定应用的权限
+                    uids = [
+                        item['perm__scope'] for item in UserPerm.valid_objects.filter(
+                            owner=owner,
+                            value=True,
+                            perm__subject='app',
+                            perm__action__startswith='access',
+                        ).values('perm__scope')
+                    ]
+                    # 获取的是指定应用部门的权限
+                    data = []
+                    dms = DeptMember.valid_objects.filter(
+                        user=owner
+                    )
+                    result = APP.valid_objects.filter(
+                        **kwargs
+                    ).order_by('-created')
+                    for item in result:
+                        uid = item.uid
+                        if item.allow_any_user is True:
+                            if item.uuid not in data:
+                                data.append(item.uuid)
+                        else:
+                            if uid in uids:
+                                if item.uuid not in data:
+                                    data.append(item.uuid)
+                            else:
+                                # 取的当前分组的所拥有的部门和当前用户的部门进行比对
+                                perms = Perm.valid_objects.filter(
+                                    scope=uid,
+                                    subject='app',
+                                    action__startswith='access'
+                                ).order_by('id')
+                                for perm in perms:
+                                    deps = DeptPerm.valid_objects.filter(
+                                        status=1,
+                                        perm=perm
+                                    )
+                                    for dep in deps:
+                                        owner = dep.owner
+                                        # 用户的部门是否属于指定的部门
+                                        for dm in dms:
+                                            dm_owner = dm.owner
+                                            if dm_owner == owner:
+                                                if item.uuid not in data:
+                                                    data.append(item.uuid)
+                                            else:
+                                                if dm_owner.if_belong_to_dept(owner, True) is True:
+                                                    if item.uuid not in data:
+                                                        data.append(item.uuid)
+                    return APP.valid_objects.filter(uuid__in=data).order_by('-created')
+                else:
+                    access_app_uids = [
+                        item['perm__scope'] for item in owner.owner_perm_cls.valid_objects.filter(
+                            owner=owner,
+                            perm__subject='app',
+                            perm__action='access',
+                            value=value,
+                            **scope_kwargs,
+                        ).values('perm__scope')
+                    ]
+                    kwargs['uid__in'] = access_app_uids
         apps = APP.valid_objects.filter(**kwargs).exclude(uid='oneid').order_by('-created')
         return apps
 
