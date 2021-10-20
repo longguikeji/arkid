@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = [ 'group_list' ,'gpermission' ]
+tag = [ 'group_list' ,'group_list.permission' ]
 path = 'gpermission'
 name = '组权限'
 
@@ -15,15 +15,17 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'get',
-            'next': 'gpermission'
+            'next': 'group_list.permission'
         },
-        'node': {
-            'next': 'gpermission'
+        'local': {
+            'node': {
+                'next': 'group_list.permission'
+            }
         }
     }
 )
 
-group_permission_tag = 'gpermission'
+group_permission_tag = 'group_list.permission'
 group_permission_name = '组权限'
 
 extend_schema_tags(
@@ -33,12 +35,11 @@ extend_schema_tags(
         'type': 'table_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/group_permission/{group_uuid}/',
-            'method': 'get',
-            'from': 'group_list'
+            'method': 'get'
         },
         'global': {
             'create': {
-                'tag': 'gpermission.create',
+                'tag': 'group_list.permission.create',
                 'description': '添加组权限',
                 'icon': 'el-icon-plus'
             }
@@ -48,14 +49,13 @@ extend_schema_tags(
                 'path': '/api/v1/tenant/{tenant_uuid}/group_permission/{group_uuid}/delete/',
                 'method': 'get',
                 'description': '删除',
-                'from': 'group_list',
                 'icon': 'el-icon-delete'
             }
         }
     }
 )
 
-group_permission_create_tag = 'gpermission.create'
+group_permission_create_tag = 'group_list.permission.create'
 group_permission_create_name = '添加组权限'
 
 extend_schema_tags(
@@ -71,8 +71,7 @@ extend_schema_tags(
             'create': {
                 'path': '/api/v1/tenant/{tenant_uuid}/group_permission/{group_uuid}/create',
                 'method': 'post',
-                'description': '确定',
-                'from': 'group_list'
+                'description': '确定'
             }
         }
     }
