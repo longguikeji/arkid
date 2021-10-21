@@ -29,5 +29,6 @@ urlpatterns = [
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('superadmin/', admin.site.urls),
     url(r'^api/v1/', include(('api.v1.urls', 'api'), namespace='api')),
-    path('scim/v2/', include('django_scim.urls')),
+    # path('scim/v2/', include('django_scim.urls')),
+    path('scim/v2/', include('scim_server.urls')),
 ]

@@ -78,7 +78,8 @@ INSTALLED_APPS = [
     'extension_root.tenantuserconfig',
     'extension_root.childaccount',
     'extension_root.childmanager',
-    'django_scim',
+    # 'django_scim',
+    # 'scim_server',
     'extension_root.miniprogram',
     'djangosaml2idp',
     'login_register_config',
@@ -100,7 +101,7 @@ MIDDLEWARE = [
     'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_scim.middleware.SCIMAuthCheckMiddleware',
+    # 'django_scim.middleware.SCIMAuthCheckMiddleware',
     'requestlogs.middleware.RequestLogsMiddleware',
 ]
 
