@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+# mama_cas/
+
 # Distribution / packaging
 .Python
 build/
@@ -25,6 +27,7 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.idea*
 MANIFEST
 
 # PyInstaller
@@ -51,6 +54,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+.hypothesis/
+.pytest_cache/
+.DS_Store
 # Translations
 *.mo
 *.pot
@@ -97,6 +103,8 @@ __pypackages__/
 # Celery stuff
 celerybeat-schedule
 celerybeat.pid
+# celery beat schedule file
+celerybeat-schedule
 
 # SageMath parsed files
 *.sage.py
@@ -127,3 +135,62 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+settings_local.py
+
+.vscode
+.vscode/*
+*.code-workspace
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+tmp
+# db
+dump.rdb
+*.sqlite3
+
+db/data
+upload/*
+key
+
+# certs
+*.key
+*.csr
+*.crt
+*.pem
+
+# demo
+pysaml2/
+djangosaml2config/saml2_config/*.xml
+
+# sql
+test/data/test_*.sql
+
+# saml
+idp_metadata.xml
+
+# docker-compose
+docker-compose/db
+docker-compose-dev
+devops/docker-compose/db
+devops/docker-compose/be/upload
+
+# celery
+celerybeat.pid
+
+# supervisord
+supervisord.pid
+supervisord.log
+
+arkid.local.toml
+
+/static/upload
+package.json
+node_modules/
+package-lock.json
+
+db.sqlite3-journal
+djangosaml2idp/saml2_config/*.xml
+

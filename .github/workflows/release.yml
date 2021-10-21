@@ -1,0 +1,37 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dev_version:
+        description: 'the tag of the image to release, like `dev-6-02dbc80`'
+        default: ''
+        required: true
+      prod_version:
+        description: 'the tag of the image,src to release, like `1.2.3`'
+        default: ''
+        required: true
+
+jobs:
+  reTagAndPush:
+    runs-on: ubuntu-latest
+    steps:
+    - name: ReTag to Dockerhub
+      uses: onichandame/docker-registry-sync-action@master
+      with:
+        source_repository: "docker.io/longguikeji/arkid:${{ github.event.inputs.dev_version }}"
+        source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
+        source_password: "${{ secrets.DOCKERHUBPWD }}"
+        target_repository: "docker.io/longguikeji/arkid:${{ github.event.inputs.prod_version }}"
+        target_username: "${{ secrets.DOCKERHUBUSERNAME }}"
+        target_password: "${{ secrets.DOCKERHUBPWD }}"
+    - name: ReTag to Harbor
+      uses: onichandame/docker-registry-sync-action@master
+      with:
+        source_repository: "docker.io/longguikeji/arkid:${{ github.event.inputs.dev_version }}"
+        source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
+        source_password: "${{ secrets.DOCKERHUBPWD }}"
+        target_repository: "harbor.longguikeji.com/ark-releases/arkid:${{ github.event.inputs.prod_version }}"
+        target_username: "${{ secrets.HARBORUSER }}"
+        target_password: "${{ secrets.HARBORPWD }}"
+    

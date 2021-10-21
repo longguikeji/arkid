@@ -1,0 +1,151 @@
+pipeline {
+    agent any
+
+    // global ENV
+    // - FEISHU_ENTRYPOINT
+    // - ARKIDV2DEV_PUBLIC_URL
+
+    environment {
+        GIT_SHORT_COMMIT = """${sh(
+            returnStdout: true,
+            script: 'git rev-parse --short HEAD',
+        ).trim()}"""
+        REPO_NAME = """${sh(
+            returnStdout: true,
+            script: "git remote show origin -n |  grep h.URL | sed 's/.*://;s/.git//' ",
+        ).trim()}"""
+
+        // DOCKER_PROD_REGISTRY="https://index.docker.io/v1/"
+        // DOCKER_PROD_REGISTRY_CREDENTIAL="devops-longguikeji-dockerhub"
+        REGISTRY_CREDENTIAL="devops-longguikeji-harbor"
+        REGISTRY_HOST = "harbor.longguikeji.com"
+        REGISTRY_NS = "/ark-releases/"
+        IMAGE_NAME = "arkid"
+        IMAGE_TAG = "v2dev-${env.BUILD_NUMBER}-${env.GIT_SHORT_COMMIT}"
+        IMAGE_FULL_TAG = "${env.REGISTRY_HOST}${env.REGISTRY_NS}${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+        
+        K8S_HOST = "https://kubernetes"
+        K8S_CREDENTIAL = "lg-k8s-dev"
+        K8S_NS = "arkidv2"
+        // deployment、statefulset、daemonset
+        K8S_DEPLOY_KIND = "deploy"
+        K8S_DEPLOY_NAME = "arkidv2-be"
+        K8S_DEPLOY_CONTAINER_NAME = "arkid-be"
+    }
+    stages {
+        stage('pre') {
+            steps {
+                sendFeishu("pending")
+                // replacePyPIRegistry()
+            }
+        }
+        stage('build image') {
+            steps {
+                script {
+                    this_stage = env.STAGE_NAME
+                }
+                withDockerRegistry([credentialsId: "${REGISTRY_CREDENTIAL}", url: "https://${REGISTRY_HOST}"]){
+                    sh """#!/bin/bash
+                        docker build -t ${env.IMAGE_FULL_TAG} .
+                        docker push ${env.IMAGE_FULL_TAG}
+                    """
+                }
+            }
+        }
+        
+        stage('pushToDockerHub'){
+            steps {
+                script {
+                    this_stage = env.STAGE_NAME
+                }
+                withDockerRegistry([credentialsId: "devops-longguikeji-dockerhub", url: "https://index.docker.io/v1/"]){
+                    sh """#!/bin/bash
+                    docker tag ${env.IMAGE_FULL_TAG} longguikeji/arkid:v2dev
+                    docker push longguikeji/arkid:v2dev
+                    """
+                }
+            }
+        }
+
+        stage('deploy image') {
+            steps{
+                script {
+                    this_stage = env.STAGE_NAME
+                }
+                withKubeConfig([credentialsId: "${env.K8S_CREDENTIAL}",
+                                serverUrl: "${K8S_HOST}",
+                                namespace: "${env.K8S_NS}"
+                                ]) {
+                                    sh """
+                                        kubectl set image ${env.K8S_DEPLOY_KIND} ${env.K8S_DEPLOY_NAME} ${env.K8S_DEPLOY_CONTAINER_NAME}=${env.IMAGE_FULL_TAG} --record=true
+                                    """
+                }
+            }
+        }
+    }
+    post {
+        success {
+            sendFeishu("success")
+        }
+        failure {
+            sendFeishu("fail")
+        }
+    }
+}
+
+// def replacePyPIRegistry(){
+//     hostname = sh (
+//         returnStdout: true,
+//         script: "python -c \"from urlparse import urlparse;print urlparse('${env.PYPI_REGISTRY}').hostname\" ",
+//     ).trim()
+//     sh """
+//     cat > devops/pip.conf << EOF
+// [global]
+// index-url = ${env.PYPI_REGISTRY}
+// trusted-host = ${hostname}
+// EOF
+//     """
+// }
+
+def sendFeishu(status){
+    if (status == "success") {
+        message="构建并部署成功，点击查看部署后的效果"
+        href_url="${env.ARKIDV2DEV_PUBLIC_URL}"
+    } else if(status == "pending"){
+        message="开始构建，点击查看构建过程"
+        href_url="${env.BUILD_URL}"
+    } else {
+        message="${this_stage}阶段失败，点击查看具体日志"
+        href_url="${env.BUILD_URL}"
+    }
+
+    sh """
+        curl -X POST \
+        ${env.FEISHU_ENTRYPOINT} \
+        -H "content-type: application/json" \
+        -d \
+        '{
+            "msg_type": "post",
+            "content": {
+                "post": {
+                    "zh_cn": {
+                        "title": "流水线状态通知",
+                        "content": [
+                            [
+                                {
+                                    "tag": "text",
+                                    "text": "${env.REPO_NAME} 项目流水线有更新: "
+                                },
+                                {
+                                    "tag": "a",
+                                    "text": "$message",
+                                    "href": "$href_url"
+                                }
+                            ]
+                        ]
+                    }
+                }
+            }
+        }'
+    """
+}

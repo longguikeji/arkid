@@ -1,0 +1,1 @@
+KEY = 'privacy_notice'
