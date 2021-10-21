@@ -155,7 +155,7 @@ class MssqlUserProvider(ProviderBase):
         user = Core2EnterpriseUser()
         user.identifier = record.get('femp_id')
         user.user_name = record.get('fcode')
-        user.enterprise_extension.department = record.get('dept_name')
+        user.enterprise_extension.department = record.get('dept_name', '').strip()
         user.title = record.get('fjob_name')
         user.enterprise_extension.manager = Manager.from_dict(
             {
@@ -179,7 +179,7 @@ class MssqlUserProvider(ProviderBase):
 
         user.add_custom_attribute(
             UserExtensionSchema,
-            {'FCOMP': record.get('COMPNAME'), 'FSTATUS': record.get('fstatus')},
+            {'FCOMP': record.get('COMPNAME'), 'FSTATUS': record.get('fstatus'), 'FDEPT_ID': record.get('dept_id')},
         )
         user.add_schema(UserExtensionSchema)
         return user

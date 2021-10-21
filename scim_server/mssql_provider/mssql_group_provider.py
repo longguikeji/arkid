@@ -170,10 +170,10 @@ class MssqlGroupProvider(ProviderBase):
         if members:
             group.members = []
         group.identifier = record.get('fid')
-        group.display_name = record.get('ffull_name')
+        group.display_name = record.get('ffull_name', '').strip()
         for item in members:
             member = Member()
-            member.display = item.get('ffull_name')
+            member.display = item.get('ffull_name', '').strip()
             member.value = item.get('fid')
             group.members.append(member)
         group.add_custom_attribute(
