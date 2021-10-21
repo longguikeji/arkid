@@ -268,6 +268,8 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
         if self.request.user.is_admin:
             sub_depts = Dept.valid_objects.filter(parent=node)
             data = self.get_response_data(node, sub_depts, url_name, user_required)
+            if node.uid == 'yunnanshengjiweijianwei':
+                data = self.order_result(data)
             return Response(data)
         if node.uid == 'root':
             # 子管理员根据管理组的类型返回不同的节点
@@ -292,6 +294,81 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
                         data = self.get_response_data(node, [], url_name, user_required)
                         return Response(data)
             return Response({})
+    
+    def order_result(self, data):
+        nodes = data.get('nodes')
+        order_names = [
+            '第一监督检查室',
+            '第二监督检查室',
+            '第三监督检查室',
+            '第四监督检查室',
+            '第五监督检查室',
+            '第六监督检查室',
+            '第七监督检查室',
+            '第八监督检查室',
+            '第九审查调查室',
+            '第十审查调查室',
+            '第十一审查调查室',
+            '第十二审查调查室',
+            '第十三审查调查室',
+            '第十四审查调查室',
+            '第十五审查调查室',
+            '第十六审查调查室',
+            '案件监督管理室',
+            '信访室',
+            '纪检监察干部监督室',
+            '党风政风监督室',
+            '案件审理室',
+            '信息技术保障室',
+            '办公厅',
+            '组织部',
+            '宣传部',
+            '研究室',
+            '法规室',
+            '国际合作室',
+            '机关党委',
+            '离退休人员办公室',
+            '省直机关纪检监察工作委员会',
+            '滇中新区纪检监察工作委员会',
+            '巡视办',
+            '第一巡视组',
+            '第二巡视组',
+            '第三巡视组',
+            '第四巡视组',
+            '第五巡视组',
+            '第六巡视组',
+            '第七巡视组',
+            '第八巡视组',
+            '第九巡视组',
+            '第十巡视组'
+        ]
+        result = []
+        # 基础
+        for order_name in order_names:
+            for index, node in enumerate(nodes):
+                info = node.get('info')
+                name = info.get('name')
+                if name == order_name:
+                    nodes.pop(index)
+                    result.append(node)
+                    break
+        # 派驻纪检
+        while True:
+            flag = True
+            for index, node in enumerate(nodes):
+                info = node.get('info')
+                name = info.get('name')
+                if '驻' in name:
+                    flag = False
+                    nodes.pop(index)
+                    result.append(node)
+                    break
+            if flag is True:
+                break
+        # 结尾
+        result.extend(nodes)
+        data['nodes'] = result
+        return data
 
     def get_sub_manager_depts(self, user):
         depts = {}
