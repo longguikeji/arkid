@@ -155,7 +155,7 @@ def set_user_register_count(ip, check_str='register', time_limit=1):
     runtime.cache_provider.set(key, v, time_limit * 60)
 
 
-def get_user_register_count(self, ip, check_str='register'):
+def get_user_register_count(ip, check_str='register'):
     key = f'{ip}-{check_str}'
     runtime = get_app_runtime()
     data = runtime.cache_provider.get(key)
@@ -164,7 +164,7 @@ def get_user_register_count(self, ip, check_str='register'):
     return int(data)
 
 
-def get_password_error_count(self, ip, check_str='login'):
+def get_password_error_count(ip, check_str='login'):
     key = f'{ip}-{check_str}'
     runtime = get_app_runtime()
     if runtime.cache_provider is None:
@@ -175,7 +175,7 @@ def get_password_error_count(self, ip, check_str='login'):
     return int(data)
 
 
-def mark_user_login_failed(self, ip, check_str='login'):
+def mark_user_login_failed(ip, check_str='login'):
     key = f'{ip}-{check_str}'
     runtime = get_app_runtime()
     data = runtime.cache_provider.get(key)

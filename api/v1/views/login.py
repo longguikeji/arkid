@@ -49,10 +49,11 @@ class LoginView(APIView):
             
         if tenant and not user.is_superuser:
             if tenant not in user.tenants.all():
-                return {
+                return JsonResponse(
+                    data = {
                     'error': Code.USERNAME_PASSWORD_MISMATCH.value,
                     'message': _('username or password is not correct'),
-                }
+                })
               
         for rule in r.auth_rules:
             ret = rule.provider.authenticate_success(rule, request, ret, user, tenant, provider.type)
