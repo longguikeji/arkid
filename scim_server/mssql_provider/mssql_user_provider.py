@@ -6,9 +6,10 @@ from scim_server.exceptions import (
     ArgumentException,
     ArgumentNullException,
     BadRequestException,
-    ConflictException,
     NotSupportedException,
     NotFoundException,
+    NotImplementedException,
+    ConflictException,
 )
 from scim_server.schemas.comparison_operator import ComparisonOperator
 from scim_server.schemas.attribute_names import AttributeNames
@@ -17,7 +18,15 @@ from scim_server.schemas.phone_number import PhoneNumber
 from scim_server.schemas.manager import Manager
 from scim_server.schemas.name import Name
 
-UserSql = 'select A.femp_id, A.fcode, A.fname, A.fcard_no, A.fstatus, A.fjob, B.fid as dept_id, B.ffull_name as dept_name, C.fjob_name, D.COMPNAME, E.fname as manager_name, E.femp_id as manager_id from emp A left join dept B on A.fdept_id = B.fid left join job C on A.fjob = C.fjob_code left join ECOMPANY D on B.fcomp = D.COMPID left join Emp E on A.freport_man = E.Fcode'
+UserSql = '''
+SELECT  A.FEMP_ID, A.FCODE, A.FNAME, A.FCARD_NO, A.FSTATUS, A.FJOB, B.FID AS dept_id, B.FFULL_NAME AS dept_name,
+        C.FJOB_NAME, D.COMPNAME, E.FNAME AS manager_name, E.FEMP_ID AS manager_id
+FROM    EMP AS A LEFT OUTER JOIN
+        DEPT AS B ON A.FDEPT_ID = B.FID LEFT OUTER JOIN
+        JOB AS C ON A.FJOB = C.fjob_code LEFT OUTER JOIN
+        ECOMPANY AS D ON B.FCOMP = D.COMPID LEFT OUTER JOIN
+        EMP AS E ON A.FREPORT_MAN = E.FCODE
+'''
 UserExtensionSchema = 'urn:ietf:params:scim:schemas:extension:hr:2.0:User'
 
 
@@ -28,35 +37,60 @@ class MssqlUserProvider(ProviderBase):
             raise BadRequestException('No sql server config found')
 
     def create_async2(self, resource, correlation_identifier):
-        if resource.identifier is not None:
-            raise BadRequestException()
-
-        if not resource.user_name:
-            raise BadRequestException()
-
-        existing_users = self.storage.users.values()
-        for item in existing_users:
-            if item.user_name == resource.user_name:
-                raise ConflictException()
-        resource_identifier = uuid.uuid4().hex
-        resource.identifier = resource_identifier
-        self.storage.users[resource_identifier] = resource
-
-        return resource
+        raise NotImplementedException('Not implemented')
 
     def delete_async2(self, resource_identifier, correlation_identifier):
-        if not resource_identifier.identifier:
-            raise BadRequestException()
-        identifier = resource_identifier.identifier
+        raise NotImplementedException('Not implemented')
 
-        if identifier in self.storage.users:
-            del self.storage.users[identifier]
+    def get_db_users(self, where_clause=None, args=None):
+        all_users = []
+        conn = self.db_config.get_connection()
+        cursor = conn.cursor(as_dict=True)
+        conn2 = self.db_config.get_connection()
+        cursor2 = conn2.cursor(as_dict=True)
+        user_sql = 'SELECT FEMP_ID, FCODE, FNAME, FCARD_NO, FSTATUS, FJOB, FREPORT_MAN, FDEPT_ID FROM EMP'
+        if where_clause:
+            user_sql = user_sql + ' ' + where_clause
+        cursor.execute(user_sql, args)
+        user_row = cursor.fetchone()
+        while user_row:
+            dept_rows = None
+            job_rows = None
+            comp_rows = None
+            manager_rows = None
+
+            # dept info
+            if user_row.get('FDEPT_ID'):
+                dept_sql = 'SELECT FCOMP, FFULL_NAME FROM DEPT WHERE FID = %d'
+                cursor2.execute(dept_sql, user_row.get('FDEPT_ID'))
+                dept_rows = cursor2.fetchall()
+            # job info
+            if user_row.get('FJOB'):
+                job_sql = 'SELECT FJOB_NAME FROM JOB WHERE FJOB_CODE = %s'
+                cursor2.execute(job_sql, user_row.get('FJOB'))
+                job_rows = cursor2.fetchall()
+
+            # company info
+            if dept_rows:
+                comp_sql = 'SELECT COMPNAME FROM ECOMPANY WHERE COMPID = %d'
+                cursor2.execute(comp_sql, dept_rows[0].get('FCOMP'))
+                comp_rows = cursor2.fetchall()
+
+            # manager info
+            if user_row.get('FREPORT_MAN'):
+                manager_sql = 'SELECT FNAME, FEMP_ID FROM EMP WHERE FEMP_ID = %d'
+                cursor2.execute(manager_sql, user_row.get('FREPORT_MAN'))
+
+            user = self.convert_record_to_user(
+                user_row, dept_rows, job_rows, comp_rows, manager_rows
+            )
+            all_users.append(user)
+            user_row = cursor.fetchone()
+        conn.close()
+        conn2.close()
+        return all_users
 
     def query_async2(self, parameters, correlation_identifier):
-        if parameters is None:
-            raise ArgumentNullException('parameters')
-        if not correlation_identifier:
-            raise ArgumentNullException('correlation_identifier')
         if parameters.alternate_filters is None:
             raise ArgumentException('Invalid parameters')
 
@@ -64,17 +98,7 @@ class MssqlUserProvider(ProviderBase):
             raise ArgumentException('Invalid parameters')
 
         if not parameters.alternate_filters:
-            all_users = []
-            conn = self.db_config.get_connection()
-            cursor = conn.cursor(as_dict=True)
-            cursor.execute(UserSql)
-            row = cursor.fetchone()
-            while row:
-                user = self.convert_record_to_user(row)
-                all_users.append(user)
-                row = cursor.fetchone()
-            conn.close()
-            return all_users
+            return self.get_db_users()
 
         query_filter = parameters.alternate_filters[0]
         if not query_filter.attribute_path:
@@ -85,35 +109,15 @@ class MssqlUserProvider(ProviderBase):
             raise NotSupportedException('unsupported comparison operator')
 
         if query_filter.attribute_path == AttributeNames.UserName:
-            conn = self.db_config.get_connection()
-            cursor = conn.cursor(as_dict=True)
-            sql = UserSql + ' where A.fcode={}'.format(query_filter.comparison_value)
-            cursor.execute(sql)
-            row = cursor.fetchone()
-            conn.close()
-            if row:
-                user = self.convert_record_to_user(row)
-                return [user]
-            else:
-                return []
+            where_clause = "WHERE FCODE = %s"
+            return self.get_db_users(
+                where_clause=where_clause, args=query_filter.comparison_value
+            )
 
         raise NotSupportedException('unsupported filter')
 
     def replace_async2(self, resource, correlation_identifier):
-        if not resource.identifier:
-            raise BadRequestException()
-        if not resource.user_name:
-            raise BadRequestException()
-
-        existing_users = self.storage.users.values()
-        for item in existing_users:
-            if item.user_name == resource.user_name:
-                raise ConflictException()
-        if resource.identifier not in self.storage.users:
-            raise NotFoundException()
-
-        self.storage.users[resource.identifier] = resource
-        return resource
+        raise NotImplementedException('Not implemented')
 
     def retrieve_async2(self, parameters, correlation_identifier):
         if not parameters:
@@ -124,47 +128,41 @@ class MssqlUserProvider(ProviderBase):
             raise ArgumentNullException('parameters')
 
         identifier = parameters.resource_identifier.identifier
-        conn = self.db_config.get_connection()
-        cursor = conn.cursor(as_dict=True)
-        sql = UserSql + ' where A.femp_id={}'.format(identifier)
-        cursor.execute(sql)
-        row = cursor.fetchone()
-        conn.close()
-        if row:
-            user = self.convert_record_to_user(row)
+        where_clause = "WHERE FEMP_ID = %s"
+        rows = self.get_db_users(where_clause=where_clause, args=identifier)
+        if rows and len(rows) == 1:
+            user = rows[0]
             return user
+        elif len(rows) > 1:
+            raise ConflictException('Duplicated identifier found')
         else:
             raise NotFoundException(identifier)
 
     def update_async2(self, patch, correlation_identifier):
-        if not patch:
-            raise ArgumentNullException('patch')
-        if not patch.resource_identifier:
-            raise ArgumentException('Invalid patch')
-        if not patch.resource_identifier.identifier:
-            raise ArgumentException('invalid patch')
-        if not patch.patch_request:
-            raise ArgumentException('invalid patch')
-        user = self.storage.users.get(patch.resource_identifier.identifier)
-        if user:
-            user.apply(patch.patch_request)
-        else:
-            raise NotFoundException(patch.resource_identifier.identifier)
+        raise NotImplementedException
 
-    def convert_record_to_user(self, record):
+    def convert_record_to_user(
+        self, user_row, dept_rows, job_rows, comp_rows, manager_rows
+    ):
         user = Core2EnterpriseUser()
-        user.identifier = record.get('femp_id')
-        user.user_name = record.get('fcode')
-        user.enterprise_extension.department = record.get('dept_name', '').strip()
-        user.title = record.get('fjob_name')
-        user.enterprise_extension.manager = Manager.from_dict(
-            {
-                'value': record.get('manager_id'),
-                'displayName': record.get('manager_name'),
-            }
-        )
-        phone_number = record.get('fcard_no')
-        user_full_name = record.get('fname')
+        user.identifier = user_row.get('FEMP_ID')
+        user.user_name = user_row.get('FCODE')
+
+        if dept_rows:
+            user.enterprise_extension.department = (
+                dept_rows[0].get('FFULL_NAME', '').strip()
+            )
+
+        if job_rows:
+            user.title = job_rows[0].get('FJOB_NAME')
+
+        manager_dict = {'value': user_row.get('FREPORT_MAN')}
+        if manager_rows:
+            manager_dict.update(displayName=manager_rows[0].get('FNAME'))
+
+        user.enterprise_extension.manager = Manager.from_dict(manager_dict)
+
+        user_full_name = user_row.get('FNAME')
         user.name = Name.from_dict(
             {
                 'formatted': user_full_name,
@@ -172,14 +170,24 @@ class MssqlUserProvider(ProviderBase):
                 'givenName': user_full_name[1:],
             }
         )
+        phone_number = user_row.get('FCARD_NO')
         if phone_number:
+            try:
+                phone_number = int(phone_number)
+            except TypeError:
+                pass
+            else:
+                phone_number = format(phone_number, 'X')
             user.phone_numbers = [
                 PhoneNumber.from_dict({'type': 'work', 'value': phone_number})
             ]
-
-        user.add_custom_attribute(
-            UserExtensionSchema,
-            {'FCOMP': record.get('COMPNAME'), 'FSTATUS': record.get('fstatus'), 'FDEPT_ID': record.get('dept_id')},
-        )
+        extension_dict = {
+            'FSTATUS': user_row.get('FSTATUS'),
+            'FDEPT_ID': user_row.get('FDEPT_ID'),
+        }
+        if comp_rows:
+            fcomp = comp_rows[0].get('COMPNAME')
+            extension_dict.update(FCOMP=fcomp)
+        user.add_custom_attribute(UserExtensionSchema, extension_dict)
         user.add_schema(UserExtensionSchema)
         return user
