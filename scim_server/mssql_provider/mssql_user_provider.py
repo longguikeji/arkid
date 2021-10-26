@@ -185,6 +185,9 @@ class MssqlUserProvider(ProviderBase):
             'FSTATUS': user_row.get('FSTATUS'),
             'FDEPT_ID': user_row.get('FDEPT_ID'),
         }
+        if dept_rows:
+            fcomp_id = dept_rows[0].get('FCOMP')
+            extension_dict.update(FCOMP_ID=fcomp_id)
         if comp_rows:
             fcomp = comp_rows[0].get('COMPNAME')
             extension_dict.update(FCOMP=fcomp)
