@@ -178,7 +178,11 @@ class MssqlGroupProvider(ProviderBase):
             group.members.append(member)
         group.add_custom_attribute(
             GroupExtensionSchema,
-            {'FCOMP': record.get('compname'), 'FSTATUS': record.get('fstatus')},
+            {
+                'FCOMP': record.get('compname'),
+                'FSTATUS': record.get('fstatus'),
+                'FCOMP_ID': record.get('fcomp'),
+            },
         )
         group.add_schema(GroupExtensionSchema)
         return group
