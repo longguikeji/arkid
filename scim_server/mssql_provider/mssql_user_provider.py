@@ -145,7 +145,7 @@ class MssqlUserProvider(ProviderBase):
         self, user_row, dept_rows, job_rows, comp_rows, manager_rows
     ):
         user = Core2EnterpriseUser()
-        user.identifier = user_row.get('FEMP_ID')
+        user.identifier = int(user_row.get('FEMP_ID'))
         user.user_name = user_row.get('FCODE')
 
         if dept_rows:
