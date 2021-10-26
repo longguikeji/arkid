@@ -43,6 +43,7 @@ ldap3 = "*"
 django-requestlogs = "*"
 django-ipware = "*"
 pymssql = "*"
+django-celery-beat = "*"
 
 [requires]
 python_version = "3.8"
