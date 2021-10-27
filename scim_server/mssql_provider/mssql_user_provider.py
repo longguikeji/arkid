@@ -101,10 +101,25 @@ class MssqlUserProvider(ProviderBase):
         return all_users
 
     def get_db_users2(self, where_clause=None, args=None):
+
+        emp_table = self.db_config.emp_table
+        dept_table = self.db_config.dept_table
+        job_table = self.db_config.job_table
+        company_table = self.db_config.company_table
+        UserSql1 = f'''
+        SELECT  A.FEMP_ID, A.FCODE, A.FNAME, A.FCARD_NO, A.FSTATUS, A.FJOB, B.FID AS DEPT_ID, B.FFULL_NAME AS DEPT_NAME, B.FCOMP AS FCOMP_ID,
+                C.FJOB_NAME, D.COMPNAME, E.FNAME AS MANAGER_NAME, E.FEMP_ID AS MANAGER_ID
+        FROM    {emp_table} AS A LEFT OUTER JOIN
+                {dept_table} AS B ON A.FDEPT_ID = B.FID LEFT OUTER JOIN
+                {job_table} AS C ON A.FJOB = C.fjob_code LEFT OUTER JOIN
+                {company_table} AS D ON B.FCOMP = D.COMPID LEFT OUTER JOIN
+                {emp_table} AS E ON A.FREPORT_MAN = E.FCODE
+        '''
+
         all_users = []
         conn = self.db_config.get_connection()
         cursor = conn.cursor(as_dict=True)
-        cursor.execute(UserSql)
+        cursor.execute(UserSql1)
         row = cursor.fetchone()
         while row:
             print('++++++++++++++++++++++++++++')
