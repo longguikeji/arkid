@@ -60,6 +60,8 @@ class MssqlUserProvider(ProviderBase):
         cursor.execute(user_sql, args)
         user_row = cursor.fetchone()
         while user_row:
+            print('-----------------------')
+            print(user_row)
             dept_rows = None
             job_rows = None
             comp_rows = None
