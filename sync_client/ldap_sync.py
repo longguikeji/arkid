@@ -39,6 +39,8 @@ class SyncClientAD(SyncClient):
         self.bind_password = settings['bind_password']
         self.mail_suffix = settings['mail_suffix']
         self.root_dn = settings['root_dn']
+        self.group_name_prefix = settings.get('group_name_prefix') or \
+                                 self.root_dn.split(',',1)[0].split('=', 1)[1] + '_'
         self.connect_timeout = settings.get('connect_timeout')
         self.receive_timeout = settings.get('receive_timeout')
 
@@ -176,7 +178,7 @@ class SyncClientAD(SyncClient):
         # logger.debug(f"{user_dn} generated for user {user['name']} user_id{user['id']}")
 
     def gen_group_dn(self, group: json, parent_group: json):
-        group['ldap_cn'] = group['name'].strip().replace('/','_')
+        group['ldap_cn'] = self.group_name_prefix + group['name'].strip().replace('/','_')
         if parent_group:
             group_last_name = group['ldap_cn'].split('_')[-1]
             group['ldap_ou'] = f"ou={group_last_name},{parent_group['ldap_ou']}"
@@ -288,21 +290,6 @@ class SyncClientAD(SyncClient):
         all_ou_dn.remove(self.root_dn.replace('ou=','OU=').replace('dc=','DC='))
         return all_ou_dn
 
-    def get_all_ou_from_ldap(self):
-        search_base = self.root_dn
-        search_filter = f'(objectclass={self.ou_object_class})'
-        res = self.conn.search(
-                search_base=search_base,
-                search_filter=search_filter,
-                search_scope=ldap3.SUBTREE,
-        )
-        if not res:
-            return []
-        all_ou = json.loads(self.conn.response_to_json())['entries']
-        all_ou_dn = [x['dn'] for x in all_ou]
-        all_ou_dn.remove(self.root_dn.replace('ou=','OU=').replace('dc=','DC='))
-        return all_ou_dn
-
     def move_user(self, source_dn, destination_dn):
         relative_dn, new_superior = destination_dn.split(',', 1)
         res = self.conn.modify_dn(
@@ -334,9 +321,14 @@ class SyncClientAD(SyncClient):
         user_attributes = user['attributes']
         ldap_user_attributes = ldap_user['attributes']
         diff = {}
-        compare_keys = ['title', 'department', 'mail', 'pager']
+        compare_keys = ['givenName', 'sn', 'name', 'displayName', 'title', 'department', 'company', 'pager']
         for k in compare_keys:
             if user_attributes[k] and user_attributes[k] != ldap_user_attributes[k]:
+                diff[k] = user_attributes[k]
+
+        for k in ['mail']:
+            if user_attributes[k] and \
+                    user_attributes[k].split('@')[0] != ldap_user_attributes[k].split('@')[0]:
                 diff[k] = user_attributes[k]
 
         return diff
