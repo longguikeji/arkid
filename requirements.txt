@@ -81,6 +81,7 @@ pycryptodome==3.11.0; python_version >= '2.7' and python_version not in '3.0, 3.
 pymssql==2.2.2
 pyopenssl==21.0.0
 pyparsing==3.0.1; python_version >= '3.6'
+pypinyin==0.43.0
 pyrsistent==0.18.0; python_version >= '3.6'
 pysaml2==7.0.1
 python-crontab==2.6.0
@@ -95,7 +96,7 @@ six==1.16.0
 sly==0.3
 sqlalchemy==1.4.26
 sqlparse==0.4.2; python_version >= '3.5'
-tablib[html,ods,xls,xlsx,yaml]==3.0.0; python_version >= '3.6'
+tablib[html,ods,xls,xlsx,yaml]==3.1.0; python_version >= '3.6'
 toml==0.10.2
 twisted[tls]==21.7.0
 typing-extensions==3.10.0.2
