@@ -19,8 +19,8 @@ from scim_server.schemas.manager import Manager
 from scim_server.schemas.name import Name
 
 UserSql = '''
-SELECT  A.FEMP_ID, A.FCODE, A.FNAME, A.FCARD_NO, A.FSTATUS, A.FJOB, B.FID AS dept_id, B.FFULL_NAME AS dept_name,
-        C.FJOB_NAME, D.COMPNAME, E.FNAME AS manager_name, E.FEMP_ID AS manager_id
+SELECT  A.FEMP_ID, A.FCODE, A.FNAME, A.FCARD_NO, A.FSTATUS, A.FJOB, B.FID AS DEPT_ID, B.FFULL_NAME AS DEPT_NAME, B.FCOMP AS FCOMP_ID,
+        C.FJOB_NAME, D.COMPNAME, E.FNAME AS MANAGER_NAME, E.FEMP_ID AS MANAGER_ID
 FROM    EMP AS A LEFT OUTER JOIN
         DEPT AS B ON A.FDEPT_ID = B.FID LEFT OUTER JOIN
         JOB AS C ON A.FJOB = C.fjob_code LEFT OUTER JOIN
@@ -100,6 +100,21 @@ class MssqlUserProvider(ProviderBase):
         conn2.close()
         return all_users
 
+    def get_db_users2(self, where_clause=None, args=None):
+        all_users = []
+        conn = self.db_config.get_connection()
+        cursor = conn.cursor(as_dict=True)
+        cursor.execute(UserSql)
+        row = cursor.fetchone()
+        while row:
+            print('++++++++++++++++++++++++++++')
+            print(row)
+            user = self.convert_record_to_user2(row)
+            all_users.append(user)
+            row = cursor.fetchone()
+        conn.close()
+        return all_users
+
     def query_async2(self, parameters, correlation_identifier):
         if parameters.alternate_filters is None:
             raise ArgumentException('Invalid parameters')
@@ -108,7 +123,8 @@ class MssqlUserProvider(ProviderBase):
             raise ArgumentException('Invalid parameters')
 
         if not parameters.alternate_filters:
-            return self.get_db_users()
+            # return self.get_db_users()
+            return self.get_db_users2()
 
         query_filter = parameters.alternate_filters[0]
         if not query_filter.attribute_path:
@@ -202,5 +218,43 @@ class MssqlUserProvider(ProviderBase):
             fcomp = comp_rows[0].get('COMPNAME')
             extension_dict.update(FCOMP=fcomp)
         user.add_custom_attribute(UserExtensionSchema, extension_dict)
+        user.add_schema(UserExtensionSchema)
+        return user
+
+    def convert_record_to_user2(self, record):
+        user = Core2EnterpriseUser()
+        user.identifier = record.get('FEMP_ID')
+        user.user_name = record.get('FCODE')
+        user.enterprise_extension.department = record.get('DEPT_NAME')
+        user.title = record.get('FJOB_NAME')
+        user.enterprise_extension.manager = Manager.from_dict(
+            {
+                'value': record.get('MANAGER_ID'),
+                'displayName': record.get('MANAGER_NAME'),
+            }
+        )
+        phone_number = record.get('FCARD_NO')
+        user_full_name = record.get('FNAME')
+        user.name = Name.from_dict(
+            {
+                'formatted': user_full_name,
+                'familyName': user_full_name[0],
+                'givenName': user_full_name[1:],
+            }
+        )
+        if phone_number:
+            user.phone_numbers = [
+                PhoneNumber.from_dict({'type': 'work', 'value': phone_number})
+            ]
+
+        user.add_custom_attribute(
+            UserExtensionSchema,
+            {
+                'FCOMP': record.get('COMPNAME'),
+                'FSTATUS': record.get('FSTATUS'),
+                'FCOMP_ID': record.get('FCOMP_ID'),
+                'FDEPT_ID': record.get('DEPT_ID'),
+            },
+        )
         user.add_schema(UserExtensionSchema)
         return user
