@@ -48,7 +48,13 @@ class MssqlUserProvider(ProviderBase):
         cursor = conn.cursor(as_dict=True)
         conn2 = self.db_config.get_connection()
         cursor2 = conn2.cursor(as_dict=True)
-        user_sql = 'SELECT FEMP_ID, FCODE, FNAME, FCARD_NO, FSTATUS, FJOB, FREPORT_MAN, FDEPT_ID FROM EMP'
+
+        emp_table = self.db_config.emp_table
+        dept_table = self.db_config.dept_table
+        job_table = self.db_config.job_table
+        company_table = self.db_config.company_table
+
+        user_sql = f'SELECT FEMP_ID, FCODE, FNAME, FCARD_NO, FSTATUS, FJOB, FREPORT_MAN, FDEPT_ID FROM {emp_table}'
         if where_clause:
             user_sql = user_sql + ' ' + where_clause
         cursor.execute(user_sql, args)
@@ -61,24 +67,26 @@ class MssqlUserProvider(ProviderBase):
 
             # dept info
             if user_row.get('FDEPT_ID'):
-                dept_sql = 'SELECT FCOMP, FFULL_NAME FROM DEPT WHERE FID = %d'
+                dept_sql = f'SELECT FCOMP, FFULL_NAME FROM {dept_table} WHERE FID = %d'
                 cursor2.execute(dept_sql, user_row.get('FDEPT_ID'))
                 dept_rows = cursor2.fetchall()
             # job info
             if user_row.get('FJOB'):
-                job_sql = 'SELECT FJOB_NAME FROM JOB WHERE FJOB_CODE = %s'
+                job_sql = f'SELECT FJOB_NAME FROM {job_table} WHERE FJOB_CODE = %s'
                 cursor2.execute(job_sql, user_row.get('FJOB'))
                 job_rows = cursor2.fetchall()
 
             # company info
             if dept_rows:
-                comp_sql = 'SELECT COMPNAME FROM ECOMPANY WHERE COMPID = %d'
+                comp_sql = f'SELECT COMPNAME FROM {company_table} WHERE COMPID = %d'
                 cursor2.execute(comp_sql, dept_rows[0].get('FCOMP'))
                 comp_rows = cursor2.fetchall()
 
             # manager info
             if user_row.get('FREPORT_MAN'):
-                manager_sql = 'SELECT FNAME, FEMP_ID FROM EMP WHERE FEMP_ID = %d'
+                manager_sql = (
+                    f'SELECT FNAME, FEMP_ID FROM {emp_table} WHERE FEMP_ID = %d'
+                )
                 cursor2.execute(manager_sql, user_row.get('FREPORT_MAN'))
 
             user = self.convert_record_to_user(
