@@ -38,17 +38,17 @@ def gen_user_attributes(user):
         'department': user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['department'],
         'company': user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP'],
         # 'manager': user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['manager']['value'],
-        'pager': str(user['phoneNumbers'][0]['value']),
+        'pager': str(user['phoneNumbers'][0].get('value','') if user.get('phoneNumbers') else ''),
     }
     result = {}
     result['raw_data'] = user
     result['id'] = user['id']
     result['name'] = data['name']
-    result['mail'] = data.get('mail','')
+    result['mail'] = user.get('mail','')
     status = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FSTATUS']
     result['status'] = 'enabled' if str(status) == '1' else 'disabled'
     result['group_id'] = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FDEPT_ID']
-    result['manager_id'] = user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['manager']['value']
+    result['manager_id'] = user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User'].get('manager',{}).get('value')
     result['attributes'] = data
     result['company_name'] = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP']
     result['company_id'] = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP_ID']
