@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = [ 'app_list', 'apermission' ]
+tag = [ 'app_list', 'app_list.permission' ]
 path = 'apermission'
 name = '应用权限'
 
@@ -15,15 +15,17 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/app_list/',
             'method': 'get',
-            'next': 'apermission'
+            'next': 'app_list.permission'
         },
-        'node': {
-            'next': 'apermission'
+        'local': {
+            'node': {
+                'next': 'app_list.permission'
+            }
         }
     }
 )
 
-app_permission_tag = 'apermission'
+app_permission_tag = 'app_list.permission'
 app_permission_name = '该应用权限'
 
 extend_schema_tags(
@@ -33,8 +35,7 @@ extend_schema_tags(
         'type': 'table_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/app_permission/{app_uuid}/',
-            'method': 'get',
-            'from': 'app_list'
+            'method': 'get'
         }
     }
 )

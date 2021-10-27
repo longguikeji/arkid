@@ -32,7 +32,7 @@ extend_schema_tags(
                 'icon': 'el-icon-upload2'
             },
             'custom': {
-                'tag': 'user.custom_fields',
+                'tag': 'custom_fields',
                 'description': '自定义字段',
                 'icon': 'el-icon-document-add'
             }
@@ -111,7 +111,7 @@ extend_schema_tags(
     }
 )
 
-user_custom_fields_tag = 'user.custom_fields'
+user_custom_fields_tag = 'custom_fields'
 user_custom_fields_name = '添加用户自定义字段'
 
 extend_schema_tags(
@@ -125,14 +125,14 @@ extend_schema_tags(
         },
         'global': {
             'create': {
-                'tag': 'user.custom_fields.create',
+                'tag': 'custom_fields.create',
                 'description': '添加自定义字段',
                 'icon': 'el-icon-plus'
             }
         },
         'local': {
             'update': {
-                'tag': 'user.custom_fields.update',
+                'tag': 'custom_fields.update',
                 'description': '编辑',
                 'icon': 'el-icon-edit'
             },
@@ -146,7 +146,7 @@ extend_schema_tags(
     }
 )
 
-user_custom_fields_create_tag = 'user.custom_fields.create'
+user_custom_fields_create_tag = 'custom_fields.create'
 user_custom_fields_create_name = '添加用户的自定义字段'
 
 extend_schema_tags(
@@ -168,7 +168,7 @@ extend_schema_tags(
     }
 )
 
-user_custom_fields_update_tag = 'user.custom_fields.update'
+user_custom_fields_update_tag = 'custom_fields.update'
 user_custom_fields_update_name = '编辑用户的自定义字段'
 
 extend_schema_tags(
