@@ -15,6 +15,8 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         gettext xmlsec1 supervisor \
+        freetds-dev freetds-bin \
+        python-dev python-pip \
         python-dev default-libmysqlclient-dev tini gosu; \
     # verify that the binary works
     gosu nobody true; \
