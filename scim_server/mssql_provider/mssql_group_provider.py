@@ -16,7 +16,6 @@ from scim_server.schemas.core2_group import Core2Group
 from scim_server.mssql_provider.mssql_storage import get_mssql_config
 from scim_server.schemas.member import Member
 
-GroupSql = 'select A.fid, A.ffull_name, A.fcomp, A.fstatus, B.compname from dept as A left join ecompany B on A.fcomp = B.compid'
 GroupExtensionSchema = 'urn:ietf:params:scim:schemas:extension:hr:2.0:Group'
 
 
@@ -68,6 +67,10 @@ class MssqlGroupProvider(ProviderBase):
             cursor = conn.cursor(as_dict=True)
             conn_member = self.db_config.get_connection()
             cursor_member = conn_member.cursor(as_dict=True)
+
+            dept_table = self.db_config.dept_table
+            company_table = self.db_config.company_table
+            GroupSql = f'select A.fid, A.ffull_name, A.fcomp, A.fstatus, B.compname from {dept_table} as A left join {company_table} B on A.fcomp = B.compid'
             cursor.execute(GroupSql)
             row = cursor.fetchone()
             while row:
