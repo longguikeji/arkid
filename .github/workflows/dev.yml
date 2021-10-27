@@ -17,7 +17,6 @@ jobs:
     - name: Login harbor
       uses: docker/login-action@v1 
       with:
-        registry: harbor.longguikeji.com
         username: ${{ secrets.HARBORUSER }}
         password: ${{ secrets.HARBORPWD }}
     - id: get-short-id
@@ -40,4 +39,4 @@ jobs:
           PIP="-i https://pypi.python.org/simple"
         push: true
         tags: |
-          harbor.longguikeji.com/arkid-farasis/arkid:v2dev-farasis-${{ github.run_number }}
+          docker.io/longguikeji/arkid:farasis-${{ github.run_number }}
