@@ -74,7 +74,11 @@ class MssqlGroupProvider(ProviderBase):
             cursor.execute(GroupSql)
             row = cursor.fetchone()
             while row:
-                member_sql = 'select fid, ffull_name from dept where fparent_id = %d'
+                print('-----------------------------')
+                print(row)
+                member_sql = (
+                    f'select fid, ffull_name from {dept_table} where fparent_id = %d'
+                )
                 cursor_member.execute(member_sql, row.get('fid'))
                 all_members = cursor_member.fetchall()
                 group = self.convert_record_to_group(row, all_members)
@@ -99,7 +103,9 @@ class MssqlGroupProvider(ProviderBase):
             cursor.execute(sql, query_filter.comparison_value)
             rows = cursor.fetchall()
             if len(rows) == 1:
-                member_sql = 'select fid, ffull_name from dept where fparent_id = %d'
+                member_sql = (
+                    f'select fid, ffull_name from {dept_table} where fparent_id = %d'
+                )
                 cursor.execute(member_sql, rows[0].get('fid'))
                 all_members = cursor.fetchall()
                 conn.close()
@@ -136,9 +142,12 @@ class MssqlGroupProvider(ProviderBase):
         if not parameters.resource_identifier.identifier:
             raise ArgumentNullException('parameters')
 
+        dept_table = self.db_config.dept_table
+        company_table = self.db_config.company_table
         identifier = parameters.resource_identifier.identifier
         conn = self.db_config.get_connection()
         cursor = conn.cursor(as_dict=True)
+        GroupSql = f'select A.fid, A.ffull_name, A.fcomp, A.fstatus, B.compname from {dept_table} as A left join {company_table} B on A.fcomp = B.compid'
         sql = GroupSql + ' where A.fid = %d'
         cursor.execute(sql, identifier)
         rows = cursor.fetchall()
