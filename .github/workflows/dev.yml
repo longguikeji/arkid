@@ -40,4 +40,4 @@ jobs:
           PIP="-i https://pypi.python.org/simple"
         push: true
         tags: |
-          harbor.longguikeji.com/ark-releases/arkid:v2dev-farasis-${{ github.run_number }}
+          harbor.longguikeji.com/arkid-farasis/arkid:v2dev-farasis-${{ github.run_number }}
