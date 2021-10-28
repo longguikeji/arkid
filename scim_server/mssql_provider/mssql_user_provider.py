@@ -239,12 +239,12 @@ class MssqlUserProvider(ProviderBase):
     def convert_record_to_user2(self, record):
         user = Core2EnterpriseUser()
         user.identifier = record.get('FEMP_ID')
-        user.user_name = record.get('FCODE')
+        user.user_name = str(record.get('FCODE', ''))
         user.enterprise_extension.department = record.get('DEPT_NAME')
         user.title = record.get('FJOB_NAME')
         user.enterprise_extension.manager = Manager.from_dict(
             {
-                'value': record.get('MANAGER_ID'),
+                'value': str(record.get('MANAGER_ID', '')),
                 'displayName': record.get('MANAGER_NAME'),
             }
         )
