@@ -16,12 +16,14 @@ services:
       - ${WORKSPACE}/portal.conf:/etc/nginx/conf.d/default.conf
 
   be:
-    image: arkid:sup2
+    image: longguikeji/arkid:v2dev-101
     container_name: ${INSTANCE}-be
     sysctls:
       - net.core.somaxconn=65535
     restart: always
-    command: supervisord
+    working_dir: /var/arkid
+    entrypoint: ["tail"]
+    command: ["-f", "/dev/null"]
     environment:
       - MYSQL_HOST=${INSTANCE}-db
       - MYSQL_PORT=3306
@@ -34,6 +36,7 @@ services:
     depends_on:
       - db
     volumes:
+      - ../../:/var/arkid
       - ${WORKSPACE}/settings_local.py:/var/arkid/settings_local.py
       - ${WORKSPACE}/arkid.toml:/var/arkid/arkid.local.toml
       - ${WORKSPACE}/supervisord.conf:/var/arkid/supervisord.conf
