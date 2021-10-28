@@ -190,6 +190,7 @@ class MssqlGroupProvider(ProviderBase):
             group.members.append(member)
 
         group_manager = record.get('fmanager')
+        manager_fcode = ''
         if group_manager:
             if ':' in group_manager:
                 manager_fcode = group_manager.split(':')[0]
