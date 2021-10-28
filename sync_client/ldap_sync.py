@@ -324,7 +324,7 @@ class SyncClientAD(SyncClient):
         user_attributes = user['attributes']
         ldap_user_attributes = ldap_user['attributes']
         diff = {}
-        compare_keys = ['givenName', 'sn', 'name', 'displayName', 'title', 'department', 'company', 'pager']
+        compare_keys = ['givenName', 'sn', 'displayName', 'title', 'department', 'company', 'pager']
         for k in compare_keys:
             if user_attributes[k] and user_attributes[k] != ldap_user_attributes.get(k):
                 diff[k] = user_attributes[k]

@@ -35,7 +35,7 @@ def gen_user_attributes(user):
         # 'userPassword': '', # generate_pwd_func and notify_by_api
         'employeeID': user['userName'],
         'title': user.get('title',''),
-        'department': user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User'].get('department',''),
+        'department': user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User'].get('department','').strip('/'),
         'company': user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP'],
         # 'manager': user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['manager']['value'],
         'pager': str(user['phoneNumbers'][0].get('value','') if user.get('phoneNumbers') else ''),
@@ -50,6 +50,8 @@ def gen_user_attributes(user):
     result['group_id'] = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User'].get('FDEPT_ID')
     result['manager_id'] = user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User'].get('manager',{}).get('value')
     result['attributes'] = data
+    while len(data['department']) > 76:
+        data['department'] = data['department'].rsplit('/', 1)[0]
     result['company_name'] = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP']
     result['company_id'] = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP_ID']
     return result
