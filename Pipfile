@@ -45,6 +45,7 @@ django-ipware = "*"
 pymssql = "*"
 django-celery-beat = "*"
 pypinyin = "*"
+random-password-generator = "*"
 
 [requires]
 python_version = "3.8"

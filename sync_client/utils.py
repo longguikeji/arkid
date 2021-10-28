@@ -30,10 +30,10 @@ def gen_user_attributes(user):
         'name': user['name']['formatted'].replace(',',''),
         'displayName': user['name']['formatted'].replace(',',''),
         'mail':  user.get('mail', ''), # generate_mail_func or mail_str or update_mail_func
-        'userPrincipalName': user['username'],
-        'sAMAccountName': user['username'],
+        'userPrincipalName': user['userName'],
+        'sAMAccountName': user['userName'],
         # 'userPassword': '', # generate_pwd_func and notify_by_api
-        'employeeID': user['username'],
+        'employeeID': user['userName'],
         'title': user.get('title',''),
         'department': user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User'].get('department',''),
         'company': user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP'],
@@ -42,7 +42,7 @@ def gen_user_attributes(user):
     }
     result = {}
     result['raw_data'] = user
-    result['id'] = user['username']
+    result['id'] = user['userName']
     result['name'] = data['name']
     result['mail'] = user.get('mail','')
     status = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FSTATUS']
@@ -61,7 +61,7 @@ def gen_group_attributes(group):
     result['id'] = group['id']
     status= group['urn:ietf:params:scim:schemas:extension:hr:2.0:Group']['FSTATUS']
     result['status'] = 'enabled' if str(status) == '3' else 'disabled'
-    result['name'] = group['displayName'].strip().replace('/','_')
+    result['name'] = group['displayName'].strip().strip('/').replace('/','_')
     result['members'] = group.get('members',[])
     result['company_name'] = group['urn:ietf:params:scim:schemas:extension:hr:2.0:Group']['FCOMP']
     result['company_id'] = group['urn:ietf:params:scim:schemas:extension:hr:2.0:Group']['FCOMP_ID']

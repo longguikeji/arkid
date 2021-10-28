@@ -180,7 +180,7 @@ class SyncClientAD(SyncClient):
         # logger.debug(f"{user_dn} generated for user {user['name']} user_id{user['id']}")
 
     def gen_group_dn(self, group: json, parent_group: json):
-        group['ldap_cn'] = self.group_name_prefix + group['name'].strip().replace('/','_')
+        group['ldap_cn'] = self.group_name_prefix + group['name']
         if parent_group:
             group_last_name = group['ldap_cn'].split('_')[-1]
             group['ldap_ou'] = f"ou={group_last_name},{parent_group['ldap_ou']}"
