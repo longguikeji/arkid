@@ -70,7 +70,7 @@ class MssqlGroupProvider(ProviderBase):
 
             dept_table = self.db_config.dept_table
             company_table = self.db_config.company_table
-            GroupSql = f'select A.fid, A.ffull_name, A.fcomp, A.fstatus, B.compname from {dept_table} as A left join {company_table} B on A.fcomp = B.compid'
+            GroupSql = f'select A.fid, A.ffull_name, A.fcomp, A.fstatus, A.fmanager, B.compname from {dept_table} as A left join {company_table} B on A.fcomp = B.compid'
             cursor.execute(GroupSql)
             row = cursor.fetchone()
             while row:
@@ -188,12 +188,23 @@ class MssqlGroupProvider(ProviderBase):
             member.display = item.get('ffull_name', '').strip()
             member.value = item.get('fid')
             group.members.append(member)
+
+        group_manager = record.get('fmanager')
+        if group_manager:
+            if ':' in group_manager:
+                manager_fcode = group_manager.split(':')[0]
+            elif '：' in group_manager:
+                manager_fcode = group_manager.split('：')[0]
+            else:
+                manager_fcode = ''
+
         group.add_custom_attribute(
             GroupExtensionSchema,
             {
                 'FCOMP': record.get('compname'),
                 'FSTATUS': record.get('fstatus'),
                 'FCOMP_ID': record.get('fcomp'),
+                'FMANAGER': manager_fcode,
             },
         )
         group.add_schema(GroupExtensionSchema)
