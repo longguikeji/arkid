@@ -204,30 +204,30 @@ class Core2UserBase(UserBase):
             if getattr(self, key):
                 result[value] = getattr(self, key)
 
-        if self.addresses:
+        if self.addresses is not None:
             result[AttributeNames.Addresses] = [
                 item.to_dict() for item in self.addresses
             ]
-        if self.electronic_mail_addresses:
+        if self.electronic_mail_addresses is not None:
             result[AttributeNames.ElectronicMailAddresses] = [
                 item.to_dict() for item in self.electronic_mail_addresses
             ]
-        if self.instant_messagings:
+        if self.instant_messagings is not None:
             result[AttributeNames.Ims] = [
                 item.to_dict() for item in self.instant_messagings
             ]
-        if self.metadata:
+        if self.metadata is not None:
             result[AttributeNames.Metadata] = self.metadata.to_dict()
 
-        if self.name:
+        if self.name is not None:
             result[AttributeNames.Name] = self.name.to_dict()
 
-        if self.phone_numbers:
+        if self.phone_numbers is not None:
             result[AttributeNames.PhoneNumbers] = [
                 item.to_dict() for item in self.phone_numbers
             ]
 
-        if self.roles:
+        if self.roles is not None:
             result[AttributeNames.Roles] = [item.to_dict() for item in self.roles]
 
         return result

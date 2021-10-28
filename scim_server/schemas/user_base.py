@@ -19,7 +19,7 @@ class UserBase(Resource):
 
     def to_dict(self):
         result = super().to_dict()
-        if self.user_name:
+        if self.user_name is not None:
             result[AttributeNames.UserName] = self.user_name
         return result
 

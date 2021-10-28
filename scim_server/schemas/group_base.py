@@ -27,10 +27,10 @@ class GroupBase(Resource):
 
     def to_dict(self):
         result = super().to_dict()
-        if self.display_name:
+        if self.display_name is not None:
             result[AttributeNames.DisplayName] = self.display_name
 
-        if self.members:
+        if self.members is not None:
             result[AttributeNames.Members] = [item.to_dict() for item in self.members]
         return result
 

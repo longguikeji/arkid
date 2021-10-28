@@ -35,10 +35,10 @@ class Resource(Schematized):
 
     def to_dict(self):
         result = super().to_dict()
-        if self.identifier:
+        if self.identifier is not None:
             result[AttributeNames.Identifier] = self.identifier
 
-        if self.external_identifier:
+        if self.external_identifier is not None:
             result[AttributeNames.ExternalIdentifier] = self.external_identifier
         return result
 

@@ -35,7 +35,7 @@ class Core2EnterpriseUserBase(Core2UserBase):
 
     def to_dict(self):
         d = super().to_dict()
-        if self.enterprise_extension:
+        if self.enterprise_extension is not None:
             d[
                 AttributeNames.ExtensionEnterpriseUser2
             ] = self.enterprise_extension.to_dict()

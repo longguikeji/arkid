@@ -71,14 +71,14 @@ class Name:
 
     def to_dict(self):
         d = {}
-        if self.formatted:
+        if self.formatted is not None:
             d[AttributeNames.Formatted] = self.formatted
-        if self.family_name:
+        if self.family_name is not None:
             d[AttributeNames.FamilyName] = self.family_name
-        if self.given_name:
+        if self.given_name is not None:
             d[AttributeNames.GivenName] = self.given_name
-        if self.honorific_prefix:
+        if self.honorific_prefix is not None:
             d[AttributeNames.HonorificPrefix] = self.honorific_prefix
-        if self.honorific_suffix:
+        if self.honorific_suffix is not None:
             d[AttributeNames.HonorificSuffix] = self.honorific_suffix
         return d
