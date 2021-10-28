@@ -6,6 +6,8 @@ from scim_server.schemas.attribute_names import AttributeNames
 class RoleBase(TypedItem):
     @property
     def display(self):
+        if not hasattr(self, '_display'):
+            return None
         return self._display
 
     @display.setter
@@ -14,6 +16,8 @@ class RoleBase(TypedItem):
 
     @property
     def value(self):
+        if not hasattr(self, '_value'):
+            return None
         return self._value
 
     @value.setter
@@ -32,8 +36,8 @@ class RoleBase(TypedItem):
 
     def to_dict(self):
         d = super().to_dict()
-        if self.value:
+        if self.value is not None:
             d[AttributeNames.Value] = self.value
-        if self.display:
+        if self.display is not None:
             d[AttributeNames.Display] = self.display
         return d

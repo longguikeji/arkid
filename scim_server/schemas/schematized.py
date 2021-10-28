@@ -29,7 +29,7 @@ class Schematized:
 
     def to_dict(self):
         result = {}
-        if self.schemas:
+        if self.schemas is not None:
             result[AttributeNames.Schemas] = self.schemas
         return result
 

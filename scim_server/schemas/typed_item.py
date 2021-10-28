@@ -35,8 +35,8 @@ class TypedItem:
 
     def to_dict(self):
         d = {}
-        if self.type is not None:
-            d[AttributeNames.Type] = self.type
+        if self.item_type is not None:
+            d[AttributeNames.Type] = self.item_type
         if self.primary is not None:
             d[AttributeNames.Primary] = self.primary
         return d
