@@ -615,7 +615,7 @@ class SyncClientAD(SyncClient):
         # delete user attributes
         changes = {}
         keys = set(user['attributes'].keys())
-        delete_keys = ['mail', 'title', 'department', 'company', 'pager']
+        delete_keys = ['title', 'department', 'company', 'pager']
         for k in delete_keys:
             changes[k] = [(ldap3.MODIFY_REPLACE, [' '])]
         res = self.conn.modify(dn=ldap_user_dn, changes=changes)
