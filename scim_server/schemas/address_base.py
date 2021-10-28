@@ -77,16 +77,16 @@ class AddressBase(TypedItem):
 
     def to_dict(self):
         d = super().to_dict()
-        if self.country:
+        if self.country is not None:
             d[AttributeNames.Country] = self.country
-        if self.formatted:
+        if self.formatted is not None:
             d[AttributeNames.Formatted] = self.formatted
-        if self.locality:
+        if self.locality is not None:
             d[AttributeNames.Locality] = self.locality
-        if self.postal_code:
+        if self.postal_code is not None:
             d[AttributeNames.PostalCode] = self.postal_code
-        if self.region:
+        if self.region is not None:
             d[AttributeNames.Region] = self.region
-        if self.street_address:
+        if self.street_address is not None:
             d[AttributeNames.StreetAddress] = self.street_address
         return d

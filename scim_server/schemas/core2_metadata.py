@@ -5,6 +5,8 @@ from scim_server.schemas.attribute_names import AttributeNames
 class Core2Metadata:
     @property
     def resource_type(self):
+        if not hasattr(self, '_resource_type'):
+            return None
         return self._resource_type
 
     @resource_type.setter
@@ -21,6 +23,6 @@ class Core2Metadata:
 
     def to_dict(self):
         d = {}
-        if self.resource_type:
+        if self.resource_type is not None:
             d[AttributeNames.ResourceType] = self.resource_type
         return d
