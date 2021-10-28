@@ -10,4 +10,7 @@ if [ "$1" = 'tini' -a "$(id -u)" = '0' ]; then
     exec gosu arkid "$0" "$@";
 fi
 
+/usr/local/bin/python3.8 manage.py compilemessages;
+/usr/local/bin/python3.8 manage.py migrate;
+
 exec "$@"

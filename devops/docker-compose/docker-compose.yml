@@ -8,32 +8,80 @@ services:
     networks:
       - arkid
     ports:
-      - 3700:80
+      - 8989:80
     depends_on:
-      - backend
-      - web
+      - be
+      - fe
     volumes:
       - ${WORKSPACE}/portal.conf:/etc/nginx/conf.d/default.conf
-      - ${WORKSPACE}/nginx.conf:/etc/nginx/nginx.conf
 
-  backend:
-    image: harbor.longguikeji.com/ark-releases/arkid:v2dev
-    container_name: ${INSTANCE}-backend
+  be:
+    image: arkid:sup2
+    container_name: ${INSTANCE}-be
     sysctls:
       - net.core.somaxconn=65535
     restart: always
+    command: supervisord
+    environment:
+      - MYSQL_HOST=${INSTANCE}-db
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=arkid
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - REDIS_HOST=${INSTANCE}-redis
     networks:
       - arkid
+    depends_on:
+      - db
     volumes:
       - ${WORKSPACE}/settings_local.py:/var/arkid/settings_local.py
-      - ${WORKSPACE}/db.sqlite3:/var/arkid/db.sqlite3
+      - ${WORKSPACE}/arkid.local.toml:/var/arkid/arkid.local.toml
+      - ${WORKSPACE}/supervisord.conf:/var/arkid/supervisord.conf
+      - ${WORKSPACE}/be/cert:/var/arkid/djangosaml2idp/certificates
+      - ${WORKSPACE}/be/saml2config:/var/arkid/djangosaml2idp/saml2_config
 
-  web:
-    image: harbor.longguikeji.com/ark-releases/arkid-fe:v2dev
-    container_name: ${INSTANCE}-web
+  fe:
+    image: longguikeji/arkid-fe:v2dev
+    container_name: ${INSTANCE}-fe
     restart: always
     networks:
       - arkid
+    volumes:
+      - ${WORKSPACE}/fe.conf:/etc/nginx/conf.d/default.conf
+
+  db:
+    image: mysql:5.7
+    container_name: ${INSTANCE}-db
+    restart: always
+    networks:
+      - arkid
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=arkid
+    volumes:
+      - ${WORKSPACE}/db/data:/var/lib/mysql
+      - ${WORKSPACE}/db/config:/etc/mysql/conf.d
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+
+  ldap:
+    image: longguikeji/arkid_ldap_server:v2dev
+    container_name: ${INSTANCE}-ldap
+    restart: always
+    networks:
+      - arkid
+    depends_on:
+      - be
+    ports:
+      - ${LDAP_PORT}:1389
+    volumes:
+      - ${WORKSPACE}/ldapjs-config.json:/usr/src/app/config.json
+    environment:
+      - TZ=Asia/Shanghai
 
   redis:
     image: redis:5.0.3
