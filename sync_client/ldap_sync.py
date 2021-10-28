@@ -40,8 +40,9 @@ class SyncClientAD(SyncClient):
         self.bind_password = settings['bind_password']
         self.mail_suffix = settings['mail_suffix']
         self.root_dn = settings['root_dn']
-        self.group_name_prefix = settings.get('group_name_prefix') or \
-                                 self.root_dn.split(',',1)[0].split('=', 1)[1] + '_'
+        self.group_name_prefix = settings['group_name_prefix'] \
+                                 if 'group_name_prefix' in settings \
+                                 else self.root_dn.split(',',1)[0].split('=', 1)[1] + '_'
         self.connect_timeout = settings.get('connect_timeout')
         self.receive_timeout = settings.get('receive_timeout')
 
