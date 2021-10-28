@@ -425,6 +425,9 @@ class SyncClientAD(SyncClient):
     def sync_groups_from_root(self, group, parent_group=None):
         self.gen_group_dn(group, parent_group)
 
+        if parent_group:
+            group['parent'] = parent_group
+
         if not self.exists_ou_dn(group['ldap_ou']):
             self.add_ou(group['ldap_ou'])
 
@@ -579,10 +582,13 @@ class SyncClientAD(SyncClient):
     def add_user_to_group(self, user):
         user_dn = user['ldap_dn']
         group = self.get_user_group(user)
-        if not group:
-            return
-        group_dn = group['ldap_dn']
-        self.add_group_member(user_dn, group_dn)
+        while group:
+            group_dn = group['ldap_dn']
+            if self.exists_group_dn(group_dn):
+                self.add_group_member(user_dn, group_dn)
+                return
+            group = group.get('parent')
+        logger.warning(f"add user {user['id']} to group failed, group {user.get('group_id','')} does not exist")
 
     def add_user_manager(self, user):
         manager_id = user['manager_id']
