@@ -258,6 +258,12 @@ class MssqlUserProvider(ProviderBase):
             }
         )
         if phone_number:
+            try:
+                phone_number = int(phone_number)
+            except TypeError:
+                pass
+            else:
+                phone_number = format(phone_number, 'X')
             user.phone_numbers = [
                 PhoneNumber.from_dict({'type': 'work', 'value': phone_number})
             ]
