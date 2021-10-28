@@ -30,10 +30,10 @@ def gen_user_attributes(user):
         'name': user['name']['formatted'].replace(',',''),
         'displayName': user['name']['formatted'].replace(',',''),
         'mail':  user.get('mail', ''), # generate_mail_func or mail_str or update_mail_func
-        'userPrincipalName': user['id'],
-        'sAMAccountName': user['id'],
+        'userPrincipalName': user['username'],
+        'sAMAccountName': user['username'],
         # 'userPassword': '', # generate_pwd_func and notify_by_api
-        'employeeID': user['id'],
+        'employeeID': user['username'],
         'title': user.get('title',''),
         'department': user['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User'].get('department',''),
         'company': user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP'],
@@ -42,7 +42,7 @@ def gen_user_attributes(user):
     }
     result = {}
     result['raw_data'] = user
-    result['id'] = user['id']
+    result['id'] = user['username']
     result['name'] = data['name']
     result['mail'] = user.get('mail','')
     status = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FSTATUS']
