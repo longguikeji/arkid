@@ -1,0 +1,34 @@
+name = "arkid v2"
+host = 'localhost:8989'
+frontend_host = 'localhost:8989'
+https_enabled = 0
+
+[email]
+host = "smtp.qq.com"
+port = 25
+user = ""
+password = ""
+
+
+[extension]
+root = "./extension_root"
+
+    [extension.demo]
+    config1 = 'demo_config1'
+    config2 = 'demo_config2'
+
+    [extension.aliyun]
+    access_key = ''
+    secret_key = ''
+
+    template = ''
+    signature = ''
+
+    [extension.redis_cache]
+    enabled = 1
+    host = 'redis'
+    port = 6379
+    db = 0
+
+    [extension.feishu]
+    enabled = 1
