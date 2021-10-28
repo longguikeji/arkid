@@ -164,7 +164,7 @@ class SyncClientAD(SyncClient):
         if not return_flag:
             max_n = 1000
             cn = user_cn
-            for n in range(1, max_n):
+            for n in range(1, max_n, 2):
                 user_cn = cn + str(n)
                 user_dn = f"cn={user_cn},{ou}"
                 if not self.exists_user_dn(user_dn):
