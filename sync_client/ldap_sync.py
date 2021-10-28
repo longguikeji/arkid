@@ -362,6 +362,16 @@ class SyncClientAD(SyncClient):
         res = self.conn.add(dn=dn, object_class=object_class, attributes=attributes)
         logger.debug(f"add ou {res and 'success' or 'failed'}: dn: {dn}, object_class: {object_class}, attributes: {attributes}, error: {res and 'None' or self.conn.result}")
 
+    def set_ou_manager(self, ou_dn: str, manager_id: str):
+        manager = self.user_dict.get(manager_id)
+        if not manager:
+            return
+        if manager["status"] == 'enabled':
+            changes = {"managedBy": [(ldap3.MODIFY_REPLACE, [manager["ldap_dn"]])]}
+        else:
+            changes = {"managedBy": [(ldap3.MODIFY_DELETE, [])]}
+        self.conn.modify(dn=ou_dn, changes=changes)
+
     def get_user_group(self, user):
         group_id = user['group_id']
         group = self.group_dict.get(group_id)
@@ -646,9 +656,16 @@ class SyncClientAD(SyncClient):
 
         self.move_user_to_ou(user, source_dn=ldap_user_dn, dest_ou=dest_ou)
 
+    def sync_ou_manager(self):
+        logger.info('syncing ou manager')
+        for group in self.groups:
+            if group['status'] == 'enabled':
+                self.set_ou_manager(group['ldap_ou'], group['manager_id'])
+
     def sync(self):
         self.sync_groups()
         self.sync_users()
+        self.sync_ou_manger()
         self.delete_users()
         self.delete_groups()
         self.delete_ous()

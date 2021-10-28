@@ -63,6 +63,7 @@ def gen_group_attributes(group):
     result['status'] = 'enabled' if str(status) == '3' else 'disabled'
     result['name'] = group['displayName'].strip().strip('/').replace('/','_')
     result['members'] = group.get('members',[])
+    result['manager_id'] = group['urn:ietf:params:scim:schemas:extension:enterprise:2.0:Group'].get('FMANAGER')
     result['company_name'] = group['urn:ietf:params:scim:schemas:extension:hr:2.0:Group']['FCOMP']
     result['company_id'] = group['urn:ietf:params:scim:schemas:extension:hr:2.0:Group']['FCOMP_ID']
     return result
