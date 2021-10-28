@@ -665,7 +665,7 @@ class SyncClientAD(SyncClient):
     def sync(self):
         self.sync_groups()
         self.sync_users()
-        self.sync_ou_manger()
+        self.sync_ou_manager()
         self.delete_users()
         self.delete_groups()
         self.delete_ous()
