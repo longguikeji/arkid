@@ -1,4 +1,5 @@
 import re
+import copy
 import json
 import pypinyin
 import ldap3
@@ -74,13 +75,14 @@ class SyncClientAD(SyncClient):
 
     def add_user(self, user: json):
         object_class = self.user_object_class
-        attributes = user['attributes']
+        attributes = copy.copy(user['attributes'])
         if not attributes.get('mail'):
             mail = self.gen_user_email(user)
             attributes['mail'] = mail
         cn, dn = user['ldap_cn'], user['ldap_dn']
 
         attributes['cn'] = cn
+        attributes = {k:v for k,v in attributes.items() if v}
 
         # add user
         res = self.conn.add(dn=dn, object_class=object_class, attributes=attributes)
@@ -323,7 +325,7 @@ class SyncClientAD(SyncClient):
         diff = {}
         compare_keys = ['givenName', 'sn', 'name', 'displayName', 'title', 'department', 'company', 'pager']
         for k in compare_keys:
-            if user_attributes[k] and user_attributes[k] != ldap_user_attributes[k]:
+            if user_attributes[k] and user_attributes[k] != ldap_user_attributes.get(k):
                 diff[k] = user_attributes[k]
 
         for k in ['mail']:
