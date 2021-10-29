@@ -347,6 +347,10 @@ class SyncClientAD(SyncClient):
         cn = group['ldap_cn']
         dn = group['ldap_dn']
         group_id = group['id']
+        if cn > 64:
+            logger.info(f'group {group_id} name: {cn} too long, more than 64')
+            return
+
         object_class = self.group_object_class
         attributes = {
             'cn': cn,
@@ -456,7 +460,8 @@ class SyncClientAD(SyncClient):
 
         # add group to parent
         if parent_group:
-            self.add_group_member(group['ldap_dn'], parent_group['ldap_dn'])
+            if self.exists_group_dn(group['ldap_dn']) and self.exists_group_dn(parent_group['ldap_dn']):
+                self.add_group_member(group['ldap_dn'], parent_group['ldap_dn'])
 
         parent_group = group
         for member in group.get('members',[]):
@@ -594,11 +599,11 @@ class SyncClientAD(SyncClient):
         group = self.get_user_group(user)
         while group:
             group_dn = group['ldap_dn']
-            if self.exists_group_dn(group_dn):
+            if self.exists_user_dn(user_dn) and self.exists_group_dn(group_dn):
                 self.add_group_member(user_dn, group_dn)
                 return
             group = group.get('parent')
-        logger.warning(f"add user {user['id']} to group failed, group {user.get('group_id','')} does not exist")
+        logger.warning(f"add user {user['id']} to group {user.get('group_id','')} failed, group or user does not exist")
 
     def add_user_manager(self, user):
         manager_id = user['manager_id']
