@@ -323,31 +323,34 @@ class SyncClientAD(SyncClient):
     def compare_user(self, user: json, ldap_user: json):
         user_attributes = user['attributes']
         ldap_user_attributes = ldap_user['attributes']
-        diff = {}
+        new_value = {}
+        old_value = {}
         compare_keys = ['givenName', 'sn', 'displayName', 'title', 'department', 'company', 'pager']
         for k in compare_keys:
             if user_attributes[k] and user_attributes[k] != ldap_user_attributes.get(k):
-                diff[k] = user_attributes[k]
+                new_value[k] = user_attributes[k]
+                old_value[k] = ldap_user_attributes.get(k)
 
         for k in ['mail']:
             if user_attributes[k] and \
                     user_attributes[k].split('@')[0] != ldap_user_attributes[k].split('@')[0]:
-                diff[k] = user_attributes[k]
+                new_value[k] = user_attributes[k]
+                old_value[k] = ldap_user_attributes.get(k)
 
-        return diff
+        return new_value, old_value
 
-    def update_user(self, user_dn: str, diff: json):
+    def update_user(self, user_dn: str, new_value: json, old_value: json):
         changes = {}
-        for k,v in diff.items():
+        for k,v in new_value.items():
             changes[k] = [(ldap3.MODIFY_REPLACE, v)]
         res = self.conn.modify(dn=user_dn, changes=changes)
-        logger.info(f"updating user {res and 'success' or 'failed'}: {user_dn}, updated_data: {diff}, error: {res and 'None' or self.conn.result}")
+        logger.info(f"updating user {res and 'success' or 'failed'}: {user_dn}, updated_data: {new_value}, old_data: {old_value}, error: {res and 'None' or self.conn.result}")
 
     def add_group(self, group: json):
         cn = group['ldap_cn']
         dn = group['ldap_dn']
         group_id = group['id']
-        if cn > 64:
+        if len(cn) > 64:
             logger.info(f'group {group_id} name: {cn} too long, more than 64')
             return
 
@@ -577,9 +580,9 @@ class SyncClientAD(SyncClient):
                         self.remove_member_of_attr(ldap_user)
                     else:
                         user['ldap_dn'] = ldap_user_dn
-                    diff = self.compare_user(user, ldap_user)
-                    if diff:
-                        self.update_user(user_dn, diff)
+                    new_value, old_value = self.compare_user(user, ldap_user)
+                    if new_value:
+                        self.update_user(user['ldap_dn'], new_value, old_value)
                 else:
                     # not the domain
                     pass
