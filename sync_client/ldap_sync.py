@@ -43,6 +43,9 @@ class SyncClientAD(SyncClient):
         self.group_name_prefix = settings['group_name_prefix'] \
                                  if 'group_name_prefix' in settings \
                                  else self.root_dn.split(',',1)[0].split('=', 1)[1] + '_'
+        self.search_base = settings['search_base'] \
+                                 if 'search_base' in settings \
+                                 else self.root_dn[self.root_dn.replace('ou=','OU=').find('OU='):]
         self.connect_timeout = settings.get('connect_timeout')
         self.receive_timeout = settings.get('receive_timeout')
 
@@ -227,7 +230,7 @@ class SyncClientAD(SyncClient):
 
     def exists_email(self, mail: str):
         for client in self.user_search_clients:
-            search_base = client.root_dn
+            search_base = client.search_base
             search_filter = f'(&(objectclass={client.user_object_class})(mail={mail}))'
             res = client.conn.search(
                     search_base=search_base,
@@ -244,8 +247,8 @@ class SyncClientAD(SyncClient):
 
     def get_user_from_ldap_by_id(self, user_id: str):
         for client in self.user_search_clients:
-            search_base = client.root_dn
-            search_filter = f'(&(objectclass={client.user_object_class})(sAMAccountName={user_id}))'
+            search_base = client.search_base
+            search_filter = f'(&(objectclass={client.user_object_class})(employeeID={user_id}))'
             res = client.conn.search(
                     search_base=search_base,
                     search_filter=search_filter,
@@ -262,7 +265,7 @@ class SyncClientAD(SyncClient):
         return None
 
     def get_group_from_ldap_by_id(self, group_id: str):
-        search_base = self.root_dn
+        search_base = self.search_base
         search_filter = f'(&(objectclass={self.group_object_class})(sAMAccountName={group_id}))'
         res = self.conn.search(
                 search_base=search_base,
@@ -514,7 +517,7 @@ class SyncClientAD(SyncClient):
                 logger.debug(f"delete group {res and 'success' or 'failed'}: dn: {entry['dn']}, error: {res and 'None' or self.conn.result}")
             if self.user_object_class in entry['attributes']['objectClass']:
                 logger.debug(f"move user {entry['dn']} out of deleted ou")
-                user = {'id': entry['attributes']['sAMAccountName'], 'name': entry['attributes']['name']}
+                user = {'id': entry['attributes']['employeeID'], 'name': entry['attributes']['name']}
                 self.move_user_to_ou(user, source_dn=entry['dn'], dest_ou=self.root_dn)
 
         if ou_dn not in self.deleted_ou_dn:
