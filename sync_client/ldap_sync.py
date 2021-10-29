@@ -45,7 +45,7 @@ class SyncClientAD(SyncClient):
                                  else self.root_dn.split(',',1)[0].split('=', 1)[1] + '_'
         self.search_base = settings['search_base'] \
                                  if 'search_base' in settings \
-                                 else self.root_dn[self.root_dn.replace('ou=','OU=').find('OU='):]
+                                 else self.root_dn[self.root_dn.replace('dc=','DC=').find('DC='):]
         self.connect_timeout = settings.get('connect_timeout')
         self.receive_timeout = settings.get('receive_timeout')
 
