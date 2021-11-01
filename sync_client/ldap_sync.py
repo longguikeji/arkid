@@ -336,9 +336,13 @@ class SyncClientAD(SyncClient):
 
         for k in ['mail']:
             if user_attributes[k] and \
-                    user_attributes[k].split('@')[0] != ldap_user_attributes[k].split('@')[0]:
+                    user_attributes[k].split('@')[0] != ldap_user_attributes.get(k, '').split('@')[0]:
                 new_value[k] = user_attributes[k]
                 old_value[k] = ldap_user_attributes.get(k)
+            if not user_attributes[k] and not ldap_user_attributes.get(k):
+                mail = self.gen_user_email(user)
+                new_value[k] = mail
+                old_value[k] = ''
 
         return new_value, old_value
 
