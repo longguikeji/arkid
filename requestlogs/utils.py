@@ -15,3 +15,8 @@ def remove_secrets(data):
 
 def get_client_ip(request):
     return _get_client_ip(request)[0]
+
+
+def chunk_to_max_len(msg):
+    max_body_length = SETTINGS['MAX_BODY_LENGTH']
+    return msg[0:max_body_length]

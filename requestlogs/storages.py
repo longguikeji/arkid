@@ -6,6 +6,7 @@ from rest_framework import serializers
 from rest_framework.utils.encoders import JSONEncoder
 
 from .base import SETTINGS
+from .utils import chunk_to_max_len
 
 
 logger = logging.getLogger('requestlogs')
@@ -18,7 +19,8 @@ class JsonDumpField(serializers.Field):
                 if isinstance(field_value, UploadedFile):
                     value[field_name] = (
                         f'<{field_value.__class__.__name__}, size={field_value.size}>')
-        return json.dumps(value, cls=JSONEncoder)
+        data = json.dumps(value, cls=JSONEncoder)
+        return chunk_to_max_len(data)
 
 
 class BaseRequestSerializer(serializers.Serializer):

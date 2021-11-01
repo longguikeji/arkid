@@ -86,6 +86,8 @@ INSTALLED_APPS = [
     'config',
     'django_python3_ldap',
     'log',
+    'django_celery_beat',
+    'sync_client',
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -303,6 +305,8 @@ MENU = [
 # Celery settings
 CELERY_BROKER = 'redis://localhost:6379'
 CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 #: Only add pickle to this list if your broker is secured
 #: from unwanted access (see userguide/security.html)
