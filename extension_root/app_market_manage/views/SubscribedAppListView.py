@@ -9,15 +9,17 @@ from django.http.response import JsonResponse
 from app.models import App
 from ..models import AppSubscribeRecord
 from api.v1.serializers.app import AppListSerializer
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 @method_decorator(never_cache, "dispatch")
 @method_decorator(csrf_exempt, "dispatch")
-@method_decorator(login_required, "dispatch")
 class SubscribeAppList(views.View):
 
-    def post(self, request, tenant_uuid):
-        user = request.user
+    def get(self, request, tenant_uuid, user_id):
+        user = User.objects.get(uuid=user_id)
+        print(user)
         data = []
         if hasattr(user, "app_subscribed_records"):
             apps = [record.app for record in user.app_subscribed_records.all()]
