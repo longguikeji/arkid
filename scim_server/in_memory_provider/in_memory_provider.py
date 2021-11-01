@@ -4,8 +4,8 @@ from scim_server.schemas.core2_enterprise_user import Core2EnterpriseUser
 from scim_server.schemas.core2_group import Core2Group
 from scim_server.schemas.schema_identifiers import SchemaIdentifiers
 from scim_server.exceptions import ArgumentNullException, ArgumentException
-from scim_server.provider.in_memory_user_provider import InMemoryUserProvider
-from scim_server.provider.in_memory_group_provider import InMemoryGroupProvider
+from scim_server.in_memory_provider.in_memory_user_provider import InMemoryUserProvider
+from scim_server.in_memory_provider.in_memory_group_provider import InMemoryGroupProvider
 
 class InMemoryProvider(ProviderBase):
 

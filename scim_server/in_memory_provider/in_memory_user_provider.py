@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
-
+#!/usr/bin/env python
 import uuid
 from scim_server.service.provider_base import ProviderBase
-from scim_server.provider.in_memory_storage import Instance
+from scim_server.in_memory_provider.in_memory_storage import Instance
 from scim_server.exceptions import (
     ArgumentException,
     ArgumentNullException,
@@ -13,27 +12,26 @@ from scim_server.exceptions import (
 )
 from scim_server.schemas.comparison_operator import ComparisonOperator
 from scim_server.schemas.attribute_names import AttributeNames
-from scim_server.schemas.core2_group import Core2Group
 
 
-class InMemoryGroupProvider(ProviderBase):
+class InMemoryUserProvider(ProviderBase):
     def __init__(self):
         self.storage = Instance
 
     def create_async2(self, resource, correlation_identifier):
-        if not resource.identifier:
+        if resource.identifier is not None:
             raise BadRequestException()
 
-        if not resource.display_name:
+        if not resource.user_name:
             raise BadRequestException()
 
-        existing_groups = self.storage.groups.values()
-        for item in existing_groups:
-            if item.display_name == resource.display_name:
+        existing_users = self.storage.users.values()
+        for item in existing_users:
+            if item.user_name == resource.user_name:
                 raise ConflictException()
         resource_identifier = uuid.uuid4().hex
         resource.identifier = resource_identifier
-        self.storage.groups[resource_identifier] = resource
+        self.storage.users[resource_identifier] = resource
 
         return resource
 
@@ -42,25 +40,25 @@ class InMemoryGroupProvider(ProviderBase):
             raise BadRequestException()
         identifier = resource_identifier.identifier
 
-        if identifier in self.storage.groups:
-            del self.storage.groups[identifier]
+        if identifier in self.storage.users:
+            del self.storage.users[identifier]
 
     def query_async2(self, parameters, correlation_identifier):
-        if not parameters:
+        if parameters is None:
             raise ArgumentNullException('parameters')
         if not correlation_identifier:
             raise ArgumentNullException('correlation_identifier')
-        if not parameters.alternate_filters:
+        if  parameters.alternate_filters is None:
             raise ArgumentException('Invalid parameters')
 
         if not parameters.schema_identifier:
             raise ArgumentException('Invalid parameters')
 
-        result = []
-        query_filter = parameters.alternate_filters[0]
-        if not query_filter:
-            buffer = self.storage.users.values()
+        if not parameters.alternate_filters:
+            all_users = self.storage.users.values()
+            return all_users
 
+        query_filter = parameters.alternate_filters[0]
         if not query_filter.attribute_path:
             raise ArgumentException('invalid parameters')
         if not query_filter.comparison_value:
@@ -68,31 +66,31 @@ class InMemoryGroupProvider(ProviderBase):
         if query_filter.filter_operator != ComparisonOperator.Equals:
             raise NotSupportedException('unsupported comparison operator')
 
-        if query_filter.attribute_path == AttributeNames.DisplayName:
-            all_groups = self.storage.groups.values()
-            group = None
-            for item in all_groups:
-                if item.display_name == query_filter.comparison_value:
-                    group = item
+        if query_filter.attribute_path == AttributeNames.UserName:
+            all_users = self.storage.users.values()
+            user = None
+            for item in all_users:
+                if item.user_name == query_filter.comparison_value:
+                    user = item
                     break
-            if group:
-                buffer = [group]
+            if user:
+                return [user]
             else:
-                buffer = []
-        else:
-            raise NotSupportedException('unsupported comparison operator')
+                return []
 
-        for item in buffer:
-            new_group = Core2Group()
-            new_group.display_name = item.display_name
-            new_group.external_identifier = item.external_identifier
-            new_group.identifier = item.identifier
-            new_group.members = item.members
-            new_group.metadata = item.metadata
-            for attr in parameters.excluded_attribute_paths:
-                if attr == AttributeNames.Members:
-                    new_group.members = None
-        return buffer
+        if query_filter.attribute_path == AttributeNames.ExternalIdentifier:
+            all_users = self.storage.users.values()
+            user = None
+            for item in all_users:
+                if item.external_identifier == query_filter.comparison_value:
+                    user = item
+                    break
+            if user:
+                return [user]
+            else:
+                return []
+
+        raise NotSupportedException('unsupported filter')
 
     def replace_async2(self, resource, correlation_identifier):
         if not resource.identifier:
@@ -122,7 +120,7 @@ class InMemoryGroupProvider(ProviderBase):
         identifier = parameters.resource_identifier.identifier
         if identifier in self.storage.users:
             return self.storage.users[identifier]
-        raise NotFoundException()
+        raise NotFoundException(identifier)
 
     def update_async2(self, patch, correlation_identifier):
         if not patch:
@@ -137,4 +135,4 @@ class InMemoryGroupProvider(ProviderBase):
         if user:
             user.apply(patch.patch_request)
         else:
-            raise NotFoundException()
+            raise NotFoundException(patch.resource_identifier.identifier)
