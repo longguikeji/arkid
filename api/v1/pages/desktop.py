@@ -1,5 +1,6 @@
 from openapi.utils import extend_schema_tags
 from django.conf import settings
+from extension.models import Extension
 
 tag = ['desktop', 'notice']
 path = 'desktop'
@@ -9,7 +10,7 @@ app_tag = 'desktop'
 app_name = '应用市集'
 
 
-if "extension_root.app_market_manage" in settings.INSTALLED_APPS:
+if "extension_root.app_market_manage" in settings.INSTALLED_APPS and Extension.objects.filter(type="app_market_manage").order_by("-id").first().is_active:
     extend_schema_tags(
         app_tag,
         app_name,
