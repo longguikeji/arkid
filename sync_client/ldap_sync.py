@@ -536,7 +536,7 @@ class SyncClientAD(SyncClient):
         logger.debug(f"delete group {res and 'success' or 'failed'}: dn: {ldap_group_dn}, group_id: {group['id']}, error: {res and 'None' or self.conn.result}")
 
     def delete_groups(self):
-        logger.info('syncing disbled groups')
+        logger.info('syncing disabled groups')
         for group in self.groups:
             if group['status'] == 'disabled':
                 self.delete_group(group)
@@ -623,13 +623,13 @@ class SyncClientAD(SyncClient):
         self.conn.modify(dn=user["ldap_dn"], changes=changes)
 
     def delete_users(self):
-        logger.info('syncing disbled users')
+        logger.info('syncing disabled users')
         for user in self.users:
             if user['status'] == 'disabled':
                 self.disable_user(user)
 
     def disable_user(self, user):
-        logger.info(f"disabling user {user['id']}")
+        logger.info(f"disabling user: id {user['id']} name user['name']")
         ldap_user = self.get_user_from_ldap_by_id(user['id'])
         if not ldap_user:
             logger.warning(f"disabling user {user['id']}, but {user['id']} does not exist in ldap")
@@ -643,8 +643,43 @@ class SyncClientAD(SyncClient):
         # delete user attributes
         changes = {}
         keys = set(user['attributes'].keys())
-        delete_keys = ['title', 'department', 'company', 'pager']
-        for k in delete_keys:
+        delete_keys = set([
+            #常规属性名称
+            "givenName",
+            "sn",
+            "initials",
+            "description",
+            "physicalDeliveryOfficeName",
+            "telephoneNumber",
+            "otherTelephone",
+            "mail",
+            "wwwHomePage",
+            "url",
+            #地址属性名称
+            "streetAddress",
+            "postOfficeBox",
+            "l",
+            "st",
+            "postalCode",
+            "c",
+            "co",
+            #组织属性名称
+            "title",
+            "department",
+            "company",
+            #电话相关属性名称
+            "telephoneNumber",
+            "otherTelephone",
+            "pager",
+            "mobile",
+            "otherMobile",
+            "facsimileTelephoneNumber",
+            "otherFacsimileTelephoneNumber",
+            "ipPhone",
+            "otherIpPhone",
+            "info",
+        ])
+        for k in keys & delete_keys:
             changes[k] = [(ldap3.MODIFY_REPLACE, [' '])]
         res = self.conn.modify(dn=ldap_user_dn, changes=changes)
         if not res:
