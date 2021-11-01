@@ -29,7 +29,7 @@ def gen_user_attributes(user):
         'sn': user['name']['familyName'],
         'name': user['name']['formatted'].replace(',',''),
         'displayName': user['name']['formatted'].replace(',',''),
-        'mail':  user.get('mail', ''), # generate_mail_func or mail_str or update_mail_func
+        'homePhone':  user.get('mail', ''), # generate_mail_func or mail_str or update_mail_func
         'userPrincipalName': user['userName'],
         'sAMAccountName': user['userName'],
         # 'userPassword': '', # generate_pwd_func and notify_by_api

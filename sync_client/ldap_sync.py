@@ -80,9 +80,9 @@ class SyncClientAD(SyncClient):
     def add_user(self, user: json):
         object_class = self.user_object_class
         attributes = copy.copy(user['attributes'])
-        if not attributes.get('mail'):
+        if not attributes.get('homePhone'):
             mail = self.gen_user_email(user)
-            attributes['mail'] = mail
+            attributes['homePhone'] = mail
         cn, dn = user['ldap_cn'], user['ldap_dn']
 
         attributes['cn'] = cn
@@ -129,7 +129,7 @@ class SyncClientAD(SyncClient):
         email = email_prefix + self.mail_suffix
         if not self.exists_email(email):
             return email
-        logger.info(f'email: {email} exists for {name}')
+        logger.debug(f'email: {email} exists for {name}')
 
         # 吴家亮 jialiangwu
         email_prefix = ''.join(givenNamePinyin + snPinyin)
@@ -137,7 +137,7 @@ class SyncClientAD(SyncClient):
         email = email_prefix + self.mail_suffix
         if not self.exists_email(email):
             return email
-        logger.info(f'email: {email} exists for {name}')
+        logger.debug(f'email: {email} exists for {name}')
 
         # 吴家亮 jialiangwu1、jialiangwu2、jialiangwu3
         max_n = 1000
@@ -146,7 +146,7 @@ class SyncClientAD(SyncClient):
             email = mail + str(n) + self.mail_suffix
             if not self.exists_email(email):
                 return email
-            logger.info(f'email: {email} exists for {name}')
+            logger.debug(f'email: {email} exists for {name}')
 
         raise Exception("more than {max_n} duplicate email: {mail} exists for {name} {user['id']}")
 
@@ -231,19 +231,15 @@ class SyncClientAD(SyncClient):
     def exists_email(self, mail: str):
         for client in self.user_search_clients:
             search_base = client.search_base
-            search_filter = f'(&(objectclass={client.user_object_class})(mail={mail}))'
+            search_filter = f'(&(objectclass={client.user_object_class})(|(mail={mail})(homePhone={mail})))'
             res = client.conn.search(
                     search_base=search_base,
                     search_filter=search_filter,
                     search_scope=ldap3.SUBTREE,
             )
-            if res:
-                entries = json.loads(client.conn.response_to_json())['entries']
-                if entries:
-                    result = entries[0]
-                    result['host_port'] = client.host + str(client.port)
-                    return result
-        return None
+            if res and json.loads(client.conn.response_to_json())['entries']:
+                return True
+        return False
 
     def get_user_from_ldap_by_id(self, user_id: str):
         for client in self.user_search_clients:
@@ -334,13 +330,18 @@ class SyncClientAD(SyncClient):
                 new_value[k] = user_attributes[k]
                 old_value[k] = ldap_user_attributes.get(k)
 
-        for k in ['mail']:
+        for k in ['homePhone']:
+            if ldap_user_attributes.get('mail') and not ldap_user_attributes.get(k):
+                ldap_user_attributes[k] = ldap_user_attributes['mail']
+                new_value[k] = ldap_user_attributes[k]
+                old_value[k] = ''
             if user_attributes[k] and \
                     user_attributes[k].split('@')[0] != ldap_user_attributes.get(k, '').split('@')[0]:
                 new_value[k] = user_attributes[k]
                 old_value[k] = ldap_user_attributes.get(k)
             if not user_attributes[k] and not ldap_user_attributes.get(k):
                 mail = self.gen_user_email(user)
+                logger.debug(f"email: {mail} generated for user: {user['name']} id: {user['id']}")
                 new_value[k] = mail
                 old_value[k] = ''
 
