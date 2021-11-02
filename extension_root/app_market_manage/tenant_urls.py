@@ -4,12 +4,12 @@ from .views import AppSubscribe, AppSubscribeList, SubscribeAppList
 
 urlpatterns = [
     re_path(
-        r'app/(?P<app_id>[\w-]+)/subscribe/',
+        r'app/(?P<app_id>[\w-]+)/user/(?P<user_id>[\w-]+)/subscribe/',
         AppSubscribe.as_view(),
         name="app_subscribe"
     ),
     url(
-        r'app_subscribe_list/',
+        r'user/(?P<user_id>[\w-]+)/app_subscribe_list/',
         AppSubscribeList.as_view(),
         name="app_subscribe_list"
     ),

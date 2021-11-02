@@ -8,14 +8,15 @@ from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse
 from app.models import App
 from ..models import AppSubscribeRecord
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 @method_decorator(never_cache, "dispatch")
 @method_decorator(csrf_exempt, "dispatch")
-@method_decorator(login_required, "dispatch")
 class AppSubscribe(views.View):
 
-    def post(self, request, tenant_uuid, app_id):
+    def post(self, request, tenant_uuid, app_id, user_id):
         try:
             if hasattr(request, "data"):
                 data = request.data
@@ -26,8 +27,10 @@ class AppSubscribe(views.View):
         except Exception as err:
             print(err)
             data = request.GET
-        app =  App.active_objects.get(id=app_id)
-        user = request.user
+
+        app = App.active_objects.get(uuid=app_id)
+        user = User.active_objects.get(uuid=user_id)
+        print(user)
         status = data.get("status", True)
 
         if hasattr(app, "subscribed_record"):
@@ -39,7 +42,7 @@ class AppSubscribe(views.View):
         else:
             # 尚未有记录
             record = AppSubscribeRecord(
-                app = app,
+                app=app,
             )
             if status:
                 record.users.add(user)
