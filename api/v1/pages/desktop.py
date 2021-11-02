@@ -8,9 +8,14 @@ name = '桌面'
 
 app_tag = 'desktop'
 app_name = '应用市集'
-extension = Extension.objects.filter(
-    type="app_market_manage").order_by("-id").first()
-extension_is_active = extension.is_active if extension else False
+
+try:
+    extension = Extension.objects.filter(
+        type="app_market_manage").order_by("-id").first()
+    extension_is_active = extension.is_active if extension else False
+except Exception as err:
+    extension_is_active = False
+
 
 if "extension_root.app_market_manage" in settings.INSTALLED_APPS and extension_is_active:
     extend_schema_tags(
