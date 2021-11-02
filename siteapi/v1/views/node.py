@@ -266,10 +266,8 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
         url_name = resolve(self.request.path_info).url_name
         user_required = self.request.query_params.get('user_required', False) not in (False, 'false', 'False')
         if self.request.user.is_admin:
-            sub_depts = Dept.valid_objects.filter(parent=node)
+            sub_depts = Dept.valid_objects.filter(parent=node).order_by('order_no')
             data = self.get_response_data(node, sub_depts, url_name, user_required)
-            if node.uid == 'yunnanshengjiweijianwei':
-                data = self.order_result(data)
             return Response(data)
         if node.uid == 'root':
             # 子管理员根据管理组的类型返回不同的节点
@@ -286,7 +284,7 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
             for manager_group in request.user.manager_groups:
                 if manager_group.scope_subject == 1:  # 所在节点及下属节点
                     if upstream_uids & set(request.user.node_uids):
-                        sub_depts = Dept.valid_objects.filter(parent=node)
+                        sub_depts = Dept.valid_objects.filter(parent=node).order_by('order_no')
                         data = self.get_response_data(node, sub_depts, url_name, user_required)
                         return Response(data)
                 if manager_group.scope_subject == 2:  # 指定节点、人
@@ -432,7 +430,6 @@ class NodeTreeAPIView(generics.RetrieveAPIView):
         return UserLiteSerializer(instance.users, many=True).data
 
 
-
 class ManagerNodeTreeAPIView(NodeTreeAPIView):
     '''
     以管理员身份获取节点结构树，以该节点为root
@@ -441,6 +438,21 @@ class ManagerNodeTreeAPIView(NodeTreeAPIView):
     permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
 
     user_identity = 'manager'
+
+
+class ManagerNodeTreeSortAPIView(APIView):
+    '''
+    以管理员身份获取节点结构树，以该节点为root
+    '''
+
+    permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
+
+    def put(self, request, uid):
+        dept_ids = request.data.get('dept_ids', [])
+        depts = Dept.get_from_pks(pks=dept_ids, pk_name='id', raise_exception=True, is_del=False)
+        Dept.sort_as(depts)
+        return Response({'error_code':0})
+
 
 
 class UcenterNodeTreeAPIView(NodeTreeAPIView):
