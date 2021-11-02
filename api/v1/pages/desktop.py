@@ -24,8 +24,14 @@ if "extension_root.app_market_manage" in settings.INSTALLED_APPS and extension_i
         {
             'type': 'dashboard_page',
             'init': {
-                    'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{parent_lookup_user}/subscribed_app_list/',
-                    'method': 'get'
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{parent_lookup_user}/subscribed_app_list/',
+                'method': 'get'
+            },
+            'global': {
+                'manage': {
+                    'tag': 'app_manage',
+                    'description': '管理应用'   
+                }
             }
         }
     )
@@ -42,6 +48,24 @@ else:
         }
     )
 
+app_manage_tag = 'app_manage'
+app_manage_name = '管理应用'
+
+extend_schema_tags(
+    app_manage_tag,
+    app_manage_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{parent_lookup_user}/app_subscribe_list/',
+            'method': 'get'
+        },
+        'local': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/user/{parent_lookup_user}/subscribe/',
+            'method': 'post'
+        }
+    }
+)
 
 notice_tag = 'notice'
 notice_name = '通知公告'
