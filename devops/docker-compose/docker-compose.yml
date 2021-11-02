@@ -49,7 +49,7 @@ services:
     container_name: arkid-fe
     restart: always
     working_dir: /root/workspace/arkid-fe
-    command: sh -c "npm install && tail -f /dev/null"
+    command: tail -f /dev/null
     networks:
       - arkid
     volumes:

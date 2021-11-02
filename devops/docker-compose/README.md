@@ -14,6 +14,8 @@ docker-compose up -d
 
 
 ## vscode 进入容器arkid-fe，开发前端
+> 安装依赖：
+> npm install
 > 启动进程：
 > npm run dev
 
