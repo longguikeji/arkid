@@ -49,12 +49,13 @@ services:
     container_name: arkid-fe
     restart: always
     working_dir: /root/workspace/arkid-fe
-    command: sh -c "npm install && npm run dev"
+    command: sh -c "npm install && tail -f /dev/null"
     networks:
       - arkid
     volumes:
       ## 这个路径是arkid-fe所在的目录
       - ../../../arkid-frontend:/root/workspace/arkid-fe
+      - ./vue.config.js:/root/workspace/arkid-fe/vue.config.js
 
   # 不开发前段的话，放开这个
   # fe:
