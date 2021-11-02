@@ -22,7 +22,8 @@ class SubscribeAppList(views.View):
         print(user)
         data = []
         if hasattr(user, "app_subscribed_records"):
-            apps = [record.app for record in user.app_subscribed_records.all()]
+            apps = [record.app for record in user.app_subscribed_records.filter(
+                is_active=True).all()]
             data = AppListSerializer(apps, many=True).data
 
         return JsonResponse(
