@@ -95,7 +95,7 @@ services:
     depends_on:
       - be
     ports:
-      - ${LDAP_PORT}:1389
+      - 10389:1389
     volumes:
       - ./ldapjs-config.json:/usr/src/app/config.json
     environment:
