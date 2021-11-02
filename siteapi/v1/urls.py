@@ -61,6 +61,7 @@ urlpatterns = [
     url(r'^node/(?P<uid>[\w|-]+)/list/$', node_views.NodeListAPIView.as_view(), name='node_list'),
     url(r'^node/(?P<uid>[\w|-]+)/$', node_views.NodeDetailAPIView.as_view(), name='node_detail'),
     url(r'^node/(?P<uid>[\w|-]+)/tree/$', node_views.ManagerNodeTreeAPIView.as_view(), name='node_tree'),
+    url(r'^node/(?P<uid>[\w|-]+)/tree_sort/$', node_views.ManagerNodeTreeSortAPIView.as_view(), name='node_tree_sort'),
     url(r'^node/(?P<uid>[\w|-]+)/node/$', node_views.NodeChildNodeAPIView.as_view(), name='node_child_node'),
     url(r'^node/(?P<uid>[\w|-]+)/user/$', node_views.NodeChildUserAPIView.as_view(), name='node_child_user'),
     # group
