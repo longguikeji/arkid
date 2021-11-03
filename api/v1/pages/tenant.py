@@ -4,14 +4,6 @@ tag = 'tenant'
 path = tag
 name = '租户管理'
 
-
-from openapi.utils import extend_schema_tags
-
-tag = 'tenant'
-path = tag
-name = '租户管理'
-
-
 extend_schema_tags(
     tag,
     name,

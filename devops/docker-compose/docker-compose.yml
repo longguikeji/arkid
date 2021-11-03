@@ -3,46 +3,112 @@ version: '3.5'
 services:
   portal:
     image: nginx:alpine
-    container_name: ${INSTANCE}-portal
+    container_name: arkid-portal
     restart: always
     networks:
       - arkid
     ports:
-      - 3700:80
+      - 8989:80
     depends_on:
-      - backend
-      - web
+      - be
+      - fe
     volumes:
-      - ${WORKSPACE}/portal.conf:/etc/nginx/conf.d/default.conf
-      - ${WORKSPACE}/nginx.conf:/etc/nginx/nginx.conf
+      - ./portal.conf:/etc/nginx/conf.d/default.conf
 
-  backend:
-    image: harbor.longguikeji.com/ark-releases/arkid:v2dev
-    container_name: ${INSTANCE}-backend
+  be:
+    image: longguikeji/arkid:v2dev-101
+    container_name: arkid-be
     sysctls:
       - net.core.somaxconn=65535
     restart: always
+    working_dir: /var/arkid
+    entrypoint: ["/bin/bash", "/var/arkid/docker-entrypoint.sh"]
+    command: ["supervisord"]
+    environment:
+      - MYSQL_HOST=arkid-db
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=arkid
+      - MYSQL_USER=arkiduser
+      - MYSQL_PASSWORD=arkiduser
+      - REDIS_HOST=arkid-redis
+    networks:
+      - arkid
+    depends_on:
+      - db
+    volumes:
+      - ../../:/var/arkid
+      - ./settings.py:/var/arkid/settings_local.py
+      - ./arkid.toml:/var/arkid/arkid.local.toml
+      - ./supervisord.conf:/var/arkid/supervisord.conf
+      - ./be/cert:/var/arkid/djangosaml2idp/certificates
+      - ./be/saml2config:/var/arkid/djangosaml2idp/saml2_config
+
+  # 开发前端的话用这个
+  fe:
+    image: node:12-buster
+    container_name: arkid-fe
+    restart: always
+    working_dir: /root/workspace/arkid-fe
+    command: tail -f /dev/null
     networks:
       - arkid
     volumes:
-      - ${WORKSPACE}/settings_local.py:/var/arkid/settings_local.py
-      - ${WORKSPACE}/db.sqlite3:/var/arkid/db.sqlite3
+      ## 这个路径是arkid-fe所在的目录，如果笔记本内存大，可以在最后加上 `:cached` 提升性能
+      - ../../../arkid-frontend:/root/workspace/arkid-fe
+      - ./vue.config.js:/root/workspace/arkid-fe/vue.config.js
 
-  web:
-    image: harbor.longguikeji.com/ark-releases/arkid-fe:v2dev
-    container_name: ${INSTANCE}-web
+  # 不开发前段的话，放开这个
+  # fe:
+  #   image: longguikeji/arkid-fe:v2dev
+  #   container_name: arkid-fe
+  #   restart: always
+  #   networks:
+  #     - arkid
+  #   volumes:
+  #     - ./fe.conf:/etc/nginx/conf.d/default.conf
+
+  db:
+    image: mysql:5.7
+    container_name: arkid-db
     restart: always
     networks:
       - arkid
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=arkiduser
+      - MYSQL_PASSWORD=arkiduser
+      - MYSQL_DATABASE=arkid
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/config:/etc/mysql/conf.d
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+
+  ldap:
+    image: longguikeji/arkid_ldap_server:v2dev
+    container_name: arkid-ldap
+    restart: always
+    networks:
+      - arkid
+    depends_on:
+      - be
+    ports:
+      - 10389:1389
+    volumes:
+      - ./ldapjs-config.json:/usr/src/app/config.json
+    environment:
+      - TZ=Asia/Shanghai
 
   redis:
     image: redis:5.0.3
-    container_name: ${INSTANCE}-redis
+    container_name: arkid-redis
     restart: always
     networks:
       - arkid
 
 networks:
   arkid:
-    name: ${INSTANCE}
+    name: arkid
     driver: bridge

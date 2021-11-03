@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = [ 'contacts_group', 'contacts_user' ]
+tag = [ 'contacts_group', 'contacts_group.user' ]
 path = 'contacts'
 name = '通讯录'
 
@@ -15,17 +15,19 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/contacts/group/',
             'method': 'get',
-            'next': 'contacts_user'
+            'next': 'contacts_group.user'
         },
-        'node': {
-            'path': '/api/v1/tenant/{tenant_uuid}/contacts/group/?parent={uuid}',
-            'method': 'get',
-            'next': 'contacts_user'
+        'local': {
+            'node': {
+                'path': '/api/v1/tenant/{tenant_uuid}/contacts/group/?parent={uuid}',
+                'method': 'get',
+                'next': 'contacts_group.user'
+            }
         }
     }
 )
 
-contacts_user_tag = 'contacts_user'
+contacts_user_tag = 'contacts_group.user'
 contacts_user_name = '通讯录'
 
 extend_schema_tags(
@@ -35,8 +37,7 @@ extend_schema_tags(
         'type': 'table_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/contacts/user/?group_uuid={group_uuid}',
-            'method': 'get',
-            'from': 'contacts_group'
+            'method': 'get'
         }
     }
 )
