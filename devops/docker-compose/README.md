@@ -1,5 +1,8 @@
 # develop ArkID by docker-compose
 
+详细文档：https://www.yuque.com/longguikeji/arkid2/zunn5q
+
+
 ```shell
 docker-compose up -d
 ```
