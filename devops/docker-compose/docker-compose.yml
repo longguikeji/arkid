@@ -53,7 +53,7 @@ services:
     networks:
       - arkid
     volumes:
-      ## 这个路径是arkid-fe所在的目录
+      ## 这个路径是arkid-fe所在的目录，如果笔记本内存大，可以在最后加上 `:cached` 提升性能
       - ../../../arkid-frontend:/root/workspace/arkid-fe
       - ./vue.config.js:/root/workspace/arkid-fe/vue.config.js
 
