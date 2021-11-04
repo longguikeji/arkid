@@ -34,6 +34,7 @@ from . import (
     user_permission,
     user_log,
     webhook,
+    data_sync,
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
@@ -97,7 +98,7 @@ root_add_routers(
                             page=authorization_agent,
                             icon='list',
                         ),
-                        PageRouter(page=data_synchronism, icon='chart'),
+                        PageRouter(page=data_sync, icon='chart'),
                     ],
                 ),
                 Router(

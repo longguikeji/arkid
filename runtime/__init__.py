@@ -18,6 +18,7 @@ from common.provider import (
     OtherAuthFactorProvider,
     ChildManagerConfigProvider,
     StatisticsProvider,
+    DataSyncProvider,
 )
 from common.serializer import (
     AppBaseSerializer,
@@ -25,10 +26,12 @@ from common.serializer import (
     ExternalIdpBaseSerializer,
     LoginRegisterConfigBaseSerializer,
     OtherAuthFactorBaseSerializer,
+    DataSyncBaseSerializer,
 )
 from authorization_server.models import AuthorizationServer
 from mfa.models import MFA
 from common.exception import DuplicatedIdException
+
 
 class Runtime:
 
@@ -74,6 +77,9 @@ class Runtime:
     auth_rule_type_serializers: Dict[str, AuthRuleBaseSerializer]
     auth_rules = []
 
+    data_sync_extensions: List
+    data_sync_providers: Dict[str, DataSyncProvider]
+    data_sync_serializers: Dict[str, DataSyncBaseSerializer]
     urlpatterns: Dict = {}
 
     def __new__(cls, *args, **kwargs):
@@ -100,10 +106,14 @@ class Runtime:
             cls._instance.auth_rule_type_providers = {}
             cls._instance.auth_rule_type_serializers = {}
             cls._instance.auth_rules = []
-            
+
             cls._instance.other_auth_factors = []
             cls._instance.other_auth_factor_providers = {}
             cls._instance.other_auth_factor_serializers = {}
+
+            cls._instance.data_sync_extensions = []
+            cls._instance.data_sync_providers = {}
+            cls._instance.data_sync_serializers = {}
 
         return cls._instance
 
@@ -140,6 +150,10 @@ class Runtime:
         self.auth_rule_type_providers = {}
         self.auth_rule_type_serializers = {}
         self.auth_rules = []
+
+        self.data_sync_extensions = []
+        self.data_sync_providers = {}
+        self.data_sync_serializers = {}
 
     def register_task(self):
         """
@@ -399,10 +413,11 @@ class Runtime:
 
             # 查找已经配置认证规则的应用写入运行时
             from auth_rules.models import TenantAuthRule
-            rules = TenantAuthRule.active_objects.filter(type=key,is_apply=True).all()
+
+            rules = TenantAuthRule.active_objects.filter(type=key, is_apply=True).all()
             if len(rules):
                 self.auth_rules.extend(rules)
-        
+
         if serializer is not None and key not in self.auth_rule_type_serializers:
             self.auth_rule_type_serializers[key] = serializer
 
@@ -460,10 +475,14 @@ class Runtime:
         self.childaccountconfig_provider = None
         print('logout_childaccountconfig_provider')
 
-    def register_childmanagerconfig_provider(self, childmanagerconfig_provider: ChildManagerConfigProvider):
+    def register_childmanagerconfig_provider(
+        self, childmanagerconfig_provider: ChildManagerConfigProvider
+    ):
         self.childmanagerconfig_provider = childmanagerconfig_provider
 
-    def logout_childmanagerconfig_provider(self, childmanagerconfig_provider: ChildManagerConfigProvider):
+    def logout_childmanagerconfig_provider(
+        self, childmanagerconfig_provider: ChildManagerConfigProvider
+    ):
         self.childmanagerconfig_provider = None
         print('logout_childmanagerconfig_provider')
 
@@ -494,6 +513,38 @@ class Runtime:
     def logout_statistics_provider(self, statistics_provider: StatisticsProvider):
         self.statistics_provider = None
         print('logout_statistics_provider')
+
+    def register_data_sync_extension(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: DataSyncProvider,
+        serializer: DataSyncBaseSerializer = None,
+    ):
+        if (key, name, description) not in self.data_sync_extensions:
+            self.data_sync_extensions.append((key, name, description))
+        if provider is not None:
+            self.data_sync_providers[key] = provider
+
+        if serializer is not None:
+            self.data_sync_serializers[key] = serializer
+
+    def logout_data_sync_extension(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: DataSyncProvider,
+        serializer: DataSyncBaseSerializer = None,
+    ):
+        if (key, name, description) in self.data_sync_extensions:
+            self.data_sync_extensions.remove((key, name, description))
+        if provider is not None and key in self.data_sync_providers:
+            self.data_sync_providers.pop(key)
+        if serializer is not None and key in self.data_sync_serializers:
+            self.data_sync_serializers.pop(key)
+        print('logout_data_sync_extension:', name)
 
     @property
     def extension_serializers(self):

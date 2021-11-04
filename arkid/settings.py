@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'log',
     'django_celery_beat',
     'sync_client',
+    'data_sync',
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -299,7 +300,7 @@ MENU = [
     '用户行为日志',
     '管理员行为日志',
     '日志设置',
-    '统计图表'
+    '统计图表',
 ]
 
 # Celery settings

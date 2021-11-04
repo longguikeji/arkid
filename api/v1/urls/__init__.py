@@ -33,6 +33,7 @@ from . import (
     reset_password,
     log,
     statistics,
+    data_sync,
 )
 from runtime import get_app_runtime
 

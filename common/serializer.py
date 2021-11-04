@@ -21,23 +21,16 @@ class AppBaseSerializer(serializers.Serializer):
 
 class AuthRuleBaseSerializer(serializers.Serializer):
 
-    title = serializers.CharField(
-        label=_("标题")
-    )
+    title = serializers.CharField(label=_("标题"))
 
-    type = serializers.CharField(
-        label=_("类型")
-    )
+    type = serializers.CharField(label=_("类型"))
 
-    data = serializers.JSONField(
-        label=_("配置数据")
-    )
+    data = serializers.JSONField(label=_("配置数据"))
 
     uuid = serializers.UUIDField(read_only=True)
 
-    is_apply = serializers.BooleanField(
-        label=_("是否启用")
-    )
+    is_apply = serializers.BooleanField(label=_("是否启用"))
+
 
 class ExternalIdpBaseSerializer(serializers.Serializer):
     # order_no = serializers.IntegerField()
@@ -70,3 +63,15 @@ class OtherAuthFactorBaseSerializer(serializers.Serializer):
     type = serializers.CharField(label=_('认证类型'))
     data = serializers.JSONField()
     uuid = serializers.UUIDField(read_only=True)
+
+
+class DataSyncBaseSerializer(serializers.Serializer):
+    name = serializers.CharField(label=_(''))
+    type = serializers.CharField(label=_('同步类型'))
+    data = serializers.JSONField()
+    uuid = serializers.UUIDField(read_only=True)
+
+
+class ScimServerBaseSerializer(serializers.Serializer):
+    users_url = serializers.URLField(read_only=True)
+    groups_url = serializers.URLField(read_only=True)
