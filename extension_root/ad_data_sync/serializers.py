@@ -6,13 +6,15 @@ from common.serializer import DataSyncBaseSerializer, ScimServerBaseSerializer
 class AdDataSyncConfigSerializer(ScimServerBaseSerializer):
 
     host = serializers.CharField()
-    password = serializers.CharField()
+    port = serializers.CharField()
     bind_dn = serializers.CharField()
     bind_password = serializers.CharField()
+    root_dn = serializers.CharField()
     use_tls = serializers.BooleanField(default=False)
 
 
 class AdDataSyncSerializer(DataSyncBaseSerializer):
 
-    data = AdDataSyncConfigSerializer(label=_('data'))
     name = serializers.CharField(label=_('配置名称'))
+    sync_mode = serializers.ChoiceField(choices=['server', 'client'], label=_('同步模式'))
+    data = AdDataSyncConfigSerializer(label=_('data'))

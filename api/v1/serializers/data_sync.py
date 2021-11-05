@@ -14,6 +14,7 @@ class DataSyncSerializer(BaseDynamicFieldModelSerializer):
             'type',
             'data',
             'name',
+            'sync_mode',
         )
 
     def create(self, validated_data):
@@ -22,25 +23,25 @@ class DataSyncSerializer(BaseDynamicFieldModelSerializer):
         tenant = self.context['tenant']
 
         name = validated_data.pop('name', None)
+        sync_mode = validated_data.pop('sync_mode', None)
         data_sync_type = validated_data.pop('type')
         data = validated_data.pop('data', None)
 
-        data_sync_config = DataSyncConfig.objects.create(
+        data_sync_config, _ = DataSyncConfig.objects.get_or_create(
             tenant=tenant,
-            name=name,
             type=data_sync_type,
+            sync_mode=sync_mode,
         )
 
         r: Runtime = get_app_runtime()
-        provider_cls: DataSyncProvider = r.data_sync_providers.get(
-            data_sync_type, None
-        )
+        provider_cls: DataSyncProvider = r.data_sync_providers.get(data_sync_type, None)
         assert provider_cls is not None
 
         provider = provider_cls()
         data = provider.create(tenant_uuid=tenant.uuid, data=data)
         if data is not None:
             data_sync_config.data = data
+        data_sync_config.name = name
         data_sync_config.save()
 
         return data_sync_config
@@ -55,9 +56,7 @@ class DataSyncSerializer(BaseDynamicFieldModelSerializer):
         tenant = self.context['tenant']
         r = get_app_runtime()
 
-        provider_cls: DataSyncProvider = r.data_sync_providers.get(
-            data_sync_type, None
-        )
+        provider_cls: DataSyncProvider = r.data_sync_providers.get(data_sync_type, None)
         assert provider_cls is not None
         provider = provider_cls()
         data = provider.update(tenant_uuid=tenant.uuid, data=data)
@@ -73,4 +72,4 @@ class DataSyncListSerializer(DataSyncSerializer):
     class Meta:
         model = DataSyncConfig
 
-        fields = ('name', 'type',)
+        fields = ('name', 'type', 'sync_mode')
