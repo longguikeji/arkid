@@ -46,6 +46,7 @@ class SyncClientAD(SyncClient):
         self.search_base = settings['search_base'] \
                                  if 'search_base' in settings \
                                  else self.root_dn[self.root_dn.replace('dc=','DC=').find('DC='):]
+        self.exclude_groups = settings.get('exclude_groups', [])
         self.connect_timeout = settings.get('connect_timeout')
         self.receive_timeout = settings.get('receive_timeout')
 
@@ -277,6 +278,22 @@ class SyncClientAD(SyncClient):
             return None
         return entries[0]
 
+    def get_group_under_ou(self, ou: str):
+        search_base = ou
+        search_filter = f'(objectclass={self.group_object_class})'
+        res = self.conn.search(
+                search_base=search_base,
+                search_filter=search_filter,
+                search_scope=ldap3.LEVEL,
+                size_limit=1,
+        )
+        if not res:
+            return None
+        entries = json.loads(self.conn.response_to_json())['entries']
+        if not entries:
+            return None
+        return entries[0]
+
     def get_all_ou_from_ldap(self):
         search_base = self.root_dn
         search_filter = f'(objectclass={self.ou_object_class})'
@@ -424,7 +441,8 @@ class SyncClientAD(SyncClient):
 
         groups_dn = attrs.get('memberOf', [])
         for group_dn in groups_dn:
-            self.remove_group_member(dn, group_dn)
+            if self.exists_group_dn(group_dn) and group_dn not in self.exclude_groups:
+                self.remove_group_member(dn, group_dn)
 
     def remove_member_of_group(self, ldap_object):
         # remove user or group from group by ldap member attribute
@@ -585,7 +603,10 @@ class SyncClientAD(SyncClient):
                     _, source_ou = ldap_user_dn.split(',', 1)
                     if source_ou.lower() != ou.lower():
                         self.move_user(source_dn=ldap_user_dn, destination_dn=user_dn)
-                        self.remove_member_of_attr(ldap_user)
+                        # search group under this ou and remove user from this ou
+                        group_dn = self.get_group_under_ou(source_ou)
+                        if group_dn:
+                            self.remove_group_member(ldap_user_dn, group_dn)
                     else:
                         user['ldap_dn'] = ldap_user_dn
                     new_value, old_value = self.compare_user(user, ldap_user)
