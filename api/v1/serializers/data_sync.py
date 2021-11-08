@@ -37,8 +37,7 @@ class DataSyncSerializer(BaseDynamicFieldModelSerializer):
         provider_cls: DataSyncProvider = r.data_sync_providers.get(data_sync_type, None)
         assert provider_cls is not None
 
-        provider = provider_cls()
-        data = provider.create(tenant_uuid=tenant.uuid, data=data)
+        data = provider_cls.create(tenant_uuid=tenant.uuid, data=data)
         if data is not None:
             data_sync_config.data = data
         data_sync_config.name = name
@@ -58,8 +57,7 @@ class DataSyncSerializer(BaseDynamicFieldModelSerializer):
 
         provider_cls: DataSyncProvider = r.data_sync_providers.get(data_sync_type, None)
         assert provider_cls is not None
-        provider = provider_cls()
-        data = provider.update(tenant_uuid=tenant.uuid, data=data)
+        data = provider_cls.update(tenant_uuid=tenant.uuid, data=data)
         if data is not None:
             instance.data = data
         instance.type = data_sync_type

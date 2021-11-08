@@ -6,7 +6,7 @@ from common.serializer import DataSyncBaseSerializer, ScimServerBaseSerializer
 class AdDataSyncConfigSerializer(ScimServerBaseSerializer):
 
     host = serializers.CharField()
-    port = serializers.CharField()
+    port = serializers.IntegerField()
     bind_dn = serializers.CharField()
     bind_password = serializers.CharField()
     root_dn = serializers.CharField()

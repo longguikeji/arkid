@@ -5,22 +5,38 @@ from scim_server.service.provider_base import ProviderBase
 from scim_server.schemas.core2_enterprise_user import Core2EnterpriseUser
 from scim_server.schemas.core2_group import Core2Group
 from scim_server.schemas.schema_identifiers import SchemaIdentifiers
-from scim_server.exceptions import ArgumentNullException, ArgumentException
+from scim_server.exceptions import (
+    ArgumentNullException,
+    ArgumentException,
+    NotFoundException,
+)
+from data_sync.models import DataSyncConfig
+from ldap3 import Server, Connection
+from .utils import load_config
+from django.urls import reverse
+from config import get_app_config
 
 
 class AdDataSyncProvider(DataSyncProvider, ProviderBase):
-    def __init__(self) -> None:
+    def __init__(self, tenant_uuid) -> None:
         super().__init__()
-        self.group_provider = AdGroupProvider()
-        self.user_provider = AdUserProvider()
+        config = load_config(tenant_uuid)
+        if not config:
+            raise NotFoundException('Ad server config not found')
+        self.group_provider = AdGroupProvider(config)
+        self.user_provider = AdUserProvider(config)
 
-    def create(self, tenant_uuid, data):
+    @classmethod
+    def create(cls, tenant_uuid, data):
         host = data.get("host")
         port = data.get("port")
         bind_dn = data.get("bind_dn")
         bind_password = data.get("bind_password")
         root_dn = data.get("root_dn")
         use_tls = data.get("use_tls")
+        server_host = get_app_config().get_host()
+        user_url = server_host + reverse('api:ad_data_sync:ad-users', args=[tenant_uuid])
+        group_url = server_host + reverse('api:ad_data_sync:ad-groups', args=[tenant_uuid])
 
         return {
             "host": host,
@@ -29,15 +45,21 @@ class AdDataSyncProvider(DataSyncProvider, ProviderBase):
             "bind_password": bind_password,
             "root_dn": root_dn,
             "use_tls": use_tls,
+            "user_url": user_url,
+            "group_url": group_url,
         }
 
-    def update(self, tenant_uuid, data):
+    @classmethod
+    def update(cls, tenant_uuid, data):
         host = data.get("host")
         port = data.get("port")
         bind_dn = data.get("bind_dn")
         bind_password = data.get("bind_password")
         root_dn = data.get("root_dn")
         use_tls = data.get("use_tls")
+        server_host = get_app_config().get_host()
+        user_url = server_host + reverse('api:ad_data_sync:ad-users', args=[tenant_uuid])
+        group_url = server_host + reverse('api:ad_data_sync:ad-groups', args=[tenant_uuid])
 
         return {
             "host": host,
@@ -46,6 +68,8 @@ class AdDataSyncProvider(DataSyncProvider, ProviderBase):
             "bind_password": bind_password,
             "root_dn": root_dn,
             "use_tls": use_tls,
+            "user_url": user_url,
+            "group_url": group_url,
         }
 
     def create_async2(self, resource, correlation_identifier):

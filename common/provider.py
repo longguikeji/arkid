@@ -113,10 +113,12 @@ class AuthorizationAgentProvider:
 
 
 class DataSyncProvider:
-    def create(self, tenant_uuid, config_data):
+    @classmethod
+    def create(cls, tenant_uuid, config_data):
         pass
 
-    def update(self, tenant_uuid, config_data):
+    @classmethod
+    def update(cls, tenant_uuid, config_data):
         pass
 
 

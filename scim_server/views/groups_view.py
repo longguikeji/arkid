@@ -23,5 +23,6 @@ class GroupsViewTemplate(ViewTemplate):
             Core2GroupProviderAdapter,
         )
 
+        # TODO deliver parameter from view to provider
         result = Core2GroupProviderAdapter(self.provider)
         return result

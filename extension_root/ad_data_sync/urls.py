@@ -9,12 +9,12 @@ except ImportError:
 
 urlpatterns = [
     re_path(
-        r'^scim/ad/Users(?:/(?P<uuid>[^/]+))?$',
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/ad/scim/Users(?:/(?P<uuid>[^/]+))?$',
         UsersView.as_view(),
         name="ad-users",
     ),
     re_path(
-        r'^scim/ad/Groups(?:/(?P<uuid>[^/]+))?$',
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/ad/scim/Groups(?:/(?P<uuid>[^/]+))?$',
         GroupsView.as_view(),
         name="ad-groups",
     ),

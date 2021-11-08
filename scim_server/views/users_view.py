@@ -21,5 +21,6 @@ class UsersViewTemplate(ViewTemplate):
             Core2EnterpriseUserProviderAdapter,
         )
 
+        # TODO deliver parameter from view to provider
         result = Core2EnterpriseUserProviderAdapter(self.provider)
         return result

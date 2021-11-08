@@ -73,5 +73,5 @@ class DataSyncBaseSerializer(serializers.Serializer):
 
 
 class ScimServerBaseSerializer(serializers.Serializer):
-    users_url = serializers.URLField(read_only=True)
-    groups_url = serializers.URLField(read_only=True)
+    user_url = serializers.URLField(read_only=True)
+    group_url = serializers.URLField(read_only=True)
