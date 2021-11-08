@@ -21,7 +21,7 @@ class ApplicationMultipleIp(BaseModel):
         max_length=200
     )
 
-    ip = models.IPAddressField(
+    ip = models.GenericIPAddressField(
         verbose_name=_("IP地址")
     )
 

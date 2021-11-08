@@ -34,6 +34,7 @@ from . import (
     user_permission,
     user_log,
     webhook,
+    multiple_ips
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
@@ -119,6 +120,10 @@ root_add_routers(
                         PageRouter(
                             page=webhook,
                             icon='webhook',
+                        ),
+                        PageRouter(
+                            page=multiple_ips,
+                            icon='list',
                         ),
                         PageRouter(page=custom_process, icon='process'),
                         UrlRouter(

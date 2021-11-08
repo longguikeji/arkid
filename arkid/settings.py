@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'extension_root.tenantuserconfig',
     'extension_root.childaccount',
     'extension_root.childmanager',
+    'extension_root.application_multiple_ip',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',
