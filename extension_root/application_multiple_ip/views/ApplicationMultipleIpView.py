@@ -11,11 +11,14 @@ from django.http.response import JsonResponse
 
 
 @extend_schema_view(
+    list=extend_schema(
+        roles=['tenant admin', 'global admin', 'general user'],
+    ),
+    retrieve=extend_schema(roles=['tenant admin', 'global admin']),
+    create=extend_schema(roles=['tenant admin', 'global admin']),
+    update=extend_schema(roles=['tenant admin', 'global admin']),
     destroy=extend_schema(roles=['tenant admin', 'global admin']),
     partial_update=extend_schema(roles=['tenant admin', 'global admin']),
-)
-@extend_schema(
-    tags=['app'],
 )
 class ApplicationMultipleIpViewSet(BaseViewSet):
 
