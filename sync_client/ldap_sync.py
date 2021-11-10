@@ -306,7 +306,8 @@ class SyncClientAD(SyncClient):
             return []
         all_ou = json.loads(self.conn.response_to_json())['entries']
         all_ou_dn = [x['dn'] for x in all_ou]
-        all_ou_dn.remove(self.root_dn.replace('ou=','OU=').replace('dc=','DC='))
+        index = [x.lower() for x in all_ou_dn].index(self.root_dn.lower())
+        del all_ou_dn[index]
         return all_ou_dn
 
     def move_user(self, source_dn, destination_dn):
@@ -604,9 +605,9 @@ class SyncClientAD(SyncClient):
                     if source_ou.lower() != ou.lower():
                         self.move_user(source_dn=ldap_user_dn, destination_dn=user_dn)
                         # search group under this ou and remove user from this ou
-                        group_dn = self.get_group_under_ou(source_ou)
-                        if group_dn:
-                            self.remove_group_member(ldap_user_dn, group_dn)
+                        group = self.get_group_under_ou(source_ou)
+                        if group:
+                            self.remove_group_member(ldap_user_dn, group['dn'])
                     else:
                         user['ldap_dn'] = ldap_user_dn
                     new_value, old_value = self.compare_user(user, ldap_user)
