@@ -2,9 +2,7 @@
 import re
 from enum import Enum
 from scim_server.schemas.comparison_operator import ComparisonOperator
-from scim_server.protocol.filter import (
-    Filter
-)
+from scim_server.protocol.filter import Filter
 from scim_server.schemas.attribute_data_type import AttributeDataType
 from scim_server.exceptions import (
     ArgumentNullException,
@@ -92,13 +90,13 @@ class FilterExpression:
 
     @classmethod
     def get_filter_pattern(cls):
-        print(cls.pattern_template)
+        # print(cls.pattern_template)
         return cls.pattern_template.format(cls.get_comparison_operators())
 
     @classmethod
     def get_expression(cls):
         pattern = cls.get_filter_pattern()
-        print(pattern)
+        # print(pattern)
         return re.compile(pattern)
 
     def __init__(
@@ -151,7 +149,7 @@ class FilterExpression:
         instance.level = level
         instance.group = group
         expression = cls.get_expression()
-        print(expression)
+        # print(expression)
         matches = expression.finditer(instance.text)
         for match in matches:
             level_up_group = match.group(cls.pattern_group_level_up)
