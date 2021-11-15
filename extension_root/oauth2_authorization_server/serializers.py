@@ -21,7 +21,7 @@ class OAuth2ConfigSerializer(serializers.Serializer):
 
 class OAuth2AppSerializer(AppBaseSerializer):
     logo = create_upload_url_field(serializers.URLField)(
-        hint=_("请选择图标"), required=False
+        hint=_("请选择图标"), required=False,
     )
     url = create_hint_field(serializers.URLField)(hint="请填写正确的url格式")
     # protocol_data = OAuth2ConfigSerializer()
