@@ -12,7 +12,7 @@ class AppBaseSerializer(serializers.Serializer):
 
     type = serializers.CharField()
     data = serializers.JSONField()
-
+    logo = serializers.URLField(required=False)
     uuid = serializers.UUIDField(read_only=True)
     name = serializers.CharField()
     url = serializers.URLField()
