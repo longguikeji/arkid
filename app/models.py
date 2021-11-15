@@ -10,7 +10,7 @@ class App(BaseModel):
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT)
     name = models.CharField(max_length=128)
     url = models.CharField(max_length=1024, blank=True)
-    logo = models.FileField(blank=True, null=True)
+    logo = models.CharField(max_length=1024, blank=True, null=True, default='')
     description = models.TextField(blank=True, null=True)
     type = models.CharField(max_length=128, verbose_name=_('App Type'))
     data = models.JSONField(blank=True, default=dict)
