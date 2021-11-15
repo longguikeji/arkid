@@ -11,8 +11,16 @@ from schema.models import Schema, AppProfile
 from webhook.manager import WebhookManager
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
+from api.v1.fields.custom import (
+    create_upload_url_field,
+)
 
 class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
+
+    logo = create_upload_url_field(serializers.URLField)(
+        hint=_("请选择图标"), required=False
+    )
+
     class Meta:
         model = App
 
@@ -33,6 +41,7 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
             'uuid',
             'name',
             'url',
+            'logo',
             'type',
             'data',
             'description',
@@ -47,6 +56,7 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
         tenant = self.context['tenant']
 
         name = validated_data.pop('name')
+        logo = validated_data.pop('logo', '')
         protocol_type = validated_data.pop('type')
         url = validated_data.pop('url', '')
         description = validated_data.pop('description', '')
@@ -59,6 +69,7 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
             type=protocol_type,
             url=url,
             description=description,
+            logo=logo,
         )
 
         r = get_app_runtime()
