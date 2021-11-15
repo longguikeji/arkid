@@ -46,6 +46,7 @@ class SyncClientAD(SyncClient):
         self.search_base = settings['search_base'] \
                                  if 'search_base' in settings \
                                  else self.root_dn[self.root_dn.replace('dc=','DC=').find('DC='):]
+        self.exclude_groups = settings.get('exclude_groups', [])
         self.connect_timeout = settings.get('connect_timeout')
         self.receive_timeout = settings.get('receive_timeout')
 
@@ -80,9 +81,9 @@ class SyncClientAD(SyncClient):
     def add_user(self, user: json):
         object_class = self.user_object_class
         attributes = copy.copy(user['attributes'])
-        if not attributes.get('mail'):
+        if not attributes.get('homePhone'):
             mail = self.gen_user_email(user)
-            attributes['mail'] = mail
+            attributes['homePhone'] = mail
         cn, dn = user['ldap_cn'], user['ldap_dn']
 
         attributes['cn'] = cn
@@ -129,7 +130,7 @@ class SyncClientAD(SyncClient):
         email = email_prefix + self.mail_suffix
         if not self.exists_email(email):
             return email
-        logger.info(f'email: {email} exists for {name}')
+        logger.debug(f'email: {email} exists for {name}')
 
         # 吴家亮 jialiangwu
         email_prefix = ''.join(givenNamePinyin + snPinyin)
@@ -137,7 +138,7 @@ class SyncClientAD(SyncClient):
         email = email_prefix + self.mail_suffix
         if not self.exists_email(email):
             return email
-        logger.info(f'email: {email} exists for {name}')
+        logger.debug(f'email: {email} exists for {name}')
 
         # 吴家亮 jialiangwu1、jialiangwu2、jialiangwu3
         max_n = 1000
@@ -146,7 +147,7 @@ class SyncClientAD(SyncClient):
             email = mail + str(n) + self.mail_suffix
             if not self.exists_email(email):
                 return email
-            logger.info(f'email: {email} exists for {name}')
+            logger.debug(f'email: {email} exists for {name}')
 
         raise Exception("more than {max_n} duplicate email: {mail} exists for {name} {user['id']}")
 
@@ -231,19 +232,15 @@ class SyncClientAD(SyncClient):
     def exists_email(self, mail: str):
         for client in self.user_search_clients:
             search_base = client.search_base
-            search_filter = f'(&(objectclass={client.user_object_class})(mail={mail}))'
+            search_filter = f'(&(objectclass={client.user_object_class})(|(mail={mail})(homePhone={mail})))'
             res = client.conn.search(
                     search_base=search_base,
                     search_filter=search_filter,
                     search_scope=ldap3.SUBTREE,
             )
-            if res:
-                entries = json.loads(client.conn.response_to_json())['entries']
-                if entries:
-                    result = entries[0]
-                    result['host_port'] = client.host + str(client.port)
-                    return result
-        return None
+            if res and json.loads(client.conn.response_to_json())['entries']:
+                return True
+        return False
 
     def get_user_from_ldap_by_id(self, user_id: str):
         for client in self.user_search_clients:
@@ -281,6 +278,22 @@ class SyncClientAD(SyncClient):
             return None
         return entries[0]
 
+    def get_group_under_ou(self, ou: str):
+        search_base = ou
+        search_filter = f'(objectclass={self.group_object_class})'
+        res = self.conn.search(
+                search_base=search_base,
+                search_filter=search_filter,
+                search_scope=ldap3.LEVEL,
+                size_limit=1,
+        )
+        if not res:
+            return None
+        entries = json.loads(self.conn.response_to_json())['entries']
+        if not entries:
+            return None
+        return entries[0]
+
     def get_all_ou_from_ldap(self):
         search_base = self.root_dn
         search_filter = f'(objectclass={self.ou_object_class})'
@@ -293,7 +306,8 @@ class SyncClientAD(SyncClient):
             return []
         all_ou = json.loads(self.conn.response_to_json())['entries']
         all_ou_dn = [x['dn'] for x in all_ou]
-        all_ou_dn.remove(self.root_dn.replace('ou=','OU=').replace('dc=','DC='))
+        index = [x.lower() for x in all_ou_dn].index(self.root_dn.lower())
+        del all_ou_dn[index]
         return all_ou_dn
 
     def move_user(self, source_dn, destination_dn):
@@ -334,11 +348,20 @@ class SyncClientAD(SyncClient):
                 new_value[k] = user_attributes[k]
                 old_value[k] = ldap_user_attributes.get(k)
 
-        for k in ['mail']:
+        for k in ['homePhone']:
+            if ldap_user_attributes.get('mail') and not ldap_user_attributes.get(k):
+                ldap_user_attributes[k] = ldap_user_attributes['mail']
+                new_value[k] = ldap_user_attributes[k]
+                old_value[k] = ''
             if user_attributes[k] and \
-                    user_attributes[k].split('@')[0] != ldap_user_attributes[k].split('@')[0]:
+                    user_attributes[k].split('@')[0] != ldap_user_attributes.get(k, '').split('@')[0]:
                 new_value[k] = user_attributes[k]
                 old_value[k] = ldap_user_attributes.get(k)
+            if not user_attributes[k] and not ldap_user_attributes.get(k):
+                mail = self.gen_user_email(user)
+                logger.debug(f"email: {mail} generated for user: {user['name']} id: {user['id']}")
+                new_value[k] = mail
+                old_value[k] = ''
 
         return new_value, old_value
 
@@ -419,7 +442,8 @@ class SyncClientAD(SyncClient):
 
         groups_dn = attrs.get('memberOf', [])
         for group_dn in groups_dn:
-            self.remove_group_member(dn, group_dn)
+            if self.exists_group_dn(group_dn) and group_dn not in self.exclude_groups:
+                self.remove_group_member(dn, group_dn)
 
     def remove_member_of_group(self, ldap_object):
         # remove user or group from group by ldap member attribute
@@ -536,7 +560,7 @@ class SyncClientAD(SyncClient):
         logger.debug(f"delete group {res and 'success' or 'failed'}: dn: {ldap_group_dn}, group_id: {group['id']}, error: {res and 'None' or self.conn.result}")
 
     def delete_groups(self):
-        logger.info('syncing disbled groups')
+        logger.info('syncing disabled groups')
         for group in self.groups:
             if group['status'] == 'disabled':
                 self.delete_group(group)
@@ -580,7 +604,10 @@ class SyncClientAD(SyncClient):
                     _, source_ou = ldap_user_dn.split(',', 1)
                     if source_ou.lower() != ou.lower():
                         self.move_user(source_dn=ldap_user_dn, destination_dn=user_dn)
-                        self.remove_member_of_attr(ldap_user)
+                        # search group under this ou and remove user from this ou
+                        group = self.get_group_under_ou(source_ou)
+                        if group:
+                            self.remove_group_member(ldap_user_dn, group['dn'])
                     else:
                         user['ldap_dn'] = ldap_user_dn
                     new_value, old_value = self.compare_user(user, ldap_user)
@@ -623,13 +650,13 @@ class SyncClientAD(SyncClient):
         self.conn.modify(dn=user["ldap_dn"], changes=changes)
 
     def delete_users(self):
-        logger.info('syncing disbled users')
+        logger.info('syncing disabled users')
         for user in self.users:
             if user['status'] == 'disabled':
                 self.disable_user(user)
 
     def disable_user(self, user):
-        logger.info(f"disabling user {user['id']}")
+        logger.info(f"disabling user: id {user['id']} name user['name']")
         ldap_user = self.get_user_from_ldap_by_id(user['id'])
         if not ldap_user:
             logger.warning(f"disabling user {user['id']}, but {user['id']} does not exist in ldap")
@@ -643,8 +670,43 @@ class SyncClientAD(SyncClient):
         # delete user attributes
         changes = {}
         keys = set(user['attributes'].keys())
-        delete_keys = ['title', 'department', 'company', 'pager']
-        for k in delete_keys:
+        delete_keys = set([
+            #常规属性名称
+            "givenName",
+            "sn",
+            "initials",
+            "description",
+            "physicalDeliveryOfficeName",
+            "telephoneNumber",
+            "otherTelephone",
+            "mail",
+            "wwwHomePage",
+            "url",
+            #地址属性名称
+            "streetAddress",
+            "postOfficeBox",
+            "l",
+            "st",
+            "postalCode",
+            "c",
+            "co",
+            #组织属性名称
+            "title",
+            "department",
+            "company",
+            #电话相关属性名称
+            "telephoneNumber",
+            "otherTelephone",
+            "pager",
+            "mobile",
+            "otherMobile",
+            "facsimileTelephoneNumber",
+            "otherFacsimileTelephoneNumber",
+            "ipPhone",
+            "otherIpPhone",
+            "info",
+        ])
+        for k in keys & delete_keys:
             changes[k] = [(ldap3.MODIFY_REPLACE, [' '])]
         res = self.conn.modify(dn=ldap_user_dn, changes=changes)
         if not res:
