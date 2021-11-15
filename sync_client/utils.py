@@ -1,5 +1,7 @@
 from re import X
 import requests
+import string
+import random
 
 
 def get_data(url):
@@ -69,3 +71,7 @@ def gen_group_attributes(group):
     result['company_name'] = group['urn:ietf:params:scim:schemas:extension:hr:2.0:Group']['FCOMP']
     result['company_id'] = group['urn:ietf:params:scim:schemas:extension:hr:2.0:Group']['FCOMP_ID']
     return result
+
+def gen_password(length):
+    chars = string.ascii_letters + string.digits
+    return ''.join([random.choice(chars) for i in range(length)])
