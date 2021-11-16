@@ -1,3 +1,5 @@
+from app.models import App
+from oauth2_provider.models import get_application_model
 from oauth2_provider.views import AuthorizationView as BaseAuthorizationView
 from urllib.parse import urlparse
 import re
@@ -12,7 +14,9 @@ class AuthorizationView(BaseAuthorizationView):
         
         try:
             from extension_root.application_multiple_ip.models import ApplicationMultipleIp
-            ipregxs = ApplicationMultipleIp.active_objects.filter(app=obj).all()
+            application = get_application_model().objects.get(client_id=credentials["client_id"])
+            app = App.active_objects.get(id=application.name)
+            ipregxs = ApplicationMultipleIp.active_objects.filter(app=app).all()
             request_host = self.context["request"].get_host()
            
             for ipregx in ipregxs:
