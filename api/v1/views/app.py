@@ -105,6 +105,7 @@ class AppViewSet(BaseViewSet):
 
     @extend_schema(roles=['tenant admin', 'global admin'], responses=AppListSerializer)
     def list(self, request, *args, **kwargs):
+        print(11111)
         return super().list(request, *args, **kwargs)
 
     @extend_schema(

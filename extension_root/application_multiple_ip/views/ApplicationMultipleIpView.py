@@ -48,3 +48,19 @@ class ApplicationMultipleIpViewSet(BaseViewSet):
             .order_by('id')
             .first()
         )
+
+    def create(self, request, *args, **kwargs):
+        app_id=request.data.get("app")
+        app = App.active_objects.get(uuid=app_id)
+        amip = ApplicationMultipleIp(
+            app = app,
+            ip_regx = request.data.get("ip_regx"),
+            ip = request.data.get("ip")
+        )
+        amip.save()
+        return JsonResponse(
+            data={
+                "status": 200,
+                "data": BaseApplicationMultipleIpSerializer(instance=amip).data
+            }
+        )

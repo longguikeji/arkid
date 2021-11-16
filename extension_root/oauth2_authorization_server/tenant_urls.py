@@ -1,10 +1,11 @@
 from django.conf.urls import url
 from django.urls import re_path
 from oauth2_provider import views
+from .views import AuthorizationView
 
 
 base_urlpatterns = [
-    url(r"oauth/authorize/$", views.AuthorizationView.as_view(), name="authorize"),
+    url(r"oauth/authorize/$", AuthorizationView.as_view(), name="authorize"),
     url(r"oauth/token/$", views.TokenView.as_view(), name="token"),
     url(r"oauth/revoke_token/$", views.RevokeTokenView.as_view(), name="revoke-token"),
     url(r"oauth/introspect/$", views.IntrospectTokenView.as_view(), name="introspect"),

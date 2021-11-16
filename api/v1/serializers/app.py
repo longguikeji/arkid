@@ -1,3 +1,4 @@
+import re
 from common.provider import AppTypeProvider
 from app.models import App
 from common.serializer import BaseDynamicFieldModelSerializer
@@ -11,8 +12,31 @@ from schema.models import Schema, AppProfile
 from webhook.manager import WebhookManager
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
+from urllib.parse import urlparse
 
 class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
+    
+    url = serializers.SerializerMethodField(
+        label=_("链接")
+    )
+    
+    def get_url(self,obj):
+        url = obj.url
+        try:
+            from extension_root.application_multiple_ip.models import ApplicationMultipleIp
+            ipregxs = ApplicationMultipleIp.active_objects.filter(app=obj).all()
+            request_host = self.context["request"].get_host()
+           
+            for ipregx in ipregxs:
+                if re.match(ipregx.ip_regx,request_host):
+                    o = urlparse(url)
+                    url = re.sub(o.hostname,ipregx.ip,url)
+                    continue
+                    
+        except Exception as err:
+            print(err)
+        return url
+    
     class Meta:
         model = App
 
@@ -96,13 +120,35 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
 
 
 class AppListSerializer(AppSerializer):
-
+    
+    url = serializers.SerializerMethodField(
+        label=_("链接")
+    )
+    
+    def get_url(self,obj):
+        url = obj.url
+        try:
+            from extension_root.application_multiple_ip.models import ApplicationMultipleIp
+            ipregxs = ApplicationMultipleIp.active_objects.filter(app=obj).all()
+            request_host = self.context["request"].get_host()
+           
+            for ipregx in ipregxs:
+                if re.match(ipregx.ip_regx,request_host):
+                    o = urlparse(url)
+                    url = re.sub(o.hostname,ipregx.ip,url)
+                    continue
+                    
+        except Exception as err:
+            print(err)
+        return url
+    
     class Meta:
         model = App
 
         fields = (
             'name',
             'url',
+            'logo',
             'type',
             'description',
             'auth_tmpl',
