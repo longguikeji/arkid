@@ -232,7 +232,7 @@ class SyncClientAD(SyncClient):
     def exists_email(self, mail: str):
         for client in self.user_search_clients:
             search_base = client.search_base
-            search_filter = f'(&(objectclass={client.user_object_class})(|(mail={mail})(homePhone={mail})))'
+            search_filter = f'(&(objectclass={client.user_object_class})(homePhone={mail}))'
             res = client.conn.search(
                     search_base=search_base,
                     search_filter=search_filter,
@@ -349,10 +349,10 @@ class SyncClientAD(SyncClient):
                 old_value[k] = ldap_user_attributes.get(k)
 
         for k in ['homePhone']:
-            if ldap_user_attributes.get('mail') and not ldap_user_attributes.get(k):
-                ldap_user_attributes[k] = ldap_user_attributes['mail']
-                new_value[k] = ldap_user_attributes[k]
-                old_value[k] = ''
+            # if ldap_user_attributes.get('mail') and not ldap_user_attributes.get(k):
+            #     ldap_user_attributes[k] = ldap_user_attributes['mail']
+            #     new_value[k] = ldap_user_attributes[k]
+            #     old_value[k] = ''
             if user_attributes[k] and \
                     user_attributes[k].split('@')[0] != ldap_user_attributes.get(k, '').split('@')[0]:
                 new_value[k] = user_attributes[k]
