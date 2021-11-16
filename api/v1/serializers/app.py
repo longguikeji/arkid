@@ -104,6 +104,7 @@ class AppListSerializer(AppSerializer):
             'name',
             'url',
             'type',
+            'logo',
             'description',
             'auth_tmpl',
         )
