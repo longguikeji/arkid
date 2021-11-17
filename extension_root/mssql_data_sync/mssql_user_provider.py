@@ -41,6 +41,7 @@ class MssqlUserProvider(ProviderBase):
             'FSTATUS': 'urn:ietf:params:scim:schemas:extension:hr:2.0:User:FSTATUS',
             'FCOMP_ID': 'urn:ietf:params:scim:schemas:extension:hr:2.0:User:FCOMP_ID',
             'FDEPT_ID': 'urn:ietf:params:scim:schemas:extension:hr:2.0:User:FDEPT_ID',
+            'FJOIN_DATE': 'urn:ietf:params:scim:schemas:extension:hr:2.0:User:FJOIN_DATA',
         }
         self.config = config
         self.db_config = config.data
@@ -60,7 +61,7 @@ class MssqlUserProvider(ProviderBase):
         job_table = self.db_config.get('job_table')
         company_table = self.db_config.get('company_table')
         UserSql = f'''
-        SELECT  A.FEMP_ID, A.FCODE, A.FNAME, A.FCARD_NO, A.FSTATUS, A.FJOB, A.email, B.FID AS DEPT_ID, B.FFULL_NAME AS DEPT_NAME, B.FCOMP AS FCOMP_ID,
+        SELECT  A.FEMP_ID, A.FCODE, A.FNAME, A.FCARD_NO, A.FSTATUS, A.FJOB, A.email, A.FJOIN_DATE, B.FID AS DEPT_ID, B.FFULL_NAME AS DEPT_NAME, B.FCOMP AS FCOMP_ID,
                 C.FJOB_NAME, D.COMPNAME, E.FNAME AS MANAGER_NAME, E.FEMP_ID AS MANAGER_ID
         FROM    {emp_table} AS A LEFT OUTER JOIN
                 {dept_table} AS B ON A.FDEPT_ID = B.FID LEFT OUTER JOIN

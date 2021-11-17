@@ -42,14 +42,15 @@ def compose_custom_user_extension(user, scim_path, value):
     if UserExtensionSchema not in custom_extension:
         user.add_custom_attribute(UserExtensionSchema, {})
 
-    if scim_path.attribute_path == 'FSTATUS':
-        custom_extension[UserExtensionSchema]['FSTATUS'] = value
-    elif scim_path.attribute_path == 'FCOMP_ID':
-        custom_extension[UserExtensionSchema]['FCOMP_ID'] = value
-    elif scim_path.attribute_path == 'FDEPT_ID':
-        custom_extension[UserExtensionSchema]['FDEPT_ID'] = value
-    elif scim_path.attribute_path == 'FCOMP':
-        custom_extension[UserExtensionSchema]['FCOMP'] = value
+    # if scim_path.attribute_path == 'FSTATUS':
+    #     custom_extension[UserExtensionSchema]['FSTATUS'] = value
+    # elif scim_path.attribute_path == 'FCOMP_ID':
+    #     custom_extension[UserExtensionSchema]['FCOMP_ID'] = value
+    # elif scim_path.attribute_path == 'FDEPT_ID':
+    #     custom_extension[UserExtensionSchema]['FDEPT_ID'] = value
+    # elif scim_path.attribute_path == 'FCOMP':
+    #     custom_extension[UserExtensionSchema]['FCOMP'] = value
+    custom_extension[UserExtensionSchema][scim_path.attribute_path] = value
 
 
 def get_scim_user(value_dict, user_attr_map):
