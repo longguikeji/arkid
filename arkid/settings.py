@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'extension_root.childaccount',
     'extension_root.childmanager',
     'extension_root.application_multiple_ip',
+    'extension_root.app_market_manage',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',
@@ -233,9 +234,7 @@ g+gp5fQ4nmDrSNHjakzQCX2mKMsx/GLWZzoIDd7ECV9f
 }
 
 
-
 MAMA_CAS_ATTRIBUTE_CALLBACKS = ('mama_cas.callbacks.user_model_attributes',)
-
 
 
 # django-scim2
