@@ -13,9 +13,7 @@ def get_ldap_config():
     return sync_client_config
 
 
-def get_scim_data():
-    users_url = 'http://localhost:80/scim/v2/Users'
-    groups_url = 'http://localhost:80/scim/v2/Groups'
+def get_scim_data(users_url, groups_url):
     users_data = get_data(users_url)
     groups_data = get_data(groups_url)
     users = [gen_user_attributes(user) for user in users_data['Resources']]
@@ -34,12 +32,12 @@ def sync():
     if isinstance(settings, dict):
         settings = [settings]
 
-    users, groups = get_scim_data()
     clients = []
     for conf in settings:
         client = SyncClientAD(**conf['domain_settings'])
         client.company = conf['company_name']
         client.company_id = conf['company_id']
+        users, groups = get_scim_data(**conf['scim_settings'])
         client.users = [user for user in users if user['company_name'] == conf['company_name']]
         client.groups = [group for group in groups if group['company_name'] == conf['company_name']]
         client.gen_user_password = gen_user_password
