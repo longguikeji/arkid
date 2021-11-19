@@ -38,9 +38,9 @@ class ExtensionSerializer(BaseDynamicFieldModelSerializer):
             is_del=False,
             type=extension_type
         )
-        o.is_active = validated_data.get('is_active')
+        o.is_active = validated_data.get('is_active', False)
         o.is_del = False
-        o.data = validated_data.get('data')
+        o.data = validated_data.get('data', {})
         o.save()
         reload_extension(o.type, o.is_active)
         return o
