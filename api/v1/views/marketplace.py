@@ -103,6 +103,10 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
                 extension.uuid = ext.uuid
                 extension.installed = '已安装'
                 extension.enabled = '已启用' if ext.is_active else '未启用'
+            else:
+                extension.uuid = ''
+                extension.installed = '未安装'
+                extension.enabled = '未启用'
         return extensions
 
     def get_object(self):
