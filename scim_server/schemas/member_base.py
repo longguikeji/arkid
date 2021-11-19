@@ -5,6 +5,8 @@ from scim_server.schemas.attribute_names import AttributeNames
 class MemberBase:
     @property
     def display(self):
+        if not hasattr(self, '_display'):
+            return None
         return self._display
 
     @display.setter
@@ -13,6 +15,8 @@ class MemberBase:
 
     @property
     def value(self):
+        if not hasattr(self, '_value'):
+            return None
         return self._value
 
     @value.setter
@@ -21,10 +25,10 @@ class MemberBase:
 
     def to_dict(self):
         result = {}
-        if self.display:
+        if self.display is not None:
             result[AttributeNames.Display] = self.display
 
-        if self.value:
+        if self.value is not None:
             result[AttributeNames.Value] = self.value
         return result
 

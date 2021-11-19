@@ -112,6 +112,16 @@ class AuthorizationAgentProvider:
         pass
 
 
+class DataSyncProvider:
+    @classmethod
+    def create(cls, tenant_uuid, config_data):
+        pass
+
+    @classmethod
+    def update(cls, tenant_uuid, config_data):
+        pass
+
+
 class AuthorizationServerProvider:
 
     id: Optional[str] = None
@@ -195,6 +205,7 @@ class PrivacyNoticeProvider:
     def load_privacy(cls, request):
         raise NotImplementedError
 
+
 class BaseAuthRuleProvider:
     @abstractmethod
     def create(self, auth_rule, data) -> Dict:
@@ -213,18 +224,19 @@ class BaseAuthRuleProvider:
         raise NotImplementedError()
 
     @abstractmethod
-    def change_form(self,auth_rule,request,form, tenant):
+    def change_form(self, auth_rule, request, form, tenant):
         raise NotImplementedError()
 
     @abstractmethod
-    def authenticate_failed(self,auth_rule,request,form,tenant, extension):
+    def authenticate_failed(self, auth_rule, request, form, tenant, extension):
         return form
 
     @abstractmethod
-    def authenticate_success(self,auth_rule,request,form, user, tenant, extension):
+    def authenticate_success(self, auth_rule, request, form, user, tenant, extension):
         print(form)
         return form
-        
+
+
 class OtherAuthFactorProvider:
     def authenticate(self, request):
         '''login'''

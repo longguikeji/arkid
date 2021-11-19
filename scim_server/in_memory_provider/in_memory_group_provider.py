@@ -2,7 +2,7 @@
 
 import uuid
 from scim_server.service.provider_base import ProviderBase
-from scim_server.provider.in_memory_storage import Instance
+from scim_server.in_memory_provider.in_memory_storage import Instance
 from scim_server.exceptions import (
     ArgumentException,
     ArgumentNullException,
@@ -50,17 +50,16 @@ class InMemoryGroupProvider(ProviderBase):
             raise ArgumentNullException('parameters')
         if not correlation_identifier:
             raise ArgumentNullException('correlation_identifier')
-        if not parameters.alternate_filters:
+        if parameters.alternate_filters is None:
             raise ArgumentException('Invalid parameters')
 
         if not parameters.schema_identifier:
             raise ArgumentException('Invalid parameters')
 
-        result = []
-        query_filter = parameters.alternate_filters[0]
-        if not query_filter:
+        if not parameters.alternate_filters:
             buffer = self.storage.users.values()
 
+        query_filter = parameters.alternate_filters[0]
         if not query_filter.attribute_path:
             raise ArgumentException('invalid parameters')
         if not query_filter.comparison_value:
@@ -76,23 +75,23 @@ class InMemoryGroupProvider(ProviderBase):
                     group = item
                     break
             if group:
-                buffer = [group]
+                return [group]
             else:
-                buffer = []
-        else:
-            raise NotSupportedException('unsupported comparison operator')
+                return []
 
-        for item in buffer:
-            new_group = Core2Group()
-            new_group.display_name = item.display_name
-            new_group.external_identifier = item.external_identifier
-            new_group.identifier = item.identifier
-            new_group.members = item.members
-            new_group.metadata = item.metadata
-            for attr in parameters.excluded_attribute_paths:
-                if attr == AttributeNames.Members:
-                    new_group.members = None
-        return buffer
+        raise NotSupportedException('unsupported filter')
+
+        # for item in buffer:
+        #     new_group = Core2Group()
+        #     new_group.display_name = item.display_name
+        #     new_group.external_identifier = item.external_identifier
+        #     new_group.identifier = item.identifier
+        #     new_group.members = item.members
+        #     new_group.metadata = item.metadata
+        #     for attr in parameters.excluded_attribute_paths:
+        #         if attr == AttributeNames.Members:
+        #             new_group.members = None
+        # return buffer
 
     def replace_async2(self, resource, correlation_identifier):
         if not resource.identifier:

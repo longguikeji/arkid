@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = [ 'user_list', 'upermission' ]
+tag = [ 'user_list', 'user_list.permission' ]
 path = 'upermission'
 name = '用户权限'
 
@@ -15,15 +15,17 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/user_list/',
             'method': 'get',
-            'next': 'upermission'
+            'next': 'user_list.permission'
         },
-        'node': {
-            'next': 'upermission'
+        'local': {
+            'node': {
+                'next': 'user_list.permission'
+            }
         }
     }
 )
 
-upermission_tag = 'upermission'
+upermission_tag = 'user_list.permission'
 upermission_name = '用户权限'
 
 extend_schema_tags(
@@ -33,12 +35,11 @@ extend_schema_tags(
         'type': 'table_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/user_permission/{user_uuid}/',
-            'method': 'get',
-            'from': 'user_list'
+            'method': 'get'
         },
         'global': {
             'create': {
-                'tag': 'upermission.create',
+                'tag': 'user_list.permission.create',
                 'description': '添加用户权限',
                 'icon': 'el-icon-plus'
             }
@@ -48,14 +49,13 @@ extend_schema_tags(
                 'path': '/api/v1/tenant/{tenant_uuid}/user_permission/{user_uuid}/delete/',
                 'method': 'get',
                 'description': '删除',
-                'from': 'user_list',
                 'icon': 'el-icon-delete'
             }
         }
     }
 )
 
-upermission_create_tag = 'upermission.create'
+upermission_create_tag = 'user_list.permission.create'
 upermission_create_name = '添加用户权限'
 
 extend_schema_tags(
@@ -71,8 +71,7 @@ extend_schema_tags(
             'create': {
                 'path': '/api/v1/tenant/{tenant_uuid}/user_permission/{user_uuid}/create',
                 'method': 'post',
-                'description': '确定',
-                'from': 'user_list'
+                'description': '确定'
             }
         }
     }

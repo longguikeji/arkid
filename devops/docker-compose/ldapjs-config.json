@@ -1,0 +1,13 @@
+{
+  "ARKID_DOMAIN": "http://be/api/",
+  "LDAP_PORT": 1389,
+  "USER_ATTRIBUTES_MAPPING": {
+    "uid": "uuid"
+  },
+  "GROUP_ATTRIBUTES_MAPPING": {
+    "uid": "uuid"
+  },
+  "DEPARTMENT_ATTRIBUTES_MAPPING": {
+    "uid": "uuid"
+  }
+}

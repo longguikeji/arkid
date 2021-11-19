@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = [ 'group', 'group_user' ]
+tag = [ 'group', 'group.user' ]
 path = 'gmanage'
 name = '分组管理'
 
@@ -15,7 +15,7 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'get',
-            'next': 'group_user'
+            'next': 'group.user'
         },
         'global': {
             'create': {
@@ -47,12 +47,12 @@ extend_schema_tags(
                 'method': 'delete',
                 'description': '删除',
                 'icon': 'el-icon-delete'
+            },
+            'node': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
+                'method': 'get',
+                'next': 'group.user'
             }
-        },
-        'node': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
-            'method': 'get',
-            'next': 'group_user'
         }
     }
 )
@@ -101,7 +101,7 @@ extend_schema_tags(
     }
 )
 
-group_user_tag = 'group_user'
+group_user_tag = 'group.user'
 group_user_name = '组用户'
 
 extend_schema_tags(
@@ -111,8 +111,7 @@ extend_schema_tags(
         'type': 'table_page',
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/user/?group={group_uuid}',
-            'method': 'get',
-            'from': 'group'
+            'method': 'get'
         },
         'global': {
             'export': {

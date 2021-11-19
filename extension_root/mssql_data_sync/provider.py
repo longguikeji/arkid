@@ -1,28 +1,96 @@
-#!/usr/bin/env python3
+from common.provider import DataSyncProvider
+from .mssql_group_provider import MssqlGroupProvider
+from .mssql_user_provider import MssqlUserProvider
 from scim_server.service.provider_base import ProviderBase
 from scim_server.schemas.core2_enterprise_user import Core2EnterpriseUser
 from scim_server.schemas.core2_group import Core2Group
 from scim_server.schemas.schema_identifiers import SchemaIdentifiers
-from scim_server.exceptions import ArgumentNullException, ArgumentException
-from scim_server.provider.in_memory_user_provider import InMemoryUserProvider
-from scim_server.provider.in_memory_group_provider import InMemoryGroupProvider
+from scim_server.exceptions import (
+    ArgumentNullException,
+    ArgumentException,
+    NotFoundException,
+)
+from data_sync.models import DataSyncConfig
+from ldap3 import Server, Connection
+from .utils import load_config
+from django.urls import reverse
+from config import get_app_config
 
-class InMemoryProvider(ProviderBase):
 
-    TypeSchema = []
-    Types = []
+class MssqlDataSyncProvider(DataSyncProvider, ProviderBase):
+    def __init__(self, tenant_uuid) -> None:
+        super().__init__()
+        config = load_config(tenant_uuid)
+        if not config:
+            raise NotFoundException('Mssql server config not found')
+        self.group_provider = MssqlGroupProvider(config)
+        self.user_provider = MssqlUserProvider(config)
 
-    def __init__(self):
-        self.group_provider = InMemoryGroupProvider()
-        self.user_provider = InMemoryUserProvider()
+    @classmethod
+    def create(cls, tenant_uuid, data):
+        server = data.get("server")
+        port = data.get("port")
+        user = data.get("user")
+        password = data.get("password")
+        database = data.get("database")
+        emp_table = data.get("emp_table")
+        dept_table = data.get("dept_table")
+        job_table = data.get("job_table")
+        company_table = data.get("company_table")
+        server_host = get_app_config().get_host()
+        user_url = server_host + reverse(
+            'api:mssql_data_sync:mssql-users', args=[tenant_uuid]
+        )
+        group_url = server_host + reverse(
+            'api:mssql_data_sync:mssql-groups', args=[tenant_uuid]
+        )
 
-    @property
-    def resource_types(self):
-        return InMemoryProvider.Types
+        return {
+            "server": server,
+            "port": port,
+            "user": user,
+            "password": password,
+            "database": database,
+            "emp_table": emp_table,
+            "dept_table": dept_table,
+            "job_table": job_table,
+            "company_table": company_table,
+            "user_url": user_url,
+            "group_url": group_url,
+        }
 
-    @property
-    def schema(self):
-        return InMemoryProvider.TypeSchema
+    @classmethod
+    def update(cls, tenant_uuid, data):
+        server = data.get("server")
+        port = data.get("port")
+        user = data.get("user")
+        password = data.get("password")
+        database = data.get("database")
+        emp_table = data.get("emp_table")
+        dept_table = data.get("dept_table")
+        job_table = data.get("job_table")
+        company_table = data.get("company_table")
+        server_host = get_app_config().get_host()
+        user_url = server_host + reverse(
+            'api:mssql_data_sync:mssql-users', args=[tenant_uuid]
+        )
+        group_url = server_host + reverse(
+            'api:mssql_data_sync:mssql-groups', args=[tenant_uuid]
+        )
+
+        return {
+            "server": server,
+            "port": port,
+            "user": user,
+            "password": password,
+            "database": database,
+            "emp_table": emp_table,
+            "dept_table": dept_table,
+            "job_table": job_table,
+            "company_table": company_table,
+            "user_url": user_url,
+            "group_url": group_url,
+        }
 
     def create_async2(self, resource, correlation_identifier):
         if isinstance(resource, Core2EnterpriseUser):

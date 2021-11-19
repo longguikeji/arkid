@@ -62,6 +62,7 @@ class Path:
         seperator_index = expression.find(Path.SeperatorAttributes)
         if seperator_index >= 0:
             value_path_expression = expression[seperator_index + 1 :]
+            expression = expression[0:seperator_index]
             value_path = Path.try_parse(value_path_expression)
             if not value_path:
                 return None

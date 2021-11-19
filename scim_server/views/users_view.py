@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
 from scim_server.views.view_template import ViewTemplate
-from scim_server.provider.in_memory_provider import InMemoryProvider
-
-# from scim_server.service.core2
+from scim_server.exceptions import NotImplementedException
 
 
-class UsersView(ViewTemplate):
+class UsersViewTemplate(ViewTemplate):
     @property
     def model_cls(self):
         from scim_server.schemas.core2_enterprise_user import Core2EnterpriseUser
@@ -15,9 +13,7 @@ class UsersView(ViewTemplate):
 
     @property
     def provider(self):
-        from scim_server.mssql_provider.mssql_provider import MssqlProvider
-
-        return MssqlProvider()
+        raise NotImplementedException()
 
     @property
     def adapter_provider(self):
@@ -25,5 +21,6 @@ class UsersView(ViewTemplate):
             Core2EnterpriseUserProviderAdapter,
         )
 
+        # TODO deliver parameter from view to provider
         result = Core2EnterpriseUserProviderAdapter(self.provider)
         return result

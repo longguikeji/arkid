@@ -8,6 +8,8 @@ from ldap3.extend.microsoft.addMembersToGroups import ad_add_members_to_groups
 from ldap3.extend.microsoft.removeMembersFromGroups import ad_remove_members_from_groups
 
 from common.logger import logger
+from qiye_weixin.utils import get_weixin_client, load_textcard_url
+from .utils import gen_password
 
 
 class SyncClient:
@@ -100,11 +102,29 @@ class SyncClientAD(SyncClient):
         self.enable_user(dn)
 
         # notify user
-        # self.notify_user_created()
-        # logger.debug("notify user success")
+        try:
+            self.notify_user_created(attributes, user_password)
+        except Exception as e:
+            logger.error(e)
+        logger.debug("notify user success")
+
+    def notify_user_created(self, attributes, user_password):
+        client = get_weixin_client()
+        textcard_url = load_textcard_url(client)
+        if not textcard_url:
+            logger.error('No textcard url return')
+        logger.info(textcard_url)
+        title = f"{attributes['displayName']}，您好："
+        description = f"""欢迎加入孚能科技，我们是您IT的同事，我们准备了以下关于IT方面的相关资讯，便于您更好的开展工作：
+                        a，您的电脑登录账户是：{attributes['SamAccountName']}，登录随机密码是：{user_password}；
+                        b，您的邮箱号是：{attributes['homePhone']}，密码与电脑密码相同或者Farasis@1234；"""
+        touser=attributes.get('employeeID')
+        res = client.send_textcard(touser, title, description, textcard_url, '更多内容')
+        logger.debug(f"weixin notify {touser} result: {res}")
+
 
     def gen_user_password(self):
-        pass
+        return gen_password(10)
 
     def set_user_password(self, user_dn: str, user_password: str):
         # set password

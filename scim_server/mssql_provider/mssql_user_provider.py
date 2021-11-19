@@ -18,15 +18,6 @@ from scim_server.schemas.phone_number import PhoneNumber
 from scim_server.schemas.manager import Manager
 from scim_server.schemas.name import Name
 
-UserSql = '''
-SELECT  A.FEMP_ID, A.FCODE, A.FNAME, A.FCARD_NO, A.FSTATUS, A.FJOB, B.FID AS DEPT_ID, B.FFULL_NAME AS DEPT_NAME, B.FCOMP AS FCOMP_ID,
-        C.FJOB_NAME, D.COMPNAME, E.FNAME AS MANAGER_NAME, E.FEMP_ID AS MANAGER_ID
-FROM    EMP AS A LEFT OUTER JOIN
-        DEPT AS B ON A.FDEPT_ID = B.FID LEFT OUTER JOIN
-        JOB AS C ON A.FJOB = C.fjob_code LEFT OUTER JOIN
-        ECOMPANY AS D ON B.FCOMP = D.COMPID LEFT OUTER JOIN
-        EMP AS E ON A.FREPORT_MAN = E.FCODE
-'''
 UserExtensionSchema = 'urn:ietf:params:scim:schemas:extension:hr:2.0:User'
 
 
@@ -106,7 +97,7 @@ class MssqlUserProvider(ProviderBase):
         dept_table = self.db_config.dept_table
         job_table = self.db_config.job_table
         company_table = self.db_config.company_table
-        UserSql1 = f'''
+        UserSql = f'''
         SELECT  A.FEMP_ID, A.FCODE, A.FNAME, A.FCARD_NO, A.FSTATUS, A.FJOB, B.FID AS DEPT_ID, B.FFULL_NAME AS DEPT_NAME, B.FCOMP AS FCOMP_ID,
                 C.FJOB_NAME, D.COMPNAME, E.FNAME AS MANAGER_NAME, E.FEMP_ID AS MANAGER_ID
         FROM    {emp_table} AS A LEFT OUTER JOIN
@@ -119,7 +110,7 @@ class MssqlUserProvider(ProviderBase):
         all_users = []
         conn = self.db_config.get_connection()
         cursor = conn.cursor(as_dict=True)
-        cursor.execute(UserSql1)
+        cursor.execute(UserSql)
         row = cursor.fetchone()
         while row:
             print('++++++++++++++++++++++++++++')
