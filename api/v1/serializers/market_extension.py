@@ -14,6 +14,9 @@ class MarketPlaceExtensionSerializer(serializers.Serializer):
     tags = serializers.CharField()
     type = serializers.CharField()
     scope = serializers.CharField()
+    uuid = serializers.UUIDField(default='')
+    installed = serializers.ChoiceField(choices=(('已安装', '未安装')), default='未安装', label=_('是否安装'))
+    enalbed = serializers.ChoiceField(choices=(('已启用', '未启用')), default='未启用', label=_('是否安装'))
 
     # class Meta:
 
