@@ -13,9 +13,17 @@ from extension.utils import reload_extension
 from common.code import Code
 
 
+serializers = get_app_runtime().extension_serializers
 ExtensionPolymorphicProxySerializer = PolymorphicProxySerializer(
     component_name='ExtensionPolymorphicProxySerializer',
-    serializers=get_app_runtime().extension_serializers,
+    serializers=serializers,
+    resource_type_field_name='type'
+)
+
+type_serializers = {name: ExtensionListSerializer for name in serializers}
+ExtensionTypePolymorphicProxySerializer = PolymorphicProxySerializer(
+    component_name='ExtensionTypePolymorphicProxySerializer',
+    serializers=type_serializers,
     resource_type_field_name='type'
 )
 
@@ -29,6 +37,15 @@ class ExtensionViewSet(BaseViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = ExtensionSerializer
+    serializer_action_classes = {
+        'create': ExtensionListSerializer,
+    }
+
+    def get_serializer_class(self):
+        try:
+            return self.serializer_action_classes[self.action]
+        except (KeyError, AttributeError):
+            return super().get_serializer_class()
 
     def get_queryset(self):
         return Extension.valid_objects.filter()
@@ -65,18 +82,10 @@ class ExtensionViewSet(BaseViewSet):
 
     @extend_schema(
         roles=['global admin'],
-        request=ExtensionPolymorphicProxySerializer,
-        responses=ExtensionPolymorphicProxySerializer,
+        request=ExtensionTypePolymorphicProxySerializer,
+        responses=ExtensionTypePolymorphicProxySerializer,
     )
     def create(self, request, *args, **kwargs):
-        data = request.data.get('data','')
-        data_path = data.get('data_path', '')
-        if data_path:
-            if '../' in data_path or './' in data_path:
-                return JsonResponse(data={
-                    'error': Code.DATA_PATH_ERROR.value,
-                    'message': _('data_path format error'),
-                })
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
