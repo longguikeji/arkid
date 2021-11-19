@@ -8,51 +8,25 @@ extend_schema_tags(
     tag,
     name,
     {
-        'type':'table_page',
+        'type':'dashboard_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
+            'path': '/api/v1/marketplace/',
             'method': 'get'
         },
-        'global': {
-            'create': {
-                'tag': 'extension.create',
-                'description': '添加系统插件',
-                'icon': 'el-icon-plus'
-            }
-        },
         'local': {
+            'install': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
+                'method': 'post',
+                'description': '点击安装'
+            },
             'update': {
                 'tag': 'extension.update',
-                'description': '编辑',
-                'icon': 'el-icon-edit'
+                'description': '编辑'
             },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/{id}/',
                 'method': 'delete',
-                'description': '删除',
-                'icon': 'el-icon-delete'
-            }
-        }
-    }
-)
-
-extension_create_tag = 'extension.create'
-extension_create_name = '创建系统插件'
-
-extend_schema_tags(
-    extension_create_tag,
-    extension_create_name,
-    {
-        'type': 'form_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
-            'method': 'post'
-        },
-        'global': {
-            'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/extension/',
-                'method': 'post',
-                'description': '确定'
+                'description': '删除'
             }
         }
     }
