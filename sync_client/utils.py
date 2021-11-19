@@ -29,7 +29,7 @@ def gen_user_attributes(user):
         'sn': user['name']['familyName'],
         'name': user['name']['formatted'].replace(',',''),
         'displayName': user['name']['formatted'].replace(',',''),
-        'homePhone':  user.get('mail', ''), # generate_mail_func or mail_str or update_mail_func
+        'homePhone':  str(user['emails'][0].get('value','') if user.get('emails') else ''),
         'userPrincipalName': user['userName'],
         'sAMAccountName': user['userName'],
         # 'userPassword': '', # generate_pwd_func and notify_by_api
@@ -54,6 +54,7 @@ def gen_user_attributes(user):
         data['department'] = data['department'].rsplit('/', 1)[0]
     result['company_name'] = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP']
     result['company_id'] = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FCOMP_ID']
+    result['join_date'] = user['urn:ietf:params:scim:schemas:extension:hr:2.0:User']['FJOIN_DATA'].strip('/')
     return result
 
 
