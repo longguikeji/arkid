@@ -28,6 +28,7 @@ class DataSyncSerializer(BaseDynamicFieldModelSerializer):
         data = validated_data.pop('data', None)
 
         data_sync_config, _ = DataSyncConfig.objects.get_or_create(
+            name=name,
             tenant=tenant,
             type=data_sync_type,
             sync_mode=sync_mode,
