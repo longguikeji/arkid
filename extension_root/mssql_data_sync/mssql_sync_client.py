@@ -1,6 +1,5 @@
 from common.logger import logger
-from tenant.models import Tenant
-from inventory.models import User, Group
+from utils import get_connection
 
 
 class SyncClient:
@@ -8,94 +7,102 @@ class SyncClient:
         pass
 
 
-class SyncClientArkID(SyncClient):
+class SyncClientMssql(SyncClient):
     def __init__(self, **settings):
         self.users = settings['users']
         self.groups = settings['groups']
-        tenant_uuid = settings['tenant_uuid']
-        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-        if not tenant:
-            raise Exception(f"{tenant_uuid} does not exist")
+        self.emp_table = settings['emp_table']
+        self.dept_table = settings['dept_table']
+        self.conn = get_connection(settings)
 
     def _get_or_create_group(self, group):
         """
-        Returns a Django group.
         If the group does not exist, then it will be created.
         """
         groupname = group['name']
 
-        # Search group in django db
-        if Group.objects.filter(
-                ~Q(tenant=self.tenant),
-                name=groupname,
-        ).exists():
-            raise Exception(f"group {groupname} conflict, {groupname} already in another tenant")
+        # Update or create the group
+        parent_group_id = group.get('parent',{}).get('sql_group_id','')
+        group_attributes = {'name': groupname, 'parent': parent_group_id}
+        names = ','.join(group_attributes.keys())
+        values = ','.join(group_attributes.values())
+        cursor = self.conn.cursor(as_dict=True)
+        cursor.execute(f"""
+                        INSERT INTO {self.dept_table} ({names}) VALUES ({values})
+                        ON DUPLICATE KEY UPDATE name={groupname}
+                        """)
+        group_id = cursor.lastrowid
+        cursor.close()
 
-        # Update or create the group.
-        group_lookup = {'name': groupname}
-        arkid_group, created = Group.objects.update_or_create(defaults={}, **group_lookup)
-        if created:
-            arkid_group.tenant = self.tenant
-            arkid_group.parent = group['parent']['arkid_group']
-            arkid_group.save()
-
-        return arkid_group
+        return group_id
 
     def _get_or_create_user(self, user):
         """
-        Returns a Django user.
         If the user does not exist, then it will be created.
         """
         username = user['username']
 
-        # Search group in django db
-        if User.objects.filter(
-                ~Q(tenant=self.tenant),
-                username=username,
-        ).exists():
-            raise Exception(f"user {username} conflict, {username} already in another tenant")
+        # Update or create the user
+        group_id = user['group_id']
+        group = self.group_dict.get(group_id)
+        if group and group.get('sql_group_id'):
+            user_group_id = group['sql_group_id']
+        else:
+            user_group_id = ''
 
-        # Update or create the user.
         user_attributes = user['attributes']
-        user_lookup = {'username': username}
-        arkid_user, created = User.objects.update_or_create(defaults=user_attributes, **user_lookup)
-        # If the user was created, set them an unusable password.
-        if created:
-            arkid_user.parent = user['parent']['arkid_group']
+        user_attributes['user_group_id'] = user_group_id
+        names = ','.join(user_attributes.keys())
+        values = ','.join(user_attributes.values())
+        cursor = self.conn.cursor(as_dict=True)
+        cursor.execute(f"""
+                        INSERT INTO {self.emp_table} ({names}) VALUES ({values})
+                        ON DUPLICATE KEY UPDATE username={username}
+                        """)
+        user_id = cursor.lastrowid
+        cursor.close()
 
-            # set user password
-            arkid_user.set_unusable_password()
-
-            arkid_user.tenants.add(self.tenant)
-            group_id = user['group_id']
-            group = self.group_dict.get(group_id)
-            if group and group.get('arkid_group'):
-                arkid_user.groups.add(group['arkid_group'])
-            arkid_user.save()
-
-        return arkid_user
+        return user_id
 
     def delete_group(self, group):
         logger.info(f"deleting group {group['id']}")
         groupname = group['groupname']
-        arkid_group = Group.objects.filter(name=groupname, tenant=self.tenant).first()
-        if not arkid_group:
-            logger.warning(f"disabling group {group['id']}, but {group['id']} does not exist in arkid")
+
+        cursor = self.conn.cursor(as_dict=True)
+        cursor.execute(f"""
+                        select * from {self.dept_table} where name={groupname}
+                        """)
+        row = cursor.fetchone()
+        cursor.close()
+        if not row:
+            logger.warning(f"disabling group {group['id']}, but {group['id']} does not exist in database")
             return
 
-        arkid_group.is_del = True
-        arkid_group.save()
+        cursor = self.conn.cursor(as_dict=True)
+        cursor.execute(f"""
+                        delete from {self.dept_table} where name={groupname}
+                        """)
+        cursor.close()
 
     def disable_user(self, user):
         logger.info(f"disabling user: id {user['id']} name user['name']")
         username = user['username']
-        arkid_user = User.objects.filter(username=username, tenant=self.tenant).first()
-        if not arkid_user:
-            logger.warning(f"disabling user {user['id']}, but {user['id']} does not exist in arkid")
+
+        cursor = self.conn.cursor(as_dict=True)
+        cursor.execute(f"""
+                        select * from {self.emp_table} where username={username}
+                        """)
+        row = cursor.fetchone()
+        cursor.close()
+        if not row:
+            logger.warning(f"disabling user {user['id']}, but {user['id']} does not exist in database")
             return
 
-        arkid_user.is_del = True
-        arkid_user.save()
+        cursor = self.conn.cursor(as_dict=True)
+        cursor.execute(f"""
+                        delete from {self.emp_table} where username={username}
+                        """)
+        cursor.close()
 
     def get_root_groups(self):
         none_root_groups = set()
@@ -112,8 +119,8 @@ class SyncClientArkID(SyncClient):
         if parent_group:
             group['parent'] = parent_group
 
-        arkid_group = self._get_or_create_group(group)
-        group['arkid_group'] = arkid_group
+        sql_group_id = self._get_or_create_group(group)
+        group['sql_group_id'] = sql_group_id
 
         for member in group.get('members',[]):
             child_group_id = member['value']
@@ -142,7 +149,7 @@ class SyncClientArkID(SyncClient):
         for user in self.users:
             if user['status'] == 'enabled':
                 arkid_user = self._get_or_create_user(user)
-                user['arkid_user'] = arkid_user
+                user['sql_user_id'] = arkid_user
 
     def delete_users(self):
         logger.info('syncing disabled users')

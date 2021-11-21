@@ -164,3 +164,24 @@ class MssqlDataSyncProvider(DataSyncProvider, ProviderBase):
             return self.group_provider.update_async2(patch, correlation_identifier)
 
         raise NotImplementedError()
+
+class MssqlDataSyncClientProvider(DataSyncProvider):
+    @classmethod
+    def create(cls, tenant_uuid, data):
+        data['task'] = 'extension_root.ad_data_sync.tasks.sync'
+        # scim_server_uuid = data['scim_server_uuid']
+        # scim_server = DataSyncConfig.objects.filter(uuid=scim_server_uuid).first()
+        # data['scim_server_name'] = scim_server.name
+        # data['user_url'] = scim_server.data['user_url']
+        # data['group_url'] = scim_server.data['group_url']
+        return data
+
+    @classmethod
+    def update(cls, tenant_uuid, data):
+        data['task'] = 'extension_root.ad_data_sync.tasks.sync'
+        # scim_server_uuid = data['scim_server_uuid']
+        # scim_server = DataSyncConfig.objects.filter(uuid=scim_server_uuid).first()
+        # data['scim_server_name'] = scim_server.name
+        # data['user_url'] = scim_server.data['user_url']
+        # data['user_url'] = scim_server.data['user_url']
+        return data

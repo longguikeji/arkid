@@ -1,28 +1,42 @@
 from runtime import Runtime
 from common.extension import InMemExtension
-from .provider import MssqlDataSyncProvider
-from .serializers import MssqlDataSyncSerializer
+from .provider import MssqlDataSyncProvider, MssqlDataSyncClientProvider
+from .serializers import MssqlDataSyncSerializer, MssqlDataSyncClientSerializer
 
 
 class MssqlDataSyncExtension(InMemExtension):
     def start(self, runtime: Runtime, *args, **kwargs):
         runtime.register_data_sync_extension(
-            key='mssql_data_sync',
-            name='mssql_data_sync',
+            key='mssql_data_sync_server',
+            name='mssql_data_sync_server',
             description='Mssql Data Sync Extension',
             provider=MssqlDataSyncProvider,
             serializer=MssqlDataSyncSerializer,
+        )
+        runtime.register_data_sync_extension(
+            key='mssql_data_sync_client',
+            name='mssql_data_sync_client',
+            description='Mssql Data Sync Client Extension',
+            provider=MssqlDataSyncClientProvider,
+            serializer=MssqlDataSyncClientSerializer,
         )
 
         super().start(runtime=runtime, *args, **kwargs)
 
     def teardown(self, runtime: Runtime, *args, **kwargs):
         runtime.logout_data_sync_extension(
-            key='mssql_data_sync',
-            name='mssql_data_sync',
+            key='mssql_data_sync_server',
+            name='mssql_data_sync_server',
             description='Mssql Data Sync Extension',
             provider=MssqlDataSyncProvider,
             serializer=MssqlDataSyncSerializer,
+        )
+        runtime.logout_data_sync_extension(
+            key='mssql_data_sync_client',
+            name='mssql_data_sync_client',
+            description='Mssql Data Sync Client Extension',
+            provider=MssqlDataSyncClientProvider,
+            serializer=MssqlDataSyncClientSerializer,
         )
 
 
