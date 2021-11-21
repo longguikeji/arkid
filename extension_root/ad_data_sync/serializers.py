@@ -21,7 +21,7 @@ class AdDataSyncSerializer(DataSyncBaseSerializer):
 
     name = serializers.CharField(label=_('配置名称'))
     # sync_mode = serializers.ChoiceField(choices=['server', 'client'], label=_('同步模式'))
-    name = serializers.CharField(label=_('同步模式'), default='server', read_only=True)
+    sync_mode = serializers.CharField(label=_('同步模式'), default='server', read_only=True)
     data = AdDataSyncConfigSerializer(label=_('data'))
 
 
@@ -49,5 +49,5 @@ class AdDataSyncClientSerializer(DataSyncBaseSerializer):
 
     name = serializers.CharField(label=_('配置名称'))
     # sync_mode = serializers.ChoiceField(choices=['server', 'client'], label=_('同步模式'), default='client')
-    name = serializers.CharField(label=_('同步模式'), default='client', read_only=True)
+    sync_mode = serializers.CharField(label=_('同步模式'), default='client', read_only=True)
     data = ADDataSyncClientConfigSerializer(label=_('data'))

@@ -13,18 +13,6 @@ from .utils_client import gen_password
 
 
 class SyncClient:
-    def get_users_from_scim(self):
-        pass
-
-    def gen_user_attributes(self):
-        pass
-
-    def get_groups_from_scim(self):
-        pass
-
-    def gen_group_attributes(self):
-        pass
-
     def sync(self):
         pass
 

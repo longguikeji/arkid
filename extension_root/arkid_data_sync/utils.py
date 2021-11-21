@@ -10,7 +10,7 @@ from ldap3 import Server, Connection
 def load_config(tenant_uuid):
     config = DataSyncConfig.active_objects.filter(
         tenant__uuid=tenant_uuid,
-        type="ad_data_sync",
+        type="ad_data_sync_server",
     ).first()
 
     if not config:
