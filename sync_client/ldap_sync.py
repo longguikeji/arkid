@@ -2,6 +2,7 @@ import re
 import copy
 import json
 import pypinyin
+import datetime
 import ldap3
 from ldap3 import Server, Connection
 from ldap3.extend.microsoft.addMembersToGroups import ad_add_members_to_groups
@@ -9,7 +10,7 @@ from ldap3.extend.microsoft.removeMembersFromGroups import ad_remove_members_fro
 
 from common.logger import logger
 from qiye_weixin.utils import get_weixin_client, load_textcard_url
-from .utils import gen_password
+from .utils import gen_password, write_event_to_mssql
 
 
 class SyncClient:
@@ -53,6 +54,8 @@ class SyncClientAD(SyncClient):
         self.receive_timeout = settings.get('receive_timeout')
 
         self.conn = self.get_connection()
+
+        self.db_config = settings.get('db_config', {})
 
         self.users = []
         self.groups = []
@@ -122,6 +125,23 @@ class SyncClientAD(SyncClient):
         res = client.send_textcard(touser, title, description, textcard_url, '更多内容')
         logger.debug(f"weixin notify {touser} result: {res}")
 
+    def write_event_to_db(self, attributes, action):
+        # write event to db
+        try:
+            # createdate contactname	contactdept	contactemail contacttel $name	$dept	$mail  $tel
+            # access now() func, or python datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            data = {
+                'createdate': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'contactname': attributes.get('name',''),
+                'contactdept': attributes.get('department',''),
+                'contactemail': attributes.get('homePhone',''),
+                'contacttel': attributes.get('pager',''),
+            }
+            write_event_to_mssql(data=data, action=action, db_config=self.db_config)
+            logger.debug("write {action} event to db success")
+        except Exception as e:
+            logger.debug("write {action} event to db failed")
+            logger.error(e)
 
     def gen_user_password(self):
         return gen_password(10)
@@ -617,6 +637,8 @@ class SyncClientAD(SyncClient):
                 if not ldap_user:
                     # add new user
                     self.add_user(user)
+                    ldap_user = self.get_user_from_ldap_by_id(user['id'])
+                    self.write_event_to_db(ldap_user['attributes'], action='add')
                 elif ldap_user['host_port'] == self.host + str(self.port):
                     # same ad domain
                     # move existing user
@@ -629,11 +651,13 @@ class SyncClientAD(SyncClient):
                         group = self.get_group_under_ou(source_ou)
                         if group:
                             self.remove_group_member(ldap_user_dn, group['dn'])
+                        self.write_event_to_db(ldap_user['attributes'], action='update')
                     else:
                         user['ldap_dn'] = ldap_user_dn
                     new_value, old_value = self.compare_user(user, ldap_user)
                     if new_value:
                         self.update_user(user['ldap_dn'], new_value, old_value)
+                        self.write_event_to_db(ldap_user['attributes'], action='update')
                 else:
                     # not the domain
                     pass
@@ -686,6 +710,9 @@ class SyncClientAD(SyncClient):
 
         # disable user
         # userAccountControl: 512 normal user, 514 disabled user
+        if ldap_user['attributes']['userAccountControl'] != 514:
+            self.write_event_to_db(ldap_user['attributes'], action='delete')
+
         self.conn.modify(ldap_user_dn, {'userAccountControl': [(ldap3.MODIFY_REPLACE, 514)]})
 
         # delete user attributes

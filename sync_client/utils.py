@@ -2,6 +2,7 @@ from re import X
 import requests
 import string
 import random
+import pymssql
 
 
 def get_data(url):
@@ -73,6 +74,30 @@ def gen_group_attributes(group):
     result['company_id'] = group['urn:ietf:params:scim:schemas:extension:hr:2.0:Group']['FCOMP_ID']
     return result
 
+
 def gen_password(length):
     chars = string.ascii_letters + string.digits
     return ''.join([random.choice(chars) for i in range(length)])
+
+
+def get_connection(db_config):
+    conn = pymssql.connect(
+        db_config.get('server'),
+        db_config.get('user'),
+        db_config.get('password'),
+        db_config.get('database'),
+        port=db_config.get('port'),
+    )
+    return conn
+
+
+def write_event_to_mssql(data, action, db_config):
+    # names = ','.join(data.keys())
+    # values = ','.join(data.values())
+    # conn = get_connection(db_config)
+    # cursor = conn.cursor(as_dict=True)
+    # cursor.execute(f"""
+    #                 INSERT INTO {table} ({names}) VALUES ({values})
+    #                 """)
+    # conn.close()
+    pass
