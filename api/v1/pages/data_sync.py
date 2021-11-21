@@ -80,3 +80,19 @@ extend_schema_tags(
         }
     }
 )
+
+
+data_sync_table_tag = 'data_sync_table'
+data_sync_table_name = '同步服务端列表'
+
+extend_schema_tags(
+    data_sync_table_tag,
+    data_sync_table_name,
+    {
+        'type': 'table_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/data_sync/',
+            'method': 'get'
+        }
+    }
+)
