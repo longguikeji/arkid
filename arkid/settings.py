@@ -86,7 +86,6 @@ INSTALLED_APPS = [
     'djangosaml2idp',
     'login_register_config',
     'config',
-    'django_python3_ldap',
     'log',
     'django_celery_beat',
     'data_sync',
