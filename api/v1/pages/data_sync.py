@@ -91,7 +91,7 @@ extend_schema_tags(
     {
         'type': 'table_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/data_sync/',
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/data_sync/?sync_mode=server',
             'method': 'get'
         }
     }

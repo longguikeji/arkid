@@ -46,13 +46,14 @@ class DataSyncClientConfigSerializer(serializers.Serializer):
     max_retries = serializers.IntegerField(default=3, label=_('重试次数'))
     retry_delay = serializers.IntegerField(default=60, label=_('重试间隔(单位秒)'))
 
-    scim_server = DataSyncBaseSerializer(read_only=True, many=False)
+    # scim_server = DataSyncBaseSerializer(同步上游服务端 many=False)
+    scim_server_name = serializers.CharField(label=_('同步上游服务端'), read_only=True)
     scim_server_uuid = create_foreign_key_field(serializers.CharField)(
         model_cls=DataSyncConfig,
         field_name='uuid',
         page=data_sync.data_sync_table_tag,
         label=_('同步上游服务端'),
-        source="scim_server.uuid",
+        link='scim_server_name',
     )
 
 

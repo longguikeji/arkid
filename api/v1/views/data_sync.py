@@ -3,6 +3,7 @@ from api.v1.serializers.data_sync import DataSyncSerializer, DataSyncListSeriali
 from runtime import get_app_runtime
 from django.http.response import JsonResponse
 from openapi.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter
 from drf_spectacular.utils import PolymorphicProxySerializer
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
@@ -24,7 +25,18 @@ DataSyncPolymorphicProxySerializer = PolymorphicProxySerializer(
     destroy=extend_schema(roles=['tenant admin', 'global admin']),
     partial_update=extend_schema(roles=['tenant admin', 'global admin']),
 )
-@extend_schema(tags=['data_sync'])
+@extend_schema(
+    roles=['tenant admin', 'global admin'],
+    tags=['data_sync'],
+    parameters=[
+        OpenApiParameter(
+            name='sync_mode',
+            type={'type': 'string'},
+            location=OpenApiParameter.QUERY,
+            required=True,
+        ),
+    ]
+)
 class DataSyncViewSet(BaseViewSet):
 
     model = DataSyncConfig
@@ -36,11 +48,15 @@ class DataSyncViewSet(BaseViewSet):
 
     def get_queryset(self):
         context = self.get_serializer_context()
+        sync_mode = self.request.query_params.get('sync_mode', None)
         tenant = context['tenant']
 
         kwargs = {
             'tenant': tenant,
         }
+
+        if sync_mode is not None:
+            kwargs['sync_mode'] = sync_mode
 
         return DataSyncConfig.valid_objects.filter(**kwargs).order_by('id')
 

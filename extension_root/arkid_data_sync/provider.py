@@ -125,20 +125,22 @@ class ArkidDataSyncProvider(DataSyncProvider, ProviderBase):
 class ArkidDataSyncClientProvider(DataSyncProvider):
     @classmethod
     def create(cls, tenant_uuid, data):
-        data['task'] = 'extension_root.ad_data_sync.tasks.sync'
-        # scim_server_uuid = data['scim_server_uuid']
-        # scim_server = DataSyncConfig.objects.filter(uuid=scim_server_uuid).first()
-        # data['scim_server_name'] = scim_server.name
-        # data['user_url'] = scim_server.data['user_url']
-        # data['group_url'] = scim_server.data['group_url']
+        data['tenant_uuid'] = tenant_uuid.hex
+        data['task'] = 'extension_root.arkid_data_sync.tasks.sync'
+        scim_server_uuid = data['scim_server_uuid']
+        scim_server = DataSyncConfig.objects.filter(uuid=scim_server_uuid).first()
+        data['scim_server_name'] = scim_server.name
+        data['user_url'] = scim_server.data['user_url']
+        data['user_url'] = scim_server.data['user_url']
         return data
 
     @classmethod
     def update(cls, tenant_uuid, data):
-        data['task'] = 'extension_root.ad_data_sync.tasks.sync'
-        # scim_server_uuid = data['scim_server_uuid']
-        # scim_server = DataSyncConfig.objects.filter(uuid=scim_server_uuid).first()
-        # data['scim_server_name'] = scim_server.name
-        # data['user_url'] = scim_server.data['user_url']
-        # data['user_url'] = scim_server.data['user_url']
+        data['tenant_uuid'] = tenant_uuid.hex
+        data['task'] = 'extension_root.arkid_data_sync.tasks.sync'
+        scim_server_uuid = data['scim_server_uuid']
+        scim_server = DataSyncConfig.objects.filter(uuid=scim_server_uuid).first()
+        data['scim_server_name'] = scim_server.name
+        data['user_url'] = scim_server.data['user_url']
+        data['user_url'] = scim_server.data['user_url']
         return data
