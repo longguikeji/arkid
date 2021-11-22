@@ -89,7 +89,6 @@ INSTALLED_APPS = [
     'django_python3_ldap',
     'log',
     'django_celery_beat',
-    'sync_client',
     'data_sync',
 ]
 
