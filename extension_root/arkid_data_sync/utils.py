@@ -1,8 +1,5 @@
 import json
 import ldap3
-from django_python3_ldap.conf import LDAPSettings
-
-# from authorization_agent.models import AuthorizationAgent
 from data_sync.models import DataSyncConfig
 from ldap3 import Server, Connection
 
