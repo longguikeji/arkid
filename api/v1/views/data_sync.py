@@ -32,6 +32,7 @@ DataSyncPolymorphicProxySerializer = PolymorphicProxySerializer(
         OpenApiParameter(
             name='sync_mode',
             type={'type': 'string'},
+            enum=['server', 'client'],
             location=OpenApiParameter.QUERY,
             required=True,
         ),
