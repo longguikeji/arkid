@@ -6,10 +6,6 @@ from log.models import Log
 
 class LogSerializer(serializers.Serializer):
 
-    uuid = serializers.CharField(
-        read_only=True,
-        label=_("唯一标识符")
-    )
     timestamp = serializers.DateTimeField(
         format="%Y-%m-%d %H:%M:%S",
         read_only=True,
@@ -27,6 +23,10 @@ class LogSerializer(serializers.Serializer):
         read_only=True,
         label=_("操作")
     )
+    status_code = serializers.IntegerField(
+        read_only=True,
+        label=_("状态码")
+    )
 
     def to_representation(self, log):
         data = super().to_representation(log)
@@ -35,6 +35,7 @@ class LogSerializer(serializers.Serializer):
         data['user'] = log.data['user'].get('username', '')
         data['ip'] = log.data['ip_address']
         data['action'] = log.data['request'].get('path', '')
+        data['status_code'] = log.data['response'].get('status_code', '')
         return data
 
 
