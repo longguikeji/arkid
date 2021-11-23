@@ -32,7 +32,7 @@ extend_schema_tags(
     {
         'type': 'form_page',
         'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/admin_log/{id}/',
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/log/{id}/',
             'method': 'get'
         }
     }
