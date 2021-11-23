@@ -78,14 +78,17 @@ INSTALLED_APPS = [
     'extension_root.tenantuserconfig',
     'extension_root.childaccount',
     'extension_root.childmanager',
+    # 'django_scim',
+    # 'scim_server',
     'extension_root.app_market_manage',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',
     'login_register_config',
     'config',
-    'django_python3_ldap',
     'log',
+    'django_celery_beat',
+    'data_sync',
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -101,7 +104,7 @@ MIDDLEWARE = [
     'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_scim.middleware.SCIMAuthCheckMiddleware',
+    # 'django_scim.middleware.SCIMAuthCheckMiddleware',
     'requestlogs.middleware.RequestLogsMiddleware',
 ]
 
@@ -295,12 +298,14 @@ MENU = [
     '用户行为日志',
     '管理员行为日志',
     '日志设置',
-    '统计图表'
+    '统计图表',
 ]
 
 # Celery settings
 CELERY_BROKER = 'redis://localhost:6379'
 CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 #: Only add pickle to this list if your broker is secured
 #: from unwanted access (see userguide/security.html)

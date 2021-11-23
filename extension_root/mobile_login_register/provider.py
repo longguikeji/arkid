@@ -23,7 +23,7 @@ from common.utils import (
 
 
 class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
-    def __init__(self, data) -> None:
+    def __init__(self, data=None, request=None, tenant=None) -> None:
         self.login_enabled = data.get('login_enabled', True)
         self.register_enabled = data.get('register_enabled', True)
         self.reset_password_enabled = data.get('reset_password_enabled', True)

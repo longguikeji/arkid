@@ -1,5 +1,6 @@
 from .base import BaseViewSet
 from rest_framework import viewsets
+from common.paginator import DefaultListPaginator
 from common.extension import InMemExtension
 from extension.models import Extension
 from extension.utils import find_available_extensions
@@ -59,44 +60,18 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = MarketPlaceExtensionSerializer
+    # pagination_class = DefaultListPaginator
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags', '')
         extension_type = self.request.query_params.get('type', '')
         scope = self.request.query_params.get('scope', '')
-        installed = True if self.request.query_params.get('installed', '') == '已安装' else False
-        enabled = True if self.request.query_params.get('enabled', '') == '已启用' else False
+        installed = self.request.query_params.get('installed', '')
+        enabled = self.request.query_params.get('enabled', '')
+
         extensions = find_available_extensions()
         installed_extensions = Extension.valid_objects.filter()
         installed_extensions_dict = {ext.type: ext for ext in installed_extensions}
-        enabled_extensions_dict = {ext.type: ext for ext in installed_extensions if ext.is_active}
-        if tags or extension_type or scope or installed or enabled:
-            result = []
-            for extension in extensions:
-                if tags:
-                    tags_list = tags.split(',')
-                    if extension.tags in tags_list:
-                        result.append(extension)
-                        continue
-                if extension_type:
-                    extension_type_list = extension_type.split(',')
-                    if extension.type in extension_type_list:
-                        result.append(extension)
-                        continue
-                if scope:
-                    scope_list = tags.split(',')
-                    if extension.scope in scope_list:
-                        result.append(extension)
-                        continue
-                if installed:
-                    if extension.name in installed_extensions_dict:
-                        result.append(extension)
-                        continue
-                if enabled:
-                    if extension.name in enabled_extensions_dict:
-                        result.append(extension)
-                        continue
-            extensions = result
         for extension in extensions:
             ext = installed_extensions_dict.get(extension.name)
             if ext:
@@ -107,6 +82,33 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
                 extension.uuid = ''
                 extension.installed = '未安装'
                 extension.enabled = '未启用'
+
+        if tags or extension_type or scope or installed or enabled:
+            result = []
+            for extension in extensions:
+                if tags:
+                    tags_list = tags.split(',')
+                    if extension.tags not in tags_list:
+                        continue
+                if extension_type:
+                    extension_type_list = extension_type.split(',')
+                    if extension.type not in extension_type_list:
+                        continue
+                if scope:
+                    scope_list = scope.split(',')
+                    if extension.scope not in scope_list:
+                        continue
+                if installed:
+                    installed_list = installed.split(',')
+                    if extension.installed not in installed_list:
+                        continue
+                if enabled:
+                    enabled_list = enabled.split(',')
+                    if extension.enabled not in enabled_list:
+                        continue
+                result.append(extension)
+            extensions = result
+
         return extensions
 
     def get_object(self):

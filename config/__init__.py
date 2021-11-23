@@ -30,7 +30,7 @@ class Config(object):
         if local_filename.exists():
             local_data = toml.load(local_filename)
             data = deep_merge(data, local_data, update=False)
-
+        self.data = data
         self.name = data.get('name')
         self.host = data.get('host')
         self.frontend_host = data.get('frontend_host')
@@ -56,18 +56,25 @@ class Config(object):
 
     def get_host(self, schema=True):
         if schema:
-            return '{}://{}'.format('https' if self.https_enabled else 'http', self.host)
+            return '{}://{}'.format(
+                'https' if self.https_enabled else 'http', self.host
+            )
 
         return self.host
 
     def get_frontend_host(self, schema=True):
         if schema:
-            return '{}://{}'.format('https' if self.https_enabled else 'http', self.frontend_host)
+            return '{}://{}'.format(
+                'https' if self.https_enabled else 'http', self.frontend_host
+            )
+
         return self.host
 
     def get_slug_frontend_host(self, slug, schema=True):
         if schema:
-            return '{}://{}.{}'.format('https' if self.https_enabled else 'http', slug, self.frontend_host)
+            return '{}://{}.{}'.format(
+                'https' if self.https_enabled else 'http', slug, self.frontend_host
+            )
         return self.host
 
 

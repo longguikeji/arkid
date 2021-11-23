@@ -21,7 +21,7 @@ from common.utils import (
 
 
 class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
-    def __init__(self, data) -> None:
+    def __init__(self, data=None, request=None, tenant=None) -> None:
         self.register_enabled = data.get('register_enabled', False)
         self.reset_password_enabled = data.get('reset_password_enabled', False)
         self.register_tmpl = data.get('register_tmpl', '')

@@ -1,0 +1,1 @@
+KEY = 'ldap_login'

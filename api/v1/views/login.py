@@ -91,6 +91,6 @@ class LoginView(APIView):
         if not provider_cls:
             return None
 
-        provider = provider_cls(config_data)
+        provider = provider_cls(config_data, tenant=tenant)
         provider.type = config.type
         return provider

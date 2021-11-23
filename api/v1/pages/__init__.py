@@ -33,6 +33,7 @@ from . import (
     user_permission,
     user_log,
     webhook,
+    data_sync,
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
@@ -92,11 +93,11 @@ root_add_routers(
                             page=authorization_server,
                             icon='list',
                         ),
-                        PageRouter(
-                            page=authorization_agent,
-                            icon='list',
-                        ),
-                        PageRouter(page=data_synchronism, icon='chart'),
+                        # PageRouter(
+                        #     page=authorization_agent,
+                        #     icon='list',
+                        # ),
+                        PageRouter(page=data_sync, icon='chart'),
                     ],
                 ),
                 Router(
@@ -119,14 +120,14 @@ root_add_routers(
                             page=webhook,
                             icon='webhook',
                         ),
-                        PageRouter(page=custom_process, icon='process'),
+                        # PageRouter(page=custom_process, icon='process'),
                         UrlRouter(
                             path='document',
                             name='API文档',
                             url='/api/schema/redoc/',
                             icon='connect',
                         ),
-                        PageRouter(page=sdk_download, icon='sdk'),
+                        # PageRouter(page=sdk_download, icon='sdk'),
                     ],
                 ),
                 Router(
