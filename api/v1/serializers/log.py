@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.utils.translation import ugettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from log.models import Log
+from requestlogs.storages import BaseEntrySerializer
 
 
 class LogSerializer(serializers.Serializer):
@@ -39,7 +40,30 @@ class LogSerializer(serializers.Serializer):
         return data
 
 
+class CustomBaseEntrySerializer(BaseEntrySerializer):
+    execution_time = serializers.CharField(read_only=True)
+
+
+class CustomEntrySerializer(CustomBaseEntrySerializer):
+    class TenantSerializer(serializers.Serializer):
+        uuid = serializers.CharField(read_only=True)
+        name = serializers.CharField(read_only=True)
+        slug = serializers.CharField(read_only=True)
+
+    class UserSerializer(serializers.Serializer):
+        uuid = serializers.CharField(read_only=True)
+        username = serializers.CharField(read_only=True)
+        admin = serializers.BooleanField(read_only=True)
+
+    tenant = TenantSerializer()
+    user = UserSerializer()
+    host = serializers.CharField(read_only=True)
+
+
 class LogDetailSerializer(BaseDynamicFieldModelSerializer):
+
+    data = CustomEntrySerializer(label=_('data'))
+
     class Meta:
         model = Log
 
