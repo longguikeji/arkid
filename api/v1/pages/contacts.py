@@ -13,13 +13,13 @@ extend_schema_tags(
     {
         'type': 'tree_page',
         'init': {
-            'path': '/api/v1/tenant/{tenant_uuid}/contacts/group/',
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'get',
             'next': 'contacts_group.user'
         },
         'local': {
             'node': {
-                'path': '/api/v1/tenant/{tenant_uuid}/contacts/group/?parent={uuid}',
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
                 'method': 'get',
                 'next': 'contacts_group.user'
             }

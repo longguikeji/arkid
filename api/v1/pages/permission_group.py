@@ -1,17 +1,21 @@
 from openapi.utils import extend_schema_tags
 
-tag = 'permission_group'
-path = tag
+tag = [ 'permission_group', 'permission_group.permission' ]
+path = 'permission_group'
 name = '权限分组'
 
+permission_group_tag = 'permission_group'
+permission_group_name = '权限分组'
+
 extend_schema_tags(
-    tag,
-    name,
+    permission_group_tag,
+    permission_group_name,
     {
         'type': 'tree_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/permission_group/',
-            'method': 'get'
+            'method': 'get',
+            'next': 'permission_group.permission'
         },
         'global': {
             'create': {
@@ -31,6 +35,9 @@ extend_schema_tags(
                 'method': 'delete',
                 'description': '删除',
                 'icon': 'el-icon-delete'
+            },
+            'node': {
+                'next': 'permission_group.permission'
             }
         }
     }
@@ -90,6 +97,21 @@ extend_schema_tags(
         'type': 'tree_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/permission_group/',
+            'method': 'get'
+        }
+    }
+)
+
+permission_group_permission_tag = 'permission_group.permission'
+permission_group_permission_name = '权限列表'
+
+extend_schema_tags(
+    permission_group_permission_tag,
+    permission_group_permission_name,
+    {
+        'type': 'table_page',
+        'init': {
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/permission/?group={group_uuid}',
             'method': 'get'
         }
     }
