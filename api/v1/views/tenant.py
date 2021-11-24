@@ -729,8 +729,15 @@ class TenantSwitchInfoView(generics.RetrieveAPIView):
     serializer_class = TenantSwitchInfoSerializer
 
     def get(self, request):
+        default_tenant = Tenant.objects.filter(id=1).first()
+        if default_tenant:
+            tenant_switch = TenantSwitch.active_objects.first()
+            if not tenant_switch:
+                tenant_switch = TenantSwitch()
+                tenant_switch.tenant = default_tenant
+                tenant_switch.switch = True
+                tenant_switch.save()
         # 开关信息
-        tenant_switch = TenantSwitch.active_objects.first()
         switch = tenant_switch.switch
         # default tenant
         tenant = Tenant.objects.filter(id=1).first()
