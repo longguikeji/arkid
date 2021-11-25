@@ -60,7 +60,7 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = MarketPlaceExtensionSerializer
-    # pagination_class = DefaultListPaginator
+    pagination_class = DefaultListPaginator
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags', '')
