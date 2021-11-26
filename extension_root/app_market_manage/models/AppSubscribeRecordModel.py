@@ -19,6 +19,6 @@ class AppSubscribeRecord(BaseModel):
         related_name="app_subscribed_records",
         verbose_name=_("订阅用户")
     )
-
+    
     class Meta:
         verbose_name = _("应用订阅记录")
