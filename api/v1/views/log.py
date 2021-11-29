@@ -51,14 +51,14 @@ def get_log_retention_date(tenant):
             required=False,
         ),
         OpenApiParameter(
-            name='start',
+            name='time_begin',
             type=OpenApiTypes.DATETIME,
             location=OpenApiParameter.QUERY,
             description='开始时间',
             required=False,
         ),
         OpenApiParameter(
-            name='end',
+            name='time_end',
             type=OpenApiTypes.DATETIME,
             location=OpenApiParameter.QUERY,
             description='结束时间',
@@ -93,8 +93,8 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         username = self.request.query_params.get('user', '')
         ip = self.request.query_params.get('ip', '')
         status = self.request.query_params.get('status_code', '')
-        start = self.request.query_params.get('start', '')
-        end = self.request.query_params.get('end', '')
+        start = self.request.query_params.get('time_begin', '')
+        end = self.request.query_params.get('time_end', '')
 
         kwargs = {
             'tenant': tenant,
@@ -146,14 +146,14 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
             required=False,
         ),
         OpenApiParameter(
-            name='start',
+            name='time_begin',
             type=OpenApiTypes.DATETIME,
             location=OpenApiParameter.QUERY,
             description='开始时间',
             required=False,
         ),
         OpenApiParameter(
-            name='end',
+            name='time_end',
             type=OpenApiTypes.DATETIME,
             location=OpenApiParameter.QUERY,
             description='结束时间',
@@ -188,8 +188,8 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         username = self.request.query_params.get('user', '')
         ip = self.request.query_params.get('ip', '')
         status = self.request.query_params.get('status_code', '')
-        start = self.request.query_params.get('start', '')
-        end = self.request.query_params.get('end', '')
+        start = self.request.query_params.get('time_begin', '')
+        end = self.request.query_params.get('time_end', '')
 
         kwargs = {
             'tenant': tenant,
