@@ -50,5 +50,5 @@ extension = SAML2IdpExtension(
     version="2.0",
     homepage="https://www.longguikeji.com",
     logo="",
-    maintainer="北京龙归科技有限公司",
+    maintainer="guancyxx@guancyxx.cn",
 )

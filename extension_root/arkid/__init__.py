@@ -37,5 +37,5 @@ extension = ArkIDExternalIdpExtension(
     version="1.0",
     homepage="https://www.longguikeji.com",
     logo="",
-    maintainer="insfocus@gmail.com",
+    maintainer="hanbin@jinji-inc.com",
 )

@@ -43,6 +43,6 @@ extension = LdapServerExtension(
     version="1.0",
     homepage="https://www.longguikeji.com",
     logo="",
-    maintainer="北京龙归科技有限公司",
+    maintainer="guancyxx@guancyxx.cn",
     serializer=LdapServerSerializer
 )
