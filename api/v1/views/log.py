@@ -30,7 +30,7 @@ def get_log_retention_date(tenant):
     tags = ['log'],
     parameters=[
         OpenApiParameter(
-            name='username',
+            name='user',
             type=OpenApiTypes.STR,
             location=OpenApiParameter.QUERY,
             required=False,
@@ -42,20 +42,20 @@ def get_log_retention_date(tenant):
             required=False,
         ),
         OpenApiParameter(
-            name='status',
+            name='status_code',
             type=OpenApiTypes.INT,
             location=OpenApiParameter.QUERY,
             required=False,
         ),
         OpenApiParameter(
             name='start',
-            type=OpenApiTypes.DATE,
+            type=OpenApiTypes.DATETIME,
             location=OpenApiParameter.QUERY,
             required=False,
         ),
         OpenApiParameter(
             name='end',
-            type=OpenApiTypes.DATE,
+            type=OpenApiTypes.DATETIME,
             location=OpenApiParameter.QUERY,
             required=False,
         ),
@@ -85,9 +85,9 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        username = self.request.query_params.get('username', '')
+        username = self.request.query_params.get('user', '')
         ip = self.request.query_params.get('ip', '')
-        status = self.request.query_params.get('status', '')
+        status = self.request.query_params.get('status_code', '')
         start = self.request.query_params.get('start', '')
         end = self.request.query_params.get('end', '')
 
@@ -120,7 +120,7 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     tags = ['log'],
     parameters=[
         OpenApiParameter(
-            name='username',
+            name='user',
             type=OpenApiTypes.STR,
             location=OpenApiParameter.QUERY,
             required=False,
@@ -132,20 +132,20 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
             required=False,
         ),
         OpenApiParameter(
-            name='status',
+            name='status_code',
             type=OpenApiTypes.INT,
             location=OpenApiParameter.QUERY,
             required=False,
         ),
         OpenApiParameter(
             name='start',
-            type=OpenApiTypes.DATE,
+            type=OpenApiTypes.DATETIME,
             location=OpenApiParameter.QUERY,
             required=False,
         ),
         OpenApiParameter(
             name='end',
-            type=OpenApiTypes.DATE,
+            type=OpenApiTypes.DATETIME,
             location=OpenApiParameter.QUERY,
             required=False,
         ),
@@ -175,9 +175,9 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        username = self.request.query_params.get('username', '')
+        username = self.request.query_params.get('user', '')
         ip = self.request.query_params.get('ip', '')
-        status = self.request.query_params.get('status', '')
+        status = self.request.query_params.get('status_code', '')
         start = self.request.query_params.get('start', '')
         end = self.request.query_params.get('end', '')
 
