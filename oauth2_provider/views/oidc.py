@@ -23,12 +23,12 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
-        tenant = request.GET.get('tenant_uuid','')
+        tenant = request.GET.get('tenant','')
         print('tenant>>>', tenant)
         issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
 
         if not issuer_url:
-            issuer_url = oauth2_settings.oidc_issuer(request)
+            issuer_url = oauth2_settings.oidc_issuer(request, tenant)
             authorization_endpoint = request.build_absolute_uri(reverse("api:oauth2_authorization_server:authorize", args=[tenant]))
             token_endpoint = request.build_absolute_uri(reverse("api:oauth2_authorization_server:token", args=[tenant]))
             userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(
