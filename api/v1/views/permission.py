@@ -35,10 +35,20 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        objs = Permission.valid_objects.filter(
-            tenant=tenant,
-        ).order_by('id')
-        return objs
+        group_uuid = self.request.query_params.get('group', None)
+        if not group_uuid:
+            objs = Permission.valid_objects.filter(
+                tenant=tenant,
+            ).order_by('id')
+            return objs
+
+        kwargs = {
+            'tenant': tenant,
+            'uuid': group_uuid,
+        }
+
+        group = PermissionGroup.valid_objects.filter(**kwargs).first()
+        return group.permissions.all()
 
     def get_object(self):
         context = self.get_serializer_context()
