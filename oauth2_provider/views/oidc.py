@@ -23,7 +23,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
-        tenant = request.query_params.get('tenant', '')
+        tenant = request.GET.get('tenant','')
         print('tenant>>>', tenant)
         issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
 
