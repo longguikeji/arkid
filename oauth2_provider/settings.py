@@ -268,7 +268,7 @@ class OAuth2ProviderSettings:
         """
         # code=NSi6ZGPOusmyqvwlXko70kbewDMcol&grant_type=authorization_code&tenant_uuid=3efed4d9-f2ee-455e-b868-6f60ea8fdff6
         body = request.body
-        arrs = body.split('&')
+        arrs = body.split('?')
         tenant = ''
         for item in arrs:
             if 'tenant_uuid=' in item:
