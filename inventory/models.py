@@ -121,6 +121,10 @@ class PermissionGroup(BaseModel):
             items.append(permission.uuid)
         return items
 
+    @property
+    def permission_children(self):
+        return self.permissions.all()
+
     def __str__(self) -> str:
         return self.name
 
