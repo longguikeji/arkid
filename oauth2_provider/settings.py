@@ -258,7 +258,7 @@ class OAuth2ProviderSettings:
         if hasattr(self, "_user_settings"):
             delattr(self, "_user_settings")
 
-    def oidc_issuer(self, request):
+    def oidc_issuer(self, request, tenant):
         """
         Helper function to get the OIDC issuer URL, either from the settings
         or constructing it from the passed request.
@@ -268,11 +268,12 @@ class OAuth2ProviderSettings:
         """
         # code=NSi6ZGPOusmyqvwlXko70kbewDMcol&grant_type=authorization_code&tenant_uuid=3efed4d9-f2ee-455e-b868-6f60ea8fdff6
         body = request.body
-        arrs = body.split('?')
-        tenant = ''
-        for item in arrs:
-            if 'tenant_uuid=' in item:
-                tenant = item[12:]
+        if body:
+            arrs = body.split('&')
+            tenant = ''
+            for item in arrs:
+                if 'tenant_uuid=' in item:
+                    tenant = item[12:]
         if self.OIDC_ISS_ENDPOINT:
             return self.OIDC_ISS_ENDPOINT
         if isinstance(request, HttpRequest):
