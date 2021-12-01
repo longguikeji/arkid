@@ -1,5 +1,6 @@
 from . import (
     admin_log,
+    all_tenant,
     app,
     app_permission,
     authorization_server,
@@ -62,6 +63,7 @@ root_add_routers(
                             page=group,
                             icon='tree-table',
                         ),
+                        PageRouter(page=all_tenant, icon='list'),
                         PageRouter(page=device, icon='developer'),
                     ],
                 ),
