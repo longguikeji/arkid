@@ -2,7 +2,7 @@ name = "demo arkid"
 # host = 'ngarkid.vaiwan.com'
 host = 'localhost:8000'
 frontend_host = 'localhost:9528'
-https_enabled = 0
+https_enabled = 1
 
 [email]
 host = "smtp.qq.com"
