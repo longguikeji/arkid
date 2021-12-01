@@ -257,6 +257,37 @@ class OAuth2ProviderSettings:
         self._cached_attrs.clear()
         if hasattr(self, "_user_settings"):
             delattr(self, "_user_settings")
+    
+    def oidc_issuer(self, request):
+"""
+        Helper function to get the OIDC issuer URL, either from the settings
+        or constructing it from the passed request.
+
+        If only an oauthlib request is available, a dummy django request is
+        built from that and used to generate the URL.
+        """
+        # code=NSi6ZGPOusmyqvwlXko70kbewDMcol&grant_type=authorization_code&tenant_uuid=3efed4d9-f2ee-455e-b868-6f60ea8fdff6
+        body = request.body
+        tenant = ''
+        if body:
+            arrs = body.split('&')
+            for item in arrs:
+                if 'tenant_uuid=' in item:
+                    tenant = item[12:]
+        if self.OIDC_ISS_ENDPOINT:
+            return self.OIDC_ISS_ENDPOINT
+        if isinstance(request, HttpRequest):
+            django_request = request
+        elif isinstance(request, Request):
+            django_request = HttpRequest()
+            django_request.META = request.headers
+        else:
+            raise TypeError("request must be a django or oauthlib request: got %r" % request)
+        if tenant:
+            abs_url = django_request.build_absolute_uri(reverse("api:oauth2_authorization_server:oidc-connect-discovery-info", args=[tenant]))
+        else:
+            abs_url = ''
+        return abs_url[: -len("/.well-known/openid-configuration/")]
 
     def oidc_issuer(self, request, tenant):
         """
