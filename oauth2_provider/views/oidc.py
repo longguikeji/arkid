@@ -32,7 +32,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             authorization_endpoint = request.build_absolute_uri(reverse("api:oauth2_authorization_server:authorize", args=[tenant]))
             token_endpoint = request.build_absolute_uri(reverse("api:oauth2_authorization_server:token", args=[tenant]))
             userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(
-                reverse("api:oauth2_authorization_server:user-info", args=[tenant])
+                reverse("api:oauth2_authorization_server:oauth-user-info", args=[tenant])
             )
             jwks_uri = request.build_absolute_uri(reverse("api:oauth2_authorization_server:jwks-info", args=[tenant]))
         else:
