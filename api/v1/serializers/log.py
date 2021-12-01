@@ -45,18 +45,18 @@ class CustomBaseEntrySerializer(BaseEntrySerializer):
 
 
 class CustomEntrySerializer(CustomBaseEntrySerializer):
-    class TenantSerializer(serializers.Serializer):
+    class TenantLogSerializer(serializers.Serializer):
         uuid = serializers.CharField(read_only=True)
         name = serializers.CharField(read_only=True)
         slug = serializers.CharField(read_only=True)
 
-    class UserSerializer(serializers.Serializer):
+    class UserLogSerializer(serializers.Serializer):
         uuid = serializers.CharField(read_only=True)
         username = serializers.CharField(read_only=True)
         admin = serializers.BooleanField(read_only=True)
 
-    tenant = TenantSerializer()
-    user = UserSerializer()
+    tenant = TenantLogSerializer()
+    user = UserLogSerializer()
     host = serializers.CharField(read_only=True)
 
 

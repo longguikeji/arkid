@@ -10,5 +10,5 @@ extension = MysqlStatisticsExtension(
     version='1.0',
     homepage='https://www.longguikeji.com',
     logo='',
-    maintainer='support@longguikeji.com',
+    maintainer='louis.law@hotmail.com',
 )
