@@ -259,7 +259,7 @@ class OAuth2ProviderSettings:
             delattr(self, "_user_settings")
     
     def oidc_issuer(self, request):
-"""
+        """
         Helper function to get the OIDC issuer URL, either from the settings
         or constructing it from the passed request.
 
