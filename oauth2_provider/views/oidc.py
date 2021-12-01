@@ -22,8 +22,8 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
     View used to show oidc provider configuration information
     """
 
-    def get(self, request, *args, **kwargs):
-        tenant = request.GET.get('tenant','')
+    def get(self, request, tenant_uuid, *args, **kwargs):
+        tenant = tenant_uuid
         print('tenant>>>', tenant)
         issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
 
