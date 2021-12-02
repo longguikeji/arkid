@@ -259,6 +259,8 @@ class OAuth2ProviderSettings:
             delattr(self, "_user_settings")
 
     def oidc_issuer(self, request, tenant=''):
+        from config import get_app_config
+        host = get_app_config().get_host()
         """
         Helper function to get the OIDC issuer URL, either from the settings
         or constructing it from the passed request.
@@ -283,7 +285,7 @@ class OAuth2ProviderSettings:
         else:
             raise TypeError("request must be a django or oauthlib request: got %r" % request)
         if tenant:
-            abs_url = django_request.build_absolute_uri(reverse("api:oauth2_authorization_server:oidc-connect-discovery-info", args=[tenant]))
+            abs_url = host+reverse("api:oauth2_authorization_server:oidc-connect-discovery-info", args=[tenant])
         else:
             abs_url = ''
         return abs_url[: -len("/.well-known/openid-configuration/")]
