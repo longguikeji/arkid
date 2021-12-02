@@ -748,11 +748,8 @@ class OAuth2Validator(RequestValidator):
         """
         claims = self.get_oidc_claims(token, token_handler, request)
         expiration_time = timezone.now() + timedelta(seconds=oauth2_settings.ID_TOKEN_EXPIRE_SECONDS)
-        print('12321321321')
-        print(request.path)
-        print(request.path_info)
-        from urllib import parse
-        print(request.build_absolute_uri())
+        print('url1')
+        print(request.uri)
         # Required ID Token claims
         claims.update(
             **{
