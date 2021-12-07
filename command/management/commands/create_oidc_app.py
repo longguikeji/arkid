@@ -3,6 +3,8 @@ from django.core.management.base import BaseCommand, CommandError
 from app.models import App
 from tenant.models import Tenant
 from runtime import get_app_runtime
+from extension.models import Extension
+from extension.utils import reload_extension
 
 
 class Command(BaseCommand):
@@ -69,6 +71,11 @@ class Command(BaseCommand):
             url=url,
             description=description,
         )
+        extension, is_created = Extension.objects.get_or_create(
+            is_del=False, type='oauth2_authorization_server', is_active=True
+        )
+        if is_created:
+            reload_extension(extension.type, extension.is_active)
         r = get_app_runtime()
         provider_cls: AppTypeProvider = r.app_type_providers.get(protocol_type, None)
         assert provider_cls is not None
