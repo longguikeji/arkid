@@ -2,7 +2,7 @@ from openapi.utils import extend_schema_tags
 
 tag = 'tenant'
 path = tag
-name = '租户管理'
+name = '租户管理（新建租户获得管理员角色）'
 
 extend_schema_tags(
     tag,

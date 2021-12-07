@@ -153,6 +153,24 @@ class TenantExtendSerializer(BaseDynamicFieldModelSerializer):
         )
 
 
+class TenantUserRoleSerializer(TenantSerializer):
+
+    role = serializers.CharField(label=_("用户角色"))
+
+    class Meta:
+        model = Tenant
+
+        fields = (
+            'uuid',
+            'name',
+            'slug',
+            'icon',
+            'created',
+            'password_complexity',
+            'role',
+        )
+
+
 class ConfigSerializer(serializers.Serializer):
     # is_open_authcode = serializers.BooleanField(label=_('是否打开验证码'))
     # error_number_open_authcode = serializers.IntegerField(label=_('错误几次提示输入验证码'))
