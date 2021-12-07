@@ -165,8 +165,8 @@ class TenantUserRoleSerializer(TenantSerializer):
             'name',
             'slug',
             'icon',
+            'use_slug',
             'created',
-            'password_complexity',
             'role',
         )
 
