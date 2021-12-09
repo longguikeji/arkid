@@ -29,6 +29,7 @@ from api.v1.serializers.tenant import (
     TenantLogConfigSerializer,
     TenantSwitchSerializer,
     TenantSwitchInfoSerializer,
+    TenantUserRoleSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
@@ -69,6 +70,8 @@ class TenantViewSet(BaseViewSet):
     def get_serializer_class(self):
         if self.action == 'apps':
             return AppBaseInfoSerializer
+        if self.action == 'list':
+            return TenantUserRoleSerializer
         return TenantSerializer
 
     @extend_schema(
@@ -113,12 +116,22 @@ class TenantViewSet(BaseViewSet):
         return super().create(request)
 
     def get_queryset(self):
-        if self.request.user and self.request.user.username != "":
-            if self.request.user.is_superuser:
-                objs = Tenant.active_objects.all()
+        user = self.request.user
+        if user and user.username != "":
+            if user.is_superuser:
+                tenants = Tenant.active_objects.all()
+                for tenant in tenants:
+                    tenant.role = '超级管理员'
             else:
-                objs = self.request.user.tenants.filter(is_del=False).all()
-            return objs
+                tenants = user.tenants.filter(is_del=False).all()
+                for tenant in tenants:
+                    if tenant.has_admin_perm(user):
+                        tenant.role = '管理员'
+                    elif ChildManager.valid_objects.filter(tenant=tenant, user=user).exists():
+                        tenant.role = '子管理员'
+                    else:
+                        tenant.role = '普通用户'
+            return tenants
         else:
             return []
 
