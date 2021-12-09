@@ -1,9 +1,9 @@
 # farasis
-孚能科技项目
 ArkID - v2
 
-**DO NOT USE THIS VRESION IN PRODUCTION (请勿在生产环境中使用)**
+产品介绍：https://arkid.cc
 
+**DO NOT USE THIS VRESION IN PRODUCTION (请勿在生产环境中使用)**
 
 # QuickStart
 
@@ -27,4 +27,3 @@ password: **admin**
 
 ## Helm Charts
 
-文档地址：https://www.yuque.com/longguikeji/arkid2/
