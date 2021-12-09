@@ -1,7 +1,7 @@
 # farasis
 ArkID - v2
 
-产品介绍：https://arkid2.longguikeji.com
+产品介绍：https://arkid.cc
 
 **DO NOT USE THIS VRESION IN PRODUCTION (请勿在生产环境中使用)**
 
