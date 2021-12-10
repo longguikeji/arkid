@@ -80,7 +80,8 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'path': '/api/v1/tenant/{parent_lookup_tenant}/config/custom_field/?subject=user',
             'method': 'get'
         },
-        label=_('用户自定义字段')
+        label=_('用户自定义字段'),
+        required = False,
     )
 
     class Meta:

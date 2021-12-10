@@ -48,7 +48,7 @@ class AuthorizationAgentBaseSerializer(serializers.Serializer):
 
 class ExtensionBaseSerializer(serializers.Serializer):
     type = serializers.CharField()
-    data = serializers.JSONField()
+    # data = serializers.JSONField()
     uuid = serializers.UUIDField(read_only=True)
     is_active = serializers.BooleanField(label=_('是否启用'))
 
