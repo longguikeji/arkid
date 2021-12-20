@@ -12,11 +12,13 @@ ArkID - v2
 ## docker-compose启动
 
 ## arkid v2.0
-git clone --branch v2-dev --depth 1  https://github.com/longguikeji/arkid-charts.git
 
-cd arkid-charts/docker-compose
+    git clone --branch v2-dev --depth 1  https://github.com/longguikeji/arkid-charts.git
 
-docker-compose up -d
+    cd arkid-charts/docker-compose
+
+    docker-compose up -d
+
 
 Open your browser and visit http://localhost:8989
 
