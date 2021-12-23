@@ -60,7 +60,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
         link="groups",
         write_only=True,
     )
-
+    created = serializers.DateTimeField(help_text='注册时间', format='%Y-%m-%d %H:%M', read_only=True)
     # permissions = serializers.SerializerMethodField()
 
     # set_permissions = create_foreign_key_field(serializers.ListField)(
@@ -105,6 +105,7 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             # 'set_permissions',
             'bind_info',
             'custom_user',
+            'created',
         )
 
         extra_kwargs = {
