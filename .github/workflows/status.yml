@@ -5,6 +5,11 @@ on:
     branches:
       - 'feature-*'
       - 'dev/*'
+    paths-ignore:
+      - 'docs/**'
+      - 'kustomize/**'
+      - 'README.md'
+      - '.github/**'
 jobs:
   ci:
     runs-on: ubuntu-latest

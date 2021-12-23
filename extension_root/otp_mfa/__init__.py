@@ -43,5 +43,5 @@ extension = OTPMFAExtension(
     logo='',
     scope='global',
     type='global',
-    maintainer='insfocus@gmail.com',
+    maintainer='hanbin@jinji-inc.com',
 )

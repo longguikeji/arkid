@@ -109,6 +109,12 @@ class PermissionGroupListSerializer(DynamicFieldsModelSerializer):
         )
 
 
+class PermissionChildSerializer(serializers.Serializer):
+
+    uuid = serializers.CharField(read_only=True)
+    name = serializers.CharField(read_only=True)
+
+
 class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
 
     uuid = serializers.CharField(read_only=True)
@@ -119,8 +125,12 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
         page=permission.permission_only_list_tag,
         child=serializers.CharField(),
         default=[],
-        link="permissions",
+        link="permission_children",
         source="permission_uuids"
+    )
+    permission_children = serializers.ListField(
+        child=PermissionChildSerializer(),
+        read_only=True,
     )
 
     class Meta:
@@ -131,6 +141,7 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
             'name',
             'is_system_group',
             'permissions',
+            'permission_children',
         )
 
     def create(self, validated_data):

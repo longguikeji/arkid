@@ -113,6 +113,6 @@ extension = AliyunExtension(
     type='global',
     homepage='https://www.longguikeji.com',
     logo='',
-    maintainer='insfocus@gmail.com',
+    maintainer='hanbin@jinji-inc.com',
     serializer=AliyunSMSSerializer,
 )

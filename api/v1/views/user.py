@@ -763,7 +763,10 @@ class UserTokenExpireView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    @extend_schema(responses=UserTokenExpireSerializer)
+    @extend_schema(
+        roles=['general user', 'tenant admin', 'global admin'],
+        responses=UserTokenExpireSerializer,
+    )
     def get(self, request):
         user = request.user
         return Response({"token": user.new_token})
