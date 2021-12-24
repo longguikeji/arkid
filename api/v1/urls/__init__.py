@@ -34,6 +34,7 @@ from . import (
     log,
     statistics,
     data_sync,
+    backend_login,
 )
 from runtime import get_app_runtime
 
@@ -90,6 +91,7 @@ urlpatterns += device.urlpatterns
 urlpatterns += auth_rule.urlpatterns
 
 urlpatterns += login.urlpatterns
+urlpatterns += backend_login.urlpatterns
 urlpatterns += register.urlpatterns
 urlpatterns += reset_password.urlpatterns
 urlpatterns += permission.urlpatterns
