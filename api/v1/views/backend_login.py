@@ -1,89 +1,175 @@
-#!/usr/bin/env python3
-
-from tenant.models import Tenant
-from common.code import Code
-from login_register_config.models import LoginRegisterConfig
-from api.v1.serializers.tenant import TenantSerializer
-from django.http.response import HttpResponse, JsonResponse
-from runtime import get_app_runtime
-from openapi.utils import extend_schema
-from rest_framework.views import APIView
-from django.utils.translation import gettext_lazy as _
-from django.template.response import TemplateResponse
-from django.template import Template
-from django.shortcuts import render
-from inventory.models import User
-from config import get_app_config
-from arkid.settings import LOGIN_URL
-
-@extend_schema(
-    tags=['backend-login-api'],
-    roles=['general user', 'tenant admin', 'global admin'],
-    # responses=PasswordLoginResponseSerializer,
+from .base import BaseViewSet
+from api.v1.serializers.backend_login import (
+    BackendLoginSerializer,
+    BackendLoginListSerializer,
+    BackendLoginReorderSerializer,
 )
-class BackendLoginView(APIView):
-    """
-    此接口主要用于登录ArkId后的第一个调用的接口：
-    1，如果是用于OIDC等协议认证，返回单独的登录页面
-    2，如果租户打开了kerboros认证，走spnego认证逻辑
-    3, 否则跳转到前端登录页面
-    """
+from runtime import get_app_runtime
+from django.http.response import JsonResponse
+from openapi.utils import extend_schema
+from drf_spectacular.utils import PolymorphicProxySerializer
+from common.paginator import DefaultListPaginator
+from .base import BaseViewSet
+from backend_login.models import BackendLogin 
+from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from common.code import Code
 
-    def get(self, request):
-        tenant = self.get_tenant(request)
-        if not tenant:
-            tenant = Tenant.active_objects.get(id=1)
-        next = request.GET.get('next')
-        if not next:
-            app_config = get_app_config()
-            if tenant.slug:
-                front_login = '{}{}'.format(app_config.get_slug_frontend_host(tenant.slug), LOGIN_URL)
-            else:
-                front_login = '{}{}?tenant={}'.format(app_config.get_frontend_host(), LOGIN_URL, tenant.uuid.hex)
-            next = front_login 
-        return render(
-            request=request,
-            template_name="backend_login/backend_login.html",
-            context={"tenant_uuid": tenant.uuid.hex, 'next': next},
+BackendLoginPolymorphicProxySerializer = PolymorphicProxySerializer(
+    component_name='BackendLoginPolymorphicProxySerializer',
+    serializers=get_app_runtime().backend_login_serializers,
+    resource_type_field_name='type',
+)
+
+
+@extend_schema_view(
+    destroy=extend_schema(roles=['tenant admin', 'global admin']),
+    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+)
+@extend_schema(tags=['backend_login'])
+class BackendLoginViewSet(BaseViewSet):
+
+    model = BackendLogin 
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+    serializer_class = BackendLoginSerializer
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+
+        kwargs = {
+            'tenant': tenant,
+        }
+
+        return BackendLogin.valid_objects.filter(**kwargs).order_by('order_no', 'id')
+
+    def get_object(self):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+
+        kwargs = {
+            'tenant': tenant,
+            'uuid': self.kwargs['pk'],
+        }
+
+        obj = BackendLogin.valid_objects.filter(**kwargs).first()
+        return obj
+
+    @extend_schema(roles=['tenant admin', 'global admin'], responses=BackendLoginListSerializer)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        request=BackendLoginPolymorphicProxySerializer,
+        responses=BackendLoginPolymorphicProxySerializer,
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        request=BackendLoginPolymorphicProxySerializer,
+        responses=BackendLoginPolymorphicProxySerializer,
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @extend_schema(roles=['tenant admin', 'global admin'], responses=BackendLoginPolymorphicProxySerializer)
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        request=BackendLoginReorderSerializer,
+        responses=BackendLoginReorderSerializer,
+    )
+    @action(detail=False, methods=['post'])
+    def batch_update(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        backend_login_uuid_list = request.data.get('backend_logins')
+        backend_logins = BackendLogin.valid_objects.filter(
+            uuid__in=backend_login_uuid_list, tenant=tenant
+        ).order_by('order_no')
+        original_order_no = [backend.order_no for backend in backend_logins]
+        index = 0
+        for uuid in backend_login_uuid_list:
+            backend = backend_logins.filter(uuid=uuid).first()
+            if not backend:
+                continue
+            backend.order_no = original_order_no[index]
+            backend.save()
+            index += 1
+        return JsonResponse(
+            data={
+                'error': Code.OK.value,
+            }
         )
 
-    def post(self, request):
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = User.active_objects.filter(username=username).first()
-        if not user or not user.check_password(password):
-            return JsonResponse(
-                {
-                    'error': Code.USERNAME_PASSWORD_MISMATCH.value,
-                    'message': _('username or password is not correct'),
-                }
-            )
-        token = user.refresh_token()
-        return JsonResponse({'token': token.key})
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        responses=BackendLoginReorderSerializer,
+    )
+    @action(detail=True, methods=['get'])
+    def move_up(self, request, *args, **kwargs):
+        return self._do_actual_move('up', request, *args, **kwargs)
 
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        responses=BackendLoginReorderSerializer,
+    )
+    @action(detail=True, methods=['get'])
+    def move_down(self, request, *args, **kwargs):
+        return self._do_actual_move('down', request, *args, **kwargs)
 
-    def get_tenant(self, request):
-        tenant = None
-        tenant_uuid = request.query_params.get('tenant', None)
-        if tenant_uuid:
-            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
-        return tenant
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        responses=BackendLoginReorderSerializer,
+    )
+    @action(detail=True, methods=['get'])
+    def move_top(self, request, *args, **kwargs):
+        return self._do_actual_move('top', request, *args, **kwargs)
 
-    def get_provider(self, tenant, config_uuid):
+    @extend_schema(
+        roles=['tenant admin', 'global admin'],
+        responses=BackendLoginReorderSerializer,
+    )
+    @action(detail=True, methods=['get'])
+    def move_bottom(self, request, *args, **kwargs):
+        return self._do_actual_move('bottom', request, *args, **kwargs)
 
-        config = LoginRegisterConfig.valid_objects.filter(
-            tenant=tenant, uuid=config_uuid
-        ).first()
-        if not config:
-            config_data = {}
-        else:
-            config_data = config.data
+    def _do_actual_move(self, direction, request, *args, **kwargs):
 
-        r = get_app_runtime()
-        provider_cls = r.login_register_config_providers.get(config.type)
-        if not provider_cls:
-            return None
-
-        provider = provider_cls(config_data, tenant=tenant)
-        provider.type = config.type
-        return provider
+        assert direction in ('top', 'bottom', 'up', 'down')
+        current_uuid = kwargs.get('pk')
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        order_str = 'order_no' if direction in ('up', 'top') else '-order_no'
+        valid_logins = BackendLogin.valid_objects.filter(tenant=tenant).order_by(order_str)
+        index = 0
+        current_login = None
+        for i, login in enumerate(valid_logins):
+            if login.uuid.hex == current_uuid:
+                index = i
+                current_login = login 
+        if index:
+            if direction in ['top', 'bottom']:
+                prev_login = valid_logins[0]
+            else:
+                prev_login = valid_logins[index - 1]
+            prev_order_no = prev_login.order_no
+            prev_login.order_no = current_login.order_no
+            current_login.order_no = prev_order_no
+            prev_login.save()
+            current_login.save()
+        return JsonResponse(
+            data={
+                'error': Code.OK.value,
+            }
+        )

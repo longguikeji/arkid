@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'data_sync',
     'command',
+    'backend_login'
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'

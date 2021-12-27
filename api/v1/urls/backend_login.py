@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from django.urls import path
+from api.v1.views import (
+    backend_login as views_backend_login
+)
 
-from api.v1.views import backend_login
+from .tenant import tenant_router
 
-urlpatterns = [
-    path(
-        'backend_login/', backend_login.BackendLoginView.as_view(), name='backend-login'
-    ),
-]
+
+tenant_backend_login_router = tenant_router.register(
+    r'backend_login', views_backend_login.BackendLoginViewSet, basename='tenant-backend-login', parents_query_lookups=['tenant'])
