@@ -35,6 +35,7 @@ from . import (
     statistics,
     data_sync,
     backend_auth,
+    backend_login,
 )
 from runtime import get_app_runtime
 

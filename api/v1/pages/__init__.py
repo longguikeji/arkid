@@ -110,7 +110,7 @@ root_add_routers(
                     children=[
                         PageRouter(page=login_register_config, icon='setting'),
                         PageRouter(page=external_idp,icon='wechat'),
-                        PageRouter(page=backend_login,icon='wechat'),
+                        PageRouter(page=backend_login,icon='setting'),
                         PageRouter(page=other_auth_factor, icon='example'),
                         PageRouter(page=auth_rules, icon='lock')
                     ],

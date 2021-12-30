@@ -17,6 +17,8 @@ from inventory.models import User
 from config import get_app_config
 from arkid.settings import LOGIN_URL
 from backend_login.models import BackendLogin
+import logging
+logger = logging.getLogger(__name__)
 
 @extend_schema(
     tags=['backend-auth-api'],
@@ -46,14 +48,18 @@ class BackendAuthView(APIView):
             provider_cls = backend_login_providers.get(config.type) 
             if not provider_cls:
                 continue
-            user, response = provider_cls().authenticate(tenant, request, config.data)
-            if user:
+            try:
+                user, response = provider_cls().authenticate(tenant, request, config.data)
+            except Exception as e:
+                logger.exception(e)
+                continue
+            if response:
+                return response
+            elif user:
                 token = user.refresh_token()
                 return JsonResponse({'token': token.key})
-            elif response:
-                return response
             else:
-                return JsonResponse({'token': ''})
+                continue 
         return JsonResponse({'token': ''})
 
 

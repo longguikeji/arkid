@@ -249,6 +249,5 @@ class StatisticsProvider:
         pass
 
 class BackendLoginProvider:
-    @classmethod
-    def authenticate(cls, tenant, request, data):
+    def authenticate(self, tenant, request, data):
         pass
