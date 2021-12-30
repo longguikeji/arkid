@@ -133,11 +133,11 @@ class LoginView(CsrfProtectMixin, TokenRequiredMixin, FormView):
         gateway = to_bool(request.GET.get('gateway'))
 
         # 一些配置信息
-        if service:
-            from config import get_app_config
-            frontend_host = get_app_config().get_frontend_host().replace('http://' , '').replace('https://' , '')
-            if frontend_host not in service:
-                return JsonResponse({'error': 'error service url'})
+        # if service:
+        #     from config import get_app_config
+        #     frontend_host = get_app_config().get_frontend_host().replace('http://' , '').replace('https://' , '')
+        #     if frontend_host not in service:
+        #         return JsonResponse({'error': 'error service url'})
 
         if token:
             # 已登录
