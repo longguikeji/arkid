@@ -758,6 +758,7 @@ class OAuth2Validator(RequestValidator):
         # Required ID Token claims
         claims.update(
             **{
+                "email": request.user.email,
                 "iss": urlinfo,
                 "exp": int(dateformat.format(expiration_time, "U")),
                 "auth_time": int(dateformat.format(request.user.last_login, "U")),
