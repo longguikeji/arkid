@@ -17,6 +17,7 @@ from api.v1.fields.custom import (
     create_enum_field,
     create_foreign_key_field,
     create_upload_url_field,
+    create_upload_file_field,
     create_html_field,
 )
 from ..pages import group, user
@@ -31,6 +32,9 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         hint=_("请选择图标"), required=False
     )
     use_slug = serializers.BooleanField(default=True, label=_('是否使用Slug'))
+    background_url = create_upload_file_field(serializers.CharField)(
+        hint=_("请选择背景图片"), required=False, label=_('登录页背景图片')
+    )
 
     class Meta:
         model = Tenant
@@ -42,6 +46,8 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
             'icon',
             'use_slug',
             'created',
+            'background_url',
+            'copyright_text',
         )
 
     def create(self, validated_data):
@@ -50,8 +56,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         if user and user.username != "":
             user.tenants.add(tenant)
         permission = Permission.active_objects.filter(
-            is_system_permission=True,
-            codename=tenant.admin_perm_code
+            is_system_permission=True, codename=tenant.admin_perm_code
         ).first()
         if permission:
             user.user_permissions.add(permission)
@@ -134,7 +139,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
                 tenant=tenant,
                 app=None,
                 permission_category='入口',
-                is_system_permission=True
+                is_system_permission=True,
             )
         return tenant
 
@@ -150,6 +155,8 @@ class TenantExtendSerializer(BaseDynamicFieldModelSerializer):
             'icon',
             'created',
             'password_complexity',
+            'background_url',
+            'copyright_text',
         )
 
 
@@ -394,7 +401,9 @@ class TenantCheckPermissionSerializer(serializers.Serializer):
     is_childmanager = serializers.BooleanField(label=_("是否是子管理员"))
     is_all_show = serializers.BooleanField(label=_("是否可以看到所有"))
     is_all_application = serializers.BooleanField(label=_("是否可以所有应用"))
-    permissions = serializers.ListField(child=TenantCheckPermissionItemSerializer(), label=_('权限'), default=[])
+    permissions = serializers.ListField(
+        child=TenantCheckPermissionItemSerializer(), label=_('权限'), default=[]
+    )
 
 
 class LogConfigSerializer(serializers.Serializer):
@@ -407,14 +416,12 @@ class LogConfigSerializer(serializers.Serializer):
 
 class TenantLogConfigSerializer(BaseDynamicFieldModelSerializer):
 
-    data = LogConfigSerializer(
-        label=_("设置数据")
-    )
+    data = LogConfigSerializer(label=_("设置数据"))
 
     class Meta:
         model = TenantLogConfig
 
-        fields = ('data', )
+        fields = ('data',)
 
     def update(self, instance, validated_data):
         data = validated_data.get('data')

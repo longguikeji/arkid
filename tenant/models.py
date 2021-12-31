@@ -12,6 +12,10 @@ class Tenant(BaseModel):
     slug = models.SlugField(verbose_name='短链接标识')
     icon = models.URLField(verbose_name='图标', blank=True)
     use_slug = models.BooleanField(default=True, verbose_name='是否使用Slug')
+    background_url = models.URLField(verbose_name='登录页背景图片', blank=True)
+    copyright_text = models.CharField(
+        verbose_name='登录页版权文字', blank=True, max_length=128
+    )
 
     def __str__(self) -> str:
         return f'Tenant: {self.name}'
