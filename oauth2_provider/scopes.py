@@ -36,8 +36,6 @@ class BaseScopes:
 
 class SettingsScopes(BaseScopes):
     def get_all_scopes(self):
-        print("全部信息")
-        print(oauth2_settings.SCOPES)
         return oauth2_settings.SCOPES
 
     def get_available_scopes(self, application=None, request=None, *args, **kwargs):
