@@ -215,7 +215,8 @@ OAUTH2_PROVIDER = {
     "OIDC_ENABLED": True,
     "SCOPES": {
         "openid": "OpenID Connect scope",
-        "userinfo": "UserInfo"
+        "userinfo": "UserInfo",
+        "email": "Email user"
         # ... any other scopes that you use
     },
     "OIDC_RSA_PRIVATE_KEY": """-----BEGIN RSA PRIVATE KEY-----
