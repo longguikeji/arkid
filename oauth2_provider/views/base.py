@@ -358,6 +358,8 @@ class TokenView(OAuthLibMixin, View):
             if access_token is not None:
                 token = get_access_token_model().objects.get(token=access_token)
                 app_authorized.send(sender=self, request=request, token=token)
+            # 补充一个邮箱
+            # body['email'] = token.user.email
         response = HttpResponse(content=body, status=status)
 
         for k, v in headers.items():
