@@ -17,7 +17,7 @@ from api.v1.fields.custom import (
     create_enum_field,
     create_foreign_key_field,
     create_upload_url_field,
-    create_upload_file_field,
+    create_upload_img_field,
     create_html_field,
 )
 from ..pages import group, user
@@ -32,7 +32,7 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
         hint=_("请选择图标"), required=False
     )
     use_slug = serializers.BooleanField(default=True, label=_('是否使用Slug'))
-    background_url = create_upload_file_field(serializers.CharField)(
+    background_url = create_upload_img_field(serializers.CharField)(
         hint=_("请选择背景图片"), required=False, label=_('登录页背景图片')
     )
 
