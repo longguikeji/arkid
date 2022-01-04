@@ -314,10 +314,12 @@ def create_init_field(field_cls):
 
     return InitField
 
+
 def create_dynamic_choice_field(field_cls):
     """
     带动态选项的单选框
     """
+
     @extend_schema_field(
         field={
             'format': 'dynamic_choice',
@@ -340,10 +342,12 @@ def create_dynamic_choice_field(field_cls):
 
     return ChoiceField
 
+
 def create_multiple_dynamic_choice_field(field_cls):
     """
     带动态选项的多选框
     """
+
     @extend_schema_field(
         field={
             'format': 'multiple_dynamic_choice',
@@ -364,6 +368,7 @@ def create_multiple_dynamic_choice_field(field_cls):
             super().__init__(**kwargs)
 
     return MultipleChoiceField
+
 
 def create_custom_list_field(field_cls):
     """
@@ -389,3 +394,34 @@ def create_custom_list_field(field_cls):
             super().__init__(**kwargs)
 
     return CustomListField
+
+
+def create_upload_img_field(field_cls):
+    """
+    图片上传字段(前端上传并写入返回结果中的url)
+    """
+
+    @extend_schema_field(
+        field={
+            'format': 'upload_img',
+        }
+    )
+    class UploadImgField(field_cls):
+        """
+        图片上传字段
+        """
+
+        _field_meta = {}
+
+        def __init__(self, hint, **kwargs):
+            field = get_override(self, 'field', {})
+            field['hint'] = hint
+
+            for k, v in kwargs.items():
+                if isinstance(v, (str, int, list, bool, dict, float)):
+                    field[k] = v
+
+            set_override(self, 'field', field)
+            super().__init__(**kwargs)
+
+    return UploadImgField
