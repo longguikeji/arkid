@@ -141,6 +141,12 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{parent_lookup_tenant}/group/',
             'method': 'get'
+        },
+        'local': {
+            'node': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
+                'method': 'get',
+            }
         }
     }
 )
