@@ -17,9 +17,7 @@ class FeishuUser(BaseModel):
         app_label = 'feishu'
 
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT)
-    user = models.OneToOneField(
-        User, verbose_name='用户', related_name='feishu_user', on_delete=models.PROTECT
-    )
+    user = models.OneToOneField(User, verbose_name='用户', related_name='feishu_user', on_delete=models.PROTECT)
     feishu_user_id = models.CharField(
         max_length=255, blank=True, verbose_name='Feishu ID'
     )

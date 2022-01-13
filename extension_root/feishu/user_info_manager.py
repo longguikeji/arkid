@@ -1,10 +1,11 @@
 '''
 飞书查询用户信息
 '''
-# from urllib.parse import parse_qs
-# import requests
+import requests
 
-# from . import constants
+from . import constants
+
+import json
 
 
 class APICallError(Exception):
@@ -33,15 +34,18 @@ class FeishuUserInfoManager:
         查询用户id
         '''
         try:
+            headers = {
+                'Authorization': f'Bearer {self.app_access_token}',
+                'Content-Type': 'application/json; charset=utf-8'
+            }
+            data = {
+                'code': code,
+                'grant_type': 'authorization_code'
+            }
             response = requests.post(
                 constants.GET_TOKEN_URL,
-                headers={
-                    'Authorization': f'Bearer {self.app_access_token}',
-                },
-                params={
-                    "code": code,
-                    "grant_type": "authorization_code",
-                },
+                headers=headers,
+                data=json.dumps(data),
             )
             result = response.json()
             '''
@@ -69,7 +73,7 @@ class FeishuUserInfoManager:
                 }
             }
             '''
-            user_id = result.get("date").get("user_id")
+            user_id = result.get("data").get("user_id")
             return user_id
         except Exception:
             raise APICallError("Invalid auth_code")

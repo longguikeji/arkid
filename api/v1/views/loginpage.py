@@ -159,7 +159,7 @@ class LoginPage(views.APIView):
     def add_tenant_idp_login_buttons(self, request, tenant, data):
         external_idps = ExternalIdp.valid_objects.filter(tenant=tenant)
         for idp in external_idps:
-            if idp.type not in ['miniprogram']:
+            if idp.type not in ['miniprogram','wechatscan']:
                 data.addExtendButton(
                     model.LOGIN,
                     model.Button(

@@ -79,7 +79,7 @@ class FeishuExternalIdpProvider(ExternalIdpProvider):
         url = GET_TENANT_ACCESS_TOKEN
         r = requests.post(url, data={
             'app_id': self.app_id,
-            'app_secret': self.app_secret,
+            'app_secret': self.secret_id,
         })
         data = r.json()
         token = data['tenant_access_token']
