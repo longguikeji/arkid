@@ -84,9 +84,9 @@ class FeishuCallbackView(APIView):
         if next_url:
             next_url = next_url.replace("?next=", "")
             print("****************")
-            query_string = urlencode(context)
+            query_string =urllib.parse.urlencode(context)
             url = f"{next_url}?{query_string}"
-            url = unquote(url)
+            url = urllib.parse.unquote(url)
             return HttpResponseRedirect(url)
 
         return Response(context, HTTP_200_OK)
