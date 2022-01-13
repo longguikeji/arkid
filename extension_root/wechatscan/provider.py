@@ -1,7 +1,7 @@
 from typing import Dict
 from .user_info_manager import WeChatScanUserInfoManager
 from common.provider import ExternalIdpProvider
-from .constants import KEY
+from .constants import KEY, IMG_URL
 from django.urls import reverse
 from config import get_app_config
 
@@ -55,4 +55,5 @@ class WeChatScanExternalIdpProvider(ExternalIdpProvider):
             'login_url': login_url,
             'bind_url': bind_url,
             'userinfo_url': userinfo_url,
+            'img_url': IMG_URL,
         }

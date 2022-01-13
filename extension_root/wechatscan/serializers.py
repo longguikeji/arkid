@@ -5,7 +5,7 @@ from common.serializer import ExternalIdpBaseSerializer
 
 class WeChatScanBindSerializer(serializers.Serializer):
 
-    openid = serializers.CharField()
+    user_id = serializers.CharField()
 
 
 class WeChatScanExternalIdpConfigSerializer(serializers.Serializer):

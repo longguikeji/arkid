@@ -21,6 +21,8 @@ from drf_spectacular.utils import extend_schema
 from .provider import WeChatScanExternalIdpProvider
 from .serializers import WeChatScanBindSerializer
 
+import uuid
+
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
@@ -38,15 +40,21 @@ class WeChatScanLoginView(APIView):
         provider.load_data(tenant_uuid=tenant_uuid)
         host = c.get_host()
         callback_url = host+reverse("api:wechatscan:callback", args=[tenant_uuid])
-        callback_url = callback_url.replace("localhost:8000","loopbing.natapp1.cc")
-        return_url = request.GET.get("return_url", None)
-        if not return_url:
-            raise ValidationError({"return_url": ["required"]})
+
+        next_url = request.GET.get("next", None)
+        if next_url is not None:
+            next_url = urllib.parse.quote("?next=" + urllib.parse.quote(next_url))
+        else:
+            next_url = ""
+        # return_url = request.GET.get("return_url", None)
+        # if not return_url:
+        #     raise ValidationError({"return_url": ["required"]})
+
         url = "{}?appid={}&redirect_uri={}&response_type=code&scope=snsapi_login&state={}".format(
             AUTHORIZE_URL,
             provider.appid,
-            callback_url,
-            return_url,
+            callback_url+next_url,
+            uuid.uuid1().hex,
         )
         return HttpResponseRedirect(url)
 
@@ -61,8 +69,19 @@ class WeChatScanCallbackView(APIView):
         """
         处理wechatscan用户登录之后重定向页面
         """
-        code = request.GET["code"]
-        return_url = request.GET.get("state", None)
+        print(123456)
+        print(request.GET)
+        code = request.GET.get("code")
+
+        next_url = request.GET.get("next", None)
+        frontend_host = get_app_config().get_frontend_host().replace('http://' , '').replace('https://' , '')
+        if "third_part_callback" not in next_url or frontend_host not in next_url:
+            return Response({'error_msg': '错误的跳转页面'}, HTTP_200_OK)
+        if next_url is not None:
+            next_url = "?next=" + urllib.parse.quote(next_url)
+        else:
+            next_url = ""
+        
         if code:
             try:
                 provider = WeChatScanExternalIdpProvider()
@@ -77,10 +96,12 @@ class WeChatScanCallbackView(APIView):
             raise ValidationError({"code": ["required"]})
 
         context = self.get_token(openid, unionid, nickname, avatar, access_token, refresh_token, tenant_uuid)
-        if return_url:
-            query_string = urlencode(context)
-            url = f"{return_url}?{query_string}"
-            url = unquote(url)
+        if next_url:
+            next_url = next_url.replace("?next=", "")
+            print("****************")
+            query_string =urllib.parse.urlencode(context)
+            url = f"{next_url}?{query_string}"
+            url = urllib.parse.unquote(url)
             return HttpResponseRedirect(url)
 
         return Response(context, HTTP_200_OK)
@@ -105,7 +126,7 @@ class WeChatScanCallbackView(APIView):
         else:
             context = {
                 "token": "",
-                "openid": openid,
+                "user_id": openid,
                 "bind": reverse(
                     "api:wechatscan:bind",
                     args=[
@@ -131,7 +152,7 @@ class WeChatScanBindAPIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = request.user
-        openid = serializer.validated_data['openid']
+        openid = serializer.validated_data['user_id']
         wechatscan_user = WeChatScanUser.valid_objects.filter(user=user, tenant=tenant).first()
         if wechatscan_user:
             wechatscan_user.openid = openid

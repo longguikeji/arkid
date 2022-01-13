@@ -672,6 +672,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
         from extension_root.miniprogram.models import MiniProgramUser
+        from extension_root.wechatscan.models import WeChatScanUser
 
         user = request.user
         feishuusers = FeishuUser.valid_objects.filter(user=request.user)
@@ -679,6 +680,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
         githubusers = GithubUser.valid_objects.filter(user=request.user)
         arkidusers = ArkIDUser.valid_objects.filter(user=request.user)
         miniprogramusers = MiniProgramUser.valid_objects.filter(user=request.user)
+        wechatscanusers = WeChatScanUser.valid_objects.filter(user=request.user)
         result = []
         for item in feishuusers:
             result.append(
@@ -722,6 +724,16 @@ class UserBindInfoView(generics.RetrieveAPIView):
                     'name': '微信小程序',
                     'tenant': item.tenant.uuid,
                     'unbind': '/api/v1/tenant/{}/miniprogram/unbind'.format(
+                        item.tenant.uuid
+                    ),
+                }
+            )
+        for item in wechatscanusers:
+            result.append(
+                {
+                    'name': '微信扫码登录',
+                    'tenant': item.tenant.uuid,
+                    'unbind': '/api/v1/tenant/{}/wechatscan/unbind'.format(
                         item.tenant.uuid
                     ),
                 }
