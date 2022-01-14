@@ -37,6 +37,7 @@ from . import (
     backend_auth,
     backend_login,
     message,
+    application_group,
 )
 from runtime import get_app_runtime
 
