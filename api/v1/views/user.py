@@ -673,6 +673,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
         from extension_root.arkid.models import ArkIDUser
         from extension_root.miniprogram.models import MiniProgramUser
         from extension_root.wechatscan.models import WeChatScanUser
+        from extension_root.wechatwork.models import WeChatWorkUser
 
         user = request.user
         feishuusers = FeishuUser.valid_objects.filter(user=request.user)
@@ -681,6 +682,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
         arkidusers = ArkIDUser.valid_objects.filter(user=request.user)
         miniprogramusers = MiniProgramUser.valid_objects.filter(user=request.user)
         wechatscanusers = WeChatScanUser.valid_objects.filter(user=request.user)
+        wechatworkusers = WeChatWorkUser.valid_objects.filter(user=request.user)
         result = []
         for item in feishuusers:
             result.append(
@@ -734,6 +736,16 @@ class UserBindInfoView(generics.RetrieveAPIView):
                     'name': '微信扫码登录',
                     'tenant': item.tenant.uuid,
                     'unbind': '/api/v1/tenant/{}/wechatscan/unbind'.format(
+                        item.tenant.uuid
+                    ),
+                }
+            )
+        for item in wechatworkusers:
+            result.append(
+                {
+                    'name': '企业微信网页授权登录',
+                    'tenant': item.tenant.uuid,
+                    'unbind': '/api/v1/tenant/{}/wechatwork/unbind'.format(
                         item.tenant.uuid
                     ),
                 }

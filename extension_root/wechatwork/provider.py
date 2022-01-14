@@ -1,15 +1,15 @@
 from typing import Dict
 from .user_info_manager import WeChatWorkUserInfoManager
 from common.provider import ExternalIdpProvider
-from .constants import KEY
+from .constants import KEY, IMG_URL
 from django.urls import reverse
 from config import get_app_config
 
 
 class WeChatWorkExternalIdpProvider(ExternalIdpProvider):
 
-    appid: str
-    secret: str
+    corpid: str
+    corpsecret: str
     login_url: str
     bind_url: str
     userinfo_url: str
@@ -30,29 +30,29 @@ class WeChatWorkExternalIdpProvider(ExternalIdpProvider):
         assert idp is not None
         data = idp.data
 
-        appid = data.get('appid')
-        secret = data.get('secret')
-        login_url = data.get('login_url')
+        corpid = data.get('corpid')
+        corpsecret = data.get('corpsecret')
         bind_url = data.get('bind_url')
         userinfo_url = data.get('userinfo_url')
 
-        self.appid = appid
-        self.secret = secret
+        self.corpid = corpid
+        self.corpsecret = corpsecret
         self.bind_url = bind_url
         self.userinfo_url = userinfo_url
 
     def create(self, tenant_uuid, external_idp, data):
         host = get_app_config().get_host()
-        appid = data.get('appid')
-        secret = data.get('secret')
+        corpid = data.get('corpid')
+        corpsecret = data.get('corpsecret')
         login_url = host+reverse("api:wechatwork:login", args=[tenant_uuid])
         bind_url = host+reverse("api:wechatwork:bind", args=[tenant_uuid])
         userinfo_url = host+reverse("api:wechatwork:userinfo", args=[tenant_uuid])
 
         return {
-            'appid': appid,
-            'secret': secret,
+            'corpid': corpid,
+            'corpsecret': corpsecret,
             'login_url': login_url,
             'bind_url': bind_url,
             'userinfo_url': userinfo_url,
+            'img_url': IMG_URL,
         }

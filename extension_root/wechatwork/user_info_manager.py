@@ -24,51 +24,26 @@ class WeChatWorkUserInfoManager:
     WeChatWork API
     """
 
-    def __init__(self, appid, secret):
-        self.appid = appid
-        self.secret = secret
+    def __init__(self, corpid, corpsecret):
+        self.corpid = corpid
+        self.corpsecret = corpsecret
 
     def get_user_info(self, code):
         """
         查询用户id
         """
         try:
-            response = requests.post(
-                constants.GET_TOKEN_URL,
-                params={
-                    "code": code,
-                    "appid": self.appid,
-                    "secret": self.secret,
-                    "grant_type": "authorization_code",
-                },
-            )
+            response = requests.get(constants.GET_TOKEN_URL.format(self.corpid,self.corpsecret))
 
             response = response.__getattribute__("_content").decode()
             result = json.loads(response)
             access_token = result["access_token"]
-            refresh_token = result["refresh_token"]
-            openid = result["openid"]
-            # unionid = result["unionid"]
-            # 获取user info
-            # {
-            #     "access_token":"ea7d7cdfdeb0c8c986fdde9c371ae96d",
-            #     "token_type":"bearer",
-            #     "expires_in":86400,
-            #     "refresh_token":"ffff7399095b206cbbdcc22da38dbfbea847db9528bc69cd6bf3e427cc6c736f",
-            #     "scope":"user_info projects pull_requests issues notes keys hook groups gists enterprises emails",
-            #     "created_at":1621943205
-            # }
-            headers = {"Authorization": "token " + access_token}
             response = requests.get(
-                constants.GET_USERINFO_URL,
-                params={
-                    "access_token": access_token,
-                    "openid": openid,
-                },
+                constants.GET_USERINFO_URL.format(access_token, code)
             ).json()
-            nickname = response.get("nickname", "")
-            avatar = response.get("headimgurl", "")
-            unionid = response.get("unionid", "")
-            return openid, unionid, nickname, avatar, access_token, refresh_token
+            device_id = response.get("DeviceId", "")
+            work_user_id = response.get("UserId", "")
+
+            return access_token, device_id, work_user_id
         except Exception as e:
             raise APICallError(e)

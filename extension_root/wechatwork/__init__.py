@@ -11,7 +11,7 @@ class WeChatWorkExternalIdpExtension(InMemExtension):
         runtime.register_external_idp(
             key=KEY,
             name="WeChatWork",
-            description="WeChatWork External idP",
+            description="企业微信授权登录",
             provider=WeChatWorkExternalIdpProvider,
             serializer=WeChatWorkExternalIdpSerializer,
         )
@@ -21,7 +21,7 @@ class WeChatWorkExternalIdpExtension(InMemExtension):
         runtime.logout_external_idp(
             key=KEY,
             name="WeChatWork",
-            description="WeChatWork External idP",
+            description="企业微信授权登录",
             provider=WeChatWorkExternalIdpProvider,
             serializer=WeChatWorkExternalIdpSerializer,
         )
@@ -32,7 +32,7 @@ extension = WeChatWorkExternalIdpExtension(
     tags='login',
     scope='tenant',
     type='tenant',
-    description="wechatwork as the external idP",
+    description="企业微信授权登录",
     version="1.0",
     homepage="https://www.longguikeji.com",
     logo="",
