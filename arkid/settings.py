@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'extension_root.message',
     'extension_root.application_group',
     'extension_root.knowledge_base',
+    'extension_root.wechatworkscan',
     # 'django_scim',
     # 'scim_server',
     'extension_root.app_market_manage',
