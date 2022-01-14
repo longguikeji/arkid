@@ -34,6 +34,11 @@ from . import (
     user_log,
     webhook,
     data_sync,
+    notice,
+    notice_manage,
+    ticket,
+    announcement,
+    message,
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
@@ -43,6 +48,18 @@ root_add_routers(
         PageRouter(page=desktop, icon='desktop'),
         PageRouter(page=contacts, icon='education'),
         PageRouter(page=mine, icon='people'),
+        PageRouter(page=notice, icon='notice'),
+        Router(
+            path='message_center',
+            name='消息中心',
+            icon='message',
+            children=[
+                PageRouter(page=notice_manage, icon='list'),
+                PageRouter(page=ticket, icon='list'),
+                PageRouter(page=announcement, icon='list'),
+                PageRouter(page=message, icon='list'),
+            ]
+        ),
         Router(
             path='tmanage',
             name='系统管理',
