@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'extension_root.childmanager',
     'extension_root.wechatscan',
     'extension_root.wechatwork',
+    'extension_root.wechatworkscan',
     # 'django_scim',
     # 'scim_server',
     'extension_root.app_market_manage',
