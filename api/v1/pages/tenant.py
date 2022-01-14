@@ -8,7 +8,7 @@ extend_schema_tags(
     tag,
     name,
     {
-        'type':'dashboard_page',
+        'type':'list_page',
         'init': {
             'path': '/api/v1/tenant/',
             'method': 'get'
