@@ -19,5 +19,5 @@ extension = DemoExtension(
     homepage='https://www.longguikeji.com',
     logo='',
     tags='demo',
-    maintainer='insfocus@gmail.com',
+    maintainer='hanbin@jinji-inc.com',
 )

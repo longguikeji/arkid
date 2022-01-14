@@ -78,6 +78,9 @@ INSTALLED_APPS = [
     'extension_root.tenantuserconfig',
     'extension_root.childaccount',
     'extension_root.childmanager',
+    'extension_root.wechatscan',
+    'extension_root.wechatwork',
+    'extension_root.message',
     # 'django_scim',
     # 'scim_server',
     'extension_root.app_market_manage',
@@ -89,6 +92,8 @@ INSTALLED_APPS = [
     'log',
     'django_celery_beat',
     'data_sync',
+    'command',
+    'backend_login'
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -214,7 +219,8 @@ OAUTH2_PROVIDER = {
     "OIDC_ENABLED": True,
     "SCOPES": {
         "openid": "OpenID Connect scope",
-        "userinfo": "UserInfo"
+        "userinfo": "UserInfo",
+        "email": "Email user"
         # ... any other scopes that you use
     },
     "OIDC_RSA_PRIVATE_KEY": """-----BEGIN RSA PRIVATE KEY-----
@@ -321,6 +327,8 @@ FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'  # 邮件重置邮�
 
 SMS_LIFESPAN = datetime.timedelta(seconds=300)
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
 
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):

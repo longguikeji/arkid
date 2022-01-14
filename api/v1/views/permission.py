@@ -35,10 +35,20 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        objs = Permission.valid_objects.filter(
-            tenant=tenant,
-        ).order_by('id')
-        return objs
+        group_uuid = self.request.query_params.get('group', None)
+        if not group_uuid:
+            objs = Permission.valid_objects.filter(
+                tenant=tenant,
+            ).order_by('id')
+            return objs
+
+        kwargs = {
+            'tenant': tenant,
+            'uuid': group_uuid,
+        }
+
+        group = PermissionGroup.valid_objects.filter(**kwargs).first()
+        return group.permissions.all()
 
     def get_object(self):
         context = self.get_serializer_context()
@@ -292,7 +302,7 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
         if uuid and source:
             if source == '用户权限':
                 permission = Permission.valid_objects.filter(uuid=uuid).first()
-                if permission and permission.is_system_permission is False:
+                if permission:
                     user.user_permissions.remove(permission)
                 else:
                     serializer = self.get_serializer(
@@ -300,7 +310,7 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
                     )
             elif source == '用户权限组':
                 permission_group = PermissionGroup.valid_objects.filter(uuid=uuid).first()
-                if permission_group and permission_group.is_system_group is False:
+                if permission_group:
                     user.user_permissions_group.remove(permission_group)
                 else:
                     serializer = self.get_serializer(

@@ -2,6 +2,8 @@
 
 详细文档：https://www.yuque.com/longguikeji/arkid2/zunn5q
 
+请仔细阅读以上文档！
+需要把arkid和arkid-frontend放在同级目录下！
 
 ```shell
 docker-compose up -d

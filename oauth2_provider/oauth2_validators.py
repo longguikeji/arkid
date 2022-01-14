@@ -746,16 +746,31 @@ class OAuth2Validator(RequestValidator):
         This function adds in iss, exp and auth_time, plus any claims added from
         calling ``get_oidc_claims()``
         """
+        from config import get_app_config
         claims = self.get_oidc_claims(token, token_handler, request)
         expiration_time = timezone.now() + timedelta(seconds=oauth2_settings.ID_TOKEN_EXPIRE_SECONDS)
+        host = get_app_config().get_host()
+        urlinfo = request.uri
+        urlinfo = host+urlinfo
+        if urlinfo.find('/oauth/token/') != -1:
+            urlinfo = urlinfo.split('/oauth/token/')[0]
+        print('issinfo:'+urlinfo)
         # Required ID Token claims
         claims.update(
             **{
-                "iss": self.get_oidc_issuer_endpoint(request),
+                "email": request.user.email,
+                "iss": urlinfo,
                 "exp": int(dateformat.format(expiration_time, "U")),
                 "auth_time": int(dateformat.format(request.user.last_login, "U")),
             }
         )
+        # claims.update(
+        #     **{
+        #         "iss": self.get_oidc_issuer_endpoint(request),
+        #         "exp": int(dateformat.format(expiration_time, "U")),
+        #         "auth_time": int(dateformat.format(request.user.last_login, "U")),
+        #     }
+        # )
         return claims, expiration_time
 
     def get_oidc_issuer_endpoint(self, request):

@@ -48,7 +48,7 @@ class AuthorizationAgentBaseSerializer(serializers.Serializer):
 
 class ExtensionBaseSerializer(serializers.Serializer):
     type = serializers.CharField()
-    data = serializers.JSONField()
+    # data = serializers.JSONField()
     uuid = serializers.UUIDField(read_only=True)
     is_active = serializers.BooleanField(label=_('是否启用'))
 
@@ -75,3 +75,8 @@ class DataSyncBaseSerializer(serializers.Serializer):
 class ScimServerBaseSerializer(serializers.Serializer):
     user_url = serializers.URLField(read_only=True)
     group_url = serializers.URLField(read_only=True)
+
+class BackendLoginBaseSerializer(serializers.Serializer):
+    type = serializers.CharField(label=_('后端认证类型'))
+    data = serializers.JSONField()
+    uuid = serializers.UUIDField(read_only=True)

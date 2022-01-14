@@ -32,53 +32,53 @@ class MessageExtension(InMemExtension):
 
     def start(self, runtime: Runtime, *args, **kwargs):
 
-        from extension.models import Extension
+        # from extension.models import Extension
 
-        o = Extension.active_objects.filter(
-            type=KEY,
-        ).first()
-        print("extension start")
-        import stomp
-        self._conn = stomp.Connection(
-            host_and_ports=[
-                (
-                    o.data.get("host","127.0.0.1"), 
-                    o.data.get("port",61616)
-                )
-            ],
-            heartbeats=(6000, 12000)
-        )
-        self._conn.set_listener('', MessageListener())
+        # o = Extension.active_objects.filter(
+        #     type=KEY,
+        # ).first()
+        # print("extension start")
+        # import stomp
+        # self._conn = stomp.Connection(
+        #     host_and_ports=[
+        #         (
+        #             o.data.get("host","127.0.0.1"), 
+        #             o.data.get("port",61616)
+        #         )
+        #     ],
+        #     heartbeats=(6000, 12000)
+        # )
+        # self._conn.set_listener('', MessageListener())
 
-        self._conn.connect(
-            o.data.get("username","artemis"), 
-            o.data.get("password","artemis"), 
-            wait=True,
-            headers={"client-id": "arkid"},
-        )
-        self._conn.subscribe(
-            destination=o.data.get("destination","arkid"),
-            id=o.data.get("destination","arkid"),
-            ack="auto",
-            headers={
-                'subscription-type': 'ANYCAST',
-                'durable-subscription-name': f'arkid.{o.data.get("destination","arkid")}',
-            },
-        )
+        # self._conn.connect(
+        #     o.data.get("username","artemis"), 
+        #     o.data.get("password","artemis"), 
+        #     wait=True,
+        #     headers={"client-id": "arkid"},
+        # )
+        # self._conn.subscribe(
+        #     destination=o.data.get("destination","arkid"),
+        #     id=o.data.get("destination","arkid"),
+        #     ack="auto",
+        #     headers={
+        #         'subscription-type': 'ANYCAST',
+        #         'durable-subscription-name': f'arkid.{o.data.get("destination","arkid")}',
+        #     },
+        # )
         return super().start(runtime=runtime, *args, **kwargs)
 
     def teardown(self, runtime: Runtime, *args, **kwargs):  # pylint: disable=unused-argument
-        print("teardown")
+        # print("teardown")
 
-        self._conn.unsubscribe(
-            destination="arkid",
-            id="arkid",
-            headers={
-                'subscription-type': 'ANYCAST',
-                'durable-subscription-name': f"arkid.sssarkid",
-            },
-        )
-        self._conn.disconnect()
+        # self._conn.unsubscribe(
+        #     destination="arkid",
+        #     id="arkid",
+        #     headers={
+        #         'subscription-type': 'ANYCAST',
+        #         'durable-subscription-name': f"arkid.sssarkid",
+        #     },
+        # )
+        # self._conn.disconnect()
         return super().teardown(runtime=runtime, *args, **kwargs)
 
 

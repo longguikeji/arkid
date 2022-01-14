@@ -1,23 +1,26 @@
 # farasis
-孚能科技项目
 ArkID - v2
+
+产品介绍：https://arkid.cc
+
+产品试用：https://arkid2.saas.longguikeji.com/，先注册用户，再登录使用
 
 **DO NOT USE THIS VRESION IN PRODUCTION (请勿在生产环境中使用)**
 
-
 # QuickStart
 
-## docker-compose
+## docker-compose启动
 
-1. sqlite3
+## arkid v2.0
 
-```
-cd devops/docker-compose
-touch db.sqlite3
-docker-compose up 
-```
+    git clone --branch v2-dev --depth 1  https://github.com/longguikeji/arkid-charts.git
 
-Open your browser and visit http://localhost:3700
+    cd arkid-charts/docker-compose
+
+    docker-compose up -d
+
+
+Open your browser and visit http://localhost:8989
 
 default admin account
 
@@ -25,6 +28,17 @@ username: **admin**
 
 password: **admin**
 
-## Helm Charts
+## Helm Charts 方式部署
+请查看详细文档：https://github.com/longguikeji/arkid-charts/tree/v2-dev/chart
 
-文档地址：https://www.yuque.com/longguikeji/arkid2/
+
+## 开发环境
+https://www.yuque.com/longguikeji/arkid2/nr77mt
+
+1. 用git clone下代码，切换到 v2-dev分支
+2. 安装依赖库，本项目使用了pipenv。
+pipenv install
+注意：pipenv在pipfile中默认使用的是python 3.6，可根据各自情况安装或更改python的版本。
+
+3. 启动服务
+python manager.py runserver

@@ -70,7 +70,7 @@ class ExtensionViewSet(BaseViewSet):
         responses=ExtensionPolymorphicProxySerializer,
     )
     def update(self, request, *args, **kwargs):
-        data = request.data.get('data','')
+        data = request.data.get('data', {})
         data_path = data.get('data_path', '')
         if data_path:
             if '../' in data_path or './' in data_path:

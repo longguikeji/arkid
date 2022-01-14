@@ -49,5 +49,5 @@ extension = AdDataSyncExtension(
     logo='',
     scope='global',
     type='global',
-    maintainer='rock@longguikeji.com',
+    maintainer='fanhe@longguikeji.com',
 )

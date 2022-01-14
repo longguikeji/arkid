@@ -52,6 +52,11 @@ extend_schema_tags(
             'method': 'post'
         },
         'global': {
+            'reset': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/message/{id}/',
+                'method': 'get',
+                'description': '重置'
+            },
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/message/',
                 'method': 'post',

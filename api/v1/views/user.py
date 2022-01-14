@@ -435,6 +435,110 @@ class UserAppViewSet(BaseViewSet):
                 )
             objs = [app for app in all_apps if app.access_perm_code in perms]
         return objs
+    
+    def list(self, request, *args, **kwargs):
+        from extension.models import Extension
+
+        try:
+            app_market_manage_extension = Extension.active_objects.filter(
+                type="app_market_manage").order_by("-id").first()
+            app_market_manage_extension_is_active = app_market_manage_extension.is_active if app_market_manage_extension else False
+        except Exception as err:
+            app_market_manage_extension_is_active = False
+
+        try:
+            application_group_extension = Extension.active_objects.filter(
+                type="application_group").order_by("-id").first()
+            application_group_extension_is_active = application_group_extension.is_active if application_group_extension else False
+        except Exception as err:
+            application_group_extension_is_active = False
+            
+        try:
+            application_account_extension = Extension.active_objects.filter(
+                type="application_account").order_by("-id").first()
+            application_account_extension_is_active = application_account_extension.is_active if application_account_extension else False
+        except Exception as err:
+            application_account_extension_is_active = False
+            
+        if app_market_manage_extension_is_active:
+            subscribed_apps = request.user.app_subscribed_records.filter(is_active=True)
+            # 在控制应用显示的插件起效的情况下
+            if application_group_extension_is_active:
+                # 应用分组插件启用
+                from extension_root.application_group.models import ApplicationGroup
+                groups = ApplicationGroup.active_objects.filter(tenant=self.get_serializer_context()['tenant']).all()
+                subscribed_app_ids=[item.app.id for item in subscribed_apps]
+                
+                rs = []
+                for group in groups:
+                    group_data = {
+                        "group_name": group.name,
+                        "apps": AppBaseInfoSerializer(group.apps.filter(is_active=True,id__in=subscribed_app_ids).all(),many=True,context={"request":request}).data
+                    }
+                    rs.append(group_data)
+                ungroups=App.active_objects.filter(id__in=subscribed_app_ids).filter(Q(application_groups = None) | Q(application_groups__is_del=True)).all()
+                if ungroups.count(): 
+                    rs.append(
+                        {
+                            "group_name": _("未分组"),
+                            "apps": AppBaseInfoSerializer(ungroups,many=True,context={"request":request}).data
+                        }
+                    )
+                
+                return JsonResponse(
+                    data={
+                        "isOk":True,
+                        "multiple_account_edit":application_account_extension_is_active,
+                        "app_manage":app_market_manage_extension_is_active,
+                        "application_group":application_group_extension_is_active,
+                        "results": rs
+                    }
+                )
+            else:
+                return JsonResponse(
+                    data={
+                        "isOk":True,
+                        "multiple_account_edit":application_account_extension_is_active,
+                        "app_manage":app_market_manage_extension_is_active,
+                        "application_group":application_group_extension_is_active,
+                        "results": AppBaseInfoSerializer([ar.app for ar in subscribed_apps.all()],many=True,context={"request":request}).data
+                    }
+                )
+        else:
+            # 在控制应用显示的插件无效的情况下
+            if application_group_extension_is_active:
+                # 应用分组插件启用
+                from extension_root.application_group.models import ApplicationGroup
+                groups = ApplicationGroup.active_objects.all()
+                
+                rs = []
+                for group in groups:
+                    group_data = {
+                        "group_name": group.name,
+                        "apps": AppBaseInfoSerializer(group.apps.filter(is_active=True).all(),many=True,context={"request":request}).data
+                    }
+                    rs.append(group_data)
+                ungroups=App.active_objects.filter(Q(application_groups = None) | Q(application_groups__is_del=True)).all()
+                if ungroups.count(): 
+                    rs.append(
+                        {
+                            "group_name": _("未分组"),
+                            "apps": AppBaseInfoSerializer(ungroups,many=True,context={"request":request}).data
+                        }
+                    )
+                
+                return JsonResponse(
+                    data={
+                        "isOk":True,
+                        "multiple_account_edit":application_account_extension_is_active,
+                        "app_manage":app_market_manage_extension_is_active,
+                        "application_group":application_group_extension_is_active,
+                        "results": rs
+                    }
+                )
+            else:
+                pass
+        return super().list(request, *args, **kwargs)
 
 
 @extend_schema(tags=['user'])
@@ -672,6 +776,8 @@ class UserBindInfoView(generics.RetrieveAPIView):
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
         from extension_root.miniprogram.models import MiniProgramUser
+        from extension_root.wechatscan.models import WeChatScanUser
+        from extension_root.wechatwork.models import WeChatWorkUser
 
         user = request.user
         feishuusers = FeishuUser.valid_objects.filter(user=request.user)
@@ -679,6 +785,8 @@ class UserBindInfoView(generics.RetrieveAPIView):
         githubusers = GithubUser.valid_objects.filter(user=request.user)
         arkidusers = ArkIDUser.valid_objects.filter(user=request.user)
         miniprogramusers = MiniProgramUser.valid_objects.filter(user=request.user)
+        wechatscanusers = WeChatScanUser.valid_objects.filter(user=request.user)
+        wechatworkusers = WeChatWorkUser.valid_objects.filter(user=request.user)
         result = []
         for item in feishuusers:
             result.append(
@@ -726,6 +834,26 @@ class UserBindInfoView(generics.RetrieveAPIView):
                     ),
                 }
             )
+        for item in wechatscanusers:
+            result.append(
+                {
+                    'name': '微信扫码登录',
+                    'tenant': item.tenant.uuid,
+                    'unbind': '/api/v1/tenant/{}/wechatscan/unbind'.format(
+                        item.tenant.uuid
+                    ),
+                }
+            )
+        for item in wechatworkusers:
+            result.append(
+                {
+                    'name': '企业微信网页授权登录',
+                    'tenant': item.tenant.uuid,
+                    'unbind': '/api/v1/tenant/{}/wechatwork/unbind'.format(
+                        item.tenant.uuid
+                    ),
+                }
+            )
         return JsonResponse({'data': result}, safe=False)
 
 
@@ -763,7 +891,10 @@ class UserTokenExpireView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    @extend_schema(responses=UserTokenExpireSerializer)
+    @extend_schema(
+        roles=['general user', 'tenant admin', 'global admin'],
+        responses=UserTokenExpireSerializer,
+    )
     def get(self, request):
         user = request.user
         return Response({"token": user.new_token})

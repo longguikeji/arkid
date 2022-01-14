@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - v2-dev
+    paths-ignore:
+      - 'docs/**'
+      - 'kustomize/**'
+      - 'README.md'
+      - '.github/**'
 jobs:
   dev2test:
     runs-on: ubuntu-latest

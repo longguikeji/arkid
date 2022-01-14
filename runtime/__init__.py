@@ -19,6 +19,7 @@ from common.provider import (
     ChildManagerConfigProvider,
     StatisticsProvider,
     DataSyncProvider,
+    BackendLoginProvider,
 )
 from common.serializer import (
     AppBaseSerializer,
@@ -27,6 +28,7 @@ from common.serializer import (
     LoginRegisterConfigBaseSerializer,
     OtherAuthFactorBaseSerializer,
     DataSyncBaseSerializer,
+    BackendLoginBaseSerializer,
 )
 from authorization_server.models import AuthorizationServer
 from mfa.models import MFA
@@ -80,6 +82,11 @@ class Runtime:
     data_sync_extensions: List
     data_sync_providers: Dict[str, DataSyncProvider]
     data_sync_serializers: Dict[str, DataSyncBaseSerializer]
+
+    backend_login_extensions: List
+    backend_login_providers: Dict[str, BackendLoginProvider]
+    backend_login_serializers: Dict[str, BackendLoginBaseSerializer]
+
     urlpatterns: Dict = {}
 
     def __new__(cls, *args, **kwargs):
@@ -114,6 +121,10 @@ class Runtime:
             cls._instance.data_sync_extensions = []
             cls._instance.data_sync_providers = {}
             cls._instance.data_sync_serializers = {}
+
+            cls._instance.backend_login_extensions = []
+            cls._instance.backend_login_providers = {}
+            cls._instance.backend_login_serializers = {}
 
         return cls._instance
 
@@ -154,6 +165,10 @@ class Runtime:
         self.data_sync_extensions = []
         self.data_sync_providers = {}
         self.data_sync_serializers = {}
+
+        self.backend_login_extensions = []
+        self.backend_login_providers = {}
+        self.backend_login_serializers = {}
 
     def register_task(self):
         """
@@ -545,6 +560,36 @@ class Runtime:
         if serializer is not None and key in self.data_sync_serializers:
             self.data_sync_serializers.pop(key)
         print('logout_data_sync_extension:', name)
+
+    def register_backend_login_extension(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: BackendLoginProvider,
+        serializer: BackendLoginBaseSerializer = None,
+    ):
+        if (key, name, description) not in self.backend_login_extensions:
+            self.backend_login_extensions.append((key, name, description))
+        if provider is not None:
+            self.backend_login_providers[key] = provider
+        if serializer is not None:
+            self.backend_login_serializers[key] = serializer
+
+    def logout_backend_login_extension(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: BackendLoginProvider,
+        serializer: BackendLoginBaseSerializer = None,
+    ):
+        if (key, name, description) in self.backend_login_extensions:
+            self.backend_login_extensions.remove((key, name, description))
+        if provider is not None and key in self.backend_login_providers:
+            self.backend_login_providers.pop(key)
+        if serializer is not None and key in self.backend_login_serializers:
+            self.backend_login_serializers.pop(key)
 
     @property
     def extension_serializers(self):
