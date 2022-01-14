@@ -69,8 +69,7 @@ class WeChatScanCallbackView(APIView):
         """
         处理wechatscan用户登录之后重定向页面
         """
-        print(123456)
-        print(request.GET)
+
         code = request.GET.get("code")
 
         next_url = request.GET.get("next", None)

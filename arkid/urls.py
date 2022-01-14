@@ -21,9 +21,11 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from api.v1.views.authcode import AuthPageInfo
 
 
 urlpatterns = [
+    path('WW_verify_XqEUmJJ1QkKsMgMN.txt', AuthPageInfo.as_view(), name='authpagecode'),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path(
         'api/schema/swagger-ui/',

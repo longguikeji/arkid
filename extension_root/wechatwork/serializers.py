@@ -5,13 +5,13 @@ from common.serializer import ExternalIdpBaseSerializer
 
 class WeChatWorkBindSerializer(serializers.Serializer):
 
-    openid = serializers.CharField()
+    user_id = serializers.CharField()
 
 
 class WeChatWorkExternalIdpConfigSerializer(serializers.Serializer):
 
-    appid = serializers.CharField()
-    secret = serializers.CharField()
+    corpid = serializers.CharField()
+    corpsecret = serializers.CharField()
 
     login_url = serializers.URLField(read_only=True)
     bind_url = serializers.URLField(read_only=True)
