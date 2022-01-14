@@ -100,7 +100,7 @@ class WeChatWorkCallbackView(APIView):
         return Response(context, HTTP_200_OK)
 
     def get_token(self, access_token, device_id, user_id, tenant_uuid):  # pylint: disable=no-self-use
-        wechatwork_user = WeChatWorkUser.valid_objects.filter(user_id=user_id).first()
+        wechatwork_user = WeChatWorkUser.valid_objects.filter(work_user_id=user_id).first()
         # 用户信息
         wechatworkinfo, created = WeChatWorkInfo.objects.get_or_create(
             is_del=False,
@@ -148,7 +148,7 @@ class WeChatWorkBindAPIView(GenericAPIView):
         if wechatwork_user:
             wechatwork_user.work_user_id = user_id
         else:
-            wechatwork_user = WeChatWorkUser.valid_objects.create(user_id=user_id, user=user, tenant=tenant)
+            wechatwork_user = WeChatWorkUser.valid_objects.create(work_user_id=user_id, user=user, tenant=tenant)
         wechatwork_user.save()
         token = user.token
         data = {"token": token}
