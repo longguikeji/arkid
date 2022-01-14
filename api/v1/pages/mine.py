@@ -1,13 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = [ 
-        'profile', 
-        # 'third_part_account', 
-        # 'subuser', 
-        # 'user_token_manage',
-        'user_application_account_manage',
-        # "user_application_account_settings_manage"
-    ]
+tag = [ 'profile', 'third_part_account', 'subuser', 'user_token_manage' ]
 path = 'mine'
 name = '个人管理'
 
@@ -18,7 +11,7 @@ extend_schema_tags(
     profile_tag,
     profile_name,
     {
-        'type':'description_page',
+        'type':'form_page',
         'init': {
             'path': '/api/v1/user/info/',
             'method': 'get'
@@ -153,117 +146,12 @@ extend_schema_tags(
     user_token_manage_tag,
     user_token_manage_name,
     {
-        'type': 'description_page',
+        'type': 'form_page',
         'global': {
             'token': {
                 'path': '/api/v1/user/token_expire/',
                 'method': 'get',
                 'description': '重置Token'
-            }
-        }
-    }
-)
-
-user_application_account_tag = 'user_application_account_manage'
-user_application_account_name = '应用内账号管理'
-
-extend_schema_tags(
-    user_application_account_tag,
-    user_application_account_name,
-    {
-        'type': 'table_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user_application_account/',
-            'method': 'get'
-        },
-        'local': {
-            'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/user_application_account/{id}/',
-                'method': 'delete',
-                'description': '删除',
-                'icon': 'el-icon-delete'
-            }
-        },
-        'global': {
-            'create': {
-                'tag': 'user_application_account_manage.create',
-                'description': '创建新应用内账号',
-                'icon': 'el-icon-plus'
-            }
-        }
-    }
-)
-
-user_application_account_manage_create_tag = 'user_application_account_manage.create'
-user_application_account_manage_create_name = '创建新应用内账号'
-
-extend_schema_tags(
-    user_application_account_manage_create_tag,
-    user_application_account_manage_create_name,
-    {
-        'type': 'form_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user_application_account/auth_from_third_platform/',
-            'method': 'post'
-        },
-        'global': {
-            'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/user_application_account/auth_from_third_platform/',
-                'method': 'post',
-                'description': '确定'
-            }
-        }
-    }
-)
-
-
-user_application_account_settings_tag = 'user_application_account_settings_manage'
-user_application_account_settings_name = '应用内账号设置'
-
-extend_schema_tags(
-    user_application_account_settings_tag,
-    user_application_account_settings_name,
-    {
-        'type': 'table_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user_application_account_settings/',
-            'method': 'get'
-        },
-        'local': {
-            'delete': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/user_application_account_settings/{id}/',
-                'method': 'delete',
-                'description': '删除',
-                'icon': 'el-icon-delete'
-            }
-        },
-        'global': {
-            'create': {
-                'tag': 'user_application_account_settings_manage.create',
-                'description': '创建新应用内账号设置',
-                'icon': 'el-icon-plus'
-            }
-        }
-    }
-)
-
-user_application_account_settings_manage_create_tag = 'user_application_account_settings_manage.create'
-user_application_account_settings_manage_create_name = '创建新应用内账号设置'
-
-extend_schema_tags(
-    user_application_account_settings_manage_create_tag,
-    user_application_account_settings_manage_create_name,
-    {
-        'type': 'form_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/user_application_account_settings/',
-            'method': 'post'
-        },
-        'global': {
-            'create': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/user_application_account_settings/',
-                'method': 'post',
-                'description': '确定'
             }
         }
     }

@@ -14,18 +14,12 @@ from . import (
     desktop_config,
     device,
     extension,
-    external_idp,
+    external_idp, 
     group,
     group_permission,
     login_register_config,
     log_config,
     mine,
-    notice,
-    notice_manage,
-    announcement,
-    message,
-    knowledge_base,
-    ticket,
     other_auth_factor,
     permission,
     profile_config,
@@ -40,17 +34,7 @@ from . import (
     user_permission,
     user_log,
     webhook,
-    application_account,
-    multiple_ips,
-    application_account_settings,
-    application_group,
-    application_settings,
     data_sync,
-    notice,
-    notice_manage,
-    ticket,
-    announcement,
-    message,
     backend_login,
 )
 
@@ -61,159 +45,137 @@ root_add_routers(
         PageRouter(page=desktop, icon='desktop'),
         PageRouter(page=contacts, icon='education'),
         PageRouter(page=mine, icon='people'),
-        PageRouter(page=notice, icon='notice'),
         Router(
-            path='message_center',
-            name='消息中心',
-            icon='message',
+            path='tmanage',
+            name='系统管理',
+            icon='peoples',
             children=[
-                PageRouter(page=notice_manage, icon='list'),
-                PageRouter(page=ticket, icon='list'),
-                PageRouter(page=announcement, icon='list'),
-                PageRouter(page=message, icon='list'),
-            ]
-        ),
-        Router(
-            path='app_manage',
-            name='应用管理',
-            icon='app',
-            children=[
-                PageRouter(
-                    page=app,
-                    icon='component',
-                ),
-                PageRouter(
-                    page=multiple_ips,
-                    icon='list',
-                ),
-                PageRouter(
-                    page=application_group,
-                    icon='list',
-                ),
-                PageRouter(
-                    page=application_settings,
-                    icon='list',
-                ),
-            ]
-        ),
-        Router(
-            path='user',
-            name='用户管理',
-            icon='people',
-            children=[
-                PageRouter(
-                    page=user,
-                    icon='list',
-                ),
-                PageRouter(
-                    page=group,
-                    icon='list',
-                ),
-                PageRouter(page=all_tenant, icon='list'),
-                PageRouter(page=device, icon='developer'),
-                PageRouter(page=application_account, icon='list'),
-            ],
-        ),
-        Router(
-            path='permission',
-            name='授权管理',
-            icon='tree-table',
-            children=[
-                PageRouter(page=permission, icon='list'),
-                PageRouter(page=permission_group, icon='list'),
+                PageRouter(page=app, icon='component'),
                 Router(
-                    path='permission_manage',
-                    name='权限管理',
+                    path='user',
+                    name='用户管理',
+                    icon='user',
+                    children=[
+                        PageRouter(
+                            page=user,
+                            icon='list',
+                        ),
+                        PageRouter(
+                            page=group,
+                            icon='tree-table',
+                        ),
+                        PageRouter(page=all_tenant, icon='list'),
+                        PageRouter(page=device, icon='developer'),
+                    ],
+                ),
+                Router(
+                    path='permission',
+                    name='授权管理',
+                    icon='tree-table',
+                    children=[
+                        PageRouter(page=permission, icon='list'),
+                        PageRouter(page=permission_group, icon='list'),
+                        Router(
+                            path='permission_manage',
+                            name='权限管理',
+                            icon='tree-table',
+                            children=[
+                                PageRouter(page=user_permission, icon='list'),
+                                PageRouter(page=group_permission, icon='list'),
+                                PageRouter(page=app_permission, icon='list')
+                            ]
+                        ),
+                    ],
+                ),
+                Router(
+                    path='source',
+                    name='连接身份源',
+                    icon='source',
+                    children=[
+                        PageRouter(
+                            page=authorization_server,
+                            icon='list',
+                        ),
+                        # PageRouter(
+                        #     page=authorization_agent,
+                        #     icon='list',
+                        # ),
+                        PageRouter(page=data_sync, icon='chart'),
+                    ],
+                ),
+                Router(
+                    path='authfactor',
+                    name='认证因素',
+                    icon='lock',
+                    children=[
+                        PageRouter(page=login_register_config, icon='setting'),
+                        PageRouter(page=external_idp,icon='wechat'),
+                        PageRouter(page=backend_login,icon='setting'),
+                        PageRouter(page=other_auth_factor, icon='example'),
+                        PageRouter(page=auth_rules, icon='lock')
+                    ],
+                ),
+                Router(
+                    path='developer',
+                    name='扩展能力',
+                    icon='developer',
+                    children=[
+                        PageRouter(
+                            page=webhook,
+                            icon='webhook',
+                        ),
+                        # PageRouter(page=custom_process, icon='process'),
+                        UrlRouter(
+                            path='document',
+                            name='API文档',
+                            url='/api/schema/redoc/',
+                            icon='connect',
+                        ),
+                        # PageRouter(page=sdk_download, icon='sdk'),
+                    ],
+                ),
+                Router(
+                    path='logmanage',
+                    name='日志管理',
+                    icon='edit',
+                    children=[
+                        PageRouter(
+                            page=user_log,
+                            icon='list',
+                        ),
+                        PageRouter(
+                            page=admin_log,
+                            icon='list',
+                        ),
+                        PageRouter(
+                            page=log_config,
+                            icon='setting',
+                        ),
+                    ],
+                ),
+                PageRouter(
+                    page=statistics,
+                    icon='statistics',
+                ),
+                Router(
+                    path='tconfig',
+                    name='租户设置',
                     icon='setting',
                     children=[
-                        PageRouter(page=user_permission, icon='list'),
-                        PageRouter(page=group_permission, icon='list'),
-                        PageRouter(page=app_permission, icon='list')
+                        PageRouter(page=tenant_config, icon='peoples'),
+                        PageRouter(page=sub_admin_config, icon='user')
                     ]
                 ),
-            ],
-        ),
-        Router(
-            path='source',
-            name='连接身份源',
-            icon='source',
-            children=[
-                PageRouter(
-                    page=authorization_server,
-                    icon='list',
-                ),
-                PageRouter(page=data_sync, icon='chart'),
-            ],
-        ),
-        Router(
-            path='authfactor',
-            name='认证因素',
-            icon='lock',
-            children=[
-                PageRouter(page=login_register_config, icon='setting'),
-                PageRouter(page=external_idp, icon='wechat'),
-                PageRouter(page=backend_login,icon='setting'),
-                PageRouter(page=other_auth_factor, icon='example'),
-                PageRouter(page=auth_rules, icon='lock')
-            ],
-        ),
-        Router(
-            path='developer',
-            name='扩展能力',
-            icon='developer',
-            children=[
-                PageRouter(
-                    page=webhook,
-                    icon='webhook',
-                ),
-                UrlRouter(
-                    path='document',
-                    name='API文档',
-                    url='/api/schema/redoc/',
-                    icon='connect',
-                ),
-            ],
-        ),
-        Router(
-            path='logmanage',
-            name='日志管理',
-            icon='edit',
-            children=[
-                PageRouter(
-                    page=user_log,
-                    icon='list',
-                ),
-                PageRouter(
-                    page=admin_log,
-                    icon='list',
-                ),
-                PageRouter(
-                    page=log_config,
-                    icon='setting',
-                ),
-            ],
-        ),
-        PageRouter(
-            page=statistics,
-            icon='statistics',
-        ),
-        Router(
-            path='tconfig',
-            name='租户设置',
-            icon='setting',
-            children=[
-                PageRouter(page=tenant_config, icon='peoples'),
-                PageRouter(page=sub_admin_config, icon='user')
-            ]
-        ),
-        Router(
-            path='umanage',
-            name='用户设置',
-            icon='people',
-            children=[
-                PageRouter(page=desktop_config, icon='desktop'),
-                PageRouter(page=contacts_config, icon='education'),
-                PageRouter(page=profile_config, icon='setting'),
+                Router(
+                    path='umanage',
+                    name='用户设置',
+                    icon='people',
+                    children=[
+                        PageRouter(page=desktop_config, icon='desktop'),
+                        PageRouter(page=contacts_config, icon='education'),
+                        PageRouter(page=profile_config, icon='setting'),
+                    ]
+                )
             ]
         ),
         Router(

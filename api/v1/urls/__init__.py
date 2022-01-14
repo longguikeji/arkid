@@ -36,9 +36,6 @@ from . import (
     data_sync,
     backend_auth,
     backend_login,
-    message,
-    application_group,
-    knowledge_base,
 )
 from runtime import get_app_runtime
 

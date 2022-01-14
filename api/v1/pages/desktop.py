@@ -1,29 +1,49 @@
 from openapi.utils import extend_schema_tags
 from django.conf import settings
 from extension.models import Extension
-from django.utils.translation import ugettext_lazy as _
 
-tag = ['desktop', 'article']
+tag = ['desktop', 'notice']
 path = 'desktop'
 name = '桌面'
 
 app_tag = 'desktop'
 app_name = '应用市集'
 
-extend_schema_tags(
+try:
+    extension = Extension.objects.filter(
+        type="app_market_manage").order_by("-id").first()
+    extension_is_active = extension.is_active if extension else False
+except Exception as err:
+    extension_is_active = False
+
+
+if "extension_root.app_market_manage" in settings.INSTALLED_APPS and extension_is_active:
+    extend_schema_tags(
         app_tag,
         app_name,
         {
-            'type': 'list_page',
+            'type': 'dashboard_page',
             'init': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{parent_lookup_user}/app/',
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{parent_lookup_user}/subscribed_app_list/',
                 'method': 'get'
             },
             'global': {
-                'manage':{
+                'manage': {
                     'tag': 'app_manage',
-                    'description': '管理应用'      
+                    'description': '管理应用'   
                 }
+            }
+        }
+    )
+else:
+    extend_schema_tags(
+        app_tag,
+        app_name,
+        {
+            'type': 'dashboard_page',
+            'init': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{parent_lookup_user}/app/',
+                'method': 'get'
             }
         }
     )
@@ -41,25 +61,16 @@ extend_schema_tags(
             'method': 'get'
         },
         'local': {
-            'item': {
-                'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/user/{parent_lookup_user}/subscribe/',
-                'method': 'post'
-            }
+            'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/user/{parent_lookup_user}/subscribe/',
+            'method': 'post'
         }
     }
 )
 
-article_tag = 'article'
-article_name = '知识驿站'
+notice_tag = 'notice'
+notice_name = '通知公告'
 
 extend_schema_tags(
-    article_tag,
-    article_name,
-    {
-        'type': 'list_page',
-        'init': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/knowledge_base_article/',
-            'method': 'get'
-        }
-    }
+    notice_tag,
+    notice_name
 )
