@@ -54,8 +54,8 @@ from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
 root_add_routers(
     [
         PageRouter(page=desktop, icon='desktop'),
-        PageRouter(page=contacts, icon='contacts'),
-        PageRouter(page=mine, icon='user'),
+        PageRouter(page=contacts, icon='education'),
+        PageRouter(page=mine, icon='people'),
         PageRouter(page=notice, icon='notice'),
         Router(
             path='message_center',
@@ -76,7 +76,7 @@ root_add_routers(
             children=[
                 PageRouter(
                     page=app,
-                    icon='app',
+                    icon='component',
                 ),
                 PageRouter(
                     page=multiple_ips,
@@ -95,7 +95,7 @@ root_add_routers(
         Router(
             path='user',
             name='用户管理',
-            icon='user',
+            icon='people',
             children=[
                 PageRouter(
                     page=user,
@@ -106,14 +106,14 @@ root_add_routers(
                     icon='list',
                 ),
                 PageRouter(page=all_tenant, icon='list'),
-                PageRouter(page=device, icon='device'),
+                PageRouter(page=device, icon='developer'),
                 PageRouter(page=application_account, icon='list'),
             ],
         ),
         Router(
             path='permission',
             name='授权管理',
-            icon='auth',
+            icon='tree-table',
             children=[
                 PageRouter(page=permission, icon='list'),
                 PageRouter(page=permission_group, icon='list'),
@@ -149,24 +149,24 @@ root_add_routers(
                 PageRouter(page=login_register_config, icon='setting'),
                 PageRouter(page=external_idp, icon='wechat'),
                 PageRouter(page=backend_login,icon='setting'),
-                PageRouter(page=other_auth_factor, icon='auth'),
+                PageRouter(page=other_auth_factor, icon='example'),
                 PageRouter(page=auth_rules, icon='lock')
             ],
         ),
         Router(
             path='developer',
             name='扩展能力',
-            icon='extend',
+            icon='developer',
             children=[
                 PageRouter(
                     page=webhook,
-                    icon='hook',
+                    icon='webhook',
                 ),
                 UrlRouter(
                     path='document',
                     name='API文档',
                     url='/api/schema/redoc/',
-                    icon='api',
+                    icon='connect',
                 ),
             ],
         ),
@@ -191,24 +191,24 @@ root_add_routers(
         ),
         PageRouter(
             page=statistics,
-            icon='bar',
+            icon='statistics',
         ),
         Router(
             path='tconfig',
             name='租户设置',
             icon='setting',
             children=[
-                PageRouter(page=tenant_config, icon='tenant'),
+                PageRouter(page=tenant_config, icon='peoples'),
                 PageRouter(page=sub_admin_config, icon='user')
             ]
         ),
         Router(
             path='umanage',
             name='用户设置',
-            icon='user',
+            icon='people',
             children=[
                 PageRouter(page=desktop_config, icon='desktop'),
-                PageRouter(page=contacts_config, icon='contacts'),
+                PageRouter(page=contacts_config, icon='education'),
                 PageRouter(page=profile_config, icon='setting'),
             ]
         ),
