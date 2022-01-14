@@ -143,8 +143,10 @@ extend_schema_tags(
             'method': 'get'
         },
         'local': {
-            'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
-            'method': 'get',
+            'node': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
+                'method': 'get',
+            }
         }
     }
 )

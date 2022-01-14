@@ -54,11 +54,6 @@ extend_schema_tags(
             'method': 'post'
         },
         'global': {
-            # 'reset': {
-            #     'path': '/api/v1/tenant/{parent_lookup_tenant}/app/{id}/',
-            #     'method': 'get',
-            #     'description': '重置'
-            # },
             'create': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/app/',
                 'method': 'post',
@@ -168,11 +163,6 @@ extend_schema_tags(
             'method': 'post'
         },
         'global': {
-            # 'reset': {
-            #     'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/{map_uuid}/',
-            #     'method': 'get',
-            #     'description': '重置'
-            # },
             'create': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/mapping/',
                 'method': 'post',
@@ -252,11 +242,6 @@ extend_schema_tags(
             'method': 'post'
         },
         'global': {
-            # 'reset': {
-            #     'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/{profile_uuid}/',
-            #     'method': 'get',
-            #     'description': '重置'
-            # },
             'create': {
                 'path': '/api/v1/tenant/{tenant_uuid}/app/{app_uuid}/provisioning/profile/',
                 'method': 'post',

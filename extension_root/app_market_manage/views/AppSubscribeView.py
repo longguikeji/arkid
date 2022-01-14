@@ -44,9 +44,9 @@ class AppSubscribe(views.View):
             record = AppSubscribeRecord(
                 app=app,
             )
-            record.save()
             if status:
                 record.users.add(user)
+            record.save()
 
         return JsonResponse(
             data={

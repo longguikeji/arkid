@@ -8,7 +8,7 @@ extend_schema_tags(
     tag,
     name,
     {
-        'type':'description_page',
+        'type':'form_page',
         'init': {
             'path': '/api/v1/tenant/{id}/',
             'method': 'get'

@@ -55,7 +55,7 @@ from rest_framework.exceptions import ValidationError
 from extension_root.childmanager.models import ChildManager
 from django.utils.translation import gettext_lazy as _
 from common.utils import check_password_complexity
-from django.db.models import Q
+
 import re
 from webhook.manager import WebhookManager
 from django.db import transaction
@@ -435,110 +435,6 @@ class UserAppViewSet(BaseViewSet):
                 )
             objs = [app for app in all_apps if app.access_perm_code in perms]
         return objs
-    
-    def list(self, request, *args, **kwargs):
-        from extension.models import Extension
-
-        try:
-            app_market_manage_extension = Extension.active_objects.filter(
-                type="app_market_manage").order_by("-id").first()
-            app_market_manage_extension_is_active = app_market_manage_extension.is_active if app_market_manage_extension else False
-        except Exception as err:
-            app_market_manage_extension_is_active = False
-
-        try:
-            application_group_extension = Extension.active_objects.filter(
-                type="application_group").order_by("-id").first()
-            application_group_extension_is_active = application_group_extension.is_active if application_group_extension else False
-        except Exception as err:
-            application_group_extension_is_active = False
-            
-        try:
-            application_account_extension = Extension.active_objects.filter(
-                type="application_account").order_by("-id").first()
-            application_account_extension_is_active = application_account_extension.is_active if application_account_extension else False
-        except Exception as err:
-            application_account_extension_is_active = False
-            
-        if app_market_manage_extension_is_active:
-            subscribed_apps = request.user.app_subscribed_records.filter(is_active=True)
-            # 在控制应用显示的插件起效的情况下
-            if application_group_extension_is_active:
-                # 应用分组插件启用
-                from extension_root.application_group.models import ApplicationGroup
-                groups = ApplicationGroup.active_objects.filter(tenant=self.get_serializer_context()['tenant']).all()
-                subscribed_app_ids=[item.app.id for item in subscribed_apps]
-                
-                rs = []
-                for group in groups:
-                    group_data = {
-                        "group_name": group.name,
-                        "apps": AppBaseInfoSerializer(group.apps.filter(is_active=True,id__in=subscribed_app_ids).all(),many=True,context={"request":request}).data
-                    }
-                    rs.append(group_data)
-                ungroups=App.active_objects.filter(id__in=subscribed_app_ids).filter(Q(application_groups = None) | Q(application_groups__is_del=True)).all()
-                if ungroups.count(): 
-                    rs.append(
-                        {
-                            "group_name": _("未分组"),
-                            "apps": AppBaseInfoSerializer(ungroups,many=True,context={"request":request}).data
-                        }
-                    )
-                
-                return JsonResponse(
-                    data={
-                        "isOk":True,
-                        "multiple_account_edit":application_account_extension_is_active,
-                        "app_manage":app_market_manage_extension_is_active,
-                        "application_group":application_group_extension_is_active,
-                        "results": rs
-                    }
-                )
-            else:
-                return JsonResponse(
-                    data={
-                        "isOk":True,
-                        "multiple_account_edit":application_account_extension_is_active,
-                        "app_manage":app_market_manage_extension_is_active,
-                        "application_group":application_group_extension_is_active,
-                        "results": AppBaseInfoSerializer([ar.app for ar in subscribed_apps.all()],many=True,context={"request":request}).data
-                    }
-                )
-        else:
-            # 在控制应用显示的插件无效的情况下
-            if application_group_extension_is_active:
-                # 应用分组插件启用
-                from extension_root.application_group.models import ApplicationGroup
-                groups = ApplicationGroup.active_objects.all()
-                
-                rs = []
-                for group in groups:
-                    group_data = {
-                        "group_name": group.name,
-                        "apps": AppBaseInfoSerializer(group.apps.filter(is_active=True).all(),many=True,context={"request":request}).data
-                    }
-                    rs.append(group_data)
-                ungroups=App.active_objects.filter(Q(application_groups = None) | Q(application_groups__is_del=True)).all()
-                if ungroups.count(): 
-                    rs.append(
-                        {
-                            "group_name": _("未分组"),
-                            "apps": AppBaseInfoSerializer(ungroups,many=True,context={"request":request}).data
-                        }
-                    )
-                
-                return JsonResponse(
-                    data={
-                        "isOk":True,
-                        "multiple_account_edit":application_account_extension_is_active,
-                        "app_manage":app_market_manage_extension_is_active,
-                        "application_group":application_group_extension_is_active,
-                        "results": rs
-                    }
-                )
-            else:
-                pass
-        return super().list(request, *args, **kwargs)
 
 
 @extend_schema(tags=['user'])
