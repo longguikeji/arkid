@@ -96,7 +96,7 @@ class PermListCreateAPIView(generics.ListCreateAPIView):
 
         # TODO: async
         for user in User.valid_objects.get_queryset():
-            UserPerm.valid_objects.create(owner=user, perm=perm)
+            UserPerm.valid_objects.create(owner=user, perm=perm, value=True)
 
         for group in Group.valid_objects.get_queryset():
             GroupPerm.valid_objects.create(owner=group, perm=perm)
