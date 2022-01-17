@@ -26,9 +26,9 @@ ARG base_commit_id=""
 RUN pre-commit install \
     && make BASE_COMMIT_ID=${base_commit_id} lint
 
-FROM build_deps as run_test
-ADD . .
-RUN make test
+# FROM build_deps as run_test
+# ADD . .
+# RUN make test
 
 FROM build_deps as build
 RUN pip install uwsgi mysqlclient==1.4.6
