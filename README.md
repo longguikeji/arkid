@@ -1,5 +1,4 @@
-# farasis
-ArkID - v2
+# ArkID - v2
 
 产品介绍：https://arkid.cc
 
