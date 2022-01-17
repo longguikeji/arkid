@@ -3,7 +3,7 @@ ArkID - v2
 
 产品介绍：https://arkid.cc
 
-产品试用：https://arkid2.saas.longguikeji.com/，先注册用户，再登录使用
+产品试用：https://saas.arkid.cc/ 先注册用户，再登录使用
 
 **DO NOT USE THIS VRESION IN PRODUCTION (请勿在生产环境中使用)**
 
