@@ -55,8 +55,11 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
     pagination_class = DefaultListPaginator
 
     read_permission_classes = [IsAuthenticated & (IsAdminUser | IsManagerUser)]
+    # write_permission_classes = [
+    #     IsAuthenticated & (IsAdminUser | CustomPerm('system_user_create'))
+    # ]
     write_permission_classes = [
-        IsAuthenticated & (IsAdminUser | CustomPerm('system_user_create'))
+        IsAuthenticated
     ]
 
     def get_permissions(self):
