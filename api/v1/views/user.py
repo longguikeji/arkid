@@ -169,9 +169,9 @@ class UserViewSet(BaseViewSet):
         if email is not None:
             kwargs['email'] = email
         if country is not None:
-            kwargs['country'] = email
+            kwargs['country'] = country
         if city is not None:
-            kwargs['city'] = email
+            kwargs['city'] = city
         if job_title is not None:
             kwargs['job_title'] = job_title
 
@@ -685,6 +685,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
         wechatscanusers = WeChatScanUser.valid_objects.filter(user=request.user)
         wechatworkusers = WeChatWorkUser.valid_objects.filter(user=request.user)
         wechatworkscanusers = WeChatWorkScanUser.valid_objects.filter(user=request.user)
+
         result = []
         for item in feishuusers:
             result.append(
@@ -762,6 +763,21 @@ class UserBindInfoView(generics.RetrieveAPIView):
                     ),
                 }
             )
+        try:
+            from extension_root.dingding.models import DingDingUser
+            dingdingusers = DingDingUser.valid_objects.filter(user=request.user)
+            for item in dingdingusers:
+                result.append(
+                    {
+                        'name': '钉钉登录',
+                        'tenant': item.tenant.uuid,
+                        'unbind': '/api/v1/tenant/{}/dingding/unbind'.format(
+                            item.tenant.uuid
+                        ),
+                    }
+                )
+        except:
+            print('没有安装钉钉插件')
         return JsonResponse({'data': result}, safe=False)
 
 
