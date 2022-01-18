@@ -1,6 +1,6 @@
 from openapi.utils import extend_schema_tags
 
-tag = ['profile', 'third_part_account', 'subuser', 'user_token_manage']
+tag = ['profile', 'third_part_account', 'subuser', 'user_token_manage', 'user_app_account_manage']
 path = 'mine'
 name = '个人管理'
 
@@ -160,7 +160,12 @@ extend_schema_tags(
                 'method': 'delete',
                 'description': '删除',
                 'icon': 'el-icon-delete',
-            }
+            },
+            'update': {
+                'tag': 'user_app_account_manage.update',
+                'description': '编辑',
+                'icon': 'el-icon-edit'
+            },
         },
         'global': {
             'create': {
@@ -188,6 +193,29 @@ extend_schema_tags(
             'create': {
                 'path': '/api/v1/tenant/{tenant_uuid}/user_app_account/',
                 'method': 'post',
+                'description': '确定',
+            }
+        },
+    },
+)
+
+
+user_app_account_manage_update_tag = 'user_app_account_manage.update'
+user_app_account_manage_update_name = '编辑表单代填账号'
+
+extend_schema_tags(
+    user_app_account_manage_update_tag,
+    user_app_account_manage_update_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/tenant/{tenant_uuid}/user_app_account/{account_uuid}/',
+            'method': 'get',
+        },
+        'global': {
+            'update': {
+                'path': '/api/v1/tenant/{tenant_uuid}/user_app_account/{account_uuid}/',
+                'method': 'put',
                 'description': '确定',
             }
         },
