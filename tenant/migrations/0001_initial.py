@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('slug', models.CharField(max_length=128)),
                 ('use_slug', models.BooleanField(default=True, verbose_name='是否使用Slug')),
                 ('background_url', models.URLField(blank=True, verbose_name='登录页背景图片')),
-                ('copyright_text', models.CharField(max_length=512, blank=True, verbose_name='登录页版权文字')),
+                ('copyright_text', models.CharField(max_length=128, blank=True, verbose_name='登录页版权文字')),
             ],
             options={
                 'abstract': False,
