@@ -667,36 +667,34 @@ class UserBindInfoView(generics.RetrieveAPIView):
         responses=UserBindInfoSerializer,
     )
     def get(self, request):
-        from extension_root.feishu.models import FeishuUser
         from extension_root.gitee.models import GiteeUser
         from extension_root.github.models import GithubUser
         from extension_root.arkid.models import ArkIDUser
         from extension_root.miniprogram.models import MiniProgramUser
-        from extension_root.wechatscan.models import WeChatScanUser
-        from extension_root.wechatwork.models import WeChatWorkUser
-        from extension_root.wechatworkscan.models import WeChatWorkScanUser
 
         user = request.user
-        feishuusers = FeishuUser.valid_objects.filter(user=request.user)
         giteeusers = GiteeUser.valid_objects.filter(user=request.user)
         githubusers = GithubUser.valid_objects.filter(user=request.user)
         arkidusers = ArkIDUser.valid_objects.filter(user=request.user)
         miniprogramusers = MiniProgramUser.valid_objects.filter(user=request.user)
-        wechatscanusers = WeChatScanUser.valid_objects.filter(user=request.user)
-        wechatworkusers = WeChatWorkUser.valid_objects.filter(user=request.user)
-        wechatworkscanusers = WeChatWorkScanUser.valid_objects.filter(user=request.user)
 
         result = []
-        for item in feishuusers:
-            result.append(
-                {
-                    'name': '飞书',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/feishu/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
+        try:
+            from extension_root.feishu.models import FeishuUser
+            feishuusers = FeishuUser.valid_objects.filter(user=request.user)
+            for item in feishuusers:
+                result.append(
+                    {
+                        'name': '飞书',
+                        'tenant': item.tenant.uuid,
+                        'unbind': '/api/v1/tenant/{}/feishu/unbind'.format(
+                            item.tenant.uuid
+                        ),
+                    }
+                )
+        except:
+            print('没有安装飞书登录插件')
+
         for item in giteeusers:
             result.append(
                 {
@@ -733,36 +731,55 @@ class UserBindInfoView(generics.RetrieveAPIView):
                     ),
                 }
             )
-        for item in wechatscanusers:
-            result.append(
-                {
-                    'name': '微信扫码登录',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/wechatscan/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
-        for item in wechatworkusers:
-            result.append(
-                {
-                    'name': '企业微信网页授权登录',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/wechatwork/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
-        for item in wechatworkscanusers:
-            result.append(
-                {
-                    'name': '企业微信扫码登录',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/wechatworkscan/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
+
+        try:
+            from extension_root.wechatscan.models import WeChatScanUser
+            wechatscanusers = WeChatScanUser.valid_objects.filter(user=request.user)
+            for item in wechatscanusers:
+                result.append(
+                    {
+                        'name': '微信扫码登录',
+                        'tenant': item.tenant.uuid,
+                        'unbind': '/api/v1/tenant/{}/wechatscan/unbind'.format(
+                            item.tenant.uuid
+                        ),
+                    }
+                )
+        except:
+            print('没有安装微信扫码登录插件')
+
+        try:
+            from extension_root.wechatwork.models import WeChatWorkUser
+            wechatworkusers = WeChatWorkUser.valid_objects.filter(user=request.user)
+            for item in wechatworkusers:
+                result.append(
+                    {
+                        'name': '企业微信网页授权登录',
+                        'tenant': item.tenant.uuid,
+                        'unbind': '/api/v1/tenant/{}/wechatwork/unbind'.format(
+                            item.tenant.uuid
+                        ),
+                    }
+                )
+        except:
+            print('没有安装企业微信网页授权登录插件')
+
+        try:
+            from extension_root.wechatworkscan.models import WeChatWorkScanUser
+            wechatworkscanusers = WeChatWorkScanUser.valid_objects.filter(user=request.user)
+            for item in wechatworkscanusers:
+                result.append(
+                    {
+                        'name': '企业微信扫码登录',
+                        'tenant': item.tenant.uuid,
+                        'unbind': '/api/v1/tenant/{}/wechatworkscan/unbind'.format(
+                            item.tenant.uuid
+                        ),
+                    }
+                )
+        except:
+            print('没有安装企业微信扫码登录插件')
+
         try:
             from extension_root.dingding.models import DingDingUser
             dingdingusers = DingDingUser.valid_objects.filter(user=request.user)
@@ -778,6 +795,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
                 )
         except:
             print('没有安装钉钉插件')
+
         return JsonResponse({'data': result}, safe=False)
 
 
