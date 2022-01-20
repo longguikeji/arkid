@@ -86,7 +86,7 @@ class DeptListChannelAPIView(generics.ListAPIView):
         kwargs = {}
         if parent:
             kwargs.update(parent_id=parent)
-        return Dept.obs.filter(**kwargs).order_by('id')
+        return Dept.obs.filter(**kwargs).order_by('order_no')
 
 
 class DeptScopeListAPIView(generics.ListAPIView):
