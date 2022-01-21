@@ -31,6 +31,7 @@ class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
             'url',
             'type',
             'description',
+            'created',
         )
 
 
