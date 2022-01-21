@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework import generics
 from openapi.utils import extend_schema
 from rest_framework.response import Response
+from app.models import App
 from tenant.models import (
     Tenant,
     TenantConfig,
@@ -15,6 +16,7 @@ from tenant.models import (
     TenantLogConfig,
     TenantSwitch,
 )
+
 from api.v1.serializers.tenant import (
     TenantSerializer,
     TenantConfigSerializer,
@@ -30,6 +32,7 @@ from api.v1.serializers.tenant import (
     TenantSwitchSerializer,
     TenantSwitchInfoSerializer,
     TenantUserRoleSerializer,
+    TenantCollectInfoSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
@@ -239,6 +242,31 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
                 tenantconfig.data = default_data.get('data')
                 tenantconfig.save()
             return tenantconfig
+
+
+@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+class TenantCollectInfoView(generics.RetrieveAPIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantCollectInfoSerializer
+
+    @extend_schema(responses=TenantCollectInfoSerializer)
+    def get(self, request, tenant_uuid):
+        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+        app_count = App.active_objects.filter(tenant=tenant).count()
+        user_count = User.active_objects.filter(tenants__in=[tenant]).count()
+        message_count = 0
+        dict_item = {
+            'message_count': message_count,
+            'app_count': app_count,
+            'user_count': user_count,
+        }
+        serializer = self.get_serializer(dict_item)
+        return Response(serializer.data)
+
+
 
 
 @extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
