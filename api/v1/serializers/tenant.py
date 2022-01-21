@@ -388,6 +388,13 @@ class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
         return instance
 
 
+
+class TenantCollectInfoSerializer(serializers.Serializer):
+
+    app_count = serializers.IntegerField(label=_('应用数'))
+    user_count = serializers.IntegerField(label=_('用户数'))
+    message_count = serializers.IntegerField(label=_('消息数'))
+
 class TenantCheckPermissionItemSerializer(serializers.Serializer):
 
     uuid = serializers.CharField()

@@ -10,6 +10,7 @@ from api.v1.fields.custom import (
     create_mobile_field,
     create_password_field,
     create_init_field,
+    create_upload_url_field,
 )
 from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
@@ -346,6 +347,9 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
         hint="请填写正确的email格式",
         required=False,
     )
+    avatar = create_upload_url_field(serializers.URLField)(
+        hint=_("请选择头像"), required=False
+    )
     token = serializers.SerializerMethodField()
 
     def get_token(self, instance):  # pylint: disable=no-self-use
@@ -374,6 +378,7 @@ class UserInfoSerializer(BaseDynamicFieldModelSerializer):
             'city',
             'job_title',
             'bind_info',
+            'avatar',
             'token',
         )
 
