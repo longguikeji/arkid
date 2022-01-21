@@ -78,7 +78,7 @@ INSTALLED_APPS = [
     'extension_root.tenantuserconfig',
     'extension_root.childaccount',
     'extension_root.childmanager',
-    'extension_root.auto_form_fill',
+    # 'extension_root.auto_form_fill',
     # 'django_scim',
     # 'scim_server',
     'extension_root.app_market_manage',
