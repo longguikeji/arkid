@@ -17,6 +17,11 @@ urlpatterns = [
         name='tenant-config',
     ),
     re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/collectinfo/',
+        views_tenant.TenantCollectInfoView.as_view(),
+        name='tenant-collectinfo',
+    ),
+    re_path(
         r'^tenant/(?P<tenant_uuid>[\w-]+)/contactsconfig/function_switch/',
         views_tenant.TenantContactsConfigFunctionSwitchView.as_view(),
         name='tenant-contactsconfig-function-switch',

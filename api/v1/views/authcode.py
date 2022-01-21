@@ -1,4 +1,4 @@
-from django.http.response import JsonResponse
+from django.http.response import JsonResponse, HttpResponse
 from rest_framework import generics
 from django.utils.translation import gettext_lazy as _
 from openapi.utils import extend_schema
@@ -58,3 +58,11 @@ class AuthCodeCheckView(generics.CreateAPIView):
             return JsonResponse(data={'is_succeed': 0})
         else:
             return JsonResponse(data={'is_succeed': 1})
+
+
+class AuthPageInfo(generics.RetrieveAPIView):
+    '''
+    页面验证信息
+    '''
+    def get(self, request):
+        return HttpResponse("XqEUmJJ1QkKsMgMN")

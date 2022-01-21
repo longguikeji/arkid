@@ -163,10 +163,10 @@ class LoginPage(views.APIView):
                 data.addExtendButton(
                     model.LOGIN,
                     model.Button(
-                        img=idp.data['img_url'],
+                        img=idp.data.get('img_url', ''),
                         tooltip=idp.type,
                         redirect=model.ButtonRedirect(
-                            url=idp.data['login_url'],
+                            url=idp.data.get('login_url', ''),
                         ),
                     ),
                 )
