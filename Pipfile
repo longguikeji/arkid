@@ -46,6 +46,7 @@ pymssql = "*"
 django-celery-beat = "*"
 pypinyin = "*"
 random-password-generator = "*"
+kerberos = "*"
 
 [requires]
 python_version = "3.8"

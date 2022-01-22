@@ -247,3 +247,7 @@ class StatisticsProvider:
     @abstractmethod
     def get_charts(self, tenant) -> any:
         pass
+
+class BackendLoginProvider:
+    def authenticate(self, tenant, request, data):
+        pass
