@@ -18,6 +18,8 @@ from .scopes import get_scopes_backend
 from .settings import oauth2_settings
 from .validators import RedirectURIValidator, WildcardSet
 
+from tenant.models import Tenant
+
 
 logger = logging.getLogger(__name__)
 
@@ -264,6 +266,13 @@ class AbstractGrant(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s"
     )
+    tenant = models.ForeignKey(
+        Tenant,
+        blank=False,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT
+    )
     code = models.CharField(max_length=255, unique=True)  # code comes from oauthlib
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
     expires = models.DateTimeField()
@@ -332,6 +341,13 @@ class AbstractAccessToken(models.Model):
         blank=True,
         null=True,
         related_name="%(app_label)s_%(class)s",
+    )
+    tenant = models.ForeignKey(
+        Tenant,
+        blank=False,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT
     )
     source_refresh_token = models.OneToOneField(
         # unique=True implied by the OneToOneField
@@ -516,6 +532,13 @@ class AbstractIDToken(models.Model):
         blank=True,
         null=True,
         related_name="%(app_label)s_%(class)s",
+    )
+    tenant = models.ForeignKey(
+        Tenant,
+        blank=False,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT
     )
     token = models.CharField(max_length=1024)
     application = models.ForeignKey(

@@ -1,3 +1,4 @@
+import re
 import json
 import logging
 from tenant.models import Tenant
@@ -38,33 +39,57 @@ class TokenRequiredMixin(AccessMixin):
 
     def get_login_url(self):
         full_path = self.request.get_full_path()
+        next_uri = urllib.parse.quote(full_path)
+        
         # # 地址加租户uuid参数
-        tenant_index = full_path.find('tenant/') + 7
-        if tenant_index != 6:
-            slash_index = full_path.find('/', tenant_index)
-            tenant_uuid = full_path[tenant_index:slash_index]
+        uuid_re = r"[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}"
+        path = self.request.path
+        res = re.search(uuid_re, path)
+        if res:
+            tenant_uuid = res.group(0)
             tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-            next = urllib.parse.quote(full_path)
             if tenant and tenant.slug:
-                full_path = '{}{}?next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, next)
+                redirect_url = '{}{}?next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, next_uri)
             else:
-                full_path = '{}{}?tenant={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, tenant_uuid, next)
-        return full_path
+                redirect_url = '{}{}?tenant={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, tenant_uuid, next_uri)
+        else:
+            host = get_app_config().get_host().split('://')[-1]
+            request_host = self.request.get_host().split(':')[0]
+            slug = request_host.replace('.' + host, '')
+            tenant = Tenant.objects.filter(slug=slug).first()
+            if tenant and tenant.slug:
+                redirect_url = '{}{}?next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, next_uri)
+            else: 
+                redirect_url = '{}{}?slug=null&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, next_uri)
+
+        return redirect_url
 
     def dispatch(self, request, *args, **kwargs):
-        is_authenticated = self.check_token(request)
+        is_authenticated = self.check_token(request, *args, **kwargs)
         if is_authenticated:
             return super().dispatch(request, *args, **kwargs)
         else:
             return self.handle_no_permission()
 
-    def check_token(self, request):
+    def check_token(self, request, *args, **kwargs):
         token = request.GET.get('token', '')
         request.META['HTTP_AUTHORIZATION'] = 'Token ' + token
+
+        tenant_uuid = kwargs.get('tenant_uuid')
+        if tenant_uuid:
+            tenant = Tenant.objects.get(uuid=tenant_uuid)
+        else:
+            host = get_app_config().get_host().split('://')[-1]
+            request_host = request.get_host().split(':')[0]
+            slug = request_host.replace('.' + host, '')
+            tenant = Tenant.objects.filter(slug=slug).first()
+
         try:
             res = ExpiringTokenAuthentication().authenticate(request)
             if res is not None:
                 user, _ = res
+                assert tenant is not None
+                user.tenant = tenant
                 request.user = user
                 return True
             return False
@@ -351,7 +376,10 @@ class TokenView(OAuthLibMixin, View):
     @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
         tenant_uuid = kwargs.get('tenant_uuid')
-        tenant = Tenant.objects.get(uuid=tenant_uuid)
+        if tenant_uuid:
+            tenant = Tenant.objects.get(uuid=tenant_uuid)
+        else:
+            tenant = None
 
         url, headers, body, status = self.create_token_response(request, tenant)
         if status == 200:
