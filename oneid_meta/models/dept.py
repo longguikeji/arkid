@@ -10,6 +10,7 @@ from django.db.utils import IntegrityError
 from common.django.model import BaseOrderedModel, BaseModel
 from oneid_meta.models.perm import DeptPerm, PermOwnerMixin
 from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
+from oneid_meta.models.config import CustomField
 
 if django.db.connection.vendor == "sqlite":
     from jsonfield import JSONField    # 测试环境（避免影响其他unit test）
@@ -190,6 +191,24 @@ class Dept(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         详情序列化实例
         '''
         return self.detail_serializer_cls(self)
+
+    @property
+    def abbreviation(self):
+        '''
+        简称
+        '''
+        cf = CustomField.valid_objects.filter(name='组织代称').first()
+        if cf:
+            cf_uuid = cf.uuid.hex
+            cd = CustomDept.valid_objects.filter(dept=self).first()
+            if cd:
+                data = cd.data
+                value = data.get(cf_uuid, '')
+                return value
+            else:
+                return ''
+        else:
+            return ''
 
 
 class CustomDept(BaseModel):
