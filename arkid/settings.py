@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'extension_root.tenantuserconfig',
     'extension_root.childaccount',
     'extension_root.childmanager',
+    # 'extension_root.auto_form_fill',
     # 'extension_root.wechatscan',
     # 'extension_root.wechatwork',
     # 'extension_root.wechatworkscan',
@@ -94,7 +95,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'data_sync',
     'command',
-    'backend_login'
+    'backend_login',
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
