@@ -79,6 +79,7 @@ class DeptSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
 
 class DeptListChannelSerializer(DynamicFieldsModelSerializer):
 
+
     class Meta:    # pylint: disable=missing-docstring
         model = Dept
 
@@ -88,6 +89,7 @@ class DeptListChannelSerializer(DynamicFieldsModelSerializer):
             'uid',
             'name',
             'remark',
+            'abbreviation',
             'parent',
             'order_no',
             'is_active',
