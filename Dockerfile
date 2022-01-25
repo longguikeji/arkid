@@ -1,14 +1,14 @@
 FROM python:3.6-buster as build_deps
 EXPOSE 80
 WORKDIR /var/oneid
-RUN echo 'deb http://mirrors.aliyun.com/debian/ buster main non-free contrib \n\
-deb-src http://mirrors.aliyun.com/debian/ buster main non-free contrib    \n\
-deb http://mirrors.aliyun.com/debian-security buster/updates main         \n\
-deb-src http://mirrors.aliyun.com/debian-security buster/updates main      \n\
-deb http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \n\
-deb-src http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib \n\
-deb http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib    \n\
-deb-src http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib  \n'\
+RUN echo 'deb http://mirrors.huaweicloud.com/debian/ buster main non-free contrib \n\
+deb-src http://mirrors.huaweicloud.com/debian/ buster main non-free contrib \n\
+deb http://mirrors.huaweicloud.com/debian-security buster/updates main \n\
+deb-src http://mirrors.huaweicloud.com/debian-security buster/updates main \n\
+deb http://mirrors.huaweicloud.com/debian/ buster-updates main non-free contrib \n\
+deb-src http://mirrors.huaweicloud.com/debian/ buster-updates main non-free contrib \n\
+deb http://mirrors.huaweicloud.com/debian/ buster-backports main non-free contrib \n\
+deb-src http://mirrors.huaweicloud.com/debian/ buster-backports main non-free contrib \n'\
 > /etc/apt/sources.list  \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
