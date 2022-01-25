@@ -296,7 +296,6 @@ class UcenterAPPListAPIView(generics.ListAPIView):
                                         if dm_owner.if_belong_to_dept(owner, True) is True:
                                             if item.uuid not in data:
                                                 data.append(item.uuid)
-        # 原来的逻辑
         if self.request.user.is_admin:
             redata = APP.valid_objects.filter(**kwargs).order_by('-created')
         else:
