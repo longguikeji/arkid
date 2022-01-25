@@ -43,7 +43,14 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
         serializer.is_valid(raise_exception=True)
         serializer.save()
         for perm in Perm.valid_objects.all():
-            UserPerm.valid_objects.create(owner=serializer.instance, perm=perm, value=True)
+            if perm.subject == 'app':
+                userperm = UserPerm.valid_objects.create(owner=serializer.instance, perm=perm, value=False)
+                print('app 权限没有')
+                print(userperm)
+            else:
+                userperm = UserPerm.valid_objects.create(owner=serializer.instance, perm=perm, value=True)
+                print('其它权限有')
+                print(userperm)
         return serializer.instance
 
     def update_user(self, user, user_info):

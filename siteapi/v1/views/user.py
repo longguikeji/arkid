@@ -280,12 +280,14 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
             dept_uids = data.get('dept_uids', [])
         cli = CLI()
         password = user_info.pop('password', None)
+        # 创建用户
         user = cli.create_user(user_info)
         if password:
             validate_password(password)
             cli.set_user_password(user, password)
         user.origin = 1  # 管理员添加
         user.save()
+        # 分配组和部门
         self.assign_user(user, dept_uids=dept_uids, group_uids=group_uids)
         user_serializer = EmployeeSerializer(user)
         transaction.on_commit(lambda: WebhookManager.user_created(user))
