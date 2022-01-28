@@ -8,6 +8,7 @@ from api.v1.fields.custom import create_hint_field, create_upload_url_field
 class OAuth2ConfigSerializer(serializers.Serializer):
 
     skip_authorization = serializers.BooleanField(default=False)
+    is_platform = serializers.BooleanField(default=False)
     redirect_uris = create_hint_field(serializers.URLField)(hint="请填写正确的url格式")
     client_type = serializers.ChoiceField(choices=Application.CLIENT_TYPES, default=Application.CLIENT_PUBLIC)
     grant_type = serializers.ChoiceField(choices=Application.GRANT_TYPES, default=Application.GRANT_AUTHORIZATION_CODE)
@@ -31,6 +32,7 @@ class OAuth2AppSerializer(AppBaseSerializer):
 class OIDCConfigSerializer(serializers.Serializer):
 
     skip_authorization = serializers.BooleanField(default=False)
+    is_platform = serializers.BooleanField(default=False)
     redirect_uris = create_hint_field(serializers.URLField)(hint="请填写正确的url格式")
     client_type = serializers.ChoiceField(choices=Application.CLIENT_TYPES, default=Application.CLIENT_PUBLIC)
     grant_type = serializers.ChoiceField(choices=Application.GRANT_TYPES, default=Application.GRANT_AUTHORIZATION_CODE)
