@@ -22,18 +22,25 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
     View used to show oidc provider configuration information
     """
 
-    def get(self, request, tenant_uuid, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         from config import get_app_config
-        tenant = tenant_uuid
+        tenant = kwargs.get('tenant_uuid', '')
         print('tenant>>>', tenant)
         issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
         host = get_app_config().get_host()
         if not issuer_url:
-            issuer_url = oauth2_settings.oidc_issuer(request, tenant)
-            authorization_endpoint = host+reverse("api:oauth2_authorization_server:authorize", args=[tenant])
-            token_endpoint = host+reverse("api:oauth2_authorization_server:token", args=[tenant])
-            userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[tenant])
-            jwks_uri = host+reverse("api:oauth2_authorization_server:jwks-info", args=[tenant])
+            if tenant:
+                issuer_url = oauth2_settings.oidc_issuer(request, tenant)
+                authorization_endpoint = host+reverse("api:oauth2_authorization_server:authorize", args=[tenant])
+                token_endpoint = host+reverse("api:oauth2_authorization_server:token", args=[tenant])
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[tenant])
+                jwks_uri = host+reverse("api:oauth2_authorization_server:jwks-info", args=[tenant])
+            else:
+                issuer_url = oauth2_settings.oidc_issuer(request)
+                authorization_endpoint = host+reverse("api:oauth2_authorization_server:authorize-platform")
+                token_endpoint = host+reverse("api:oauth2_authorization_server:token-platform")
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or host+reverse("api:oauth2_authorization_server:oauth-user-info-platform")
+                jwks_uri = host+reverse("api:oauth2_authorization_server:jwks-info-platform")
         else:
             authorization_endpoint = "{}{}".format(issuer_url, reverse("api:oauth2_authorization_server:authorize"))
             token_endpoint = "{}{}".format(issuer_url, reverse("api:oauth2_authorization_server:token"))
