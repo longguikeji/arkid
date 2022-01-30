@@ -251,3 +251,8 @@ class StatisticsProvider:
 class BackendLoginProvider:
     def authenticate(self, tenant, request, data):
         pass
+    
+class ApplicationManageProvider:
+    
+    def get_queryset(self,view_instance,*args, **kwargs):
+        return view_instance.get_queryset()

@@ -1,6 +1,7 @@
 from typing import Optional, List, Dict, TypeVar, Generic
 from collections import OrderedDict
 from common.provider import (
+    ApplicationManageProvider,
     BaseAuthRuleProvider,
     SMSProvider,
     CacheProvider,
@@ -86,6 +87,10 @@ class Runtime:
     backend_login_extensions: List
     backend_login_providers: Dict[str, BackendLoginProvider]
     backend_login_serializers: Dict[str, BackendLoginBaseSerializer]
+    
+    # 应用管理插件列表，控制页面上应用显示等
+    application_manage_extensions: List
+    application_manage_providers: Dict[str, ApplicationManageProvider]    
 
     urlpatterns: Dict = {}
 
@@ -125,6 +130,9 @@ class Runtime:
             cls._instance.backend_login_extensions = []
             cls._instance.backend_login_providers = {}
             cls._instance.backend_login_serializers = {}
+            
+            cls._instance.application_manage_extensions = []
+            cls._instance.application_manage_providers = {}
 
         return cls._instance
 
@@ -169,6 +177,9 @@ class Runtime:
         self.backend_login_extensions = []
         self.backend_login_providers = {}
         self.backend_login_serializers = {}
+        
+        self.application_manage_extensions = []
+        self.application_manage_providers = {}
 
     def register_task(self):
         """
@@ -590,6 +601,30 @@ class Runtime:
             self.backend_login_providers.pop(key)
         if serializer is not None and key in self.backend_login_serializers:
             self.backend_login_serializers.pop(key)
+            
+    def register_application_manage_extension(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: ApplicationManageProvider,
+    ):
+        if (key, name, description) not in self.application_manage_extensions:
+            self.application_manage_extensions.append((key, name, description))
+        if provider is not None:
+            self.application_manage_providers[key] = provider
+            
+    def logout_application_manage_extension(
+        self,
+        key: str,
+        name: str,
+        description: str,
+        provider: ApplicationManageProvider,
+    ):
+        if (key, name, description) in self.application_manage_extensions:
+            self.application_manage_extensions.remove((key, name, description))
+        if provider is not None and key in self.application_manage_providers:
+            self.application_manage_providers.pop(key)
 
     @property
     def extension_serializers(self):
