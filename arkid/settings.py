@@ -327,6 +327,9 @@ FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'  # 邮件重置密码页面
 FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'  # 邮件激活账号页面
 FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'  # 邮件重置邮箱页面
 
+ARKID_SAAS = 'http://saas.authids.com' # 中心ARKID链接
+ARKSTOER_URL = 'http://ext.authids.com' # 插件商店链接
+
 SMS_LIFESPAN = datetime.timedelta(seconds=300)
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880

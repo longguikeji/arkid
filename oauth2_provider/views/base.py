@@ -75,10 +75,20 @@ class TokenRequiredMixin(AccessMixin):
         token = request.GET.get('token', '')
         request.META['HTTP_AUTHORIZATION'] = 'Token ' + token
 
+        tenant = None
         tenant_uuid = kwargs.get('tenant_uuid')
         if tenant_uuid:
             tenant = Tenant.objects.get(uuid=tenant_uuid)
-        else:
+
+        if not tenant:
+            uuid_re = r"[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}"
+            path = self.request.path
+            res = re.search(uuid_re, path)
+            if res:
+                tenant_uuid = res.group(0)
+                tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        
+        if not tenant:
             host = get_app_config().get_host().split('://')[-1]
             request_host = request.get_host().split(':')[0]
             slug = request_host.replace('.' + host, '')
