@@ -29,7 +29,9 @@ class AppBaseInfoSerializer(BaseDynamicFieldModelSerializer):
             'name',
             'logo',
             'url',
+            'type',
             'description',
+            'created',
         )
 
 

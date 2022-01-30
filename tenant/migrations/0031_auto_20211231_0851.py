@@ -10,14 +10,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='tenant',
-            name='background_url',
-            field=models.URLField(blank=True, verbose_name='登录页背景图片'),
-        ),
-        migrations.AddField(
-            model_name='tenant',
-            name='copyright_text',
-            field=models.CharField(blank=True, max_length=128, verbose_name='登录页版权文字'),
-        ),
+        # migrations.AddField(
+        #     model_name='tenant',
+        #     name='background_url',
+        #     field=models.URLField(blank=True, verbose_name='登录页背景图片'),
+        # ),
+        # migrations.AddField(
+        #     model_name='tenant',
+        #     name='copyright_text',
+        #     field=models.CharField(blank=True, max_length=128, verbose_name='登录页版权文字'),
+        # ),
     ]
