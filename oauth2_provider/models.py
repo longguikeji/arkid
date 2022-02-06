@@ -540,7 +540,7 @@ class AbstractIDToken(models.Model):
         default=None,
         on_delete=models.PROTECT
     )
-    token = models.CharField(max_length=1024)
+    token = models.TextField()
     application = models.ForeignKey(
         oauth2_settings.APPLICATION_MODEL,
         on_delete=models.CASCADE,
