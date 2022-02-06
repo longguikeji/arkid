@@ -1,14 +1,8 @@
-from email.policy import default
 import requests
-from rest_framework.views import APIView
-from django.urls import reverse
-from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
-from rest_framework.views import APIView
-
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 from config import get_app_config
@@ -19,30 +13,8 @@ from runtime import get_app_runtime
 from app.models import App
 from common.provider import AppTypeProvider
 from django.conf import settings
+from api.v1.serializers.bind_saas import ArkIDBindSaasSerializer, ArkIDBindSaasCreateSerializer
 
-from rest_framework import serializers
-from django.utils.translation import gettext_lazy as _
-
-class ArkIDBindSaasSerializer(serializers.Serializer):
-
-    company_name = serializers.CharField(label=_('公司名'), read_only=False)
-    contact_person = serializers.CharField(label=_('联系人'), read_only=False)
-    email = serializers.CharField(label=_('邮箱'), read_only=False)
-    mobile = serializers.CharField(label=_('手机'), read_only=False)
-    local_tenant_slug = serializers.CharField(label=_('本地租户Slug'), read_only=False)
-    local_tenant_uuid = serializers.CharField(label=_('本地租户UUID'), read_only=False)
-    saas_tenant_slug = serializers.CharField(label=_('中心平台租户Slug'), read_only=False)
-    saas_tenant_uuid = serializers.CharField(label=_('中心平台租户UUID'), read_only=False)
-    saas_tenant_url = serializers.CharField(label=_('中心平台网址'), read_only=False)
-
-
-class ArkIDBindSaasCreateSerializer(serializers.Serializer):
-
-    slug = serializers.SlugField(label=_('中心租户Slug'), read_only=False)
-    company_name = serializers.CharField(label=_('公司名'), read_only=False)
-    contact_person = serializers.CharField(label=_('联系人'), read_only=False)
-    email = serializers.EmailField(label=_('邮箱'), read_only=False)
-    mobile = serializers.CharField(label=_('手机'), read_only=False)
 
 @extend_schema(tags=["arkid"])
 class ArkIDBindSaasAPIView(GenericAPIView):
@@ -56,7 +28,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
     def post(self, request, tenant_uuid, *args, **kwargs):
         """
         检查slug是否存在的api
-        发送 公司名，联系人，邮箱，手机号，Saas ArkID 租户slug
+        发送 公司名,联系人,邮箱,手机号,Saas ArkID 租户slug
         本地租户绑定Saas租户
         """
         tenant = Tenant.objects.get(uuid=tenant_uuid)
@@ -69,15 +41,13 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         try:
             resp = self.create_saas_binding(tenant, request, app)
             if 'error' in resp:
+                app.kill()
                 return Response(resp, HTTP_200_OK)
         except Exception as e:
             app.kill()
             data = {'error': str(e)}
             return Response(data, HTTP_200_OK)
-    
-        app.data['redirect_uris'] = resp['callback_url']
-        app.save()
-        
+
         data = {
             'saas_tenant_uuid': resp['saas_tenant_uuid'],
             'saas_tenant_slug': resp['saas_tenant_slug'],
@@ -114,7 +84,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         oidc_data = {
             'client_type': 'public',
             'redirect_uris': redirect_uris,
-            'grant_type': 'authorization_code',
+            'grant_type': 'authorization-code',
             'skip_authorization': True,
             'algorithm': 'RS256',
         }
@@ -137,7 +107,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         bind_saas_url = settings.ARKID_SAAS + '/api/v1/arkid/saas/bind'
         host = get_app_config().get_frontend_host()
         params = {
-            'local_tenant_uuid': tenant.uuid,
+            'local_tenant_uuid': str(tenant.uuid),
             'local_tenant_slug': tenant.slug,
             'company_name': request.data['company_name'],
             'contact_person': request.data['contact_person'],
@@ -149,4 +119,22 @@ class ArkIDBindSaasAPIView(GenericAPIView):
             'saas_tenant_slug': request.data['saas_tenant_slug'],
         }
         resp = requests.post(bind_saas_url, json=params).json()
+
+        redirect_uris = resp['callback_url']
+        oidc_data = {
+            'client_type': 'public',
+            'redirect_uris': redirect_uris,
+            'grant_type': 'authorization-code',
+            'skip_authorization': True,
+            'algorithm': 'RS256',
+        }
+        r = get_app_runtime()
+        provider_cls: AppTypeProvider = r.app_type_providers.get('OIDC', None)
+        assert provider_cls is not None
+        provider = provider_cls()
+        data = provider.update(app=app, data=oidc_data)
+        if data is not None:
+            app.data = data
+            app.save()
+
         return resp

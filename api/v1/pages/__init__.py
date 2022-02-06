@@ -189,6 +189,7 @@ root_add_routers(
                     page=tenant_switch,
                     icon='setting',
                 ),
+                PageRouter(page=bind_saas, icon='list'),
             ],
         ),
     ]

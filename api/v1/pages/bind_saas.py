@@ -28,7 +28,7 @@ extend_schema_tags(
         'type': 'form_page',
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/bind_saas/',
-            'method': 'post'
+            'method': 'get'
         },
         'global': {
             'create': {
