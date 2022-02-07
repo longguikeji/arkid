@@ -26,6 +26,14 @@ class GiteeExternalIdpExtension(InMemExtension):
             serializer=GiteeExternalIdpSerializer,
         )
 
+    def get_unbind_url(self, user):
+        '''
+        如果是第三方登录需要实现这个方法方便解绑
+        '''
+        from .models import GiteeUser as User
+        return self.generation_result(user, User)
+
+
 
 extension = GiteeExternalIdpExtension(
     name="gitee",

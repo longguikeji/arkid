@@ -26,6 +26,13 @@ class MiniProgramExtension(InMemExtension):
             serializer=MiniProgramExternalIdpSerializer,
         )
 
+    def get_unbind_url(self, user):
+        '''
+        如果是第三方登录需要实现这个方法方便解绑
+        '''
+        from .models import MiniProgramUser as User
+        return self.generation_result(user, User)
+
 
 extension = MiniProgramExtension(
     name='miniprogram',

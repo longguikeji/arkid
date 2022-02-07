@@ -4,7 +4,6 @@ from .provider import ArkIDExternalIdpProvider
 from runtime import Runtime
 from .constants import KEY
 
-
 class ArkIDExternalIdpExtension(InMemExtension):
 
     def start(self, runtime: Runtime, *args, **kwargs):
@@ -25,6 +24,13 @@ class ArkIDExternalIdpExtension(InMemExtension):
             provider=ArkIDExternalIdpProvider,
             serializer=ArkIDExternalIdpSerializer,
         )
+
+    def get_unbind_url(self, user):
+        '''
+        如果是第三方登录需要实现这个方法方便解绑
+        '''
+        from .models import ArkIDUser as User
+        return self.generation_result(user, User)
 
 
 

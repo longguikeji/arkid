@@ -204,66 +204,23 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         return full_name.strip()
 
     def bind_info(self):
-        from extension_root.gitee.models import GiteeUser
-        from extension_root.github.models import GithubUser
-        from extension_root.arkid.models import ArkIDUser
-        from extension_root.miniprogram.models import MiniProgramUser
-
-        giteeusers = GiteeUser.valid_objects.filter(user=self).exists()
-        githubusers = GithubUser.valid_objects.filter(user=self).exists()
-        arkidusers = ArkIDUser.valid_objects.filter(user=self).exists()
-        miniprogramusers = MiniProgramUser.valid_objects.filter(user=self).exists()
+        from external_idp.models import ExternalIdp
+        from extension.utils import find_available_extensions
         result = ''
-
-        try:
-            from extension_root.feishu.models import FeishuUser
-            feishuusers = FeishuUser.valid_objects.filter(user=self).exists()
-            if feishuusers:
-                result = '飞书 '
-        except:
-            print('没有安装飞书插件')
-
-        if giteeusers:
-            result = result + 'gitee '
-        if githubusers:
-            result = result + 'github '
-        if arkidusers:
-            result = result + 'arkid '
-
-        try:
-            from extension_root.wechatscan.models import WeChatScanUser
-            wechatscanusers = WeChatScanUser.valid_objects.filter(user=self).exists()
-            if wechatscanusers:
-                result = '微信扫码登录 '
-        except:
-            print('没有安装微信扫码登录插件')
-        
-        try:
-            from extension_root.wechatwork.models import WeChatWorkUser
-            wechatworkusers = WeChatWorkUser.valid_objects.filter(user=self).exists()
-            if wechatworkusers:
-                result = '企业微信网页授权登录 '
-        except:
-            print('没有安装企业微信网页授权登录插件')
-
-        try:
-            from extension_root.wechatworkscan.models import WeChatWorkScanUser
-            wechatworkscanusers = WeChatWorkScanUser.valid_objects.filter(user=self).exists()
-            if wechatworkscanusers:
-                result = '企业微信扫码登录 '
-        except:
-            print('没有安装企业微信扫码登录插件')
-
-        try:
-            from extension_root.dingding.models import DingDingUser
-            dingdingusers = DingDingUser.valid_objects.filter(user=request.user).exists()
-            if dingdingusers:
-                result = '钉钉插件登录 '
-        except:
-            print('没有安装钉钉插件')
-
-        if miniprogramusers:
-            result = result + '微信小程序'
+        external_idps = ExternalIdp.valid_objects.order_by('order_no', 'id')
+        available_extensions = find_available_extensions()
+        for external_idp in external_idps:
+            idp_type = external_idp.type
+            for extension in available_extensions:
+                extension_name = extension.name
+                if idp_type == extension_name:
+                    try:
+                        items = extension.get_unbind_url(self)
+                        if len(items) > 0:
+                            result = '{}{} '.format(result,extension_name)
+                    except:
+                        print('没有启用插件，无法读取:'+extension_name)
+        result = result.rstrip()
         return result
 
     @property
