@@ -786,9 +786,14 @@ class OAuth2Validator(RequestValidator):
         # https://github.com/oauthlib/oauthlib/issues/746
         if "nonce" not in id_token and request.nonce:
             id_token["nonce"] = request.nonce
-
+        # 特殊处理添加认证模块(此处原来只有alg)
+        from jwcrypto import jwk
+        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+        header = {"alg": "RS256", "use": "sig", "kid": key.thumbprint()}
+        header.update(json.loads(key.export_public()))
+        # 特殊处理添加认证模块结束
         jwt_token = jwt.JWT(
-            header=json.dumps({"alg": request.client.algorithm}, default=str),
+            header=json.dumps(header, default=str),
             claims=json.dumps(id_token, default=str),
         )
         jwt_token.make_signed_token(request.client.jwk_key)
