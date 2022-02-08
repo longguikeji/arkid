@@ -613,7 +613,6 @@ class Runtime:
             self.application_manage_extensions.append((key, name, description))
         if provider is not None:
             self.application_manage_providers[key] = provider
-            
     def logout_application_manage_extension(
         self,
         key: str,
