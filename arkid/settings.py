@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     # 'django_scim',
     # 'scim_server',
     'extension_root.app_market_manage',
+    'extension_root.application_group',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',
