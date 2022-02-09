@@ -83,8 +83,6 @@ INSTALLED_APPS = [
     'extension_root.wechatworkscan',
     # 'django_scim',
     # 'scim_server',
-    'extension_root.app_market_manage',
-    'extension_root.application_group',
     'django_scim',
     'extension_root.miniprogram',
     'djangosaml2idp',
