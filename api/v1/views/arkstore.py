@@ -1,4 +1,5 @@
 from rest_framework.generics import GenericAPIView, ListAPIView
+from sqlalchemy import extract
 from common.paginator import DefaultListPaginator
 from api.v1.serializers.arkstore import ArkStoreExtensionSerializer
 from openapi.utils import extend_schema
@@ -73,12 +74,12 @@ class ArkStoreDownloadView(GenericAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
 
     def get(self, request, tenant_uuid, *args, **kwargs):
-        extension_uuid = request.data['extension_uuid']
+        extension_uuid = kwargs['pk']
         token = request.user.token
         tenant = Tenant.objects.get(uuid=tenant_uuid)
         access_token = get_arkstore_access_token(tenant, token)
-        resp = download_arkstore_extension(access_token, extension_uuid)
-        return JsonResponse({'success': 'true'})
+        result = download_arkstore_extension(access_token, extension_uuid)
+        return JsonResponse(result)
 
 
 def get_saas_token(tenant, token):
@@ -136,19 +137,41 @@ def purcharse_arkstore_extension(access_token, extension_uuid):
     return resp
 
 
-def download_arkstore_extension(access_token, extension_name, extension_uuid):
+def download_arkstore_extension(access_token, extension_uuid):
     import config
     from pathlib import Path
+
+    ext_detail_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_uuid}'
+    headers = {'Authorization': f'Token {access_token}'}
+    resp = requests.get(ext_detail_url, headers=headers)
+    if resp.status_code != 200:
+        return 'failed'
+    extension_name = resp.json()['name']
+
     app_config = config.get_app_config()
     extension_root = app_config.extension.root
 
-    download_url = settings.ARKSTOER_URL + f'/extensions/{extension_uuid}/download'
+    download_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_uuid}/download'
     headers = {'Authorization': f'Token {access_token}'}
     resp = requests.get(download_url, headers=headers)
     if resp.status_code != 200:
-        return 'failed'
+        return {'error': 'download failed'}
 
-    file_name = Path(extension_root) / extension_name
-    with open(file_name,"wb") as f:
-        f.write(resp.content)
-    return
+    # delete extension folder
+    folder_name = Path(extension_root) / extension_name
+    import shutil
+    if folder_name.exists():
+        try:
+            shutil.rmtree(folder_name)
+        except OSError as e:
+            print ("Error remove folder: %s - %s." % (e.filename, e.strerror))
+            return {'error': 'delete extension fodler failed'}
+
+    # unzip
+    import zipfile
+    import io
+    extract_folder = Path(extension_root)
+    with zipfile.ZipFile(io.BytesIO(resp.content)) as zip_ref:
+        zip_ref.extractall(extract_folder)
+
+    return {'success': 'true'}
