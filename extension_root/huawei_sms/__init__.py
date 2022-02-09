@@ -6,6 +6,7 @@ from .provider import HuaWeiSMSProvider
 
 
 class HuaWeiExtension(InMemExtension):
+
     def start(self, runtime: Runtime, *args, **kwargs):
 
         from extension.models import Extension

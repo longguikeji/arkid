@@ -14,7 +14,7 @@ from . import (
     desktop_config,
     device,
     extension,
-    external_idp, 
+    external_idp,
     group,
     group_permission,
     login_register_config,
@@ -36,6 +36,7 @@ from . import (
     webhook,
     data_sync,
     backend_login,
+    app_account,
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
@@ -61,6 +62,7 @@ root_add_routers(
                 ),
                 PageRouter(page=all_tenant, icon='list'),
                 PageRouter(page=device, icon='developer'),
+                PageRouter(page=app_account, icon='list'),
             ],
         ),
         Router(
@@ -77,8 +79,8 @@ root_add_routers(
                     children=[
                         PageRouter(page=user_permission, icon='list'),
                         PageRouter(page=group_permission, icon='list'),
-                        PageRouter(page=app_permission, icon='list')
-                    ]
+                        PageRouter(page=app_permission, icon='list'),
+                    ],
                 ),
             ],
         ),
@@ -104,10 +106,10 @@ root_add_routers(
             icon='lock',
             children=[
                 PageRouter(page=login_register_config, icon='setting'),
-                PageRouter(page=external_idp,icon='wechat'),
-                PageRouter(page=backend_login,icon='setting'),
+                PageRouter(page=external_idp, icon='wechat'),
+                PageRouter(page=backend_login, icon='setting'),
                 PageRouter(page=other_auth_factor, icon='example'),
-                PageRouter(page=auth_rules, icon='lock')
+                PageRouter(page=auth_rules, icon='lock'),
             ],
         ),
         Router(
@@ -158,8 +160,8 @@ root_add_routers(
             icon='setting',
             children=[
                 PageRouter(page=tenant_config, icon='peoples'),
-                PageRouter(page=sub_admin_config, icon='user')
-            ]
+                PageRouter(page=sub_admin_config, icon='user'),
+            ],
         ),
         Router(
             path='umanage',
@@ -169,21 +171,18 @@ root_add_routers(
                 PageRouter(page=desktop_config, icon='desktop'),
                 PageRouter(page=contacts_config, icon='education'),
                 PageRouter(page=profile_config, icon='setting'),
-            ]
+            ],
         ),
         Router(
             path='system',
             name='平台管理',
             icon='setting',
             children=[
-                PageRouter(
-                    page=extension,
-                    icon='list'
-                ),
+                PageRouter(page=extension, icon='list'),
                 PageRouter(
                     page=tenant_switch,
                     icon='setting',
-                )
+                ),
             ],
         ),
     ]

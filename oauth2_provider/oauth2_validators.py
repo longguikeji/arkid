@@ -410,6 +410,7 @@ class OAuth2Validator(RequestValidator):
             if not grant.is_expired():
                 request.scopes = grant.scope.split(" ")
                 request.user = grant.user
+                request.user.tenant = grant.tenant
                 if grant.nonce:
                     request.nonce = grant.nonce
                 if grant.claims:
@@ -605,6 +606,7 @@ class OAuth2Validator(RequestValidator):
             id_token = IDToken.objects.get(token=id_token)
         return AccessToken.objects.create(
             user=request.user,
+            tenant=request.user.tenant,
             scope=token["scope"],
             expires=expires,
             token=token["access_token"],
@@ -619,6 +621,7 @@ class OAuth2Validator(RequestValidator):
         return Grant.objects.create(
             application=request.client,
             user=request.user,
+            tenant=request.user.tenant,
             code=code["code"],
             expires=expires,
             redirect_uri=request.redirect_uri,
@@ -715,6 +718,7 @@ class OAuth2Validator(RequestValidator):
 
         id_token = IDToken.objects.create(
             user=request.user,
+            tenant=request.user.tenant,
             scope=scopes,
             expires=expires,
             token=token,
@@ -758,7 +762,6 @@ class OAuth2Validator(RequestValidator):
         # Required ID Token claims
         claims.update(
             **{
-                "email": request.user.email,
                 "iss": urlinfo,
                 "exp": int(dateformat.format(expiration_time, "U")),
                 "auth_time": int(dateformat.format(request.user.last_login, "U")),
@@ -783,9 +786,14 @@ class OAuth2Validator(RequestValidator):
         # https://github.com/oauthlib/oauthlib/issues/746
         if "nonce" not in id_token and request.nonce:
             id_token["nonce"] = request.nonce
-
+        # 特殊处理添加认证模块(此处原来只有alg)
+        from jwcrypto import jwk
+        key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+        header = {"alg": "RS256", "use": "sig", "kid": key.thumbprint()}
+        header.update(json.loads(key.export_public()))
+        # 特殊处理添加认证模块结束
         jwt_token = jwt.JWT(
-            header=json.dumps({"alg": request.client.algorithm}, default=str),
+            header=json.dumps(header, default=str),
             claims=json.dumps(id_token, default=str),
         )
         jwt_token.make_signed_token(request.client.jwk_key)
@@ -883,4 +891,13 @@ class OAuth2Validator(RequestValidator):
         return self.get_oidc_claims(None, None, request)
 
     def get_additional_claims(self, request):
-        return {}
+        return {
+            "sub": request.user.uuid,
+            "preferred_username": request.user.username,
+            'nickname': request.user.nickname,
+            'given_name': request.user.first_name,
+            'family_name': request.user.last_name,
+            'email': request.user.email,
+            'tenant_uuid': request.user.tenant.uuid,
+            "tenant_slug": request.user.tenant.slug,
+        }

@@ -85,3 +85,24 @@ class InMemExtension:
 
     def register(self, service_name):
         pass
+
+    def get_unbind_url(self, user):
+        '''
+        交给第三方登录插件去实现
+        '''
+        pass
+    
+    def generation_result(self, user, userModel):
+        from django.urls import reverse
+        result = []
+        if not userModel is None and not user is None:
+            temp_users = userModel.valid_objects.filter(user=user)
+            for item in temp_users:
+                result.append(
+                    {
+                        'name': self.name,
+                        'tenant': item.tenant.uuid,
+                        'unbind': reverse("api:"+self.name+":unbind", args=[item.tenant.uuid]),
+                    }
+                )
+        return result

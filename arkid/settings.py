@@ -78,15 +78,16 @@ INSTALLED_APPS = [
     # 'extension_root.tenantuserconfig',
     # 'extension_root.childaccount',
     # 'extension_root.childmanager',
+    # 'extension_root.auto_form_fill',
     # 'extension_root.wechatscan',
     # 'extension_root.wechatwork',
     # 'extension_root.wechatworkscan',
     # 'extension_root.dingding',
     # 'django_scim',
     # 'scim_server',
-    'extension_root.app_market_manage',
+    # 'extension_root.app_market_manage',
     'django_scim',
-    'extension_root.miniprogram',
+    # 'extension_root.miniprogram',
     'djangosaml2idp',
     'login_register_config',
     'config',
@@ -94,7 +95,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'data_sync',
     'command',
-    'backend_login'
+    'backend_login',
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'

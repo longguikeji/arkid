@@ -4,20 +4,21 @@ from django.db import migrations
 
 
 def add_default_tenant_config(apps, schema_editor):
-    from tenant.models import TenantConfig, Tenant
+    # from tenant.models import TenantConfig, Tenant
 
-    tenant = Tenant.objects.filter(id=1).first()
-    TenantConfig.objects.get_or_create(
-        tenant=tenant,
-        data={
-            "is_open_register_limit": False,
-            "register_time_limit": 1,
-            "register_count_limit": 10,
-            "upload_file_format": ["jpg", "png", "gif", "jpeg"],
-            "close_page_auto_logout": False,
-            "password_validity_period": 60,
-        },
-    )
+    # tenant = Tenant.objects.filter(id=1).first()
+    # TenantConfig.objects.get_or_create(
+    #     tenant=tenant,
+    #     data={
+    #         "is_open_register_limit": False,
+    #         "register_time_limit": 1,
+    #         "register_count_limit": 10,
+    #         "upload_file_format": ["jpg", "png", "gif", "jpeg"],
+    #         "close_page_auto_logout": False,
+    #         "password_validity_period": 60,
+    #     },
+    # )
+    pass
 
 
 class Migration(migrations.Migration):
