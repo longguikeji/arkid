@@ -20,7 +20,7 @@ extend_schema_tags(
                 'description': '购买'
             },
             'download': {
-                'path': '/api/v1/tenant/{tenant_uuid}/arkstore/download/{id}',
+                'path': '/api/v1/tenant/{tenant_uuid}/arkstore/download/{id}/',
                 'method': 'get',
                 'description': '下载'
             }
