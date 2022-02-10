@@ -36,9 +36,13 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             authorize_url = host+reverse("api:oauth2_authorization_server:authorize-platform")
             token_url = host+reverse("api:oauth2_authorization_server:token-platform")
         else:
-            userinfo_url = host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[app.tenant.uuid])
-            authorize_url = host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid])
-            token_url = host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid])
+            # userinfo_url = host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[app.tenant.uuid])
+            # authorize_url = host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid])
+            # token_url = host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid])
+            tenan_uuid = str(app.tenant.uuid)
+            authorize_url = f"{host}/api/v1/tenant/{tenan_uuid}/oauth/authorize/"
+            token_url = f"{host}/api/v1/tenant/{tenan_uuid}/oauth/token/"
+            userinfo_url = f"{host}/api/v1/tenant/{tenan_uuid}/oauth/userinfo/"
 
         uniformed_data = {
             'client_type': client_type,
@@ -57,7 +61,9 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             if is_platform:
                 uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oauth-user-logout-platform")
             else:
-                uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oauth-user-logout", args=[app.tenant.uuid])
+                # uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oauth-user-logout", args=[app.tenant.uuid])
+                tenan_uuid = str(app.tenant.uuid)
+                userinfo_url = f"{host}/api/v1/tenant/{tenan_uuid}/oauth/logout/"
         return uniformed_data
 
     def update(self, app, data: Dict) -> Dict:
@@ -83,9 +89,14 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             authorize_url = host+reverse("api:oauth2_authorization_server:authorize-platform")
             token_url = host+reverse("api:oauth2_authorization_server:token-platform")
         else:
-            userinfo_url = host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[app.tenant.uuid])
-            authorize_url = host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid])
-            token_url = host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid])
+            # reverse tenan_urls not working 
+            # userinfo_url = host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[app.tenant.uuid])
+            # authorize_url = host+reverse("api:oauth2_authorization_server:authorize", args=[app.tenant.uuid])
+            # token_url = host+reverse("api:oauth2_authorization_server:token", args=[app.tenant.uuid])
+            tenan_uuid = str(app.tenant.uuid)
+            authorize_url = f"{host}/api/v1/tenant/{tenan_uuid}/oauth/authorize/"
+            token_url = f"{host}/api/v1/tenant/{tenan_uuid}/oauth/token/"
+            userinfo_url = f"{host}/api/v1/tenant/{tenan_uuid}/oauth/userinfo/"
 
         uniformed_data = {
             'client_type': client_type,
@@ -104,5 +115,7 @@ class OAuth2AppTypeProvider(AppTypeProvider):
             if is_platform:
                 uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oauth-user-logout-platform")
             else:
-                uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oauth-user-logout", args=[app.tenant.uuid])
+                # uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oidc/logout/", args=[app.tenant.uuid])
+                tenan_uuid = str(app.tenant.uuid)
+                userinfo_url = f"{host}/api/v1/tenant/{tenan_uuid}/oauth/logout/"
         return uniformed_data

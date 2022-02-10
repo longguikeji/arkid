@@ -36,6 +36,8 @@ from . import (
     data_sync,
     backend_auth,
     backend_login,
+    bind_saas,
+    arkstore,
 )
 from runtime import get_app_runtime
 
@@ -97,3 +99,5 @@ urlpatterns += reset_password.urlpatterns
 urlpatterns += permission.urlpatterns
 urlpatterns += statistics.urlpatterns
 urlpatterns += backend_auth.urlpatterns
+urlpatterns += bind_saas.urlpatterns
+urlpatterns += arkstore.urlpatterns

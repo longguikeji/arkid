@@ -37,6 +37,8 @@ from . import (
     data_sync,
     backend_login,
     app_account,
+    bind_saas,
+    arkstore,
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
@@ -173,6 +175,10 @@ root_add_routers(
                 PageRouter(page=profile_config, icon='setting'),
             ],
         ),
+        PageRouter(
+            page=arkstore,
+            icon='setting',
+        ),
         Router(
             path='system',
             name='平台管理',
@@ -183,6 +189,7 @@ root_add_routers(
                     page=tenant_switch,
                     icon='setting',
                 ),
+                PageRouter(page=bind_saas, icon='list'),
             ],
         ),
     ]
