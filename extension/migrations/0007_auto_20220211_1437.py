@@ -6,7 +6,7 @@ from django.db import migrations
 def add_default_enabled_extensions(apps, schema_editor):
     Extension = apps.get_model('extension', 'Extension')
 
-    Extension.objects.get_or_create(
+    Extension.active_objects.get_or_create(
         type='oauth2_authorization_server',
         data={},
     )
