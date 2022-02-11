@@ -51,6 +51,7 @@ jobs:
         push: true
         tags: |
           harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
+          harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }}
           longguikeji/arkid:v2dev-${{ github.run_number }}
           longguikeji/arkid:v2dev
     - name: deploy to cluster
