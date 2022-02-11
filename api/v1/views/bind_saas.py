@@ -105,7 +105,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
 
     def create_saas_binding(self, tenant, request, app):
         bind_saas_url = settings.ARKID_SAAS + '/api/v1/arkid/saas/bind'
-        host = get_app_config().get_frontend_host()
+        host = get_app_config().get_host()
         params = {
             'local_tenant_uuid': str(tenant.uuid),
             'local_tenant_slug': tenant.slug,

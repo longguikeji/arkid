@@ -175,9 +175,14 @@ root_add_routers(
                 PageRouter(page=profile_config, icon='setting'),
             ],
         ),
-        PageRouter(
-            page=arkstore,
+        Router(
+            path='extension',
+            name='插件管理',
             icon='setting',
+            children=[
+                PageRouter(page=bind_saas, icon='list'),
+                PageRouter(page=arkstore, icon='setting'),
+            ],
         ),
         Router(
             path='system',
@@ -189,7 +194,6 @@ root_add_routers(
                     page=tenant_switch,
                     icon='setting',
                 ),
-                PageRouter(page=bind_saas, icon='list'),
             ],
         ),
     ]
