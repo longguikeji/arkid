@@ -135,6 +135,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         data = provider.update(app=app, data=oidc_data)
         if data is not None:
             app.data = data
-            app.save()
+        app.url = f"{settings.ARKSTOER_URL.rstrip('/')}/api/v1/login?tenant_slug={resp['saas_tenant_slug']}"
+        app.save()
 
         return resp
