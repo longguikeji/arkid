@@ -9,6 +9,7 @@ def add_default_enabled_extensions(apps, schema_editor):
     Extension.objects.get_or_create(
         type='oauth2_authorization_server',
         data={},
+        is_active=True,
     )
 
 
