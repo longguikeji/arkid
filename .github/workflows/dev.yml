@@ -59,7 +59,7 @@ jobs:
       uses: steebchen/kubectl@v2.0.0
       with: # defaults to latest kubectl binary version
         config: ${{ secrets.KUBE_CONFIG_HW }}
-        command: -n dev-arkidv2 --insecure-skip-tls-verify=true set image --record deployment/dev-arkidv2-be arkid-be=harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }}
+        command: -n dev-arkidv2 --insecure-skip-tls-verify=true set image --record deployment/dev-arkidv2-be cpextensionroot=harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }} arkid-be=harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }}
     - name: Feishu 报忧
       if: ${{ failure() }}
       uses: wangsijie/feishu-bot@v1
