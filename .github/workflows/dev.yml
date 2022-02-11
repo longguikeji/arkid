@@ -1,6 +1,7 @@
 name: arkid v2 cicd
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - v2-dev
