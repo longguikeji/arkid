@@ -8,7 +8,7 @@ on:
         default: ''
         required: true
       prod_version:
-        description: 'the tag of the image,src to release, like `1.2.3`'
+        description: 'the tag of the image,src to release, like `2.2.3`'
         default: ''
         required: true
 
@@ -31,7 +31,7 @@ jobs:
         source_repository: "docker.io/longguikeji/arkid:${{ github.event.inputs.dev_version }}"
         source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         source_password: "${{ secrets.DOCKERHUBPWD }}"
-        target_repository: "harbor.longguikeji.com/ark-releases/arkid:${{ github.event.inputs.prod_version }}"
+        target_repository: "${{ secrets.ARK_RLS }}/arkid:${{ github.event.inputs.prod_version }}"
         target_username: "${{ secrets.HARBORUSER }}"
         target_password: "${{ secrets.HARBORPWD }}"
     - name: Feishu 报忧
