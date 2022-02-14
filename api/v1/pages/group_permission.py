@@ -19,6 +19,8 @@ extend_schema_tags(
         },
         'local': {
             'node': {
+                'path': '/api/v1/tenant/{parent_lookup_tenant}/group/?parent={id}',
+                'method': 'get',
                 'next': 'group_list.permission'
             }
         }

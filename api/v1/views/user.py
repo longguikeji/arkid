@@ -17,6 +17,9 @@ from config.models import PasswordComplexity
 from inventory.models import User, Invitation, UserAppData
 from inventory.resouces import UserResource
 from runtime import get_app_runtime
+from external_idp.models import ExternalIdp
+from extension.utils import find_available_extensions
+
 from api.v1.serializers.user import (
     UserSerializer,
     UserListResponsesSerializer,
@@ -56,6 +59,7 @@ from rest_framework.exceptions import ValidationError
 from extension_root.childmanager.models import ChildManager
 from django.utils.translation import gettext_lazy as _
 from common.utils import check_password_complexity
+from runtime import get_app_runtime
 
 import re
 from webhook.manager import WebhookManager
@@ -170,9 +174,9 @@ class UserViewSet(BaseViewSet):
         if email is not None:
             kwargs['email'] = email
         if country is not None:
-            kwargs['country'] = email
+            kwargs['country'] = country
         if city is not None:
-            kwargs['city'] = email
+            kwargs['city'] = city
         if job_title is not None:
             kwargs['job_title'] = job_title
 
@@ -684,101 +688,23 @@ class UserBindInfoView(generics.RetrieveAPIView):
         responses=UserBindInfoSerializer,
     )
     def get(self, request):
-        from extension_root.feishu.models import FeishuUser
-        from extension_root.gitee.models import GiteeUser
-        from extension_root.github.models import GithubUser
-        from extension_root.arkid.models import ArkIDUser
-        from extension_root.miniprogram.models import MiniProgramUser
-        from extension_root.wechatscan.models import WeChatScanUser
-        from extension_root.wechatwork.models import WeChatWorkUser
-        from extension_root.wechatworkscan.models import WeChatWorkScanUser
-
+        # 所有登录创建
         user = request.user
-        feishuusers = FeishuUser.valid_objects.filter(user=request.user)
-        giteeusers = GiteeUser.valid_objects.filter(user=request.user)
-        githubusers = GithubUser.valid_objects.filter(user=request.user)
-        arkidusers = ArkIDUser.valid_objects.filter(user=request.user)
-        miniprogramusers = MiniProgramUser.valid_objects.filter(user=request.user)
-        wechatscanusers = WeChatScanUser.valid_objects.filter(user=request.user)
-        wechatworkusers = WeChatWorkUser.valid_objects.filter(user=request.user)
-        wechatworkscanusers = WeChatWorkScanUser.valid_objects.filter(user=request.user)
         result = []
-        for item in feishuusers:
-            result.append(
-                {
-                    'name': '飞书',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/feishu/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
-        for item in giteeusers:
-            result.append(
-                {
-                    'name': 'gitee',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/gitee/unbind'.format(item.tenant.uuid),
-                }
-            )
-        for item in githubusers:
-            result.append(
-                {
-                    'name': 'github',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/github/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
-        for item in arkidusers:
-            result.append(
-                {
-                    'name': 'arkid',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/arkid/unbind'.format(item.tenant.uuid),
-                }
-            )
-        for item in miniprogramusers:
-            result.append(
-                {
-                    'name': '微信小程序',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/miniprogram/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
-        for item in wechatscanusers:
-            result.append(
-                {
-                    'name': '微信扫码登录',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/wechatscan/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
-        for item in wechatworkusers:
-            result.append(
-                {
-                    'name': '企业微信网页授权登录',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/wechatwork/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
-        for item in wechatworkscanusers:
-            result.append(
-                {
-                    'name': '企业微信扫码登录',
-                    'tenant': item.tenant.uuid,
-                    'unbind': '/api/v1/tenant/{}/wechatworkscan/unbind'.format(
-                        item.tenant.uuid
-                    ),
-                }
-            )
+        external_idps = ExternalIdp.valid_objects.order_by('order_no', 'id')
+        available_extensions = find_available_extensions()
+        for external_idp in external_idps:
+            idp_type = external_idp.type
+            for extension in available_extensions:
+                extension_name = extension.name
+                if idp_type == extension_name:
+                    try:
+                        items = extension.get_unbind_url(user)
+                        if len(items) > 0:
+                            for item in items:
+                                result.append(item)
+                    except:
+                        print('没有启用插件，无法读取:'+extension_name)
         return JsonResponse({'data': result}, safe=False)
 
 

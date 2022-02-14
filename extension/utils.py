@@ -116,6 +116,10 @@ def load_extension(runtime, ext_name: str, name: str, execute: bool = False) -> 
     if not execute:
         return ext.extension
 
+    extension_migrate_foldname = Path(ext_dir) / 'migrations'
+    if extension_migrate_foldname.exists():
+        migrate_extension(ext_name, name)
+
     extension_global_urls_filename = Path(ext_dir) / 'urls.py'
     if extension_global_urls_filename.exists():
         urlpatterns = [url('', include((f'{ext_name}.urls', 'extension'), namespace=f'{name}'))]
@@ -181,3 +185,20 @@ def reload_extension(extension_type, is_add=True):
     # 重新加载相应的url
     reload(api.v1.urls)
     reload(arkid.urls)
+
+
+def migrate_extension(ext_name: str, name: str) -> None:
+    from collections import OrderedDict
+    from django.apps import apps
+    from django.conf import settings
+    from django.core import management
+
+    settings.INSTALLED_APPS += (ext_name, )
+    apps.app_configs = OrderedDict()
+    apps.apps_ready = apps.models_ready = apps.loading = apps.ready = False
+    apps.clear_cache()
+    apps.populate(settings.INSTALLED_APPS)
+
+    # management.call_command('makemigrations', name, interactive=False)
+    print(f'Migrate {ext_name}')
+    management.call_command('migrate', name, interactive=False)

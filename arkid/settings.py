@@ -70,21 +70,24 @@ INSTALLED_APPS = [
     'extension',
     'api',
     'system',
-    'extension_root.github',
-    'extension_root.gitee',
-    'extension_root.feishu',
-    'extension_root.mysql_migration',
-    'extension_root.arkid',
-    'extension_root.tenantuserconfig',
-    'extension_root.childaccount',
-    'extension_root.childmanager',
-    'extension_root.wechatscan',
-    'extension_root.wechatwork',
-    'extension_root.wechatworkscan',
+    # 'extension_root.github',
+    # 'extension_root.gitee',
+    # 'extension_root.feishu',
+    # 'extension_root.mysql_migration',
+    # 'extension_root.arkid',
+    # 'extension_root.tenantuserconfig',
+    # 'extension_root.childaccount',
+    # 'extension_root.childmanager',
+    # 'extension_root.auto_form_fill',
+    # 'extension_root.wechatscan',
+    # 'extension_root.wechatwork',
+    # 'extension_root.wechatworkscan',
+    # 'extension_root.dingding',
     # 'django_scim',
     # 'scim_server',
+    # 'extension_root.app_market_manage',
     'django_scim',
-    'extension_root.miniprogram',
+    # 'extension_root.miniprogram',
     'djangosaml2idp',
     'login_register_config',
     'config',
@@ -92,7 +95,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'data_sync',
     'command',
-    'backend_login'
+    'backend_login',
 ]
 
 X_FRAME_OPTIONS = 'ALLOWALL'
@@ -323,6 +326,9 @@ FE_EMAIL_REGISTER_URL = '/oneid#/oneid/signup'  # 邮件注册页面
 FE_EMAIL_RESET_PWD_URL = '/oneid#/oneid/password'  # 邮件重置密码页面
 FE_EMAIL_ACTIVATE_USER_URL = '/oneid#/oneid/activate'  # 邮件激活账号页面
 FE_EMAIL_UPDATE_EMAIL_URL = '/oneid/#/reset_email_callback'  # 邮件重置邮箱页面
+
+ARKID_SAAS = 'http://saas.authids.com' # 中心ARKID链接
+ARKSTOER_URL = 'http://ext.authids.com' # 插件商店链接
 
 SMS_LIFESPAN = datetime.timedelta(seconds=300)
 

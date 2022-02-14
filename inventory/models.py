@@ -204,28 +204,23 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         return full_name.strip()
 
     def bind_info(self):
-        from extension_root.feishu.models import FeishuUser
-        from extension_root.gitee.models import GiteeUser
-        from extension_root.github.models import GithubUser
-        from extension_root.arkid.models import ArkIDUser
-        from extension_root.miniprogram.models import MiniProgramUser
-
-        feishuusers = FeishuUser.valid_objects.filter(user=self).exists()
-        giteeusers = GiteeUser.valid_objects.filter(user=self).exists()
-        githubusers = GithubUser.valid_objects.filter(user=self).exists()
-        arkidusers = ArkIDUser.valid_objects.filter(user=self).exists()
-        miniprogramusers = MiniProgramUser.valid_objects.filter(user=self).exists()
+        from external_idp.models import ExternalIdp
+        from extension.utils import find_available_extensions
         result = ''
-        if feishuusers:
-            result = '飞书 '
-        if giteeusers:
-            result = result + 'gitee '
-        if githubusers:
-            result = result + 'github '
-        if arkidusers:
-            result = result + 'arkid '
-        if miniprogramusers:
-            result = result + '微信'
+        external_idps = ExternalIdp.valid_objects.order_by('order_no', 'id')
+        available_extensions = find_available_extensions()
+        for external_idp in external_idps:
+            idp_type = external_idp.type
+            for extension in available_extensions:
+                extension_name = extension.name
+                if idp_type == extension_name:
+                    try:
+                        items = extension.get_unbind_url(self)
+                        if len(items) > 0:
+                            result = '{}{} '.format(result,extension_name)
+                    except:
+                        print('没有启用插件，无法读取:'+extension_name)
+        result = result.rstrip()
         return result
 
     @property
