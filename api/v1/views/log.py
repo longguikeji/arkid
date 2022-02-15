@@ -96,6 +96,11 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         start = self.request.query_params.get('time_begin', '')
         end = self.request.query_params.get('time_end', '')
 
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return []
+
         kwargs = {
             'tenant': tenant,
             'data__user__admin': False,
@@ -190,6 +195,11 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         status = self.request.query_params.get('status_code', '')
         start = self.request.query_params.get('time_begin', '')
         end = self.request.query_params.get('time_end', '')
+
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return []
 
         kwargs = {
             'tenant': tenant,

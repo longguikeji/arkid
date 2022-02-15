@@ -35,6 +35,11 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return []
+
         group_uuid = self.request.query_params.get('group', None)
         if not group_uuid:
             objs = Permission.valid_objects.filter(
@@ -73,6 +78,16 @@ class PermissionCreateView(generics.CreateAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        user = request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
+
+        return super(PermissionCreateView, self).create(request, *args, **kwargs)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -121,6 +136,12 @@ class PermissionGroupView(generics.ListAPIView):
 
     def get_queryset(self):
         tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return []
+
         kwargs = {
             'tenant__uuid': tenant_uuid,
         }
@@ -138,6 +159,14 @@ class PermissionGroupCreateView(generics.CreateAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionGroupCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        user = request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -261,9 +290,19 @@ class UserPermissionCreateView(generics.CreateAPIView):
 
     serializer_class = UserPermissionCreateSerializer
 
+    def create(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        user = request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
+        return super(UserPermissionCreateView, self).create(request, *args, **kwargs)
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['user'] = User.objects.filter(uuid=self.kwargs['user_uuid']).first()
+        context['tenant'] = Tenant.objects.filter(uuid=self.kwargs['tenant_uuid']).first()
         return context
 
 

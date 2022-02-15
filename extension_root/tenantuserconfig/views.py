@@ -31,6 +31,11 @@ class TenantUserLogOutConfigView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return None
+
         config = TenantUserConfig.active_objects.filter(
             tenant=tenant
         ).first()
@@ -71,6 +76,10 @@ class TenantUserLoggingConfigView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return None
         config = TenantUserConfig.active_objects.filter(
             tenant=tenant
         ).first()
@@ -159,6 +168,11 @@ class TenantUserConfigFieldSelectListView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
+
         config = TenantUserConfig.active_objects.filter(
             tenant=tenant
         ).first()
@@ -245,6 +259,11 @@ class TenantUserEditFieldListConfigView(generics.RetrieveAPIView):
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return None
+
         config = TenantUserConfig.active_objects.filter(
             tenant=tenant
         ).first()

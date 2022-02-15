@@ -27,6 +27,10 @@ class StatisticsView(APIView):
     def get(self, request, *args, **kwargs):
         tenant_uuid = kwargs.get('tenant_uuid')
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        user = request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
 
         charts = []
         r = get_app_runtime()

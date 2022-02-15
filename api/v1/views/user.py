@@ -143,6 +143,9 @@ class UserViewSet(BaseViewSet):
         context = self.get_serializer_context()
         tenant = context['tenant']
 
+        if not user.check_permission(tenant) is None:
+            return []
+
         group = self.request.query_params.get('group', None)
         name = self.request.query_params.get('name', None)
         username = self.request.query_params.get('username', None)
@@ -236,6 +239,14 @@ class UserViewSet(BaseViewSet):
         )
 
     def create(self, request, *args, **kwargs):
+        user = request.user
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
+
         email = request.data.get('email')
         if email and not re.match(
             r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
@@ -258,6 +269,13 @@ class UserViewSet(BaseViewSet):
         return super(UserViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
+        user = request.user
+        context = self.get_serializer_context()
+        tenant = context['tenant']
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
+
         email = request.data.get('email')
         if email and not re.match(
             r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
@@ -288,6 +306,11 @@ class UserViewSet(BaseViewSet):
     def user_import(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
+        user = request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
+
         support_content_types = [
             'application/csv',
             'text/csv',
@@ -376,6 +399,11 @@ class UserViewSet(BaseViewSet):
     def user_export(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
+        user = request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
+
         kwargs = {
             'tenants__in': [tenant],
         }
@@ -810,6 +838,11 @@ class UserListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).order_by('id').first()
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return []
 
         group = self.request.query_params.get('group', None)
 

@@ -342,6 +342,41 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
             if tenant.has_admin_perm(self):
                 uuids.append(tenant.uuid)
         return uuids
+    
+    def check_permission(self, tenant):
+        '''
+        检查用户是否是某个租户的管理员
+        '''
+        from extension_root.childmanager.models import ChildManager
+        from django.http.response import JsonResponse
+        from common.code import Code
+        if self.is_superuser is False and tenant.has_admin_perm(self) is False and ChildManager.valid_objects.filter(tenant=tenant, user=self).exists() is False:
+            return JsonResponse(
+                data={
+                    'error': Code.PERMISSION_ERROR.value,
+                    'message': _('unauthorized operation'),
+                }
+            )
+        else:
+            return None
+
+    
+    def check_super_permission(self, tenant):
+        '''
+        检查用户是否是某个租户的超级管理员
+        '''
+        from extension_root.childmanager.models import ChildManager
+        from django.http.response import JsonResponse
+        from common.code import Code
+        if self.is_superuser is False and tenant.has_admin_perm(self) is False:
+            return JsonResponse(
+                data={
+                    'error': Code.PERMISSION_ERROR.value,
+                    'message': _('unauthorized operation'),
+                }
+            )
+        else:
+            return None
 
 
 class UserPassword(BaseModel):

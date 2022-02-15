@@ -87,6 +87,12 @@ class TenantViewSet(BaseViewSet):
 
     @extend_schema(roles=['tenant admin', 'global admin'], summary=_('update tenant'))
     def update(self, request, *args, **kwargs):
+        tenant = self.get_object()
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return check_result
+
         slug = request.data.get('slug')
         tenant_exists = (
             Tenant.active_objects.exclude(uuid=kwargs.get('pk'))
@@ -177,6 +183,9 @@ class TenantViewSet(BaseViewSet):
     def apps(self, request, pk):
         user: User = request.user
         tenant: Tenant = self.get_object()
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return []
 
         all_apps = App.active_objects.filter(
             tenant=tenant,
@@ -233,6 +242,10 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         if tenant:
+            user = self.request.user
+            check_result = user.check_permission(tenant)
+            if not check_result is None:
+                return None
             tenantconfig, is_created = TenantConfig.objects.get_or_create(
                 is_del=False,
                 tenant=tenant,
@@ -279,6 +292,11 @@ class TenantContactsConfigFunctionSwitchView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return None
         return TenantContactsConfig.active_objects.filter(
             tenant__uuid=tenant_uuid
         ).first()
@@ -311,6 +329,13 @@ class TenantContactsConfigInfoVisibilityView(generics.ListAPIView):
 
     def get_queryset(self):
         tenant_uuid = self.kwargs['tenant_uuid']
+
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return []
+
         return TenantContactsUserFieldConfig.active_objects.filter(
             tenant__uuid=tenant_uuid
         ).order_by('-id')
@@ -656,6 +681,10 @@ class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return None
         config = TenantDesktopConfig.active_objects.filter(tenant=tenant).first()
         if config is None:
             config = TenantDesktopConfig()
@@ -727,6 +756,12 @@ class TenantLogConfigView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         tenant_uuid = self.kwargs['tenant_uuid']
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+
+        user = self.request.user
+        check_result = user.check_permission(tenant)
+        if not check_result is None:
+            return None
+
         log_config, is_created = TenantLogConfig.objects.get_or_create(
             is_del=False,
             tenant=tenant,
