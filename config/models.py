@@ -46,3 +46,9 @@ class PasswordComplexity(BaseModel):
             return True
         else:
             return False
+
+class PlatformConfig(BaseModel):
+
+    frontend_url = models.URLField(
+        verbose_name='ArkId访问地址', max_length=128, blank=True, null=True, default=''
+    )

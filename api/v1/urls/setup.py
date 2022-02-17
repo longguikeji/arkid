@@ -6,4 +6,5 @@ from api.v1.views import (
 
 urlpatterns = [
     path('get_frontendurl/', views_setup.GetFrontendUrlAPIView.as_view(), name='get-frontendurl'),
+    path('set_frontendurl/', views_setup.SetFrontendUrlAPIView.as_view(), name='set-frontendurl'),
 ]
