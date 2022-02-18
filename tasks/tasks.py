@@ -18,11 +18,17 @@ from provisioning.utils import (
 )
 from inventory.models import User, Group
 from app.models import App
+from config import get_app_config
+from inventory.models import Permission
 
 # from webhook.models import WebHook, WebHookTriggerHistory
 from common.utils import send_email as send_email_func
 import requests
 from provisioning.constants import ProvisioningType
+
+import requests
+import json
+import uuid
 
 
 @app.task
@@ -208,6 +214,52 @@ def send_email(addrs, subject, content):
     发送邮件
     '''
     send_email_func(addrs, subject, content)
+
+
+@app.task
+def update_permission():
+    '''
+    定时更新权限
+    '''
+    c = get_app_config()
+    api_info = "{}/api/schema/?format=json".format(c.get_host())
+    response = requests.get(api_info)
+    response = response.json()
+    paths = response.get('paths')
+    path_keys = paths.keys()
+    for path_key in path_keys:
+        item = paths.get(path_key)
+        item_keys = item.keys()
+        for item_key in item_keys:
+            request_obj = item.get(item_key)
+            # 参数信息
+            request_type = item_key
+            request_url = path_key
+            action = request_obj.get('action')
+            summary = request_obj.get('summary', '')
+            description = request_obj.get('description')
+            operation_id = request_obj.get('operationId')
+            # 缓存数据
+            # content_type = ContentType.objects.get_for_model(Tenant)
+            codename = 'api_{}'.format(uuid.uuid4())
+            permission, is_create = Permission.objects.get_or_create(
+                is_del=False,
+                operation_id=operation_id
+            )
+            if is_create is False:
+                permission.codename = codename
+            permission.name = summary
+            permission.content_type = None
+            permission.tenant = None
+            permission.app = None
+            permission.permission_category = 'API'
+            permission.is_system_permission = True
+            permission.action = action
+            permission.description = description
+            permission.request_url = request_url
+            permission.request_type = request_type
+            permission.save()
+
 
 
 @app.task

@@ -8,6 +8,14 @@ from runtime import get_app_runtime
 from openapi.utils import extend_schema
 from rest_framework.views import APIView
 from django.utils.translation import gettext_lazy as _
+from django.contrib.contenttypes.models import ContentType
+from inventory.models import Permission
+from tasks.tasks import update_permission
+
+from config import get_app_config
+import requests
+import json
+import uuid
 
 
 @extend_schema(
@@ -66,7 +74,8 @@ class LoginView(APIView):
             return_data['tenants'] = [
                 TenantSerializer(o).data for o in user.tenants.all()
             ]
-
+        # 需要在此处插入api格式缓存权限数据
+        update_permission.delay()
         return JsonResponse(data={'error': Code.OK.value, 'data': return_data})
 
     def get_tenant(self, request):

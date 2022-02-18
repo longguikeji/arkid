@@ -77,7 +77,6 @@ class PasswordLoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         ip = get_client_ip(request)
-
         # 图片验证码信息
         is_open_authcode = config.data.get('is_open_authcode', False)
         error_number_open_authcode = config.data.get('error_number_open_authcode', 0)

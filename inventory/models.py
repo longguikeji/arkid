@@ -41,11 +41,18 @@ class Permission(BaseModel):
         models.CASCADE,
         verbose_name=_('content type'),
         related_name='upermission_content_type',
+        default=None,
+        null=True,
+        blank=True,
     )
     codename = models.CharField(_('codename'), max_length=100)
     # 用户扩展的权限字段
     tenant = models.ForeignKey(
-        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+        'tenant.Tenant',
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
     )
     app = models.ForeignKey(
         App,
@@ -55,9 +62,21 @@ class Permission(BaseModel):
         blank=True,
     )
     permission_category = models.CharField(_('权限类型'), blank=False, null=True, default='', max_length=64)
-    is_system_permission = models.BooleanField(
-        default=True,
-        verbose_name='是否是系统权限'
+    is_system_permission = models.BooleanField(default=True, verbose_name='是否是系统权限')
+    # 权限字段扩展(兼容读取api)
+    action = models.CharField(_('动作'), blank=False, null=True, default='', max_length=256)
+    operation_id = models.CharField(_('操作id'), blank=False, null=True, default='', max_length=256)
+    description = models.CharField(_('描述'), blank=False, null=True, default='', max_length=512)
+    request_url = models.CharField(_('请求地址'), blank=False, null=True, default='', max_length=256)
+    request_type = models.CharField(_('请求方法'), blank=False, null=True, default='', max_length=256)
+    # 如果是分组权限则有此字段
+    group_info = models.ForeignKey(
+        'inventory.Group',
+        blank=False,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT,
+        verbose_name='分组',
     )
 
     objects = PermissionManager()
@@ -103,6 +122,14 @@ class PermissionGroup(BaseModel):
         null=True,
         default=None,
         on_delete=models.PROTECT
+    )
+    permission_parent = models.ForeignKey(
+        'self',
+        default=None,
+        null=True,
+        blank=True,
+        verbose_name='父分组',
+        on_delete=models.PROTECT,
     )
 
     @property

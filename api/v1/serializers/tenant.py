@@ -128,19 +128,19 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
             },
         )
         # 新建权限
-        content_type = ContentType.objects.get_for_model(Tenant)
-        items = MENU
-        for item in items:
-            codename = 'enter_{}'.format(uuid.uuid4())
-            Permission.objects.create(
-                name=item,
-                content_type=content_type,
-                codename=codename,
-                tenant=tenant,
-                app=None,
-                permission_category='入口',
-                is_system_permission=True,
-            )
+        # content_type = ContentType.objects.get_for_model(Tenant)
+        # items = MENU
+        # for item in items:
+        #     codename = 'enter_{}'.format(uuid.uuid4())
+        #     Permission.objects.create(
+        #         name=item,
+        #         content_type=content_type,
+        #         codename=codename,
+        #         tenant=tenant,
+        #         app=None,
+        #         permission_category='入口',
+        #         is_system_permission=True,
+        #     )
         return tenant
 
 

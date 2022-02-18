@@ -28,6 +28,7 @@ from ..signals import app_authorized
 from .mixins import OAuthLibMixin
 from config import get_app_config
 from arkid.settings import LOGIN_URL
+from inventory.models import Permission
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
@@ -61,12 +62,23 @@ class TokenRequiredMixin(AccessMixin):
                 redirect_url = '{}{}?next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, next_uri)
             else: 
                 redirect_url = '{}{}?slug=null&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, next_uri)
-
         return redirect_url
 
     def dispatch(self, request, *args, **kwargs):
         is_authenticated = self.check_token(request, *args, **kwargs)
         if is_authenticated:
+            # 用户
+            user = request.user
+            # 租户
+            tenant = user.tenant
+            if not user.check_permission(tenant) is None:
+                # 是否有用户权限
+                Permission.active_objects.filter(
+                    is_system_permission=False,
+                    tenant=tenant,
+                )
+                # 是否有组权限
+                pass
             return super().dispatch(request, *args, **kwargs)
         else:
             return self.handle_no_permission()

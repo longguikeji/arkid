@@ -42,8 +42,17 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
         group_uuid = self.request.query_params.get('group', None)
         if not group_uuid:
+            ids = []
             objs = Permission.valid_objects.filter(
                 tenant=tenant,
+            ).order_by('id')
+            for obj in objs:
+                if obj.app is None:
+                    ids.append(obj.id)
+                elif obj.app.is_del is False:
+                    ids.append(obj.id)
+            objs = Permission.valid_objects.filter(
+                id__in=ids,
             ).order_by('id')
             return objs
 

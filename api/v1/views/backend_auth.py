@@ -32,7 +32,6 @@ class BackendAuthView(APIView):
     2，如果租户打开了kerboros认证，走spnego认证逻辑
     3, 否则跳转到前端登录页面
     """
-
     def get(self, request):
         tenant = self.get_tenant(request)
         if not tenant:
