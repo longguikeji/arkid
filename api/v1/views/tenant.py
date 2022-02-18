@@ -128,10 +128,15 @@ class TenantViewSet(BaseViewSet):
             else:
                 tenants = user.tenants.filter(is_del=False).all()
                 for tenant in tenants:
+                    try:
+                        from extension_root.childmanager.models import ChildManager
+                        if ChildManager.valid_objects.filter(tenant=tenant, user=user).exists():
+                            tenant.role = '子管理员'
+                            continue
+                    except:
+                        print('没安装子管理员模块')
                     if tenant.has_admin_perm(user):
                         tenant.role = '管理员'
-                    elif ChildManager.valid_objects.filter(tenant=tenant, user=user).exists():
-                        tenant.role = '子管理员'
                     else:
                         tenant.role = '普通用户'
             return tenants
@@ -675,8 +680,13 @@ class TenantCheckPermissionView(generics.RetrieveAPIView):
 
     @extend_schema(responses=TenantCheckPermissionSerializer)
     def get(self, request, tenant_uuid):
-        user  = request.user
-        childmanager = ChildManager.valid_objects.filter(tenant__uuid=tenant_uuid, user=user).first()
+        user = request.user
+        childmanager = None
+        try:
+            from extension_root.childmanager.models import ChildManager
+            childmanager = ChildManager.valid_objects.filter(tenant__uuid=tenant_uuid, user=user).first()
+        except:
+            print('没安装子管理员模块')
         result = {}
         if childmanager:
             result['is_childmanager'] = True

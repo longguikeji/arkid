@@ -203,6 +203,43 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         full_name = f'{self.first_name} {self.last_name}'
         return full_name.strip()
 
+    def check_app_permission(self, tenant, app):
+        '''
+        检查app权限
+        '''
+        childmanager_result = False
+        try:
+            from extension_root.childmanager.models import ChildManager
+            childmanager_result = ChildManager.valid_objects.filter(tenant=tenant, user=self).exists()
+        except:
+            print('没有子管理员的插件')
+        if self.is_superuser is False and tenant.has_admin_perm(self) is False and childmanager_result is False:
+            # 权限
+            permission = Permission.active_objects.filter(
+                is_system_permission=True,
+                tenant=tenant,
+                app=app,
+            ).first()
+            permission_result = self.user_permissions.filter(
+                uuid=permission.uuid
+            ).exists()
+            if permission_result is True:
+                return permission_result
+            # 看下组权限
+            permissiongroups = PermissionGroup.active_objects.filter(permissions__uuid=permission.uuid)
+            if permissiongroups is None:
+                return False
+            user_permissions_groups = self.user_permissions_group.all()
+            if user_permissions_groups is None:
+                return False
+            for user_permissions_group in user_permissions_groups:
+                for permissiongroup in permissiongroups:
+                    if user_permissions_group == permissiongroup:
+                        return True
+            return False
+        else:
+            return True
+
     def bind_info(self):
         from external_idp.models import ExternalIdp
         from extension.utils import find_available_extensions
