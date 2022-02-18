@@ -194,7 +194,7 @@ class ConfigSerializer(serializers.Serializer):
     close_page_auto_logout = serializers.BooleanField(
         label=_('是否关闭页面自动退出'), default=False
     )
-    password_validity_period = serializers.IntegerField(label=_('密码有效期(天)'), default=60)
+    # password_validity_period = serializers.IntegerField(label=_('密码有效期(天)'), default=60)
 
 
 class TenantConfigSerializer(BaseDynamicFieldModelSerializer):

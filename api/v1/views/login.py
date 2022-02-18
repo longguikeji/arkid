@@ -37,7 +37,7 @@ class LoginView(APIView):
         ret = provider.authenticate(request)
         r = get_app_runtime()
 
-        if ret.get('error') != Code.OK.value:
+        if ret.get('error') != Code.OK.value and ret.get('error') != Code.PASSWORD_EXPIRED_ERROR.value:
 
             # 失败后调用认证规则
             for rule in r.auth_rules:
@@ -67,7 +67,7 @@ class LoginView(APIView):
                 TenantSerializer(o).data for o in user.tenants.all()
             ]
 
-        return JsonResponse(data={'error': Code.OK.value, 'data': return_data})
+        return JsonResponse(data={'error': ret.get('error'), 'data': return_data})
 
     def get_tenant(self, request):
         tenant = None

@@ -518,40 +518,23 @@ class UpdatePasswordView(generics.CreateAPIView):
         responses=PasswordSerializer,
     )
     def post(self, request):
-        tenant_uuid = self.request.query_params.get('tenant')
-        if not tenant_uuid:
-            tenant = None
-        else:
-            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
-        uuid = request.data.get('uuid', '')
+        # tenant_uuid = self.request.query_params.get('tenant')
+        # if not tenant_uuid:
+        #     tenant = None
+        # else:
+        #     tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
         password = request.data.get('password', '')
-        old_password = request.data.get('old_password', '')
-        user = User.objects.filter(uuid=uuid).first()
-        is_succeed = True
-        if not user:
-            return JsonResponse(
-                data={
-                    'error': Code.USER_EXISTS_ERROR.value,
-                    'message': _('user does not exist'),
-                }
-            )
-        if password:
-            ret, message = check_password_complexity(password, tenant)
-            if not ret:
-                return JsonResponse(
-                    data={
-                        'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                        'message': message,
-                    }
-                )
+        user = request.user
+        # if password:
+        #     ret, message = check_password_complexity(password, tenant)
+        #     if not ret:
+        #         return JsonResponse(
+        #             data={
+        #                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
+        #                 'message': message,
+        #             }
+        #         )
 
-        if password and user.check_password(old_password) is False:
-            return JsonResponse(
-                data={
-                    'error': Code.OLD_PASSWORD_ERROR.value,
-                    'message': _('old password error'),
-                }
-            )
         if password and user.valid_password(password) is True:
             return JsonResponse(
                 data={
@@ -559,12 +542,9 @@ class UpdatePasswordView(generics.CreateAPIView):
                     'message': _('password is already in use'),
                 }
             )
-        try:
-            user.set_password(password)
-            user.save()
-        except Exception as e:
-            is_succeed = False
-        return Response(is_succeed)
+        user.set_password(password)
+        user.save()
+        return JsonResponse(data={'error': Code.OK.value})
 
 
 @extend_schema(
