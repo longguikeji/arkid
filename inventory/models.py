@@ -238,7 +238,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
                         return True
             return False
         else:
-            return False
+            return True
 
     def bind_info(self):
         from external_idp.models import ExternalIdp

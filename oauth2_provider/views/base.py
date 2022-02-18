@@ -111,7 +111,7 @@ class TokenRequiredMixin(AccessMixin):
                 data = app.data
                 app_client_id = data.get('client_id', '')
                 if app_client_id == client_id:
-                    if user.check_app_permission(tenant, app) == True:
+                    if user.check_app_permission(tenant, app) is True:
                         check_result = True
                         break
             return check_result
