@@ -65,7 +65,7 @@ class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             }
             return data
 
-        user_exists = User.objects.filter(Q(username=email) | Q(email=email)).exists()
+        user_exists = User.objects.filter(Q(username=email) | Q(email=email)).filter(tenants=tenant).exists()
         if user_exists:
             data = {
                 'error': Code.EMAIL_ERROR.value,

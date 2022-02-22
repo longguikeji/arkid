@@ -184,6 +184,7 @@ class PasswordRegisterView(APIView):
         tenant_uuid = request.query_params.get('tenant', None)
         if tenant_uuid:
             tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+        assert tenant is not None
 
         is_custom_field = request.query_params.get('is_custom_field', None)
         user = None
@@ -191,17 +192,17 @@ class PasswordRegisterView(APIView):
             field_name = request.query_params.get('field_name')
             custom_field = CustomField.valid_objects.filter(
                 name=field_name, subject='user'
-            )
+            ).filter(tenant=tenant)
             assert custom_field is not None
             field_value = request.data.get(field_name)
 
-            custom_user = CustomUser.valid_objects.filter(data__name=field_name).first()
+            custom_user = CustomUser.valid_objects.filter(data__name=field_name).filter(tenant=tenant).first()
             if custom_user:
                 user = custom_user.user
         else:
             field_name = request.query_params.get('field_name')
             field_value = request.data.get(field_name)
-            user = User.active_objects.filter(**{field_name: field_value}).first()
+            user = User.active_objects.filter(**{field_name: field_value}).filter(tenants=tenant).first()
 
         password = request.data.get('password')
         ip = get_client_ip(request)

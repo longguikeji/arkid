@@ -103,7 +103,7 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
 
         user_exists = User.objects.filter(
             Q(username=mobile) | Q(mobile=mobile)
-        ).exists()
+        ).filter(tenants=tenant).exists()
         if user_exists:
             data = {
                 'error': Code.MOBILE_ERROR.value,

@@ -17,6 +17,7 @@ from common.utils import (
     get_user_register_count,
 )
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 
 
 @extend_schema(
@@ -25,13 +26,15 @@ from django.utils.translation import gettext_lazy as _
     # responses=PasswordLoginResponseSerializer,
 )
 class RegisterView(APIView):
+    @transaction.atomic()
     def post(self, request):
         tenant = get_request_tenant(request)
 
         config = self.get_system_or_tenant_config(tenant)
-        is_open_register_limit = config.data.get('is_open_register_limit', False)
-        register_time_limit = config.data.get('register_time_limit', 1)
-        register_count_limit = config.data.get('register_count_limit', 10)
+        config_data = config.data if config else {}
+        is_open_register_limit = config_data.get('is_open_register_limit', False)
+        register_time_limit = config_data.get('register_time_limit', 1)
+        register_count_limit = config_data.get('register_count_limit', 10)
 
         ip = get_client_ip(request)
         if is_open_register_limit:

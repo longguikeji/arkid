@@ -122,7 +122,7 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
                     break
 
         field_value = request.data.get(field_name)
-        user = self._get_register_user(field_name, field_value)
+        user = self._get_register_user(field_name, field_value, tenant)
         if user:
             data = {
                 'error': Code.USERNAME_EXISTS_ERROR.value,
@@ -176,18 +176,18 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
                     user = custom_user.user
         return user
 
-    def _get_register_user(self, field_name, field_value):
+    def _get_register_user(self, field_name, field_value, tenant):
         user = None
         if field_name in ('username', 'email'):
-            user = User.active_objects.filter(**{field_name: field_value}).first()
+            user = User.active_objects.filter(**{field_name: field_value}).filter(tenants=tenant).first()
         else:
             custom_field = CustomField.valid_objects.filter(
-                name=field_name, subject='user'
+                name=field_name, subject='user', tenant=tenant
             )
             if not custom_field:
                 return None
 
-            custom_user = CustomUser.valid_objects.filter(data__name=field_name).first()
+            custom_user = CustomUser.valid_objects.filter(data__name=field_name).filter(tenant=tenant).first()
             if custom_user:
                 user = custom_user.user
         return user
