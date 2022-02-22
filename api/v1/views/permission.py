@@ -60,11 +60,12 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
             return objs
 
         kwargs = {
-            'tenant': tenant,
             'uuid': group_uuid,
         }
 
-        group = PermissionGroup.valid_objects.filter(**kwargs).first()
+        group = PermissionGroup.valid_objects.filter(
+            Q(tenant=tenant)|Q(is_system_group=True)
+        ).filter(**kwargs).first()
         return group.permissions.all()
 
     def get_object(self):
@@ -154,7 +155,7 @@ class PermissionGroupView(generics.ListAPIView):
         tenant_uuid = self.kwargs['tenant_uuid']
 
         kwargs = {
-            'tenant__uuid': tenant_uuid,
+            
         }
 
         if parent is None:
@@ -162,7 +163,7 @@ class PermissionGroupView(generics.ListAPIView):
         else:
             kwargs['parent__uuid'] = parent
 
-        permission_groups = PermissionGroup.valid_objects.filter(**kwargs).order_by('-id')
+        permission_groups = PermissionGroup.valid_objects.filter(Q(tenant__uuid=tenant_uuid)|Q(is_system_group=True)).filter(**kwargs).order_by('-id')
         return permission_groups
 
 
