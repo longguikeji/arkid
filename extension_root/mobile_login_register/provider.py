@@ -64,7 +64,8 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             }
             return data
 
-        user = User.active_objects.filter(mobile=mobile).first()
+        tenant = get_request_tenant(request)
+        user = User.active_objects.filter(mobile=mobile,tenants=tenant).first()
 
         if not user:
             data = {
@@ -138,7 +139,8 @@ class MobileLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             }
             return data
 
-        user = User.objects.filter(mobile=mobile).first()
+        tenant = get_request_tenant(request)
+        user = User.objects.filter(mobile=mobile, tenants=tenant).first()
         if not user:
             data = {
                 'error': Code.USER_EXISTS_ERROR.value,

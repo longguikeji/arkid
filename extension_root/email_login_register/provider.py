@@ -101,7 +101,8 @@ class EmailLoginRegisterConfigProvider(LoginRegisterConfigProvider):
             }
             return data
 
-        user = User.objects.filter(email=email).first()
+        tenant = get_request_tenant(request)
+        user = User.objects.filter(email=email, tenants=tenant).first()
         if not user:
             data = {
                 'error': Code.USER_EXISTS_ERROR.value,

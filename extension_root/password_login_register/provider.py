@@ -71,7 +71,8 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
 
         username = request.data.get('username')
         password = request.data.get('password')
-        user = self._get_login_user(username)
+        tenant = get_request_tenant(request)
+        user = self._get_login_user(username, tenant)
         if not user or not user.check_password(password):
             data = {
                 'error': Code.USERNAME_PASSWORD_MISMATCH.value,
@@ -152,25 +153,25 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
         data = {'error': Code.OK.value, 'user': user}
         return data
 
-    def _get_login_user(self, username):
+    def _get_login_user(self, username, tenant):
         user = None
         if 'username' in self.login_enabled_field_names:
-            user = User.active_objects.filter(username=username).first()
+            user = User.active_objects.filter(username=username, tenants=tenant).first()
             self.login_enabled_field_names.remove('username')
         if not user and 'email' in self.login_enabled_field_names:
-            user = User.active_objects.filter(email=username).first()
+            user = User.active_objects.filter(email=username, tenants=tenant).first()
             self.login_enabled_field_names.remove('email')
         if not user and self.login_enabled_field_names:
 
             # 自定义字段查找用户
             for name in self.login_enabled_field_names:
                 custom_field = CustomField.valid_objects.filter(
-                    name=name, subject='user'
+                    name=name, subject='user', tenant=tenant
                 )
                 if not custom_field:
                     continue
                 custom_user = CustomUser.valid_objects.filter(
-                    data__name=username
+                    data__name=username, tenant=tenant
                 ).first()
                 if custom_user:
                     user = custom_user.user
