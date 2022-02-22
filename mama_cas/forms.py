@@ -50,7 +50,7 @@ class LoginForm(forms.Form):
         #     raise forms.ValidationError(error_msg)
         if username and password:
             user = User.active_objects.filter(
-                username=username,
+                username=username, tenants__uuid=tenant_uuid
             ).first()
             if not user or not user.check_password(password):
                 user = None

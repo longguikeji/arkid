@@ -2,6 +2,7 @@ from django.urls import reverse
 from requestlogs.entries import RequestLogEntry
 from tenant.models import Tenant
 from inventory.models import User
+from common.utils import get_request_tenant
 
 
 class CustomRequestLogEntry(RequestLogEntry):
@@ -28,8 +29,9 @@ class CustomRequestLogEntry(RequestLogEntry):
         # get user from login
         if not log_user and self.request.path == reverse('api:login'):
             try:
+                tenant = get_request_tenant(self.request)
                 username = self.django_request.cached_request_data.get('username')
-                user = User.objects.filter(username=username).first()
+                user = User.objects.filter(username=username, tenants=tenant).first()
                 if user:
                     log_user = user
                 else:
