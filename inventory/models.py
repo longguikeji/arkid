@@ -138,7 +138,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         related_query_name="tenant",
     )
 
-    username = models.CharField(max_length=128, blank=False, unique=True)
+    username = models.CharField(max_length=128, blank=False, unique=False)
     password = models.CharField(max_length=128, blank=False, null=True)
     email = models.EmailField(blank=True)
     mobile = models.CharField(max_length=128, blank=True)
@@ -181,6 +181,8 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
     is_platform_user = models.BooleanField(default=False, verbose_name='是否是平台用户')
 
     _password = None
+
+    USERNAME_FIELD = 'uuid'
 
     @property
     def scim_groups(self):
@@ -379,6 +381,9 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
             if tenant.has_admin_perm(self):
                 uuids.append(tenant.uuid)
         return uuids
+
+    def __str__(self) -> str:
+        return f'User: {self.username}, UUID: {self.uuid}'
 
 
 class UserPassword(BaseModel):
