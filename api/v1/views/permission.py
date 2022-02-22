@@ -14,14 +14,17 @@ from tenant.models import (
 from common.paginator import DefaultListPaginator
 from openapi.utils import extend_schema
 from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.openapi import OpenApiTypes
 from .base import BaseTenantViewSet
 from inventory.models import Permission, PermissionGroup, User, Group
 from rest_framework import viewsets
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
+from django.db.models import Q
+
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission']
 )
 class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
@@ -35,25 +38,25 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return []
 
         group_uuid = self.request.query_params.get('group', None)
         if not group_uuid:
-            ids = []
+            # ids = []
+            # objs = Permission.valid_objects.filter(
+            #     tenant=tenant,
+            # ).order_by('id')
+            # for obj in objs:
+            #     if obj.app is None:
+            #         ids.append(obj.id)
+            #     elif obj.app.is_del is False:
+            #         ids.append(obj.id)
+            # 系统权限
+            # objs = Permission.valid_objects.filter(
+            #     id__in=ids,
+            # ).order_by('id')
             objs = Permission.valid_objects.filter(
-                tenant=tenant,
-            ).order_by('id')
-            for obj in objs:
-                if obj.app is None:
-                    ids.append(obj.id)
-                elif obj.app.is_del is False:
-                    ids.append(obj.id)
-            objs = Permission.valid_objects.filter(
-                id__in=ids,
-            ).order_by('id')
+                Q(tenant=tenant)|Q(is_system_permission=True)
+            ).order_by('-id')
             return objs
 
         kwargs = {
@@ -78,7 +81,7 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission']
 )
 class PermissionCreateView(generics.CreateAPIView):
@@ -90,12 +93,6 @@ class PermissionCreateView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         context = self.get_serializer_context()
-        tenant = context['tenant']
-        user = request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
-
         return super(PermissionCreateView, self).create(request, *args, **kwargs)
 
     def get_serializer_context(self):
@@ -105,7 +102,7 @@ class PermissionCreateView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission']
 )
 class PermissionView(generics.RetrieveUpdateDestroyAPIView):
@@ -132,8 +129,17 @@ class PermissionView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
-    tags=['permission']
+    roles=['tenantadmin', 'globaladmin'],
+    tags=['permission'],
+    parameters=[
+        OpenApiParameter(
+            "parent",
+            OpenApiTypes.UUID,
+            OpenApiParameter.QUERY,
+            description='permission_group.uuid',
+            required=False,
+        ),
+    ],
 )
 class PermissionGroupView(generics.ListAPIView):
 
@@ -144,22 +150,24 @@ class PermissionGroupView(generics.ListAPIView):
     pagination_class = DefaultListPaginator
 
     def get_queryset(self):
+        parent = self.request.query_params.get('parent', None)
         tenant_uuid = self.kwargs['tenant_uuid']
-        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return []
 
         kwargs = {
             'tenant__uuid': tenant_uuid,
         }
+
+        if parent is None:
+            kwargs['parent'] = None
+        else:
+            kwargs['parent__uuid'] = parent
+
         permission_groups = PermissionGroup.valid_objects.filter(**kwargs).order_by('-id')
         return permission_groups
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission']
 )
 class PermissionGroupCreateView(generics.CreateAPIView):
@@ -169,14 +177,6 @@ class PermissionGroupCreateView(generics.CreateAPIView):
 
     serializer_class = PermissionGroupCreateSerializer
 
-    def create(self, request, *args, **kwargs):
-        context = self.get_serializer_context()
-        tenant = context['tenant']
-        user = request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
-
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['tenant'] = Tenant.objects.filter(uuid=self.kwargs['tenant_uuid']).first()
@@ -184,7 +184,7 @@ class PermissionGroupCreateView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission']
 )
 class PermissionGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -211,7 +211,7 @@ class PermissionGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(
@@ -289,7 +289,7 @@ class UserPermissionView(generics.RetrieveAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission']
 )
 class UserPermissionCreateView(generics.CreateAPIView):
@@ -316,7 +316,7 @@ class UserPermissionCreateView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(
@@ -377,7 +377,7 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
 
 # group
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(
@@ -433,7 +433,7 @@ class GroupPermissionView(generics.RetrieveAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission']
 )
 class GroupPermissionCreateView(generics.CreateAPIView):
@@ -450,7 +450,7 @@ class GroupPermissionCreateView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(
@@ -511,7 +511,7 @@ class GroupPermissionDeleteView(generics.RetrieveAPIView):
 
 # app
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(

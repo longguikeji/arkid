@@ -22,7 +22,7 @@ import datetime
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['tenant'],
     parameters=[
         OpenApiParameter(
@@ -151,7 +151,7 @@ class DeviceListView(generics.ListCreateAPIView):
         return context
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['tenant'])
 class DeviceDetailView(generics.RetrieveDestroyAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -164,7 +164,7 @@ class DeviceDetailView(generics.RetrieveDestroyAPIView):
         return device
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'], responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY})
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['tenant'], responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY})
 class DeviceExportView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated]

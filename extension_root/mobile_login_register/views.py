@@ -46,7 +46,7 @@ from api.v1.serializers.tenant import TenantSerializer
 
 @extend_schema(
     tags=['mobile-login-register'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     responses=MobileLoginResponseSerializer,
 )
 class MobileLoginView(APIView):
@@ -115,7 +115,7 @@ class MobileLoginView(APIView):
 
 @extend_schema(
     tags=['mobile-login-register'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     responses=MobileRegisterResponseSerializer,
 )
 class MobileRegisterView(APIView):
@@ -218,7 +218,7 @@ class MobileRegisterView(APIView):
 
 @extend_schema(
     tags=['mobile-login-register'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
 )
 class MobileResetPasswordView(generics.CreateAPIView):
     '''

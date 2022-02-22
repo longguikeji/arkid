@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @extend_schema(
     tags=['backend-auth-api'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     # responses=PasswordLoginResponseSerializer,
 )
 class BackendAuthView(APIView):

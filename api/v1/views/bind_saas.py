@@ -24,7 +24,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
 
     serializer_class = ArkIDBindSaasSerializer
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=ArkIDBindSaasCreateSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=ArkIDBindSaasCreateSerializer)
     def post(self, request, tenant_uuid, *args, **kwargs):
         """
         检查slug是否存在的api
@@ -54,7 +54,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         }
         return Response(data, HTTP_200_OK)
 
-    @extend_schema(roles=['tenant admin', 'global admin'], request=ArkIDBindSaasSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], request=ArkIDBindSaasSerializer)
     def get(self, request, tenant_uuid, *args, **kwarg):
         """
         查询 saas 绑定信息

@@ -19,7 +19,7 @@ from provisioning.utils import (
 from inventory.models import User, Group
 from app.models import App
 from config import get_app_config
-from inventory.models import Permission
+from inventory.models import Permission, PermissionGroup
 
 # from webhook.models import WebHook, WebHookTriggerHistory
 from common.utils import send_email as send_email_func
@@ -225,8 +225,26 @@ def update_permission():
     api_info = "{}/api/schema/?format=json".format(c.get_host())
     response = requests.get(api_info)
     response = response.json()
+    # 权限分组更新
+    info = response.get('info')
+    roles_describe = info.get('roles_describe')
+    roles = {
+
+    }
+    # 权限更新
     paths = response.get('paths')
     path_keys = paths.keys()
+    # 所有权限数据重置为没更新
+    old_permissions = Permission.valid_objects.filter(
+        tenant=None,
+        app=None,
+        content_type=None,
+        permission_category='API',
+        is_system_permission=True,
+    )
+    for old_permission in old_permissions:
+        old_permission.is_update = False
+        old_permission.save()
     for path_key in path_keys:
         item = paths.get(path_key)
         item_keys = item.keys()
@@ -246,12 +264,13 @@ def update_permission():
                 is_del=False,
                 operation_id=operation_id
             )
-            if is_create is False:
+            if is_create is True:
                 permission.codename = codename
             permission.name = summary
             permission.content_type = None
             permission.tenant = None
             permission.app = None
+            permission.is_update = True
             permission.permission_category = 'API'
             permission.is_system_permission = True
             permission.action = action
@@ -259,8 +278,61 @@ def update_permission():
             permission.request_url = request_url
             permission.request_type = request_type
             permission.save()
-
-
+            # 统计所有的角色
+            roles_obj = request_obj.get('roles', [])
+            for role in roles_obj:
+                role_list = []
+                if role in roles:
+                    role_list = roles[role]
+                role_list.append(permission)
+                roles[role] = role_list
+    # 删掉没更新的数据
+    Permission.valid_objects.filter(
+        tenant=None,
+        app=None,
+        content_type=None,
+        permission_category='API',
+        is_system_permission=True,
+        is_update=False,
+    ).delete()
+    # 权限分组
+    base_permission_group, is_create = PermissionGroup.objects.get_or_create(
+        is_active=True,
+        is_del=False,
+        name='arkid',
+        en_name='arkid',
+        is_system_group=True,
+        is_update=True,
+    )
+    old_permissiongroups = PermissionGroup.valid_objects.filter(
+        parent=base_permission_group,
+        tenant=None,
+        is_system_group=True,
+        is_update=True,
+    )
+    for old_permissiongroup in old_permissiongroups:
+        old_permissiongroup.is_update = False
+        old_permissiongroup.save()
+    for role_key in roles.keys():
+        permissiongroup, is_create = PermissionGroup.objects.get_or_create(
+            is_del=False,
+            tenant=None,
+            en_name=role_key,
+            is_system_group=True,
+            parent=base_permission_group,
+        )
+        permissiongroup.name = roles_describe.get(role_key, '')
+        permissiongroup.is_update = True
+        permissiongroup.save()
+        for role in roles.get(role_key):
+            permissiongroup.permissions.add(role)
+    # 删掉没更新的数据
+    PermissionGroup.valid_objects.filter(
+        parent=base_permission_group,
+        tenant=None,
+        is_system_group=True,
+        is_update=False,
+    ).delete()
 
 @app.task
 def provision_tenant_app(tenant_uuid: str, app_id: int):

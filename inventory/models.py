@@ -78,6 +78,8 @@ class Permission(BaseModel):
         on_delete=models.PROTECT,
         verbose_name='分组',
     )
+    # 是否更新
+    is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
     objects = PermissionManager()
 
@@ -106,6 +108,7 @@ class Permission(BaseModel):
 class PermissionGroup(BaseModel):
 
     name = models.CharField(_('name'), max_length=255)
+    en_name = models.CharField(_('en_name'), blank=False, null=True, default='', max_length=255)
     permissions = models.ManyToManyField(
         Permission,
         blank=True,
@@ -123,7 +126,7 @@ class PermissionGroup(BaseModel):
         default=None,
         on_delete=models.PROTECT
     )
-    permission_parent = models.ForeignKey(
+    parent = models.ForeignKey(
         'self',
         default=None,
         null=True,
@@ -131,6 +134,8 @@ class PermissionGroup(BaseModel):
         verbose_name='父分组',
         on_delete=models.PROTECT,
     )
+    # 是否更新
+    is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
     @property
     def permission_names(self):

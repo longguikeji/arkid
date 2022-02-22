@@ -29,7 +29,7 @@ from login_register_config.models import LoginRegisterConfig
 
 @extend_schema(
     tags=['tenant_config'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     parameters=[
         OpenApiParameter(
             name='subject',
@@ -127,7 +127,7 @@ class CustomFieldViewSet(BaseViewSet):
 
 @extend_schema(
     tags=['system_config'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
 )
 class NativeFieldListAPIView(generics.ListAPIView):
     '''
@@ -147,7 +147,7 @@ class NativeFieldListAPIView(generics.ListAPIView):
 
 @extend_schema(
     tags=['system_config'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
 )
 class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
     '''
@@ -169,7 +169,7 @@ class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['config'],
     parameters=[
         OpenApiParameter(
@@ -225,7 +225,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
 
 
 # @extend_schema(
-#     roles=['tenant admin', 'global admin'],
+#     roles=['tenantadmin', 'globaladmin'],
 #     tags=['config'],
 #     parameters=[
 #         OpenApiParameter(
@@ -255,7 +255,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
 
 
 # @extend_schema(
-#     roles=['tenant admin', 'global admin'],
+#     roles=['tenantadmin', 'globaladmin'],
 #     tags=['config'],
 #     parameters=[
 #         OpenApiParameter(
@@ -286,7 +286,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     tags=['config'],
     parameters=[
         OpenApiParameter(

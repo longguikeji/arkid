@@ -26,7 +26,7 @@ from rest_framework import status
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
 
-# @extend_schema(tags=['sms'], roles=['general user', 'tenant admin', 'global admin'])
+# @extend_schema(tags=['sms'], roles=['generaluser', 'tenantadmin', 'globaladmin'])
 # class SendSMSView(generics.CreateAPIView):
 
 #     serializer_class = LoginSerializer
@@ -59,7 +59,7 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 #         )
 
 
-@extend_schema(tags=['sms'], roles=['general user', 'tenant admin', 'global admin'])
+@extend_schema(tags=['sms'], roles=['generaluser', 'tenantadmin', 'globaladmin'])
 class SMSClaimAPIView(GenericAPIView):
     '''
     sms api

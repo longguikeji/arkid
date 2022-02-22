@@ -25,8 +25,8 @@ AuthorizationAgentPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(tags=['authorization_agent'])
 class AuthorizationAgentViewSet(BaseViewSet):
@@ -60,12 +60,12 @@ class AuthorizationAgentViewSet(BaseViewSet):
         obj = AuthorizationAgent.valid_objects.filter(**kwargs).first()
         return obj
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=AuthorizationAgentListSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=AuthorizationAgentListSerializer)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=AuthorizationAgentPolymorphicProxySerializer,
         responses=AuthorizationAgentPolymorphicProxySerializer,
     )
@@ -73,19 +73,19 @@ class AuthorizationAgentViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=AuthorizationAgentPolymorphicProxySerializer,
         responses=AuthorizationAgentPolymorphicProxySerializer,
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=AuthorizationAgentPolymorphicProxySerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=AuthorizationAgentPolymorphicProxySerializer)
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=AuthorizationAgentReorderSerializer,
         responses=AuthorizationAgentReorderSerializer,
     )
@@ -113,7 +113,7 @@ class AuthorizationAgentViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=AuthorizationAgentReorderSerializer,
     )
     @action(detail=True, methods=['get'])
@@ -121,7 +121,7 @@ class AuthorizationAgentViewSet(BaseViewSet):
         return self._do_actual_move('up', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=AuthorizationAgentReorderSerializer,
     )
     @action(detail=True, methods=['get'])
@@ -129,7 +129,7 @@ class AuthorizationAgentViewSet(BaseViewSet):
         return self._do_actual_move('down', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=AuthorizationAgentReorderSerializer,
     )
     @action(detail=True, methods=['get'])
@@ -137,7 +137,7 @@ class AuthorizationAgentViewSet(BaseViewSet):
         return self._do_actual_move('top', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=AuthorizationAgentReorderSerializer,
     )
     @action(detail=True, methods=['get'])

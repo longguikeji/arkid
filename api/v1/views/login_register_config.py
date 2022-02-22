@@ -26,12 +26,12 @@ LoginRegisterConfigPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(
     tags=['login_register_config'],
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     parameters=[
         OpenApiParameter(
             name='tenant',
@@ -91,14 +91,14 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         return obj
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=LoginRegisterConfigListSerializer,
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=LoginRegisterConfigPolymorphicProxySerializer,
         responses=LoginRegisterConfigPolymorphicProxySerializer,
     )
@@ -115,7 +115,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=LoginRegisterConfigPolymorphicProxySerializer,
         responses=LoginRegisterConfigPolymorphicProxySerializer,
     )
@@ -132,7 +132,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=LoginRegisterConfigPolymorphicProxySerializer,
     )
     def retrieve(self, request, *args, **kwargs):

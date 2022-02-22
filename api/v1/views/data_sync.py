@@ -22,11 +22,11 @@ DataSyncPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['data_sync'],
     parameters=[
         OpenApiParameter(
@@ -78,13 +78,13 @@ class DataSyncViewSet(BaseViewSet):
         return obj
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'], responses=DataSyncListSerializer
+        roles=['tenantadmin', 'globaladmin'], responses=DataSyncListSerializer
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=DataSyncPolymorphicProxySerializer,
         responses=DataSyncPolymorphicProxySerializer,
     )
@@ -92,7 +92,7 @@ class DataSyncViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=DataSyncPolymorphicProxySerializer,
         responses=DataSyncPolymorphicProxySerializer,
     )
@@ -106,7 +106,7 @@ class DataSyncViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=DataSyncPolymorphicProxySerializer,
     )
     def retrieve(self, request, *args, **kwargs):

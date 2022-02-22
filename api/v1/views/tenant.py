@@ -56,10 +56,10 @@ from config import get_app_config
 
 
 @extend_schema_view(
-    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    retrieve=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
+    destroy=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
     partial_update=extend_schema(
-        roles=['general user', 'tenant admin', 'global admin']
+        roles=['generaluser', 'tenantadmin', 'globaladmin']
     ),
 )
 @extend_schema(tags=['tenant'])
@@ -78,14 +78,14 @@ class TenantViewSet(BaseViewSet):
         return TenantSerializer
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
         summary=_('get tenant list'),
         action_type='list',
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @extend_schema(roles=['tenant admin', 'global admin'], summary=_('update tenant'))
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], summary=_('update tenant'))
     def update(self, request, *args, **kwargs):
         tenant = self.get_object()
         user = self.request.user
@@ -109,7 +109,7 @@ class TenantViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
         summary=_('create tenant'),
     )
     def create(self, request):
@@ -218,7 +218,7 @@ class TenantViewSet(BaseViewSet):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantSlugView(generics.RetrieveAPIView):
 
     serializer_class = TenantSerializer
@@ -230,7 +230,7 @@ class TenantSlugView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -257,7 +257,7 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
             return tenantconfig
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantCollectInfoView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -282,7 +282,7 @@ class TenantCollectInfoView(generics.RetrieveAPIView):
 
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantContactsConfigFunctionSwitchView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -302,7 +302,7 @@ class TenantContactsConfigFunctionSwitchView(generics.RetrieveUpdateAPIView):
         ).first()
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantContactsConfigInfoVisibilityDetailView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -318,7 +318,7 @@ class TenantContactsConfigInfoVisibilityDetailView(generics.RetrieveUpdateAPIVie
         ).first()
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantContactsConfigInfoVisibilityView(generics.ListAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -341,7 +341,7 @@ class TenantContactsConfigInfoVisibilityView(generics.ListAPIView):
         ).order_by('-id')
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantContactsConfigGroupVisibilityView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -373,7 +373,7 @@ class TenantContactsConfigGroupVisibilityView(generics.RetrieveUpdateAPIView):
             return group_config
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantContactsGroupView(generics.ListAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -504,7 +504,7 @@ class TenantContactsGroupView(generics.ListAPIView):
             return qs
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantContactsUserView(generics.ListAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -624,7 +624,7 @@ class TenantContactsUserView(generics.ListAPIView):
         return qs
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantContactsUserTagsView(generics.RetrieveAPIView):
 
     serializer_class = TenantContactsUserTagsSerializer
@@ -670,7 +670,7 @@ class TenantContactsUserTagsView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -694,7 +694,7 @@ class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
         return config
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantCheckPermissionView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -745,7 +745,7 @@ class TenantCheckPermissionView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantLogConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -783,7 +783,7 @@ class TenantLogConfigView(generics.RetrieveUpdateAPIView):
         return log_config
 
 
-@extend_schema(roles=['general user','tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['generaluser','tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantSwitchView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -796,7 +796,7 @@ class TenantSwitchView(generics.RetrieveUpdateAPIView):
         return tenant_switch
 
 
-@extend_schema(roles=['general user','tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['generaluser','tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantSwitchInfoView(generics.RetrieveAPIView):
 
     permission_classes = []

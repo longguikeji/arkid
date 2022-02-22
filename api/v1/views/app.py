@@ -41,7 +41,7 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 @extend_schema_view(
     list=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=AppSerializer,
         parameters=[
             OpenApiParameter(
@@ -52,8 +52,8 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
             ),
         ],
     ),
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(
     tags=['app'],
@@ -97,7 +97,7 @@ class AppViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
     )
     @transaction.atomic()
     def destroy(self, request, *args, **kwargs):
@@ -108,12 +108,12 @@ class AppViewSet(BaseViewSet):
         transaction.on_commit(lambda: WebhookManager.app_deleted(tenant.uuid, app))
         return ret
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=AppListSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=AppListSerializer)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=AppPolymorphicProxySerializer,
         responses=AppPolymorphicProxySerializer,
     )
@@ -136,7 +136,7 @@ class AppViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=AppPolymorphicProxySerializer,
         responses=AppPolymorphicProxySerializer,
     )
@@ -165,7 +165,7 @@ class AppViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'], responses=AppPolymorphicProxySerializer
+        roles=['tenantadmin', 'globaladmin'], responses=AppPolymorphicProxySerializer
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
@@ -195,7 +195,7 @@ class AppViewSet(BaseViewSet):
         return Response({'error': Code.OK.value})
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
@@ -209,7 +209,7 @@ class AppProvisioningView(generics.RetrieveUpdateAPIView):
         return config
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningMappingView(generics.ListCreateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -228,7 +228,7 @@ class AppProvisioningMappingView(generics.ListCreateAPIView):
         return mapping
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningMappingDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -248,7 +248,7 @@ class AppProvisioningMappingDetailView(generics.RetrieveUpdateDestroyAPIView):
         return map
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningProfileView(generics.ListCreateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -267,7 +267,7 @@ class AppProvisioningProfileView(generics.ListCreateAPIView):
         return profile
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -288,7 +288,7 @@ class AppProvisioningProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['app']
 )
 class AppListAPIView(generics.ListAPIView):

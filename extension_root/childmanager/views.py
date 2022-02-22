@@ -22,7 +22,7 @@ from inventory.models import User
 from tenant.models import Tenant
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['admin'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['admin'])
 class ChildManagerListView(generics.ListAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -46,7 +46,7 @@ class ChildManagerListView(generics.ListAPIView):
         return childmanagers
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['admin'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['admin'])
 class ChildManagerCreateView(generics.CreateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -69,7 +69,7 @@ class ChildManagerCreateView(generics.CreateAPIView):
         return context
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['admin'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['admin'])
 class ChildManagerDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated]

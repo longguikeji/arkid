@@ -15,7 +15,7 @@ from tenant.models import (
 )
 
 
-@extend_schema(tags = ['upload'], roles=['general user', 'tenant admin', 'global admin'])
+@extend_schema(tags = ['upload'], roles=['generaluser', 'tenantadmin', 'globaladmin'])
 class UploadAPIView(APIView):
 
     permission_classes = [IsAuthenticated]

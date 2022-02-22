@@ -20,7 +20,7 @@ from extension_root.childaccount.serializers import(
 from inventory.models import User
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'])
 class ChildUserAccountListView(generics.ListCreateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -89,7 +89,7 @@ class ChildUserAccountListView(generics.ListCreateAPIView):
         return super(ChildUserAccountListView, self).create(request, *args, **kwargs)
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'])
 class ChildUserAccountDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -151,7 +151,7 @@ class ChildUserAccountDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(status=HTTP_204_NO_CONTENT)
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'])
 class ChildUserAccountCheckTypeView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -185,7 +185,7 @@ class ChildUserAccountCheckTypeView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'])
 class ChildUserAccountGetTokenView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated]

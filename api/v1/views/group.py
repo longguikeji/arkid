@@ -30,7 +30,7 @@ from django.db import transaction
 
 @extend_schema_view(
     list=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=GroupSerializer,
         parameters=[
             OpenApiParameter(
@@ -49,24 +49,24 @@ from django.db import transaction
         ],
     ),
     create=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=GroupCreateRequestSerializer,
         responses=GroupSerializer,
     ),
     retrieve=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=GroupSerializer,
     ),
     update=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=GroupSerializer,
         responses=GroupSerializer,
     ),
     destroy=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
     ),
     partial_update=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
     ),
 )
 @extend_schema(tags=['group'])
@@ -150,12 +150,22 @@ class GroupViewSet(BaseViewSet):
             return check_result
 
         group = self.get_object()
+
+        # 删除相应的权限
+        Permission.valid_objects.filter(
+            tenant=instance.tenant,
+            app=None,
+            permission_category='数据',
+            is_system_permission=True,
+            group_info=group,
+        ).delete()
+
         ret = super().destroy(request, *args, **kwargs)
         transaction.on_commit(lambda: WebhookManager.group_deleted(tenant.uuid, group))
         return ret
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=GroupImportSerializer,
         responses=GroupImportSerializer,
     )
@@ -229,7 +239,7 @@ class GroupViewSet(BaseViewSet):
             )
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
     )
     @action(detail=False, methods=['get'])

@@ -26,7 +26,7 @@ def get_log_retention_date(tenant):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags = ['log'],
     parameters=[
         OpenApiParameter(
@@ -126,7 +126,7 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags = ['log'],
     parameters=[
         OpenApiParameter(
@@ -226,7 +226,7 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags = ['log']
 )
 class LogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):

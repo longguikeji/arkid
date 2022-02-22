@@ -15,7 +15,7 @@ from runtime import get_app_runtime
 from common.code import Code
 
 
-@extend_schema(roles=['global admin'], tags=['system'])
+@extend_schema(roles=['globaladmin'], tags=['system'])
 class SystemConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated, IsSuperAdmin]

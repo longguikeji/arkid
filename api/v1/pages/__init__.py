@@ -42,6 +42,7 @@ from . import (
 )
 
 from openapi.routers import root_add_routers, Router, PageRouter, UrlRouter
+from openapi.describe import root_add_roles_describe
 
 root_add_routers(
     [
@@ -198,3 +199,9 @@ root_add_routers(
         ),
     ]
 )
+
+root_add_roles_describe({
+    'globaladmin': '超级管理员',
+    'tenantadmin': '租户管理员',
+    'generaluser': '普通用户'
+})

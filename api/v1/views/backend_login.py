@@ -25,8 +25,8 @@ BackendLoginPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(tags=['backend_login'])
 class BackendLoginViewSet(BaseViewSet):
@@ -64,12 +64,12 @@ class BackendLoginViewSet(BaseViewSet):
         obj = BackendLogin.valid_objects.filter(**kwargs).first()
         return obj
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=BackendLoginListSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=BackendLoginListSerializer)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=BackendLoginPolymorphicProxySerializer,
         responses=BackendLoginPolymorphicProxySerializer,
     )
@@ -77,19 +77,19 @@ class BackendLoginViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=BackendLoginPolymorphicProxySerializer,
         responses=BackendLoginPolymorphicProxySerializer,
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=BackendLoginPolymorphicProxySerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=BackendLoginPolymorphicProxySerializer)
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=BackendLoginReorderSerializer,
         responses=BackendLoginReorderSerializer,
     )
@@ -117,7 +117,7 @@ class BackendLoginViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=BackendLoginReorderSerializer,
     )
     @action(detail=True, methods=['get'])
@@ -125,7 +125,7 @@ class BackendLoginViewSet(BaseViewSet):
         return self._do_actual_move('up', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=BackendLoginReorderSerializer,
     )
     @action(detail=True, methods=['get'])
@@ -133,7 +133,7 @@ class BackendLoginViewSet(BaseViewSet):
         return self._do_actual_move('down', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=BackendLoginReorderSerializer,
     )
     @action(detail=True, methods=['get'])
@@ -141,7 +141,7 @@ class BackendLoginViewSet(BaseViewSet):
         return self._do_actual_move('top', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=BackendLoginReorderSerializer,
     )
     @action(detail=True, methods=['get'])

@@ -15,7 +15,7 @@ CACHE_SECONDS = 60*2
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['statistics']
 )
 class StatisticsView(APIView):

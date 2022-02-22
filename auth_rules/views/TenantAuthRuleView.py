@@ -16,8 +16,8 @@ TenantAuthRulePolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(
     tags=['app'],
@@ -54,13 +54,13 @@ class TenantAuthRuleViewSet(BaseViewSet):
             .first()
         )
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=TenantAuthRuleListSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=TenantAuthRuleListSerializer)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=TenantAuthRulePolymorphicProxySerializer,
         responses=TenantAuthRulePolymorphicProxySerializer,
     )
@@ -74,7 +74,7 @@ class TenantAuthRuleViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=TenantAuthRulePolymorphicProxySerializer,
         responses=TenantAuthRulePolymorphicProxySerializer,
     )
@@ -82,7 +82,7 @@ class TenantAuthRuleViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'], responses=TenantAuthRulePolymorphicProxySerializer
+        roles=['tenantadmin', 'globaladmin'], responses=TenantAuthRulePolymorphicProxySerializer
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)

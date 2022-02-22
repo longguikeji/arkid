@@ -20,7 +20,7 @@ from tenant.models import Tenant
 import copy
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantUserLogOutConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -65,7 +65,7 @@ class TenantUserLogOutConfigView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantUserLoggingConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -115,7 +115,7 @@ class TenantUserLoggingConfigView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantUserTokenConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -160,7 +160,7 @@ class TenantUserTokenConfigView(generics.RetrieveUpdateAPIView):
         })
         return Response(serializer.data)
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantUserConfigFieldSelectListView(generics.RetrieveUpdateAPIView):
 
     serializer_class = TenantUserConfigFieldSelectListSerializer
@@ -248,7 +248,7 @@ class TenantUserConfigFieldSelectListView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data)
 
         
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
 class TenantUserEditFieldListConfigView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated]

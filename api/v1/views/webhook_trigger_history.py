@@ -19,9 +19,9 @@ import json
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['tenant admin', 'global admin']),
-    retrieve=extend_schema(roles=['tenant admin', 'global admin']),
-    destory=extend_schema(roles=['tenant admin', 'global admin']),
+    list=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    destory=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(tags=['webhook_histroy'])
 class WebhookTriggerHistoryViewSet(
@@ -66,7 +66,7 @@ class WebhookTriggerHistoryViewSet(
         return obj
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
     )
     @action(detail=True, methods=['get'])
     def retry(self, request, *args, **kwargs):

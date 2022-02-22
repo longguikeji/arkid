@@ -14,7 +14,7 @@ from app.models import App
 
 
 @extend_schema(
-    roles=['global admin'],
+    roles=['globaladmin'],
     tags=['arkstore-extension'],
 )
 class ArkStoreAPIView(ListAPIView):
@@ -52,7 +52,7 @@ class ArkStoreAPIView(ListAPIView):
         return saas_extensions_data
 
 
-@extend_schema(roles=['global admin'], tags=['arkstore-extension'])
+@extend_schema(roles=['globaladmin'], tags=['arkstore-extension'])
 class ArkStoreOrderView(GenericAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -67,7 +67,7 @@ class ArkStoreOrderView(GenericAPIView):
         return JsonResponse(resp)
 
 
-@extend_schema(roles=['global admin'], tags=['arkstore-extension'])
+@extend_schema(roles=['globaladmin'], tags=['arkstore-extension'])
 class ArkStoreDownloadView(GenericAPIView):
 
     permission_classes = [IsAuthenticated]

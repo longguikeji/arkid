@@ -20,7 +20,7 @@ import uuid
 
 @extend_schema(
     tags=['login-api'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     # responses=PasswordLoginResponseSerializer,
 )
 class LoginView(APIView):

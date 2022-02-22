@@ -69,7 +69,7 @@ from django.db import transaction
 
 @extend_schema_view(
     list=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=UserListResponsesSerializer,
         parameters=[
             OpenApiParameter(
@@ -122,11 +122,11 @@ from django.db import transaction
             ),
         ]
     ),
-    retrieve=extend_schema(roles=['tenant admin', 'global admin']),
-    create=extend_schema(roles=['tenant admin', 'global admin']),
-    update=extend_schema(roles=['tenant admin', 'global admin']),
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    create=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    update=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(
     tags=['user'],
@@ -424,7 +424,7 @@ class UserViewSet(BaseViewSet):
         return super(UserViewSet, self).update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=UserImportSerializer,
         responses=UserImportSerializer,
     )
@@ -518,7 +518,7 @@ class UserViewSet(BaseViewSet):
             )
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
     )
     @action(detail=False, methods=['get'])
@@ -545,13 +545,13 @@ class UserViewSet(BaseViewSet):
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    create=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
+    list=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
+    create=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
+    retrieve=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
+    destroy=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
+    update=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
     partial_update=extend_schema(
-        roles=['general user', 'tenant admin', 'global admin']
+        roles=['generaluser', 'tenantadmin', 'globaladmin']
     ),
 )
 @extend_schema(tags=['user-app'])
@@ -613,7 +613,7 @@ class UserTokenView(generics.CreateAPIView):
         return Response(is_valid)
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'])
 class UserAppDataView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -632,7 +632,7 @@ class UserAppDataView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     tags=['user'],
     parameters=[
         OpenApiParameter(
@@ -650,7 +650,7 @@ class UpdatePasswordView(generics.CreateAPIView):
     serializer_class = PasswordRequestSerializer
 
     @extend_schema(
-        roles=['tenant admin', 'global admin', 'general user'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
         responses=PasswordSerializer,
     )
     def post(self, request):
@@ -704,7 +704,7 @@ class UpdatePasswordView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     tags=['user'],
     parameters=[
         OpenApiParameter(
@@ -721,7 +721,7 @@ class ResetPasswordView(generics.CreateAPIView):
 
     serializer_class = ResetPasswordRequestSerializer
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=PasswordSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=PasswordSerializer)
     def post(self, request):
         tenant_uuid = self.request.query_params.get('tenant')
         if not tenant_uuid:
@@ -764,7 +764,7 @@ class ResetPasswordView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     tags=['user'],
     parameters=[
         OpenApiParameter(
@@ -775,7 +775,7 @@ class ResetPasswordView(generics.CreateAPIView):
         )
     ],
 )
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [ExpiringTokenAuthentication]
@@ -820,7 +820,7 @@ class UserBindInfoView(generics.RetrieveAPIView):
     serializer_class = UserBindInfoSerializer
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserBindInfoSerializer,
     )
     def get(self, request):
@@ -879,7 +879,7 @@ class UserTokenExpireView(generics.RetrieveAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserTokenExpireSerializer,
     )
     def get(self, request):
@@ -893,7 +893,7 @@ class UserManageTenantsView(generics.RetrieveAPIView):
     authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserManageTenantsSerializer,
     )
     def get(self, request):
@@ -951,7 +951,7 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['user']
 )
 class UserListAPIView(generics.ListAPIView):

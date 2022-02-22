@@ -15,7 +15,7 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 
 
 @extend_schema(
-    roles=['global admin'],
+    roles=['globaladmin'],
     tags=['market-extension'],
             parameters=[
             OpenApiParameter(
@@ -121,7 +121,7 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
         return None
 
 
-@extend_schema(roles=['global admin'], tags=['market-extension'])
+@extend_schema(roles=['globaladmin'], tags=['market-extension'])
 class MarketPlaceTagsViewSet(generics.RetrieveAPIView):
 
     serializer_class = MarketPlaceExtensionTagsSerializer
