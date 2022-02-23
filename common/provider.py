@@ -188,6 +188,10 @@ class LoginRegisterConfigProvider:
     def reset_password_form(self):
         return None
 
+    @property
+    def update_password_form(self):
+        return None
+
     def authenticate(self, request):
         '''login'''
         pass
@@ -198,7 +202,6 @@ class LoginRegisterConfigProvider:
 
     def reset_password(self, request):
         pass
-
 
 class PrivacyNoticeProvider:
     @classmethod

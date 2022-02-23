@@ -258,8 +258,14 @@ class TokenSerializer(serializers.Serializer):
 
 class PasswordRequestSerializer(serializers.Serializer):
 
-    password = create_password_field(serializers.CharField)(
+    new_password = create_password_field(serializers.CharField)(
         label=_('新密码'),
+        hint="密码长度大于等于8位的字母数字组合",
+        write_only=True,
+        required=False,
+    ) 
+    old_password = create_password_field(serializers.CharField)(
+        label=_('旧密码'),
         hint="密码长度大于等于8位的字母数字组合",
         write_only=True,
         required=False,

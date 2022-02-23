@@ -18,7 +18,7 @@ from common.utils import (
 )
 from rest_framework.exceptions import ValidationError
 
-from .form import PasswordLoginForm, PasswordRegisterForm
+from .form import PasswordLoginForm, PasswordRegisterForm, UpdatePasswordForm
 from common.exception import ValidationFailed
 from common.code import Code
 from django.utils.translation import gettext_lazy as _
@@ -43,6 +43,10 @@ class PasswordLoginRegisterConfigProvider(LoginRegisterConfigProvider):
         if self.login_enabled and self.login_enabled_field_names:
             return PasswordLoginForm(self).get_form()
         return None
+
+    @property
+    def update_password_form(self):
+        return UpdatePasswordForm(self).get_form()
 
     @property
     def register_form(self):

@@ -518,31 +518,38 @@ class UpdatePasswordView(generics.CreateAPIView):
         responses=PasswordSerializer,
     )
     def post(self, request):
-        # tenant_uuid = self.request.query_params.get('tenant')
-        # if not tenant_uuid:
-        #     tenant = None
-        # else:
-        #     tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
-        password = request.data.get('password', '')
+        tenant_uuid = self.request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
+        new_password = request.data.get('new_password', '')
+        old_password = request.data.get('old_password', '')
         user = request.user
-        # if password:
-        #     ret, message = check_password_complexity(password, tenant)
-        #     if not ret:
-        #         return JsonResponse(
-        #             data={
-        #                 'error': Code.PASSWORD_STRENGTH_ERROR.value,
-        #                 'message': message,
-        #             }
-        #         )
 
-        if password and user.valid_password(password) is True:
+        ret, message = check_password_complexity(new_password, tenant)
+        if not ret:
+            return JsonResponse(
+                data={
+                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                    'message': message,
+                }
+            )
+        if not user.check_password(old_password):
+            return JsonResponse(
+                data={
+                    'error': Code.OLD_PASSWORD_ERROR.value,
+                    'message': _('old password error'),
+                }
+            )
+        if user.valid_password(new_password) is True:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_CHECK_ERROR.value,
                     'message': _('password is already in use'),
                 }
             )
-        user.set_password(password)
+        user.set_password(new_password)
         user.save()
         return JsonResponse(data={'error': Code.OK.value})
 

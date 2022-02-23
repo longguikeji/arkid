@@ -49,6 +49,7 @@ class LoginPage(views.APIView):
             self.add_login_form(data, provider, config.uuid.hex, tenant_uuid)
             self.add_register_form(data, provider, config.uuid.hex, tenant_uuid)
             self.add_reset_password_form(data, provider, config.uuid.hex, tenant_uuid)
+            self.add_update_password_form(data, provider, config.uuid.hex, tenant_uuid)
 
         if tenant:
             data.setTenant(TenantExtendSerializer(instance=tenant).data)
@@ -107,7 +108,7 @@ class LoginPage(views.APIView):
 
         url = reverse('api:register')
         if tenant_uuid:
-            url += '?tenant=tenant_uuid'
+            url += f'?tenant={tenant_uuid}'
 
         if type(form) != list:
             forms = [form]
@@ -128,7 +129,7 @@ class LoginPage(views.APIView):
 
         url = reverse('api:reset-password')
         if tenant_uuid:
-            url += '?tenant=tenant_uuid'
+            url += f'?tenant={tenant_uuid}'
 
         if type(form) != list:
             forms = [form]
@@ -144,6 +145,30 @@ class LoginPage(views.APIView):
 
             self.append_config_uuid_form_item(form, config_uuid)
         data.addForm(model.PASSWORD, form)
+
+    def add_update_password_form(self, data, provider, config_uuid, tenant_uuid=None):
+        form = provider.update_password_form
+        if not form:
+            return
+
+        url = reverse('api:user-update-password')
+        if tenant_uuid:
+            url += f'?tenant={tenant_uuid}'
+
+        if type(form) != list:
+            forms = [form]
+        else:
+            forms = form
+
+        for form in forms:
+            form['submit'] = model.Button(
+                label='确认',
+                http=model.ButtonHttp(url=url, method='post'),
+                gopage=model.LOGIN,
+            )
+
+            # self.append_config_uuid_form_item(form, config_uuid)
+        data.addForm(model.UPDATE_PASSWORD, form)
 
     def get_privacy_notice(self, tenant):
         privacy_notice = PrivacyNotice.valid_objects.filter(tenant=tenant).first()

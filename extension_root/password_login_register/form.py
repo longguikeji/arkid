@@ -44,3 +44,10 @@ class PasswordRegisterForm(BaseForm):
             FormItem('checkpassword', 'password', '密码确认'),
         ]
         return super().get_form_items()
+
+class UpdatePasswordForm(BaseForm):
+    form_label = '修改密码'
+    form_items = [
+        FormItem('old_password', 'password', '旧密码'),
+        FormItem('new_password', 'password', '新密码'),
+    ]

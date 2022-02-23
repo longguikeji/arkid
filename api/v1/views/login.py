@@ -66,7 +66,8 @@ class LoginView(APIView):
             return_data['tenants'] = [
                 TenantSerializer(o).data for o in user.tenants.all()
             ]
-
+        if ret.get('error') == Code.PASSWORD_EXPIRED_ERROR.value:
+            return JsonResponse(data={'error': ret.get('error'), 'data': return_data, 'gopage': 'update_password'})
         return JsonResponse(data={'error': ret.get('error'), 'data': return_data})
 
     def get_tenant(self, request):
