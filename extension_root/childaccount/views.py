@@ -18,6 +18,7 @@ from extension_root.childaccount.serializers import(
     ChildUserSerializer, ChildUserCheckTypeSerializer, ChildUserGetTokenSerializer,
 )
 from inventory.models import User
+from common.utils import get_request_tenant
 
 
 @extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
@@ -55,6 +56,7 @@ class ChildUserAccountListView(generics.ListCreateAPIView):
         email = request.data.get('email')
         mobile = request.data.get('mobile')
         password = request.data.get('password')
+        tenant = get_request_tenant(request)
         if password and self.check_password(password) is False:
             return JsonResponse(
                 data={
@@ -62,7 +64,7 @@ class ChildUserAccountListView(generics.ListCreateAPIView):
                     'message': _('password strength not enough'),
                 }
             )
-        user_username = User.objects.filter(username=username).exists()
+        user_username = User.objects.filter(username=username).filter(tenants=tenant).exists()
         if user_username:
             return JsonResponse(
                 data={
@@ -70,7 +72,7 @@ class ChildUserAccountListView(generics.ListCreateAPIView):
                     'message': _('username already exists'),
                 }
             )
-        user_email = User.objects.filter(email=email).exists()
+        user_email = User.objects.filter(email=email).filter(tenants=tenant).exists()
         if user_email:
             return JsonResponse(
                 data={
@@ -78,7 +80,7 @@ class ChildUserAccountListView(generics.ListCreateAPIView):
                     'message': _('email already exists'),
                 }
             )
-        user_mobile = User.objects.filter(mobile=mobile).exists()
+        user_mobile = User.objects.filter(mobile=mobile).filter(tenants=tenant).exists()
         if user_mobile:
             return JsonResponse(
                 data={
@@ -112,6 +114,7 @@ class ChildUserAccountDetailView(generics.RetrieveUpdateDestroyAPIView):
         email = request.data.get('email')
         mobile = request.data.get('mobile')
         password = request.data.get('password')
+        tenant = get_request_tenant(request)
         if password and self.check_password(password) is False:
             return JsonResponse(
                 data={
@@ -119,7 +122,7 @@ class ChildUserAccountDetailView(generics.RetrieveUpdateDestroyAPIView):
                     'message': _('password strength not enough'),
                 }
             )
-        user_username = User.objects.filter(username=username).exists()
+        user_username = User.objects.filter(username=username).filter(tenants=tenant).exists()
         if user_username and username != user.username:
             return JsonResponse(
                 data={
@@ -127,7 +130,7 @@ class ChildUserAccountDetailView(generics.RetrieveUpdateDestroyAPIView):
                     'message': _('username already exists'),
                 }
             )
-        user_email = User.objects.filter(email=email).exists()
+        user_email = User.objects.filter(email=email).filter(tenants=tenant).exists()
         if user_email and email != user.email:
             return JsonResponse(
                 data={
@@ -135,7 +138,7 @@ class ChildUserAccountDetailView(generics.RetrieveUpdateDestroyAPIView):
                     'message': _('email already exists'),
                 }
             )
-        user_mobile = User.objects.filter(mobile=mobile).exists()
+        user_mobile = User.objects.filter(mobile=mobile).filter(tenants=tenant).exists()
         if user_mobile and mobile != user.mobile:
             return JsonResponse(
                 data={

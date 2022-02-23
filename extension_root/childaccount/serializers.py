@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
 from extension_root.tenantuserconfig.models import TenantUserConfig
 from inventory.models import User
+from django.db import transaction
 
 
 class ChildUserSerializer(BaseDynamicFieldModelSerializer):
@@ -29,6 +30,7 @@ class ChildUserSerializer(BaseDynamicFieldModelSerializer):
             'uuid': {'read_only': True},
         }
 
+    @transaction.atomic()
     def create(self, validated_data):
         request = self.context['request']
         parent = request.user

@@ -74,7 +74,7 @@ extend_schema_tags(
     subuser_name,
     {
         'type': 'table_page',
-        'init': {'path': '/api/v1/childaccounts/', 'method': 'get'},
+        'init': {'path': '/api/v1/childaccounts/?tenant={parent_lookup_tenant}', 'method': 'get'},
         'global': {
             'create': {
                 'tag': 'subuser.create',
@@ -113,7 +113,7 @@ extend_schema_tags(
     subuser_create_name,
     {
         'type': 'form_page',
-        'init': {'path': '/api/v1/childaccounts/', 'method': 'post'},
+        'init': {'path': '/api/v1/childaccounts/?tenant={parent_lookup_tenant}', 'method': 'post'},
         'global': {
             'create': {
                 'path': '/api/v1/childaccounts/',
