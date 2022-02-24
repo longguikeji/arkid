@@ -148,7 +148,7 @@ class UserInfoExtendView(OIDCOnlyMixin, OAuthLibMixin, View):
             access_token = AccessToken.objects.filter(token=access_token).first()
             if access_token:
                 user = access_token.user
-                return JsonResponse({"id":user.id,"sub":user.id,"name":user.username,"email":user.email})
+                return JsonResponse({"id":user.id,"sub":str(user.id),"name":user.username,"email":user.email})
             else:
                 return JsonResponse({"error": "access_token 不存在"})
         else:
