@@ -63,10 +63,6 @@ class LoginRegisterConfigViewSet(BaseViewSet):
             tenant = None
         else:
             tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
-            user = self.request.user
-            check_result = user.check_permission(tenant)
-            if not check_result is None:
-                return []
         kwargs = {
             'tenant': tenant,
         }
@@ -108,10 +104,6 @@ class LoginRegisterConfigViewSet(BaseViewSet):
             tenant = None
         else:
             tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
-            user = self.request.user
-            check_result = user.check_permission(tenant)
-            if not check_result is None:
-                return check_result
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
@@ -125,10 +117,6 @@ class LoginRegisterConfigViewSet(BaseViewSet):
             tenant = None
         else:
             tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
-            user = self.request.user
-            check_result = user.check_permission(tenant)
-            if not check_result is None:
-                return check_result
         return super().create(request, *args, **kwargs)
 
     @extend_schema(

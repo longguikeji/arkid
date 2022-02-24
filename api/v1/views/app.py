@@ -72,10 +72,6 @@ class AppViewSet(BaseViewSet):
         kwargs = {
         }
         tenant = context['tenant']
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return []
 
         if name is not None:
             kwargs['name'] = name
@@ -142,11 +138,7 @@ class AppViewSet(BaseViewSet):
     )
     def create(self, request, *args, **kwargs):
         context = self.get_serializer_context()
-        tenant = context['tenant']
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
+
         data = request.data.get('data', '')
         if data:
             redirect_uris = data.get('redirect_uris', '')
@@ -301,11 +293,6 @@ class AppListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         tenant_uuid = self.kwargs['tenant_uuid']
-        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return []
 
         kwargs = {
             'tenant__uuid': tenant_uuid,

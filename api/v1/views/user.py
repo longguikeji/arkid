@@ -61,7 +61,7 @@ from extension_root.childmanager.models import ChildManager
 from django.utils.translation import gettext_lazy as _
 from common.utils import check_password_complexity
 from runtime import get_app_runtime
-
+from perm.custom_access import ApiAccessPermission
 import re
 from webhook.manager import WebhookManager
 from django.db import transaction
@@ -120,20 +120,20 @@ from django.db import transaction
                 location=OpenApiParameter.QUERY,
                 required=False,
             ),
-        ]
+        ], summary='用户列表'
     ),
-    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    create=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    update=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='读取用户'),
+    create=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='创建用户'),
+    update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='更新用户'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='删除用户'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='批量更新用户'),
 )
 @extend_schema(
     tags=['user'],
 )
 class UserViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     model = User
@@ -145,9 +145,6 @@ class UserViewSet(BaseViewSet):
         user = self.request.user
         context = self.get_serializer_context()
         tenant = context['tenant']
-
-        if not user.check_permission(tenant) is None:
-            return []
 
         group = self.request.query_params.get('group', None)
         name = self.request.query_params.get('name', None)
@@ -215,129 +212,6 @@ class UserViewSet(BaseViewSet):
                             break
         return qs.order_by('id')
 
-    def list(self, request, *args, **kwargs):
-        # print('一些路径信息')
-        # print(request.path)
-        # print(request.get_full_path())
-        # print(request.encoding)
-        # print(request.path_info)
-        # # ^api/v1/tenant/(?P<parent_lookup_tenant>[^/.]+)/user/$
-        # print(request.resolver_match.route)
-        print('路径信息')
-        print(self.get_operation_id(request))
-        return super().list(request, *args, **kwargs)
-
-    def get_operation_id(self, request):
-        from django.contrib.admindocs.views import simplify_regex
-        path_regex = request.resolver_match.route
-        path_re = re.compile(
-            r'<(?:(?P<converter>[^>:]+):)?(?P<parameter>\w+)>'
-        )
-        path = simplify_regex(path_regex)
-        path = re.sub(path_re, r'{\g<parameter>}', path)
-        path = path.replace('\\.', '.')
-        # 获取operation_id
-        tokenized_path = self._tokenize_path(path)
-        tokenized_path = [t.replace('-', '_') for t in tokenized_path]
-        method = request.method.lower()
-        method_mapping = {
-            'get': 'retrieve',
-            'post': 'create',
-            'put': 'update',
-            'patch': 'partial_update',
-            'delete': 'destroy',
-        }
-        action = ''
-        if method == 'get' and self._is_list_view(method, path):
-            action = 'list'
-        else:
-            action = method_mapping[method]
-
-        if not tokenized_path:
-            tokenized_path.append('root')
-
-        if re.search(r'<drf_format_suffix\w*:\w+>', path_regex):
-            tokenized_path.append('formatted')
-        
-        return '_'.join(tokenized_path + [action])
-    
-    def _tokenize_path(self, path):
-        from drf_spectacular.settings import spectacular_settings
-        path = re.sub(
-            pattern=spectacular_settings.SCHEMA_PATH_PREFIX,
-            repl='',
-            string=path,
-            flags=re.IGNORECASE
-        )
-        # remove path variables
-        path = re.sub(pattern=r'\{[\w\-]+\}', repl='', string=path)
-        # cleanup and tokenize remaining parts.
-        path = path.rstrip('/').lstrip('/').split('/')
-        return [t for t in path if t]
-
-    def _is_list_view(self, method, path):
-        import uritemplate
-
-        from drf_spectacular.plumbing import (
-            is_list_serializer, is_basic_type, error,
-        )
-        serializer = self.get_serializer_info()
-        if isinstance(serializer, dict) and serializer:
-            # extract likely main serializer from @extend_schema override
-            serializer = {str(code): s for code, s in serializer.items()}
-            serializer = serializer[min(serializer)]
-
-        if is_list_serializer(serializer):
-            return True
-        if is_basic_type(serializer):
-            return False
-        if hasattr(self, 'action'):
-            return self.action == 'list'
-        # list responses are "usually" only returned by GET
-        if method != 'get':
-            return False
-        if isinstance(self, ListModelMixin):
-            return True
-        # primary key/lookup variable in path is a strong indicator for retrieve
-        if isinstance(self, GenericAPIView):
-            lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-            if lookup_url_kwarg in uritemplate.variables(path):
-                return False
-        return False
-
-    def get_serializer_info(self):
-        view = self
-        try:
-            if isinstance(view, GenericAPIView):
-                # try to circumvent queryset issues with calling get_serializer. if view has NOT
-                # overridden get_serializer, its safe to use get_serializer_class.
-                if view.__class__.get_serializer == GenericAPIView.get_serializer:
-                    return view.get_serializer_class()()
-                return view.get_serializer()
-            elif isinstance(view, APIView):
-                # APIView does not implement the required interface, but be lenient and make
-                # good guesses before giving up and emitting a warning.
-                if callable(getattr(view, 'get_serializer', None)):
-                    return view.get_serializer()
-                elif callable(getattr(view, 'get_serializer_class', None)):
-                    return view.get_serializer_class()()
-                elif hasattr(view, 'serializer_class'):
-                    return view.serializer_class
-                else:
-                    error(
-                        'unable to guess serializer. This is graceful '
-                        'fallback handling for APIViews. Consider using GenericAPIView as view base '
-                        'class, if view is under your control. Ignoring view for now. '
-                    )
-            else:
-                error('Encountered unknown view base class. Please report this issue. Ignoring for now')
-        except Exception as exc:
-            error(
-                f'exception raised while getting serializer. Hint: '
-                f'Is get_serializer_class() returning None or is get_queryset() not working without '
-                f'a request? Ignoring the view for now. (Exception: {exc})'
-            )
-
     def get_object(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
@@ -365,13 +239,6 @@ class UserViewSet(BaseViewSet):
         )
 
     def create(self, request, *args, **kwargs):
-        user = request.user
-        context = self.get_serializer_context()
-        tenant = context['tenant']
-
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
 
         email = request.data.get('email')
         if email and not re.match(
@@ -395,12 +262,6 @@ class UserViewSet(BaseViewSet):
         return super(UserViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        user = request.user
-        context = self.get_serializer_context()
-        tenant = context['tenant']
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
 
         email = request.data.get('email')
         if email and not re.match(
@@ -432,10 +293,6 @@ class UserViewSet(BaseViewSet):
     def user_import(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        user = request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
 
         support_content_types = [
             'application/csv',
@@ -525,10 +382,6 @@ class UserViewSet(BaseViewSet):
     def user_export(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        user = request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
 
         kwargs = {
             'tenants__in': [tenant],
@@ -964,11 +817,6 @@ class UserListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         tenant_uuid = self.kwargs['tenant_uuid']
-        tenant = Tenant.active_objects.filter(uuid=tenant_uuid).order_by('id').first()
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return []
 
         group = self.request.query_params.get('group', None)
 

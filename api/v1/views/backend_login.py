@@ -41,10 +41,6 @@ class BackendLoginViewSet(BaseViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return []
 
         kwargs = {
             'tenant': tenant,

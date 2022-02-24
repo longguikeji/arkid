@@ -38,10 +38,7 @@ class WebhookViewSet(BaseViewSet):
     def get_queryset(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return []
+
         objs = Webhook.active_objects.filter(
             tenant=tenant,
         ).order_by('id')
@@ -62,9 +59,4 @@ class WebhookViewSet(BaseViewSet):
     
     def create(self, request, *args, **kwargs):
         context = self.get_serializer_context()
-        tenant = context['tenant']
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
         return super().create(request, *args, **kwargs)

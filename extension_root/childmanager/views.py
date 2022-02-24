@@ -34,11 +34,6 @@ class ChildManagerListView(generics.ListAPIView):
     def get_queryset(self):
         tenant_uuid = self.kwargs['tenant_uuid']
 
-        user = self.request.user
-        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-        check_result = user.check_super_permission(tenant)
-        if not check_result is None:
-            return []
         kwargs = {
             'tenant__uuid': tenant_uuid,
         }
@@ -55,12 +50,7 @@ class ChildManagerCreateView(generics.CreateAPIView):
     serializer_class = ChildManagerSerializer
 
     def create(self, request, *args, **kwargs):
-        user = request.user
         context = self.get_serializer_context()
-        tenant = context['tenant']
-        check_result = user.check_super_permission(tenant)
-        if not check_result is None:
-            return check_result
         return super().create(request, *args, **kwargs)
 
     def get_serializer_context(self):

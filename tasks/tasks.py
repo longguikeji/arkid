@@ -296,43 +296,93 @@ def update_permission():
         is_update=False,
     ).delete()
     # 权限分组
+    base_code = roles_describe.get('code')
+    base_title = roles_describe.get('name', '')
+    base_children = roles_describe.get('children', [])
+    roles_describe = {}
+    # 处理子对象
+    process_child(roles_describe, base_children, '')
     base_permission_group, is_create = PermissionGroup.objects.get_or_create(
         is_active=True,
         is_del=False,
-        name='arkid',
-        en_name='arkid',
+        name=base_title,
+        en_name=base_code,
+        title=base_title,
         is_system_group=True,
         is_update=True,
     )
+    # 将权限分组的更新状态统统重置为false
     old_permissiongroups = PermissionGroup.valid_objects.filter(
-        parent=base_permission_group,
+        title=base_title,
         tenant=None,
         is_system_group=True,
         is_update=True,
-    )
+    ).exclude(uuid=base_permission_group.uuid)
     for old_permissiongroup in old_permissiongroups:
         old_permissiongroup.is_update = False
         old_permissiongroup.save()
+    # 权限分组实体
     for role_key in roles.keys():
-        permissiongroup, is_create = PermissionGroup.objects.get_or_create(
-            is_del=False,
-            tenant=None,
-            en_name=role_key,
-            is_system_group=True,
-            parent=base_permission_group,
-        )
-        permissiongroup.name = roles_describe.get(role_key, '')
-        permissiongroup.is_update = True
-        permissiongroup.save()
-        for role in roles.get(role_key):
-            permissiongroup.permissions.add(role)
+        # 先要看看有几级
+        role_key_arr = role_key.split('.')
+        role_key_temp_arr=[]
+        parent_list = []
+        for index, role_key_item in enumerate(role_key_arr):
+            # 先加进数组
+            role_key_temp_arr.append(role_key)
+            # 在拼接
+            role_key_item = '.'.join(role_key_temp_arr)    
+            permissiongroup, is_create = PermissionGroup.objects.get_or_create(
+                is_del=False,
+                tenant=None,
+                en_name=role_key_item,
+                is_system_group=True,
+                title=base_title,
+            )
+            permissiongroup.name = roles_describe.get(role_key_item, '')
+            permissiongroup.is_update = True
+            if index == 0:
+                # 第一项没父亲(arkid)
+                permissiongroup.parent = base_permission_group
+            else:
+                # 前一项设置为父亲
+                permissiongroup.parent = parent_list[index-1]
+            permissiongroup.save()
+            # 额外添加
+            parent_list.append(permissiongroup)
+            # 给匹配权限
+            for role in roles.get(role_key_item):
+                permissiongroup.permissions.add(role)
     # 删掉没更新的数据
     PermissionGroup.valid_objects.filter(
-        parent=base_permission_group,
         tenant=None,
         is_system_group=True,
         is_update=False,
-    ).delete()
+        title=base_title,
+    ).exclude(uuid=base_permission_group.uuid).delete()
+
+def process_child(roles_describe, base_children, base_code):
+    '''
+    处理子对象
+    '''
+    base_temp_code = base_code
+    for item in base_children:
+        # 处理code
+        code = item.get('code', '')
+        if base_temp_code == '':
+            base_temp_code = code
+        else:
+            base_temp_code = base_temp_code+'.'+code
+        # 处理name
+        name = item.get('name', '')
+        roles_describe[base_temp_code] = name
+        # 如果需要扩展字段可以修改这个字段
+        # roles_describe[base_temp_code] = {'name': name}
+        # 处理children
+        children = item.get('children', [])
+        process_child(roles_describe, children, base_temp_code)
+        # 重置base_temp_code
+        base_temp_code = base_code
 
 @app.task
 def provision_tenant_app(tenant_uuid: str, app_id: int):

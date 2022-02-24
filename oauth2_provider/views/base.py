@@ -67,18 +67,6 @@ class TokenRequiredMixin(AccessMixin):
     def dispatch(self, request, *args, **kwargs):
         is_authenticated = self.check_token(request, *args, **kwargs)
         if is_authenticated:
-            # 用户
-            user = request.user
-            # 租户
-            tenant = user.tenant
-            if not user.check_permission(tenant) is None:
-                # 是否有用户权限
-                Permission.active_objects.filter(
-                    is_system_permission=False,
-                    tenant=tenant,
-                )
-                # 是否有组权限
-                pass
             return super().dispatch(request, *args, **kwargs)
         else:
             return self.handle_no_permission()

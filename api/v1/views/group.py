@@ -84,9 +84,7 @@ class GroupViewSet(BaseViewSet):
         user = self.request.user
         context = self.get_serializer_context()
         tenant = context['tenant']
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return []
+
         # 分组
         parent = self.request.query_params.get('parent', None)
         name = self.request.query_params.get('name', None)
@@ -128,10 +126,7 @@ class GroupViewSet(BaseViewSet):
     def get_object(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
+  
         kwargs = {
             'tenant': tenant,
             'uuid': self.kwargs['pk'],
@@ -144,10 +139,6 @@ class GroupViewSet(BaseViewSet):
     def destroy(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
 
         group = self.get_object()
 
@@ -173,10 +164,6 @@ class GroupViewSet(BaseViewSet):
     def group_import(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        user = request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
 
         support_content_types = [
             'application/csv',
@@ -246,10 +233,6 @@ class GroupViewSet(BaseViewSet):
     def group_export(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
-        user = request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
 
         kwargs = {
             'tenant': tenant,

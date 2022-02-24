@@ -235,7 +235,10 @@ class UserPermissionView(generics.RetrieveAPIView):
         user = User.active_objects.filter(uuid=user_uuid).first()
         items = []
         # 当前用户拥有的权限
-        user_permissions = user.user_permissions.filter(is_del=False, tenant__uuid=tenant_uuid).all()
+        user_permissions = user.user_permissions.filter(
+            Q(tenant__uuid=tenant_uuid)|Q(is_system_permission=True),
+            is_del=False,
+        ).all()
         for user_permission in user_permissions:
             items.append({
                 'uuid': user_permission.uuid_hex,
@@ -245,7 +248,10 @@ class UserPermissionView(generics.RetrieveAPIView):
                 'source': '用户权限',
             })
         # 当前用户拥有的权限组
-        user_permissions_groups = user.user_permissions_group.filter(is_del=False, tenant__uuid=tenant_uuid).all()
+        user_permissions_groups = user.user_permissions_group.filter(
+            Q(tenant__uuid=tenant_uuid)|Q(is_system_group=True),
+            is_del=False,
+        ).all()
         for user_permissions_group in user_permissions_groups:
             items.append({
                 'uuid': user_permissions_group.uuid_hex,
@@ -257,7 +263,10 @@ class UserPermissionView(generics.RetrieveAPIView):
         # 当前用户所属分组拥有的权限
         groups = user.groups.all()
         for group in groups:
-            for permission in group.permissions.filter(is_del=False, tenant__uuid=tenant_uuid).all():
+            for permission in group.permissions.filter(
+                    Q(tenant__uuid=tenant_uuid)|Q(is_system_permission=True),
+                    is_del=False,
+                ).all():
                 items.append({
                     'uuid': permission.uuid_hex,
                     'name': permission.name,
@@ -268,7 +277,10 @@ class UserPermissionView(generics.RetrieveAPIView):
         # 当前用户所属分组用户的组权限
         groups = user.groups.all()
         for group in groups:
-            for permissions_group in group.permissions_groups.filter(is_del=False, tenant__uuid=tenant_uuid).all():
+            for permissions_group in group.permissions_groups.filter(
+                Q(tenant__uuid=tenant_uuid)|Q(is_system_group=True),
+                is_del=False,
+            ).all():
                 items.append({
                     'uuid': permissions_group.uuid_hex,
                     'name': permissions_group.name,
@@ -302,11 +314,6 @@ class UserPermissionCreateView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         context = self.get_serializer_context()
-        tenant = context['tenant']
-        user = request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return check_result
         return super(UserPermissionCreateView, self).create(request, *args, **kwargs)
 
     def get_serializer_context(self):
@@ -401,7 +408,10 @@ class GroupPermissionView(generics.RetrieveAPIView):
         group = Group.active_objects.filter(uuid=group_uuid).first()
         items = []
         # 当前分组拥有的权限
-        permissions = group.permissions.filter(is_del=False, tenant__uuid=tenant_uuid).all()
+        permissions = group.permissions.filter(
+            Q(tenant__uuid=tenant_uuid)|Q(is_system_permission=True),
+            is_del=False,
+        ).all()
         for permission in permissions:
             items.append({
                 'uuid': permission.uuid_hex,
@@ -411,7 +421,10 @@ class GroupPermissionView(generics.RetrieveAPIView):
                 'source': '分组权限',
             })
         # 当前分组拥有的权限组
-        permissions_groups = group.permissions_groups.filter(is_del=False, tenant__uuid=tenant_uuid).all()
+        permissions_groups = group.permissions_groups.filter(
+            Q(tenant__uuid=tenant_uuid)|Q(is_system_group=True),
+            is_del=False,
+        ).all()
         for permissions_group in permissions_groups:
             items.append({
                 'uuid': permissions_group.uuid_hex,
@@ -535,13 +548,14 @@ class AppPermissionView(generics.ListAPIView):
         tenant_uuid = self.kwargs['tenant_uuid']
         app_uuid = self.kwargs['app_uuid']
         kwargs = {
-            'tenant__uuid': tenant_uuid,
             'app__uuid': app_uuid,
         }
         name = self.request.query_params.get('name', '')
         if name:
             kwargs['name__icontains'] = name
         objs = Permission.valid_objects.filter(
+            Q(tenant__uuid=tenant_uuid)|Q(is_system_permission=True),
+        ).filter(
             **kwargs
         ).order_by('id')
         return objs

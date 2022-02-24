@@ -9,10 +9,12 @@ from openapi.utils import extend_schema
 from rest_framework.views import APIView
 from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
-from inventory.models import Permission
+from inventory.models import Permission, PermissionGroup
 from tasks.tasks import update_permission
 
 from config import get_app_config
+
+
 import requests
 import json
 import uuid

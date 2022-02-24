@@ -22,7 +22,7 @@ from api.v1.fields.custom import (
 )
 from ..pages import group, user
 from config.models import PasswordComplexity
-from arkid.settings import MENU
+
 import uuid
 
 

@@ -52,7 +52,7 @@ class Permission(BaseModel):
         default=None,
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     app = models.ForeignKey(
         App,
@@ -75,7 +75,7 @@ class Permission(BaseModel):
         blank=False,
         null=True,
         default=None,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         verbose_name='分组',
     )
     # 是否更新
@@ -124,7 +124,7 @@ class PermissionGroup(BaseModel):
         blank=False,
         null=True,
         default=None,
-        on_delete=models.PROTECT
+        on_delete=models.CASCADE
     )
     parent = models.ForeignKey(
         'self',
@@ -132,8 +132,9 @@ class PermissionGroup(BaseModel):
         null=True,
         blank=True,
         verbose_name='父分组',
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
+    title = models.CharField(_('顶级标题'), blank=False, null=True, default='', max_length=255)
     # 是否更新
     is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
@@ -374,41 +375,6 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
             if tenant.has_admin_perm(self):
                 uuids.append(tenant.uuid)
         return uuids
-    
-    def check_permission(self, tenant):
-        '''
-        检查用户是否是某个租户的管理员
-        '''
-        from extension_root.childmanager.models import ChildManager
-        from django.http.response import JsonResponse
-        from common.code import Code
-        if self.is_superuser is False and tenant.has_admin_perm(self) is False and ChildManager.valid_objects.filter(tenant=tenant, user=self).exists() is False:
-            return JsonResponse(
-                data={
-                    'error': Code.PERMISSION_ERROR.value,
-                    'message': _('unauthorized operation'),
-                }
-            )
-        else:
-            return None
-
-    
-    def check_super_permission(self, tenant):
-        '''
-        检查用户是否是某个租户的超级管理员
-        '''
-        from extension_root.childmanager.models import ChildManager
-        from django.http.response import JsonResponse
-        from common.code import Code
-        if self.is_superuser is False and tenant.has_admin_perm(self) is False:
-            return JsonResponse(
-                data={
-                    'error': Code.PERMISSION_ERROR.value,
-                    'message': _('unauthorized operation'),
-                }
-            )
-        else:
-            return None
 
 
 class UserPassword(BaseModel):
@@ -483,6 +449,17 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
         for group in groups:
             uuids.append(str(group.uuid))
             group.child_groups(uuids)
+    
+    def parent_groups(self, ids):
+        '''
+        所有的父分组
+        '''
+        parent = self.parent
+        if parent is None:
+            return ids
+        else:
+            ids.append(parent.id)
+            parent.parent_groups(ids)
 
 
 class Invitation(BaseModel):

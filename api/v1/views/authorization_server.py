@@ -18,13 +18,6 @@ class AuthorizationServerViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = DefaultListPaginator
 
     def get_queryset(self):
-        context = self.get_serializer_context()
-        tenant = context['tenant']
-        user = self.request.user
-        check_result = user.check_permission(tenant)
-        if not check_result is None:
-            return []
-
         runtime = get_app_runtime()
         objs = runtime.authorization_servers
         return objs

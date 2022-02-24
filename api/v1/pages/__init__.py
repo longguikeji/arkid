@@ -201,7 +201,259 @@ root_add_routers(
 )
 
 root_add_roles_describe({
-    'globaladmin': '超级管理员',
-    'tenantadmin': '租户管理员',
-    'generaluser': '普通用户'
+    'code':'arkid',
+    'name': 'ArkID',
+    'children':[
+        {
+            'code':'globaladmin',
+            'name':'超级管理员'
+        },
+        {
+            'code':'tenantadmin',
+            'name':'租户管理员'
+        },
+        {
+            'code':'generaluser',
+            'name':'普通用户'
+        },
+        {
+            'code':'appmanage',
+            'name':'应用管理'
+        },
+        {
+            'code':'usermanage',
+            'name':'用户管理',
+            'children': [
+                {
+                    'code': 'userlist',
+                    'name': '用户列表'
+                },
+                {
+                    'code': 'groupmanage',
+                    'name': '分组管理'
+                },
+                {
+                    'code': 'tenantlist',
+                    'name': '租户列表'
+                },
+                {
+                    'code': 'devicemanage',
+                    'name': '设备管理'
+                },
+                {
+                    'code': 'fillformaccount',
+                    'name': '表单代填账号'
+                }
+            ]
+        },
+        {
+            'code':'authmanage',
+            'name':'授权管理',
+            'children': [
+                {
+                    'code': 'permissionlist',
+                    'name': '权限列表'
+                },
+                {
+                    'code': 'permissiongroup',
+                    'name': '权限分组'
+                },
+                {
+                    'code': 'permissionmanage',
+                    'name': '权限管理'
+                }
+            ]
+        },
+        {
+            'code':'linkidentity',
+            'name':'连接身份源',
+            'children': [
+                {
+                    'code': 'identityservice',
+                    'name': '身份源服务'
+                },
+                {
+                    'code': 'datasync',
+                    'name': '数据同步'
+                }
+            ]
+        },
+        {
+            'code':'authfactor',
+            'name':'认证因素',
+            'children': [
+                {
+                    'code': 'factorconfig',
+                    'name': '因素配置'
+                },
+                {
+                    'code': 'thirdpartylogin',
+                    'name': '第三方登录'
+                },
+                {
+                    'code': 'backendauth',
+                    'name': '后端认证'
+                },
+                {
+                    'code': 'otherauthfactor',
+                    'name': '其它认证因素'
+                }
+            ]
+        },
+        {
+            'code':'expansionable',
+            'name':'扩展能力',
+            'children': [
+                {
+                    'code': 'webhook',
+                    'name': 'Webhook'
+                },
+                {
+                    'code': 'apidocument',
+                    'name': 'API文档'
+                }
+            ]
+        },
+        {
+            'code':'logmanage',
+            'name':'日志管理',
+            'children': [
+                {
+                    'code': 'useractionlog',
+                    'name': '用户行为日志'
+                },
+                {
+                    'code': 'manageractionlog',
+                    'name': '管理员行为日志'
+                },
+                {
+                    'code': 'logset',
+                    'name': '日志设置'
+                }
+            ]
+        },
+        {
+            'code':'statisticalgraph',
+            'name':'统计图表'
+        },
+        {
+            'code':'tenantset',
+            'name':'租户设置',
+            'children': [
+                {
+                    'code': 'tenantconfig',
+                    'name': '租户配置'
+                },
+                {
+                    'code': 'childmanagerset',
+                    'name': '子管理员设置'
+                }
+            ]
+        },
+        {
+            'code':'userset',
+            'name':'用户设置',
+            'children': [
+                {
+                    'code': 'desktopset',
+                    'name': '桌面设置'
+                },
+                {
+                    'code': 'contactsset',
+                    'name': '通讯录设置'
+                },
+                {
+                    'code': 'profileset',
+                    'name': '个人资料设置'
+                }
+            ]
+        },
+        {
+            'code':'userset',
+            'name':'用户设置',
+            'children': [
+                {
+                    'code': 'desktopset',
+                    'name': '桌面设置'
+                },
+                {
+                    'code': 'contactsset',
+                    'name': '通讯录设置'
+                },
+                {
+                    'code': 'profileset',
+                    'name': '个人资料设置'
+                }
+            ]
+        },
+        {
+            'code':'platformmanage',
+            'name':'平台管理',
+            'children': [
+                {
+                    'code': 'pluginconfig',
+                    'name': '插件配置'
+                },
+                {
+                    'code': 'platformconfig',
+                    'name': '平台配置'
+                }
+            ]
+        }
+    ]
 })
+
+# root_add_roles_describe({
+#     # 基础角色
+#     'globaladmin': '超级管理员',
+#     'tenantadmin': '租户管理员',
+#     'generaluser': '普通用户',
+#     # 菜单
+#     'appmanage': '应用管理',
+
+#     'usermanage': '用户管理',
+#     'usermanage.userlist': '用户列表',
+#     'usermanage.groupmanage': '分组管理',
+#     'usermanage.tenantlist': '租户列表',
+#     'usermanage.devicemanage': '设备管理',
+#     'usermanage.fillformaccount': '表单代填账号',
+
+#     'authmanage': '授权管理',
+#     'authmanage.permissionlist': '权限列表',
+#     'authmanage.permissiongroup': '权限分组',
+#     'authmanage.permissionmanage': '权限管理',
+
+#     'linkidentity': '连接身份源',
+#     'linkidentity.identityservice': '身份源服务',
+#     'linkidentity.datasync': '数据同步',
+
+#     'authfactor': '认证因素',
+#     'authfactor.factorconfig': '因素配置',
+#     'authfactor.thirdpartylogin': '第三方登录',
+#     'authfactor.backendauth': '后端认证',
+#     'authfactor.otherauthfactor': '其它认证因素',
+
+#     'expansionable': '扩展能力',
+#     'expansionable.webhook': 'Webhook',
+#     'expansionable.apidocument': 'API文档',
+
+#     'logmanage': '日志管理',
+#     'logmanage.useractionlog': '用户行为日志',
+#     'logmanage.manageractionlog': '管理员行为日志',
+#     'logmanage.logset': '日志设置',
+
+#     'statisticalgraph': '统计图表',
+
+#     'tenantset': '租户设置',
+#     'tenantset.tenantconfig': '租户配置',
+#     'tenantset.childmanagerset': '子管理员设置',
+
+#     'userset': '用户设置',
+#     'userset.desktopset': '桌面设置',
+#     'userset.contactsset': '通讯录设置',
+#     'userset.profileset': '个人资料设置',
+
+#     'platformmanage': '平台管理',
+#     'platformmanage.pluginconfig': '插件配置',
+#     'platformmanage.platformconfig': '平台配置'
+# })
