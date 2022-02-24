@@ -892,7 +892,8 @@ class OAuth2Validator(RequestValidator):
 
     def get_additional_claims(self, request):
         return {
-            "sub": request.user.uuid,
+            "sub": str(request.user.id),
+            "sub_uuid": str(request.user.uuid),
             "preferred_username": request.user.username,
             'nickname': request.user.nickname,
             'given_name': request.user.first_name,
