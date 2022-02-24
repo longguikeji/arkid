@@ -192,5 +192,6 @@ node_modules/
 package-lock.json
 
 db.sqlite3-journal
+results.sqlite
 djangosaml2idp/saml2_config/*.xml
 
