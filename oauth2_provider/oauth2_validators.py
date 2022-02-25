@@ -395,6 +395,7 @@ class OAuth2Validator(RequestValidator):
         if access_token and access_token.is_valid(scopes):
             request.client = access_token.application
             request.user = access_token.user
+            request.user.tenant = access_token.tenant
             request.scopes = scopes
 
             # this is needed by django rest framework
@@ -891,6 +892,11 @@ class OAuth2Validator(RequestValidator):
         return self.get_oidc_claims(None, None, request)
 
     def get_additional_claims(self, request):
+        groups = []
+        user = request.user
+        tenant = user.tenant
+        if tenant.has_admin_perm(user):
+            groups.append('tenant_admin')
         return {
             "sub": str(request.user.id),
             "sub_uuid": str(request.user.uuid),
@@ -899,6 +905,7 @@ class OAuth2Validator(RequestValidator):
             'given_name': request.user.first_name,
             'family_name': request.user.last_name,
             'email': request.user.email,
-            'tenant_uuid': request.user.tenant.uuid,
+            'groups': groups,
+            'tenant_uuid': str(request.user.tenant.uuid),
             "tenant_slug": request.user.tenant.slug,
         }
