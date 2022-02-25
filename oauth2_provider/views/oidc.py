@@ -128,27 +128,33 @@ class UserInfoView(OIDCOnlyMixin, OAuthLibMixin, View):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class UserInfoExtendView(OIDCOnlyMixin, OAuthLibMixin, View):
+class UserInfoExtendView(UserInfoView):
     """
     View used to show Claims about the authenticated End-User
     """
 
     def get(self, request, *args, **kwargs):
         access_token = request.META.get('HTTP_AUTHORIZATION', '')
-        return self.get_user(access_token)
-
+        return self.get_user(request, access_token)
 
     def post(self, request, *args, **kwargs):
         access_token = request.META.get('HTTP_AUTHORIZATION', '')
-        return self.get_user(access_token)
+        return self.get_user(request, access_token)
 
-    def get_user(self, access_token):
+    def get_user(self, request, access_token):
         if access_token:
             access_token = access_token.split(' ')[1]
             access_token = AccessToken.objects.filter(token=access_token).first()
             if access_token:
                 user = access_token.user
-                return JsonResponse({"id":user.id,"sub":str(user.id),"name":user.username,"email":user.email})
+                data = {"id":user.id,"name":user.username,"email":user.email}
+                try:
+                    response = self._create_userinfo_response(request)
+                    resp_data = json.loads(response.content)
+                    data.update(resp_data)
+                    return JsonResponse(data)
+                except Exception as e:
+                     return JsonResponse({"error": str(e)})
             else:
                 return JsonResponse({"error": "access_token 不存在"})
         else:
