@@ -51,15 +51,15 @@ jobs:
           PIP="-i https://pypi.python.org/simple"
         push: true
         tags: |
-          harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
-          harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }}
+          ${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
+          ${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }}
           longguikeji/arkid:v2dev-${{ github.run_number }}
           longguikeji/arkid:v2dev
     - name: deploy to cluster
       uses: steebchen/kubectl@v2.0.0
       with: # defaults to latest kubectl binary version
         config: ${{ secrets.KUBE_CONFIG_HW }}
-        command: -n dev-arkidv2 --insecure-skip-tls-verify=true set image --record deployment/dev-arkidv2-be cpextensionroot=harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }} arkid-be=harbor.longguikeji.com/ark-releases/arkid:v2dev-${{ github.run_number }}
+        command: -n dev-arkidv2 --insecure-skip-tls-verify=true set image --record deployment/dev-arkidv2-be cpextensionroot=${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }} arkid-be=${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }}
     - name: Feishu 报忧
       if: ${{ failure() }}
       uses: wangsijie/feishu-bot@v1
@@ -77,4 +77,4 @@ jobs:
         data: |
           {"msg_type":"post","content":{"post":{"zh_cn":{"title": "${{ github.event.repository.name }}流水线状态通知",
           "content":[[{"tag":"text","text":"${{ github.event.repository.name }} 项目流水线有更新: "},
-          {"tag":"a","text":"${{ github.event.ref }}分支构建并部署成功，点击查看部署后的效果","href":"http://arkid.vtwo.longguikeji.com/"}]]}}}}
+          {"tag":"a","text":"${{ github.event.ref }}分支构建并部署成功，点击查看部署后的效果","href":"${{ secrets.ENV_DEV }}"}]]}}}}

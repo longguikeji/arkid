@@ -68,9 +68,45 @@ class TokenRequiredMixin(AccessMixin):
     def dispatch(self, request, *args, **kwargs):
         is_authenticated = self.check_token(request)
         if is_authenticated:
+            if self.check_permission(request) is False:
+                return HttpResponseRedirect(self.get_return_url(self.get_login_url(), '您没有使用cas应用的权限'))
             return super().dispatch(request, *args, **kwargs)
         else:
             return self.handle_no_permission()
+
+    
+    def get_return_url(self, url, alert):
+        '''
+        取得回调地址
+        '''
+        if not 'is_alert' in url:
+            str_url = url
+            token_index = str_url.find('%26token')
+            str_url_before = str_url[0:token_index]
+            str_url_after_index = str_url.find('%26', token_index+1)
+            str_url_after = ''
+            if str_url_after_index != -1:
+                str_url_after = str_url[str_url_after_index:]
+            url = str_url_before+str_url_after
+            url = '{}&is_alert={}'.format(url, alert)
+        return url
+        
+    
+    def check_permission(self, request):
+        '''
+        权限检查
+        '''
+        # 用户
+        user = request.user
+        # 租户
+        tenant = user.tenant
+        # app
+        from app.models import App
+        app = App.valid_objects.filter(
+            tenant=tenant,
+            type='Cas',
+        ).first()
+        return user.check_app_permission(tenant, app)
 
     def check_token(self, request):
         token = request.GET.get('token', '')

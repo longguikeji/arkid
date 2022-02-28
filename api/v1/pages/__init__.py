@@ -179,10 +179,10 @@ root_add_routers(
         Router(
             path='extension',
             name='插件管理',
-            icon='setting',
+            icon='extend',
             children=[
-                PageRouter(page=bind_saas, icon='list'),
-                PageRouter(page=arkstore, icon='setting'),
+                PageRouter(page=arkstore, icon='extend'),
+                PageRouter(page=extension, icon='list'),
             ],
         ),
         Router(
@@ -190,7 +190,7 @@ root_add_routers(
             name='平台管理',
             icon='setting',
             children=[
-                PageRouter(page=extension, icon='list'),
+                PageRouter(page=bind_saas, icon='connect'),
                 PageRouter(
                     page=tenant_switch,
                     icon='setting',

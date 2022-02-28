@@ -1,5 +1,5 @@
 import json
-
+import re
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -12,6 +12,7 @@ from ..settings import oauth2_settings
 from .mixins import OAuthLibMixin, OIDCOnlyMixin
 from oauth2_provider.models import AccessToken, IDToken
 from rest_framework.authtoken.models import Token
+from tenant.models import Tenant
 
 
 Application = get_application_model()
@@ -24,30 +25,50 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
 
     def get(self, request, *args, **kwargs):
         from config import get_app_config
-        tenant = kwargs.get('tenant_uuid', '')
-        print('tenant>>>', tenant)
+
+        tenant = None
+        tenant_uuid = kwargs.get('tenant_uuid')
+        if tenant_uuid:
+            tenant = Tenant.objects.get(uuid=tenant_uuid)
+
+        if not tenant:
+            uuid_re = r"[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}"
+            path = self.request.path
+            res = re.search(uuid_re, path)
+            if res:
+                tenant_uuid = res.group(0)
+                tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+
         issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
         host = get_app_config().get_host()
         if not issuer_url:
             if tenant:
-                issuer_url = oauth2_settings.oidc_issuer(request, tenant)
-                authorization_endpoint = host+reverse("api:oauth2_authorization_server:authorize", args=[tenant])
-                token_endpoint = host+reverse("api:oauth2_authorization_server:token", args=[tenant])
-                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[tenant])
-                jwks_uri = host+reverse("api:oauth2_authorization_server:jwks-info", args=[tenant])
+                issuer_url = oauth2_settings.oidc_issuer(request, tenant.uuid)
+                authorization_endpoint = host+reverse("api:oauth2_authorization_server:authorize", args=[tenant.uuid])
+                token_endpoint = host+reverse("api:oauth2_authorization_server:token", args=[tenant.uuid])
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[tenant.uuid])
+                jwks_uri = host+reverse("api:oauth2_authorization_server:jwks-info", args=[tenant.uuid])
             else:
                 issuer_url = oauth2_settings.oidc_issuer(request)
-                authorization_endpoint = host+reverse("api:oauth2_authorization_server:authorize-platform")
-                token_endpoint = host+reverse("api:oauth2_authorization_server:token-platform")
-                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or host+reverse("api:oauth2_authorization_server:oauth-user-info-platform")
-                jwks_uri = host+reverse("api:oauth2_authorization_server:jwks-info-platform")
+                authorization_endpoint = host+reverse("api:arkid_saas:authorize-platform")
+                token_endpoint = host+reverse("api:arkid_saas:token-platform")
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or host+reverse("api:arkid_saas:oauth-user-info-platform")
+                jwks_uri = host+reverse("api:arkid_saas:jwks-info-platform")
         else:
-            authorization_endpoint = "{}{}".format(issuer_url, reverse("api:oauth2_authorization_server:authorize"))
-            token_endpoint = "{}{}".format(issuer_url, reverse("api:oauth2_authorization_server:token"))
-            userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
-                issuer_url, reverse("api:oauth2_authorization_server:user-info")
-            )
-            jwks_uri = "{}{}".format(issuer_url, reverse("api:oauth2_authorization_server:jwks-info"))
+            if tenant:
+                authorization_endpoint = "{}{}".format(issuer_url, reverse("api:oauth2_authorization_server:authorize"))
+                token_endpoint = "{}{}".format(issuer_url, reverse("api:oauth2_authorization_server:token"))
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
+                    issuer_url, reverse("api:oauth2_authorization_server:user-info")
+                )
+                jwks_uri = "{}{}".format(issuer_url, reverse("api:oauth2_authorization_server:jwks-info"))
+            else:
+                authorization_endpoint = "{}{}".format(issuer_url, reverse("api:arkid_saas:authorize"))
+                token_endpoint = "{}{}".format(issuer_url, reverse("api:arkid_saas:token"))
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
+                    issuer_url, reverse("api:arkid_saas:user-info")
+                )
+                jwks_uri = "{}{}".format(issuer_url, reverse("api:arkid_saas:jwks-info"))
         signing_algorithms = [Application.HS256_ALGORITHM]
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
             signing_algorithms = [Application.RS256_ALGORITHM, Application.HS256_ALGORITHM]
@@ -107,27 +128,33 @@ class UserInfoView(OIDCOnlyMixin, OAuthLibMixin, View):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class UserInfoExtendView(OIDCOnlyMixin, OAuthLibMixin, View):
+class UserInfoExtendView(UserInfoView):
     """
     View used to show Claims about the authenticated End-User
     """
 
     def get(self, request, *args, **kwargs):
         access_token = request.META.get('HTTP_AUTHORIZATION', '')
-        return self.get_user(access_token)
-
+        return self.get_user(request, access_token)
 
     def post(self, request, *args, **kwargs):
         access_token = request.META.get('HTTP_AUTHORIZATION', '')
-        return self.get_user(access_token)
+        return self.get_user(request, access_token)
 
-    def get_user(self, access_token):
+    def get_user(self, request, access_token):
         if access_token:
             access_token = access_token.split(' ')[1]
             access_token = AccessToken.objects.filter(token=access_token).first()
             if access_token:
                 user = access_token.user
-                return JsonResponse({"id":user.id,"name":user.username,"email":user.email})
+                data = {"id":user.id,"name":user.username,"email":user.email}
+                try:
+                    response = self._create_userinfo_response(request)
+                    resp_data = json.loads(response.content)
+                    data.update(resp_data)
+                    return JsonResponse(data)
+                except Exception as e:
+                     return JsonResponse({"error": str(e)})
             else:
                 return JsonResponse({"error": "access_token 不存在"})
         else:
