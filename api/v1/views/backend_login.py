@@ -14,6 +14,7 @@ from backend_login.models import BackendLogin
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
+from perm.custom_access import ApiAccessPermission
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from common.code import Code
 
@@ -25,7 +26,7 @@ BackendLoginPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='后台登录方式删除'),
     partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(tags=['backend_login'])
@@ -33,7 +34,7 @@ class BackendLoginViewSet(BaseViewSet):
 
     model = BackendLogin 
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = BackendLoginSerializer
     pagination_class = DefaultListPaginator
@@ -60,7 +61,7 @@ class BackendLoginViewSet(BaseViewSet):
         obj = BackendLogin.valid_objects.filter(**kwargs).first()
         return obj
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=BackendLoginListSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=BackendLoginListSerializer, summary='后台登录方式列表')
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -68,6 +69,7 @@ class BackendLoginViewSet(BaseViewSet):
         roles=['tenantadmin', 'globaladmin'],
         request=BackendLoginPolymorphicProxySerializer,
         responses=BackendLoginPolymorphicProxySerializer,
+        summary='后台登录方式修改'
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
@@ -76,11 +78,12 @@ class BackendLoginViewSet(BaseViewSet):
         roles=['tenantadmin', 'globaladmin'],
         request=BackendLoginPolymorphicProxySerializer,
         responses=BackendLoginPolymorphicProxySerializer,
+        summary='后台登录方式创建'
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=BackendLoginPolymorphicProxySerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=BackendLoginPolymorphicProxySerializer, summary='后台登录方式获取')
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -88,6 +91,7 @@ class BackendLoginViewSet(BaseViewSet):
         roles=['tenantadmin', 'globaladmin'],
         request=BackendLoginReorderSerializer,
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式修改'
     )
     @action(detail=False, methods=['post'])
     def batch_update(self, request, *args, **kwargs):
@@ -115,6 +119,7 @@ class BackendLoginViewSet(BaseViewSet):
     @extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式上移'
     )
     @action(detail=True, methods=['get'])
     def move_up(self, request, *args, **kwargs):
@@ -123,6 +128,7 @@ class BackendLoginViewSet(BaseViewSet):
     @extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式下移'
     )
     @action(detail=True, methods=['get'])
     def move_down(self, request, *args, **kwargs):
@@ -131,6 +137,7 @@ class BackendLoginViewSet(BaseViewSet):
     @extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式置顶'
     )
     @action(detail=True, methods=['get'])
     def move_top(self, request, *args, **kwargs):
@@ -139,6 +146,7 @@ class BackendLoginViewSet(BaseViewSet):
     @extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式置底'
     )
     @action(detail=True, methods=['get'])
     def move_bottom(self, request, *args, **kwargs):

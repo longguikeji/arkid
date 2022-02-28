@@ -6,6 +6,7 @@ from openapi.utils import extend_schema
 from django.http.response import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from perm.custom_access import ApiAccessPermission
 from django.conf import settings
 from collections import OrderedDict
 import requests
@@ -16,10 +17,11 @@ from app.models import App
 @extend_schema(
     roles=['globaladmin'],
     tags=['arkstore-extension'],
+    summary='获取arkstore插件列表'
 )
 class ArkStoreAPIView(ListAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = ArkStoreExtensionSerializer
@@ -52,10 +54,10 @@ class ArkStoreAPIView(ListAPIView):
         return saas_extensions_data
 
 
-@extend_schema(roles=['globaladmin'], tags=['arkstore-extension'])
+@extend_schema(roles=['globaladmin'], tags=['arkstore-extension'], summary='arkstore下单')
 class ArkStoreOrderView(GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     def post(self, request, tenant_uuid, *args, **kwargs):
@@ -67,10 +69,10 @@ class ArkStoreOrderView(GenericAPIView):
         return JsonResponse(resp)
 
 
-@extend_schema(roles=['globaladmin'], tags=['arkstore-extension'])
+@extend_schema(roles=['globaladmin'], tags=['arkstore-extension'], summary='arkstore下载插件')
 class ArkStoreDownloadView(GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     def get(self, request, tenant_uuid, *args, **kwargs):

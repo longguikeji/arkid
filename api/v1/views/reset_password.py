@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 
 @extend_schema(
     tags=['reset-password-api'],
+    summary='重置密码',
     roles=['generaluser', 'tenantadmin', 'globaladmin'],
     # responses=PasswordLoginResponseSerializer,
 )

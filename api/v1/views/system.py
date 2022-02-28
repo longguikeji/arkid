@@ -10,15 +10,15 @@ from api.v1.serializers.system import (
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from system.models import SystemConfig
-from system.permission import IsSuperAdmin
+from perm.custom_access import ApiAccessPermission
 from runtime import get_app_runtime
 from common.code import Code
 
 
-@extend_schema(roles=['globaladmin'], tags=['system'])
+@extend_schema(roles=['globaladmin'], tags=['system'], summary='系统配置')
 class SystemConfigView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated, IsSuperAdmin]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = SystemConfigSerializer

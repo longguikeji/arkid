@@ -12,6 +12,7 @@ from api.v1.serializers.group import (
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from openapi.utils import extend_schema
+from perm.custom_access import ApiAccessPermission
 from drf_spectacular.utils import extend_schema_view, OpenApiParameter
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.response import Response
@@ -47,32 +48,38 @@ from django.db import transaction
                 required=False,
             ),
         ],
+        summary='分组列表',
     ),
     create=extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         request=GroupCreateRequestSerializer,
         responses=GroupSerializer,
+        summary='分组创建',
     ),
     retrieve=extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         responses=GroupSerializer,
+        summary='分组获取',
     ),
     update=extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         request=GroupSerializer,
         responses=GroupSerializer,
+        summary='分组更新',
     ),
     destroy=extend_schema(
         roles=['tenantadmin', 'globaladmin'],
+        summary='分组删除',
     ),
     partial_update=extend_schema(
         roles=['tenantadmin', 'globaladmin'],
+        summary='分组批量更新',
     ),
 )
 @extend_schema(tags=['group'])
 class GroupViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     model = Group
@@ -159,6 +166,7 @@ class GroupViewSet(BaseViewSet):
         roles=['tenantadmin', 'globaladmin'],
         request=GroupImportSerializer,
         responses=GroupImportSerializer,
+        summary='分组导入',
     )
     @action(detail=False, methods=['post'])
     def group_import(self, request, *args, **kwargs):

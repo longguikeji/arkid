@@ -13,6 +13,7 @@ from tenant.models import (
 )
 from common.paginator import DefaultListPaginator
 from openapi.utils import extend_schema
+from perm.custom_access import ApiAccessPermission
 from drf_spectacular.utils import OpenApiParameter
 from drf_spectacular.openapi import OpenApiTypes
 from .base import BaseTenantViewSet
@@ -29,7 +30,7 @@ from django.db.models import Q
 )
 class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionSerializer
@@ -80,14 +81,28 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         obj = Permission.valid_objects.filter(**kwargs).first()
         return obj
 
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='分组权限列表'
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='分组权限获取'
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
 @extend_schema(
     roles=['tenantadmin', 'globaladmin'],
-    tags=['permission']
+    tags=['permission'],
+    summary='权限创建'
 )
 class PermissionCreateView(generics.CreateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionCreateSerializer
@@ -108,7 +123,7 @@ class PermissionCreateView(generics.CreateAPIView):
 )
 class PermissionView(generics.RetrieveUpdateDestroyAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionCreateSerializer
@@ -128,6 +143,34 @@ class PermissionView(generics.RetrieveUpdateDestroyAPIView):
         context['tenant'] = Tenant.objects.filter(uuid=self.kwargs['tenant_uuid']).first()
         return context
 
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='租户权限详情'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='租户权限修改'
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='租户权限修改'
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='租户权限删除'
+    )
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
 
 @extend_schema(
     roles=['tenantadmin', 'globaladmin'],
@@ -141,10 +184,11 @@ class PermissionView(generics.RetrieveUpdateDestroyAPIView):
             required=False,
         ),
     ],
+    summary='租户权限分组列表'
 )
 class PermissionGroupView(generics.ListAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionGroupListSerializer
@@ -169,11 +213,12 @@ class PermissionGroupView(generics.ListAPIView):
 
 @extend_schema(
     roles=['tenantadmin', 'globaladmin'],
-    tags=['permission']
+    tags=['permission'],
+    summary='权限分组创建'
 )
 class PermissionGroupCreateView(generics.CreateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionGroupCreateSerializer
@@ -190,7 +235,7 @@ class PermissionGroupCreateView(generics.CreateAPIView):
 )
 class PermissionGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PermissionGroupCreateSerializer
@@ -210,6 +255,34 @@ class PermissionGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
         context['tenant'] = Tenant.objects.filter(uuid=self.kwargs['tenant_uuid']).first()
         return context
 
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='租户权限分组详情'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='租户权限分组修改'
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='租户权限分组修改'
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='租户权限分组删除'
+    )
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
 
 @extend_schema(
     roles=['tenantadmin', 'globaladmin'],
@@ -221,11 +294,12 @@ class PermissionGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
             location=OpenApiParameter.QUERY,
             required=False,
         )
-    ]
+    ],
+    summary='用户权限列表'
 )
 class UserPermissionView(generics.RetrieveAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = UserPermissionListSerializer
@@ -303,11 +377,12 @@ class UserPermissionView(generics.RetrieveAPIView):
 
 @extend_schema(
     roles=['tenantadmin', 'globaladmin'],
-    tags=['permission']
+    tags=['permission'],
+    summary='用户权限创建'
 )
 class UserPermissionCreateView(generics.CreateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = UserPermissionCreateSerializer
@@ -339,11 +414,12 @@ class UserPermissionCreateView(generics.CreateAPIView):
             location=OpenApiParameter.QUERY,
             required=True,
         ),
-    ]
+    ],
+    summary='用户权限删除'
 )
 class UserPermissionDeleteView(generics.RetrieveAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = UserPermissionDeleteSerializer
@@ -394,11 +470,12 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
             location=OpenApiParameter.QUERY,
             required=False,
         )
-    ]
+    ],
+    summary='分组权限列表'
 )
 class GroupPermissionView(generics.RetrieveAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = GroupPermissionListSerializer
@@ -448,11 +525,12 @@ class GroupPermissionView(generics.RetrieveAPIView):
 
 @extend_schema(
     roles=['tenantadmin', 'globaladmin'],
-    tags=['permission']
+    tags=['permission'],
+    summary='分组权限创建'
 )
 class GroupPermissionCreateView(generics.CreateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = GroupPermissionCreateSerializer
@@ -479,11 +557,12 @@ class GroupPermissionCreateView(generics.CreateAPIView):
             location=OpenApiParameter.QUERY,
             required=True,
         ),
-    ]
+    ],
+    summary='分组权限删除'
 )
 class GroupPermissionDeleteView(generics.RetrieveAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = GroupPermissionDeleteSerializer
@@ -534,11 +613,12 @@ class GroupPermissionDeleteView(generics.RetrieveAPIView):
             location=OpenApiParameter.QUERY,
             required=False,
         )
-    ]
+    ],
+    summary='应用权限列表'
 )
 class AppPermissionView(generics.ListAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = AppPermissionSerializer

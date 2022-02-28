@@ -288,6 +288,7 @@ class UserViewSet(BaseViewSet):
         roles=['tenantadmin', 'globaladmin'],
         request=UserImportSerializer,
         responses=UserImportSerializer,
+        summary='导入用户',
     )
     @action(detail=False, methods=['post'])
     def user_import(self, request, *args, **kwargs):
@@ -377,6 +378,7 @@ class UserViewSet(BaseViewSet):
     @extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
+        summary='导出用户',
     )
     @action(detail=False, methods=['get'])
     def user_export(self, request, *args, **kwargs):
@@ -398,19 +400,17 @@ class UserViewSet(BaseViewSet):
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
-    create=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
-    retrieve=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
-    destroy=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
-    update=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin']),
-    partial_update=extend_schema(
-        roles=['generaluser', 'tenantadmin', 'globaladmin']
-    ),
+    list=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app列表'),
+    create=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app创建'),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app详情'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app删除'),
+    update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app修改'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app修改'),
 )
 @extend_schema(tags=['user-app'])
 class UserAppViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     model = App
@@ -447,7 +447,11 @@ class UserAppViewSet(BaseViewSet):
         return objs
 
 
-@extend_schema(tags=['user'])
+@extend_schema(
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    tags=['user'],
+    summary='获取用户token'
+)
 class UserTokenView(generics.CreateAPIView):
     permission_classes = []
     authentication_classes = []
@@ -466,10 +470,10 @@ class UserTokenView(generics.CreateAPIView):
         return Response(is_valid)
 
 
-@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'], summary='用户app数据')
 class UserAppDataView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = UserAppDataSerializer
@@ -497,7 +501,7 @@ class UserAppDataView(generics.RetrieveUpdateAPIView):
     ],
 )
 class UpdatePasswordView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PasswordRequestSerializer
@@ -505,6 +509,7 @@ class UpdatePasswordView(generics.CreateAPIView):
     @extend_schema(
         roles=['tenantadmin', 'globaladmin', 'generaluser'],
         responses=PasswordSerializer,
+        summary='修改用户密码',
     )
     def post(self, request):
         tenant_uuid = self.request.query_params.get('tenant')
@@ -569,12 +574,16 @@ class UpdatePasswordView(generics.CreateAPIView):
     ],
 )
 class ResetPasswordView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = ResetPasswordRequestSerializer
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=PasswordSerializer)
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        responses=PasswordSerializer,
+        summary='重置用户密码'
+    )
     def post(self, request):
         tenant_uuid = self.request.query_params.get('tenant')
         if not tenant_uuid:
@@ -627,14 +636,13 @@ class ResetPasswordView(generics.CreateAPIView):
             required=False,
         )
     ],
+    summary='用户信息修改',
 )
-@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserInfoSerializer
 
-    @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
 
@@ -642,6 +650,10 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
         context = super().get_serializer_context()
         context['tenant_uuid'] = self.request.query_params.get('tenant_uuid', '')
         return context
+
+    @extend_schema(summary='用户信息获取', roles=['generaluser', 'tenantadmin', 'globaladmin'])
+    def get(self, request, *args, **kwargs):
+        return super(UserInfoView, self).get(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         email = request.data.get('email')
@@ -668,13 +680,14 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
 
 @extend_schema(tags=['user'])
 class UserBindInfoView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserBindInfoSerializer
 
     @extend_schema(
         roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserBindInfoSerializer,
+        summary='用户绑定信息'
     )
     def get(self, request):
         # 所有登录创建
@@ -699,10 +712,14 @@ class UserBindInfoView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserLogoutView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    @extend_schema(responses=LogoutSerializer)
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        responses=LogoutSerializer,
+        summary='用户登出'
+    )
     def get(self, request):
         user = request.user
         is_succeed = False
@@ -716,10 +733,14 @@ class UserLogoutView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserLogoffView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    @extend_schema(responses=UserLogoffSerializer)
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        responses=UserLogoffSerializer,
+        summary='用户注销',
+    )
     def get(self, request):
         user = request.user
         User.objects.filter(id=user.id).delete()
@@ -728,12 +749,13 @@ class UserLogoffView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserTokenExpireView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(
         roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserTokenExpireSerializer,
+        summary='用户token更新',
     )
     def get(self, request):
         user = request.user
@@ -742,12 +764,13 @@ class UserTokenExpireView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserManageTenantsView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(
         roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserManageTenantsSerializer,
+        summary='用户管理的租户',
     )
     def get(self, request):
         user = request.user
@@ -767,9 +790,13 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
     invite user
     '''
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        summary='邀请用户',
+    )
     def post(self, request, username):  # pylint: disable=arguments-differ
         data = request.data if request.data else {}
 
@@ -805,11 +832,12 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
 
 @extend_schema(
     roles=['tenantadmin', 'globaladmin'],
-    tags=['user']
+    tags=['user'],
+    summary='分组用户列表',
 )
 class UserListAPIView(generics.ListAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = UserListSerializer

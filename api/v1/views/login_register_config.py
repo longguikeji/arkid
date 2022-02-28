@@ -6,6 +6,7 @@ from api.v1.serializers.login_register_config import (
 from runtime import get_app_runtime
 from django.http.response import JsonResponse
 from openapi.utils import extend_schema
+from perm.custom_access import ApiAccessPermission
 from drf_spectacular.utils import PolymorphicProxySerializer
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
@@ -26,8 +27,8 @@ LoginRegisterConfigPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='删除登录注册配置'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='修改登录注册配置'),
 )
 @extend_schema(
     tags=['login_register_config'],
@@ -51,7 +52,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
 
     model = LoginRegisterConfig
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = LoginRegisterConfigSerializer
 
@@ -89,6 +90,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
     @extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         responses=LoginRegisterConfigListSerializer,
+        summary='登录注册配置列表'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -97,6 +99,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         roles=['tenantadmin', 'globaladmin'],
         request=LoginRegisterConfigPolymorphicProxySerializer,
         responses=LoginRegisterConfigPolymorphicProxySerializer,
+        summary='登录注册配置修改'
     )
     def update(self, request, *args, **kwargs):
         tenant_uuid = self.request.query_params.get('tenant')
@@ -110,6 +113,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         roles=['tenantadmin', 'globaladmin'],
         request=LoginRegisterConfigPolymorphicProxySerializer,
         responses=LoginRegisterConfigPolymorphicProxySerializer,
+        summary='登录注册配置创建'
     )
     def create(self, request, *args, **kwargs):
         tenant_uuid = self.request.query_params.get('tenant')
@@ -122,6 +126,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
     @extend_schema(
         roles=['tenantadmin', 'globaladmin'],
         responses=LoginRegisterConfigPolymorphicProxySerializer,
+        summary='登录注册配置获取'
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)

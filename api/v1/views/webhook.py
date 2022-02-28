@@ -1,5 +1,6 @@
 from rest_framework.permissions import IsAuthenticated
 
+from perm.custom_access import ApiAccessPermission
 from drf_spectacular.utils import extend_schema_view
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
@@ -17,19 +18,19 @@ from .base import BaseViewSet
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    update=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    create=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    list=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook列表'),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook详情'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook删除'),
+    update=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook修改'),
+    create=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook创建'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook更新'),
 )
 @extend_schema(
     tags=['webhook'],
 )
 class WebhookViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = WebhookSerializer

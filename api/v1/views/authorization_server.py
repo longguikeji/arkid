@@ -10,7 +10,7 @@ from tenant.models import (
 )
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'], tags = ['authorizationServer']
+    roles=['tenantadmin', 'globaladmin'], tags = ['authorizationServer'], summary='认证服务'
 )
 class AuthorizationServerViewSet(viewsets.ReadOnlyModelViewSet):
 

@@ -12,7 +12,7 @@ from common.code import Code
 from login_register_config.models import OtherAuthFactor
 
 
-@extend_schema(tags=['authcode'])
+@extend_schema(tags=['authcode'], summary='产生验证码')
 class AuthCodeGenerateView(generics.RetrieveAPIView):
     @property
     def runtime(self):
@@ -40,7 +40,7 @@ class AuthCodeGenerateView(generics.RetrieveAPIView):
         return JsonResponse(data={'key': key, 'base64': str(base64_str, 'utf8')})
 
 
-@extend_schema(tags=['authcode'])
+@extend_schema(tags=['authcode'], summary='验证码检验')
 class AuthCodeCheckView(generics.CreateAPIView):
 
     serializer_class = AuthCodeSerializer
@@ -60,6 +60,7 @@ class AuthCodeCheckView(generics.CreateAPIView):
             return JsonResponse(data={'is_succeed': 1})
 
 
+@extend_schema(summary='页面验证信息')
 class AuthPageInfo(generics.RetrieveAPIView):
     '''
     页面验证信息

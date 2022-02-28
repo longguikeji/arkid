@@ -133,7 +133,20 @@ class ApiAccessPermission(BaseAccessPermission, permissions.BasePermission):
 
     def has_permission(self, request, view):
         operation_id = self.get_operation_id(request, view)
-        tenant = Tenant.objects.filter(uuid=view.kwargs[self.TEANT_STRING]).first()
+        tenant = None
+        tenant_uuid = None
+        # 租户uuid的所有可能的取值情况
+        if self.TEANT_STRING in view.kwargs:
+            tenant_uuid = view.kwargs[self.TEANT_STRING]
+        if 'tenant_uuid' in view.kwargs:
+            tenant_uuid = view.kwargs['tenant_uuid']
+        if tenant is None:
+            tenant_uuid = request.query_params.get('tenant', None)
+        if tenant is None:
+            tenant_uuid = request.query_params.get('tenant_uuid', None)
+        # 给附租户
+        if tenant_uuid:
+            tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         user = request.user
         permission = Permission.valid_objects.filter(
             is_system_permission=True,
@@ -149,14 +162,14 @@ class ApiAccessPermission(BaseAccessPermission, permissions.BasePermission):
             permissions_groups_ids = []
             for permissiongroup in permissiongroups:
                 en_name = permissiongroup.en_name
+                if en_name == 'generaluser':
+                    # 普通用户
+                    return True
                 if en_name == 'globaladmin' and user.is_superuser:
                     # 超级管理员
                     return True
-                if en_name == 'tenantadmin' and tenant.has_admin_perm(user):
+                if en_name == 'tenantadmin' and tenant and tenant.has_admin_perm(user):
                     # 租户管理员
-                    return True
-                if en_name == 'generaluser':
-                    # 普通用户
                     return True
                 for user_permissions_group in user_permissions_groups:
                     if user_permissions_group.id == permissiongroup.id:
