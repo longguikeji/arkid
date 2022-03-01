@@ -8,6 +8,7 @@ from rest_framework.status import HTTP_200_OK
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.exceptions import ValidationError
+from perm.custom_access import ApiAccessPermission
 from rest_framework.permissions import AllowAny
 from openapi.utils import extend_schema
 from extension_root.tenantuserconfig.serializers import(
@@ -20,10 +21,10 @@ from tenant.models import Tenant
 import copy
 
 
-@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'userset.profileset'], tags=['tenant'], summary='个人资料注销设置更新')
 class TenantUserLogOutConfigView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = TenantUserLogOutConfigSerializer
@@ -40,6 +41,10 @@ class TenantUserLogOutConfigView(generics.RetrieveUpdateAPIView):
             config.save_data(tenant)
         return config
     
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'userset.profileset'],
+        summary='个人资料注销设置获取'
+    )
     def get(self, request, tenant_uuid):
         config = self.get_object()
         data = config.data
@@ -48,6 +53,10 @@ class TenantUserLogOutConfigView(generics.RetrieveUpdateAPIView):
         })
         return Response(serializer.data)
     
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'userset.profileset'],
+        summary='个人资料注销设置更新'
+    )
     def put(self, request, tenant_uuid):
         config = self.get_object()
         data = config.data
@@ -61,10 +70,10 @@ class TenantUserLogOutConfigView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'userset.profileset'], tags=['tenant'], summary='个人资料设备记录配置更新')
 class TenantUserLoggingConfigView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = TenantUserLoggingConfigSerializer
@@ -80,7 +89,11 @@ class TenantUserLoggingConfigView(generics.RetrieveUpdateAPIView):
             config = TenantUserConfig()
             config.save_data(tenant)
         return config
-    
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'userset.profileset'],
+        summary='个人资料设备记录配置获取'
+    )
     def get(self, request, tenant_uuid):
         config = self.get_object()
         data = config.data
@@ -89,7 +102,11 @@ class TenantUserLoggingConfigView(generics.RetrieveUpdateAPIView):
             'is_logging_device': data.get('is_logging_device')
         })
         return Response(serializer.data)
-    
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'userset.profileset'],
+        summary='个人资料设备记录配置更新'
+    )
     def put(self, request, tenant_uuid):
         config = self.get_object()
         data = config.data
@@ -108,10 +125,10 @@ class TenantUserLoggingConfigView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'userset.profileset'], tags=['tenant'], summary='个人资料Token配置更新')
 class TenantUserTokenConfigView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = TenantUserTokenConfigSerializer
@@ -126,7 +143,11 @@ class TenantUserTokenConfigView(generics.RetrieveUpdateAPIView):
             config = TenantUserConfig()
             config.save_data(tenant)
         return config
-    
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'userset.profileset'],
+        summary='个人资料Token配置获取'
+    )
     def get(self, request, tenant_uuid):
         config = self.get_object()
         data = config.data
@@ -135,7 +156,11 @@ class TenantUserTokenConfigView(generics.RetrieveUpdateAPIView):
             'is_manual_overdue_token': data.get('is_manual_overdue_token')
         })
         return Response(serializer.data)
-    
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'userset.profileset'],
+        summary='个人资料Token配置修改'
+    )
     def put(self, request, tenant_uuid):
         config = self.get_object()
         data = config.data
@@ -153,8 +178,11 @@ class TenantUserTokenConfigView(generics.RetrieveUpdateAPIView):
         })
         return Response(serializer.data)
 
-@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'userset.profileset'], tags=['tenant'])
 class TenantUserConfigFieldSelectListView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = TenantUserConfigFieldSelectListSerializer
 
@@ -170,7 +198,11 @@ class TenantUserConfigFieldSelectListView(generics.RetrieveUpdateAPIView):
             config.save_data(tenant)
         return config
 
-    @extend_schema(responses=TenantUserConfigFieldSelectListSerializer)
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'userset.profileset'],
+        responses=TenantUserConfigFieldSelectListSerializer,
+        summary='获取可编辑字段选择列表'
+    )
     def get(self, request, tenant_uuid):
         config = self.get_object()
         data = config.data
@@ -216,6 +248,11 @@ class TenantUserConfigFieldSelectListView(generics.RetrieveUpdateAPIView):
         })
         return Response(serializer.data)
     
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'userset.profileset'],
+        responses=TenantUserConfigFieldSelectListSerializer,
+        summary='修改可编辑字段'
+    )
     def put(self, request, tenant_uuid):
         config = self.get_object()
         data = config.data
@@ -236,11 +273,37 @@ class TenantUserConfigFieldSelectListView(generics.RetrieveUpdateAPIView):
         })
         return Response(serializer.data)
 
+    
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'userset.profileset'],
+        responses=TenantUserConfigFieldSelectListSerializer,
+        summary='修改可编辑字段'
+    )
+    def patch(self, request, tenant_uuid):
+        config = self.get_object()
+        data = config.data
+        result = request.data.get('results')
+        item_copys = []
+        for item in result:
+            is_select = item.get('is_select')
+            if is_select is True:
+                item_copy = copy.deepcopy(item)
+                item_copy.pop('is_select')
+                if item_copy not in item_copys:
+                    item_copys.append(item_copy)
+        data['is_edit_fields'] = item_copys
+        config.data = data
+        config.save()
+        serializer = self.get_serializer({
+            'results': result
+        })
+        return Response(serializer.data)
+
         
-@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'userset.profileset'], tags=['tenant'], summary='个人资料可编辑字段列表')
 class TenantUserEditFieldListConfigView(generics.RetrieveAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = TenantUserEditFieldListConfigSerializer

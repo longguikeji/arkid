@@ -15,7 +15,7 @@ CACHE_SECONDS = 60*2
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'statisticalgraph'],
     summary='统计图表',
     tags=['statistics'],
 )

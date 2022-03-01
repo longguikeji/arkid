@@ -18,12 +18,12 @@ from .base import BaseViewSet
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook列表'),
-    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook详情'),
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook删除'),
-    update=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook修改'),
-    create=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook创建'),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'],summary='webhook更新'),
+    list=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook列表'),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook详情'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook删除'),
+    update=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook修改'),
+    create=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook创建'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook更新'),
 )
 @extend_schema(
     tags=['webhook'],

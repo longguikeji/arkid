@@ -27,8 +27,8 @@ LoginRegisterConfigPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='删除登录注册配置'),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='修改登录注册配置'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'], summary='删除登录注册配置'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'], summary='修改登录注册配置'),
 )
 @extend_schema(
     tags=['login_register_config'],
@@ -88,7 +88,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         return obj
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'],
         responses=LoginRegisterConfigListSerializer,
         summary='登录注册配置列表'
     )
@@ -96,7 +96,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'],
         request=LoginRegisterConfigPolymorphicProxySerializer,
         responses=LoginRegisterConfigPolymorphicProxySerializer,
         summary='登录注册配置修改'
@@ -110,7 +110,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'],
         request=LoginRegisterConfigPolymorphicProxySerializer,
         responses=LoginRegisterConfigPolymorphicProxySerializer,
         summary='登录注册配置创建'
@@ -124,7 +124,7 @@ class LoginRegisterConfigViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'],
         responses=LoginRegisterConfigPolymorphicProxySerializer,
         summary='登录注册配置获取'
     )

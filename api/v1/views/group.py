@@ -31,7 +31,7 @@ from django.db import transaction
 
 @extend_schema_view(
     list=extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser', 'usermanage.groupmanage'],
         responses=GroupSerializer,
         parameters=[
             OpenApiParameter(
@@ -51,29 +51,29 @@ from django.db import transaction
         summary='分组列表',
     ),
     create=extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
         request=GroupCreateRequestSerializer,
         responses=GroupSerializer,
         summary='分组创建',
     ),
     retrieve=extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser', 'usermanage.groupmanage'],
         responses=GroupSerializer,
         summary='分组获取',
     ),
     update=extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
         request=GroupSerializer,
         responses=GroupSerializer,
         summary='分组更新',
     ),
     destroy=extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
         summary='分组删除',
     ),
     partial_update=extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
-        summary='分组批量更新',
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
+        summary='分组更新',
     ),
 )
 @extend_schema(tags=['group'])
@@ -150,14 +150,6 @@ class GroupViewSet(BaseViewSet):
         group = self.get_object()
 
         # 删除相应的权限
-        Permission.valid_objects.filter(
-            tenant=instance.tenant,
-            app=None,
-            permission_category='数据',
-            is_system_permission=True,
-            group_info=group,
-        ).delete()
-
         ret = super().destroy(request, *args, **kwargs)
         transaction.on_commit(lambda: WebhookManager.group_deleted(tenant.uuid, group))
         return ret
@@ -234,7 +226,8 @@ class GroupViewSet(BaseViewSet):
             )
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
+        summary='分组导出',
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
     )
     @action(detail=False, methods=['get'])

@@ -57,10 +57,10 @@ from config import get_app_config
 
 
 @extend_schema_view(
-    retrieve=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], summary='租户详情'),
-    destroy=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], summary='租户删除'),
+    retrieve=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin', 'tenantset.tenantconfig'], summary='租户详情'),
+    destroy=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin', 'tenantset.tenantconfig'], summary='租户删除'),
     partial_update=extend_schema(
-        roles=['generaluser', 'tenantadmin', 'globaladmin'], summary='租户修改'
+        roles=['generaluser', 'tenantadmin', 'globaladmin', 'tenantset.tenantconfig'], summary='租户修改'
     ),
 )
 @extend_schema(tags=['tenant'])
@@ -79,16 +79,51 @@ class TenantViewSet(BaseViewSet):
         return TenantSerializer
 
     @extend_schema(
-        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin', 'usermanage.tenantlist'],
         action_type='list',
         summary='租户列表'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], summary=_('租户修改'))
-    def update(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
+        result = self.check_tenant_permission()
+        if result is not None:
+            return result
+        return super().destroy(request, *args, **kwargs)
+    
+    def check_tenant_permission(self):
+        '''
+        检查租户权限
+        '''
+        object = self.get_object()
+        user = self.request.user
+        if user is None:
+            return JsonResponse(
+                data={
+                    'error': Code.TENANT_NO_ACCESS.value,
+                    'message': _('tenant no access'),
+                }
+            )
+        if user.is_superuser is False:
+            tenant = user.tenants.filter(is_del=False, id=object.id).first()
+            if tenant and tenant.has_admin_perm(user):
+                pass
+            else:
+                return JsonResponse(
+                    data={
+                        'error': Code.TENANT_NO_ACCESS.value,
+                        'message': _('tenant no access'),
+                    }
+                )
+        return None
 
+    @extend_schema(roles=['tenantadmin', 'globaladmin', 'tenantset.tenantconfig'], summary=_('租户修改'))
+    def update(self, request, *args, **kwargs):
+        result = self.check_tenant_permission()
+        if result is not None:
+            return result
+        # 权限slug
         slug = request.data.get('slug')
         tenant_exists = (
             Tenant.active_objects.exclude(uuid=kwargs.get('pk'))
@@ -104,8 +139,30 @@ class TenantViewSet(BaseViewSet):
             )
         return super().update(request, *args, **kwargs)
 
+
+    @extend_schema(roles=['tenantadmin', 'globaladmin', 'tenantset.tenantconfig'], summary=_('租户修改'))
+    def patch(self, request, *args, **kwargs):
+        result = self.check_tenant_permission()
+        if result is not None:
+            return result
+        # 权限slug
+        slug = request.data.get('slug')
+        tenant_exists = (
+            Tenant.active_objects.exclude(uuid=kwargs.get('pk'))
+            .filter(slug=slug)
+            .exists()
+        )
+        if tenant_exists:
+            return JsonResponse(
+                data={
+                    'error': Code.SLUG_EXISTS_ERROR.value,
+                    'message': _('slug already exists'),
+                }
+            )
+        return super().patch(request, *args, **kwargs)
+
     @extend_schema(
-        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin', 'tenantset.tenantconfig'],
         summary=_('租户创建'),
     )
     def create(self, request):
@@ -228,7 +285,7 @@ class TenantSlugView(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'])
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'], tags=['tenant'])
 class TenantConfigView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated, ApiAccessPermission]
@@ -251,21 +308,21 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
             return tenantconfig
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser', 'authfactor.factorconfig'],
         summary='租户配置获取'
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'],
         summary='租户配置更新'
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'],
         summary='租户配置更新'
     )
     def patch(self, request, *args, **kwargs):
@@ -312,21 +369,21 @@ class TenantContactsConfigFunctionSwitchView(generics.RetrieveUpdateAPIView):
         ).first()
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
         summary='租户通讯录开关获取'
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'userset.contactsset'],
         summary='租户通讯录开关修改'
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'userset.contactsset'],
         summary='租户通讯录开关修改'
     )
     def patch(self, request, *args, **kwargs):
@@ -370,7 +427,7 @@ class TenantContactsConfigInfoVisibilityDetailView(generics.RetrieveUpdateAPIVie
         return super().patch(request, *args, **kwargs)
 
 
-@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'], summary='租户通讯录个人字段列表')
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'userset.contactsset'], tags=['tenant'], summary='租户通讯录个人字段列表')
 class TenantContactsConfigInfoVisibilityView(generics.ListAPIView):
 
     permission_classes = [IsAuthenticated, ApiAccessPermission]
@@ -419,21 +476,21 @@ class TenantContactsConfigGroupVisibilityView(generics.RetrieveUpdateAPIView):
             return group_config
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'userset.contactsset'],
         summary='租户通讯录分组配置详情'
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'userset.contactsset'],
         summary='租户通讯录分组配置修改'
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'userset.contactsset'],
         summary='租户通讯录分组配置修改'
     )
     def patch(self, request, *args, **kwargs):
@@ -757,21 +814,21 @@ class TenantDesktopConfigView(generics.RetrieveUpdateAPIView):
         return config
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
         summary='租户桌面配置详情'
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'userset.desktopset'],
         summary='租户桌面配置修改'
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'userset.desktopset'],
         summary='租户桌面配置修改'
     )
     def patch(self, request, *args, **kwargs):
@@ -892,7 +949,7 @@ class TenantLogConfigView(generics.RetrieveUpdateAPIView):
         return super().patch(request, *args, **kwargs)
 
 
-@extend_schema(roles=['generaluser','tenantadmin', 'globaladmin'], tags=['tenant'])
+@extend_schema(roles=['globaladmin', 'platformmanage.platformconfig'], tags=['tenant'])
 class TenantSwitchView(generics.RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated, ApiAccessPermission]
@@ -905,21 +962,21 @@ class TenantSwitchView(generics.RetrieveUpdateAPIView):
         return tenant_switch
 
     @extend_schema(
-        roles=['generaluser','tenantadmin', 'globaladmin'],
+        roles=['globaladmin', 'platformmanage.platformconfig'],
         summary='租户功能开关详情'
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['generaluser','tenantadmin', 'globaladmin'],
+        roles=['globaladmin', 'platformmanage.platformconfig'],
         summary='租户功能开关修改'
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['generaluser','tenantadmin', 'globaladmin'],
+        roles=['globaladmin', 'platformmanage.platformconfig'],
         summary='租户功能开关修改'
     )
     def patch(self, request, *args, **kwargs):

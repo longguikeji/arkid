@@ -26,8 +26,8 @@ BackendLoginPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='后台登录方式删除'),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'], summary='后台登录方式删除'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'], summary='后台登录方式修改'),
 )
 @extend_schema(tags=['backend_login'])
 class BackendLoginViewSet(BaseViewSet):
@@ -61,12 +61,12 @@ class BackendLoginViewSet(BaseViewSet):
         obj = BackendLogin.valid_objects.filter(**kwargs).first()
         return obj
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=BackendLoginListSerializer, summary='后台登录方式列表')
+    @extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'], responses=BackendLoginListSerializer, summary='后台登录方式列表')
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         request=BackendLoginPolymorphicProxySerializer,
         responses=BackendLoginPolymorphicProxySerializer,
         summary='后台登录方式修改'
@@ -75,7 +75,7 @@ class BackendLoginViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         request=BackendLoginPolymorphicProxySerializer,
         responses=BackendLoginPolymorphicProxySerializer,
         summary='后台登录方式创建'
@@ -83,12 +83,12 @@ class BackendLoginViewSet(BaseViewSet):
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=BackendLoginPolymorphicProxySerializer, summary='后台登录方式获取')
+    @extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'], responses=BackendLoginPolymorphicProxySerializer, summary='后台登录方式获取')
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         request=BackendLoginReorderSerializer,
         responses=BackendLoginReorderSerializer,
         summary='后台登录方式修改'
@@ -117,7 +117,7 @@ class BackendLoginViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         responses=BackendLoginReorderSerializer,
         summary='后台登录方式上移'
     )
@@ -126,7 +126,7 @@ class BackendLoginViewSet(BaseViewSet):
         return self._do_actual_move('up', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         responses=BackendLoginReorderSerializer,
         summary='后台登录方式下移'
     )
@@ -135,7 +135,7 @@ class BackendLoginViewSet(BaseViewSet):
         return self._do_actual_move('down', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         responses=BackendLoginReorderSerializer,
         summary='后台登录方式置顶'
     )
@@ -144,7 +144,7 @@ class BackendLoginViewSet(BaseViewSet):
         return self._do_actual_move('top', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         responses=BackendLoginReorderSerializer,
         summary='后台登录方式置底'
     )

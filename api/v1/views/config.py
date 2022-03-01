@@ -196,7 +196,7 @@ class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'],
     tags=['config'],
     parameters=[
         OpenApiParameter(
@@ -221,7 +221,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
             return None
         return privacy_notice_provider
 
-    @extend_schema(summary='隐私政策修改', roles=['tenantadmin', 'globaladmin'])
+    @extend_schema(summary='隐私政策修改', roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'])
     def put(self, request, *args, **kwargs):
         provider = self.get_provider()
         if not provider:
@@ -238,7 +238,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
         serializer.save()
         return Response(serializer.data)
 
-    @extend_schema(summary='隐私政策获取', roles=['tenantadmin', 'globaladmin'])
+    @extend_schema(summary='隐私政策获取', roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'])
     def get(self, request, *args, **kwargs):
         provider = self.get_provider()
         if not provider:

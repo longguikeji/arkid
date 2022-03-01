@@ -90,7 +90,7 @@ class AppViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         summary='租户app删除'
     )
     @transaction.atomic()
@@ -103,7 +103,7 @@ class AppViewSet(BaseViewSet):
         return ret
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         responses=AppSerializer,
         summary='租户app列表'
     )
@@ -111,7 +111,7 @@ class AppViewSet(BaseViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         request=AppPolymorphicProxySerializer,
         responses=AppPolymorphicProxySerializer,
         summary='租户app修改'
@@ -135,7 +135,7 @@ class AppViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         request=AppPolymorphicProxySerializer,
         responses=AppPolymorphicProxySerializer,
         summary='租户app创建',
@@ -161,7 +161,7 @@ class AppViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser', 'appmanage'],
         responses=AppPolymorphicProxySerializer, summary='租户app获取'
     )
     def retrieve(self, request, *args, **kwargs):
@@ -196,7 +196,7 @@ class AppViewSet(BaseViewSet):
 
 @extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = AppProvisioningSerializer
 
@@ -206,6 +206,27 @@ class AppProvisioningView(generics.RetrieveUpdateAPIView):
         app = App.objects.filter(uuid=app_uuid, tenant__uuid=tenant_uuid).first()
         config, is_created = Config.valid_objects.get_or_create(app=app)
         return config
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='app配置获取'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='app配置更新'
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='app配置修改'
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
 
 
 @extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])

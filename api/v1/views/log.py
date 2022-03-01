@@ -27,7 +27,7 @@ def get_log_retention_date(tenant):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'logmanage.useractionlog'],
     tags = ['log'],
 )
 class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
@@ -84,7 +84,7 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         return qs
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'logmanage.useractionlog'],
         parameters=[
             OpenApiParameter(
                 name='user',
@@ -128,7 +128,7 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'logmanage.useractionlog'],
         summary='租户用户日志详情'
     )
     def retrieve(self, request, *args, **kwargs):
@@ -136,7 +136,7 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'logmanage.manageractionlog'],
     tags = ['log'],
 )
 class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
@@ -193,7 +193,7 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         return qs
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'logmanage.manageractionlog'],
         parameters=[
             OpenApiParameter(
                 name='user',
@@ -237,7 +237,7 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'logmanage.manageractionlog'],
         summary='租户管理员日志详情'
     )
     def retrieve(self, request, *args, **kwargs):
@@ -245,7 +245,7 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'logmanage.logset'],
     tags = ['log']
 )
 class LogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
@@ -269,14 +269,14 @@ class LogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         return log
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'logmanage.logset'],
         summary='租户日志列表'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'logmanage.logset'],
         summary='租户日志详情'
     )
     def retrieve(self, request, *args, **kwargs):

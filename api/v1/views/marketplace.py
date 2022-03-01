@@ -87,7 +87,7 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
 
 
     @extend_schema(
-        roles=['globaladmin'],
+        roles=['globaladmin', 'pluginmanage.pluginconfig'],
         summary='插件市场列表',
         parameters=[
             OpenApiParameter(

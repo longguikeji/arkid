@@ -6,6 +6,7 @@ from openapi.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from auth_rules.models import TenantAuthRule
+from perm.custom_access import ApiAccessPermission
 from auth_rules.serializers import BaseTenantAuthRuleSerializer, TenantAuthRuleListSerializer
 
 TenantAuthRulePolymorphicProxySerializer = PolymorphicProxySerializer(
@@ -16,15 +17,15 @@ TenantAuthRulePolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin']),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.authrule'], summary='删除认证因素'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.authrule'], summary='修改认证因素'),
 )
 @extend_schema(
     tags=['app'],
 )
 class TenantAuthRuleViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = BaseTenantAuthRuleSerializer
@@ -51,30 +52,34 @@ class TenantAuthRuleViewSet(BaseViewSet):
             .first()
         )
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=TenantAuthRuleListSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.authrule'], responses=TenantAuthRuleListSerializer, summary='认证因素列表')
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.authrule'],
         request=TenantAuthRulePolymorphicProxySerializer,
         responses=TenantAuthRulePolymorphicProxySerializer,
+        summary='创建认证因素',
     )
     def create(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.authrule'],
         request=TenantAuthRulePolymorphicProxySerializer,
         responses=TenantAuthRulePolymorphicProxySerializer,
+        summary='修改认证因素',
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'], responses=TenantAuthRulePolymorphicProxySerializer
+        roles=['tenantadmin', 'globaladmin', 'authfactor.authrule'],
+        responses=TenantAuthRulePolymorphicProxySerializer,
+        summary='获取认证因素'
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)

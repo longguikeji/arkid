@@ -302,6 +302,8 @@ def update_permission():
     roles_describe = {}
     # 处理子对象
     process_child(roles_describe, base_children, '')
+    print('结果对吗')
+    print(json.dumps(roles_describe))
     base_permission_group, is_create = PermissionGroup.objects.get_or_create(
         is_active=True,
         is_del=False,
@@ -329,7 +331,7 @@ def update_permission():
         parent_list = []
         for index, role_key_item in enumerate(role_key_arr):
             # 先加进数组
-            role_key_temp_arr.append(role_key)
+            role_key_temp_arr.append(role_key_item)
             # 在拼接
             role_key_item = '.'.join(role_key_temp_arr)    
             permissiongroup, is_create = PermissionGroup.objects.get_or_create(
@@ -348,10 +350,12 @@ def update_permission():
                 # 前一项设置为父亲
                 permissiongroup.parent = parent_list[index-1]
             permissiongroup.save()
+            # 清理掉权限
+            permissiongroup.permissions.clear()
             # 额外添加
             parent_list.append(permissiongroup)
             # 给匹配权限
-            for role in roles.get(role_key_item):
+            for role in roles.get(role_key_item, []):
                 permissiongroup.permissions.add(role)
     # 删掉没更新的数据
     PermissionGroup.valid_objects.filter(

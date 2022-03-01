@@ -240,36 +240,65 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         '''
         检查app权限
         '''
-        childmanager_result = False
-        try:
-            from extension_root.childmanager.models import ChildManager
-            childmanager_result = ChildManager.valid_objects.filter(tenant=tenant, user=self).exists()
-        except:
-            print('没有子管理员的插件')
-        if self.is_superuser is False and tenant.has_admin_perm(self) is False and childmanager_result is False:
+        from django.db.models import Q
+        if self.is_superuser is False and tenant.has_admin_perm(self) is False:
             # 权限
             permission = Permission.active_objects.filter(
                 is_system_permission=True,
                 tenant=tenant,
                 app=app,
             ).first()
-            permission_result = self.user_permissions.filter(
-                uuid=permission.uuid
-            ).exists()
-            if permission_result is True:
-                return permission_result
-            # 看下组权限
-            permissiongroups = PermissionGroup.active_objects.filter(permissions__uuid=permission.uuid)
-            if permissiongroups is None:
-                return False
-            user_permissions_groups = self.user_permissions_group.all()
-            if user_permissions_groups is None:
-                return False
-            for user_permissions_group in user_permissions_groups:
-                for permissiongroup in permissiongroups:
-                    if user_permissions_group == permissiongroup:
+            # 用户权限分组
+            user = self
+            permissiongroups = PermissionGroup.valid_objects.filter(
+                permissions=permission
+            )
+            user_permissions_groups = user.user_permissions_group.all()
+            permissions_groups_ids = []
+            for permissiongroup in permissiongroups:
+                for user_permissions_group in user_permissions_groups:
+                    if user_permissions_group.id == permissiongroup.id:
                         return True
+                # 数据补充
+                permissions_groups_ids.append(permissiongroup.id)
+            # 用户权限
+            user_permissions = user.user_permissions.all()
+            for user_permission in user_permissions:
+                if user_permission.id == permission.id:
+                    return True
+            # 用户组权限
+            groups = user.groups.all()
+            group_ids = []
+            for group in groups:
+                # 本体
+                group_ids.append(group.id)
+                # 父分组
+                group.parent_groups(group_ids)
+            if group_ids:
+                return Group.valid_objects.filter(
+                    Q(permissions=permission)|Q(permissions_groups__id__in=permissions_groups_ids),
+                    id__in=group_ids
+                ).exists()
             return False
+            # permission_result = self.user_permissions.filter(
+            #     uuid=permission.uuid
+            # ).exists()
+            # if permission_result is True:
+            #     return permission_result
+            # # 看下组权限
+            # permissiongroups = PermissionGroup.active_objects.filter(permissions__uuid=permission.uuid)
+            # if permissiongroups is None:
+            #     return False
+            # user_permissions_groups = self.user_permissions_group.all()
+            # if user_permissions_groups is None:
+            #     return False
+            # # 权限组循环
+            # for user_permissions_group in user_permissions_groups:
+            #     for permissiongroup in permissiongroups:
+            #         if user_permissions_group == permissiongroup:
+            #             return True
+            # # 要考虑父分组的情况
+            # return False
         else:
             return True
 

@@ -26,7 +26,7 @@ ExternalIdpPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='删除外部插件'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'], summary='删除外部插件'),
     partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(tags=['external_idp'])
@@ -61,12 +61,12 @@ class ExternalIdpViewSet(BaseViewSet):
         obj = ExternalIdp.valid_objects.filter(**kwargs).first()
         return obj
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=ExternalIdpListSerializer, summary='外部插件列表')
+    @extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'], responses=ExternalIdpListSerializer, summary='外部插件列表')
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'],
         request=ExternalIdpPolymorphicProxySerializer,
         responses=ExternalIdpPolymorphicProxySerializer,
         summary='修改外部插件',
@@ -75,7 +75,7 @@ class ExternalIdpViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'],
         request=ExternalIdpPolymorphicProxySerializer,
         responses=ExternalIdpPolymorphicProxySerializer,
         summary='创建外部插件',
@@ -85,12 +85,12 @@ class ExternalIdpViewSet(BaseViewSet):
 
         return super().create(request, *args, **kwargs)
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=ExternalIdpPolymorphicProxySerializer, summary='获得外部插件')
+    @extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'], responses=ExternalIdpPolymorphicProxySerializer, summary='获得外部插件')
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'],
         request=ExternalIdpReorderSerializer,
         responses=ExternalIdpReorderSerializer,
         summary='修改外部插件'
@@ -119,7 +119,7 @@ class ExternalIdpViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'],
         responses=ExternalIdpReorderSerializer,
         summary='外部插件上移',
     )
@@ -128,7 +128,7 @@ class ExternalIdpViewSet(BaseViewSet):
         return self._do_actual_move('up', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'],
         responses=ExternalIdpReorderSerializer,
         summary='外部插件下移',
     )
@@ -137,7 +137,7 @@ class ExternalIdpViewSet(BaseViewSet):
         return self._do_actual_move('down', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'],
         responses=ExternalIdpReorderSerializer,
         summary='外部插件置顶',
     )
@@ -146,7 +146,7 @@ class ExternalIdpViewSet(BaseViewSet):
         return self._do_actual_move('top', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.thirdpartylogin'],
         responses=ExternalIdpReorderSerializer,
         summary='外部插件置底',
     )

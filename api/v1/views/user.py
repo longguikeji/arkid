@@ -69,7 +69,7 @@ from django.db import transaction
 
 @extend_schema_view(
     list=extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'],
         responses=UserListResponsesSerializer,
         parameters=[
             OpenApiParameter(
@@ -122,11 +122,11 @@ from django.db import transaction
             ),
         ], summary='用户列表'
     ),
-    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='读取用户'),
-    create=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='创建用户'),
-    update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='更新用户'),
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='删除用户'),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='批量更新用户'),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='读取用户'),
+    create=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='创建用户'),
+    update=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='更新用户'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='删除用户'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='批量更新用户'),
 )
 @extend_schema(
     tags=['user'],
@@ -285,7 +285,7 @@ class UserViewSet(BaseViewSet):
         return super(UserViewSet, self).update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'],
         request=UserImportSerializer,
         responses=UserImportSerializer,
         summary='导入用户',
@@ -376,7 +376,7 @@ class UserViewSet(BaseViewSet):
             )
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'],
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
         summary='导出用户',
     )
@@ -400,7 +400,7 @@ class UserViewSet(BaseViewSet):
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app列表'),
+    list=extend_schema(roles=['tenantadmin', 'globaladmin', 'generaluser'], summary='租户app列表'),
     create=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app创建'),
     retrieve=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app详情'),
     destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app删除'),

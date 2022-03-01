@@ -27,8 +27,8 @@ OtherAuthFactorPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='删除其它认证因素'),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='批量修改其它认证因素'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'], summary='删除其它认证因素'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'], summary='批量修改其它认证因素'),
 )
 @extend_schema(
     tags=['other_auth_factor'],
@@ -79,7 +79,7 @@ class OtherAuthFactorViewSet(BaseViewSet):
         return obj
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'],
         responses=OtherAuthFactorListSerializer,
         summary='其它认证因素列表'
     )
@@ -87,7 +87,7 @@ class OtherAuthFactorViewSet(BaseViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'],
         request=OtherAuthFactorPolymorphicProxySerializer,
         responses=OtherAuthFactorPolymorphicProxySerializer,
         summary='其它认证因素修改'
@@ -96,7 +96,7 @@ class OtherAuthFactorViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'],
         request=OtherAuthFactorPolymorphicProxySerializer,
         responses=OtherAuthFactorPolymorphicProxySerializer,
         summary='其它认证因素创建'
@@ -110,7 +110,7 @@ class OtherAuthFactorViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'],
         responses=OtherAuthFactorPolymorphicProxySerializer,
         summary='其它认证因素获取'
     )

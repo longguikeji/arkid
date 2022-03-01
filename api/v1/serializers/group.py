@@ -91,23 +91,6 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         parent = Group.valid_objects.filter(uuid=parent_uuid).first()
 
         o: Group = Group.valid_objects.create(tenant=tenant, name=name, parent=parent)
-
-        # 新建分组权限
-        permission_obj = Permission()
-        permission_obj.name = name
-        permission_obj.tenant = tenant
-        permission_obj.app = None
-        permission_obj.codename = 'group_{}'.format(uuid.uuid4())
-        permission_obj.permission_category = '数据'
-        permission_obj.is_system_permission = True
-        permission_obj.action = ''
-        permission_obj.operation_id = ''
-        permission_obj.description = ''
-        permission_obj.request_url = ''
-        permission_obj.request_type = ''
-        permission_obj.group_info = o
-        permission_obj.is_update = True
-        permission_obj.save()
         # if set_permissions is not None:
         #     o.permissions.clear()
         #     for p_uuid in set_permissions:
@@ -145,33 +128,6 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         #     instance.permissions.clear()
 
         instance.save()
-
-        permission_obj = Permission.valid_objects.filter(
-            tenant=instance.tenant,
-            app=None,
-            permission_category='数据',
-            is_system_permission=True,
-            group_info=instance,
-        ).first()
-        if permission_obj is None:
-            permission_obj = Permission()
-            permission_obj.name = instance.name
-            permission_obj.tenant = instance.tenant
-            permission_obj.codename = 'group_{}'.format(uuid.uuid4())
-            permission_obj.app = None
-            permission_obj.permission_category = '数据'
-            permission_obj.is_system_permission = True
-            permission_obj.action = ''
-            permission_obj.operation_id = ''
-            permission_obj.description = ''
-            permission_obj.request_url = ''
-            permission_obj.request_type = ''
-            permission_obj.group_info = instance
-            permission_obj.is_update = True
-            permission_obj.save()
-        # 可能会更新名称
-        permission_obj.name = instance.name
-        permission_obj.save()
 
         transaction.on_commit(
             lambda: WebhookManager.group_updated(self.context['tenant'].uuid, instance)

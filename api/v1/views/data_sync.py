@@ -23,8 +23,8 @@ DataSyncPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='删除数据同步设置'),
-    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='批量更新数据同步设置'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'], summary='删除数据同步设置'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'], summary='批量更新数据同步设置'),
 )
 @extend_schema(
     roles=['tenantadmin', 'globaladmin'],
@@ -75,7 +75,7 @@ class DataSyncViewSet(BaseViewSet):
         return obj
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'],
         responses=DataSyncListSerializer,
         summary='数据更新列表',
     )
@@ -83,7 +83,7 @@ class DataSyncViewSet(BaseViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'],
         request=DataSyncPolymorphicProxySerializer,
         responses=DataSyncPolymorphicProxySerializer,
         summary='修改数据更新',
@@ -92,7 +92,7 @@ class DataSyncViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'],
         request=DataSyncPolymorphicProxySerializer,
         responses=DataSyncPolymorphicProxySerializer,
         summary='创建数据更新',
@@ -102,7 +102,7 @@ class DataSyncViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'],
         responses=DataSyncPolymorphicProxySerializer,
         summary='获取数据更新',
     )

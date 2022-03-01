@@ -204,7 +204,6 @@ class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
 
 RFC3339 = "%Y-%m-%dT%H:%M:%SZ"
 
-
 class AuthorizationView(BaseAuthorizationView, FormView):
     """
     Implements an endpoint to handle *Authorization Requests* as in :rfc:`4.1.1` and prompting the

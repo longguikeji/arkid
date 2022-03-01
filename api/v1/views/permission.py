@@ -82,21 +82,21 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         return obj
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissionlist'],
         summary='分组权限列表'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissionlist'],
         summary='分组权限获取'
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionlist'],
     tags=['permission'],
     summary='权限创建'
 )
@@ -118,7 +118,7 @@ class PermissionCreateView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionlist'],
     tags=['permission']
 )
 class PermissionView(generics.RetrieveUpdateDestroyAPIView):
@@ -144,28 +144,28 @@ class PermissionView(generics.RetrieveUpdateDestroyAPIView):
         return context
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissionlist'],
         summary='租户权限详情'
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissionlist'],
         summary='租户权限修改'
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissionlist'],
         summary='租户权限修改'
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissionlist'],
         summary='租户权限删除'
     )
     def delete(self, request, *args, **kwargs):
@@ -173,7 +173,7 @@ class PermissionView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissiongroup'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(
@@ -207,12 +207,12 @@ class PermissionGroupView(generics.ListAPIView):
         else:
             kwargs['parent__uuid'] = parent
 
-        permission_groups = PermissionGroup.valid_objects.filter(Q(tenant__uuid=tenant_uuid)|Q(is_system_group=True)).filter(**kwargs).order_by('-id')
+        permission_groups = PermissionGroup.valid_objects.filter(Q(tenant__uuid=tenant_uuid)|Q(is_system_group=True)).filter(**kwargs).order_by('-is_system_group', '-id')
         return permission_groups
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissiongroup'],
     tags=['permission'],
     summary='权限分组创建'
 )
@@ -230,7 +230,7 @@ class PermissionGroupCreateView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissiongroup'],
     tags=['permission']
 )
 class PermissionGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -256,28 +256,28 @@ class PermissionGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
         return context
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissiongroup'],
         summary='租户权限分组详情'
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissiongroup'],
         summary='租户权限分组修改'
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissiongroup'],
         summary='租户权限分组修改'
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin'],
+        roles=['tenantadmin', 'globaladmin', 'authmanage.permissiongroup'],
         summary='租户权限分组删除'
     )
     def delete(self, request, *args, **kwargs):
@@ -285,7 +285,7 @@ class PermissionGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(
@@ -376,7 +376,7 @@ class UserPermissionView(generics.RetrieveAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
     tags=['permission'],
     summary='用户权限创建'
 )
@@ -399,7 +399,7 @@ class UserPermissionCreateView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(
@@ -461,7 +461,7 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
 
 # group
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(
@@ -524,7 +524,7 @@ class GroupPermissionView(generics.RetrieveAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
     tags=['permission'],
     summary='分组权限创建'
 )
@@ -542,7 +542,7 @@ class GroupPermissionCreateView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(
@@ -604,7 +604,7 @@ class GroupPermissionDeleteView(generics.RetrieveAPIView):
 
 # app
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
     tags=['permission'],
     parameters=[
         OpenApiParameter(

@@ -297,6 +297,10 @@ root_add_roles_describe({
                 {
                     'code': 'otherauthfactor',
                     'name': '其它认证因素'
+                },
+                {
+                    'code': 'authrule',
+                    'name': '认证规则'
                 }
             ]
         },
@@ -369,20 +373,16 @@ root_add_roles_describe({
             ]
         },
         {
-            'code':'userset',
-            'name':'用户设置',
+            'code':'pluginmanage',
+            'name':'插件管理',
             'children': [
                 {
-                    'code': 'desktopset',
-                    'name': '桌面设置'
+                    'code': 'pluginstore',
+                    'name': '插件商店'
                 },
                 {
-                    'code': 'contactsset',
-                    'name': '通讯录设置'
-                },
-                {
-                    'code': 'profileset',
-                    'name': '个人资料设置'
+                    'code': 'pluginconfig',
+                    'name': '插件配置'
                 }
             ]
         },
@@ -391,8 +391,8 @@ root_add_roles_describe({
             'name':'平台管理',
             'children': [
                 {
-                    'code': 'pluginconfig',
-                    'name': '插件配置'
+                    'code': 'bindplatform',
+                    'name': '绑定中心平台'
                 },
                 {
                     'code': 'platformconfig',

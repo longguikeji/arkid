@@ -32,3 +32,24 @@ class SystemConfigView(generics.RetrieveUpdateAPIView):
             systemconfig.data = default_data.get('data')
             systemconfig.save()
         return systemconfig
+
+    @extend_schema(
+        roles=['globaladmin'],
+        summary='系统配置获取'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['globaladmin'],
+        summary='系统配置更新'
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['globaladmin'],
+        summary='系统配置修改'
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)

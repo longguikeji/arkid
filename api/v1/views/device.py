@@ -151,12 +151,12 @@ class DeviceListView(generics.ListCreateAPIView):
         context['tenant_uuid'] = self.request.query_params.get('tenant_uuid', '')
         return context
 
-    @extend_schema(summary='设备列表', roles=['tenantadmin', 'globaladmin'])
+    @extend_schema(summary='设备列表', roles=['tenantadmin', 'globaladmin', 'usermanage.devicemanage'])
     def get(self, request, *args, **kwargs):
         return super(DeviceListView, self).get(request, *args, **kwargs)
 
 
-    @extend_schema(summary='新建设备', roles=['tenantadmin', 'globaladmin'])
+    @extend_schema(summary='新建设备', roles=['tenantadmin', 'globaladmin', 'generaluser'])
     def post(self, request, *args, **kwargs):
         return super(DeviceListView, self).post(request, *args, **kwargs)
 
@@ -173,18 +173,18 @@ class DeviceDetailView(generics.RetrieveDestroyAPIView):
         device = Device.active_objects.filter(uuid=device_uuid).first()
         return device
 
-    @extend_schema(summary='设备详情获取', roles=['tenantadmin', 'globaladmin', 'generaluser'])
+    @extend_schema(summary='设备详情获取', roles=['tenantadmin', 'globaladmin', 'usermanage.devicemanage'])
     def get(self, request, *args, **kwargs):
         return super(DeviceDetailView, self).get(request, *args, **kwargs)
 
 
-    @extend_schema(summary='设备删除', roles=['tenantadmin', 'globaladmin', 'generaluser'])
+    @extend_schema(summary='设备删除', roles=['tenantadmin', 'globaladmin', 'usermanage.devicemanage'])
     def delete(self, request, *args, **kwargs):
         return super(DeviceDetailView, self).delete(request, *args, **kwargs)
 
 
 
-@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], summary='设备导出', tags=['tenant'], responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY})
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.devicemanage'], summary='设备导出', tags=['tenant'], responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY})
 class DeviceExportView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated, ApiAccessPermission]
