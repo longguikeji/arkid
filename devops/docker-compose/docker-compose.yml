@@ -16,7 +16,7 @@ services:
       - ./portal.conf:/etc/nginx/conf.d/default.conf
 
   be:
-    image: longguikeji/arkid:v2dev-101
+    image: longguikeji/arkid:v2dev-189
     container_name: arkid-be
     sysctls:
       - net.core.somaxconn=65535
@@ -57,7 +57,7 @@ services:
       - ../../../arkid-frontend:/root/workspace/arkid-fe
       - ./vue.config.js:/root/workspace/arkid-fe/vue.config.js
 
-  # 不开发前段的话，放开这个
+  不开发前段的话，放开这个
   # fe:
   #   image: longguikeji/arkid-fe:v2dev
   #   container_name: arkid-fe
