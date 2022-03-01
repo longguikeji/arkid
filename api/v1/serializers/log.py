@@ -7,7 +7,7 @@ from requestlogs.storages import BaseEntrySerializer
 
 class LogSerializer(serializers.Serializer):
 
-    timestamp = serializers.DateTimeField(
+    created = serializers.DateTimeField(
         format="%Y-%m-%d %H:%M:%S",
         read_only=True,
         label=_("时间")
@@ -32,7 +32,7 @@ class LogSerializer(serializers.Serializer):
     def to_representation(self, log):
         data = super().to_representation(log)
         data['uuid'] = log.uuid
-        data['timestamp'] = log.created.strftime("%Y-%m-%d %H:%M:%S")
+        data['timestamp'] = data.pop('created')
         data['user'] = log.data['user'].get('username', '')
         data['ip'] = log.data['ip_address']
         data['action'] = log.data['request'].get('path', '')
