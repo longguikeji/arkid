@@ -140,9 +140,9 @@ class ApiAccessPermission(BaseAccessPermission, permissions.BasePermission):
             tenant_uuid = view.kwargs[self.TEANT_STRING]
         if 'tenant_uuid' in view.kwargs:
             tenant_uuid = view.kwargs['tenant_uuid']
-        if tenant is None:
+        if tenant_uuid is None:
             tenant_uuid = request.query_params.get('tenant', None)
-        if tenant is None:
+        if tenant_uuid is None:
             tenant_uuid = request.query_params.get('tenant_uuid', None)
         # 给附租户
         if tenant_uuid:

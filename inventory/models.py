@@ -61,18 +61,18 @@ class Permission(BaseModel):
         null=True,
         blank=True,
     )
-    permission_category = models.CharField(_('权限类型'), blank=False, null=True, default='', max_length=64)
+    permission_category = models.CharField(_('权限类型'), blank=True, null=True, default='', max_length=64)
     is_system_permission = models.BooleanField(default=True, verbose_name='是否是系统权限')
     # 权限字段扩展(兼容读取api)
-    action = models.CharField(_('动作'), blank=False, null=True, default='', max_length=256)
-    operation_id = models.CharField(_('操作id'), blank=False, null=True, default='', max_length=256)
-    description = models.CharField(_('描述'), blank=False, null=True, default='', max_length=512)
-    request_url = models.CharField(_('请求地址'), blank=False, null=True, default='', max_length=256)
-    request_type = models.CharField(_('请求方法'), blank=False, null=True, default='', max_length=256)
+    action = models.CharField(_('动作'), blank=True, null=True, default='', max_length=256)
+    operation_id = models.CharField(_('操作id'), blank=True, null=True, default='', max_length=256)
+    description = models.CharField(_('描述'), blank=True, null=True, default='', max_length=512)
+    request_url = models.CharField(_('请求地址'), blank=True, null=True, default='', max_length=256)
+    request_type = models.CharField(_('请求方法'), blank=True, null=True, default='', max_length=256)
     # 如果是分组权限则有此字段
     group_info = models.ForeignKey(
         'inventory.Group',
-        blank=False,
+        blank=True,
         null=True,
         default=None,
         on_delete=models.CASCADE,
@@ -553,9 +553,9 @@ class UserTenantPermissionAndPermissionGroup(BaseModel):
         verbose_name='用户',
         on_delete=models.CASCADE,
     )
-    tenant = models.ForeignKey('tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT, verbose_name='租户')
-    permission = models.ForeignKey('inventory.Permission', default=None, blank=False, null=True, on_delete=models.PROTECT, verbose_name='权限')
-    permissiongroup = models.ForeignKey('inventory.PermissionGroup', default=None,blank=False, null=True, on_delete=models.PROTECT, verbose_name='权限组')
+    tenant = models.ForeignKey('tenant.Tenant', blank=True, null=True, on_delete=models.PROTECT, verbose_name='租户')
+    permission = models.ForeignKey('inventory.Permission', default=None, blank=True, null=True, on_delete=models.PROTECT, verbose_name='权限')
+    permissiongroup = models.ForeignKey('inventory.PermissionGroup', default=None,blank=True, null=True, on_delete=models.PROTECT, verbose_name='权限组')
 
 
 class Invitation(BaseModel):
