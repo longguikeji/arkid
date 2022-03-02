@@ -17,7 +17,7 @@ from perm.custom_access import ApiAccessPermission
 from drf_spectacular.utils import OpenApiParameter
 from drf_spectacular.openapi import OpenApiTypes
 from .base import BaseTenantViewSet
-from inventory.models import Permission, PermissionGroup, User, Group
+from inventory.models import Permission, PermissionGroup, User, Group, UserTenantPermissionAndPermissionGroup
 from rest_framework import viewsets
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
@@ -309,10 +309,19 @@ class UserPermissionView(generics.RetrieveAPIView):
         user = User.active_objects.filter(uuid=user_uuid).first()
         items = []
         # 当前用户拥有的权限
-        user_permissions = user.user_permissions.filter(
-            Q(tenant__uuid=tenant_uuid)|Q(is_system_permission=True),
-            is_del=False,
-        ).all()
+        user_permissions = []
+        user_permissions_groups = []
+        user_permission_groups = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+            user=user,
+            tenant__uuid=tenant_uuid,
+        )
+        for user_permission_group in user_permission_groups:
+            # 权限分组
+            if user_permission_group.permissiongroup is not None:
+                user_permissions_groups.append(user_permission_group.permissiongroup)
+            # 权限
+            if user_permission_group.permission is not None:
+                user_permissions.append(user_permission_group.permission)
         for user_permission in user_permissions:
             items.append({
                 'uuid': user_permission.uuid_hex,
@@ -322,10 +331,6 @@ class UserPermissionView(generics.RetrieveAPIView):
                 'source': '用户权限',
             })
         # 当前用户拥有的权限组
-        user_permissions_groups = user.user_permissions_group.filter(
-            Q(tenant__uuid=tenant_uuid)|Q(is_system_group=True),
-            is_del=False,
-        ).all()
         for user_permissions_group in user_permissions_groups:
             items.append({
                 'uuid': user_permissions_group.uuid_hex,
@@ -388,7 +393,6 @@ class UserPermissionCreateView(generics.CreateAPIView):
     serializer_class = UserPermissionCreateSerializer
 
     def create(self, request, *args, **kwargs):
-        context = self.get_serializer_context()
         return super(UserPermissionCreateView, self).create(request, *args, **kwargs)
 
     def get_serializer_context(self):
@@ -435,7 +439,11 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
             if source == '用户权限':
                 permission = Permission.valid_objects.filter(uuid=uuid).first()
                 if permission:
-                    user.user_permissions.remove(permission)
+                    UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                        user=user,
+                        tenant__uuid=tenant_uuid,
+                        permission=permission,
+                    ).delete()
                 else:
                     serializer = self.get_serializer(
                         {'is_delete': False}
@@ -443,7 +451,11 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
             elif source == '用户权限组':
                 permission_group = PermissionGroup.valid_objects.filter(uuid=uuid).first()
                 if permission_group:
-                    user.user_permissions_group.remove(permission_group)
+                    UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                        user=user,
+                        tenant__uuid=tenant_uuid,
+                        permissiongroup=permission_group,
+                    ).delete()
                 else:
                     serializer = self.get_serializer(
                         {'is_delete': False}

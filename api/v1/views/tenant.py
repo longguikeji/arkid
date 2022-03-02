@@ -33,6 +33,7 @@ from api.v1.serializers.tenant import (
     TenantSwitchInfoSerializer,
     TenantUserRoleSerializer,
     TenantCollectInfoSerializer,
+    TenantUserPermissionSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
@@ -43,7 +44,7 @@ from drf_spectacular.openapi import OpenApiTypes
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
-from inventory.models import CustomField, Group, User, UserPassword, CustomUser, Permission
+from inventory.models import CustomField, Group, User, UserPassword, CustomUser, Permission, UserTenantPermissionAndPermissionGroup
 from common.code import Code
 from .base import BaseViewSet, BaseTenantViewSet
 from app.models import App
@@ -890,7 +891,72 @@ class TenantCheckPermissionView(generics.RetrieveAPIView):
             result['is_childmanager'] = False
             result['is_all_show'] = False
             result['permissions'] = []
-        print(result)
+        serializer = self.get_serializer(result)
+        return Response(serializer.data)
+
+
+@extend_schema(
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    tags=['tenant'],
+    responses=TenantUserPermissionSerializer,
+    summary='当前用户在当前租户拥有的权限'
+)
+class TenantUserPermissionView(generics.RetrieveAPIView):
+
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = TenantUserPermissionSerializer
+
+    def get(self, request, tenant_uuid):
+        # 用户
+        user = request.user
+        is_superuser = user.is_superuser
+        # 租户
+        tenant = Tenant.objects.get(uuid=tenant_uuid)
+        is_tenantadmin = tenant.has_admin_perm(user)
+        en_names = []
+        if is_superuser is False and is_tenantadmin is False:
+            # 用户权限组
+            user_permissions_groups = []
+            user_permission_group_infos = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                permissiongroup__isnull=False,
+                user=user,
+                tenant=tenant
+            )
+            for user_permission_group_info in user_permission_group_infos:
+                user_permissions_groups.append(user_permission_group_info.permissiongroup)
+            for user_permissions_group in user_permissions_groups:
+                if user_permissions_group.en_name:
+                    en_names.append(user_permissions_group.en_name)
+            # 用户所属分组的权限组
+            groups = user.groups.filter(tenant=tenant).all()
+            group_ids = []
+            for group in groups:
+                # 本体
+                group_ids.append(group.id)
+                # 父分组
+                group.parent_groups(group_ids)
+            if group_ids:
+                groups = Group.valid_objects.filter(
+                    id__in=group_ids
+                )
+                for group in groups:
+                    permissions_groups = group.permissions_groups.all()
+                    for permissions_group in permissions_groups:
+                        if permissions_group.en_name:
+                            en_names.append(permissions_group.en_name)
+        result = {
+            'is_globaladmin': is_superuser,
+            'is_tenantadmin': is_tenantadmin,
+            'en_names': en_names,
+            'global_en_names': [
+                'pluginmanage.pluginconfig',
+                'pluginmanage.pluginstore',
+                'platformmanage.bindplatform',
+                'platformmanage.platformconfig'
+            ]
+        }
         serializer = self.get_serializer(result)
         return Response(serializer.data)
 

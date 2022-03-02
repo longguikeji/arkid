@@ -6,7 +6,7 @@ from rest_framework_extensions.settings import extensions_api_settings
 
 from tenant.models import Tenant
 from django.db.models import Q
-from inventory.models import Permission, PermissionGroup, Group
+from inventory.models import Permission, PermissionGroup, Group, UserTenantPermissionAndPermissionGroup
 
 import re
 
@@ -158,7 +158,20 @@ class ApiAccessPermission(BaseAccessPermission, permissions.BasePermission):
             permissiongroups = PermissionGroup.valid_objects.filter(
                 permissions=permission
             )
-            user_permissions_groups = user.user_permissions_group.all()
+            # 当前用户所拥有的权限分组
+            user_permission_groups = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                user=user,
+                tenant=tenant
+            )
+            user_permissions_groups = []
+            user_permissions = []
+            for user_permission_group in user_permission_groups:
+                # 权限分组
+                if user_permission_group.permissiongroup is not None:
+                    user_permissions_groups.append(user_permission_group.permissiongroup)
+                # 权限
+                if user_permission_group.permission is not None:
+                    user_permissions.append(user_permission_group.permission)
             permissions_groups_ids = []
             for permissiongroup in permissiongroups:
                 en_name = permissiongroup.en_name
@@ -177,12 +190,11 @@ class ApiAccessPermission(BaseAccessPermission, permissions.BasePermission):
                 # 数据补充
                 permissions_groups_ids.append(permissiongroup.id)
             # 用户权限
-            user_permissions = user.user_permissions.all()
             for user_permission in user_permissions:
                 if user_permission.id == permission.id:
                     return True
             # 用户组权限
-            groups = user.groups.all()
+            groups = user.groups.filter(tenant=tenant).all()
             group_ids = []
             for group in groups:
                 # 本体

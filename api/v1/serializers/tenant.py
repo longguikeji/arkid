@@ -388,12 +388,12 @@ class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
         return instance
 
 
-
 class TenantCollectInfoSerializer(serializers.Serializer):
 
     app_count = serializers.IntegerField(label=_('应用数'))
     user_count = serializers.IntegerField(label=_('用户数'))
     message_count = serializers.IntegerField(label=_('消息数'))
+
 
 class TenantCheckPermissionItemSerializer(serializers.Serializer):
 
@@ -410,6 +410,17 @@ class TenantCheckPermissionSerializer(serializers.Serializer):
     is_all_application = serializers.BooleanField(label=_("是否可以所有应用"))
     permissions = serializers.ListField(
         child=TenantCheckPermissionItemSerializer(), label=_('权限'), default=[]
+    )
+
+
+class TenantUserPermissionSerializer(serializers.Serializer):
+    is_globaladmin = serializers.BooleanField(label=_("是否是超级管理员"))
+    is_tenantadmin = serializers.BooleanField(label=_("是否是租户管理员"))
+    en_names = serializers.ListField(
+        child=serializers.CharField(), label=_('用户权限组'), default=[]
+    )
+    global_en_names = serializers.ListField(
+        child=serializers.CharField(), label=_('超级管理员特殊权限组'), default=[]
     )
 
 

@@ -1,7 +1,7 @@
 from lib.dynamic_fields_model_serializer import DynamicFieldsModelSerializer
 from common.serializer import BaseDynamicFieldModelSerializer
 from django.contrib.contenttypes.models import ContentType
-from inventory.models import User, Permission, PermissionGroup
+from inventory.models import User, Permission, PermissionGroup, UserTenantPermissionAndPermissionGroup
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from api.v1.fields.custom import create_foreign_key_field
@@ -249,6 +249,7 @@ class UserPermissionCreateSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user = self.context['user']
+        tenant = self.context['tenant']
 
         permissions = validated_data.get('permissions', None)
         permission_groups = validated_data.get('permission_groups', None)
@@ -256,12 +257,22 @@ class UserPermissionCreateSerializer(serializers.Serializer):
         if permissions is not None:
             permissions = Permission.valid_objects.filter(uuid__in=permissions)
             for permission in permissions:
-                user.user_permissions.add(permission)
+                UserTenantPermissionAndPermissionGroup.objects.get_or_create(
+                    is_del=False,
+                    user=user,
+                    tenant=tenant,
+                    permission=permission,
+                )
         
         if permission_groups is not None:
             permission_groups = PermissionGroup.valid_objects.filter(uuid__in=permission_groups)
             for permission_group in permission_groups:
-                user.user_permissions_group.add(permission_group)
+                UserTenantPermissionAndPermissionGroup.objects.get_or_create(
+                    is_del=False,
+                    user=user,
+                    tenant=tenant,
+                    permissiongroup=permission_group,
+                )
         return validated_data
 
 

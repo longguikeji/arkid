@@ -199,18 +199,18 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         related_name="user_set",
         related_query_name="user",
     )
-    user_permissions = models.ManyToManyField(
-        'inventory.Permission',
-        blank=True,
-        related_name="user_permission_set",
-        related_query_name="user_permission",
-    )
-    user_permissions_group = models.ManyToManyField(
-        'inventory.PermissionGroup',
-        blank=True,
-        related_name="user_permission_groups_set",
-        related_query_name="user_permission_groups",
-    )
+    # user_permissions = models.ManyToManyField(
+    #     'inventory.Permission',
+    #     blank=True,
+    #     related_name="user_permission_set",
+    #     related_query_name="user_permission",
+    # )
+    # user_permissions_group = models.ManyToManyField(
+    #     'inventory.PermissionGroup',
+    #     blank=True,
+    #     related_name="user_permission_groups_set",
+    #     related_query_name="user_permission_groups",
+    # )
     is_platform_user = models.BooleanField(default=False, verbose_name='是否是平台用户')
 
     _password = None
@@ -253,7 +253,22 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
             permissiongroups = PermissionGroup.valid_objects.filter(
                 permissions=permission
             )
-            user_permissions_groups = user.user_permissions_group.all()
+
+            # 当前用户所拥有的权限分组
+            user_permission_groups = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                user=user,
+                tenant=tenant
+            )
+            user_permissions_groups = []
+            user_permissions = []
+            for user_permission_group in user_permission_groups:
+                # 权限分组
+                if user_permission_group.permissiongroup is not None:
+                    user_permissions_groups.append(user_permission_group.permissiongroup)
+                # 权限
+                if user_permission_group.permission is not None:
+                    user_permissions.append(user_permission_group.permission)
+
             permissions_groups_ids = []
             for permissiongroup in permissiongroups:
                 for user_permissions_group in user_permissions_groups:
@@ -262,12 +277,11 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
                 # 数据补充
                 permissions_groups_ids.append(permissiongroup.id)
             # 用户权限
-            user_permissions = user.user_permissions.all()
             for user_permission in user_permissions:
                 if user_permission.id == permission.id:
                     return True
             # 用户组权限
-            groups = user.groups.all()
+            groups = user.groups.filter(tenant=tenant).all()
             group_ids = []
             for group in groups:
                 # 本体
@@ -526,6 +540,22 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
         else:
             ids.append(parent.id)
             parent.parent_groups(ids)
+
+
+class UserTenantPermissionAndPermissionGroup(BaseModel):
+    '''
+    用户对应租户权限组和权限
+    '''
+
+    user = models.ForeignKey(
+        'inventory.User',
+        related_name='main_user',
+        verbose_name='用户',
+        on_delete=models.CASCADE,
+    )
+    tenant = models.ForeignKey('tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT, verbose_name='租户')
+    permission = models.ForeignKey('inventory.Permission', default=None, blank=False, null=True, on_delete=models.PROTECT, verbose_name='权限')
+    permissiongroup = models.ForeignKey('inventory.PermissionGroup', default=None,blank=False, null=True, on_delete=models.PROTECT, verbose_name='权限组')
 
 
 class Invitation(BaseModel):
