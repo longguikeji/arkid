@@ -159,10 +159,12 @@ class ApiAccessPermission(BaseAccessPermission, permissions.BasePermission):
                 permissions=permission
             )
             # 当前用户所拥有的权限分组
-            user_permission_groups = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
-                user=user,
-                tenant=tenant
-            )
+            user_permission_groups = []
+            if tenant:
+                user_permission_groups = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                    user=user,
+                    tenant=tenant
+                )
             user_permissions_groups = []
             user_permissions = []
             for user_permission_group in user_permission_groups:

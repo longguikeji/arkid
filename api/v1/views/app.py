@@ -42,6 +42,7 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 @extend_schema_view(
     list=extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         parameters=[
             OpenApiParameter(
                 name='name',
@@ -90,7 +91,6 @@ class AppViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         summary='租户app删除'
     )
     @transaction.atomic()
@@ -104,7 +104,6 @@ class AppViewSet(BaseViewSet):
 
     @extend_schema(
         roles=['tenantadmin', 'globaladmin', 'appmanage'],
-        responses=AppSerializer,
         summary='租户app列表'
     )
     def list(self, request, *args, **kwargs):
