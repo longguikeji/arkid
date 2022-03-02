@@ -567,9 +567,9 @@ class UpdatePasswordView(generics.CreateAPIView):
     tags=['user'],
     parameters=[
         OpenApiParameter(
-            name='tenant',
+            name='tenant_uuid',
             type={'type': 'string'},
-            location=OpenApiParameter.QUERY,
+            location=OpenApiParameter.PATH,
             required=True,
         )
     ],
@@ -586,7 +586,7 @@ class ResetPasswordView(generics.CreateAPIView):
         summary='重置用户密码'
     )
     def post(self, request):
-        tenant_uuid = self.request.query_params.get('tenant')
+        tenant_uuid = self.request.query_params.get('tenant_uuid')
         if not tenant_uuid:
             tenant = None
         else:
