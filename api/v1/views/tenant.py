@@ -254,9 +254,10 @@ class TenantViewSet(BaseViewSet):
 
             perms = set(
                 [
-                    perm.codename
-                    for perm in user.user_permissions.filter(
-                        codename__in=all_apps_perms
+                    perm.permissions.codename
+                    for perm in UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                        user=user,
+                        permission__codename__in=all_apps_perms
                     )
                 ]
             )

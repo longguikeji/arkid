@@ -17,7 +17,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from tenant.models import Tenant
 from config.models import PasswordComplexity
-from inventory.models import User, Invitation, UserAppData
+from inventory.models import User, Invitation, UserAppData, UserTenantPermissionAndPermissionGroup
 from inventory.resouces import UserResource
 from external_idp.models import ExternalIdp
 from extension.utils import find_available_extensions
@@ -431,9 +431,10 @@ class UserAppViewSet(BaseViewSet):
             all_apps_perms = [app.access_perm_code for app in all_apps]
             perms = set(
                 [
-                    perm.codename
-                    for perm in user.user_permissions.filter(
-                        codename__in=all_apps_perms
+                    perm.permission.codename
+                    for perm in UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                        user=user,
+                        permission__codename__in=all_apps_perms
                     )
                 ]
             )

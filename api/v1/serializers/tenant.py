@@ -12,7 +12,7 @@ from rest_framework import serializers
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
-from inventory.models import Permission, Group, User
+from inventory.models import Permission, Group, User, UserTenantPermissionAndPermissionGroup
 from api.v1.fields.custom import (
     create_enum_field,
     create_foreign_key_field,
@@ -59,7 +59,12 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
             is_system_permission=True, codename=tenant.admin_perm_code
         ).first()
         if permission:
-            user.user_permissions.add(permission)
+            UserTenantPermissionAndPermissionGroup.objects.get_or_create(
+                is_del=False,
+                user=user,
+                tenant=tenant,
+                permission=permission,
+            )
         # 创建密码规则
         PasswordComplexity.active_objects.get_or_create(
             is_apply=True,
