@@ -1,6 +1,6 @@
 from inspect import Parameter
 from common.serializer import BaseDynamicFieldModelSerializer
-from inventory.models import Group, Permission
+from inventory.models import Group, Permission, UserTenantPermissionAndPermissionGroup
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
@@ -135,7 +135,18 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         return instance
 
     def get_children(self, instance):
-        qs = Group.valid_objects.filter(parent=instance).order_by('id')
+        userpermissions = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+            tenant=instance.tenant,
+            user=self.context['request'].user,
+            permission__group_info__isnull=False,
+        )
+        group_ids = []
+        for userpermission in userpermissions:
+            group_info = userpermission.permission.group_info
+            group_ids.append(group_info.id)
+        if len(group_ids) == 0:
+            group_ids.append(0)
+        qs = Group.valid_objects.filter(id__in=group_ids,parent=instance).order_by('id')
         return [GroupBaseSerializer(q).data for q in qs]
 
 

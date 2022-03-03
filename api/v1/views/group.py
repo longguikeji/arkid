@@ -1,7 +1,7 @@
 import json
 import io
 import datetime
-from inventory.models import Group
+from inventory.models import Group, UserTenantPermissionAndPermissionGroup
 from api.v1.serializers.group import (
     GroupSerializer,
     GroupListResponseSerializer,
@@ -110,24 +110,37 @@ class GroupViewSet(BaseViewSet):
 
         qs = Group.valid_objects.filter(**kwargs)
         # 用户
-        if tenant.has_admin_perm(user) is False:
-            childmanager = ChildManager.valid_objects.filter(tenant=tenant, user=user).first()
-            if childmanager:
-                # 所在分组 所在分组的下级分组 指定分组与账号
-                manager_visible = childmanager.manager_visible
-                uuids = []
-                if '所在分组' in manager_visible:
-                    for group in user.groups.all():
-                        uuids.append(group.uuid_hex)
-                if '所在分组的下级分组' in manager_visible:
-                    for group in user.groups.all():
-                        group_uuids = []
-                        group.child_groups(group_uuids)
-                        uuids.extend(group_uuids)
-                if '指定分组与账号' in manager_visible:
-                    assign_group = childmanager.assign_group
-                    uuids.extend(assign_group)
-                qs = qs.filter(uuid__in=uuids)
+        if user.is_superuser is False and tenant.has_admin_perm(user) is False:
+            userpermissions = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                tenant=tenant,
+                user=user,
+                permission__group_info__isnull=False,
+            )
+            group_ids = []
+            for userpermission in userpermissions:
+                group_info = userpermission.permission.group_info
+                group_ids.append(group_info.id)
+            if len(group_ids) == 0:
+                group_ids.append(0)
+            if parent is not None:
+                qs = qs.filter(id__in=group_ids)
+            # childmanager = ChildManager.valid_objects.filter(tenant=tenant, user=user).first()
+            # if childmanager:
+            #     # 所在分组 所在分组的下级分组 指定分组与账号
+            #     manager_visible = childmanager.manager_visible
+            #     uuids = []
+            #     if '所在分组' in manager_visible:
+            #         for group in user.groups.all():
+            #             uuids.append(group.uuid_hex)
+            #     if '所在分组的下级分组' in manager_visible:
+            #         for group in user.groups.all():
+            #             group_uuids = []
+            #             group.child_groups(group_uuids)
+            #             uuids.extend(group_uuids)
+            #     if '指定分组与账号' in manager_visible:
+            #         assign_group = childmanager.assign_group
+            #         uuids.extend(assign_group)
+            #     qs = qs.filter(uuid__in=uuids)
         return qs.order_by('id')
 
     def get_object(self):

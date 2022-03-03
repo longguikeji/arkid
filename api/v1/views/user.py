@@ -57,7 +57,6 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.exceptions import ValidationError
-from extension_root.childmanager.models import ChildManager
 from django.utils.translation import gettext_lazy as _
 from common.utils import check_password_complexity
 from runtime import get_app_runtime
@@ -182,34 +181,21 @@ class UserViewSet(BaseViewSet):
             kwargs['job_title'] = job_title
 
         qs = User.objects.filter(**kwargs)
-        if tenant.has_admin_perm(user) is False:
-            childmanager = ChildManager.valid_objects.filter(tenant=tenant, user=user).first()
-            if childmanager:
-                # 所在分组 所在分组的下级分组 指定分组与账号
-                manager_visible = childmanager.manager_visible
-                uuids = []
-                assign_user = []
-                assign_group = []
-                if '所在分组' in manager_visible:
-                    for group in user.groups.all():
-                        uuids.append(group.uuid_hex)
-                if '所在分组的下级分组' in manager_visible:
-                    for group in user.groups.all():
-                        group_uuids = []
-                        group.child_groups(group_uuids)
-                        uuids.extend(group_uuids)
-                if '指定分组与账号' in manager_visible:
-                    assign_group = childmanager.assign_group
-                    assign_user = childmanager.assign_user
-                    uuids.extend(assign_group)
-                qs = qs.filter(groups__uuid__in=uuids)
-                # 取得指定账号
-                if '指定分组与账号' in manager_visible and len(assign_user) > 0 and group1 is not None:
-                    group1 = group1.split(',')
-                    for item in group1:
-                        if item in assign_group:
-                            qs = qs.filter(uuid__in=assign_user)
-                            break
+        if user.is_superuser is False and tenant.has_admin_perm(user) is False:
+            userpermissions = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                tenant=tenant,
+                user=user,
+                permission__group_info__isnull=False,
+            )
+            group_ids = []
+            for userpermission in userpermissions:
+                group_info = userpermission.permission.group_info
+                group_ids.append(group_info.id)
+            if len(group_ids) == 0:
+                group_ids.append(0)
+            qs = qs.filter(groups__id__in=group_ids)
+            if qs.count() == 0:
+                qs = User.objects.filter(id=user.id)
         return qs.order_by('id')
 
     def get_object(self):
