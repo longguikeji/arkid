@@ -104,7 +104,7 @@ class TokenRequiredMixin(AccessMixin):
             from app.models import App
             apps = App.valid_objects.filter(
                 tenant=tenant,
-                type__in=['OIDC', 'OAuth2']
+                type__in=['OIDC', 'OAuth2', 'OIDC-Platform']
             )
             check_result = False
             for app in apps:
