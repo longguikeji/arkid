@@ -177,6 +177,7 @@ class Group(BaseOrderedModel, PermOwnerMixin, TreeNode, NodeVisibilityScope):
         group, _ = cls.valid_objects.get_or_create(uid='extern')
         return group
 
+
 class CustomGroup(BaseModel):
     group = models.OneToOneField(Group, verbose_name='Group', related_name='custom_group', on_delete=models.CASCADE)
     data = JSONField(verbose_name='扩展信息')
