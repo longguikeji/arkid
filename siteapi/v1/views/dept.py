@@ -421,7 +421,7 @@ class DeptGeneralTermsAPIView(APIView):
     部门总称
     '''
 
-    permission_classes = [IsAuthenticated & IsAdminUser]
+    permission_classes = [IsAuthenticated & (IsAdminUser|IsManagerUser)]
 
     def get(self, request, uid):
         items = []
