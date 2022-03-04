@@ -32,7 +32,6 @@ class LogSerializer(serializers.Serializer):
     def to_representation(self, log):
         data = super().to_representation(log)
         data['uuid'] = log.uuid
-        data['timestamp'] = data.pop('created')
         data['user'] = log.data['user'].get('username', '')
         data['ip'] = log.data['ip_address']
         data['action'] = log.data['request'].get('path', '')
