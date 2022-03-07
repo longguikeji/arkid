@@ -6,6 +6,7 @@ views about dept
 '''
 import json
 
+from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import generics, mixins, status
 from rest_framework.views import APIView
@@ -413,6 +414,34 @@ class DeptChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView
             update_users_of_owner(dept, users, subject)
 
         return Response(UserListSerializer(dept).data)
+
+
+class DeptGeneralTermsAPIView(APIView):
+    '''
+    部门总称
+    '''
+
+    permission_classes = [IsAuthenticated & (IsAdminUser|IsManagerUser)]
+
+    def get(self, request, uid):
+        items = []
+        if uid.startswith(Dept.NODE_PREFIX):
+            uid = uid.replace(Dept.NODE_PREFIX, '', 1)
+        child = None
+        if uid:
+            child = Dept.valid_objects.filter(uid=uid).first()
+        if child:
+            self.parent_dept(items, child)
+            items = list(reversed(items))
+        return JsonResponse({'items':items})
+
+    def parent_dept(self, items, temp_dept):
+        '''
+        子部门
+        '''
+        if temp_dept and temp_dept.parent is not None:
+            items.append(temp_dept.name)
+            self.parent_dept(items, temp_dept.parent)
 
 
 class UcenterDeptChildUserAPIView(

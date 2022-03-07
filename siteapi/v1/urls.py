@@ -70,6 +70,7 @@ urlpatterns = [
     url(r'^group/(?P<uid>[\w|-]+)/list/$', group_views.GroupScopeListAPIView.as_view(), name='group_scope_list'),
     url(r'^group/(?P<uid>[\w|-]+)/tree/$', group_views.ManagerGroupTreeAPIView.as_view(), name='group_tree'),
     url(r'^group/(?P<uid>[\w|-]+)/group/$', group_views.GroupChildGroupAPIView.as_view(), name='group_child_group'),
+    url(r'^group/(?P<uid>[\w|-]+)/group_page/$', group_views.ManagerGroupPageListAPIView.as_view(), name='group_child_group_page'),
     url(r'^group/(?P<uid>[\w|-]+)/user/$', group_views.GroupChildUserAPIView.as_view(), name='group_child_user'),
     # dept
     url(r'^dept/$', dept_views.DeptListAPIView.as_view(), name='dept_list'),
@@ -80,6 +81,7 @@ urlpatterns = [
     url(r'^dept/(?P<uid>[\w|-]+)/tree/$', dept_views.ManagerDeptTreeAPIView.as_view(), name='dept_tree'),
     url(r'^dept/(?P<uid>[\w|-]+)/dept/$', dept_views.DeptChildDeptAPIView.as_view(), name='dept_child_dept'),
     url(r'^dept/(?P<uid>[\w|-]+)/user/$', dept_views.DeptChildUserAPIView.as_view(), name='dept_child_user'),
+    url(r'^dept/(?P<uid>[\w|-]+)/general_terms/$', dept_views.DeptGeneralTermsAPIView.as_view(), name='group_general_terms'),
     # perm
     url(r'^perm/$', perm_views.PermListCreateAPIView.as_view(), name='perm_list'),
     url(r'^perm/(?P<uid>[\w|-]+)/$', perm_views.PermDetailAPIView.as_view(), name='perm_detail'),

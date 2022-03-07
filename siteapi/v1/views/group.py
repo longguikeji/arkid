@@ -35,6 +35,7 @@ from siteapi.v1.serializers.group import (
     GroupTreeSerializer,
     GroupListSerializer,
     GroupDetailSerializer,
+    GroupWithVerboseManagerGroup,
     ManagerGroupListSerializer,
 )
 from siteapi.v1.views import node as node_views
@@ -383,6 +384,23 @@ class ManagerGroupListAPIView(generics.RetrieveAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+
+class ManagerGroupPageListAPIView(generics.ListAPIView):
+    '''
+    get manager group page in list
+    '''
+
+    permission_classes = [IsAuthenticated & IsAdminUser]
+    serializer_class = GroupWithVerboseManagerGroup
+    pagination_class = DefaultListPaginator
+
+    def get_queryset(self):
+        group = Group.valid_objects.filter(uid='manager').first()
+        if group:
+            return Group.valid_objects.filter(parent=group)
+        else:
+            return []
 
 
 class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView):

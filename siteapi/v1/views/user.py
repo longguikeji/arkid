@@ -74,7 +74,36 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
         '''
         return queryset for list [GET]
         '''
-        queryset = User.valid_objects.all()
+        user = self.request.user
+        if user.is_admin:
+            queryset = User.valid_objects.all()
+        else:
+            dept_uids = set()
+            all_manage_node_uids = user.all_manage_node_uids
+            for node_uid in all_manage_node_uids:
+                if node_uid.startswith(Dept.NODE_PREFIX):
+                    dept_uids.add(node_uid.replace(Dept.NODE_PREFIX, '', 1))
+            if dept_uids:
+                depts = Dept.valid_objects.filter(uid__in=dept_uids)
+                user_ids = []
+                user_depts = []
+                for dept in depts:
+                    user_depts.append(dept)
+                    # 某一个部门的所有子部门
+                    self.child_dept(user_depts, dept)
+                if user_depts:
+                    ids = []
+                    for user_dept in user_depts:
+                        temp_users = user_dept.users
+                        for temp_user in temp_users:
+                            ids.append(temp_user.id)
+                    if len(ids) == 0:
+                        ids.append(0)
+                    queryset = User.valid_objects.filter(id__in=ids)
+                else:
+                    queryset = User.valid_objects.filter(id=0)
+            else:
+                queryset = User.valid_objects.filter(id=0)
         keyword = self.request.query_params.get('keyword', '')
         if keyword != '':
             queryset = (
@@ -236,21 +265,39 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
                     {'sort': f"Invalid order_by argument: '{field_name}'"}
                 )
         queryset = queryset.order_by(*_sort)
+        return queryset.select_related('wechat_user', 'custom_user', 'ding_user')
+        # under_manage_user_ids = set()
+        # 非admin
+        # for item in queryset:  # 这种遍历不能接受
+        #     if item.is_visible_to_manager(user):
+        #         under_manage_user_ids.add(item.username)
+        # 方案1
+        # all_manage_node_uids = user.all_manage_node_uids
+        # for item in queryset:
+        #     try:
+        #         self_all_node_uids = item.all_node_uids
+        #         for self_all_node_uid in self_all_node_uids:
+        #             if self_all_node_uid in all_manage_node_uids:
+        #                 under_manage_user_ids.add(item.username)
+        #     except:
+        #         print('异常用户不显示')
+        #         print(item.name)
+        #         continue;
+        # under_manage_user_query_set = queryset.filter(
+        #     username__in=under_manage_user_ids
+        # )
+        # return under_manage_user_query_set
+        
+    def child_dept(self, items, temp_dept):
+        '''
+        子部门
+        '''
+        depts = Dept.valid_objects.filter(parent=temp_dept)
+        if depts:
+            for dept in depts:
+                items.append(dept)
+                self.child_dept(items, dept)
 
-        user = self.request.user
-        if user.is_admin:
-            return queryset.select_related('wechat_user', 'custom_user', 'ding_user')
-
-        under_manage_user_ids = set()
-
-        for item in queryset:  # 这种遍历不能接受
-            if item.is_visible_to_manager(user):
-                under_manage_user_ids.add(item.username)
-
-        under_manage_user_query_set = queryset.filter(
-            username__in=under_manage_user_ids
-        )
-        return under_manage_user_query_set
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):  # pylint: disable=unused-argument
