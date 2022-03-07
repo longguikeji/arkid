@@ -20,7 +20,7 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 
-from oneid_meta.models import Group, GroupMember, User, Dept
+from oneid_meta.models import Group, GroupMember, User
 from oneid.permissions import (
     CustomPerm,
     IsAdminUser,
@@ -159,64 +159,9 @@ class GroupDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         '''
         group = self.get_object()
         data = json.loads(request.body.decode('utf-8'))
-        # 此处需要处理变更逻辑
-        if 'node_subject' in data and data.get('node_subject') == 'manager':
-            manager_group = data.get('manager_group')
-            nodes = manager_group.get('nodes', [])
-            scope_subject = manager_group.get('scope_subject', 1)
-            if nodes and scope_subject == 2:
-                # 要找到指节点的所有子节点并考虑效率
-                nodes = self.get_all_dept_uid(nodes)
-                manager_group['nodes'] = nodes
         group = CLI().update_group(group, data)
         transaction.on_commit(lambda: WebhookManager.group_updated(group))
         return Response(self.get_serializer(group).data)
-    
-    def get_all_dept_uid(self, check_uids):
-        temp_uids = []
-        for check_uid in check_uids:
-            check_uid = check_uid.replace(Dept.NODE_PREFIX, '', 1)
-            temp_uids.append(check_uid)
-        # 取得所有的子集
-        dept_dict = {}
-        depts = Dept.valid_objects.all()
-        for dept in depts:
-            uid = dept.uid
-            dept_dict[uid] = {
-                'id': dept.id,
-                'uid': dept.uid,
-                'parent_id': dept.parent_id
-            }
-        # 给补上父级uid
-        for dept_key in dept_dict.keys():
-            dept_item = dept_dict.get(dept_key)
-            parent_id = dept_item.get('parent_id')
-            for dept_item_1 in dept_dict.values():
-                current_id = dept_item_1.get('id')
-                if current_id == parent_id:
-                    dept_item['parent_uid'] = dept_item_1.get('uid')
-                    break
-        # 找到对应节点的子节点
-        items = []
-        items.extend(check_uids)
-        for temp_uid in temp_uids:
-            self.check_uid_info(dept_dict, temp_uid, items)
-        return items
-    
-    def check_uid_info(self, data, temp_uid, items):
-        # 某一个节点没有孩子就退出
-        total = 0
-        total_uids = []
-        for data_item in data.values():
-            parent_uid = data_item.get('parent_uid')
-            uid = data_item.get('uid')
-            if parent_uid and parent_uid == temp_uid and uid not in items:
-                total = total + 1
-                items.append(Dept.NODE_PREFIX+uid)
-                total_uids.append(uid)
-        if total != 0:
-            for total_uid in total_uids:
-                self.check_uid_info(data, total_uid, items)
 
 
 class ManagerGroupTreeAPIView(APIView):
@@ -346,15 +291,6 @@ class GroupChildGroupAPIView(
 
         cli = CLI()
         group_data.update(parent_uid=self.kwargs['uid'])
-        if 'manager_group' in group_data:
-            manager_group = group_data.get('manager_group')
-            nodes = manager_group.get('nodes', [])
-            scope_subject = manager_group.get('scope_subject', 1)
-            if nodes and scope_subject == 2:
-                # 要找到指节点的所有子节点并考虑效率
-                nodes = self.get_all_dept_uid(nodes)
-                manager_group['nodes'] = nodes
-                group_data.update(manager_group=manager_group)
         child_group = cli.create_group(group_data)
         cli.add_group_to_group(child_group, parent_group)
 
@@ -364,52 +300,6 @@ class GroupChildGroupAPIView(
         return Response(
             GroupDetailSerializer(child_group).data, status=status.HTTP_201_CREATED
         )
-
-    def get_all_dept_uid(self, check_uids):
-        temp_uids = []
-        for check_uid in check_uids:
-            check_uid = check_uid.replace(Dept.NODE_PREFIX, '', 1)
-            temp_uids.append(check_uid)
-        # 取得所有的子集
-        dept_dict = {}
-        depts = Dept.valid_objects.all()
-        for dept in depts:
-            uid = dept.uid
-            dept_dict[uid] = {
-                'id': dept.id,
-                'uid': dept.uid,
-                'parent_id': dept.parent_id
-            }
-        # 给补上父级uid
-        for dept_key in dept_dict.keys():
-            dept_item = dept_dict.get(dept_key)
-            parent_id = dept_item.get('parent_id')
-            for dept_item_1 in dept_dict.values():
-                current_id = dept_item_1.get('id')
-                if current_id == parent_id:
-                    dept_item['parent_uid'] = dept_item_1.get('uid')
-                    break
-        # 找到对应节点的子节点
-        items = []
-        items.extend(check_uids)
-        for temp_uid in temp_uids:
-            self.check_uid_info(dept_dict, temp_uid, items)
-        return items
-    
-    def check_uid_info(self, data, temp_uid, items):
-        # 某一个节点没有孩子就退出
-        total = 0
-        total_uids = []
-        for data_item in data.values():
-            parent_uid = data_item.get('parent_uid')
-            uid = data_item.get('uid')
-            if parent_uid and parent_uid == temp_uid and uid not in items:
-                total = total + 1
-                items.append(Dept.NODE_PREFIX+uid)
-                total_uids.append(uid)
-        if total != 0:
-            for total_uid in total_uids:
-                self.check_uid_info(data, total_uid, items)
 
     @catch_json_load_error
     def patch(self, request, *args, **kwargs):  # pylint: disable=unused-argument
