@@ -895,7 +895,9 @@ class OAuth2Validator(RequestValidator):
         groups = []
         user = request.user
         tenant = user.tenant
-        if tenant.has_admin_perm(user):
+        for group in user.groups.all():
+            groups.append(group.name)
+        if tenant.has_admin_perm(user) and 'tenant_admin' not in groups:
             groups.append('tenant_admin')
         return {
             "sub": str(request.user.id),
