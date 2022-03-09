@@ -32,33 +32,38 @@ jobs:
         echo "PRODVERSION=$PRODVERSION" >> $GITHUB_ENV
     - run: echo "${DEVVERSION}"
     - run: echo "${PRODVERSION}"
-    - id: get-short-version
+    - id: get-versions
       run: |
         sversion="${PRODVERSION}"
         echo "::set-output name=sversion::${sversion: 0 :3}"
-    - run: echo "${{steps.get-short-version.outputs.sversion}}"
+        echo "::set-output name=DEVVERSION::${DEVVERSION}"
+        echo "::set-output name=PRODVERSION::${PRODVERSION}"
+    - run: |
+        echo "${{steps.get-versions.outputs.sversion}}"
+        echo "${{steps.get-versions.outputs.DEVVERSION}}"
+        echo "${{steps.get-versions.outputs.PRODVERSION}}"
     - name: ReTag to Dockerhub 2.x.y
       uses: onichandame/docker-registry-sync-action@master
       with:
-        source_repository: "docker.io/longguikeji/arkid:${DEVVERSION}"
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
         source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         source_password: "${{ secrets.DOCKERHUBPWD }}"
-        target_repository: "docker.io/longguikeji/arkid:${PRODVERSION}"
+        target_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.PRODVERSION}}"
         target_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         target_password: "${{ secrets.DOCKERHUBPWD }}"
     - name: ReTag to Dockerhub 2.x
       uses: onichandame/docker-registry-sync-action@master
       with:
-        source_repository: "docker.io/longguikeji/arkid:${DEVVERSION}"
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
         source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         source_password: "${{ secrets.DOCKERHUBPWD }}"
-        target_repository: "docker.io/longguikeji/arkid:${{steps.get-short-version.outputs.sversion}}"
+        target_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.sversion}}"
         target_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         target_password: "${{ secrets.DOCKERHUBPWD }}"
     - name: ReTag to Dockerhub 2
       uses: onichandame/docker-registry-sync-action@master
       with:
-        source_repository: "docker.io/longguikeji/arkid:${DEVVERSION}"
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
         source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         source_password: "${{ secrets.DOCKERHUBPWD }}"
         target_repository: "docker.io/longguikeji/arkid:2"
@@ -68,25 +73,25 @@ jobs:
     - name: ReTag to Harbor 2.x.y
       uses: onichandame/docker-registry-sync-action@master
       with:
-        source_repository: "docker.io/longguikeji/arkid:${DEVVERSION}"
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
         source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         source_password: "${{ secrets.DOCKERHUBPWD }}"
-        target_repository: "${{ secrets.ARK_RLS }}/arkid:${PRODVERSION}"
+        target_repository: "${{ secrets.ARK_RLS }}/arkid:${{steps.get-versions.outputs.PRODVERSION}}"
         target_username: "${{ secrets.HARBORUSER }}"
         target_password: "${{ secrets.HARBORPWD }}"
     - name: ReTag to Harbor 2.x
       uses: onichandame/docker-registry-sync-action@master
       with:
-        source_repository: "docker.io/longguikeji/arkid:${DEVVERSION}"
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
         source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         source_password: "${{ secrets.DOCKERHUBPWD }}"
-        target_repository: "${{ secrets.ARK_RLS }}/arkid:${{steps.get-short-version.outputs.sversion}}"
+        target_repository: "${{ secrets.ARK_RLS }}/arkid:${{steps.get-versions.outputs.sversion}}"
         target_username: "${{ secrets.HARBORUSER }}"
         target_password: "${{ secrets.HARBORPWD }}"
     - name: ReTag to Harbor 2
       uses: onichandame/docker-registry-sync-action@master
       with:
-        source_repository: "docker.io/longguikeji/arkid:${DEVVERSION}"
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
         source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         source_password: "${{ secrets.DOCKERHUBPWD }}"
         target_repository: "${{ secrets.ARK_RLS }}/arkid:2"
