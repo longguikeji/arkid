@@ -53,6 +53,8 @@ jobs:
         tags: |
           ${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
           ${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }}
+          ${{ secrets.ARK_DEV }}/arkid:v2dev
+          longguikeji/arkid:v2dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
           longguikeji/arkid:v2dev-${{ github.run_number }}
           longguikeji/arkid:v2dev
     - name: deploy to cluster
