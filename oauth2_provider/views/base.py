@@ -100,23 +100,45 @@ class TokenRequiredMixin(AccessMixin):
         tenant = user.tenant
         # app
         client_id = request.GET.get('client_id', '')
-        if client_id:
-            from app.models import App
-            apps = App.valid_objects.filter(
-                tenant=tenant,
-                type__in=['OIDC', 'OAuth2', 'OIDC-Platform']
-            )
-            check_result = False
-            for app in apps:
-                data = app.data
-                app_client_id = data.get('client_id', '')
-                if app_client_id == client_id:
-                    if user.check_app_permission(tenant, app) is True:
-                        check_result = True
-                        break
-            return check_result
-        else:
+        if not client_id:
             return False
+
+        from app.models import App
+        app = App.valid_objects.filter(
+            tenant=tenant,
+            type__in=['OIDC', 'OAuth2'],
+            data__client_id = client_id,
+        ).first()
+        if app and user.check_app_permission(tenant, app) is True:
+            return True
+
+        # OIDC-Platform
+        app = App.valid_objects.filter(
+            type__in=['OIDC-Platform'],
+            data__client_id = client_id,
+        ).first()
+        if app and user.check_app_permission(tenant, app) is True:
+            return True
+
+        # arkstore 特殊处理
+        app = App.valid_objects.filter(
+            type__in=['OIDC-Platform'],
+            data__client_id = client_id,
+            name='arkstore',
+        ).first()
+        if app:
+            return True
+
+        # arkid_saas 特殊处理
+        from oauth2_provider.models import Application
+        app = Application.objects.filter(
+            name='arkid_saas',
+            client_id=client_id,
+        ).first()
+        if app and tenant == Tenant.active_objects.first():
+            return True
+
+        return False
 
     def check_token(self, request, *args, **kwargs):
         token = request.GET.get('token', '')
