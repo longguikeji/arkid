@@ -117,7 +117,9 @@ class TokenRequiredMixin(AccessMixin):
             type__in=['OIDC-Platform'],
             data__client_id = client_id,
         ).first()
-        if app and user.check_app_permission(tenant, app) is True:
+        # ToDo 
+        # 验证是否购买
+        if app:
             return True
 
         # arkstore 特殊处理
