@@ -331,7 +331,7 @@ class TenantConfigView(generics.RetrieveUpdateAPIView):
         return super().patch(request, *args, **kwargs)
 
 
-@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['tenant'], summary='租户提示信息数')
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['tenant'], summary='租户提示信息数')
 class TenantCollectInfoView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated, ApiAccessPermission]
@@ -339,7 +339,7 @@ class TenantCollectInfoView(generics.RetrieveAPIView):
 
     serializer_class = TenantCollectInfoSerializer
 
-    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=TenantCollectInfoSerializer)
+    @extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], responses=TenantCollectInfoSerializer)
     def get(self, request, tenant_uuid):
         tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         app_count = App.active_objects.filter(tenant=tenant).count()
