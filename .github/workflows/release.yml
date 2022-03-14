@@ -5,33 +5,96 @@ on:
     inputs:
       dev_version:
         description: 'the tag of the image to release, like `dev-6-02dbc80`'
-        default: ''
+        default: 'v2dev'
         required: true
       prod_version:
         description: 'the tag of the image,src to release, like `2.2.3`'
         default: ''
         required: true
+  push:
+    tags:
+      - '2.*.*'
+      - '!v1.*.*'
 
 jobs:
   reTagAndPush:
     runs-on: ubuntu-latest
     steps:
-    - name: ReTag to Dockerhub
+    ## 自动触发的时候，dev_version 默认为 v2dev
+    ## prod_version 默认为 ${{ github.ref_name}}
+    - id: set-version
+      run: |
+        DEVVERSIONIN=${{ github.event.inputs.dev_version }}
+        DEVVERSION=${DEVVERSIONIN:-"v2dev"}
+        PRODVERSIONIN=${{ github.event.inputs.prod_version }}
+        PRODVERSION=${PRODVERSIONIN:-"${{ github.ref_name}}"}
+        echo "DEVVERSION=$DEVVERSION" >> $GITHUB_ENV
+        echo "PRODVERSION=$PRODVERSION" >> $GITHUB_ENV
+    - run: echo "${DEVVERSION}"
+    - run: echo "${PRODVERSION}"
+    - id: get-versions
+      run: |
+        sversion="${PRODVERSION}"
+        echo "::set-output name=sversion::${sversion: 0 :3}"
+        echo "::set-output name=DEVVERSION::${DEVVERSION}"
+        echo "::set-output name=PRODVERSION::${PRODVERSION}"
+    - run: |
+        echo "${{steps.get-versions.outputs.sversion}}"
+        echo "${{steps.get-versions.outputs.DEVVERSION}}"
+        echo "${{steps.get-versions.outputs.PRODVERSION}}"
+    - name: ReTag to Dockerhub 2.x.y
       uses: onichandame/docker-registry-sync-action@master
       with:
-        source_repository: "docker.io/longguikeji/arkid:${{ github.event.inputs.dev_version }}"
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
         source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         source_password: "${{ secrets.DOCKERHUBPWD }}"
-        target_repository: "docker.io/longguikeji/arkid:${{ github.event.inputs.prod_version }}"
+        target_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.PRODVERSION}}"
         target_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         target_password: "${{ secrets.DOCKERHUBPWD }}"
-    - name: ReTag to Harbor
+    - name: ReTag to Dockerhub 2.x
       uses: onichandame/docker-registry-sync-action@master
       with:
-        source_repository: "docker.io/longguikeji/arkid:${{ github.event.inputs.dev_version }}"
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
         source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
         source_password: "${{ secrets.DOCKERHUBPWD }}"
-        target_repository: "${{ secrets.ARK_RLS }}/arkid:${{ github.event.inputs.prod_version }}"
+        target_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.sversion}}"
+        target_username: "${{ secrets.DOCKERHUBUSERNAME }}"
+        target_password: "${{ secrets.DOCKERHUBPWD }}"
+    - name: ReTag to Dockerhub 2
+      uses: onichandame/docker-registry-sync-action@master
+      with:
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
+        source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
+        source_password: "${{ secrets.DOCKERHUBPWD }}"
+        target_repository: "docker.io/longguikeji/arkid:2"
+        target_username: "${{ secrets.DOCKERHUBUSERNAME }}"
+        target_password: "${{ secrets.DOCKERHUBPWD }}"
+
+    - name: ReTag to Harbor 2.x.y
+      uses: onichandame/docker-registry-sync-action@master
+      with:
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
+        source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
+        source_password: "${{ secrets.DOCKERHUBPWD }}"
+        target_repository: "${{ secrets.ARK_RLS }}/arkid:${{steps.get-versions.outputs.PRODVERSION}}"
+        target_username: "${{ secrets.HARBORUSER }}"
+        target_password: "${{ secrets.HARBORPWD }}"
+    - name: ReTag to Harbor 2.x
+      uses: onichandame/docker-registry-sync-action@master
+      with:
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
+        source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
+        source_password: "${{ secrets.DOCKERHUBPWD }}"
+        target_repository: "${{ secrets.ARK_RLS }}/arkid:${{steps.get-versions.outputs.sversion}}"
+        target_username: "${{ secrets.HARBORUSER }}"
+        target_password: "${{ secrets.HARBORPWD }}"
+    - name: ReTag to Harbor 2
+      uses: onichandame/docker-registry-sync-action@master
+      with:
+        source_repository: "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.DEVVERSION}}"
+        source_username: "${{ secrets.DOCKERHUBUSERNAME }}"
+        source_password: "${{ secrets.DOCKERHUBPWD }}"
+        target_repository: "${{ secrets.ARK_RLS }}/arkid:2"
         target_username: "${{ secrets.HARBORUSER }}"
         target_password: "${{ secrets.HARBORPWD }}"
     - name: Feishu 报忧
@@ -51,4 +114,4 @@ jobs:
         data: |
           {"msg_type":"post","content":{"post":{"zh_cn":{"title": "${{ github.event.repository.name }} 镜像版本 ${{ github.event.inputs.prod_version }} 发布成功",
           "content":[[{"tag":"text","text":""},
-          {"tag":"a","text":"","href":""}]]}}}}
+          {"tag":"a","text":"","href":"https://hub.docker.com/r/longguikeji/arkid/tags"}]]}}}}
