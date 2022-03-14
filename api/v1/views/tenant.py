@@ -339,7 +339,7 @@ class TenantCollectInfoView(generics.RetrieveAPIView):
 
     serializer_class = TenantCollectInfoSerializer
 
-    @extend_schema(responses=TenantCollectInfoSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=TenantCollectInfoSerializer)
     def get(self, request, tenant_uuid):
         tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         app_count = App.active_objects.filter(tenant=tenant).count()
