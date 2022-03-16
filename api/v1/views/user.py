@@ -1,10 +1,12 @@
 import json
 import io
 import datetime
+import collections
 from django.db import models
 from django.http import Http404
 from django.http.response import JsonResponse
 from django.utils.translation import gettext_lazy as _
+from common.excel_utils import export_excel, import_excel
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.mixins import ListModelMixin
@@ -17,7 +19,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from tenant.models import Tenant
 from config.models import PasswordComplexity
-from inventory.models import User, Invitation, UserAppData, UserTenantPermissionAndPermissionGroup
+from inventory.models import User, Group, Invitation, UserAppData, UserTenantPermissionAndPermissionGroup
 from inventory.resouces import UserResource
 from external_idp.models import ExternalIdp
 from extension.utils import find_available_extensions
@@ -278,14 +280,95 @@ class UserViewSet(BaseViewSet):
     )
     @action(detail=False, methods=['post'])
     def user_import(self, request, *args, **kwargs):
+        # context = self.get_serializer_context()
+        # tenant = context['tenant']
+
+        # support_content_types = [
+        #     'application/csv',
+        #     'text/csv',
+        # ]
+        # upload = request.data.get("file", None)  # 设置默认值None
+        # if not upload:
+        #     return Response(
+        #         {
+        #             'error': Code.USER_IMPORT_ERROR.value,
+        #             'message': 'No file find in form dada',
+        #         }
+        #     )
+        # if upload.content_type not in support_content_types:
+        #     return Response(
+        #         {
+        #             'error': Code.USER_IMPORT_ERROR.value,
+        #             'message': 'ContentType Not Support!',
+        #         }
+        #     )
+        # user_resource = UserResource()
+        # dataset = Dataset()
+        # imported_data = dataset.load(
+        #     io.StringIO(upload.read().decode('utf-8')), format='csv'
+        # )
+        # result = user_resource.import_data(
+        #     dataset, dry_run=True, tenant_id=tenant.id
+        # )  # Test the data import
+        # for item in dataset:
+        #     email = str(item[2])
+        #     mobile = str(item[3])
+        #     if email and not re.match(
+        #         r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
+        #         email,
+        #     ):
+        #         return JsonResponse(
+        #             data={
+        #                 'error': Code.EMAIL_FROMAT_ERROR.value,
+        #                 'message': _('email format error:{}'.format(email)),
+        #             }
+        #         )
+        #     if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
+        #         return JsonResponse(
+        #             data={
+        #                 'error': Code.MOBILE_FROMAT_ERROR.value,
+        #                 'message': _('mobile format error:{}'.format(mobile)),
+        #             }
+        #         )
+        # if not result.has_errors() and not result.has_validation_errors():
+        #     user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
+        #     return Response(
+        #         {'error': Code.OK.value, 'message': json.dumps(result.totals)}
+        #     )
+        # else:
+        #     base_errors = result.base_errors
+        #     if base_errors:
+        #         base_errors = [err.error for err in base_errors]
+        #     row_errors = result.row_errors()
+        #     row_errors_dict = defaultdict(list)
+        #     if row_errors:
+        #         for lineno, err_list in row_errors:
+        #             for err in err_list:
+        #                 row_errors_dict[lineno].append(str(err.error))
+
+        #     invalid_rows = result.invalid_rows
+        #     if invalid_rows:
+        #         invalid_rows = [err.error for err in base_errors]
+
+        #     return Response(
+        #         {
+        #             'error': Code.USER_IMPORT_ERROR.value,
+        #             'message': json.dumps(
+        #                 {
+        #                     'base_errors': base_errors,
+        #                     'row_errors': row_errors_dict,
+        #                     'invalid_rows': invalid_rows,
+        #                 }
+        #             ),
+        #         }
+        #     )
         context = self.get_serializer_context()
         tenant = context['tenant']
-
         support_content_types = [
-            'application/csv',
-            'text/csv',
+            'application/vnd.ms-excel',
         ]
-        upload = request.data.get("file", None)  # 设置默认值None
+        # 文件读取
+        upload = request.data.get("file", None)
         if not upload:
             return Response(
                 {
@@ -300,27 +383,13 @@ class UserViewSet(BaseViewSet):
                     'message': 'ContentType Not Support!',
                 }
             )
-        user_resource = UserResource()
-        dataset = Dataset()
-        imported_data = dataset.load(
-            io.StringIO(upload.read().decode('utf-8')), format='csv'
-        )
-        result = user_resource.import_data(
-            dataset, dry_run=True, tenant_id=tenant.id
-        )  # Test the data import
-        for item in dataset:
-            email = str(item[2])
-            mobile = str(item[3])
-            if email and not re.match(
-                r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
-                email,
-            ):
-                return JsonResponse(
-                    data={
-                        'error': Code.EMAIL_FROMAT_ERROR.value,
-                        'message': _('email format error:{}'.format(email)),
-                    }
-                )
+        # 解析数据
+        items = import_excel(request.FILES['file'])
+        mobiles = []
+        usernames = []
+        for item in items:
+            username = str(item['username']).strip()
+            mobile = str(int(item['mobile']) if item['mobile'] else '').strip()
             if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
                 return JsonResponse(
                     data={
@@ -328,38 +397,53 @@ class UserViewSet(BaseViewSet):
                         'message': _('mobile format error:{}'.format(mobile)),
                     }
                 )
-        if not result.has_errors() and not result.has_validation_errors():
-            user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
-            return Response(
-                {'error': Code.OK.value, 'message': json.dumps(result.totals)}
-            )
-        else:
-            base_errors = result.base_errors
-            if base_errors:
-                base_errors = [err.error for err in base_errors]
-            row_errors = result.row_errors()
-            row_errors_dict = defaultdict(list)
-            if row_errors:
-                for lineno, err_list in row_errors:
-                    for err in err_list:
-                        row_errors_dict[lineno].append(str(err.error))
-
-            invalid_rows = result.invalid_rows
-            if invalid_rows:
-                invalid_rows = [err.error for err in base_errors]
-
-            return Response(
-                {
-                    'error': Code.USER_IMPORT_ERROR.value,
-                    'message': json.dumps(
-                        {
-                            'base_errors': base_errors,
-                            'row_errors': row_errors_dict,
-                            'invalid_rows': invalid_rows,
-                        }
-                    ),
+            mobiles.append(mobile)
+            usernames.append(username)
+        exists_username_user = User.valid_objects.filter(username__in=usernames).first()
+        if exists_username_user:
+            return JsonResponse(
+                data={
+                    'error': Code.USERNAME_EXISTS_ERROR.value,
+                    'message': _('username already exists:{}'.format(exists_username_user.username)),
                 }
             )
+        exists_mobile_user = User.valid_objects.filter(mobile__in=mobiles).first()
+        if exists_mobile_user:
+            return JsonResponse(
+                data={
+                    'error': Code.MOBILE_EXISTS_ERROR.value,
+                    'message': _('mobile already exists:{}'.format(exists_mobile_user.mobile)),
+                }
+            )
+        for item in items:
+            username = str(item['username']).strip()
+            mobile = str(int(item['mobile']) if item['mobile'] else '').strip()
+            username = str(item['username']).strip()
+            email = str(item['email']).strip()
+            first_name = str(item['first_name']).strip()
+            last_name = str(item['last_name']).strip()
+            nickname = str(item['nickname']).strip()
+            country = str(item['country']).strip()
+            city = str(item['city']).strip()
+            job_title = str(item['job_title']).strip()
+            # 新建用户
+            create_user = User()
+            create_user.username = username
+            create_user.mobile = mobile
+            create_user.email = email
+            create_user.first_name = first_name
+            create_user.last_name = last_name
+            create_user.nickname = nickname
+            create_user.country = country
+            create_user.city = city
+            create_user.job_title = job_title
+            create_user.save()
+            # 给用户关联租户
+            create_user.tenants.add(tenant)
+        return Response(
+            {'error': Code.OK.value, 'message': 'import user succeed'}
+        )
+
 
     @extend_schema(
         roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'],
@@ -368,20 +452,54 @@ class UserViewSet(BaseViewSet):
     )
     @action(detail=False, methods=['get'])
     def user_export(self, request, *args, **kwargs):
-        context = self.get_serializer_context()
-        tenant = context['tenant']
+        # context = self.get_serializer_context()
+        # tenant = context['tenant']
 
-        kwargs = {
-            'tenants__in': [tenant],
-        }
-        qs = User.active_objects.filter(**kwargs).order_by('id')
-        data = UserResource().export(qs)
-        export_data = data.csv
-        content_type = 'application/octet-stream'
+        # kwargs = {
+        #     'tenants__in': [tenant],
+        # }
+        # qs = User.active_objects.filter(**kwargs).order_by('id')
+        # data = UserResource().export(qs)
+        # export_data = data.csv
+        # content_type = 'application/octet-stream'
+        # response = HttpResponse(export_data, content_type=content_type)
+        # date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+        # filename = '%s-%s.%s' % ('User', date_str, 'csv')
+        # response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
+        # return response
+        context = self.get_serializer_context()
+        users = self.get_queryset()
+        records = []
+        headers = [
+            'username',
+            'email',
+            'mobile',
+            'first_name',
+            'last_name',
+            'nickname',
+            'country',
+            'city',
+            'job_title',
+        ]
+        for user in users:
+            app = collections.OrderedDict()
+            app['username'] = user.username
+            app['email'] = user.email
+            app['mobile'] = user.mobile
+            app['first_name'] = user.first_name
+            app['last_name'] = user.last_name
+            app['nickname'] = user.nickname
+            app['country'] = user.country
+            app['city'] = user.city
+            app['job_title'] = user.job_title
+            records.append(app)
+        name = 'user_{}'.format(datetime.datetime.now().strftime('%Y%m%d'))
+        export_data = export_excel(headers, records, name)
+
+        content_type = 'application/vnd.ms-excel'
         response = HttpResponse(export_data, content_type=content_type)
-        date_str = datetime.datetime.now().strftime('%Y-%m-%d')
-        filename = '%s-%s.%s' % ('User', date_str, 'csv')
-        response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
+        response['Content-Disposition'] = 'attachment; filename="%s.xls"' % (
+            name)
         return response
 
 
