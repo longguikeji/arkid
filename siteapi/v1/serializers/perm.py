@@ -193,6 +193,7 @@ class UserPermResultSerializer(PermResultSerializer):
         model = UserPerm
 
         fields = (
+            'id',
             'perm',
             'status',
             'dept_perm_value',

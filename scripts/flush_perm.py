@@ -25,33 +25,36 @@ def check_perm_exists():
     perms = Perm.valid_objects.all()
 
     for perm in perms:
-        users = User.objects.exclude(id__in=UserPerm.objects.values('owner').filter(perm=perm).distinct())
+        users = User.valid_objects.exclude(id__in=UserPerm.objects.values('owner').filter(perm=perm).distinct())
         for user in users:
-            # if not UserPerm.valid_objects.filter(owner=user, perm=perm).exists():
-            UserPerm.valid_objects.create(
-                owner=user,
-                perm=perm,
-                dept_perm_value=False,
-                group_perm_value=False,
-                status=0,
-                value=perm.default_value,
-            )
-        groups = Group.objects.exclude(id__in=GroupPerm.objects.values('owner').filter(perm=perm).distinct())
+            if user.is_del is False:
+                # if not UserPerm.valid_objects.filter(owner=user, perm=perm).exists():
+                UserPerm.valid_objects.create(
+                    owner=user,
+                    perm=perm,
+                    dept_perm_value=False,
+                    group_perm_value=False,
+                    status=0,
+                    value=perm.default_value,
+                )
+        groups = Group.valid_objects.exclude(id__in=GroupPerm.objects.values('owner').filter(perm=perm).distinct())
         for group in groups:
-            GroupPerm.valid_objects.create(
-                owner=group,
-                perm=perm,
-                status=0,
-                value=perm.default_value,
-            )
-        depts = Dept.objects.exclude(id__in=DeptPerm.objects.values('owner').filter(perm=perm).distinct())
+            if group.is_del is False:
+                GroupPerm.valid_objects.create(
+                    owner=group,
+                    perm=perm,
+                    status=0,
+                    value=perm.default_value,
+                )
+        depts = Dept.valid_objects.exclude(id__in=DeptPerm.objects.values('owner').filter(perm=perm).distinct())
         for dept in depts:
-            DeptPerm.valid_objects.create(
-                owner=dept,
-                perm=perm,
-                status=0,
-                value=perm.default_value,
-            )
+            if dept.is_del is False:
+                DeptPerm.valid_objects.create(
+                    owner=dept,
+                    perm=perm,
+                    status=0,
+                    value=perm.default_value,
+                )
 
 def flush_all_perm():
     '''

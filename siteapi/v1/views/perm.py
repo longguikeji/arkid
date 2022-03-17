@@ -261,13 +261,18 @@ class PermOwnerAPIView(generics.ListAPIView, generics.UpdateAPIView):
         return Response({'user_perm_status': user_perm_status, 'node_perm_status': node_perm_status})
 
 
-def filter_owner_perms(self, owner_key, cls):
+def filter_owner_perms(self, owner_key, cls, owner_id=None):
     '''
     查询权限判定结果
     '''
-    kwargs = {
-        'owner__{}'.format(owner_key): self.kwargs[owner_key],
-    }
+    if owner_id:
+        kwargs = {
+            'owner_id': self.kwargs[owner_id],
+        }
+    else:
+        kwargs = {
+            'owner__{}'.format(owner_key): self.kwargs[owner_key],
+        }
     subject = self.request.query_params.get('subject', '')
     if subject:
         kwargs.update(perm__subject=subject)
@@ -309,7 +314,7 @@ class UserPermView(
         """
         find user
         """
-        user = User.valid_objects.get_queryset().filter(username=self.kwargs['username']).first()
+        user = User.valid_objects.get_queryset().filter(id=self.kwargs['user_id']).first()
         if not user:
             raise NotFound
         if not user.under_manage(self.request.user):
@@ -317,9 +322,9 @@ class UserPermView(
         return user
 
     def get_queryset(self):
-        return filter_owner_perms(self, owner_key='username', cls=UserPerm)
+        return filter_owner_perms(self, owner_key=None, cls=UserPerm, owner_id='user_id')
 
-    def patch(self, request, username):    # pylint: disable=unused-argument
+    def patch(self, request, user_id):    # pylint: disable=unused-argument
         """
         update user perms
         """
