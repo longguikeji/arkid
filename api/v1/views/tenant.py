@@ -31,10 +31,11 @@ from api.v1.serializers.tenant import (
     TenantLogConfigSerializer,
     TenantSwitchSerializer,
     TenantSwitchInfoSerializer,
-    TenantUserRoleSerializer,
+    TenantUserRoleSerializer, 
     TenantCollectInfoSerializer,
     TenantUserPermissionSerializer,
 )
+from api.v1.serializers.user import UserMenuDataSerializer
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import RegisterSMSClaimSerializer, LoginSMSClaimSerializer
 from api.v1.serializers.email import RegisterEmailClaimSerializer
@@ -44,7 +45,11 @@ from drf_spectacular.openapi import OpenApiTypes
 from runtime import get_app_runtime
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework.authtoken.models import Token
-from inventory.models import CustomField, Group, User, UserPassword, CustomUser, Permission, UserTenantPermissionAndPermissionGroup
+from inventory.models import (
+    CustomField, Group, User,
+    UserPassword, CustomUser, Permission,
+    UserTenantPermissionAndPermissionGroup, UserMenuData,
+)
 from common.code import Code
 from .base import BaseViewSet, BaseTenantViewSet
 from app.models import App
@@ -1081,3 +1086,47 @@ class TenantSwitchInfoView(generics.RetrieveAPIView):
         }
         serializer = self.get_serializer(data)
         return Response(serializer.data)
+
+
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['tenant'], summary='用户菜单数据')
+class TenantUserMenuDataView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    serializer_class = UserMenuDataSerializer
+
+    def get_object(self):
+        tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        user = self.request.user
+        usermenudata = UserMenuData.valid_objects.filter(user=user, tenant=tenant).first()
+        if usermenudata is None:
+            usermenudata = UserMenuData()
+            usermenudata.user = user
+            usermenudata.tenant = tenant
+            usermenudata.data = {}
+            usermenudata.save()
+        return usermenudata
+
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='用户菜单数据获取'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='用户菜单数据修改'
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='用户菜单数据修改'
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)

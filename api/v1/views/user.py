@@ -19,7 +19,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from tenant.models import Tenant
 from config.models import PasswordComplexity
-from inventory.models import User, Group, Invitation, UserAppData, UserTenantPermissionAndPermissionGroup
+from inventory.models import (
+    User, Group, Invitation,
+    UserAppData, UserTenantPermissionAndPermissionGroup,
+)
 from inventory.resouces import UserResource
 from external_idp.models import ExternalIdp
 from extension.utils import find_available_extensions
@@ -38,9 +41,9 @@ from api.v1.serializers.user import (
     ResetPasswordRequestSerializer,
     MobileResetPasswordRequestSerializer,
     EmailResetPasswordRequestSerializer,
-    UserAppDataSerializer,
     UserLogoffSerializer,
     UserTokenExpireSerializer,
+    UserAppDataSerializer,
     UserListSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
@@ -584,13 +587,38 @@ class UserAppDataView(generics.RetrieveUpdateAPIView):
     serializer_class = UserAppDataSerializer
 
     def get_object(self):
-        userAppData = UserAppData.active_objects.filter(user=self.request.user).first()
-        if not userAppData:
-            userAppData = UserAppData()
-            userAppData.user = self.request.user
-            userAppData.data = []
-            userAppData.save()
-        return userAppData
+        tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        user = self.request.user
+        userappdata = UserAppData.active_objects.filter(user=user, tenant=tenant).first()
+        if userappdata is None:
+            userappdata = UserAppData()
+            userappdata.user = user
+            userappdata.tenant = tenant
+            userappdata.data = []
+            userappdata.save()
+        return userappdata
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='用户app数据获取'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='用户app数据修改'
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='用户app数据修改'
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
 
 
 @extend_schema(

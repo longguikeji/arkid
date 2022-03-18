@@ -62,6 +62,11 @@ urlpatterns = [
         name='tenant-desktop-config',
     ),
     re_path(
+        r'^tenant/(?P<tenant_uuid>[\w-]+)/user_menu_data/',
+        views_tenant.TenantUserMenuDataView.as_view(),
+        name='tenant-user-menu-data',
+    ),
+    re_path(
         r'^tenant/(?P<tenant_uuid>[\w-]+)/check_permission/$',
         views_tenant.TenantCheckPermissionView.as_view(),
         name='tenant-check-permission',

@@ -741,6 +741,22 @@ class UserAppData(BaseModel):
     DEFAULT_VALUE = ""
 
     user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
+    tenant = models.ForeignKey(Tenant, default=None, null=True, on_delete=models.PROTECT, verbose_name='租户')
+    data = models.JSONField(verbose_name='数据内容')
+
+    def __str__(self) -> str:
+        return f'User: {self.user.username}'
+
+
+class UserMenuData(BaseModel):
+    '''
+    用户Menu数据(方便前端存储调整后的页面位置数据)
+    '''
+
+    DEFAULT_VALUE = ""
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
     data = models.JSONField(verbose_name='数据内容')
 
     def __str__(self) -> str:
