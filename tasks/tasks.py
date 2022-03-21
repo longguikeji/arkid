@@ -302,8 +302,6 @@ def update_permission():
     roles_describe = {}
     # 处理子对象
     process_child(roles_describe, base_children, '')
-    print('结果对吗')
-    print(json.dumps(roles_describe))
     base_permission_group, is_create = PermissionGroup.objects.get_or_create(
         is_active=True,
         is_del=False,
