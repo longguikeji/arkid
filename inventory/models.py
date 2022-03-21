@@ -80,6 +80,7 @@ class Permission(BaseModel):
     )
     # 是否更新
     is_update = models.BooleanField(default=False, verbose_name='是否更新')
+    base_code = models.CharField(_('应用code'), blank=True, null=True, default='', max_length=256)
 
     objects = PermissionManager()
 
@@ -135,6 +136,7 @@ class PermissionGroup(BaseModel):
         on_delete=models.CASCADE,
     )
     title = models.CharField(_('顶级标题'), blank=False, null=True, default='', max_length=255)
+    base_code = models.CharField(_('应用code'), blank=True, null=True, default='', max_length=256)
     # 是否更新
     is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
@@ -553,9 +555,9 @@ class UserTenantPermissionAndPermissionGroup(BaseModel):
         verbose_name='用户',
         on_delete=models.CASCADE,
     )
-    tenant = models.ForeignKey('tenant.Tenant', blank=True, null=True, on_delete=models.PROTECT, verbose_name='租户')
-    permission = models.ForeignKey('inventory.Permission', default=None, blank=True, null=True, on_delete=models.PROTECT, verbose_name='权限')
-    permissiongroup = models.ForeignKey('inventory.PermissionGroup', default=None,blank=True, null=True, on_delete=models.PROTECT, verbose_name='权限组')
+    tenant = models.ForeignKey('tenant.Tenant', blank=True, null=True, on_delete=models.CASCADE, verbose_name='租户')
+    permission = models.ForeignKey('inventory.Permission', default=None, blank=True, null=True, on_delete=models.CASCADE, verbose_name='权限')
+    permissiongroup = models.ForeignKey('inventory.PermissionGroup', default=None,blank=True, null=True, on_delete=models.CASCADE, verbose_name='权限组')
 
 
 class Invitation(BaseModel):

@@ -228,6 +228,7 @@ def update_permission():
     # 权限分组更新
     info = response.get('info')
     roles_describe = info.get('roles_describe')
+    base_code = roles_describe.get('code')
     roles = {
 
     }
@@ -241,6 +242,7 @@ def update_permission():
         content_type=None,
         permission_category='API',
         is_system_permission=True,
+        base_code=base_code,
     )
     for old_permission in old_permissions:
         old_permission.is_update = False
@@ -274,6 +276,7 @@ def update_permission():
             permission.permission_category = 'API'
             permission.is_system_permission = True
             permission.action = action
+            permission.base_code = base_code
             permission.description = description
             permission.request_url = request_url
             permission.request_type = request_type
@@ -293,10 +296,10 @@ def update_permission():
         content_type=None,
         permission_category='API',
         is_system_permission=True,
+        base_code=base_code,
         is_update=False,
     ).delete()
     # 权限分组
-    base_code = roles_describe.get('code')
     base_title = roles_describe.get('name', '')
     base_children = roles_describe.get('children', [])
     roles_describe = {}
@@ -308,6 +311,7 @@ def update_permission():
         name=base_title,
         en_name=base_code,
         title=base_title,
+        base_code=base_code,
         is_system_group=True,
         is_update=True,
     )
@@ -316,6 +320,7 @@ def update_permission():
         title=base_title,
         tenant=None,
         is_system_group=True,
+        base_code=base_code,
         is_update=True,
     ).exclude(uuid=base_permission_group.uuid)
     for old_permissiongroup in old_permissiongroups:
@@ -337,6 +342,7 @@ def update_permission():
                 tenant=None,
                 en_name=role_key_item,
                 is_system_group=True,
+                base_code=base_code,
                 title=base_title,
             )
             permissiongroup.name = roles_describe.get(role_key_item, '')
@@ -361,6 +367,7 @@ def update_permission():
         is_system_group=True,
         is_update=False,
         title=base_title,
+        base_code=base_code,
     ).exclude(uuid=base_permission_group.uuid).delete()
 
 def process_child(roles_describe, base_children, base_code):
