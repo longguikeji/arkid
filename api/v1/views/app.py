@@ -91,6 +91,7 @@ class AppViewSet(BaseViewSet):
         )
 
     @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         summary='租户app删除'
     )
     @transaction.atomic()
