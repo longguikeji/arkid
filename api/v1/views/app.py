@@ -1,3 +1,5 @@
+import jwt
+import json
 from .base import BaseViewSet
 from common.code import Code
 from rest_framework.response import Response
@@ -14,10 +16,12 @@ from api.v1.serializers.app import (
 )
 from common.paginator import DefaultListPaginator
 from django.http.response import JsonResponse
+from rest_framework.views import APIView
 from openapi.utils import extend_schema
 from drf_spectacular.utils import PolymorphicProxySerializer
 from runtime import get_app_runtime
 from provisioning.models import Config
+from inventory.models import Permission, UserAppPermissionResult
 from schema.models import Schema, AppProfile
 from rest_framework.decorators import action
 from oauth2_provider.models import Application
@@ -380,3 +384,61 @@ class AppListAPIView(generics.ListAPIView):
 
         qs = App.active_objects.filter(**kwargs).order_by('id')
         return qs
+
+
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'generaluser'], tags=['tenant'])
+class AppPermissionCheckView(APIView):
+
+    permission_classes = []
+    authentication_classes = []
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='权限鉴定'
+    )
+    def get(self, request):
+        id_token = request.META.get('HTTP_ID_TOKEN', '')
+        payload = self.id_token_reverse(id_token)
+        client_id = payload.get('aud', None)
+        user_uuid = payload.get('sub_uuid', '')
+        tenant_uuid = payload.get('tenant_uuid', '')
+        # user_uuid = 'c59b055f-726b-4ba4-b550-15c0c69a680e'
+        # tenant_uuid = '3efed4d9-f2ee-455e-b868-6f60ea8fdff6'
+        # client_id = 'NuLbozhXNrMFYpkhKZlfaf724OaoQSSYlACGE5rF'
+        # 存在性判断
+        if client_id is None:
+            return JsonResponse(data={'error_code': Code.CLIENT_ID_ERROR.value, 'error_msg': 'client_id not exists'})
+        if tenant_uuid is None:
+            return JsonResponse(data={'error_code': Code.TENANT_NO_EXISTS.value, 'error_msg': 'tenant not exists'})
+        if user_uuid is None:
+            return JsonResponse(data={'error_code': Code.USER_EXISTS_ERROR.value, 'error_msg': 'user not exists'})
+        # 准备数据
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        # TODO 后面这里可以改为筛选所有app
+        apps = App.valid_objects.filter(
+            type__in=['OIDC-Platform'],
+            tenant=tenant,
+        )
+        app_temp = None
+        for app in apps:
+            data = app.data
+            app_client_id = data.get('client_id', '')
+            if app_client_id == client_id:
+                app_temp = app
+                break
+        userappp_permission = UserAppPermissionResult.valid_objects.filter(
+            tenant=tenant,
+            user__uuid=user_uuid,
+            app=app_temp,
+        ).first()
+        if userappp_permission:
+            return JsonResponse(data={'error': Code.OK.value, 'result': userappp_permission.result, 'error_msg': 'request success'})
+        else:
+            return JsonResponse(data={'error': Code.USER_PERMISSION_EXISTS_ERROR.value, 'error_msg': 'user permission not exists'})
+    
+    def id_token_reverse(self, id_token):
+        try:
+            payload = jwt.decode(id_token, options={"verify_signature": False})
+            return payload
+        except Exception:
+            raise Exception("unable to parse id_token")

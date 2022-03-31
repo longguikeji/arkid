@@ -81,6 +81,10 @@ class Permission(BaseModel):
     # 是否更新
     is_update = models.BooleanField(default=False, verbose_name='是否更新')
     base_code = models.CharField(_('应用code'), blank=True, null=True, default='', max_length=256)
+    # 扩展需求
+    sort_id = models.IntegerField(_('sort_id'), default=-1)
+    container = models.JSONField(blank=True, default=[])
+    parent_sort_id = models.IntegerField(_('parent_sort_id'), default=-1)
 
     objects = PermissionManager()
 
@@ -105,7 +109,7 @@ class Permission(BaseModel):
 
     natural_key.dependencies = ['contenttypes.contenttype']
 
-
+    
 class PermissionGroup(BaseModel):
 
     name = models.CharField(_('name'), max_length=255)
@@ -139,6 +143,17 @@ class PermissionGroup(BaseModel):
     base_code = models.CharField(_('应用code'), blank=True, null=True, default='', max_length=256)
     # 是否更新
     is_update = models.BooleanField(default=False, verbose_name='是否更新')
+    # 扩展需求
+    sort_id = models.IntegerField(_('sort_id'), default=-1)
+    container = models.JSONField(blank=True, default=[])
+    parent_sort_id = models.IntegerField(_('parent_sort_id'), default=-1)
+    app = models.ForeignKey(
+        App,
+        models.CASCADE,
+        default=None,
+        null=True,
+        blank=True,
+    )
 
     @property
     def permission_names(self):
@@ -760,6 +775,21 @@ class UserMenuData(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
     data = models.JSONField(verbose_name='数据内容')
+
+    def __str__(self) -> str:
+        return f'User: {self.user.username}'
+
+
+class UserAppPermissionResult(BaseModel):
+    '''
+    用户app权限结果
+    '''
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    app = models.ForeignKey(App, on_delete=models.PROTECT, verbose_name='App')
+    result = models.CharField(max_length=1024, blank=True, null=True, verbose_name='权限结果')
+    is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
     def __str__(self) -> str:
         return f'User: {self.user.username}'

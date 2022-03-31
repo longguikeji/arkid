@@ -1,0 +1,19 @@
+name: appstore fe
+
+on:
+  workflow_dispatch:
+    inputs:
+      arkidfe_tag:
+        description: 'the tag of the arkidv2 fe vue3 image to build, like `v2dev-24`'
+        default: 'v2dev'
+        required: true
+jobs:
+  dev2test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: deploy to cluster
+      uses: steebchen/kubectl@v2.0.0
+      with: # defaults to latest kubectl binary version
+        config: ${{ secrets.KUBE_CONFIG_ARKOS }}
+        command: -n dev-arkidv2saas --insecure-skip-tls-verify=true set image --record deployment/dev-arkidv2saas-fe arkid-fe=harbor.longguikeji.com/ark-develops/arkid-fe-vue3:${{ github.event.inputs.arkidfe_tag }}
+    

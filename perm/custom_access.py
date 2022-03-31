@@ -153,7 +153,7 @@ class ApiAccessPermission(BaseAccessPermission, permissions.BasePermission):
         #     permission_category='API',
         #     operation_id=operation_id
         # ).first()
-        permission = Permission.objects.raw("select id from inventory_permission where is_del = 0 and is_system_permission=1 and permission_category=%s and operation_id = %s limit 1", ['API', operation_id])
+        permission = Permission.objects.raw("select id from inventory_permission where is_del = 0 and is_system_permission=1 and base_code = 'arkid' and permission_category=%s and operation_id = %s limit 1", ['API', operation_id])
         if permission:
             permission = permission[0]
         else:
