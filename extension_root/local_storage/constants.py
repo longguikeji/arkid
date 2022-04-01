@@ -1,1 +1,0 @@
-KEY = 'local_storage'

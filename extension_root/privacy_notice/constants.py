@@ -1,1 +1,0 @@
-KEY = 'privacy_notice'
