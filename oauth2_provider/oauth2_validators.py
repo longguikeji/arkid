@@ -605,7 +605,7 @@ class OAuth2Validator(RequestValidator):
         client = request.client
         client_id = client.client_id
         # 更新用户权限
-        update_user_apppermission.delay(client_id, request.user)
+        update_user_apppermission.delay(client_id, request.user.id)
         # 颁发access_token
         id_token = token.get("id_token", None)
         if id_token:

@@ -20,6 +20,7 @@ from .base import BaseTenantViewSet
 from inventory.models import Permission, PermissionGroup, User, Group, UserTenantPermissionAndPermissionGroup
 from rest_framework import viewsets
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from tasks.tasks import update_user_apppermission, update_user_apps_permission, update_group_apppermission
 
 from django.db.models import Q
 
@@ -336,7 +337,7 @@ class UserPermissionView(generics.RetrieveAPIView):
                 'uuid': user_permissions_group.uuid_hex,
                 'name': user_permissions_group.name,
                 'is_system': user_permissions_group.is_system_group,
-                'app_name': '',
+                'app_name': user_permissions_group.app.name if user_permissions_group.app else '',
                 'source': '用户权限组'
             })
         # 当前用户所属分组拥有的权限
@@ -350,7 +351,7 @@ class UserPermissionView(generics.RetrieveAPIView):
                     'uuid': permission.uuid_hex,
                     'name': permission.name,
                     'is_system': permission.is_system_permission,
-                    'app_name': '',
+                    'app_name': permission.app.name if permission.app else '',
                     'source': '用户组权限'
                 })
         # 当前用户所属分组用户的组权限
@@ -364,7 +365,7 @@ class UserPermissionView(generics.RetrieveAPIView):
                     'uuid': permissions_group.uuid_hex,
                     'name': permissions_group.name,
                     'is_system': permissions_group.is_system_group,
-                    'app_name': '',
+                    'app_name': permissions_group.app.name if permissions_group.app else '',
                     'source': '用户组权限组'
                 })
         if name:
@@ -444,6 +445,12 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
                         tenant__uuid=tenant_uuid,
                         permission=permission,
                     ).delete()
+                    if permission.app:
+                        app_temp = permission.app
+                        data = app_temp.data
+                        client_id = data.get('client_id', '')
+                        if client_id:
+                            update_user_apppermission.delay(client_id, user.id)
                 else:
                     serializer = self.get_serializer(
                         {'is_delete': False}
@@ -456,6 +463,8 @@ class UserPermissionDeleteView(generics.RetrieveAPIView):
                         tenant__uuid=tenant_uuid,
                         permissiongroup=permission_group,
                     ).delete()
+                    if permission_group.app:
+                        update_user_apps_permission.delay([permission_group.app.id], user.id)
                 else:
                     serializer = self.get_serializer(
                         {'is_delete': False}
@@ -519,7 +528,7 @@ class GroupPermissionView(generics.RetrieveAPIView):
                 'uuid': permissions_group.uuid_hex,
                 'name': permissions_group.name,
                 'is_system': permissions_group.is_system_group,
-                'app_name': '',
+                'app_name': permissions_group.app.name if permissions_group.app else '',
                 'source': '分组权限组'
             })
         if name:
@@ -589,16 +598,20 @@ class GroupPermissionDeleteView(generics.RetrieveAPIView):
         if uuid and source:
             if source == '分组权限':
                 permission = Permission.valid_objects.filter(uuid=uuid).first()
-                if permission and permission.is_system_permission is False:
+                if permission:
                     group.permissions.remove(permission)
+                    if permission.app:
+                        update_group_apppermission.delay([permission.app.id], group.id)
                 else:
                     serializer = self.get_serializer(
                         {'is_delete': False}
                     )
             elif source == '分组权限组':
                 permission_group = PermissionGroup.valid_objects.filter(uuid=uuid).first()
-                if permission_group and permission_group.is_system_group is False:
+                if permission_group:
                     group.permissions_groups.remove(permission_group)
+                    if permission_group.app:
+                        update_group_apppermission.delay([permission_group.app.id], group.id)
                 else:
                     serializer = self.get_serializer(
                         {'is_delete': False}

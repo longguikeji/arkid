@@ -6,6 +6,7 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from api.v1.fields.custom import create_foreign_key_field
 from ..pages import app, permission, permission_group
+from tasks.tasks import update_user_apps_permission, update_group_apppermission
 from app.models import App
 
 import uuid
@@ -253,9 +254,11 @@ class UserPermissionCreateSerializer(serializers.Serializer):
 
         permissions = validated_data.get('permissions', None)
         permission_groups = validated_data.get('permission_groups', None)
+        app_ids = []
 
         if permissions is not None:
             permissions = Permission.valid_objects.filter(uuid__in=permissions)
+
             for permission in permissions:
                 UserTenantPermissionAndPermissionGroup.objects.get_or_create(
                     is_del=False,
@@ -263,6 +266,8 @@ class UserPermissionCreateSerializer(serializers.Serializer):
                     tenant=tenant,
                     permission=permission,
                 )
+                if permission.app:
+                    app_ids.append(permission.app_id)
         
         if permission_groups is not None:
             permission_groups = PermissionGroup.valid_objects.filter(uuid__in=permission_groups)
@@ -273,6 +278,11 @@ class UserPermissionCreateSerializer(serializers.Serializer):
                     tenant=tenant,
                     permissiongroup=permission_group,
                 )
+                if permission_group.app:
+                    app_ids.append(permission_group.app_id)
+        
+        if app_ids:
+            update_user_apps_permission.delay(app_ids, user.id)
         return validated_data
 
 
@@ -325,16 +335,21 @@ class GroupPermissionCreateSerializer(serializers.Serializer):
 
         permissions = validated_data.get('permissions', None)
         permission_groups = validated_data.get('permission_groups', None)
-
+        app_ids = []
         if permissions is not None:
             permissions = Permission.valid_objects.filter(uuid__in=permissions)
             for permission in permissions:
                 group.permissions.add(permission)
-        
+                if permission.app:
+                    app_ids.append(permission.app.id)
         if permission_groups is not None:
             permission_groups = PermissionGroup.valid_objects.filter(uuid__in=permission_groups)
             for permission_group in permission_groups:
                 group.permissions_groups.add(permission_group)
+                if permission_group.app:
+                    app_ids.append(permission_group.app.id)
+        if app_ids:
+            update_group_apppermission.delay(app_ids, group.id)
         return validated_data
 
 

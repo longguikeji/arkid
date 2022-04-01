@@ -36,7 +36,6 @@ import collections
 Application = get_application_model()
 AccessToken = get_access_token_model()
 
-
 @app.task
 def provision_user(tenant_uuid: str, user_id: int, is_del: bool = False):
     apps = App.active_objects.filter(
@@ -257,10 +256,11 @@ def by_app_client_id_update_permission(client_id):
 
 
 @app.task
-def update_user_apppermission(client_id, user):
+def update_user_apppermission(client_id, user_id):
     '''
     更新单个用户的权限
     '''
+    user = User.valid_objects.filter(id=user_id).first()
     apps = App.valid_objects.filter(
         type__in=['OIDC-Platform']
     )
@@ -272,74 +272,107 @@ def update_user_apppermission(client_id, user):
             openapi_uris = data.get('openapi_uris', '')
             # 处理任务
             if openapi_uris:
-                update_single_user_apppermission(app_temp, user, client_id)
+                update_single_user_apppermission(app_temp, user)
             break
 
-def update_single_user_apppermission(app_temp, user, client_id):
-    tenant = app_temp.tenant
-    # 取得当前应用的所有用户权限
-    application = Application.objects.filter(
-        client_id=client_id 
+
+@app.task
+def update_user_apps_permission(app_ids, user_id):
+    '''
+    更新单个用户的权限(apps)
+    '''
+    user = User.valid_objects.filter(id=user_id).first()
+    apps = App.valid_objects.filter(
+        type__in=['OIDC-Platform'],
+        id__in=app_ids,
+    )
+    for app_temp in apps:
+        ## 更新缓存的权限
+        data = app_temp.data
+        client_id = data.get('client_id', '')
+        openapi_uris = data.get('openapi_uris', '')
+        # 处理任务
+        if openapi_uris:
+            update_single_user_apppermission(app_temp, user)
+
+
+@app.task
+def update_group_apppermission(app_ids, group_id):
+    group = Group.valid_objects.filter(
+        id=group_id
     ).first()
-    if application:
-        auth_users = []
-        # 分出所有的用户
-        access_tokens = AccessToken.objects.filter(
-            application=application,
+    # 取得当前分组的所有子分组
+    uuids = [group.uuid]
+    group.child_groups(uuids)
+    # 计算出用户
+    auth_users = User.valid_objects.filter(
+        groups__uuid__in=uuids
+    )
+    if auth_users:
+        apps = App.valid_objects.filter(
+            type__in=['OIDC-Platform'],
+            id__in=app_ids,
         )
-        for access_token in access_tokens:
-            access_token_user = access_token.user
-            if access_token_user not in auth_users:
-                auth_users.append(access_token_user)
-        # 取出所有的权限
-        data_dict = {}
-        permissions = Permission.valid_objects.filter(
-            tenant=tenant,
-            app=app_temp,
-            content_type=None,
-            permission_category='API',
-            is_system_permission=True,
-            base_code=app_temp.name,
-        )
-        for permission in permissions:
-            data_dict[permission.sort_id] = permission
-        # 取出所有的权限分组
-        permissiongroups = PermissionGroup.valid_objects.filter(
-            title=app_temp.name,
-            tenant=tenant,
-            app=app_temp,
-            is_system_group=True,
-            base_code=app_temp.name,
-            is_update=True,
-            parent__isnull=False,
-        )
-        for permissiongroup in permissiongroups:
-            data_dict[permissiongroup.sort_id] = permissiongroup
-        # 对数据进行一次排序
-        data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
-        # 将符合条件的数据进行重新组合
-        user_permission_groups = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
-            tenant=tenant,
-            user=user,
-        )
-        user_permission_info_dict = {}
-        user_permission_group_info_dict = {}
-        for user_permission_group in user_permission_groups:
-            user_id = user_permission_group.user.id
-            if user_permission_group.permission:
-                if user_id not in user_permission_info_dict.keys():
-                    user_permission_info_dict[user_id] = []
-                permission_info_arr = user_permission_info_dict[user_id]
-                permission_info_arr.append(user_permission_group.permission_id)
-                user_permission_info_dict[user_id] = permission_info_arr
-            else:
-                if user_id not in user_permission_group_info_dict.keys():
-                    user_permission_group_info_dict[user_id] = []
-                permission_group_info_arr = user_permission_group_info_dict[user_id]
-                permission_group_info_arr.append(user_permission_group.permissiongroup_id)
-                user_permission_group_info_dict[user_id] = permission_group_info_arr
-        # 计算用户权限和权限分组
-        auth_user = user
+        for app_temp in apps:
+            ## 更新缓存的权限
+            data = app_temp.data
+            openapi_uris = data.get('openapi_uris', '')
+            # 处理任务
+            if openapi_uris:
+                update_users_apppermission(app_temp, auth_users)
+
+
+def update_users_apppermission(app_temp, auth_users):
+    tenant = app_temp.tenant
+    # 取出所有的权限
+    data_dict = {}
+    permissions = Permission.valid_objects.filter(
+        tenant=tenant,
+        app=app_temp,
+        content_type=None,
+        permission_category='API',
+        is_system_permission=True,
+        base_code=app_temp.name,
+    )
+    for permission in permissions:
+        data_dict[permission.sort_id] = permission
+    # 取出所有的权限分组
+    permissiongroups = PermissionGroup.valid_objects.filter(
+        title=app_temp.name,
+        tenant=tenant,
+        app=app_temp,
+        is_system_group=True,
+        base_code=app_temp.name,
+        is_update=True,
+        parent__isnull=False,
+    )
+    for permissiongroup in permissiongroups:
+        data_dict[permissiongroup.sort_id] = permissiongroup
+    # 对数据进行一次排序
+    data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
+    # 将符合条件的数据进行重新组合
+    user_permission_groups = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+        tenant=tenant,
+        user__in=auth_users,
+    )
+    user_permission_info_dict = {}
+    user_permission_group_info_dict = {}
+    for user_permission_group in user_permission_groups:
+        user_id = user_permission_group.user.id
+        if user_permission_group.permission:
+            if user_id not in user_permission_info_dict.keys():
+                user_permission_info_dict[user_id] = []
+            permission_info_arr = user_permission_info_dict[user_id]
+            permission_info_arr.append(user_permission_group.permission_id)
+            user_permission_info_dict[user_id] = permission_info_arr
+        else:
+            if user_id not in user_permission_group_info_dict.keys():
+                user_permission_group_info_dict[user_id] = []
+            permission_group_info_arr = user_permission_group_info_dict[user_id]
+            permission_group_info_arr.append(user_permission_group.permissiongroup_id)
+            user_permission_group_info_dict[user_id] = permission_group_info_arr
+    # 计算用户权限和权限分组
+    for auth_user in auth_users:
         auth_user_id = auth_user.id
         user_permission_item_dict = user_permission_info_dict.get(auth_user_id, [])
         user_permission_group_item_dict = user_permission_group_info_dict.get(auth_user_id, [])
@@ -406,6 +439,125 @@ def update_single_user_apppermission(app_temp, user, client_id):
         userapppermissionresult.is_update = True
         userapppermissionresult.result = result_str
         userapppermissionresult.save()
+
+
+def update_single_user_apppermission(app_temp, user):
+    tenant = app_temp.tenant
+    # 取出所有的权限
+    data_dict = {}
+    permissions = Permission.valid_objects.filter(
+        tenant=tenant,
+        app=app_temp,
+        content_type=None,
+        permission_category='API',
+        is_system_permission=True,
+        base_code=app_temp.name,
+    )
+    for permission in permissions:
+        data_dict[permission.sort_id] = permission
+    # 取出所有的权限分组
+    permissiongroups = PermissionGroup.valid_objects.filter(
+        title=app_temp.name,
+        tenant=tenant,
+        app=app_temp,
+        is_system_group=True,
+        base_code=app_temp.name,
+        is_update=True,
+        parent__isnull=False,
+    )
+    for permissiongroup in permissiongroups:
+        data_dict[permissiongroup.sort_id] = permissiongroup
+    # 对数据进行一次排序
+    data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
+    # 将符合条件的数据进行重新组合
+    user_permission_groups = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+        tenant=tenant,
+        user=user,
+    )
+    user_permission_info_dict = {}
+    user_permission_group_info_dict = {}
+    for user_permission_group in user_permission_groups:
+        user_id = user_permission_group.user.id
+        if user_permission_group.permission:
+            if user_id not in user_permission_info_dict.keys():
+                user_permission_info_dict[user_id] = []
+            permission_info_arr = user_permission_info_dict[user_id]
+            permission_info_arr.append(user_permission_group.permission_id)
+            user_permission_info_dict[user_id] = permission_info_arr
+        else:
+            if user_id not in user_permission_group_info_dict.keys():
+                user_permission_group_info_dict[user_id] = []
+            permission_group_info_arr = user_permission_group_info_dict[user_id]
+            permission_group_info_arr.append(user_permission_group.permissiongroup_id)
+            user_permission_group_info_dict[user_id] = permission_group_info_arr
+    # 计算用户权限和权限分组
+    auth_user = user
+    auth_user_id = auth_user.id
+    user_permission_item_dict = user_permission_info_dict.get(auth_user_id, [])
+    user_permission_group_item_dict = user_permission_group_info_dict.get(auth_user_id, [])
+    result_str = ''
+    for data_item in data_dict.values():
+        data_item_id = data_item.id
+        if isinstance(data_item, Permission):
+            # 权限
+            if data_item_id in user_permission_item_dict:
+                data_item.is_pass = 1
+            else:
+                if hasattr(data_item, 'is_pass') == False:
+                    data_item.is_pass = 0
+        else:
+            # 权限分组
+            # 如果用户对某一个权限分组有权限，则对该权限分组内的所有权限有权限
+            if data_item.name == 'normal-user':
+                '''
+                普通用户
+                '''
+                data_item.is_pass = 1
+                container = data_item.container
+                if container:
+                    for item in container:
+                        data_dict.get(item).is_pass = 1
+            elif data_item.name == 'platform-user' and auth_user.is_platform_user is True:
+                '''
+                平台用户
+                '''
+                data_item.is_pass = 1
+                container = data_item.container
+                if container:
+                    for item in container:
+                        data_dict.get(item).is_pass = 1
+            elif data_item.name == 'tenant-user' and auth_user.tenants.filter(id=app_temp.tenant.id).exists() is True:
+                '''
+                租户用户
+                '''
+                data_item.is_pass = 1
+                container = data_item.container
+                if container:
+                    for item in container:
+                        data_dict.get(item).is_pass = 1
+            elif data_item_id in user_permission_group_item_dict:
+                '''
+                其它分组
+                '''
+                data_item.is_pass = 1
+                container = data_item.container
+                if container:
+                    for item in container:
+                        data_dict.get(item).is_pass = 1
+            else:
+                data_item.is_pass = 0
+    for data_item in data_dict.values():
+        result_str = result_str + str(data_item.is_pass)
+    # 用户app权限结果
+    userapppermissionresult, is_create = UserAppPermissionResult.objects.get_or_create(
+        is_del=False,
+        tenant=tenant,
+        app=app_temp,
+        user=auth_user,
+    )
+    userapppermissionresult.is_update = True
+    userapppermissionresult.result = result_str
+    userapppermissionresult.save()
 
 
 def app_all_user_permission(app_temp, client_id):
