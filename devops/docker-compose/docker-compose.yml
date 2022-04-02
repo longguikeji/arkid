@@ -16,7 +16,7 @@ services:
       - ./portal.conf:/etc/nginx/conf.d/default.conf
 
   be:
-    image: longguikeji/arkid:v2dev-101
+    image: longguikeji/arkid:v2dev-189
     container_name: arkid-be
     sysctls:
       - net.core.somaxconn=65535
@@ -44,28 +44,28 @@ services:
       - ./be/saml2config:/var/arkid/djangosaml2idp/saml2_config
 
   # 开发前端的话用这个
-  fe:
-    image: node:12-buster
-    container_name: arkid-fe
-    restart: always
-    working_dir: /root/workspace/arkid-fe
-    command: tail -f /dev/null
-    networks:
-      - arkid
-    volumes:
-      ## 这个路径是arkid-fe所在的目录，如果笔记本内存大，可以在最后加上 `:cached` 提升性能
-      - ../../../arkid-frontend:/root/workspace/arkid-fe
-      - ./vue.config.js:/root/workspace/arkid-fe/vue.config.js
-
-  # 不开发前段的话，放开这个
   # fe:
-  #   image: longguikeji/arkid-fe:v2dev
+  #   image: node:12-buster
   #   container_name: arkid-fe
   #   restart: always
+  #   working_dir: /root/workspace/arkid-fe
+  #   command: tail -f /dev/null
   #   networks:
   #     - arkid
   #   volumes:
-  #     - ./fe.conf:/etc/nginx/conf.d/default.conf
+  #     ## 这个路径是arkid-fe所在的目录，如果笔记本内存大，可以在最后加上 `:cached` 提升性能
+  #     - ../../../arkid-frontend:/root/workspace/arkid-fe
+  #     - ./vue.config.js:/root/workspace/arkid-fe/vue.config.js
+
+  # 不开发前段的话，放开这个
+  fe:
+    image: longguikeji/arkid-fe:v2dev
+    container_name: arkid-fe
+    restart: always
+    networks:
+      - arkid
+    volumes:
+      - ./fe.conf:/etc/nginx/conf.d/default.conf
 
   db:
     image: mysql:5.7

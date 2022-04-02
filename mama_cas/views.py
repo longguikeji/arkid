@@ -69,7 +69,7 @@ class TokenRequiredMixin(AccessMixin):
         is_authenticated = self.check_token(request)
         if is_authenticated:
             # if self.check_permission(request) is False:
-            #     return HttpResponseRedirect(self.get_return_url(self.get_login_url(), '您没有使用cas应用的权限'))
+            #    return HttpResponseRedirect(self.get_return_url(self.get_login_url(), '您没有使用cas应用的权限'))
             return super().dispatch(request, *args, **kwargs)
         else:
             return self.handle_no_permission()
