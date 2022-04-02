@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-^x5*mjwcy2p&6+=twa35nm95j5(%)dk3%l0&if)xd97maw9h8d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'arkid.core',
     'arkid.extension',
-    # 'extension_root.abc'
+    'api',
 ]
 
 MIDDLEWARE = [

@@ -28,11 +28,15 @@ def register(tag, name, data_model=None, description=''):
     tag_map_signal[tag] = TagSignal(tag=tag, name=name, data_model=data_model, description=description)
 
 
+def register_signal(tag_signal: TagSignal):
+    tag_map_signal[tag_signal.tag] = tag_signal
+
+
 def unregister(tag):
     tag_map_signal.pop(tag, None)
 
 
-def dispacth(event, sender=None):
+def dispatch(event, sender=None):
     tag_signal = tag_map_signal.get(event.tag)
     if not tag_signal:
         return

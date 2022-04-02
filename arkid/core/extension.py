@@ -81,8 +81,9 @@ class Extension:
         core.event.listen_event(tag, signal_func)
         self.events.extend((tag, signal_func))
 
-    def register_extend_api(self):
-        pass
+    def register_extend_api(self, api_schema_cls, **field_definitions):
+        core.api.add_fields(api_schema_cls, **field_definitions)
+        self.extend_apis.append((api_schema_cls, field_definitions.keys()))
     
     def load(self):
         self.migrate_extension()
@@ -93,7 +94,5 @@ class Extension:
             core.event.unlisten_event(tag, func)
         for field in self.extend_fields:
             core.expand.field_expand_map.remove(field)
-
-    
-
-
+        for api_schema_cls, fields in self.extend_apis:
+            core.api.remove_fields(api_schema_cls, fields)
