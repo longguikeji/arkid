@@ -16,6 +16,12 @@ class ExtensionLoader:
         return cls._instance
 
     def _start(self):
+        
+        try:# 防止在migrate或其它命令运行时没有创建数据库而报错
+            extensions = list(Extension.active_objects.filter())
+        except Exception:
+            return
+        
         exts = find_available_extensions()
         for ext in exts:
             Extension.objects.update_or_create(

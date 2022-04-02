@@ -1,7 +1,7 @@
 from .api import api
 
 from ninja import Schema, Query
-from arkid.core.event import TagSignal, dispatch, register, Event
+from arkid.core.event import dispatch, register, Event
 
 class UserIn(Schema):
     username: str
@@ -11,10 +11,9 @@ UserIn.use1 = ''
 
 class UserOut(Schema):
     id: int
-    idx: int
     # username: str
 
-
+ 
 # from pydantic import BaseModel
 # class ApiEventData(BaseModel):
 #     request: any
@@ -48,6 +47,7 @@ def operation():
             response = old_view_func(request=request, *params, **kwargs)
             # copy request
             dispatch(Event(tag, 'tenant', RequestResponse(request, response)))
+            print(response)
             return response
         operation.view_func = func
 

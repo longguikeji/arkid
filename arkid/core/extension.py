@@ -6,6 +6,7 @@ from collections import OrderedDict
 from django.apps import apps
 from django.conf import settings
 from django.core import management
+from arkid.core import api
 
 
 app_config = config.get_app_config()
@@ -82,7 +83,7 @@ class Extension:
         self.events.extend((tag, signal_func))
 
     def register_extend_api(self, api_schema_cls, **field_definitions):
-        core.api.add_fields(api_schema_cls, **field_definitions)
+        api.add_fields(api_schema_cls, **field_definitions)
         self.extend_apis.append((api_schema_cls, field_definitions.keys()))
     
     def load(self):

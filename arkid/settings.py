@@ -39,8 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'arkid.core',
-    'arkid.extension',
     'api',
+    'arkid.extension',
 ]
 
 MIDDLEWARE = [

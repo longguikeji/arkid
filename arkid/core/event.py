@@ -22,6 +22,7 @@ class Event:
 
 
 tag_map_signal: Dict[str, Event] = {}
+temp_listens:list = []
 
 
 def register(tag, name, data_model=None, description=''):
@@ -37,6 +38,10 @@ def unregister(tag):
 
 
 def dispatch(event, sender=None):
+    if len(temp_listens) > 0:
+        for tag,func,kwargs in temp_listens:
+            listen_event(tag,func,**kwargs)
+        temp_listens.clear()
     tag_signal = tag_map_signal.get(event.tag)
     if not tag_signal:
         return
@@ -82,6 +87,8 @@ def listen_event(tag, func, **kwargs):
         tag_signal = tag_map_signal.get(tag)
         if tag_signal:
             tag_signal.signal.connect(func, **kwargs)
+        else:
+            temp_listens.append((tag,func, kwargs))
 
 def unlisten_event(tag, func, **kwargs):
     if isinstance(tag, (list, tuple)):

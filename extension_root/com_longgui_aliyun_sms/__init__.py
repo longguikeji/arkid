@@ -1,8 +1,8 @@
 import uuid
 import json
 import logging
-from aliyunsdkcore.client import AcsClient
-from aliyunsdkcore.profile import region_provider
+# from aliyunsdkcore.client import AcsClient
+# from aliyunsdkcore.profile import region_provider
 from .request.v20170525.SendSmsRequest import SendSmsRequest
 from .constants import KEY
 from arkid import core
@@ -87,6 +87,8 @@ class AliyunExtension(extension.Extension):
     def load(self):
         super().load()
         self.register_event('api_login_create_user', self.send_sms_code)
+        from api.login import UserOut
+        self.register_extend_api(UserOut, idx=int)
 
     def send_sms_code(self, event, **kwargs):
         tenant = event.tenant

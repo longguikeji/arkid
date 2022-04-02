@@ -16,6 +16,8 @@ celery = "*"
 redis = "*"
 mysqlclient = "*"
 oauth2_provider = "*"
+toml = "*"
+aliyunsdkcore = "*"
 
 [requires]
 python_version = "3.8"
