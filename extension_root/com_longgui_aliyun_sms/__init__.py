@@ -86,7 +86,7 @@ from arkid.core import extension, event
 class AliyunExtension(extension.Extension):
     def load(self):
         super().load()
-        self.register_event('api_login_create_user', self.send_sms_code)
+        self.listen_event('api_login_create_user', self.send_sms_code)
         from api.login import UserOut
         self.register_extend_api(UserOut, idx=int)
 

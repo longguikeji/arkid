@@ -69,7 +69,7 @@ class Extension:
         self.extend_fields.append(data)
         core.expand.field_expand_map.append(data)
 
-    def register_event(self, tag, func):
+    def listen_event(self, tag, func):
         def signal_func(event, **kwargs2):
             # 判断租户是否启用该插件
             # tenant

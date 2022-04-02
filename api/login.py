@@ -1,3 +1,4 @@
+from typing import Any
 from .api import api
 
 from ninja import Schema, Query
@@ -13,12 +14,6 @@ class UserOut(Schema):
     id: int
     # username: str
 
- 
-# from pydantic import BaseModel
-# class ApiEventData(BaseModel):
-#     request: any
-#     response: dict
-
 
 class RequestResponse:
     def __init__(self, request, response) -> None:
@@ -30,7 +25,7 @@ class RequestResponse:
         return self._response
 
 
-def operation():
+def operation(event_data_model):
     from functools import partial
 
     def replace_view_func(operation):
@@ -39,7 +34,7 @@ def operation():
             tag = tag,
             name = operation.summary,
             description = operation.description,
-            # data_model = ApiEventData
+            data_model = event_data_model
         )
 
         old_view_func = operation.view_func
@@ -65,8 +60,12 @@ def operation():
 
     return decorator
 
+class ApiEventData(Schema):
+    request: Any
+    response: UserOut
+    
 @api.get("/users/", response=UserOut, auth=None)
-@operation()
+@operation(ApiEventData)
 def create_user(request, data: UserIn = Query(...)):
     user = {'id': 1}
     return user
