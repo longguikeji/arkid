@@ -363,7 +363,7 @@ class AppProvisioningProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
     tags=['app'],
     summary='租户app列表'
 )

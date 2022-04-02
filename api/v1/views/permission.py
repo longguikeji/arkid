@@ -57,7 +57,7 @@ class PermissionViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
             #     id__in=ids,
             # ).order_by('id')
             objs = Permission.valid_objects.filter(
-                Q(tenant=tenant)|Q(is_system_permission=True)
+                Q(tenant=tenant)|Q(Q(is_system_permission=True)&Q(tenant_id__isnull=True))
             ).order_by('-id')
             return objs
 
@@ -207,8 +207,9 @@ class PermissionGroupView(generics.ListAPIView):
             kwargs['parent'] = None
         else:
             kwargs['parent__uuid'] = parent
-
-        permission_groups = PermissionGroup.valid_objects.filter(Q(tenant__uuid=tenant_uuid)|Q(is_system_group=True)).filter(**kwargs).order_by('-is_system_group', '-id')
+        permission_groups = PermissionGroup.valid_objects.filter(
+            Q(Q(is_system_group=True)&Q(tenant_id__isnull=True))|Q(tenant__uuid=tenant_uuid)
+        ).filter(**kwargs).order_by('-is_system_group', '-id')
         return permission_groups
 
 

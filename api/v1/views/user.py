@@ -964,7 +964,7 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenantadmin', 'globaladmin'],
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
     tags=['user'],
     summary='分组用户列表',
 )
