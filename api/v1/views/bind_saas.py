@@ -69,7 +69,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         bind_info = self.get_bind_info(tenant_uuid)
         return Response(bind_info, HTTP_200_OK)
 
-    @extend_schema(roles=['tenant admin', 'global admin'], request=ArkIDBindSaasSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], request=ArkIDBindSaasSerializer)
     def patch(self, request, tenant_uuid, *args, **kwarg):
         """
         查询 saas 绑定信息

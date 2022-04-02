@@ -209,7 +209,10 @@ class PermissionGroupView(generics.ListAPIView):
             kwargs['parent__uuid'] = parent
         permission_groups = PermissionGroup.valid_objects.filter(
             Q(Q(is_system_group=True)&Q(tenant_id__isnull=True))|Q(tenant__uuid=tenant_uuid)
-        ).filter(**kwargs).order_by('-is_system_group', '-id')
+        ).filter(**kwargs)
+        if self.request.user.is_superuser is False:
+            permission_groups = permission_groups.exclude(name='平台管理')
+        permission_groups = permission_groups.order_by('-is_system_group', '-id')
         return permission_groups
 
 

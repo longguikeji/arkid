@@ -710,76 +710,76 @@ def app_permission_task(app_temp, api_info):
     '''
     response = requests.get(api_info)
     response = response.json()
-    # permissions = response.get('permissions')
-    permission_jsons = {
-        "permissions":[
-            {
-                "name":"修改数据更新",
-                "sort_id":0,
-                "type":"api",
-                "operation_id":"api_v1_tenant_data_sync_update"
-            },
-            {
-                "name":"创建数据更新",
-                "sort_id":1,
-                "type":"api",
-                "operation_id":"api_v1_tenant_data_sync_create"
-            },
-            {
-                "name":"数据更新",
-                "sort_id":2,
-                "type":"group",
-                "parent":4,
-                "container":[
-                    0
-                ],
-                "operation_id":""
-            },
-            {
-                "name":"数据清洗",
-                "sort_id":3,
-                "type":"group",
-                "parent":4,
-                "container":[
-                    1
-                ],
-                "operation_id":""
-            },
-            {
-                "name":"数据",
-                "sort_id":4,
-                "type":"group",
-                "container":[
+    permission_jsons = response.get('permissions')
+    # permission_jsons = {
+    #     "permissions":[
+    #         {
+    #             "name":"修改数据更新",
+    #             "sort_id":0,
+    #             "type":"api",
+    #             "operation_id":"api_v1_tenant_data_sync_update"
+    #         },
+    #         {
+    #             "name":"创建数据更新",
+    #             "sort_id":1,
+    #             "type":"api",
+    #             "operation_id":"api_v1_tenant_data_sync_create"
+    #         },
+    #         {
+    #             "name":"数据更新",
+    #             "sort_id":2,
+    #             "type":"group",
+    #             "parent":4,
+    #             "container":[
+    #                 0
+    #             ],
+    #             "operation_id":""
+    #         },
+    #         {
+    #             "name":"数据清洗",
+    #             "sort_id":3,
+    #             "type":"group",
+    #             "parent":4,
+    #             "container":[
+    #                 1
+    #             ],
+    #             "operation_id":""
+    #         },
+    #         {
+    #             "name":"数据",
+    #             "sort_id":4,
+    #             "type":"group",
+    #             "container":[
 
-                ],
-                "operation_id":""
-            },
-            {
-                "name": "normal-user",
-                "sort_id": 5,
-                "type": "group",
-                "container":[
-                    1
-                ]
-            },
-            {
-                "name": "tenant-user",
-                "sort_id": 6,
-                "type": "group",
-                "container":[
-                    1
-                ]
-            },
-            {
-                "name": "platform-user",
-                "sort_id": 7,
-                "type": "group",
-                "container":[
-                    1
-                ]
-            }
-        ]
-    }
+    #             ],
+    #             "operation_id":""
+    #         },
+    #         {
+    #             "name": "normal-user",
+    #             "sort_id": 5,
+    #             "type": "group",
+    #             "container":[
+    #                 1
+    #             ]
+    #         },
+    #         {
+    #             "name": "tenant-user",
+    #             "sort_id": 6,
+    #             "type": "group",
+    #             "container":[
+    #                 1
+    #             ]
+    #         },
+    #         {
+    #             "name": "platform-user",
+    #             "sort_id": 7,
+    #             "type": "group",
+    #             "container":[
+    #                 1
+    #             ]
+    #         }
+    #     ]
+    # }
     permission_jsons = permission_jsons.get('permissions')
     group_permission_jsons = []
     api_permission_jsons = []
