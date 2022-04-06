@@ -138,9 +138,10 @@ class OwnerPerm(BaseModel):
         return f'{self.__class__.__name__}: {self.owner} -> {self.perm} = {self.value}'
 
     def save_value(self,value):
-        if self.value != value:
-            self.value = value
-            self.save()
+        # 引发了无法选择的错误
+        # if self.value != value:
+        self.value = value
+        self.save()
 
     def permit(self):
         '''
