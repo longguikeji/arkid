@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -134,3 +135,14 @@ CONFIG_LOCAL_FILE = 'arkid.local.toml'
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, "settings_local.py")):
     exec(open(os.path.join(BASE_DIR, "settings_local.py")).read())
+
+from django.utils.translation import gettext_lazy as _
+
+LANGUAGES = [
+    ('en-us', _('English American')),
+    # ('zh-hans', _("Simplified Chinese"))
+]
+
+LOCALE_PATHS = [
+    # '/home/guancy/longgui/arkid/extension_root/com_longgui_international_en_us/locale'
+]

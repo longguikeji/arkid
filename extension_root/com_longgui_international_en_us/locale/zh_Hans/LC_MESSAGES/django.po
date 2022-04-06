@@ -1,0 +1,276 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#: common/serializer.py:69
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-04-06 08:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: api/login.py:72 extension_root/com_longgui_aliyun_sms/serializers.py:15
+msgid "data"
+msgstr "数据"
+
+#: arkid/core/models.py:11 arkid/core/models.py:12 arkid/core/models.py:154
+#: arkid/core/models.py:225 arkid/extension/models.py:26
+msgid "租户"
+msgstr ""
+
+#: arkid/core/models.py:14
+msgid "名字"
+msgstr ""
+
+#: arkid/core/models.py:15
+msgid "短链接标识"
+msgstr ""
+
+#: arkid/core/models.py:16
+msgid "图标"
+msgstr ""
+
+#: arkid/core/models.py:25 arkid/core/models.py:26
+msgid "用户"
+msgstr ""
+
+#: arkid/core/models.py:29
+msgid "头像"
+msgstr ""
+
+#: arkid/core/models.py:30
+msgid "是否是平台用户"
+msgstr ""
+
+#: arkid/core/models.py:43 arkid/core/models.py:44
+msgid "用户分组"
+msgstr ""
+
+#: arkid/core/models.py:62
+msgid "用户列表"
+msgstr ""
+
+#: arkid/core/models.py:76 arkid/core/models.py:77 arkid/core/models.py:162
+#: arkid/core/models.py:233
+msgid "应用"
+msgstr ""
+
+#: arkid/core/models.py:82
+msgid "应用名称"
+msgstr ""
+
+#: arkid/core/models.py:83
+msgid "应用地址"
+msgstr ""
+
+#: arkid/core/models.py:84
+msgid "应用图标"
+msgstr ""
+
+#: arkid/core/models.py:85
+msgid "应用描述"
+msgstr ""
+
+#: arkid/core/models.py:86
+msgid "应用类型"
+msgstr ""
+
+#: arkid/core/models.py:87
+msgid "应用配置"
+msgstr ""
+
+#: arkid/core/models.py:89
+msgid "应用密钥"
+msgstr ""
+
+#: arkid/core/models.py:105 arkid/core/models.py:106
+msgid "应用分组"
+msgstr ""
+
+#: arkid/core/models.py:124
+msgid "应用列表"
+msgstr ""
+
+#: arkid/core/models.py:138 arkid/core/models.py:139
+msgid "权限"
+msgstr ""
+
+#: arkid/core/models.py:151 arkid/core/models.py:221
+#: arkid/extension/models.py:15
+msgid "名称"
+msgstr ""
+
+#: arkid/core/models.py:152 arkid/core/models.py:222
+msgid "编码"
+msgstr ""
+
+#: arkid/core/models.py:168 common/serializer.py:26
+msgid "类型"
+msgstr ""
+
+#: arkid/core/models.py:172
+msgid "是否是系统权限"
+msgstr ""
+
+#: arkid/core/models.py:182 arkid/core/models.py:183
+msgid "权限分组"
+msgstr ""
+
+#: arkid/core/models.py:191
+msgid "父权限分组"
+msgstr ""
+
+#: arkid/core/models.py:198
+msgid "权限列表"
+msgstr ""
+
+#: arkid/core/models.py:212 arkid/core/models.py:213
+msgid "审批动作"
+msgstr ""
+
+#: arkid/core/models.py:223
+msgid "备注"
+msgstr ""
+
+#: arkid/core/models.py:239
+msgid "状态"
+msgstr ""
+
+#: arkid/core/models.py:243
+msgid "数据"
+msgstr ""
+
+#: arkid/core/tests.py:12
+msgid "发送短信验证码"
+msgstr ""
+
+#: arkid/extension/models.py:9 arkid/extension/models.py:10
+#: arkid/extension/models.py:27
+msgid "插件"
+msgstr ""
+
+#: arkid/extension/models.py:13
+msgid "标签"
+msgstr ""
+
+#: arkid/extension/models.py:14
+msgid "标识"
+msgstr ""
+
+#: arkid/extension/models.py:16
+msgid "版本"
+msgstr ""
+
+#: arkid/extension/models.py:17 arkid/extension/models.py:28
+#: common/serializer.py:32 common/serializer.py:53
+msgid "是否启用"
+msgstr ""
+
+#: arkid/extension/models.py:23 arkid/extension/models.py:24
+msgid "租户插件配置"
+msgstr ""
+
+#: arkid/extension/models.py:29
+msgid "配置"
+msgstr ""
+
+#: arkid/extension/models.py:30
+msgid "是否启用平台配置"
+msgstr ""
+
+#: arkid/settings.py:142
+msgid "English American"
+msgstr ""
+
+#: common/event.py:8
+msgid "USER_CREATED"
+msgstr ""
+
+#: common/event.py:9
+msgid "USER_UPDATED"
+msgstr ""
+
+#: common/event.py:10
+msgid "USER_DELETED"
+msgstr ""
+
+#: common/event.py:12
+msgid "GROUP_CREATED"
+msgstr ""
+
+#: common/event.py:13
+msgid "GROUP_UPDATED"
+msgstr ""
+
+#: common/event.py:14
+msgid "GROUP_DELETED"
+msgstr ""
+
+#: common/event.py:16
+msgid "APP_CREATED"
+msgstr ""
+
+#: common/event.py:17
+msgid "APP_UPDATED"
+msgstr ""
+
+#: common/event.py:18
+msgid "APP_DELETED"
+msgstr ""
+
+#: common/serializer.py:24
+msgid "标题"
+msgstr ""
+
+#: common/serializer.py:28
+msgid "配置数据"
+msgstr ""
+
+#: common/serializer.py:57
+msgid "登录注册类型"
+msgstr ""
+
+#: common/serializer.py:63
+msgid "认证类型"
+msgstr ""
+
+#: common/serializer.py:70
+msgid "同步类型"
+msgstr ""
+
+#: common/serializer.py:80
+msgid "后端认证类型"
+msgstr ""
+
+#: extension_root/com_longgui_aliyun_sms/serializers.py:7
+msgid "Access Key"
+msgstr ""
+
+#: extension_root/com_longgui_aliyun_sms/serializers.py:8
+msgid "Secret Key"
+msgstr ""
+
+#: extension_root/com_longgui_aliyun_sms/serializers.py:9
+msgid "Template"
+msgstr ""
+
+#: extension_root/com_longgui_aliyun_sms/serializers.py:10
+msgid "Signature"
+msgstr ""
+
+#: extension_root/com_longgui_international_en_us/__init__.py:15
+msgid "Simplified Chinese"
+msgstr ""
+
+#~ msgid "Username"
+#~ msgstr "用户名"

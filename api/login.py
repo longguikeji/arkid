@@ -3,7 +3,8 @@ from .api import api
 
 from ninja import Schema, Query
 from arkid.core.event import dispatch, register, Event
-
+from django.utils.translation import gettext_lazy as _
+from django.utils import translation
 class UserIn(Schema):
     username: str
     password: str
@@ -12,7 +13,7 @@ UserIn.use1 = ''
 
 class UserOut(Schema):
     id: int
-    # username: str
+    username: str
 
 
 class RequestResponse:
@@ -67,7 +68,9 @@ class ApiEventData(Schema):
 @api.get("/users/", response=UserOut, auth=None)
 @operation(ApiEventData)
 def create_user(request, data: UserIn = Query(...)):
-    user = {'id': 1}
+    translation.activate(translation.get_language_from_request(request))
+    user = {'id': 1,"username":translation.gettext("data")}
+    translation.deactivate()
     return user
 
 

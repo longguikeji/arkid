@@ -85,6 +85,11 @@ class Extension:
     def register_extend_api(self, api_schema_cls, **field_definitions):
         api.add_fields(api_schema_cls, **field_definitions)
         self.extend_apis.append((api_schema_cls, field_definitions.keys()))
+        
+    
+    def register_languge(self,name,description,locale_path):
+        settings.LANGUAGES.append((name,description))
+        settings.LOCALE_PATHS.append(locale_path)
     
     def load(self):
         self.migrate_extension()
