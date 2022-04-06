@@ -780,7 +780,7 @@ def app_permission_task(app_temp, api_info):
     #         }
     #     ]
     # }
-    permission_jsons = permission_jsons.get('permissions')
+    # permission_jsons = permission_jsons.get('permissions')
     group_permission_jsons = []
     api_permission_jsons = []
     api_permission_dict = {}

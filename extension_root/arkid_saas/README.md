@@ -1,2 +1,0 @@
-# arkid_saas
-中心ArkID插件arkid_saas，负责本地ArkID与中心ArkID绑定
