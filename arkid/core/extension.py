@@ -6,8 +6,7 @@ from collections import OrderedDict
 from django.apps import apps
 from django.conf import settings
 from django.core import management
-from arkid.core import api
-
+from arkid.core import api, pages as core_page, routers
 
 app_config = config.get_app_config()
 
@@ -26,6 +25,8 @@ class Extension:
         self.extend_fields = []
         self.events = []
         self.extend_apis = []
+        self.front_routers = []
+        self.front_pages = []
         self.ext_dir = Path(app_config.extension.root) / self.name
         self.full_name = f'{self.ext_dir.parent}.{self.name}'
 
@@ -86,6 +87,30 @@ class Extension:
         api.add_fields(api_schema_cls, **field_definitions)
         self.extend_apis.append((api_schema_cls, field_definitions.keys()))
     
+    def register_front_routers(self, router, primary=''):
+        """
+        primary: 一级路由名字，由 routers 文件提供定义
+        """
+        router.path = self.package
+        router.change_page_tag(self.package)
+
+        for old_router, old_primary in self.front_routers:
+            if old_primary == primary:
+                self.front_routers.remove((old_router, old_primary))
+                routers.unregister_front_routers(old_router, old_primary)
+
+        routers.register_front_routers(router, primary)
+        self.front_routers.append((router, primary))
+
+    def register_front_pages(self, page):
+        """
+        primary: 一级路由名字，由 routers 文件提供定义
+        """
+        page.tag = self.package + '_' + page.tag
+
+        core_page.register_front_pages(page)
+        self.front_pages.append(page)
+
     def load(self):
         self.migrate_extension()
 
@@ -97,3 +122,7 @@ class Extension:
             core.expand.field_expand_map.remove(field)
         for api_schema_cls, fields in self.extend_apis:
             core.api.remove_fields(api_schema_cls, fields)
+        for old_router, old_primary in self.front_routers:
+            routers.unregister_front_routers(old_router, old_primary)
+        for page in self.front_pages:
+            core_page.unregister_front_pages(page)
