@@ -6,7 +6,7 @@ import shutil
 import string
 import sys
 from arkid import core
-from common.logger import logger
+from arkid.common.logger import logger
 from arkid.extension.models import Extension
 from arkid import config
 

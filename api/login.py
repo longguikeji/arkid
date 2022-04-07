@@ -1,5 +1,5 @@
 from typing import Any
-from .api import api
+from arkid.core.api import api, operation
 
 from ninja import Schema, Query
 from arkid.core.event import dispatch, register_event, Event

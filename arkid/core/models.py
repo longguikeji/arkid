@@ -3,8 +3,8 @@ import binascii
 import datetime
 from django.db import models
 from django.utils import timezone
-from common.model import BaseModel
-from django.utils.translation import gettext_lazy as _
+from arkid.common.model import BaseModel
+from arkid.core.translation import gettext_default as _
 # from oauth2_provider.generators import generate_client_secret
 from arkid.core.expand import ExpandManager, ExpandModel
 
@@ -12,12 +12,12 @@ from arkid.core.expand import ExpandManager, ExpandModel
 class Tenant(BaseModel):
 
     class Meta(object):
-        verbose_name = _("租户")
-        verbose_name_plural = _("租户")
+        verbose_name = _("tenant", "租户")
+        verbose_name_plural = _("tenant", "租户")
 
-    name = models.CharField(verbose_name=_('名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('短链接标识'), unique=True)
-    icon = models.URLField(verbose_name=_('图标'), blank=True)
+    name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
+    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), unique=True)
+    icon = models.URLField(verbose_name=_('icon', '图标'), blank=True)
 
     def __str__(self) -> str:
         return f'Tenant: {self.name}'
@@ -26,8 +26,8 @@ class Tenant(BaseModel):
 class User(ExpandModel, BaseModel):
     
     class Meta(object):
-        verbose_name = _("用户")
-        verbose_name_plural = _("用户")
+        verbose_name = _("user", "用户")
+        verbose_name_plural = _("user", "用户")
 
     username = models.CharField(max_length=128, blank=False)
     avatar = models.URLField(verbose_name=_('头像'), blank=True)

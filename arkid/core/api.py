@@ -1,10 +1,10 @@
 import functools
 from typing import Any, Dict, Optional
 from pydantic.fields import ModelField
-from django.utils.translation import ugettext_lazy as _
+from arkid.core.translation import gettext_default as _
 from ninja import NinjaAPI, Schema
 from ninja.security import HttpBearer
-from common.logger import logger
+from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
 from arkid.core.event import register_event, dispatch, Event
 from arkid.core.models import ExpiringToken

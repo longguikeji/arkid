@@ -1,6 +1,6 @@
 from email.policy import default
 from arkid.extension.utils import load_active_extensions, find_available_extensions
-from common.logger import logger
+from arkid.common.logger import logger
 from arkid.extension.models import Extension
 
 

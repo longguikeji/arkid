@@ -1,6 +1,6 @@
 from typing import Dict
 from django.dispatch import Signal
-from django.utils.translation import gettext_lazy as _
+from arkid.core.translation import gettext_default as _
 
 
 class TagSignal:
@@ -65,7 +65,7 @@ def dispatch(event, sender=None):
     return tag_signal.signal.send(sender=sender, event=event)
 
 
-def register_and_dispatch_event(tag, name, tenant, description='', data_model=None, data=None)
+def register_and_dispatch_event(tag, name, tenant, description='', data_model=None, data=None):
     register_event(tag, name, data_model, description)
     return dispatch(Event(tag, tenant, data))
 

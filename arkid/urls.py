@@ -15,9 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from api.api import api
-from api import login
-
+from arkid.core.api import api
+from api import v1
 
 urlpatterns = [
     path("admin/", admin.site.urls),

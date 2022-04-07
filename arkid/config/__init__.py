@@ -4,7 +4,7 @@ from django.utils.translation import to_language
 import toml
 from .email_config import EmailConfig
 from .extension_config import ExtensionConfig
-from common.utils import deep_merge
+from arkid.common.utils import deep_merge
 
 
 class Config(object):

@@ -1,10 +1,11 @@
-from typing import Any, Dict, Optional, List, Enum
+from enum import Enum
+from typing import Any, Dict, Optional, List
 from pydantic import Field, HttpUrl
 from ninja import Schema, Query, ModelSchema
 from arkid.core.event import register_and_dispatch_event
-from arkid.core.api import api, operation, ApiEventData
+from arkid.core.api import api, operation
 from arkid.core.models import Tenant
-from django.utils.translation import gettext_lazy as _
+from arkid.core.translation import gettext_default as _
 
 
 class LoginPageIn(Schema):
@@ -72,7 +73,7 @@ class LoginPageTenantSchema(ModelSchema):
         model_fields = ['uuid', 'name', 'slug', 'icon']
 
 class LoginPageOut(Schema):
-    data: Dict[str, LoginPageSchema]
+    data: Dict[str, Optional[LoginPageSchema]]
     tenant: LoginPageTenantSchema
 
 
@@ -82,7 +83,14 @@ def login_page(request, data: LoginPageIn = Query(...)):
     tenant_uuid = data.tenant
     tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
     request.tenant = tenant
-
-    return {}
+    
+    return {
+        'tenant': tenant, 
+        'data': {
+            'login': None,
+            'password': None,
+            'register': None,
+        }
+    }
 
     # response = register_and_dispatch_event(tag='AUTO_LOGIN', name=_('自动登录'), tenant=tenant)

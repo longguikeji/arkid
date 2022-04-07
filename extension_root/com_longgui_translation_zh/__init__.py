@@ -4,7 +4,7 @@ import logging
 from .constants import KEY
 from arkid import core
 from arkid.core import extension, event 
-from django.utils.translation import gettext_lazy as _
+from arkid.core.translation import gettext_default as _
 from django.conf import settings
 import os
     

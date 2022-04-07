@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.views import View
 from django.urls import reverse
 from django.shortcuts import redirect
-from django.utils.translation import ugettext_lazy as _
-from common.logger import logger
+from arkid.core.translation import gettext_default as _
+from arkid.common.logger import logger
 from arkid.core.models import Tenant, ExpiringToken
 from arkid.core.event import register_and_dispatch_event
 from ninja import Schema

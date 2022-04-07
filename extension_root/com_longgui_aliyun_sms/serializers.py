@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from django.utils.translation import gettext_lazy as _
-from common.serializer import ExtensionBaseSerializer
+from arkid.core.translation import gettext_default as _
+from arkid.common.serializer import ExtensionBaseSerializer
 
 class AliyunSMSConfigSerializer(serializers.Serializer):
 

@@ -2,7 +2,7 @@ from typing import Optional, Callable
 
 from config import Config, get_app_config
 from django.utils.translation import gettext_lazy as _
-from common.serializer import ExtensionBaseSerializer
+from arkid.common.serializer import ExtensionBaseSerializer
 
 
 class InMemExtension:

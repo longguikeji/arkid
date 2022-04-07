@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from django.db import models
 from tenant.models import Tenant
-from common.model import BaseModel
+from arkid.common.model import BaseModel
 
 
 class PrivacyNotice(BaseModel):

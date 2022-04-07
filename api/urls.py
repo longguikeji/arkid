@@ -16,8 +16,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from .api import api
-from . import login
+from arkid.core.api import api
 from arkid.login import view as login_view
 
 

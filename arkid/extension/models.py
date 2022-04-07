@@ -1,5 +1,5 @@
 from django.db import models
-from common.model import BaseModel
+from arkid.common.model import BaseModel
 from django.utils.translation import gettext_lazy as _
 
 

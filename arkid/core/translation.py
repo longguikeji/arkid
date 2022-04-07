@@ -19,6 +19,8 @@ def gettext_default(id,msg="",lang="en"):
         default_lang_maps[lang] = {
             id:msg
         }
+
+    return id
     
 
 def gettext(id,lang_map: tuple()=("","en"),lang_maps:list(tuple())=None):
