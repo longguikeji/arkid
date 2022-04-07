@@ -4,7 +4,7 @@ from ninja.security import HttpBearer
 from django.conf import settings
 
 # from .models import User
-# from .openapi import get_openapi_schema
+from arkid.core.openapi import get_openapi_schema
 # from .utils import verify_id_token
 
 
@@ -24,4 +24,4 @@ class GlobalAuth(HttpBearer):
 
 api = NinjaAPI(auth=GlobalAuth())
 
-# api.get_openapi_schema = functools.partial(get_openapi_schema, api)
+api.get_openapi_schema = functools.partial(get_openapi_schema, api)
