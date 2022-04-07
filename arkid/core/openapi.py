@@ -1,7 +1,7 @@
 from typing import Optional
 from ninja.openapi.schema import OpenAPISchema
 from ninja.openapi import get_schema
-from arkid.core import routers, pages
+from arkid.core import routers, pages, translation
 
 
 def get_openapi_schema(self, path_prefix: Optional[str] = None) -> OpenAPISchema:
@@ -12,4 +12,7 @@ def get_openapi_schema(self, path_prefix: Optional[str] = None) -> OpenAPISchema
     schema["pages"] = pages.global_pages
     # permissions = get_permissions(self)
     # schema["permissions"] = permissions
+    
+    schema["translation"] = translation.lang_maps
+    
     return schema

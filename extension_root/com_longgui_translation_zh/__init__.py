@@ -8,24 +8,23 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 import os
     
-class InternationalEnUsExtension(extension.Extension):
+class TranslationZhExtension(extension.Extension):
     def load(self):
         super().load()
         
         self.register_languge(
             'zh-hans',
-            _("Simplified Chinese"),
-            os.path.join(settings.BASE_DIR,'extension_root/com_longgui_international_en_us/locale')
+            {"data":"数据"}
         )
     
 
-extension = InternationalEnUsExtension(
-    package="com.longgui.international_en_us",
+extension = TranslationZhExtension(
+    package="com.longgui.translation_zh",
     description="""国际化插件：
-    英语（en-US）
+    中文（zh_Hans）
     """,
     version='1.0',
-    labels='international',
+    labels='translation',
     homepage='https://www.longguikeji.com',
     logo='',
     author='guancyxx@guancyxx.cn',

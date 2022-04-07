@@ -29,6 +29,8 @@ class Extension:
         self.front_pages = []
         self.ext_dir = Path(app_config.extension.root) / self.name
         self.full_name = f'{self.ext_dir.parent}.{self.name}'
+        
+        self.lang_code = None
 
     def migrate_extension(self) -> None:
         extension_migrate_foldname = Path(self.ext_dir) / 'migrations'
@@ -88,9 +90,15 @@ class Extension:
         self.extend_apis.append((api_schema_cls, field_definitions.keys()))
         
     
-    def register_languge(self,name,description,locale_path):
-        settings.LANGUAGES.append((name,description))
-        settings.LOCALE_PATHS.append(locale_path)
+    def register_languge(self, lang_code:str = 'en', lang_maps={}):
+        self.lang_code = lang_code
+        if lang_code in core.translation.extension_lang_maps.keys():
+            core.translation.extension_lang_maps[lang_code][self.name] = lang_maps
+        else:
+            core.translation.extension_lang_maps[lang_code] = {}
+            core.translation.extension_lang_maps[lang_code][self.name] = lang_maps
+        core.translation.lang_maps = core.translation.reset_lang_maps()
+        
     
     def register_front_routers(self, router, primary=''):
         """
@@ -131,3 +139,9 @@ class Extension:
             routers.unregister_front_routers(old_router, old_primary)
         for page in self.front_pages:
             core_page.unregister_front_pages(page)
+
+        if self.lang_code:
+            core.translation.extension_lang_maps[self.lang_code].pop(self.name)
+            if not core.translation.extension_lang_maps[self.lang_code]:
+                core.translation.extension_lang_maps.pop(self.lang_code)
+            core.translation.lang_maps = core.translation.reset_lang_maps()
