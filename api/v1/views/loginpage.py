@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Any, Dict, Optional, List
-from pydantic import Field, HttpUrl
+from pydantic import Field
 from ninja import Schema, Query, ModelSchema
 from arkid.core.event import register_and_dispatch_event
 from arkid.core.api import api, operation
@@ -17,7 +17,7 @@ class ButtonRedirectSchema(Schema):
 
 
 class ButtonHttpSchema(Schema):
-    url: HttpUrl = Field(title=_('url','http请求地址'))
+    url: str = Field(title=_('url','http请求地址'))
     method: str = Field(title=_('method','http请求方法'))
     params: Optional[dict] = Field(title=_('params','http请求参数'))
 
@@ -32,12 +32,12 @@ class ButtonSchema(Schema):
     title: Optional[str] = Field(title=_('title','标签文字'))
     tooltip: Optional[str] = Field(title=_('tooltip','提示文字'))
     long: Optional[bool] = Field(title=_('long button','是否为长按钮'))
-    img: Optional[HttpUrl] = Field(title=_('image url','图片地址'))
+    img: Optional[str] = Field(title=_('image url','图片地址'))
     gopage: Optional[str] = Field(title=_('gopage','跳转的页面名字'))
     redirect: Optional[ButtonRedirectSchema] = Field(title=_('redirect','重定向'))
     http: Optional[ButtonHttpSchema] = Field(title=_('http','http请求'))
     delay: Optional[int] = Field(title=_('delay','点击后延时（单位：秒）'))
-    agreement: ButtonAgreementSchema = Field(title=_('agreement','隐私声明'))
+    agreement: Optional[ButtonAgreementSchema] = Field(title=_('agreement','隐私声明'))
 
 class LOGIN_FORM_ITEM_TYPES(str, Enum):
     text = _('text', '普通文本框')

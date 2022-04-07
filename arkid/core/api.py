@@ -126,6 +126,8 @@ def operation(respnose_model):
             dispatch(Event(tag, request.tenant, RequestResponse(request, response)))
             print(response)
             return response
+        func.__name__ = old_view_func.__name__
+        func.__module__ = old_view_func.__module__
         operation.view_func = func
 
     def decorator(view_func):
