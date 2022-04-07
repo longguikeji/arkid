@@ -1,4 +1,8 @@
+import os
+import binascii
+import datetime
 from django.db import models
+from django.utils import timezone
 from common.model import BaseModel
 from django.utils.translation import gettext_lazy as _
 # from oauth2_provider.generators import generate_client_secret
@@ -246,3 +250,50 @@ class Approve(ExpandModel, BaseModel):
     def __str__(self):
         return '%s' % (self.name)
 
+
+class ExpiringToken:
+
+    class Meta(object):
+        verbose_name = _("Token")
+        verbose_name_plural = _("Token")
+
+    user = models.OneToOneField(
+        'User', related_name='auth_token',
+        on_delete=models.CASCADE, verbose_name=_("User")
+    )
+    token = models.CharField(_("Token"), max_length=40, primary_key=True)
+    created = models.DateTimeField(_("Created"), auto_now_add=True)
+    
+    def expired(self, tenant):
+        """Return boolean indicating token expiration."""
+        now = timezone.now()
+        config = TenantConfig.active_objects.filter(tenant=tenant).first()
+        if config:
+            token_duration_minutes = config.token_duration_minutes
+        else:
+            token_duration_minutes = 24*60
+        if self.created < now - datetime.timedelta(minutes=token_duration_minutes):
+            return True
+        return False
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = self.generate_token()
+        return super().save(*args, **kwargs)
+
+    @classmethod
+    def generate_token(cls):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return self.token
+
+
+class TenantConfig(ExpandModel, BaseModel):
+
+    class Meta(object):
+        verbose_name = _("租户配置")
+        verbose_name_plural = _("租户配置")
+
+    tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT, verbose_name=_('租户'))
+    token_duration_minutes = models.IntegerField(blank=False, default=24*60, verbose_name=_('token有效时长(分钟)'))

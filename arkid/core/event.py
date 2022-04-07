@@ -15,7 +15,7 @@ class TagSignal:
 
 class Event:
 
-    def __init__(self, tag, tenant, data) -> None:
+    def __init__(self, tag, tenant, data=None) -> None:
         self.tag = tag
         self.tenant = tenant
         self.data = data
@@ -25,7 +25,7 @@ tag_map_signal: Dict[str, Event] = {}
 temp_listens:Dict[str, tuple] = {}
 
 
-def register(tag, name, data_model=None, description=''):
+def register_event(tag, name, data_model=None, description=''):
     register_signal(TagSignal(tag=tag, name=name, data_model=data_model, description=description))
 
 
@@ -63,6 +63,11 @@ def dispatch(event, sender=None):
     # if tag_signal.data_model:
     #     event.data = tag_signal.data_model(**event.data)
     return tag_signal.signal.send(sender=sender, event=event)
+
+
+def register_and_dispatch_event(tag, name, tenant, description='', data_model=None, data=None)
+    register_event(tag, name, data_model, description)
+    return dispatch(Event(tag, tenant, data))
 
 
 def decorator_listen_event(tag, **kwargs):

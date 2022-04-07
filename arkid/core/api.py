@@ -1,5 +1,13 @@
+import functools
 from typing import Any, Dict, Optional
 from pydantic.fields import ModelField
+from django.utils.translation import ugettext_lazy as _
+from ninja import NinjaAPI, Schema
+from ninja.security import HttpBearer
+from common.logger import logger
+from arkid.core.openapi import get_openapi_schema
+from arkid.core.event import register_event, dispatch, Event
+from arkid.core.models import ExpiringToken
 
 
 def add_fields(cls, **field_definitions: Any):
@@ -54,3 +62,82 @@ def remove_fields(cls, fields: Any):
 # print(Model.schema())
 # remove_fields(Model, 'bar')
 # print(Model.schema())
+
+
+class GlobalAuth(HttpBearer):
+    openapi_scheme = "token"
+
+    def authenticate(self, request, token):
+        try:
+            token = ExpiringToken.objects.get(token=token)
+            
+            if not token.user.is_active:
+                raise Exception(_('User inactive or deleted'))
+
+            if token.expired():
+                raise Exception(_('Token has expired'))
+                
+        except ExpiringToken.DoesNotExist:
+            logger.error(_("Invalid token"))
+            return
+        except Exception as err:
+            logger.error(err)
+            return
+
+        request.user = token.user
+        return token
+
+
+api = NinjaAPI(auth=GlobalAuth())
+
+api.get_openapi_schema = functools.partial(get_openapi_schema, api)
+
+
+class RequestResponse:
+    def __init__(self, request, response) -> None:
+        self.request = request
+        self._response = response
+
+    @property
+    def response(self):
+        return self._response
+
+
+def operation(respnose_model):
+    from functools import partial
+
+    class ApiEventData(Schema):
+        request: Any
+        response: respnose_model 
+
+    def replace_view_func(operation):
+        tag = api.get_openapi_operation_id(operation)
+        register_event(
+            tag = tag,
+            name = operation.summary,
+            description = operation.description,
+            data_model = ApiEventData
+        )
+
+        old_view_func = operation.view_func
+        def func(request, *params, **kwargs):
+            response = old_view_func(request=request, *params, **kwargs)
+            # copy request
+            dispatch(Event(tag, request.tenant, RequestResponse(request, response)))
+            print(response)
+            return response
+        operation.view_func = func
+
+    def decorator(view_func):
+        old_ninja_contribute_to_operation = getattr(view_func, '_ninja_contribute_to_operation', None)
+        def ninja_contribute_to_operation(operation):
+            if old_ninja_contribute_to_operation:
+                old_ninja_contribute_to_operation(operation)
+            replace_view_func(operation)
+            
+        view_func._ninja_contribute_to_operation = partial(
+            ninja_contribute_to_operation
+        )
+        return view_func
+
+    return decorator

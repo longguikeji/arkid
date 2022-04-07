@@ -126,6 +126,7 @@ class Extension:
 
     def load(self):
         self.migrate_extension()
+        # self.install_requirements() sys.modeles
 
     def unload(self):
         core.urls.unregister(self.urls)

@@ -18,9 +18,12 @@ from django.contrib import admin
 from django.urls import path
 from .api import api
 from . import login
+from arkid.login import view as login_view
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", api.urls),
+    path("api/v1/login", login_view.LoginEnter),
+    path("api/v1/login_process", login_view.LoginProcess)
 ]
