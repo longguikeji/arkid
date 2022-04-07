@@ -800,14 +800,15 @@ def app_permission_task(app_temp, api_info):
     base_code = app_temp.name
     base_title = app_temp.name
     tenant = app_temp.tenant
-    old_permissions = Permission.valid_objects.filter(
-        tenant=tenant,
-        app=app_temp,
-        content_type=None,
-        permission_category='API',
-        is_system_permission=True,
-        base_code=base_code,
-    )
+    # old_permissions = Permission.valid_objects.filter(
+    #     tenant=tenant,
+    #     app=app_temp,
+    #     content_type=None,
+    #     permission_category='API',
+    #     is_system_permission=True,
+    #     base_code=base_code,
+    # )
+    old_permissions = Permission.objects.raw("select * from inventory_permission where is_del=0 and content_type_id is NULl and permission_category='API' and is_system_permission=1 and tenant_id=%s and base_code=%s and app_id=%s", [tenant.id, base_code, app_temp.id])
     for old_permission in old_permissions:
         old_permission.is_update = False
         old_permission.save()
