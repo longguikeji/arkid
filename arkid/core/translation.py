@@ -6,7 +6,7 @@ lang_maps = {}
 default_lang_maps = {}
 
 
-def add_text_in_default_lang_maps(id,msg="",lang="en"):
+def gettext_default(id,msg="",lang="en"):
     if not msg:
         if lang=='en':
             msg = id
@@ -21,16 +21,16 @@ def add_text_in_default_lang_maps(id,msg="",lang="en"):
         }
     
 
-def getText(id,lang_map: tuple()=("","en"),lang_maps:list(tuple())=None):
+def gettext(id,lang_map: tuple()=("","en"),lang_maps:list(tuple())=None):
 
     if lang_map:
         msg,lang = lang_map
-        add_text_in_default_lang_maps(id,msg,lang)
+        gettext_default(id,msg,lang)
     
     if lang_maps:
         for t in lang_maps:
             msg,lang = t
-            add_text_in_default_lang_maps(id,msg,lang)
+            gettext_default(id,msg,lang)
     
     return id
 

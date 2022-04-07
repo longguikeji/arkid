@@ -3,7 +3,7 @@ from .api import api
 
 from ninja import Field, Schema, Query
 from arkid.core.event import dispatch, register, Event
-from arkid.core.translation import getText as _
+from arkid.core.translation import gettext as _
 from django.utils import translation
 class UserIn(Schema):
     username: str
