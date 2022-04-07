@@ -808,7 +808,7 @@ def app_permission_task(app_temp, api_info):
     #     is_system_permission=True,
     #     base_code=base_code,
     # )
-    old_permissions = Permission.objects.raw("select * from inventory_permission where is_del=0 and content_type_id is NULl and permission_category='API' and is_system_permission=1 and tenant_id=%s and base_code=%s and app_id=%s", [tenant.id, base_code, app_temp.id])
+    old_permissions = Permission.objects.raw("select * from inventory_permission where is_del=0 and content_type_id is NULl and permission_category='API' and is_update=1 and is_system_permission=1 and tenant_id=%s and base_code=%s and app_id=%s", [tenant.id, base_code, app_temp.id])
     for old_permission in old_permissions:
         old_permission.is_update = False
         old_permission.save()
@@ -906,6 +906,7 @@ def app_permission_task(app_temp, api_info):
         base_code=base_code,
         is_update=False,
     ).delete()
+    # Permission.objects.raw("select * from inventory_permission where is_del=0 and content_type_id is NULl and permission_category='API' and is_system_permission=1 and tenant_id=%s and base_code=%s and app_id=%s and is_update=0", [tenant.id, base_code, app_temp.id]).delete()
     # 创建顶级权限分组
     base_permission_group, is_create = PermissionGroup.objects.get_or_create(
         is_active=True,
@@ -920,14 +921,15 @@ def app_permission_task(app_temp, api_info):
         tenant=tenant,
     )
     # 将权限分组的更新状态全部重置为false
-    old_permissiongroups = PermissionGroup.valid_objects.filter(
-        title=base_title,
-        tenant=tenant,
-        app=app_temp,
-        is_system_group=True,
-        base_code=base_code,
-        is_update=True,
-    ).exclude(uuid=base_permission_group.uuid)
+    old_permissiongroups = PermissionGroup.objects.raw('select * from inventory_permissiongroup where is_del=0 and title=%s and app_id=%s and is_system_group=1 and base_code=%s and is_update=%s and tenant_id=%s and uuid != %s', [base_title,app_temp.id,base_code,1,tenant.id,base_permission_group.id])
+    # old_permissiongroups = PermissionGroup.valid_objects.filter(
+    #     title=base_title,
+    #     tenant=tenant,
+    #     app=app_temp,
+    #     is_system_group=True,
+    #     base_code=base_code,
+    #     is_update=True,
+    # ).exclude(uuid=base_permission_group.uuid)
     for old_permissiongroup in old_permissiongroups:
         old_permissiongroup.is_update = False
         old_permissiongroup.save()
@@ -982,6 +984,7 @@ def app_permission_task(app_temp, api_info):
         for group_permission_container_item in group_permission_container:
             permissiongroup.permissions.add(api_permission_obj_dict.get(group_permission_container_item))
     # 删掉没更新的分组数据
+    # PermissionGroup.objects.raw('select * from inventory_permissiongroup where is_del=0 and title=%s and app_id=%s and is_system_group=1 and base_code=%s and is_update=%s and tenant_id=%s and uuid != %s', [base_title,app_temp.id,base_code,0,tenant.id,base_permission_group.id]).delete()
     PermissionGroup.valid_objects.filter(
         tenant=tenant,
         app=app_temp,
