@@ -32,7 +32,7 @@ def register(tag, name, data_model=None, description=''):
 def register_signal(tag_signal: TagSignal):
     tag = tag_signal.tag
     tag_map_signal[tag] = tag_signal
-    if temp_listens[tag]:
+    if tag in temp_listens.keys():
         func, kwargs = temp_listens[tag]
         listen_event(tag,func,**kwargs)
         del temp_listens[tag]

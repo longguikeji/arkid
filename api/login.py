@@ -1,9 +1,10 @@
 from typing import Any
 from .api import api
 
-from ninja import Schema, Query
+from ninja import Field, Schema, Query
 from arkid.core.event import dispatch, register, Event
-
+from arkid.core.translation import gettext as _
+from django.utils import translation
 class UserIn(Schema):
     username: str
     password: str
@@ -12,7 +13,9 @@ UserIn.use1 = ''
 
 class UserOut(Schema):
     id: int
-    # username: str
+    username:str = Field(
+        title=_("username",("用户名","zh-hans"),[("username","en-US")])
+    )
 
 
 class RequestResponse:
@@ -67,7 +70,7 @@ class ApiEventData(Schema):
 @api.get("/users/", response=UserOut, auth=None)
 @operation(ApiEventData)
 def create_user(request, data: UserIn = Query(...)):
-    user = {'id': 1}
+    user = {'id': 1,"username":_("data")}
     return user
 
 
