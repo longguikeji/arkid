@@ -1,6 +1,8 @@
 import uuid
 import json
 import logging
+
+from ninja import Field
 # from aliyunsdkcore.client import AcsClient
 # from aliyunsdkcore.profile import region_provider
 from .request.v20170525.SendSmsRequest import SendSmsRequest
@@ -88,7 +90,7 @@ class AliyunExtension(extension.Extension):
         super().load()
         self.listen_event('api_login_create_user', self.send_sms_code)
         from api.login import UserOut
-        self.register_extend_api(UserOut, idx=int)
+        self.register_extend_api(UserOut, idx=(int,Field(title='额外的')))
 
     def send_sms_code(self, event, **kwargs):
         tenant = event.tenant

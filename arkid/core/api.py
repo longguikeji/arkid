@@ -6,7 +6,7 @@ from ninja import NinjaAPI, Schema
 from ninja.security import HttpBearer
 from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
-from arkid.core.event import register_event, dispatch, Event
+from arkid.core.event import register_event, dispatch_event, Event
 from arkid.core.models import ExpiringToken
 
 
@@ -123,7 +123,7 @@ def operation(respnose_model):
         def func(request, *params, **kwargs):
             response = old_view_func(request=request, *params, **kwargs)
             # copy request
-            dispatch(Event(tag, request.tenant, RequestResponse(request, response)))
+            dispatch_event(Event(tag, request.tenant, RequestResponse(request, response)))
             print(response)
             return response
         func.__name__ = old_view_func.__name__

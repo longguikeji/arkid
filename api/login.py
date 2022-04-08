@@ -2,7 +2,7 @@ from typing import Any
 from arkid.core.api import api, operation
 
 from ninja import Schema, Query
-from arkid.core.event import dispatch, register_event, Event
+from arkid.core.event import dispatch_event, register_event, Event
 
 class UserIn(Schema):
     username: str
@@ -13,6 +13,8 @@ UserIn.use1 = ''
 class UserOut(Schema):
     id: int
     # username: str
+    
+UserOut.schema()
 class ApiEventData(Schema):
     request: Any
     response: UserOut

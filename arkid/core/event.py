@@ -3,7 +3,7 @@ from django.dispatch import Signal
 from arkid.core.translation import gettext_default as _
 
 
-class TagSignal:
+class EventType:
 
     def __init__(self, tag, name, data_model=None, description='') -> None:
         self.signal = Signal()
@@ -26,10 +26,10 @@ temp_listens:Dict[str, tuple] = {}
 
 
 def register_event(tag, name, data_model=None, description=''):
-    register_signal(TagSignal(tag=tag, name=name, data_model=data_model, description=description))
+    register_event_type(EventType(tag=tag, name=name, data_model=data_model, description=description))
 
 
-def register_signal(tag_signal: TagSignal):
+def register_event_type(tag_signal: EventType):
     tag = tag_signal.tag
     tag_map_signal[tag] = tag_signal
     if tag in temp_listens.keys():
@@ -52,11 +52,11 @@ def register_signal(tag_signal: TagSignal):
     # )
 
 
-def unregister(tag):
+def unregister_event(tag):
     tag_map_signal.pop(tag, None)
 
 
-def dispatch(event, sender=None):
+def dispatch_event(event, sender=None):
     tag_signal = tag_map_signal.get(event.tag)
     if not tag_signal:
         return
@@ -67,7 +67,7 @@ def dispatch(event, sender=None):
 
 def register_and_dispatch_event(tag, name, tenant, description='', data_model=None, data=None):
     register_event(tag, name, data_model, description)
-    return dispatch(Event(tag, tenant, data))
+    return dispatch_event(Event(tag, tenant, data))
 
 
 def decorator_listen_event(tag, **kwargs):
