@@ -29,9 +29,9 @@ def register_event(tag, name, data_model=None, description=''):
     register_event_type(EventType(tag=tag, name=name, data_model=data_model, description=description))
 
 
-def register_event_type(tag_signal: EventType):
-    tag = tag_signal.tag
-    tag_map_signal[tag] = tag_signal
+def register_event_type(event_type: EventType):
+    tag = event_type.tag
+    tag_map_signal[tag] = event_type
     if tag in temp_listens.keys():
         func, kwargs = temp_listens[tag]
         listen_event(tag,func,**kwargs)
@@ -44,10 +44,10 @@ def register_event_type(tag_signal: EventType):
     #     methods = ['event'],
     #     path = tag,
     #     view_func = view_func,
-    #     response = tag_signal.data_model,
+    #     response = event_type.data_model,
     #     operation_id = tag + '_event',
-    #     summary = tag_signal.name,
-    #     description = tag_signal.description,
+    #     summary = event_type.name,
+    #     description = event_type.description,
     #     tags = ['event']
     # )
 
@@ -57,12 +57,12 @@ def unregister_event(tag):
 
 
 def dispatch_event(event, sender=None):
-    tag_signal = tag_map_signal.get(event.tag)
-    if not tag_signal:
+    event_type = tag_map_signal.get(event.tag)
+    if not event_type:
         return
-    # if tag_signal.data_model:
-    #     event.data = tag_signal.data_model(**event.data)
-    return tag_signal.signal.send(sender=sender, event=event)
+    # if event_type.data_model:
+    #     event.data = event_type.data_model(**event.data)
+    return event_type.signal.send(sender=sender, event=event)
 
 
 def register_and_dispatch_event(tag, name, tenant, description='', data_model=None, data=None):
@@ -84,13 +84,13 @@ def decorator_listen_event(tag, **kwargs):
 
         if isinstance(tag, (list, tuple)):
             for t in tag:
-                tag_signal = tag_map_signal.get(t)
-                if tag_signal:
-                    tag_signal.signal.connect(signal_func, **kwargs)
+                event_type = tag_map_signal.get(t)
+                if event_type:
+                    event_type.signal.connect(signal_func, **kwargs)
         else:
-            tag_signal = tag_map_signal.get(tag)
-            if tag_signal:
-                tag_signal.signal.connect(signal_func, **kwargs)
+            event_type = tag_map_signal.get(tag)
+            if event_type:
+                event_type.signal.connect(signal_func, **kwargs)
         return func
 
     return _decorator
@@ -100,28 +100,28 @@ def listen_event(tag, func, **kwargs):
 
     if isinstance(tag, (list, tuple)):
         for t in tag:
-            tag_signal = tag_map_signal.get(t)
-            if tag_signal:
-                tag_signal.signal.connect(func, **kwargs)
+            event_type = tag_map_signal.get(t)
+            if event_type:
+                event_type.signal.connect(func, **kwargs)
             else:
                 temp_listens[t] = (func, kwargs)
     else:
-        tag_signal = tag_map_signal.get(tag)
-        if tag_signal:
-            tag_signal.signal.connect(func, **kwargs)
+        event_type = tag_map_signal.get(tag)
+        if event_type:
+            event_type.signal.connect(func, **kwargs)
         else:
             temp_listens[tag] = (func, kwargs)
 
 def unlisten_event(tag, func, **kwargs):
     if isinstance(tag, (list, tuple)):
         for t in tag:
-            tag_signal = tag_map_signal.get(t)
-            if tag_signal:
-                tag_signal.signal.disconnect(func, **kwargs)
+            event_type = tag_map_signal.get(t)
+            if event_type:
+                event_type.signal.disconnect(func, **kwargs)
     else:
-        tag_signal = tag_map_signal.get(tag)
-        if tag_signal:
-            tag_signal.signal.disconnect(func, **kwargs)
+        event_type = tag_map_signal.get(tag)
+        if event_type:
+            event_type.signal.disconnect(func, **kwargs)
 
 
 # SEND_SMS_CODE = 'SEND_SMS_CODE'
