@@ -27,10 +27,19 @@ class Extension:
         self.extend_apis = []
         self.front_routers = []
         self.front_pages = []
-        self.ext_dir = Path(app_config.extension.root) / self.name
-        self.full_name = f'{self.ext_dir.parent}.{self.name}'
-        
         self.lang_code = None
+
+    @property
+    def ext_dir(self):
+        return self._ext_dir
+
+    @ext_dir.setter
+    def ext_dir(self, value: str):
+        self._ext_dir = value
+
+    @property
+    def full_name(self):
+        return f'{Path(self.ext_dir).parent}.{self.name}'
 
     def migrate_extension(self) -> None:
         extension_migrate_foldname = Path(self.ext_dir) / 'migrations'
