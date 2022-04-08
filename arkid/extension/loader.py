@@ -27,6 +27,7 @@ class ExtensionLoader:
             Extension.objects.update_or_create(
                 defaults={
                     'labels': ext.labels,
+                    'ext_dir': str(ext.ext_dir),
                     'name': ext.name,
                     'is_active': True,
                 },

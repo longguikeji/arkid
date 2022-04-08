@@ -35,15 +35,16 @@ def find_available_extensions():
     app_config = config.get_app_config()
     
     extensions = []
-    for name in os.listdir(app_config.extension.root):
-        ext_dir = Path(app_config.extension.root) / name
-        if not ext_dir.is_dir() or not is_valid_extension_name(name):
-            continue
+    for ext_root_path in app_config.extension.root:
+        for name in os.listdir(ext_root_path):
+            ext_dir = Path(ext_root_path) / name
+            if not ext_dir.is_dir() or not is_valid_extension_name(name):
+                continue
 
-        ext_name = f'{ext_dir.parent}.{name}'
-        ext = import_extension(ext_name)
-        if ext:
-            extensions.append(ext)
+            # ext_name = f'{ext_dir.parent}.{name}'
+            ext = import_extension(ext_dir)
+            if ext:
+                extensions.append(ext)
 
     return extensions
 
@@ -63,37 +64,37 @@ def load_active_extensions():
     for extension in extensions:
         package = extension.package
         name = package.replace('.', '_')
-        ext_dir = Path(app_config.extension.root) / name
+        ext_dir = Path(extension.ext_dir)
         if not ext_dir.is_dir() or not is_valid_extension_name(name):
             continue
 
-        ext_package_path = f'{ext_dir.parent}.{name}'
-
-        ext = load_extension(ext_package_path)
+        ext = load_extension(extension.ext_dir)
         if ext:
             loaded_extensions.append(ext)
 
     return loaded_extensions
 
 
-def delete_extension_folder(name: str) -> None:
+def delete_extension_folder(extension) -> None:
     '''
     Uninstall an extension from the extension directory, this operation is non recoverable
     '''
     # TODO: 增加校验，防止部分应用中的扩展被卸载后导致无法正常工作
 
+    name = extension.name
     if not is_valid_extension_name(name):
         return
 
-    app_config = config.get_app_config()
-    ext_dir = Path(app_config.extension.root) / name
+    ext_dir = Path(extension.ext_dir)
     if ext_dir.exists():
         shutil.rmtree(ext_dir)
 
 
-def import_extension(ext_name: str) -> any:
+def import_extension(ext_dir: str) -> any:
+    ext_name = f'{Path(ext_dir).parent}.{Path(ext_dir).name}'
     ext = importlib.import_module(ext_name)
-    if ext:
+    if ext and hasattr(ext, 'extension'):
+        ext.extension.ext_dir = ext_dir
         logger.info(f'{ext_name} import success')
         return ext.extension
     else:
@@ -101,9 +102,11 @@ def import_extension(ext_name: str) -> any:
         return None
 
 
-def load_extension(ext_name: str) -> any:
+def load_extension(ext_dir: str) -> any:
+    ext_name = f'{Path(ext_dir).parent}.{Path(ext_dir).name}'
     ext = importlib.import_module(ext_name)
-    if ext:
+    if ext and hasattr(ext, 'extension'):
+        ext.extension.ext_dir = ext_dir
         ext.extension.load()
         logger.info(f'{ext_name} load success')
         return ext.extension
@@ -112,23 +115,24 @@ def load_extension(ext_name: str) -> any:
         return None
 
 
-def unload_extension(ext_name: str) -> any:
+def unload_extension(ext_dir: str) -> any:
+    ext_name = f'{Path(ext_dir).parent}.{Path(ext_dir).name}'
     ext = importlib.import_module(ext_name)
     if ext:
         ext.extension.unload()
     sys.modules.pop(ext_name, None)
 
 
-def reload_extension(ext_name: str) -> None:
+def reload_extension(ext_dir: str) -> None:
     from django.urls import clear_url_caches
     from importlib import reload
     import api.v1.urls
     import arkid.urls
     # 清理url缓存
     clear_url_caches()
-
-    unload_extension(ext_name)
-    load_extension(ext_name)
+    
+    unload_extension(ext_dir)
+    load_extension(ext_dir)
 
     # 重新加载相应的url
     reload(api.v1.urls)

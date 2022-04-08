@@ -12,6 +12,7 @@ class Extension(BaseModel):
 
     labels = models.CharField(max_length=128, verbose_name=_('标签'))
     package = models.CharField(max_length=128, verbose_name=_('标识'))
+    ext_dir = models.CharField(max_length=1024, verbose_name=_('完整路径名'))
     name = models.CharField(max_length=128, verbose_name=_('名称'))
     version = models.CharField(max_length=128, verbose_name=_('版本'))
     is_active = models.BooleanField(default=False, verbose_name=_('是否启用'))
