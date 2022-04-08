@@ -63,4 +63,4 @@ def unregister_front_routers(routers, primary: str = ''):
             return
 
     for router in routers:
-        global_routers.remove_child(router)
+        global_routers.remove(router)

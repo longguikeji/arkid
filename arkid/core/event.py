@@ -64,6 +64,12 @@ def dispatch_event(event, sender=None):
     #     event.data = event_type.data_model(**event.data)
     return event_type.signal.send(sender=sender, event=event)
 
+class EventDisruptionData(Exception):
+    pass
+
+def break_event_loop(data):
+    raise EventDisruptionData(data)
+
 
 def register_and_dispatch_event(tag, name, tenant, description='', data_model=None, data=None):
     register_event(tag, name, data_model, description)
@@ -96,21 +102,25 @@ def decorator_listen_event(tag, **kwargs):
     return _decorator
 
 
-def listen_event(tag, func, **kwargs):
+def listen_event(tag, func, listener=None, **kwargs):
+    def signal_func(**kwargs2):
+        return func(**kwargs2), listener
+
+    kwargs['listener'] = listener
 
     if isinstance(tag, (list, tuple)):
         for t in tag:
             event_type = tag_map_signal.get(t)
             if event_type:
-                event_type.signal.connect(func, **kwargs)
+                event_type.signal.connect(signal_func, **kwargs)
             else:
-                temp_listens[t] = (func, kwargs)
+                temp_listens[t] = (signal_func, kwargs)
     else:
         event_type = tag_map_signal.get(tag)
         if event_type:
-            event_type.signal.connect(func, **kwargs)
+            event_type.signal.connect(signal_func, **kwargs)
         else:
-            temp_listens[tag] = (func, kwargs)
+            temp_listens[tag] = (signal_func, kwargs)
 
 def unlisten_event(tag, func, **kwargs):
     if isinstance(tag, (list, tuple)):

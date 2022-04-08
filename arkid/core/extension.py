@@ -96,7 +96,7 @@ class Extension:
             # Extension.
             return func(event=event, **kwargs2)
 
-        core_event.listen_event(tag, signal_func)
+        core_event.listen_event(tag, signal_func, listener=self)
         self.events.extend((tag, signal_func))        
 
     def register_event(self, tag, name, data_model=None, description=''):
