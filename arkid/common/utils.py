@@ -2,7 +2,6 @@ import re
 from copy import deepcopy
 from functools import reduce
 from typing import Dict, List
-from .email import EmailManager
 
 
 def deep_merge(*dicts: List[Dict], update=False) -> Dict:
@@ -32,23 +31,6 @@ def deep_merge(*dicts: List[Dict], update=False) -> Dict:
         return reduce(merge_into, dicts[1:], dicts[0])
     else:
         return reduce(merge_into, dicts, {})
-
-
-def send_email(addrs, subject, content):
-    '''
-    发送邮件
-    '''
-    from config import get_app_config
-
-    email_config = get_app_config().email
-    emailer = EmailManager(
-        user=email_config.user,
-        pwd=email_config.password,
-        host=email_config.host,
-        port=email_config.port,
-        nickname=email_config.nickname,
-    )
-    emailer.send_html_mail(addrs, subject, content)
 
 
 CN_MOBILE_PREFIX = '+86 '

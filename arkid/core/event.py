@@ -106,7 +106,7 @@ def listen_event(tag, func, listener=None, **kwargs):
     def signal_func(**kwargs2):
         return func(**kwargs2), listener
 
-    kwargs['listener'] = listener
+    # kwargs['listener'] = listener
 
     if isinstance(tag, (list, tuple)):
         for t in tag:
