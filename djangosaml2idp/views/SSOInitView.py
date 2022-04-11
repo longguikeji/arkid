@@ -56,6 +56,7 @@ class SSOInit(LoginRequiredMixin, IdPHandlerViewMixin, View):
                 'name': 'first_name',
                 'is_boss': 'is_admin',
                 'token': 'token',
+                'uuid':'uuid'
             },
             'extra_config': app.data["attribute_mapping"]
         }
@@ -92,7 +93,7 @@ class SSOInit(LoginRequiredMixin, IdPHandlerViewMixin, View):
             name_id_formats = self.IDP.config.getattr("name_id_format", "idp") or [
                 NAMEID_FORMAT_UNSPECIFIED
             ]
-            name_id = NameID(format=name_id_formats[0], text=user_id)
+            name_id = NameID(format=name_id_formats[0], text=app.data.get("name_id",user_id))
             authn = AUTHN_BROKER.get_authn_by_accr(req_authn_context)
             sign_response = self.IDP.config.getattr(
                 "sign_response", "idp"
