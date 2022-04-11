@@ -89,8 +89,11 @@ class AliyunExtension(extension.Extension):
     def load(self):
         super().load()
         self.listen_event('api_login_create_user', self.send_sms_code)
-        from api.login import UserOut
-        self.register_extend_api(UserOut, idx=(int,Field(title='额外的')))
+        # from api.login import UserOut
+        from pydantic import Field
+        # self.register_extend_api(UserOut, idx=(int, Field(title='我的')))
+        # self.regiseter_routers(urls)
+        
 
     def send_sms_code(self, event, **kwargs):
         tenant = event.tenant
