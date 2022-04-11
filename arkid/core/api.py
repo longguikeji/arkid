@@ -1,3 +1,4 @@
+import uuid
 import functools
 from typing import Any, Dict, Optional
 from pydantic.fields import ModelField
@@ -6,7 +7,7 @@ from ninja import NinjaAPI, Schema
 from ninja.security import HttpBearer
 from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
-from arkid.core.event import register_event, dispatch_event, Event
+from arkid.core.event import register_event, dispatch_event, Event, EventDisruptionData
 from arkid.core.models import ExpiringToken
 
 
@@ -113,6 +114,11 @@ def operation(respnose_model):
     def replace_view_func(operation):
         tag = api.get_openapi_operation_id(operation)
         register_event(
+            tag = tag + '_pre',
+            name = operation.summary,
+            description = operation.description,
+        )
+        register_event(
             tag = tag,
             name = operation.summary,
             description = operation.description,
@@ -121,10 +127,17 @@ def operation(respnose_model):
 
         old_view_func = operation.view_func
         def func(request, *params, **kwargs):
+            # if not request.header.get('request_uuid'):
+            #     request.header['request_uuid'] = uuid.uuid4().hex
+            # 插件存 request_uuid
+            dispatch_event(Event(tag+'_pre', request.tenant, request))
             response = old_view_func(request=request, *params, **kwargs)
             # copy request
             dispatch_event(Event(tag, request.tenant, RequestResponse(request, response)))
             print(response)
+            # response 设置 header
+            # 前端拿到response header request_uuid 存储到内存，后续请求都带上request_uuid header
+            # session
             return response
         func.__name__ = old_view_func.__name__
         func.__module__ = old_view_func.__module__
@@ -143,3 +156,12 @@ def operation(respnose_model):
         return view_func
 
     return decorator
+
+
+@api.exception_handler(EventDisruptionData)
+def event_disrupt(request, exc):
+    return api.create_response(
+        request,
+        exc.args,
+        status=200,
+    )
