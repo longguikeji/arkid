@@ -294,6 +294,7 @@ class GroupDetailSerializer(GroupSerializer):
         custom_group_data = validated_data.pop('custom_group', None)
         ding_group_data = validated_data.pop('ding_group', None)
         manager_group_data = validated_data.pop('manager_group', None)
+        is_all_select = validated_data.pop('all_select', False)
         group = Group.objects.create(**validated_data)
 
         if custom_group_data:
@@ -307,6 +308,8 @@ class GroupDetailSerializer(GroupSerializer):
             ding_group_serializer.save(group=group)
 
         if manager_group_data:
+            if is_all_select:
+                manager_group_data['apps'] = self.get_app_uids()
             manager_group_serializer = ManagerGroupSerializer(data=manager_group_data)
             manager_group_serializer.is_valid(raise_exception=True)
             manager_group_serializer.save(group=group)
