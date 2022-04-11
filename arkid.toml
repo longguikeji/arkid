@@ -13,7 +13,7 @@ nickname = "longguikeji"
 
 
 [extension]
-root = "./extension_root"
+root = ["./extension_root"]
 
     [extension.demo]
     config1 = 'demo_config1'
