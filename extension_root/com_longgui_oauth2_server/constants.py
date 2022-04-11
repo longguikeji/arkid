@@ -1,0 +1,1 @@
+KEY = "oauth2_server"
