@@ -23,8 +23,8 @@ from arkid.core import urls as core_urls
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", api.urls),
-    path("api/v1/login", login_view.LoginEnter),
-    path("api/v1/login_process", login_view.LoginProcess)
+    path("api/v1/login", login_view.LoginEnter.as_view()),
+    path("api/v1/login_process", login_view.LoginProcess.as_view())
 ]
 
 urlpatterns += core_urls.urlpatterns

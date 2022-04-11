@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional, List
 from attr import validate
 from pydantic import Field
 from ninja import Schema, Query, ModelSchema
-from arkid.common import extension
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant
