@@ -35,7 +35,7 @@ class SAMLasIDPAliyunRamConfigSerializer(serializers.Serializer):  # pylint: dis
     )
     
     name_id = serializers.CharField(
-        label=_("NameId")
+        label=_("域名")
     )
 
     attribute_mapping = create_custom_dict_field(serializers.JSONField)(
