@@ -251,3 +251,29 @@ class StatisticsProvider:
 class BackendLoginProvider:
     def authenticate(self, tenant, request, data):
         pass
+    
+class ApplicationManageProvider:
+    
+    def get_queryset(self,objs:list,view_instance,*args, **kwargs):
+        """获取查询结果集，即应用列表
+
+        Args:
+            objs (list): 原始查询结果集
+            view_instance: 视图对象
+
+        Returns:
+            [list]: 查询结果集
+        """
+        return objs
+    
+    def list_view(self,request,rs,*args, **kwargs):
+        """列表视图
+
+        Args:
+            request: 请求对象
+            rs: 原始返回对象
+
+        Returns:
+            返回对象
+        """
+        return rs

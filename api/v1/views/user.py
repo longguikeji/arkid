@@ -16,8 +16,10 @@ from tenant.models import Tenant
 from config.models import PasswordComplexity
 from inventory.models import User, Invitation, UserAppData
 from inventory.resouces import UserResource
+from runtime import get_app_runtime
 from external_idp.models import ExternalIdp
 from extension.utils import find_available_extensions
+
 from api.v1.serializers.user import (
     UserSerializer,
     UserListResponsesSerializer,
@@ -437,7 +439,23 @@ class UserAppViewSet(BaseViewSet):
                     [perm.codename for perm in g.owned_perms(all_apps_perms)]
                 )
             objs = [app for app in all_apps if app.access_perm_code in perms]
+        
+        runtime = get_app_runtime()
+        for provider_name in runtime.application_manage_providers:
+            objs = runtime.application_manage_providers.get(provider_name)().get_queryset(objs=objs,view_instance=self)    
+        
         return objs
+    
+    def list(self, request, *args, **kwargs):
+        
+        rs = super().list(request,*args,**kwargs)
+        objs = self.get_queryset()
+        runtime = get_app_runtime()
+        for provider_name in runtime.application_manage_providers:
+            rs = runtime.application_manage_providers.get(provider_name)().list_view(request=request,rs=rs,tenant=self.get_serializer_context()['tenant'],objs=objs,*args,**kwargs)
+            
+        return rs
+
 
 
 @extend_schema(tags=['user'])

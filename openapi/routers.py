@@ -19,9 +19,9 @@ class Router(dict):
         super().__init__(*args, **kwargs)
 
     def add_child(self, child):
-        if not self.children:
-            self.children = []
-        self.children.append(child)
+        if not self["children"]:
+             self["children"] = []
+        self["children"].append(child)
 
 class PageRouter(Router):
     def __init__(self, page, *args, **kwargs):
@@ -44,7 +44,7 @@ def get_router_by_path(paths:list, routers:list = root_list):
     path = paths.pop(0)
     for router in routers:
         router:Router
-        if router.path == path:
+        if router["path"] == path:
             if len(paths) == 0:
                 return router
             else:
@@ -59,6 +59,32 @@ def add_router_by_path(path:str, router:Router):
         get_router_by_path(paths).add_child(router)
 
     fresh()
+    
+def router_children_contains(path:str, router:Router):
+    """判断子路由中是否存在路径path
 
+    Args:
+        path (str): 子路由路径名称
+        router (Router): 当前路由
+    """
+    if router["children"]:
+        for child in router["children"]:
+            if child["path"] == path:
+                return True
+    return False
+    
+def remove_child_from_router(path:str, router:Router):
+    """从路由中删除子路由
+
+    Args:
+        path (str): 子路由路径名称
+        router (Router): 当前路由
+    """
+    if router["children"]:
+        for child in router["children"]:
+            if child["path"] == path:
+                router["children"].remove(child)
+                return True
+    return False
 
     
