@@ -9,7 +9,7 @@ from api.v1.fields.custom import (
 
 class SystemDataConfigSerializer(serializers.Serializer):
     is_open_register = serializers.BooleanField(label=_('是否可以注册用户'), default=True)
-    password_validity_period = serializers.IntegerField(label=_('密码有效期(天)'), default=60)
+    # password_validity_period = serializers.IntegerField(label=_('密码有效期(天)'), default=60)
     is_open_register_limit = serializers.BooleanField(
         label=_('是否限制注册用户'), default=False
     )

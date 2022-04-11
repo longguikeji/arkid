@@ -523,48 +523,35 @@ class UpdatePasswordView(generics.CreateAPIView):
             tenant = None
         else:
             tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
-        uuid = request.data.get('uuid', '')
-        password = request.data.get('password', '')
+        new_password = request.data.get('new_password', '')
         old_password = request.data.get('old_password', '')
-        user = User.objects.filter(uuid=uuid).first()
-        is_succeed = True
-        if not user:
+        user = request.user
+
+        ret, message = check_password_complexity(new_password, tenant)
+        if not ret:
             return JsonResponse(
                 data={
-                    'error': Code.USER_EXISTS_ERROR.value,
-                    'message': _('user does not exist'),
+                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                    'message': message,
                 }
             )
-        if password:
-            ret, message = check_password_complexity(password, tenant)
-            if not ret:
-                return JsonResponse(
-                    data={
-                        'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                        'message': message,
-                    }
-                )
-
-        if password and user.check_password(old_password) is False:
+        if not user.check_password(old_password):
             return JsonResponse(
                 data={
                     'error': Code.OLD_PASSWORD_ERROR.value,
                     'message': _('old password error'),
                 }
             )
-        if password and user.valid_password(password) is True:
+        if user.valid_password(new_password) is True:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_CHECK_ERROR.value,
                     'message': _('password is already in use'),
                 }
             )
-        try:
-            user.set_password(password)
-            user.save()
-        except Exception as e:
-            is_succeed = False
-        return Response(is_succeed)
+        user.set_password(new_password)
+        user.save()
+        return JsonResponse(data={'error': Code.OK.value})
 
 
 @extend_schema(

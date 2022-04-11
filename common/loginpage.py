@@ -213,6 +213,7 @@ LOGIN = 'login'
 REGISTER = 'register'
 PASSWORD = 'password'
 BIND = 'bind'
+UPDATE_PASSWORD = 'update_password'
 
 
 FormItem = namedtuple('FormItem', ['name', 'type', 'placeholder'])

@@ -95,11 +95,12 @@ class EmailRegisterView(APIView):
                     'message': _('password is empty'),
                 }
             )
-        if check_password_complexity(password, tenant) is False:
+        res, desc = check_password_complexity(password, tenant)
+        if not res:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                    'message': _('password strength not enough'),
+                    'message': _(f'{desc}'),
                 }
             )
 
@@ -187,11 +188,12 @@ class EmailResetPasswordView(generics.CreateAPIView):
                     'message': _('user does not exist'),
                 }
             )
-        if password and check_password_complexity(password, tenant) is False:
+        res, desc = check_password_complexity(password, tenant)
+        if not res:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                    'message': _('password strength not enough'),
+                    'message': _(f'{desc}'),
                 }
             )
         # 检查验证码

@@ -11,67 +11,83 @@ from django.utils.translation import gettext_lazy as _
 
 
 @extend_schema(
-    tags=['login-api'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    tags=["login-api"],
+    roles=["general user", "tenant admin", "global admin"],
     # responses=PasswordLoginResponseSerializer,
 )
 class LoginView(APIView):
     def post(self, request):
         tenant = self.get_tenant(request)
 
-        config_uuid = request.data.get('config_uuid', None)
+        config_uuid = request.data.get("config_uuid", None)
         if not config_uuid:
             return {
-                'error': Code.POST_DATA_ERROR.value,
-                'message': 'No config uuid in post data',
+                "error": Code.POST_DATA_ERROR.value,
+                "message": "No config uuid in post data",
             }
 
         provider = self.get_provider(tenant, config_uuid)
         if not provider:
             return {
-                'error': Code.PROVIDER_NOT_EXISTS_ERROR.value,
-                'message': f'No provider found',
+                "error": Code.PROVIDER_NOT_EXISTS_ERROR.value,
+                "message": f"No provider found",
             }
 
         # 获取登录注册配置
         ret = provider.authenticate(request)
         r = get_app_runtime()
 
-        if ret.get('error') != Code.OK.value:
+        if (
+            ret.get("error") != Code.OK.value
+            and ret.get("error") != Code.PASSWORD_EXPIRED_ERROR.value
+        ):
 
             # 失败后调用认证规则
             for rule in r.auth_rules:
-                ret = rule.provider.authenticate_failed(rule, request, ret, tenant, provider.type)
+                ret = rule.provider.authenticate_failed(
+                    rule, request, ret, tenant, provider.type
+                )
             return JsonResponse(ret)
 
         else:
-            user = ret.get('user')
-            
+            user = ret.get("user")
+
         if tenant and not user.is_superuser:
             if tenant not in user.tenants.all():
                 return JsonResponse(
-                    data = {
-                    'error': Code.USERNAME_PASSWORD_MISMATCH.value,
-                    'message': _('username or password is not correct'),
-                })
-              
+                    data={
+                        "error": Code.USERNAME_PASSWORD_MISMATCH.value,
+                        "message": _("username or password is not correct"),
+                    }
+                )
+
         for rule in r.auth_rules:
-            ret = rule.provider.authenticate_success(rule, request, ret, user, tenant, provider.type)
+            ret = rule.provider.authenticate_success(
+                rule, request, ret, user, tenant, provider.type
+            )
 
         token = user.refresh_token()
-        return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
+        return_data = {"token": token.key, "user_uuid": user.uuid.hex}
         if tenant:
-            return_data['has_tenant_admin_perm'] = tenant.has_admin_perm(user)
+            return_data["has_tenant_admin_perm"] = tenant.has_admin_perm(user)
         else:
-            return_data['tenants'] = [
+            return_data["tenants"] = [
                 TenantSerializer(o).data for o in user.tenants.all()
             ]
-
-        return JsonResponse(data={'error': Code.OK.value, 'data': return_data})
+        if ret.get("error") == Code.PASSWORD_EXPIRED_ERROR.value:
+            return JsonResponse(
+                data={
+                    "error": ret.get("error"),
+                    "data": return_data,
+                    "gopage": "update_password",
+                    "message": _("密码已经过期，请修改密码"),
+                }
+            )
+        return JsonResponse(data={"error": ret.get("error"), "data": return_data})
 
     def get_tenant(self, request):
         tenant = None
-        tenant_uuid = request.query_params.get('tenant', None)
+        tenant_uuid = request.query_params.get("tenant", None)
         if tenant_uuid:
             tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
         return tenant

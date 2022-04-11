@@ -131,10 +131,10 @@ def check_password_complexity(pwd, tenant):
     if not pwd:
         return False, 'No password provide'
 
-    config = LoginRegisterConfig.active_objects.filter(
+    configs = LoginRegisterConfig.active_objects.filter(
         tenant=tenant, data__is_apply=True
-    ).first()
-    if config:
+    )
+    for config in configs:
         regular = config.data.get('regular')
         title = config.data.get('title')
         if re.match(regular, pwd):
