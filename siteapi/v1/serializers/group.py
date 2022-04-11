@@ -42,6 +42,7 @@ class ManagerGroupSerializer(DynamicFieldsModelSerializer):
     '''
     Serializer for ManagerGroup
     '''
+
     class Meta:    # pylint: disable=missing-docstring
         model = ManagerGroup
         fields = (
@@ -250,6 +251,7 @@ class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'accept_user',
             'ding_group',
             'manager_group',
+            'is_all_select',
         )
 
 
@@ -257,6 +259,8 @@ class GroupDetailSerializer(GroupSerializer):
     '''
     group info with parent_uid
     '''
+
+    all_select = serializers.BooleanField(default=False, write_only=True, required=False)
 
     class Meta:    # pylint: disable=missing-docstring
         model = Group
@@ -278,6 +282,7 @@ class GroupDetailSerializer(GroupSerializer):
             'visibility',
             'node_scope',
             'user_scope',
+            'all_select',
         )
 
     def create(self, validated_data):
@@ -317,6 +322,7 @@ class GroupDetailSerializer(GroupSerializer):
         custom_group_data = validated_data.pop('custom_group', None)
         ding_group_data = validated_data.pop('ding_group', None)
         manager_group_data = validated_data.pop('manager_group', None)
+        is_all_select = validated_data.pop('all_select', False)
 
         if custom_group_data:
             if hasattr(group, 'custom_group'):
@@ -344,6 +350,8 @@ class GroupDetailSerializer(GroupSerializer):
 
         if manager_group_data:
             if hasattr(group, 'manager_group'):
+                if is_all_select:
+                    manager_group_data['apps'] = self.get_app_uids()
                 manager_group_serializer = ManagerGroupSerializer(
                     instance=instance.manager_group,
                     data=manager_group_data,
@@ -369,6 +377,13 @@ class GroupDetailSerializer(GroupSerializer):
         group.save(update_fields=validated_data.keys())
 
         return group
+    
+    def get_app_uids(self):
+        apps = APP.valid_objects.exclude(uid='oneid').order_by('-created')
+        app_uids = []
+        for app in apps:
+            app_uids.append(app.uid)
+        return app_uids
 
     def validate_uid(self, value):
         '''
