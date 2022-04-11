@@ -1,7 +1,6 @@
 from enum import Enum
 from logging.config import listen
 from typing import Any, Dict, Optional, List
-from attr import validate
 from pydantic import Field
 from ninja import Schema, Query, ModelSchema
 from arkid.core.event import Event, register_event, dispatch_event
