@@ -251,7 +251,6 @@ class GroupSerializer(DynamicFieldsModelSerializer, IgnoreNoneMix):
             'accept_user',
             'ding_group',
             'manager_group',
-            'is_all_select',
         )
 
 
