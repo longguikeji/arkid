@@ -23,7 +23,7 @@ class AuthOut(Schema):
 
 @api.post("/auth/", response=AuthOut, auth=None)
 @operation(AuthOut, use_uuid=True)
-def auth(request, data: Any):
+def auth(request):
     tenant_uuid = data.tenant
     tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
     request.tenant = tenant

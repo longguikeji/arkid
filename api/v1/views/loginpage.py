@@ -8,7 +8,7 @@ from arkid.core.api import api, operation
 from arkid.core.models import Tenant
 from arkid.core.extension import AuthFactorExtension
 from arkid.core.translation import gettext_default as _
-from api.v1 import events
+from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
 
 
 class LoginPageIn(Schema):
@@ -85,8 +85,8 @@ class LoginPageOut(Schema):
     tenant: LoginPageTenantSchema
 
 
-register_event(events.CREATE_LOGIN_PAGE_AUTH_FACTOR, '认证因素生成登录页面')
-register_event(events.CREATE_LOGIN_PAGE_RULES, '登录页面生成规则')
+register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, '认证因素生成登录页面')
+register_event(CREATE_LOGIN_PAGE_RULES, '登录页面生成规则')
 
 
 @api.get("/login_page/", response=LoginPageOut, auth=None)
@@ -97,11 +97,11 @@ def login_page(request, data: LoginPageIn = Query(...)):
     request.tenant = tenant
 
     login_pages = []
-    responses = dispatch_event(Event(tag=events.CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, data={'request': request}))
+    responses = dispatch_event(Event(tag=CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, data={'request': request}))
     for _, response in responses:
         login_pages.append(response)
 
-    dispatch_event(Event(tag=events.CREATE_LOGIN_PAGE_RULES, tenant=tenant, data={'request': request, 'login_pages': login_pages}))
+    dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, data={'request': request, 'login_pages': login_pages}))
     
     data = {}
     for login_page, _ in login_pages:

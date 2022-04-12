@@ -1,4 +1,7 @@
 from abc import abstractclassmethod
+from typing import Union
+from typing_extensions import Annotated
+from pydantic import Field
 from django.urls import include, re_path
 from pathlib import Path
 from arkid import config
@@ -15,6 +18,8 @@ app_config = config.get_app_config()
 
 Event = core_event.Event
 EventType = core_event.EventType
+
+ExtensionConfigSchema = Annotated[Union[None, str], Field()]
 
 class Extension:
 
@@ -163,6 +168,18 @@ class Extension:
         core_page.register_front_pages(page)
         self.front_pages.append(page)
 
+    def register_config_schema(self, schema):
+        if Union[None, str] in ExtensionConfigSchema.__args__:
+            ExtensionConfigSchema.__args__ = (schema,)
+        elif len(ExtensionConfigSchema.__args__) == 1:
+            ExtensionConfigSchema.__args__ = (Union[ExtensionConfigSchema.__args__[0], schema],)
+        else:
+            ExtensionConfigSchema.__args__ = (Union[tuple(list(ExtensionConfigSchema.__args__.__args__) + [schema])],) # type: ignore
+        ExtensionConfigSchema.__origin__ = ExtensionConfigSchema.__args__[0]
+        
+        if len(ExtensionConfigSchema.__args__) >= 2:
+            ExtensionConfigSchema.__metadata__ = (Field(discriminator='package'),)
+        
     def get_tenant_configs(self, tenant):
         ext = Extension.objects.filter(package=self.package, version=self.version).first()
         configs = TenantExtensionConfig.objects.filter(tenant=tenant, extension=ext).all()

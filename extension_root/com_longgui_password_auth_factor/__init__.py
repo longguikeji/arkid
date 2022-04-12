@@ -3,12 +3,27 @@ from arkid.core.extension import AuthFactorExtension
 from arkid.core.error import ErrorCode
 from arkid.core.translation import gettext_default as _
 from .models import UserPassword
+from ninja import ModelSchema
+from typing import Literal, Union
 
+class PasswordAuthFactorSchema(ModelSchema):
+    package: Literal['cat']
+    class Config:
+        model = UserPassword
+        model_fields = "__all__"
+
+class PasswordAuthFactorSchema2(ModelSchema):
+    package: Literal['dog']
+    class Config:
+        model = UserPassword
+        model_fields = "__all__"
 
 class PasswordAuthFactorExtension(AuthFactorExtension):
     def load(self):
         super().load()
         self.register_extend_field(UserPassword, "password")
+        # self.register_config_schema(PasswordAuthFactorSchema)
+        # self.register_config_schema(PasswordAuthFactorSchema2)
 
     def authenticate(self, event, **kwargs):
         print(**kwargs)
@@ -101,20 +116,21 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         return True, None
 
     def _get_register_user(self, field_name, field_value):
-        user = None
-        if field_name in ('username', 'email'):
-            user = .active_objects.filter(**{field_name: field_value}).first()
-        else:
-            custom_field = CustomField.valid_objects.filter(
-                name=field_name, subject='user'
-            )
-            if not custom_field:
-                return None
+        # user = None
+        # if field_name in ('username', 'email'):
+        #     user = .active_objects.filter(**{field_name: field_value}).first()
+        # else:
+        #     custom_field = CustomField.valid_objects.filter(
+        #         name=field_name, subject='user'
+        #     )
+        #     if not custom_field:
+        #         return None
 
-            custom_user = CustomUser.valid_objects.filter(data__name=field_name).first()
-            if custom_user:
-                user = custom_user.user
-        return user
+        #     custom_user = CustomUser.valid_objects.filter(data__name=field_name).first()
+        #     if custom_user:
+        #         user = custom_user.user
+        # return user
+        pass
 
 extension = PasswordAuthFactorExtension(
     package="com.longgui.password_auth_factor",
