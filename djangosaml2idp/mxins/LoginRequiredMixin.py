@@ -22,7 +22,7 @@ class LoginRequiredMixin(AccessMixin):
                 return super().dispatch(request, tenant_uuid, app_id, *args, **kwargs)
         except Exception as err:    # pylint: disable=broad-except
             logger.debug(err)
-            next = f"{get_app_config().get_host()}{request.path}?{'&'.join([f'{k}={request.GET[k]}'for k in request.GET.keys()])}"
+            next = f"{request.path}?{'&'.join([f'{k}={request.GET[k]}'for k in request.GET.keys()])}"
 
             if next.endswith("?"):
                 # 如无参数 则去掉？
