@@ -25,6 +25,6 @@ class FakeLogin(View):
             return redirect(f"{next}&spauthn={token}")
 
         params=[f'{k}={request.GET[k]}' for k in request.GET.keys() ]
-        login_url = f"{get_app_config().get_frontend_host()}/login?next={request.get_full_path()}&{'&'.join(params)}"
+        login_url = f"{get_app_config().get_frontend_host()}/login?tenant={str(tenant_uuid).replace('-','')}&next={next}"
         # login_url = urllib.parse.quote(login_url)
         return render(request, 'djangosaml2idp/fake_login.html', context={'login_url': login_url, "next": next})

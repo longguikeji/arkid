@@ -15,6 +15,6 @@ class SsoHook(View):
         """
         调用sso url 前中转
         """
-        spauthn = request.GET.get("spauthn")
+        spauthn = request.GET.get("spauthn",None)
         app = App.active_objects.get(id=app_id)
         return render(request, 'djangosaml2idp/hook.html', context={'sso_url': app.data["sso_url"], "spauthn": spauthn})
