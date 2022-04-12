@@ -70,6 +70,7 @@ urlpatterns = [
     url(r'^group/(?P<uid>[\w|-]+)/list/$', group_views.GroupScopeListAPIView.as_view(), name='group_scope_list'),
     url(r'^group/(?P<uid>[\w|-]+)/tree/$', group_views.ManagerGroupTreeAPIView.as_view(), name='group_tree'),
     url(r'^group/(?P<uid>[\w|-]+)/group/$', group_views.GroupChildGroupAPIView.as_view(), name='group_child_group'),
+    url(r'^group/(?P<uid>[\w|-]+)/group/(?P<user_uid>[\w|-]+)/$', group_views.ManagerGroupDetailAPIView.as_view(), name='group_child_group_detail'),
     url(r'^group/(?P<uid>[\w|-]+)/group_page/$', group_views.ManagerGroupPageListAPIView.as_view(), name='group_child_group_page'),
     url(r'^group/(?P<uid>[\w|-]+)/user/$', group_views.GroupChildUserAPIView.as_view(), name='group_child_user'),
     # dept

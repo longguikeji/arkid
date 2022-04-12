@@ -403,6 +403,25 @@ class ManagerGroupPageListAPIView(generics.ListAPIView):
             return []
 
 
+
+
+class ManagerGroupDetailAPIView(generics.RetrieveAPIView):
+    '''
+    get manager group
+    '''
+
+    permission_classes = [IsAuthenticated & IsAdminUser]
+    serializer_class = GroupWithVerboseManagerGroup
+    pagination_class = DefaultListPaginator
+
+    def get_object(self):
+        group = Group.valid_objects.filter(uid='manager').first()
+        if group:
+            return Group.valid_objects.filter(parent=group).filter(uid=self.kwargs['user_uid']).first()
+        else:
+            return None
+
+
 class GroupChildUserAPIView(mixins.ListModelMixin, generics.RetrieveUpdateAPIView):
     '''
     组下属成员信息
