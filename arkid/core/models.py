@@ -96,12 +96,6 @@ class App(ExpandModel, BaseModel):
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'
 
-    @property
-    def app_types(self):
-        from runtime import get_app_runtime
-        r = get_app_runtime()
-        return r.app_types
-
 
 class AppGroup(ExpandModel, BaseModel):
 
@@ -251,7 +245,7 @@ class Approve(ExpandModel, BaseModel):
         return '%s' % (self.name)
 
 
-class ExpiringToken:
+class ExpiringToken(models.Model):
 
     class Meta(object):
         verbose_name = _("Token")
@@ -284,6 +278,11 @@ class ExpiringToken:
     @classmethod
     def generate_token(cls):
         return binascii.hexlify(os.urandom(20)).decode()
+
+    @classmethod
+    def refresh_token(self):
+        self.token = self.generate_token()
+        self.save()
 
     def __str__(self):
         return self.token
