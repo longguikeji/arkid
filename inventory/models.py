@@ -476,7 +476,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
 
 class UserPassword(BaseModel):
 
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     password = models.CharField(max_length=128, blank=False, null=True)
 
     def __str__(self) -> str:
