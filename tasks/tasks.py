@@ -454,7 +454,8 @@ def update_single_user_apppermission(app_temp, user):
         base_code=app_temp.name,
     )
     for permission in permissions:
-        data_dict[permission.sort_id] = permission
+        if permission.sort_id != -1:
+            data_dict[permission.sort_id] = permission
     # 取出所有的权限分组
     permissiongroups = PermissionGroup.valid_objects.filter(
         title=app_temp.name,
@@ -587,7 +588,8 @@ def app_all_user_permission(app_temp, client_id):
             base_code=app_temp.name,
         )
         for permission in permissions:
-            data_dict[permission.sort_id] = permission
+            if permission.sort_id != -1:
+                data_dict[permission.sort_id] = permission
         # 取出所有的权限分组
         permissiongroups = PermissionGroup.valid_objects.filter(
             title=app_temp.name,
