@@ -97,11 +97,11 @@ def login_page(request, data: LoginPageIn = Query(...)):
     request.tenant = tenant
 
     login_pages = []
-    responses = dispatch_event(Event(tag=CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, data={'request': request}))
+    responses = dispatch_event(Event(tag=CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, request=request))
     for _, response in responses:
         login_pages.append(response)
 
-    dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, data={'request': request, 'login_pages': login_pages}))
+    dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, request=request, data=login_pages))
     
     data = {}
     for login_page, _ in login_pages:

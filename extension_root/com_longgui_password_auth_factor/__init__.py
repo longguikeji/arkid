@@ -29,7 +29,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def load(self):
         super().load()
         self.register_extend_field(UserPassword, "password")
-        self.register_config_schema(PasswordAuthFactorSchema, 'package1')
+        self.register_config_schema(PasswordAuthFactorSchema)
         self.register_config_schema(BaseAuthFactorSchema, 'package2')
         
     def authenticate(self, event, **kwargs):
