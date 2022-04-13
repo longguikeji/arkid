@@ -6,12 +6,9 @@ lang_maps = {}
 default_lang_maps = {}
 
 
-def gettext_default(id,msg="",lang="en"):
+def gettext_default(id,msg=None,lang="zh-hans"):
     if not msg:
-        if lang=='en':
-            msg = id
-        else:
-            raise Exception("invalid params")
+        msg = id
     
     if lang in default_lang_maps.keys():
         default_lang_maps[lang][id] = msg
