@@ -77,7 +77,7 @@ class LoginPageSchema(Schema):
 class LoginPageTenantSchema(ModelSchema):
     class Config:
         model = Tenant
-        model_fields = ['uuid', 'name', 'slug', 'icon']
+        model_fields = ['id', 'name', 'slug', 'icon']
         # validate = False
 
 class LoginPageOut(Schema):
@@ -92,8 +92,8 @@ register_event(CREATE_LOGIN_PAGE_RULES, '登录页面生成规则')
 @api.get("/login_page/", response=LoginPageOut, auth=None)
 @operation(LoginPageOut)
 def login_page(request, data: LoginPageIn = Query(...)):
-    tenant_uuid = data.tenant
-    tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+    tenant_id = data.tenant
+    tenant = Tenant.objects.filter(uuid=tenant_id).first()
     request.tenant = tenant
 
     login_pages = []

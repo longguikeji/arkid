@@ -36,8 +36,8 @@ class LoginProcess(View):
     """
     def get(self, request, *args, **kwargs):    # pylint: disable=no-self-use unused-argument
         params_list = []
-        tenant__uuid = request.GET.get("tenant")
-        tenant = Tenant.active_objects.get(uuid=tenant__uuid)
+        tenant__id = request.GET.get("tenant")
+        tenant = Tenant.active_objects.get(uuid=tenant__id)
         
         next = request.GET.get("next")
         for key in request.GET.keys():

@@ -13,12 +13,12 @@ class PasswordAuthFactorSchema(BaseAuthFactorSchema):
     login_enabled_field_names: List[str] = Field(
         default=[], 
         title=_('login_enabled_field_names', '启用密码登录的字段'),
-        url='/api/v1/login_fields?tenant={tenant_uuid}'
+        url='/api/v1/login_fields?tenant={tenant_id}'
     )
     register_enabled_field_names: List[str] = Field(
         default=[], 
         title=_('register_enabled_field_names', '启用密码注册的字段'),
-        url='/api/v1/register_fields?tenant={tenant_uuid}'
+        url='/api/v1/register_fields?tenant={tenant_id}'
     )
     is_apply: bool = Field(default=False, title=_('is_apply', '是否启用密码校验'))
     regular: str = Field(default='', title=_('regular', '密码校验正则表达式'))
@@ -29,7 +29,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def load(self):
         super().load()
         self.register_extend_field(UserPassword, "password")
-        self.register_config_schema(PasswordAuthFactorSchema)
+        self.register_config_schema(PasswordAuthFactorSchema, 'package1')
         self.register_config_schema(BaseAuthFactorSchema, 'package2')
         
     def authenticate(self, event, **kwargs):

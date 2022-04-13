@@ -55,9 +55,9 @@ from api.v1.serializers.tenant import TenantSerializer
 class PasswordLoginView(APIView):
     def post(self, request):
         tenant = None
-        tenant_uuid = request.query_params.get('tenant', None)
-        if tenant_uuid:
-            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+        tenant_id = request.query_params.get('tenant', None)
+        if tenant_id:
+            tenant = Tenant.active_objects.filter(uuid=tenant_id).first()
 
         # 获取登录注册配置
         config = LoginRegisterConfig.valid_objects.filter(
@@ -159,7 +159,7 @@ class PasswordLoginView(APIView):
 
         token = user.refresh_token()
 
-        return_data = {'token': token.key, 'user_uuid': user.uuid.hex}
+        return_data = {'token': token.key, 'user_id': user.uuid.hex}
         if tenant:
             return_data['has_tenant_admin_perm'] = tenant.has_admin_perm(user)
         else:
@@ -181,9 +181,9 @@ class PasswordRegisterView(APIView):
         原生字段和自定义字段的密码注册处理接口
         """
         tenant = None
-        tenant_uuid = request.query_params.get('tenant', None)
-        if tenant_uuid:
-            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+        tenant_id = request.query_params.get('tenant', None)
+        if tenant_id:
+            tenant = Tenant.active_objects.filter(uuid=tenant_id).first()
 
         is_custom_field = request.query_params.get('is_custom_field', None)
         user = None
@@ -283,7 +283,7 @@ class PasswordRegisterView(APIView):
                 'error': Code.OK.value,
                 'data': {
                     'token': token.key,  # TODO: fullfil user info
-                    'user_uuid': user.uuid.hex,
+                    'user_id': user.uuid.hex,
                 },
             }
         )
@@ -302,9 +302,9 @@ class LoginFieldsView(generics.RetrieveAPIView):
         data.append({'value': 'username', 'label': '用户名'})
         data.append({'value': 'email', 'label': '邮箱账号'})
         tenant = None
-        tenant_uuid = request.query_params.get('tenant', None)
-        if tenant_uuid:
-            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+        tenant_id = request.query_params.get('tenant', None)
+        if tenant_id:
+            tenant = Tenant.active_objects.filter(uuid=tenant_id).first()
 
         custom_fields = CustomField.valid_objects.filter(subject='user', tenant=tenant)
         for field in custom_fields:
@@ -325,9 +325,9 @@ class RegisterFieldsView(generics.RetrieveAPIView):
         data = []
         data.append({'value': 'username', 'label': '用户名'})
         tenant = None
-        tenant_uuid = request.query_params.get('tenant', None)
-        if tenant_uuid:
-            tenant = Tenant.active_objects.filter(uuid=tenant_uuid).first()
+        tenant_id = request.query_params.get('tenant', None)
+        if tenant_id:
+            tenant = Tenant.active_objects.filter(uuid=tenant_id).first()
 
         custom_fields = CustomField.valid_objects.filter(subject='user', tenant=tenant)
         for field in custom_fields:
