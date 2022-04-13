@@ -1,5 +1,5 @@
 from abc import abstractclassmethod
-from typing import Union
+from typing import Union, Literal
 from typing_extensions import Annotated
 from pydantic import Field
 from django.urls import include, re_path
@@ -12,6 +12,9 @@ from django.core import management
 from arkid.core import api as core_api, pages as core_page, routers as core_routers, event as core_event
 from arkid.core import urls as core_urls, expand as core_expand, models as core_models, translation as core_translation
 from arkid.extension.models import TenantExtensionConfig, Extension
+from ninja import Schema
+from pydantic import Field
+from arkid.core.translation import gettext_default as _
 
 
 app_config = config.get_app_config()
@@ -19,7 +22,7 @@ app_config = config.get_app_config()
 Event = core_event.Event
 EventType = core_event.EventType
 
-ExtensionConfigSchema = Annotated[Union[None, str], Field()]
+ExtensionConfigSchema = Annotated[Union[None, str], Field(discriminator="package")]
 
 class Extension:
 
@@ -40,6 +43,9 @@ class Extension:
         self.front_routers = []
         self.front_pages = []
         self.lang_code = None
+
+    class ConfigSchema:
+        pass
 
     @property
     def ext_dir(self):
@@ -168,17 +174,19 @@ class Extension:
         core_page.register_front_pages(page)
         self.front_pages.append(page)
 
-    def register_config_schema(self, schema):
+    def register_config_schema(self, schema, package=None):
+        core_api.add_fields(schema, package=(Literal[package or self.package], package or self.package)) # type: ignore
+
         if Union[None, str] in ExtensionConfigSchema.__args__:
-            ExtensionConfigSchema.__args__ = (schema,)
-        elif len(ExtensionConfigSchema.__args__) == 1:
+            ExtensionConfigSchema.__args__ = (Union[schema, None],)
+        elif type(None) in ExtensionConfigSchema.__args__[0].__args__:
             ExtensionConfigSchema.__args__ = (Union[ExtensionConfigSchema.__args__[0], schema],)
         else:
-            ExtensionConfigSchema.__args__ = (Union[tuple(list(ExtensionConfigSchema.__args__.__args__) + [schema])],) # type: ignore
+            ExtensionConfigSchema.__args__ = (Union[tuple(list(ExtensionConfigSchema.__args__[0].__args__) + [schema])],) # type: ignore
         ExtensionConfigSchema.__origin__ = ExtensionConfigSchema.__args__[0]
         
-        if len(ExtensionConfigSchema.__args__) >= 2:
-            ExtensionConfigSchema.__metadata__ = (Field(discriminator='package'),)
+        # if len(ExtensionConfigSchema.__args__) >= 2:
+        #     ExtensionConfigSchema.__metadata__ = (Field(discriminator='package'),)
         
     def get_tenant_configs(self, tenant):
         ext = Extension.objects.filter(package=self.package, version=self.version).first()
@@ -275,11 +283,11 @@ class AuthFactorExtension(Extension):
         }
         configs = self.get_tenant_configs(event.tenant)
         for config in configs:
-            if config.is_login:
+            if config.login_enabled:
                 self.create_login_page(event, config)
-            if config.is_register:
+            if config.register_enabled:
                 self.create_register_page(event, config)
-            if config.is_password:
+            if config.reset_password_enabled:
                 self.create_password_page(event, config)
         self.create_other_page(event, config)
         return self.data
@@ -331,3 +339,9 @@ class AuthFactorExtension(Extension):
     def get_current_config(self, event):
         config_uuid = event.POST.get('config_uuid')
         return self.get_config_by_uuid(config_uuid)
+
+
+class BaseAuthFactorSchema(Schema):
+    login_enabled: bool = Field(default=True, title=_('login_enabled', '启用登录'))
+    register_enabled: bool = Field(default=True, title=_('register_enabled', '启用注册'))
+    reset_password_enabled: bool = Field(default=True, title=_('reset_password_enabled', '启用重置密码'))

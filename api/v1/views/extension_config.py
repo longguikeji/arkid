@@ -1,16 +1,27 @@
-from ninja import Schema
+from ninja import Schema, ModelSchema
 from arkid.core.api import api
 from typing import Union
 from typing_extensions import Annotated
 from pydantic import Field
 from arkid.core.extension import ExtensionConfigSchema
 
+class ExtensionConfigSchemaIn(Schema):
+    config_uuid: str
+    ext_uuid: str
+    config: ExtensionConfigSchema
 
-@api.post("/extension/config", response=ExtensionConfigSchema)
-def create_extension_config(request):
+class ExtensionConfigSchemaOut(Schema):
+    config_uuid: str
+    ext_uuid: str
+    ext_name: str
+    ext_icon: str
+    config: ExtensionConfigSchema
+
+@api.post("/extension/config", response=ExtensionConfigSchemaOut)
+def create_extension_config(request, data: ExtensionConfigSchemaIn):
     # extension.save()
     # return {"uuid": extension.uuid.hex}
-    return {}
+    return data
 
 
 # @api.get("/extensions/{extension_uuid}", response=ExtensionDetailOut)

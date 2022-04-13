@@ -1,30 +1,37 @@
 import re
-from arkid.core.extension import AuthFactorExtension
+from arkid.core.extension import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.error import ErrorCode
-from arkid.core.translation import gettext_default as _
 from .models import UserPassword
-from ninja import ModelSchema
-from typing import Literal, Union
+from pydantic import Field
+from typing import List, Optional
+from arkid.core.translation import gettext_default as _
 
-class PasswordAuthFactorSchema(ModelSchema):
-    package: Literal['cat']
-    class Config:
-        model = UserPassword
-        model_fields = "__all__"
 
-class PasswordAuthFactorSchema2(ModelSchema):
-    package: Literal['dog']
-    class Config:
-        model = UserPassword
-        model_fields = "__all__"
+class PasswordAuthFactorSchema(BaseAuthFactorSchema):
+    reset_password_enabled: Optional[bool] = Field(deprecated=True)
+    
+    login_enabled_field_names: List[str] = Field(
+        default=[], 
+        title=_('login_enabled_field_names', '启用密码登录的字段'),
+        url='/api/v1/login_fields?tenant={tenant_uuid}'
+    )
+    register_enabled_field_names: List[str] = Field(
+        default=[], 
+        title=_('register_enabled_field_names', '启用密码注册的字段'),
+        url='/api/v1/register_fields?tenant={tenant_uuid}'
+    )
+    is_apply: bool = Field(default=False, title=_('is_apply', '是否启用密码校验'))
+    regular: str = Field(default='', title=_('regular', '密码校验正则表达式'))
+    title: str = Field(default='', title=_('title', '密码校验提示信息'))    
+
 
 class PasswordAuthFactorExtension(AuthFactorExtension):
     def load(self):
         super().load()
         self.register_extend_field(UserPassword, "password")
-        # self.register_config_schema(PasswordAuthFactorSchema)
-        # self.register_config_schema(PasswordAuthFactorSchema2)
-
+        self.register_config_schema(PasswordAuthFactorSchema)
+        self.register_config_schema(BaseAuthFactorSchema, 'package2')
+        
     def authenticate(self, event, **kwargs):
         print(**kwargs)
         tenant = event.tenant
@@ -131,6 +138,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         #         user = custom_user.user
         # return user
         pass
+
 
 extension = PasswordAuthFactorExtension(
     package="com.longgui.password_auth_factor",
