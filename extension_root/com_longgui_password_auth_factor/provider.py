@@ -177,7 +177,7 @@ class PasswordLoginRegisterConfigProvider(xxx):
                 user = custom_user.user
         return user
 
-    # def login_form(self, tenant_uuid=None, **kwargs):
+    # def login_form(self, tenant_id=None, **kwargs):
     #     """
     #     原生和自定义字段的密码登录共用表单
     #     """
@@ -220,8 +220,8 @@ class PasswordLoginRegisterConfigProvider(xxx):
     #             params['code'] = 'code'
     #             params['code_filename'] = 'code_filename'
     #     submit_url = reverse("api:password_login_register:password-login")
-    #     if tenant_uuid:
-    #         submit_url = submit_url + f'?tenant={tenant_uuid}'
+    #     if tenant_id:
+    #         submit_url = submit_url + f'?tenant={tenant_id}'
     #     return lp.LoginForm(
     #         label='密码登录',
     #         items=items,
@@ -231,27 +231,27 @@ class PasswordLoginRegisterConfigProvider(xxx):
     #         ),
     #     )
 
-    # def register_form(self, tenant_uuid=None, **kwargs):
+    # def register_form(self, tenant_id=None, **kwargs):
     #     result = []
     #     if self.username_login_enabled:
     #         display_name = NativeFieldNames.DISPLAY_LABELS.get('username')
     #         result.append(
-    #             self._register_form(tenant_uuid, 'username', display_name, False)
+    #             self._register_form(tenant_id, 'username', display_name, False)
     #         )
 
     #     for custom_field in self.register_enabled_custom_field_names:
     #         result.append(
-    #             self._register_form(tenant_uuid, custom_field, custom_field, True)
+    #             self._register_form(tenant_id, custom_field, custom_field, True)
     #         )
     #     return result
 
-    # def _register_form(self, tenant_uuid, field_name, display_name, is_custom_field):
+    # def _register_form(self, tenant_id, field_name, display_name, is_custom_field):
     #     submit_url = (
     #         reverse("api:password_login_register:password-register")
     #         + f'?field_name={field_name}&is_custom_field={is_custom_field}'
     #     )
-    #     if tenant_uuid:
-    #         submit_url = submit_url + f'?tenant={tenant_uuid}'
+    #     if tenant_id:
+    #         submit_url = submit_url + f'?tenant={tenant_id}'
     #     return lp.LoginForm(
     #         label=f'{display_name}注册',
     #         items=[

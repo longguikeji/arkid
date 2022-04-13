@@ -12,7 +12,7 @@ from arkid.core.token import refresh_token
 class AuthTenantSchema(ModelSchema):
     class Config:
         model = Tenant
-        model_fields = ['uuid', 'name', 'slug', 'icon']
+        model_fields = ['id', 'name', 'slug', 'icon']
         # validate = False
 
 
@@ -22,16 +22,16 @@ class AuthOut(Schema):
 
 
 @api.post("/auth/", response=AuthOut, auth=None)
-@operation(AuthOut, use_uuid=True)
+@operation(AuthOut, use_id=True)
 def auth(request):
-    tenant_uuid = data.tenant
-    tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+    tenant_id = data.tenant
+    tenant = Tenant.objects.filter(uuid=tenant_id).first()
     request.tenant = tenant
 
-    request_uuid = request.Meta.get('request_uuid')
+    request_id = request.Meta.get('request_id')
 
     # 认证
-    responses = dispatch_event(Event(tag=data.tag, tenant=tenant, request=request, uuid=request_uuid))
+    responses = dispatch_event(Event(tag=data.tag, tenant=tenant, request=request, uuid=request_id))
     if len(responses) < 1:
         return {'error': 'error_code', 'message': '认证插件未启用'}
 

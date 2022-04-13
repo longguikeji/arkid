@@ -1,32 +1,33 @@
 from ninja import Schema, ModelSchema
+from arkid.core import extension
 from arkid.core.api import api
 from typing import Union
 from typing_extensions import Annotated
 from pydantic import Field
 from arkid.core.extension import ExtensionConfigSchema
+from arkid.extension.models import TenantExtensionConfig, Extension
 
-class ExtensionConfigSchemaIn(Schema):
-    config_uuid: str
-    ext_uuid: str
-    config: ExtensionConfigSchema
+
+class ExtensionConfigSchemaIn(ExtensionConfigSchema):
+    extension_id: str 
 
 class ExtensionConfigSchemaOut(Schema):
-    config_uuid: str
-    ext_uuid: str
-    ext_name: str
-    ext_icon: str
-    config: ExtensionConfigSchema
-
-@api.post("/extension/config", response=ExtensionConfigSchemaOut)
-def create_extension_config(request, data: ExtensionConfigSchemaIn):
-    # extension.save()
-    # return {"uuid": extension.uuid.hex}
-    return data
+    config_id: str
 
 
-# @api.get("/extensions/{extension_uuid}", response=ExtensionDetailOut)
-# def get_extension(request, extension_uuid: str):
-#     extension = get_object_or_404(Extension, uuid=extension_uuid, user=request.user)
+@api.post("/{tenant_id}/extension/config", response=ExtensionConfigSchemaOut, auth=None)
+def create_extension_config(request, tenant_id: str, data: ExtensionConfigSchemaIn):
+    config = TenantExtensionConfig.objects.create(
+        tenant_id=tenant_id,
+        extension_id=data.extension_id,
+        config = data.config.data.dict(),
+    )
+    return {"config_id": config.id.hex}
+
+
+# @api.get("/extensions/{extension_id}", response=ExtensionDetailOut)
+# def get_extension(request, extension_id: str):
+#     extension = get_object_or_404(Extension, uuid=extension_id, user=request.user)
 #     return extension
 
 
@@ -40,8 +41,8 @@ def create_extension_config(request, data: ExtensionConfigSchemaIn):
 
 
 # @operation(roles=["tenant-user", "platform-user"])
-# def update_extension(request, extension_uuid: str, payload: ExtensionIn):
-#     extension = get_object_or_404(Extension, uuid=extension_uuid, user=request.user)
+# def update_extension(request, extension_id: str, payload: ExtensionIn):
+#     extension = get_object_or_404(Extension, uuid=extension_id, user=request.user)
 #     data = payload.dict()
 #     file_name = data.pop("file_name")
 #     categories = data.pop("categories")
@@ -74,8 +75,8 @@ def create_extension_config(request, data: ExtensionConfigSchemaIn):
 #     return {"success": True}
 
 
-# @api.delete("/extensions/{extension_uuid}")
-# def delete_extension(request, extension_uuid: str):
-#     extension = get_object_or_404(Extension, uuid=extension_uuid)
+# @api.delete("/extensions/{extension_id}")
+# def delete_extension(request, extension_id: str):
+#     extension = get_object_or_404(Extension, uuid=extension_id)
 #     extension.delete()
 #     return {"success": True}

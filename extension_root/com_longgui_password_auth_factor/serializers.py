@@ -14,13 +14,13 @@ class PasswordLoginRegisterConfigDataSerializer(serializers.Serializer):
         child=serializers.CharField(),
         label=_('启用密码登录的字段'),
         default=[],
-        url='/api/v1/login_fields?tenant={tenant_uuid}',
+        url='/api/v1/login_fields?tenant={tenant_id}',
     )
     register_enabled_field_names = create_custom_list_field(serializers.ListField)(
         child=serializers.CharField(),
         label=_('启用密码注册的字段'),
         default=[],
-        url='/api/v1/register_fields?tenant={tenant_uuid}',
+        url='/api/v1/register_fields?tenant={tenant_id}',
     )
 
     is_apply = serializers.BooleanField(label=_('是否启用密码校验'), default=False)

@@ -92,8 +92,8 @@ class GlobalAuth(HttpBearer):
 class ArkidApi(NinjaAPI):
     def create_response(self, request, *args, **kwargs):
             response = super().create_response(request, *args, **kwargs)
-            if request.META.get('request_uuid'):
-                response.headers['request_uuid'] = request.META.get('request_uuid')
+            if request.META.get('request_id'):
+                response.headers['request_id'] = request.META.get('request_id')
             return response
 
 
@@ -102,7 +102,7 @@ api = ArkidApi(auth=GlobalAuth())
 api.get_openapi_schema = functools.partial(get_openapi_schema, api)
 
 
-def operation(respnose_model, use_uuid=False):
+def operation(respnose_model, use_id=False):
     from functools import partial
 
     class ApiEventData(Schema):
@@ -125,17 +125,17 @@ def operation(respnose_model, use_uuid=False):
 
         old_view_func = operation.view_func
         def func(request, *params, **kwargs):
-            request_uuid = request.Meta.get('request_uuid')
-            if not request_uuid and use_uuid:
-                request_uuid = uuid.uuid4().hex
-                request.Meta['request_uuid'] = request_uuid
+            request_id = request.Meta.get('request_id')
+            if not request_id and use_id:
+                request_id = uuid.uuid4().hex
+                request.Meta['request_id'] = request_id
             
-            dispatch_event(Event(tag+'_pre', request.tenant, request=request, uuid=request_uuid))
+            dispatch_event(Event(tag+'_pre', request.tenant, request=request, uuid=request_id))
             response = old_view_func(request=request, *params, **kwargs)
             # copy request
-            dispatch_event(Event(tag, request.tenant, request=request, response=response, uuid=request_uuid))
+            dispatch_event(Event(tag, request.tenant, request=request, response=response, uuid=request_id))
             # response 设置 header
-            # 前端拿到response header request_uuid 存储到内存，后续请求都带上request_uuid header
+            # 前端拿到response header request_id 存储到内存，后续请求都带上request_id header
             # session
             return response
         func.__name__ = old_view_func.__name__

@@ -35,7 +35,7 @@ class PasswordComplexity(BaseModel):
     )
 
     @property
-    def tenant_uuid(self):
+    def tenant_id(self):
         return self.tenant.uuid
 
     def check_pwd(self, pwd):

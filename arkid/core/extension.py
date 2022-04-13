@@ -15,6 +15,8 @@ from arkid.extension.models import TenantExtensionConfig, Extension
 from ninja import Schema
 from pydantic import Field
 from arkid.core.translation import gettext_default as _
+from ninja.orm import create_schema
+
 
 
 app_config = config.get_app_config()
@@ -22,7 +24,12 @@ app_config = config.get_app_config()
 Event = core_event.Event
 EventType = core_event.EventType
 
-ExtensionConfigSchema = Annotated[Union[None, str], Field(discriminator="package")]
+
+class ExtensionConfigSchema(Schema):
+    pass
+
+
+config_schema_map = {}
 
 class Extension:
 
@@ -42,6 +49,7 @@ class Extension:
         self.extend_apis = []
         self.front_routers = []
         self.front_pages = []
+        # self.config_schema_map = 
         self.lang_code = None
 
     class ConfigSchema:
@@ -75,7 +83,7 @@ class Extension:
 
     def register_routers(self, urls_ext, tenant_urls=False):
         if tenant_urls:
-            urls_ext = [re_path(r'tenant/(?P<tenant_uuid>[\w-]+)/', include((urls_ext, 'extension'), namespace=f'{self.name}'))]
+            urls_ext = [re_path(r'tenant/(?P<tenant_id>[\w-]+)/', include((urls_ext, 'extension'), namespace=f'{self.name}'))]
             self.urls.extend(urls_ext)
             core_urls.register(urls_ext)
         else:
@@ -175,25 +183,42 @@ class Extension:
         self.front_pages.append(page)
 
     def register_config_schema(self, schema, package=None):
-        core_api.add_fields(schema, package=(Literal[package or self.package], package or self.package)) # type: ignore
-
-        if Union[None, str] in ExtensionConfigSchema.__args__:
-            ExtensionConfigSchema.__args__ = (Union[schema, None],)
-        elif type(None) in ExtensionConfigSchema.__args__[0].__args__:
-            ExtensionConfigSchema.__args__ = (Union[ExtensionConfigSchema.__args__[0], schema],)
+        # class XxSchema(Schema):
+        #     config: schema
+            # package: Literal[package or self.package] # type: ignore
+        new_schema = create_schema(TenantExtensionConfig,
+            name=self.package+'_config', 
+            fields=['id'],
+            custom_fields=[("data", schema, Field()), ("package", Literal[package or self.package], Field())], # type: ignore
+        )
+        config_schema_map[package or self.package] = new_schema
+        if len(config_schema_map) > 1:
+            core_api.add_fields(ExtensionConfigSchema, config=(Union[tuple(config_schema_map.values())], Field(discriminator='package'))) # type: ignore
         else:
-            ExtensionConfigSchema.__args__ = (Union[tuple(list(ExtensionConfigSchema.__args__[0].__args__) + [schema])],) # type: ignore
-        ExtensionConfigSchema.__origin__ = ExtensionConfigSchema.__args__[0]
+            core_api.add_fields(ExtensionConfigSchema, config=new_schema)
+        # schema = type(self.full_name+'_config', (Schema,), dict((config: schema)=Field(), (package: Literal[package or self.package]) = Field())
+
+        # core_api.add_fields(schema, package=(Literal[package or self.package], package or self.package)) # type: ignore
+
+        # if Union[None, str] in ExtensionConfigSchemaRoot.__args__:
+        #     ExtensionConfigSchemaRoot.__args__ = (Union[schema, None],)
+        # elif type(None) in ExtensionConfigSchemaRoot.__args__[0].__args__:
+        #     ExtensionConfigSchemaRoot.__args__ = (Union[ExtensionConfigSchemaRoot.__args__[0], schema],)
+        # else:
+        #     ExtensionConfigSchemaRoot.__args__ = (Union[tuple(list(ExtensionConfigSchemaRoot.__args__[0].__args__) + [schema])],) # type: ignore
+        # ExtensionConfigSchemaRoot.__origin__ = ExtensionConfigSchemaRoot.__args__[0]
         
-        # if len(ExtensionConfigSchema.__args__) >= 2:
-        #     ExtensionConfigSchema.__metadata__ = (Field(discriminator='package'),)
+        # if len(ExtensionConfigSchemaRoot.__args__[0].__args__) >= 2:
+        #     ExtensionConfigSchemaRoot.__metadata__ = (Field(discriminator='package'),)
+
+
         
     def get_tenant_configs(self, tenant):
         ext = Extension.objects.filter(package=self.package, version=self.version).first()
         configs = TenantExtensionConfig.objects.filter(tenant=tenant, extension=ext).all()
         return configs
 
-    def get_config_by_uuid(self, uuid):
+    def get_config_by_id(self, uuid):
         return TenantExtensionConfig.objects.get(uuid=uuid)
     
     def update_tenant_config(self, uuid,  config):
@@ -252,7 +277,7 @@ class AuthFactorExtension(Extension):
         return user
     
     def auth_failed(self, event):
-        core_event.remove_event_uuid(event)
+        core_event.remove_event_id(event)
         core_event.break_event_loop(event.data)
 
     @abstractclassmethod
@@ -294,16 +319,16 @@ class AuthFactorExtension(Extension):
         
     def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):
         default = {
-            "login": ("登录", "/api/v1/auth/?tenant=tenant_uuid"),
-            "register": ("登录", "/api/v1/register/?tenant=tenant_uuid"),
-            "password": ("登录", "/api/v1/reset_password/?tenant=tenant_uuid"),
+            "login": ("登录", "/api/v1/auth/?tenant=tenant_id"),
+            "register": ("登录", "/api/v1/register/?tenant=tenant_id"),
+            "password": ("登录", "/api/v1/reset_password/?tenant=tenant_id"),
         }
         if not submit_label:
             submit_label, useless = default.get(page_name)
         if not submit_url:
             useless, submit_url = default.get(page_name)
 
-        items.append({"type": "hidden", "name": "config_uuid", "value": config.uuid})
+        items.append({"type": "hidden", "name": "config_id", "value": config.uuid})
         self.data[page_name]['forms'].append({
             'label': label,
             'items': items,
@@ -337,8 +362,8 @@ class AuthFactorExtension(Extension):
         pass
     
     def get_current_config(self, event):
-        config_uuid = event.POST.get('config_uuid')
-        return self.get_config_by_uuid(config_uuid)
+        config_id = event.POST.get('config_id')
+        return self.get_config_by_id(config_id)
 
 
 class BaseAuthFactorSchema(Schema):
