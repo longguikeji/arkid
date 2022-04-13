@@ -84,7 +84,6 @@ from arkid.core import extension, event
 #         super().start(runtime=runtime, *args, **kwargs)
 
 
-
 class AliyunExtension(extension.Extension):
     def load(self):
         super().load()

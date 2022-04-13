@@ -15,14 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from arkid.core.api import api
+from arkid.core.api import api as core_api
 from api import v1
 from arkid.login import view as login_view
 from arkid.core import urls as core_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/", api.urls),
+    path("api/v1/", core_api.urls),
     path("api/v1/login", login_view.LoginEnter.as_view()),
     path("api/v1/login_process", login_view.LoginProcess.as_view())
 ]

@@ -5,6 +5,18 @@ from django.db import transaction
 import extension_root
 
 
+class TenantExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+
+    tenant = models.ForeignKey(
+        'core.Tenant',
+        blank=False,
+        on_delete=models.PROTECT,
+    )
+
+
 class UserExpandAbstract(BaseModel):
 
     class Meta:
@@ -12,6 +24,78 @@ class UserExpandAbstract(BaseModel):
 
     user = models.ForeignKey(
         'core.User',
+        blank=False,
+        on_delete=models.PROTECT,
+    )
+
+
+class UserGroupExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+
+    user_group = models.ForeignKey(
+        'core.UserGroup',
+        blank=False,
+        on_delete=models.PROTECT,
+    )
+
+
+class AppExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+
+    app = models.ForeignKey(
+        'core.App',
+        blank=False,
+        on_delete=models.PROTECT,
+    )
+
+
+class AppGroupExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+
+    app_group = models.ForeignKey(
+        'core.AppGroup',
+        blank=False,
+        on_delete=models.PROTECT,
+    )
+
+
+class PermissionExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+
+    permission = models.ForeignKey(
+        'core.Permission',
+        blank=False,
+        on_delete=models.PROTECT,
+    )
+
+
+class ApproveExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+
+    approve = models.ForeignKey(
+        'core.Approve',
+        blank=False,
+        on_delete=models.PROTECT,
+    )
+
+
+class TenantConfigExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+
+    tenant_config = models.ForeignKey(
+        'core.TenantConfig',
         blank=False,
         on_delete=models.PROTECT,
     )
