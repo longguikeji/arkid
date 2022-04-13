@@ -378,55 +378,58 @@ def update_users_apppermission(app_temp, auth_users):
         user_permission_group_item_dict = user_permission_group_info_dict.get(auth_user_id, [])
         result_str = ''
         for data_item in data_dict.values():
-            data_item_id = data_item.id
-            if isinstance(data_item, Permission):
-                # 权限
-                if data_item_id in user_permission_item_dict:
-                    data_item.is_pass = 1
-                else:
-                    if hasattr(data_item, 'is_pass') == False:
-                        data_item.is_pass = 0
+            if auth_user.is_superuser:
+                data_item.is_pass = 1
             else:
-                # 权限分组
-                # 如果用户对某一个权限分组有权限，则对该权限分组内的所有权限有权限
-                if data_item.name == 'normal-user':
-                    '''
-                    普通用户
-                    '''
-                    data_item.is_pass = 1
-                    container = data_item.container
-                    if container:
-                        for item in container:
-                            data_dict.get(item).is_pass = 1
-                elif data_item.name == 'platform-user' and auth_user.is_platform_user is True:
-                    '''
-                    平台用户
-                    '''
-                    data_item.is_pass = 1
-                    container = data_item.container
-                    if container:
-                        for item in container:
-                            data_dict.get(item).is_pass = 1
-                elif data_item.name == 'tenant-user' and auth_user.tenants.filter(id=app_temp.tenant.id).exists() is True:
-                    '''
-                    租户用户
-                    '''
-                    data_item.is_pass = 1
-                    container = data_item.container
-                    if container:
-                        for item in container:
-                            data_dict.get(item).is_pass = 1
-                elif data_item_id in user_permission_group_item_dict:
-                    '''
-                    其它分组
-                    '''
-                    data_item.is_pass = 1
-                    container = data_item.container
-                    if container:
-                        for item in container:
-                            data_dict.get(item).is_pass = 1
+                data_item_id = data_item.id
+                if isinstance(data_item, Permission):
+                    # 权限
+                    if data_item_id in user_permission_item_dict:
+                        data_item.is_pass = 1
+                    else:
+                        if hasattr(data_item, 'is_pass') == False:
+                            data_item.is_pass = 0
                 else:
-                    data_item.is_pass = 0
+                    # 权限分组
+                    # 如果用户对某一个权限分组有权限，则对该权限分组内的所有权限有权限
+                    if data_item.name == 'normal-user':
+                        '''
+                        普通用户
+                        '''
+                        data_item.is_pass = 1
+                        container = data_item.container
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
+                    elif data_item.name == 'platform-user' and auth_user.is_platform_user is True:
+                        '''
+                        平台用户
+                        '''
+                        data_item.is_pass = 1
+                        container = data_item.container
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
+                    elif data_item.name == 'tenant-user' and auth_user.tenants.filter(id=app_temp.tenant.id).exists() is True:
+                        '''
+                        租户用户
+                        '''
+                        data_item.is_pass = 1
+                        container = data_item.container
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
+                    elif data_item_id in user_permission_group_item_dict:
+                        '''
+                        其它分组
+                        '''
+                        data_item.is_pass = 1
+                        container = data_item.container
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
+                    else:
+                        data_item.is_pass = 0
         for data_item in data_dict.values():
             result_str = result_str + str(data_item.is_pass)
         # 用户app权限结果
@@ -498,55 +501,58 @@ def update_single_user_apppermission(app_temp, user):
     user_permission_group_item_dict = user_permission_group_info_dict.get(auth_user_id, [])
     result_str = ''
     for data_item in data_dict.values():
-        data_item_id = data_item.id
-        if isinstance(data_item, Permission):
-            # 权限
-            if data_item_id in user_permission_item_dict:
-                data_item.is_pass = 1
-            else:
-                if hasattr(data_item, 'is_pass') == False:
-                    data_item.is_pass = 0
+        if auth_user.is_superuser:
+            data_item.is_pass = 1
         else:
-            # 权限分组
-            # 如果用户对某一个权限分组有权限，则对该权限分组内的所有权限有权限
-            if data_item.name == 'normal-user':
-                '''
-                普通用户
-                '''
-                data_item.is_pass = 1
-                container = data_item.container
-                if container:
-                    for item in container:
-                        data_dict.get(item).is_pass = 1
-            elif data_item.name == 'platform-user' and auth_user.is_platform_user is True:
-                '''
-                平台用户
-                '''
-                data_item.is_pass = 1
-                container = data_item.container
-                if container:
-                    for item in container:
-                        data_dict.get(item).is_pass = 1
-            elif data_item.name == 'tenant-user' and auth_user.tenants.filter(id=app_temp.tenant.id).exists() is True:
-                '''
-                租户用户
-                '''
-                data_item.is_pass = 1
-                container = data_item.container
-                if container:
-                    for item in container:
-                        data_dict.get(item).is_pass = 1
-            elif data_item_id in user_permission_group_item_dict:
-                '''
-                其它分组
-                '''
-                data_item.is_pass = 1
-                container = data_item.container
-                if container:
-                    for item in container:
-                        data_dict.get(item).is_pass = 1
+            data_item_id = data_item.id
+            if isinstance(data_item, Permission):
+                # 权限
+                if data_item_id in user_permission_item_dict:
+                    data_item.is_pass = 1
+                else:
+                    if hasattr(data_item, 'is_pass') == False:
+                        data_item.is_pass = 0
             else:
-                data_item.is_pass = 0
+                # 权限分组
+                # 如果用户对某一个权限分组有权限，则对该权限分组内的所有权限有权限
+                if data_item.name == 'normal-user':
+                    '''
+                    普通用户
+                    '''
+                    data_item.is_pass = 1
+                    container = data_item.container
+                    if container:
+                        for item in container:
+                            data_dict.get(item).is_pass = 1
+                elif data_item.name == 'platform-user' and auth_user.is_platform_user is True:
+                    '''
+                    平台用户
+                    '''
+                    data_item.is_pass = 1
+                    container = data_item.container
+                    if container:
+                        for item in container:
+                            data_dict.get(item).is_pass = 1
+                elif data_item.name == 'tenant-user' and auth_user.tenants.filter(id=app_temp.tenant.id).exists() is True:
+                    '''
+                    租户用户
+                    '''
+                    data_item.is_pass = 1
+                    container = data_item.container
+                    if container:
+                        for item in container:
+                            data_dict.get(item).is_pass = 1
+                elif data_item_id in user_permission_group_item_dict:
+                    '''
+                    其它分组
+                    '''
+                    data_item.is_pass = 1
+                    container = data_item.container
+                    if container:
+                        for item in container:
+                            data_dict.get(item).is_pass = 1
+                else:
+                    data_item.is_pass = 0
     for data_item in data_dict.values():
         result_str = result_str + str(data_item.is_pass)
     # 用户app权限结果
