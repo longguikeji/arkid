@@ -757,7 +757,7 @@ class UserAppData(BaseModel):
 
     DEFAULT_VALUE = ""
 
-    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
     tenant = models.ForeignKey(Tenant, default=None, null=True, on_delete=models.PROTECT, verbose_name='租户')
     data = models.JSONField(verbose_name='数据内容')
 
@@ -772,7 +772,7 @@ class UserMenuData(BaseModel):
 
     DEFAULT_VALUE = ""
 
-    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
     data = models.JSONField(verbose_name='数据内容')
 
@@ -785,7 +785,7 @@ class UserAppPermissionResult(BaseModel):
     用户app权限结果
     '''
 
-    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
     app = models.ForeignKey(App, on_delete=models.PROTECT, verbose_name='App')
     result = models.CharField(max_length=1024, blank=True, null=True, verbose_name='权限结果')
