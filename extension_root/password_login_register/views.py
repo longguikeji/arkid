@@ -219,11 +219,12 @@ class PasswordRegisterView(APIView):
                     'message': _('password is empty'),
                 }
             )
-        if check_password_complexity(password, tenant) is False:
+        ret, message = check_password_complexity(password, tenant)
+        if not ret:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                    'message': _('password strength not enough'),
+                    'message': message,
                 }
             )
 

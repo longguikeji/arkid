@@ -20,7 +20,7 @@ class ChildManager(BaseModel):
         app_label = 'childmanager'
 
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT)
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     data = models.JSONField(blank=True, default=dict)
 
     def __str__(self) -> str:

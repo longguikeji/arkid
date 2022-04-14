@@ -92,6 +92,10 @@ class SSOInit(LoginRequiredMixin, IdPHandlerViewMixin, View):
             name_id_formats = self.IDP.config.getattr("name_id_format", "idp") or [
                 NAMEID_FORMAT_UNSPECIFIED
             ]
+            
+            if app.type=="saml2idp_aliyun_ram":
+                user_id = f"{user_id}@{app.data.get('name_id')}"
+            
             name_id = NameID(format=name_id_formats[0], text=user_id)
             authn = AUTHN_BROKER.get_authn_by_accr(req_authn_context)
             sign_response = self.IDP.config.getattr(

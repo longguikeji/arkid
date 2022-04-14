@@ -24,8 +24,10 @@ from inventory.models import (
     UserAppData, UserTenantPermissionAndPermissionGroup,
 )
 from inventory.resouces import UserResource
+from runtime import get_app_runtime
 from external_idp.models import ExternalIdp
 from extension.utils import find_available_extensions
+
 from api.v1.serializers.user import (
     UserSerializer,
     UserListResponsesSerializer,
@@ -552,7 +554,23 @@ class UserAppViewSet(BaseViewSet):
                     [perm.codename for perm in g.owned_perms(all_apps_perms)]
                 )
             objs = [app for app in all_apps if app.access_perm_code in perms]
+        
+        runtime = get_app_runtime()
+        for provider_name in runtime.application_manage_providers:
+            objs = runtime.application_manage_providers.get(provider_name)().get_queryset(objs=objs,view_instance=self)    
+        
         return objs
+    
+    def list(self, request, *args, **kwargs):
+        
+        rs = super().list(request,*args,**kwargs)
+        objs = self.get_queryset()
+        runtime = get_app_runtime()
+        for provider_name in runtime.application_manage_providers:
+            rs = runtime.application_manage_providers.get(provider_name)().list_view(request=request,rs=rs,tenant=self.get_serializer_context()['tenant'],objs=objs,*args,**kwargs)
+            
+        return rs
+
 
 
 @extend_schema(
@@ -650,48 +668,35 @@ class UpdatePasswordView(generics.CreateAPIView):
             tenant = None
         else:
             tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
-        uuid = request.data.get('uuid', '')
-        password = request.data.get('password', '')
+        new_password = request.data.get('new_password', '')
         old_password = request.data.get('old_password', '')
-        user = User.objects.filter(uuid=uuid).first()
-        is_succeed = True
-        if not user:
+        user = request.user
+
+        ret, message = check_password_complexity(new_password, tenant)
+        if not ret:
             return JsonResponse(
                 data={
-                    'error': Code.USER_EXISTS_ERROR.value,
-                    'message': _('user does not exist'),
+                    'error': Code.PASSWORD_STRENGTH_ERROR.value,
+                    'message': message,
                 }
             )
-        if password:
-            ret, message = check_password_complexity(password, tenant)
-            if not ret:
-                return JsonResponse(
-                    data={
-                        'error': Code.PASSWORD_STRENGTH_ERROR.value,
-                        'message': message,
-                    }
-                )
-
-        if password and user.check_password(old_password) is False:
+        if not user.check_password(old_password):
             return JsonResponse(
                 data={
                     'error': Code.OLD_PASSWORD_ERROR.value,
                     'message': _('old password error'),
                 }
             )
-        if password and user.valid_password(password) is True:
+        if user.valid_password(new_password) is True:
             return JsonResponse(
                 data={
                     'error': Code.PASSWORD_CHECK_ERROR.value,
                     'message': _('password is already in use'),
                 }
             )
-        try:
-            user.set_password(password)
-            user.save()
-        except Exception as e:
-            is_succeed = False
-        return Response(is_succeed)
+        user.set_password(new_password)
+        user.save()
+        return JsonResponse(data={'error': Code.OK.value})
 
 
 @extend_schema(
