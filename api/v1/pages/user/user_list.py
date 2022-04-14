@@ -5,7 +5,7 @@ user_list_name = '用户列表'
 
 
 router = routers.FrontRouter(
-    path='list',
+    path=user_list_tag,
     name='用户管理',
     icon='user',
     page=user_list_tag,

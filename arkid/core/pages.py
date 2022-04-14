@@ -1,6 +1,5 @@
 
-from typing import OrderedDict
-
+from collections import OrderedDict
 
 global_pages = []
 
@@ -11,11 +10,10 @@ TREE_PAGE_TYPE = 'tree_page'
 
 class FrontPage(OrderedDict):
     def __init__(self, tag, name, type, init_action,  *args, **kwargs):
-        self.tag = tag
-        self.name = name
-        self.type = type
-        self.tag = tag
-        self.init = init_action
+        self["tag"] = tag
+        self["name"] = name
+        self["type"] = type
+        self["init"] = init_action
         super().__init__(*args, **kwargs)
 
     def add_global_action(self, actions):
@@ -43,23 +41,23 @@ class FrontPage(OrderedDict):
 class FrontAction(OrderedDict):
     def __init__(self, tag=None, name=None, page=None, path=None, method=None, icon=None, *args, **kwargs):
         if tag:
-            self.tag = tag
+            self["tag"] = tag
         if name:
-            self.name = name
+            self["name"] = name
         if page:
-            self.page = page
+            self["page"] = page
         if path:
-            self.path = path
+            self["path"] = path
         if method:
-            self.method = method
+            self["method"] = method
         if icon:
-            self.icon = icon
+            self["icon"] = icon
         super().__init__(*args, **kwargs)
 
 
 def register_front_pages(pages):
     if not isinstance(pages, tuple) or not isinstance(pages, list):
-        pages = list(pages)
+        pages = [pages]
 
     global_pages.extend(pages)
 
