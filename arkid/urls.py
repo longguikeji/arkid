@@ -19,12 +19,14 @@ from arkid.core.api import api as core_api
 from api import v1
 from arkid.login import view as login_view
 from arkid.core import urls as core_urls
+from arkid.redoc import view as redoc_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", core_api.urls),
     path("api/v1/login", login_view.LoginEnter.as_view()),
-    path("api/v1/login_process", login_view.LoginProcess.as_view())
+    path("api/v1/login_process", login_view.LoginProcess.as_view()),
+    path("api/v1/redoc", redoc_view.Redoc.as_view())
 ]
 
 urlpatterns += core_urls.urlpatterns

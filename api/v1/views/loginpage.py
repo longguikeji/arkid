@@ -82,8 +82,8 @@ class LoginPageOut(Schema):
     tenant: LoginPageTenantSchema
 
 
-register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, '认证因素生成登录页面')
-register_event(CREATE_LOGIN_PAGE_RULES, '登录页面生成规则')
+register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor','认证因素生成登录页面'))
+register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules','登录页面生成规则'))
 
 
 @api.get("/tenant/{tenant_id}/login_page/", response=LoginPageOut, auth=None)
@@ -91,11 +91,11 @@ register_event(CREATE_LOGIN_PAGE_RULES, '登录页面生成规则')
 def login_page(request, tenant_id: str):
     tenant = request.tenant
     login_pages = []
-    responses = dispatch_event(Event(tag=CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, data={'request': request}))
+    responses = dispatch_event(Event(tag=CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, request=request))
     for _, response in responses:
         login_pages.append(response)
 
-    dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, data={'request': request, 'login_pages': login_pages}))
+    dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, request=request, data=login_pages))
     
     data = {}
     for (login_page, ext), _ in login_pages:
@@ -119,19 +119,19 @@ def login_page(request, tenant_id: str):
                 data[k]['name'] = k
 
     if data.get(AuthFactorExtension.RESET_PASSWORD):
-        bottom = {"label": "忘记密码", "gopage": AuthFactorExtension.RESET_PASSWORD}
+        bottom = {"label": _("Forget Password", "忘记密码"), "gopage": AuthFactorExtension.RESET_PASSWORD}
         data[AuthFactorExtension.LOGIN]['bottoms'].insert(0, bottom)
-        bottom = {"prepend": "已有账号，", "label": "立即登录", "gopage": AuthFactorExtension.LOGIN}
+        bottom = {"prepend": _("Existing Account,", "已有账号，"), "label": _("Login Now","立即登录"), "gopage": AuthFactorExtension.LOGIN}
         data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)
     
     if data.get(AuthFactorExtension.REGISTER):
-        bottom = {"prepend": "还没有账号，", "label": "立即注册", "gopage": AuthFactorExtension.REGISTER}
+        bottom = {"prepend": _("No Account,","还没有账号，"), "label": _("Register Now","立即注册"), "gopage": AuthFactorExtension.REGISTER}
         data[AuthFactorExtension.LOGIN]['bottoms'].insert(0, bottom)
-        bottom = {"prepend": "已有账号，", "label": "立即登录", "gopage": AuthFactorExtension.LOGIN}
+        bottom = {"prepend": _("Existing Account,", "已有账号，"), "label": _("Login Now","立即登录"), "gopage": AuthFactorExtension.LOGIN}
         data[AuthFactorExtension.REGISTER]['bottoms'].insert(0, bottom)
 
     if data.get(AuthFactorExtension.REGISTER) and data.get(AuthFactorExtension.RESET_PASSWORD):
-        bottom = {"prepend": "还没有账号，", "label": "立即注册", "gopage": AuthFactorExtension.REGISTER}
+        bottom = {"prepend": _("No Account,","还没有账号，"), "label": _("Register Now","立即注册"), "gopage": AuthFactorExtension.REGISTER}
         data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)
 
     return {
