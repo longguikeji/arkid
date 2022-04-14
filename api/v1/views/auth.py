@@ -23,7 +23,7 @@ class AuthOut(Schema):
 
 @api.post("/tenant/{tenant_id}/auth/", response=AuthOut, auth=None)
 @operation(AuthOut, use_id=True)
-def auth(request, event_tag: str):
+def auth(request, tenant_id: str, event_tag: str):
     tenant = request.tenant
     request_id = request.META.get('request_id')
 

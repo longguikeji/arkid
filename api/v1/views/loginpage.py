@@ -92,13 +92,13 @@ def login_page(request, tenant_id: str):
     tenant = request.tenant
     login_pages = []
     responses = dispatch_event(Event(tag=CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, request=request))
-    for _, response in responses:
+    for useless, response in responses:
         login_pages.append(response)
 
     dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, request=request, data=login_pages))
     
     data = {}
-    for (login_page, ext), _ in login_pages:
+    for (login_page, ext), useless in login_pages:
         for k,v in login_page.items():
             if not data.get(k):
                 data[k] = v

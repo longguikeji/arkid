@@ -219,11 +219,11 @@ class Extension(ABC):
         configs = TenantExtensionConfig.objects.filter(tenant=tenant, extension=ext).all()
         return configs
 
-    def get_config_by_id(self, uuid):
-        return TenantExtensionConfig.objects.get(uuid=uuid)
+    def get_config_by_id(self, id):
+        return TenantExtensionConfig.objects.get(id=id)
     
-    def update_tenant_config(self, uuid,  config):
-        TenantExtensionConfig.objects.get(uuid=uuid).update(config=config)
+    def update_tenant_config(self, id,  config):
+        TenantExtensionConfig.objects.get(id=id).update(config=config)
 
     def create_tenant_config(self, tenant, config):
         ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
@@ -363,7 +363,7 @@ class AuthFactorExtension(Extension):
         pass
     
     def get_current_config(self, event):
-        config_id = event.POST.get('config_id')
+        config_id = event.request.POST.get('config_id')
         return self.get_config_by_id(config_id)
 
 

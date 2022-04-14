@@ -23,12 +23,12 @@ class RegisterOut(Schema):
 
 @api.post("/tenant/{tenant_id}/register/", response=RegisterOut, auth=None)
 @operation(RegisterOut, use_id=True)
-def register(request, tenant_id: str):
+def register(request, tenant_id: str, event_tag: str):
     tenant = request.tenant
     request_id = request.META.get('request_id')
 
     # 认证
-    responses = dispatch_event(Event(tag='', tenant=tenant, request=request, uuid=request_id))
+    responses = dispatch_event(Event(tag=event_tag, tenant=tenant, request=request, uuid=request_id))
     if len(responses) < 1:
         return {'error': 'error_code', 'message': '认证插件未启用'}
 
