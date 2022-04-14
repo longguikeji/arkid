@@ -29,8 +29,8 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def load(self):
         super().load()
         self.register_extend_field(UserPassword, "password")
-        self.register_config_schema(PasswordAuthFactorSchema, 'package1')
-        self.register_config_schema(BaseAuthFactorSchema, 'package2')
+        self.register_config_schema(PasswordAuthFactorSchema, self.package)
+        # self.register_config_schema(BaseAuthFactorSchema, 'package2')
         
     def authenticate(self, event, **kwargs):
         print(**kwargs)
@@ -98,10 +98,39 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         pass
 
     def create_login_page(self, event, config):
-        pass
+        items = [
+            {
+                "type": "text",
+                "name": "username",
+                "placeholder": "用户名"
+            },
+            {
+                "type": "password",
+                "name": "password",
+                "placeholder": "密码"
+            },
+        ]
+        self.add_page_form(config, self.LOGIN, "密码登录", items)
 
     def create_register_page(self, event, config):
-        pass
+        items = [
+            {
+                "type": "text",
+                "name": "username",
+                "placeholder": "用户名"
+            },
+            {
+                "type": "password",
+                "name": "password",
+                "placeholder": "密码"
+            },
+            {
+                "type": "password",
+                "name": "checkpassword",
+                "placeholder": "密码确认"
+            },
+        ]
+        self.add_page_form(config, self.REGISTER, "用户名密码注册", items)
 
     def create_password_page(self, event, config):
         pass
