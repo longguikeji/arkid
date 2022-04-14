@@ -9,7 +9,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "arkid.settings")
 django.setup()
 
 def update_url():
-    print(123)
+    from django.urls import include, re_path
+    urls = [
+        re_path(r'^o/', include('oauth2_provider.urls'))
+    ]
+    print(urls)
 
 
 if __name__ == "__main__":

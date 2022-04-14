@@ -7,11 +7,11 @@ class OAuth2ServerExtension(extension.Extension):
         self.load_urls()
     
     def load_urls(self):
-        # from django.urls import path
+        from django.urls import include, re_path
 
-        # urls = [
-        #     url(r'^o/', include(('oauth2_provider.urls', 'oauth2_provider'), namespace='oauth2_provider')),
-        # ]
+        urls = [
+            re_path(r'^o/', include('oauth2_provider.urls'))
+        ]
 
         self.register_routers(urls, True)
 

@@ -12,6 +12,7 @@ from arkid.core.translation import gettext_default as _
 class LoginPageIn(Schema):
     tenant: str
 
+
 class ButtonRedirectSchema(Schema):
     url: str = Field(title=_('URL','重定向地址'))
     params : Optional[dict] = Field(title=_('params','重定向参数'))
