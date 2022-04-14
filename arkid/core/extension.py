@@ -5,6 +5,7 @@ from pydantic import Field
 from django.urls import include, re_path
 from pathlib import Path
 from arkid import config
+from types import SimpleNamespace
 from collections import OrderedDict
 from django.apps import apps
 from django.conf import settings
@@ -111,7 +112,7 @@ class Extension(ABC):
         else:
             raise Exception('非法的扩展字段类对应的父类')
 
-        data = OrderedDict(
+        data = SimpleNamespace(
             table = table,
             field = alias or model_field,
             extension = self.name,
@@ -276,9 +277,9 @@ class AuthFactorExtension(Extension):
     def auth_success(self, user):
         return user
     
-    def auth_failed(self, event):
+    def auth_failed(self, event, data):
         core_event.remove_event_id(event)
-        core_event.break_event_loop(event.data)
+        core_event.break_event_loop(data)
 
     @abstractmethod
     def register(self, event, **kwargs):
@@ -319,9 +320,9 @@ class AuthFactorExtension(Extension):
         
     def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):
         default = {
-            "login": ("登录", "/api/v1/auth/?tenant=tenant_id"),
-            "register": ("登录", "/api/v1/register/?tenant=tenant_id"),
-            "password": ("登录", "/api/v1/reset_password/?tenant=tenant_id"),
+            "login": ("登录", f"/api/v1/auth/?tenant=tenant_id&event_tag={self.auth_event_tag}"),
+            "register": ("登录", f"/api/v1/register/?tenant=tenant_id&event_tag={self.register_event_tag}"),
+            "password": ("登录", f"/api/v1/reset_password/?tenant=tenant_id&event_tag={self.password_event_tag}"),
         }
         if not submit_label:
             submit_label, useless = default.get(page_name)
