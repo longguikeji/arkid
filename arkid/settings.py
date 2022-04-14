@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'arkid.core.tenant_middleware.TenantMiddleware',
 ]
 
 ROOT_URLCONF = 'arkid.urls'

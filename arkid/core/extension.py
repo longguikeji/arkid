@@ -1,4 +1,4 @@
-from abc import abstractclassmethod
+from abc import ABC, abstractmethod
 from typing import Union, Literal
 from typing_extensions import Annotated
 from pydantic import Field
@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core import management
 from arkid.core import api as core_api, pages as core_page, routers as core_routers, event as core_event
 from arkid.core import urls as core_urls, expand as core_expand, models as core_models, translation as core_translation
-from arkid.extension.models import TenantExtensionConfig, Extension
+from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
 from ninja import Schema
 from pydantic import Field
 from arkid.core.translation import gettext_default as _
@@ -31,7 +31,7 @@ class ExtensionConfigSchema(Schema):
 
 config_schema_map = {}
 
-class Extension:
+class Extension(ABC):
 
     def __init__(self, package, version, description, labels, homepage, logo, author) -> None:
         self.package = package
@@ -214,7 +214,7 @@ class Extension:
 
         
     def get_tenant_configs(self, tenant):
-        ext = Extension.objects.filter(package=self.package, version=self.version).first()
+        ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
         configs = TenantExtensionConfig.objects.filter(tenant=tenant, extension=ext).all()
         return configs
 
@@ -225,7 +225,7 @@ class Extension:
         TenantExtensionConfig.objects.get(uuid=uuid).update(config=config)
 
     def create_tenant_config(self, tenant, config):
-        ext = Extension.objects.filter(package=self.package, version=self.version).first()
+        ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
         TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config)
 
     def load(self):
@@ -269,7 +269,7 @@ class AuthFactorExtension(Extension):
         self.listen_event(self.password_event_tag, self.reset_password)
         self.listen_event(core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.create_response)
 
-    @abstractclassmethod
+    @abstractmethod
     def authenticate(self, event, **kwargs):
         pass
 
@@ -280,11 +280,11 @@ class AuthFactorExtension(Extension):
         core_event.remove_event_id(event)
         core_event.break_event_loop(event.data)
 
-    @abstractclassmethod
+    @abstractmethod
     def register(self, event, **kwargs):
         pass
     
-    @abstractclassmethod
+    @abstractmethod
     def reset_password(self, event, **kwargs):
         pass
     
@@ -308,11 +308,11 @@ class AuthFactorExtension(Extension):
         }
         configs = self.get_tenant_configs(event.tenant)
         for config in configs:
-            if config.login_enabled:
+            if config.config.get("login_enabled"):
                 self.create_login_page(event, config)
-            if config.register_enabled:
+            if config.config.get("register_enabled"):
                 self.create_register_page(event, config)
-            if config.reset_password_enabled:
+            if config.config.get("reset_password_enabled"):
                 self.create_password_page(event, config)
         self.create_other_page(event, config)
         return self.data
@@ -328,7 +328,7 @@ class AuthFactorExtension(Extension):
         if not submit_url:
             useless, submit_url = default.get(page_name)
 
-        items.append({"type": "hidden", "name": "config_id", "value": config.uuid})
+        items.append({"type": "hidden", "name": "config_id", "value": config.id})
         self.data[page_name]['forms'].append({
             'label': label,
             'items': items,
@@ -345,19 +345,19 @@ class AuthFactorExtension(Extension):
         self.data[page_name]['extend']['title'] = title
         self.data[page_name]['extend']['buttons'].append(buttons)
 
-    @abstractclassmethod
+    @abstractmethod
     def create_login_page(self, event, config):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def create_register_page(self, event, config):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def create_password_page(self, event, config):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def create_other_page(self, event, config):
         pass
     

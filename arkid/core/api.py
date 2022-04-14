@@ -125,10 +125,10 @@ def operation(respnose_model, use_id=False):
 
         old_view_func = operation.view_func
         def func(request, *params, **kwargs):
-            request_id = request.Meta.get('request_id')
+            request_id = request.META.get('request_id')
             if not request_id and use_id:
                 request_id = uuid.uuid4().hex
-                request.Meta['request_id'] = request_id
+                request.META['request_id'] = request_id
             
             dispatch_event(Event(tag+'_pre', request.tenant, request=request, uuid=request_id))
             response = old_view_func(request=request, *params, **kwargs)

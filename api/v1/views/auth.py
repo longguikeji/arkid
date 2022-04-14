@@ -28,7 +28,7 @@ def auth(request):
     tenant = Tenant.objects.filter(uuid=tenant_id).first()
     request.tenant = tenant
 
-    request_id = request.Meta.get('request_id')
+    request_id = request.META.get('request_id')
 
     # 认证
     responses = dispatch_event(Event(tag=data.tag, tenant=tenant, request=request, uuid=request_id))
