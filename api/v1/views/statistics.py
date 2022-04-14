@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from openapi.utils import extend_schema
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
-
+from perm.custom_access import ApiAccessPermission
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
@@ -15,12 +15,13 @@ CACHE_SECONDS = 60*2
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
-    tags=['statistics']
+    roles=['tenantadmin', 'globaladmin', 'statisticalgraph'],
+    summary='统计图表',
+    tags=['statistics'],
 )
 class StatisticsView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     @method_decorator(cache_page(CACHE_SECONDS))

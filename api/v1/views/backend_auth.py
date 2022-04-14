@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 
 @extend_schema(
     tags=['backend-auth-api'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    summary='后端认证'
     # responses=PasswordLoginResponseSerializer,
 )
 class BackendAuthView(APIView):
@@ -32,7 +33,6 @@ class BackendAuthView(APIView):
     2，如果租户打开了kerboros认证，走spnego认证逻辑
     3, 否则跳转到前端登录页面
     """
-
     def get(self, request):
         tenant = self.get_tenant(request)
         if not tenant:

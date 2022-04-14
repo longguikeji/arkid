@@ -49,7 +49,7 @@ from .constants import KEY
 
 @extend_schema(
     tags=['email-login-register'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     responses=EmailRegisterResponseSerializer,
 )
 class EmailRegisterView(APIView):
@@ -156,7 +156,7 @@ class EmailRegisterView(APIView):
 
 @extend_schema(
     tags=['email-login-register'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
 )
 class EmailResetPasswordView(generics.CreateAPIView):
     '''

@@ -13,6 +13,7 @@ from runtime import get_app_runtime
 from app.models import App
 from common.provider import AppTypeProvider
 from django.conf import settings
+from perm.custom_access import ApiAccessPermission
 from oauth2_provider.models import Application
 from api.v1.serializers.bind_saas import ArkIDBindSaasSerializer, ArkIDBindSaasCreateSerializer
 
@@ -20,12 +21,12 @@ from api.v1.serializers.bind_saas import ArkIDBindSaasSerializer, ArkIDBindSaasC
 @extend_schema(tags=["arkid"])
 class ArkIDBindSaasAPIView(GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = ArkIDBindSaasSerializer
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=ArkIDBindSaasCreateSerializer)
+    @extend_schema(roles=['globaladmin'], responses=ArkIDBindSaasCreateSerializer, summary='本地租户绑定Saas租户')
     def post(self, request, tenant_uuid, *args, **kwargs):
         """
         检查slug是否存在的api
@@ -60,7 +61,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         }
         return Response(data, HTTP_200_OK)
 
-    @extend_schema(roles=['tenant admin', 'global admin'], request=ArkIDBindSaasSerializer)
+    @extend_schema(roles=['globaladmin'], request=ArkIDBindSaasSerializer, summary='查询saas绑定信息')
     def get(self, request, tenant_uuid, *args, **kwarg):
         """
         查询 saas 绑定信息
@@ -68,7 +69,7 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         bind_info = self.get_bind_info(tenant_uuid)
         return Response(bind_info, HTTP_200_OK)
 
-    @extend_schema(roles=['tenant admin', 'global admin'], request=ArkIDBindSaasSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], request=ArkIDBindSaasSerializer)
     def patch(self, request, tenant_uuid, *args, **kwarg):
         """
         查询 saas 绑定信息

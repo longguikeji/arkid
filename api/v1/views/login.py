@@ -8,11 +8,22 @@ from runtime import get_app_runtime
 from openapi.utils import extend_schema
 from rest_framework.views import APIView
 from django.utils.translation import gettext_lazy as _
+from django.contrib.contenttypes.models import ContentType
+from inventory.models import Permission, PermissionGroup
+from tasks.tasks import update_permission
+
+from config import get_app_config
+
+
+import requests
+import json
+import uuid
 
 
 @extend_schema(
-    tags=["login-api"],
-    roles=["general user", "tenant admin", "global admin"],
+    tags=['login-api'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    summary='登录'
     # responses=PasswordLoginResponseSerializer,
 )
 class LoginView(APIView):
@@ -83,6 +94,7 @@ class LoginView(APIView):
                     "message": _("密码已经过期，请修改密码"),
                 }
             )
+        update_permission.delay()
         return JsonResponse(data={"error": ret.get("error"), "data": return_data})
 
     def get_tenant(self, request):

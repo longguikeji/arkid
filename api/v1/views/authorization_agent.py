@@ -15,6 +15,7 @@ from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from perm.custom_access import ApiAccessPermission
 from common.code import Code
 
 AuthorizationAgentPolymorphicProxySerializer = PolymorphicProxySerializer(
@@ -25,15 +26,15 @@ AuthorizationAgentPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='删除认证代理'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin']),
 )
 @extend_schema(tags=['authorization_agent'])
 class AuthorizationAgentViewSet(BaseViewSet):
 
     model = AuthorizationAgent
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = AuthorizationAgentSerializer
     pagination_class = DefaultListPaginator
@@ -60,34 +61,37 @@ class AuthorizationAgentViewSet(BaseViewSet):
         obj = AuthorizationAgent.valid_objects.filter(**kwargs).first()
         return obj
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=AuthorizationAgentListSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=AuthorizationAgentListSerializer, summary='认证代理列表')
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=AuthorizationAgentPolymorphicProxySerializer,
         responses=AuthorizationAgentPolymorphicProxySerializer,
+        summary='更新认证代理',
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=AuthorizationAgentPolymorphicProxySerializer,
         responses=AuthorizationAgentPolymorphicProxySerializer,
+        summary='创建认证代理',
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=AuthorizationAgentPolymorphicProxySerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin'], responses=AuthorizationAgentPolymorphicProxySerializer, summary='获取认证代理')
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=AuthorizationAgentReorderSerializer,
         responses=AuthorizationAgentReorderSerializer,
+        summary='批量更改认证代理'
     )
     @action(detail=False, methods=['post'])
     def batch_update(self, request, *args, **kwargs):
@@ -113,32 +117,36 @@ class AuthorizationAgentViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=AuthorizationAgentReorderSerializer,
+        summary='上移认证代理',
     )
     @action(detail=True, methods=['get'])
     def move_up(self, request, *args, **kwargs):
         return self._do_actual_move('up', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=AuthorizationAgentReorderSerializer,
+        summary='下移认证代理',
     )
     @action(detail=True, methods=['get'])
     def move_down(self, request, *args, **kwargs):
         return self._do_actual_move('down', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=AuthorizationAgentReorderSerializer,
+        summary='置顶认证代理',
     )
     @action(detail=True, methods=['get'])
     def move_top(self, request, *args, **kwargs):
         return self._do_actual_move('top', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         responses=AuthorizationAgentReorderSerializer,
+        summary='置底认证代理',
     )
     @action(detail=True, methods=['get'])
     def move_bottom(self, request, *args, **kwargs):

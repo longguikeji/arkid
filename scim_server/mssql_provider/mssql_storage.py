@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import pymssql
 from config import get_app_config
 
 
@@ -19,6 +18,7 @@ class MssqlConfig:
         self.company_table = 'ECOMPANY'
 
     def get_connection(self):
+        import pymssql
         conn = pymssql.connect(self.server, self.user, self.password, self.database)
         return conn
 

@@ -4,8 +4,12 @@ from rest_framework.views import APIView
 from rest_framework import status
 from runtime import get_app_runtime
 from api.v1.serializers.migration import MigrationSerializer
+from openapi.utils import extend_schema
 
-
+@extend_schema(
+    summary='迁移',
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+)
 class MigrationAPIView(APIView):
 
     serializer_class = MigrationSerializer

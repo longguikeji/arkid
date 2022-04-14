@@ -7,6 +7,7 @@ from openapi.utils import extend_schema
 from .base import BaseTenantViewSet
 from drf_spectacular.utils import OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
+from perm.custom_access import ApiAccessPermission
 from rest_framework import viewsets
 from rest_framework.permissions import DjangoObjectPermissions, IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
@@ -26,49 +27,12 @@ def get_log_retention_date(tenant):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin', 'logmanage.useractionlog'],
     tags = ['log'],
-    parameters=[
-        OpenApiParameter(
-            name='user',
-            type=OpenApiTypes.STR,
-            location=OpenApiParameter.QUERY,
-            description='用户',
-            required=False,
-        ),
-        OpenApiParameter(
-            name='ip',
-            type=OpenApiTypes.STR,
-            location=OpenApiParameter.QUERY,
-            description='ip地址',
-            required=False,
-        ),
-        OpenApiParameter(
-            name='status_code',
-            type=OpenApiTypes.INT,
-            location=OpenApiParameter.QUERY,
-            description='状态码',
-            required=False,
-        ),
-        OpenApiParameter(
-            name='time_begin',
-            type=OpenApiTypes.DATETIME,
-            location=OpenApiParameter.QUERY,
-            description='开始时间',
-            required=False,
-        ),
-        OpenApiParameter(
-            name='time_end',
-            type=OpenApiTypes.DATETIME,
-            location=OpenApiParameter.QUERY,
-            description='结束时间',
-            required=False,
-        ),
-    ],
 )
 class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = LogSerializer
@@ -119,51 +83,65 @@ class UserLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         qs = Log.valid_objects.filter(**kwargs).order_by('-id')
         return qs
 
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'logmanage.useractionlog'],
+        parameters=[
+            OpenApiParameter(
+                name='user',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='用户',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='ip',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='ip地址',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='status_code',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='状态码',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='time_begin',
+                type=OpenApiTypes.DATETIME,
+                location=OpenApiParameter.QUERY,
+                description='开始时间',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='time_end',
+                type=OpenApiTypes.DATETIME,
+                location=OpenApiParameter.QUERY,
+                description='结束时间',
+                required=False,
+            ),
+        ],
+        summary='租户用户日志列表'
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'logmanage.useractionlog'],
+        summary='租户用户日志详情'
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin', 'logmanage.manageractionlog'],
     tags = ['log'],
-    parameters=[
-        OpenApiParameter(
-            name='user',
-            type=OpenApiTypes.STR,
-            location=OpenApiParameter.QUERY,
-            description='用户',
-            required=False,
-        ),
-        OpenApiParameter(
-            name='ip',
-            type=OpenApiTypes.STR,
-            location=OpenApiParameter.QUERY,
-            description='ip地址',
-            required=False,
-        ),
-        OpenApiParameter(
-            name='status_code',
-            type=OpenApiTypes.INT,
-            location=OpenApiParameter.QUERY,
-            description='状态码',
-            required=False,
-        ),
-        OpenApiParameter(
-            name='time_begin',
-            type=OpenApiTypes.DATETIME,
-            location=OpenApiParameter.QUERY,
-            description='开始时间',
-            required=False,
-        ),
-        OpenApiParameter(
-            name='time_end',
-            type=OpenApiTypes.DATETIME,
-            location=OpenApiParameter.QUERY,
-            description='结束时间',
-            required=False,
-        ),
-    ],
 )
 class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = LogSerializer
@@ -214,14 +192,65 @@ class AdminLogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
         qs = Log.valid_objects.filter(**kwargs).order_by('-id')
         return qs
 
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'logmanage.manageractionlog'],
+        parameters=[
+            OpenApiParameter(
+                name='user',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='用户',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='ip',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='ip地址',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='status_code',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='状态码',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='time_begin',
+                type=OpenApiTypes.DATETIME,
+                location=OpenApiParameter.QUERY,
+                description='开始时间',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='time_end',
+                type=OpenApiTypes.DATETIME,
+                location=OpenApiParameter.QUERY,
+                description='结束时间',
+                required=False,
+            ),
+        ],
+        summary='租户管理员日志列表'
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'logmanage.manageractionlog'],
+        summary='租户管理员日志详情'
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin', 'logmanage.logset'],
     tags = ['log']
 )
 class LogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = LogDetailSerializer
@@ -238,3 +267,17 @@ class LogViewSet(BaseTenantViewSet, viewsets.ReadOnlyModelViewSet):
 
         log = Log.valid_objects.filter(**kwargs).first()
         return log
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'logmanage.logset'],
+        summary='租户日志列表'
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'logmanage.logset'],
+        summary='租户日志详情'
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)

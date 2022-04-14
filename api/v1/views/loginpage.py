@@ -16,9 +16,13 @@ from login_register_config.models import LoginRegisterConfig
 DEFAULT_LOGIN_REGISTER_EXTENSION = 'password_login_register'
 
 
-@extend_schema(tags=['login page'])
+@extend_schema(
+    tags=['login page'],
+    summary='登录页面'
+)
 class LoginPage(views.APIView):
-    @extend_schema(responses=lp.LoginPagesSerializer)
+
+    @extend_schema(responses=lp.LoginPagesSerializer, roles=['generaluser', 'tenantadmin', 'globaladmin'])
     def get(self, request):
         tenant_uuid = request.query_params.get('tenant', None)
         tenant = Tenant.objects.filter(uuid=tenant_uuid).first()

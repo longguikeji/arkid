@@ -1,20 +1,28 @@
 import json
 import io
 import datetime
+import collections
 from django.db import models
 from django.http import Http404
 from django.http.response import JsonResponse
 from django.utils.translation import gettext_lazy as _
+from common.excel_utils import export_excel, import_excel
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.mixins import ListModelMixin
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.contrib.auth.models import User as DUser
+from rest_framework.generics import GenericAPIView
+from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from tenant.models import Tenant
 from config.models import PasswordComplexity
-from inventory.models import User, Invitation, UserAppData
+from inventory.models import (
+    User, Group, Invitation,
+    UserAppData, UserTenantPermissionAndPermissionGroup,
+)
 from inventory.resouces import UserResource
 from runtime import get_app_runtime
 from external_idp.models import ExternalIdp
@@ -35,9 +43,9 @@ from api.v1.serializers.user import (
     ResetPasswordRequestSerializer,
     MobileResetPasswordRequestSerializer,
     EmailResetPasswordRequestSerializer,
-    UserAppDataSerializer,
     UserLogoffSerializer,
     UserTokenExpireSerializer,
+    UserAppDataSerializer,
     UserListSerializer,
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
@@ -56,11 +64,10 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.exceptions import ValidationError
-from extension_root.childmanager.models import ChildManager
 from django.utils.translation import gettext_lazy as _
 from common.utils import check_password_complexity
 from runtime import get_app_runtime
-
+from perm.custom_access import ApiAccessPermission
 import re
 from webhook.manager import WebhookManager
 from django.db import transaction
@@ -68,7 +75,7 @@ from django.db import transaction
 
 @extend_schema_view(
     list=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'],
         responses=UserListResponsesSerializer,
         parameters=[
             OpenApiParameter(
@@ -119,20 +126,20 @@ from django.db import transaction
                 location=OpenApiParameter.QUERY,
                 required=False,
             ),
-        ]
+        ], summary='用户列表'
     ),
-    retrieve=extend_schema(roles=['tenant admin', 'global admin']),
-    create=extend_schema(roles=['tenant admin', 'global admin']),
-    update=extend_schema(roles=['tenant admin', 'global admin']),
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='读取用户'),
+    create=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='创建用户'),
+    update=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='更新用户'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='删除用户'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'], summary='批量更新用户'),
 )
 @extend_schema(
     tags=['user'],
 )
 class UserViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     model = User
@@ -181,34 +188,21 @@ class UserViewSet(BaseViewSet):
             kwargs['job_title'] = job_title
 
         qs = User.objects.filter(**kwargs)
-        if tenant.has_admin_perm(user) is False:
-            childmanager = ChildManager.valid_objects.filter(tenant=tenant, user=user).first()
-            if childmanager:
-                # 所在分组 所在分组的下级分组 指定分组与账号
-                manager_visible = childmanager.manager_visible
-                uuids = []
-                assign_user = []
-                assign_group = []
-                if '所在分组' in manager_visible:
-                    for group in user.groups.all():
-                        uuids.append(group.uuid_hex)
-                if '所在分组的下级分组' in manager_visible:
-                    for group in user.groups.all():
-                        group_uuids = []
-                        group.child_groups(group_uuids)
-                        uuids.extend(group_uuids)
-                if '指定分组与账号' in manager_visible:
-                    assign_group = childmanager.assign_group
-                    assign_user = childmanager.assign_user
-                    uuids.extend(assign_group)
-                qs = qs.filter(groups__uuid__in=uuids)
-                # 取得指定账号
-                if '指定分组与账号' in manager_visible and len(assign_user) > 0 and group1 is not None:
-                    group1 = group1.split(',')
-                    for item in group1:
-                        if item in assign_group:
-                            qs = qs.filter(uuid__in=assign_user)
-                            break
+        if user.is_superuser is False and tenant.has_admin_perm(user) is False:
+            userpermissions = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                tenant=tenant,
+                user=user,
+                permission__group_info__isnull=False,
+            )
+            group_ids = []
+            for userpermission in userpermissions:
+                group_info = userpermission.permission.group_info
+                group_ids.append(group_info.id)
+            if len(group_ids) == 0:
+                group_ids.append(0)
+            qs = qs.filter(groups__id__in=group_ids)
+            if qs.count() == 0:
+                qs = User.objects.filter(id=user.id)
         return qs.order_by('id')
 
     def get_object(self):
@@ -238,6 +232,7 @@ class UserViewSet(BaseViewSet):
         )
 
     def create(self, request, *args, **kwargs):
+
         email = request.data.get('email')
         if email and not re.match(
             r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
@@ -260,6 +255,7 @@ class UserViewSet(BaseViewSet):
         return super(UserViewSet, self).create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
+
         email = request.data.get('email')
         if email and not re.match(
             r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
@@ -282,19 +278,102 @@ class UserViewSet(BaseViewSet):
         return super(UserViewSet, self).update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'],
         request=UserImportSerializer,
         responses=UserImportSerializer,
+        summary='导入用户',
     )
     @action(detail=False, methods=['post'])
     def user_import(self, request, *args, **kwargs):
+        # context = self.get_serializer_context()
+        # tenant = context['tenant']
+
+        # support_content_types = [
+        #     'application/csv',
+        #     'text/csv',
+        # ]
+        # upload = request.data.get("file", None)  # 设置默认值None
+        # if not upload:
+        #     return Response(
+        #         {
+        #             'error': Code.USER_IMPORT_ERROR.value,
+        #             'message': 'No file find in form dada',
+        #         }
+        #     )
+        # if upload.content_type not in support_content_types:
+        #     return Response(
+        #         {
+        #             'error': Code.USER_IMPORT_ERROR.value,
+        #             'message': 'ContentType Not Support!',
+        #         }
+        #     )
+        # user_resource = UserResource()
+        # dataset = Dataset()
+        # imported_data = dataset.load(
+        #     io.StringIO(upload.read().decode('utf-8')), format='csv'
+        # )
+        # result = user_resource.import_data(
+        #     dataset, dry_run=True, tenant_id=tenant.id
+        # )  # Test the data import
+        # for item in dataset:
+        #     email = str(item[2])
+        #     mobile = str(item[3])
+        #     if email and not re.match(
+        #         r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
+        #         email,
+        #     ):
+        #         return JsonResponse(
+        #             data={
+        #                 'error': Code.EMAIL_FROMAT_ERROR.value,
+        #                 'message': _('email format error:{}'.format(email)),
+        #             }
+        #         )
+        #     if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
+        #         return JsonResponse(
+        #             data={
+        #                 'error': Code.MOBILE_FROMAT_ERROR.value,
+        #                 'message': _('mobile format error:{}'.format(mobile)),
+        #             }
+        #         )
+        # if not result.has_errors() and not result.has_validation_errors():
+        #     user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
+        #     return Response(
+        #         {'error': Code.OK.value, 'message': json.dumps(result.totals)}
+        #     )
+        # else:
+        #     base_errors = result.base_errors
+        #     if base_errors:
+        #         base_errors = [err.error for err in base_errors]
+        #     row_errors = result.row_errors()
+        #     row_errors_dict = defaultdict(list)
+        #     if row_errors:
+        #         for lineno, err_list in row_errors:
+        #             for err in err_list:
+        #                 row_errors_dict[lineno].append(str(err.error))
+
+        #     invalid_rows = result.invalid_rows
+        #     if invalid_rows:
+        #         invalid_rows = [err.error for err in base_errors]
+
+        #     return Response(
+        #         {
+        #             'error': Code.USER_IMPORT_ERROR.value,
+        #             'message': json.dumps(
+        #                 {
+        #                     'base_errors': base_errors,
+        #                     'row_errors': row_errors_dict,
+        #                     'invalid_rows': invalid_rows,
+        #                 }
+        #             ),
+        #         }
+        #     )
         context = self.get_serializer_context()
         tenant = context['tenant']
         support_content_types = [
-            'application/csv',
-            'text/csv',
+            'application/vnd.ms-excel',
         ]
-        upload = request.data.get("file", None)  # 设置默认值None
+        # 文件读取
+        upload = request.data.get("file", None)
         if not upload:
             return Response(
                 {
@@ -309,27 +388,13 @@ class UserViewSet(BaseViewSet):
                     'message': 'ContentType Not Support!',
                 }
             )
-        user_resource = UserResource()
-        dataset = Dataset()
-        imported_data = dataset.load(
-            io.StringIO(upload.read().decode('utf-8')), format='csv'
-        )
-        result = user_resource.import_data(
-            dataset, dry_run=True, tenant_id=tenant.id
-        )  # Test the data import
-        for item in dataset:
-            email = str(item[2])
-            mobile = str(item[3])
-            if email and not re.match(
-                r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
-                email,
-            ):
-                return JsonResponse(
-                    data={
-                        'error': Code.EMAIL_FROMAT_ERROR.value,
-                        'message': _('email format error:{}'.format(email)),
-                    }
-                )
+        # 解析数据
+        items = import_excel(request.FILES['file'])
+        mobiles = []
+        usernames = []
+        for item in items:
+            username = str(item['username']).strip()
+            mobile = str(int(item['mobile']) if item['mobile'] else '').strip()
             if mobile and not re.match(r'(^(1)\d{10}$)', mobile):
                 return JsonResponse(
                     data={
@@ -337,75 +402,124 @@ class UserViewSet(BaseViewSet):
                         'message': _('mobile format error:{}'.format(mobile)),
                     }
                 )
-        if not result.has_errors() and not result.has_validation_errors():
-            user_resource.import_data(dataset, dry_run=False, tenant_id=tenant.id)
-            return Response(
-                {'error': Code.OK.value, 'message': json.dumps(result.totals)}
-            )
-        else:
-            base_errors = result.base_errors
-            if base_errors:
-                base_errors = [err.error for err in base_errors]
-            row_errors = result.row_errors()
-            row_errors_dict = defaultdict(list)
-            if row_errors:
-                for lineno, err_list in row_errors:
-                    for err in err_list:
-                        row_errors_dict[lineno].append(str(err.error))
-
-            invalid_rows = result.invalid_rows
-            if invalid_rows:
-                invalid_rows = [err.error for err in base_errors]
-
-            return Response(
-                {
-                    'error': Code.USER_IMPORT_ERROR.value,
-                    'message': json.dumps(
-                        {
-                            'base_errors': base_errors,
-                            'row_errors': row_errors_dict,
-                            'invalid_rows': invalid_rows,
-                        }
-                    ),
+            mobiles.append(mobile)
+            usernames.append(username)
+        exists_username_user = User.valid_objects.filter(username__in=usernames).first()
+        if exists_username_user:
+            return JsonResponse(
+                data={
+                    'error': Code.USERNAME_EXISTS_ERROR.value,
+                    'message': _('username already exists:{}'.format(exists_username_user.username)),
                 }
             )
+        exists_mobile_user = User.valid_objects.filter(mobile__in=mobiles).first()
+        if exists_mobile_user:
+            return JsonResponse(
+                data={
+                    'error': Code.MOBILE_EXISTS_ERROR.value,
+                    'message': _('mobile already exists:{}'.format(exists_mobile_user.mobile)),
+                }
+            )
+        for item in items:
+            username = str(item['username']).strip()
+            mobile = str(int(item['mobile']) if item['mobile'] else '').strip()
+            username = str(item['username']).strip()
+            email = str(item['email']).strip()
+            first_name = str(item['first_name']).strip()
+            last_name = str(item['last_name']).strip()
+            nickname = str(item['nickname']).strip()
+            country = str(item['country']).strip()
+            city = str(item['city']).strip()
+            job_title = str(item['job_title']).strip()
+            # 新建用户
+            create_user = User()
+            create_user.username = username
+            create_user.mobile = mobile
+            create_user.email = email
+            create_user.first_name = first_name
+            create_user.last_name = last_name
+            create_user.nickname = nickname
+            create_user.country = country
+            create_user.city = city
+            create_user.job_title = job_title
+            create_user.save()
+            # 给用户关联租户
+            create_user.tenants.add(tenant)
+        return Response(
+            {'error': Code.OK.value, 'message': 'import user succeed'}
+        )
+
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.userlist'],
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
+        summary='导出用户',
     )
     @action(detail=False, methods=['get'])
     def user_export(self, request, *args, **kwargs):
+        # context = self.get_serializer_context()
+        # tenant = context['tenant']
+
+        # kwargs = {
+        #     'tenants__in': [tenant],
+        # }
+        # qs = User.active_objects.filter(**kwargs).order_by('id')
+        # data = UserResource().export(qs)
+        # export_data = data.csv
+        # content_type = 'application/octet-stream'
+        # response = HttpResponse(export_data, content_type=content_type)
+        # date_str = datetime.datetime.now().strftime('%Y-%m-%d')
+        # filename = '%s-%s.%s' % ('User', date_str, 'csv')
+        # response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
+        # return response
         context = self.get_serializer_context()
-        tenant = context['tenant']
-        kwargs = {
-            'tenants__in': [tenant],
-        }
-        qs = User.active_objects.filter(**kwargs).order_by('id')
-        data = UserResource().export(qs)
-        export_data = data.csv
-        content_type = 'application/octet-stream'
+        users = self.get_queryset()
+        records = []
+        headers = [
+            'username',
+            'email',
+            'mobile',
+            'first_name',
+            'last_name',
+            'nickname',
+            'country',
+            'city',
+            'job_title',
+        ]
+        for user in users:
+            app = collections.OrderedDict()
+            app['username'] = user.username
+            app['email'] = user.email
+            app['mobile'] = user.mobile
+            app['first_name'] = user.first_name
+            app['last_name'] = user.last_name
+            app['nickname'] = user.nickname
+            app['country'] = user.country
+            app['city'] = user.city
+            app['job_title'] = user.job_title
+            records.append(app)
+        name = 'user_{}'.format(datetime.datetime.now().strftime('%Y%m%d'))
+        export_data = export_excel(headers, records, name)
+
+        content_type = 'application/vnd.ms-excel'
         response = HttpResponse(export_data, content_type=content_type)
-        date_str = datetime.datetime.now().strftime('%Y-%m-%d')
-        filename = '%s-%s.%s' % ('User', date_str, 'csv')
-        response['Content-Disposition'] = 'attachment; filename="%s"' % (filename)
+        response['Content-Disposition'] = 'attachment; filename="%s.xls"' % (
+            name)
         return response
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    create=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    retrieve=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    destroy=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    update=extend_schema(roles=['general user', 'tenant admin', 'global admin']),
-    partial_update=extend_schema(
-        roles=['general user', 'tenant admin', 'global admin']
-    ),
+    list=extend_schema(roles=['tenantadmin', 'globaladmin', 'generaluser'], summary='租户app列表'),
+    create=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app创建'),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app详情'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app删除'),
+    update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app修改'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='租户app修改'),
 )
 @extend_schema(tags=['user-app'])
 class UserAppViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     model = App
@@ -426,9 +540,10 @@ class UserAppViewSet(BaseViewSet):
             all_apps_perms = [app.access_perm_code for app in all_apps]
             perms = set(
                 [
-                    perm.codename
-                    for perm in user.user_permissions.filter(
-                        codename__in=all_apps_perms
+                    perm.permission.codename
+                    for perm in UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                        user=user,
+                        permission__codename__in=all_apps_perms
                     )
                 ]
             )
@@ -458,7 +573,11 @@ class UserAppViewSet(BaseViewSet):
 
 
 
-@extend_schema(tags=['user'])
+@extend_schema(
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    tags=['user'],
+    summary='获取用户token'
+)
 class UserTokenView(generics.CreateAPIView):
     permission_classes = []
     authentication_classes = []
@@ -477,26 +596,51 @@ class UserTokenView(generics.CreateAPIView):
         return Response(is_valid)
 
 
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
+@extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], tags=['user'], summary='用户app数据')
 class UserAppDataView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = UserAppDataSerializer
 
     def get_object(self):
-        userAppData = UserAppData.active_objects.filter(user=self.request.user).first()
-        if not userAppData:
-            userAppData = UserAppData()
-            userAppData.user = self.request.user
-            userAppData.data = []
-            userAppData.save()
-        return userAppData
+        tenant_uuid = self.kwargs['tenant_uuid']
+        tenant = Tenant.active_objects.get(uuid=tenant_uuid)
+        user = self.request.user
+        userappdata = UserAppData.active_objects.filter(user=user, tenant=tenant).first()
+        if userappdata is None:
+            userappdata = UserAppData()
+            userappdata.user = user
+            userappdata.tenant = tenant
+            userappdata.data = []
+            userappdata.save()
+        return userappdata
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='用户app数据获取'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='用户app数据修改'
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='用户app数据修改'
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     tags=['user'],
     parameters=[
         OpenApiParameter(
@@ -508,14 +652,15 @@ class UserAppDataView(generics.RetrieveUpdateAPIView):
     ],
 )
 class UpdatePasswordView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = PasswordRequestSerializer
 
     @extend_schema(
-        roles=['tenant admin', 'global admin', 'general user'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
         responses=PasswordSerializer,
+        summary='修改用户密码',
     )
     def post(self, request):
         tenant_uuid = self.request.query_params.get('tenant')
@@ -555,26 +700,30 @@ class UpdatePasswordView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     tags=['user'],
     parameters=[
         OpenApiParameter(
-            name='tenant',
+            name='tenant_uuid',
             type={'type': 'string'},
-            location=OpenApiParameter.QUERY,
+            location=OpenApiParameter.PATH,
             required=True,
         )
     ],
 )
 class ResetPasswordView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = ResetPasswordRequestSerializer
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=PasswordSerializer)
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        responses=PasswordSerializer,
+        summary='重置用户密码'
+    )
     def post(self, request):
-        tenant_uuid = self.request.query_params.get('tenant')
+        tenant_uuid = self.request.query_params.get('tenant_uuid')
         if not tenant_uuid:
             tenant = None
         else:
@@ -615,7 +764,7 @@ class ResetPasswordView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     tags=['user'],
     parameters=[
         OpenApiParameter(
@@ -625,14 +774,13 @@ class ResetPasswordView(generics.CreateAPIView):
             required=False,
         )
     ],
+    summary='用户信息修改',
 )
-@extend_schema(roles=['general user', 'tenant admin', 'global admin'], tags=['user'])
 class UserInfoView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserInfoSerializer
 
-    @extend_schema(responses=UserInfoSerializer)
     def get_object(self):
         return self.request.user
 
@@ -640,6 +788,10 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
         context = super().get_serializer_context()
         context['tenant_uuid'] = self.request.query_params.get('tenant_uuid', '')
         return context
+
+    @extend_schema(summary='用户信息获取', roles=['generaluser', 'tenantadmin', 'globaladmin'])
+    def get(self, request, *args, **kwargs):
+        return super(UserInfoView, self).get(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         email = request.data.get('email')
@@ -666,13 +818,14 @@ class UserInfoView(generics.RetrieveUpdateAPIView):
 
 @extend_schema(tags=['user'])
 class UserBindInfoView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UserBindInfoSerializer
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserBindInfoSerializer,
+        summary='用户绑定信息'
     )
     def get(self, request):
         # 所有登录创建
@@ -697,10 +850,14 @@ class UserBindInfoView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserLogoutView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    @extend_schema(responses=LogoutSerializer)
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        responses=LogoutSerializer,
+        summary='用户登出'
+    )
     def get(self, request):
         user = request.user
         is_succeed = False
@@ -714,10 +871,14 @@ class UserLogoutView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserLogoffView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
-    @extend_schema(responses=UserLogoffSerializer)
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        responses=UserLogoffSerializer,
+        summary='用户注销',
+    )
     def get(self, request):
         user = request.user
         User.objects.filter(id=user.id).delete()
@@ -726,12 +887,13 @@ class UserLogoffView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserTokenExpireView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserTokenExpireSerializer,
+        summary='用户token更新',
     )
     def get(self, request):
         user = request.user
@@ -740,12 +902,13 @@ class UserTokenExpireView(generics.RetrieveAPIView):
 
 @extend_schema(tags=['user'])
 class UserManageTenantsView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     @extend_schema(
-        roles=['general user', 'tenant admin', 'global admin'],
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserManageTenantsSerializer,
+        summary='用户管理的租户',
     )
     def get(self, request):
         user = request.user
@@ -765,9 +928,13 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
     invite user
     '''
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        summary='邀请用户',
+    )
     def post(self, request, username):  # pylint: disable=arguments-differ
         data = request.data if request.data else {}
 
@@ -802,12 +969,13 @@ class InviteUserCreateAPIView(generics.CreateAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
-    tags=['user']
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
+    tags=['user'],
+    summary='分组用户列表',
 )
 class UserListAPIView(generics.ListAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = UserListSerializer

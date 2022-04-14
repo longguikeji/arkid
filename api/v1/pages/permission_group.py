@@ -37,7 +37,9 @@ extend_schema_tags(
                 'icon': 'el-icon-delete'
             },
             'node': {
-                'next': 'permission_group.permission'
+                'next': 'permission_group.permission',
+                'path': '/api/v1/tenant/{tenant_uuid}/permission_group/?parent={id}',
+                'method': 'get'
             }
         }
     }
@@ -98,6 +100,12 @@ extend_schema_tags(
         'init': {
             'path': '/api/v1/tenant/{tenant_uuid}/permission_group/',
             'method': 'get'
+        },
+        'local': {
+            'node': {
+                'path': '/api/v1/tenant/{tenant_uuid}/permission_group/?parent={id}',
+                'method': 'get',
+            }
         }
     }
 )

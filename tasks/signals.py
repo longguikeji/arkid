@@ -5,6 +5,8 @@ from app.models import App
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 
+import uuid
+
 
 def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
     if created:
@@ -13,7 +15,7 @@ def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
             tenant=instance,
             content_type=content_type,
             codename=f'tenant_admin_{instance.uuid}',
-            name=_('Can admin tenant') + f' {instance.name}',
+            name=_('管理租户') + f' {instance.name}',
         )
 
 
@@ -51,11 +53,53 @@ def group_saved(sender, instance: Group, created: bool, **kwargs):
     if not tenant:
         print('Group with no tenant!')
         return
-
+    if created:
+        # 新建分组权限
+        permission = Permission()
+        permission.name = instance.name
+        permission.tenant = tenant
+        permission.app = None
+        permission.codename = 'group_{}'.format(uuid.uuid4())
+        permission.permission_category = '数据'
+        permission.is_system_permission = True
+        permission.action = ''
+        permission.operation_id = ''
+        permission.description = ''
+        permission.request_url = ''
+        permission.request_type = ''
+        permission.group_info = instance
+        permission.is_update = True
+        permission.save()
+    else:
+        permission = Permission.valid_objects.filter(
+            tenant=tenant,
+            app=None,
+            permission_category='数据',
+            is_system_permission=True,
+            group_info=instance,
+        ).first()
+        if permission is None:
+            permission = Permission()
+            permission.name = instance.name
+            permission.tenant = instance.tenant
+            permission.codename = 'group_{}'.format(uuid.uuid4())
+            permission.app = None
+            permission.permission_category = '数据'
+            permission.is_system_permission = True
+            permission.action = ''
+            permission.operation_id = ''
+            permission.description = ''
+            permission.request_url = ''
+            permission.request_type = ''
+            permission.group_info = instance
+            permission.is_update = True
+            permission.save()
+        permission.name = instance.name
+        permission.save()
     # provision_group.delay(tenant.uuid, instance.id)
     provision_group(tenant.uuid, instance.id)
 
-def group_deleted(sender, instance: User, **kwargs):
+def group_deleted(sender, instance: Group, **kwargs):
     print('signal group deleted', sender, kwargs)
     from tasks.tasks import provision_group
 
@@ -65,6 +109,13 @@ def group_deleted(sender, instance: User, **kwargs):
         return
 
         # provision_user.delay(tenant.uuid, instance.id)
+    Permission.valid_objects.filter(
+        tenant=tenant,
+        app=None,
+        permission_category='数据',
+        is_system_permission=True,
+        group_info=instance,
+    ).delete()
     provision_group(tenant.uuid, instance.id, is_del=True)
 
 
@@ -74,7 +125,8 @@ def app_saved(sender, instance: App, created: bool, **kwargs):
         permission = Permission.objects.create(
             tenant=instance.tenant,
             codename=f'app_access_{instance.uuid}',
-            name=_('Can access app') + f' {instance.name}',
+            name=_('进入应用') + f' {instance.name}',
+            permission_category='入口',
             content_type=content_type,
         )
         permission.app = instance

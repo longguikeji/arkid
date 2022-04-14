@@ -14,6 +14,7 @@ def generate_app_payload(app):
 
 
 def generate_user_payload(user):
+    from inventory.models import UserTenantPermissionAndPermissionGroup
     groups = user.groups.all()
     if groups:
         groups_data = []
@@ -22,11 +23,11 @@ def generate_user_payload(user):
     else:
         groups_data = []
 
-    permissions = user.user_permissions.all()
+    permissions = UserTenantPermissionAndPermissionGroup.valid_objects.filter(user=user).all()
     if permissions:
         permissions_data = []
         for perm in permissions:
-            permissions_data.append({'name': perm.name, 'codename': perm.codename})
+            permissions_data.append({'name': perm.permissions.name, 'codename': perm.permissions.codename})
     else:
         permissions_data = []
 

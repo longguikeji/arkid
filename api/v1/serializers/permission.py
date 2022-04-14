@@ -1,11 +1,12 @@
 from lib.dynamic_fields_model_serializer import DynamicFieldsModelSerializer
 from common.serializer import BaseDynamicFieldModelSerializer
 from django.contrib.contenttypes.models import ContentType
-from inventory.models import User, Permission, PermissionGroup
+from inventory.models import User, Permission, PermissionGroup, UserTenantPermissionAndPermissionGroup
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from api.v1.fields.custom import create_foreign_key_field
 from ..pages import app, permission, permission_group
+from tasks.tasks import update_user_apps_permission, update_group_apppermission
 from app.models import App
 
 import uuid
@@ -47,6 +48,7 @@ class PermissionCreateSerializer(DynamicFieldsModelSerializer):
         page=app.app_only_list_tag,
         label=_('应用'),
         source="app.uuid",
+        required=False,
     )
 
     class Meta:
@@ -64,20 +66,36 @@ class PermissionCreateSerializer(DynamicFieldsModelSerializer):
     def create(self, validated_data):
         tenant = self.context['tenant']
         name = validated_data.get('name', '')
-        app_uuid = validated_data.get('app', '').get('uuid')
+        app_obj = validated_data.get('app', '')
+        app_uuid = ''
+        if app_obj:
+            app_uuid = app_obj.get('uuid')
         codename = 'custom_{}'.format(uuid.uuid4())
         permission_category = validated_data.get('permission_category', '')
-        content_type = ContentType.objects.get_for_model(App)
-        app = App.active_objects.filter(uuid=app_uuid).first()
-        permission = Permission.objects.create(
-            name=name,
-            content_type=content_type,
-            codename=codename,
-            tenant=tenant,
-            app=app,
-            permission_category=permission_category,
-            is_system_permission=False
-        )
+        # 新建权限
+        permission = Permission()
+        permission.name = name
+        if app_obj:
+            content_type = ContentType.objects.get_for_model(App)
+            app = App.active_objects.filter(uuid=app_uuid).first()
+            # 权限属性配置
+            permission.content_type = content_type
+            permission.app = app
+        else:
+            permission.content_type = None
+            permission.app = None
+        permission.codename = codename
+        permission.tenant = tenant
+        permission.permission_category = permission_category
+        permission.is_system_permission = False
+        permission.action = ''
+        permission.operation_id = ''
+        permission.description = ''
+        permission.request_url = ''
+        permission.request_type = ''
+        permission.group_info = None
+        permission.is_update = True
+        permission.save()
         return permission
 
     def update(self, instance, validated_data):
@@ -132,6 +150,14 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
         child=PermissionChildSerializer(),
         read_only=True,
     )
+    parent_uuid = create_foreign_key_field(serializers.CharField)(
+        model_cls=PermissionGroup,
+        field_name='uuid',
+        page=permission_group.permission_group_only_list_tag,
+        label=_('父权限分组'),
+        source="parent.uuid",
+        required=False,
+    )
 
     class Meta:
         model = PermissionGroup
@@ -139,6 +165,7 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
         fields = (
             'uuid',
             'name',
+            'parent_uuid',
             'is_system_group',
             'permissions',
             'permission_children',
@@ -148,9 +175,15 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
         tenant = self.context['tenant']
         name = validated_data.get('name', '')
         permissions = validated_data.get('permission_uuids', None)
+        parent = validated_data.get('parent', None)
+        parent_uuid = ''
+        if parent:
+            parent_uuid = parent.get('uuid', '')
         permission_group = PermissionGroup()
         permission_group.name = name
         permission_group.is_system_group = False
+        if parent_uuid:
+            permission_group.parent = PermissionGroup.valid_objects.filter(uuid=parent_uuid).first()
         permission_group.tenant = tenant
         permission_group.save()
         if permissions is not None:
@@ -161,6 +194,12 @@ class PermissionGroupCreateSerializer(DynamicFieldsModelSerializer):
 
     def update(self, instance, validated_data):
         permissions = validated_data.pop('permission_uuids', None)
+        parent = validated_data.get('parent', None)
+        parent_uuid = ''
+        if parent:
+            parent_uuid = parent.get('uuid', '')
+        if parent_uuid:
+            instance.parent = PermissionGroup.valid_objects.filter(uuid=parent_uuid).first()
         if permissions is not None:
             instance.permissions.clear()
             permissions = Permission.valid_objects.filter(uuid__in=permissions)
@@ -211,19 +250,39 @@ class UserPermissionCreateSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user = self.context['user']
+        tenant = self.context['tenant']
 
         permissions = validated_data.get('permissions', None)
         permission_groups = validated_data.get('permission_groups', None)
+        app_ids = []
 
         if permissions is not None:
             permissions = Permission.valid_objects.filter(uuid__in=permissions)
+
             for permission in permissions:
-                user.user_permissions.add(permission)
+                UserTenantPermissionAndPermissionGroup.objects.get_or_create(
+                    is_del=False,
+                    user=user,
+                    tenant=tenant,
+                    permission=permission,
+                )
+                if permission.app:
+                    app_ids.append(permission.app_id)
         
         if permission_groups is not None:
             permission_groups = PermissionGroup.valid_objects.filter(uuid__in=permission_groups)
             for permission_group in permission_groups:
-                user.user_permissions_group.add(permission_group)
+                UserTenantPermissionAndPermissionGroup.objects.get_or_create(
+                    is_del=False,
+                    user=user,
+                    tenant=tenant,
+                    permissiongroup=permission_group,
+                )
+                if permission_group.app:
+                    app_ids.append(permission_group.app_id)
+        
+        if app_ids:
+            update_user_apps_permission.delay(app_ids, user.id)
         return validated_data
 
 
@@ -276,16 +335,21 @@ class GroupPermissionCreateSerializer(serializers.Serializer):
 
         permissions = validated_data.get('permissions', None)
         permission_groups = validated_data.get('permission_groups', None)
-
+        app_ids = []
         if permissions is not None:
             permissions = Permission.valid_objects.filter(uuid__in=permissions)
             for permission in permissions:
                 group.permissions.add(permission)
-        
+                if permission.app:
+                    app_ids.append(permission.app.id)
         if permission_groups is not None:
             permission_groups = PermissionGroup.valid_objects.filter(uuid__in=permission_groups)
             for permission_group in permission_groups:
                 group.permissions_groups.add(permission_group)
+                if permission_group.app:
+                    app_ids.append(permission_group.app.id)
+        if app_ids:
+            update_group_apppermission.delay(app_ids, group.id)
         return validated_data
 
 

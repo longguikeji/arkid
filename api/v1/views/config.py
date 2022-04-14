@@ -21,15 +21,17 @@ from api.v1.serializers.config import (
 )
 from tenant.models import Tenant
 from config.models import PrivacyNotice, PasswordComplexity
+from perm.custom_access import ApiAccessPermission
 from rest_framework.response import Response
 from runtime import get_app_runtime
 from rest_framework import status
-from login_register_config.models import LoginRegisterConfig
 
-
+@extend_schema_view(
+    destroy=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], summary='删除用户自定义字段'),
+    partial_update=extend_schema(roles=['generaluser', 'tenantadmin', 'globaladmin'], summary='批量更新用户自定义字段'),
+)
 @extend_schema(
     tags=['tenant_config'],
-    roles=['general user', 'tenant admin', 'global admin'],
     parameters=[
         OpenApiParameter(
             name='subject',
@@ -38,10 +40,11 @@ from login_register_config.models import LoginRegisterConfig
             required=True,
         )
     ],
+    summary='用户自定义字段'
 )
 class CustomFieldViewSet(BaseViewSet):
     model = CustomField
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = CustomFieldSerailizer
@@ -74,6 +77,10 @@ class CustomFieldViewSet(BaseViewSet):
 
         return CustomField.valid_objects.filter(**kwargs).first()
 
+    @extend_schema(
+        summary='创建用户自定义字段',
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    )
     def create(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
@@ -98,6 +105,24 @@ class CustomFieldViewSet(BaseViewSet):
             )
         return super().create(request, *args, **kwargs)
 
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        summary='用户自定义字段列表'
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        summary='用户自定义字段获取'
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        summary='修改用户自定义字段'
+    )
     def update(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
@@ -127,14 +152,15 @@ class CustomFieldViewSet(BaseViewSet):
 
 @extend_schema(
     tags=['system_config'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    summary='原生字段不分页列表'
 )
 class NativeFieldListAPIView(generics.ListAPIView):
     '''
     原生字段，不分页
     '''
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = NativeFieldSerializer
 
@@ -147,14 +173,15 @@ class NativeFieldListAPIView(generics.ListAPIView):
 
 @extend_schema(
     tags=['system_config'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    summary='原生字段详情'
 )
 class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
     '''
     某原生字段
     '''
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = NativeFieldSerializer
 
@@ -169,7 +196,7 @@ class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'],
     tags=['config'],
     parameters=[
         OpenApiParameter(
@@ -179,10 +206,11 @@ class NativeFieldDetailAPIView(generics.RetrieveUpdateAPIView):
             required=True,
         )
     ],
+    summary='隐私政策修改'
 )
 class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = PrivacyNoticeSerializer
 
@@ -193,6 +221,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
             return None
         return privacy_notice_provider
 
+    @extend_schema(summary='隐私政策修改', roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'])
     def put(self, request, *args, **kwargs):
         provider = self.get_provider()
         if not provider:
@@ -209,6 +238,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
         serializer.save()
         return Response(serializer.data)
 
+    @extend_schema(summary='隐私政策获取', roles=['tenantadmin', 'globaladmin', 'authfactor.factorconfig'])
     def get(self, request, *args, **kwargs):
         provider = self.get_provider()
         if not provider:
@@ -225,7 +255,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
 
 
 # @extend_schema(
-#     roles=['tenant admin', 'global admin'],
+#     roles=['tenantadmin', 'globaladmin'],
 #     tags=['config'],
 #     parameters=[
 #         OpenApiParameter(
@@ -255,7 +285,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
 
 
 # @extend_schema(
-#     roles=['tenant admin', 'global admin'],
+#     roles=['tenantadmin', 'globaladmin'],
 #     tags=['config'],
 #     parameters=[
 #         OpenApiParameter(
@@ -286,7 +316,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     tags=['config'],
     parameters=[
         OpenApiParameter(
@@ -296,6 +326,7 @@ class PrivacyNoticeView(generics.RetrieveUpdateAPIView):
             required=True,
         )
     ],
+    summary='获取密码复杂度'
 )
 class CurrentPasswordComplexityView(generics.RetrieveAPIView):
 
@@ -305,6 +336,7 @@ class CurrentPasswordComplexityView(generics.RetrieveAPIView):
     # serializer_class = PasswordComplexitySerializer
 
     def get_object(self):
+        from login_register_config.models import LoginRegisterConfig
         tenant_uuid = self.request.query_params.get('tenant')
         if not tenant_uuid:
             tenant = None

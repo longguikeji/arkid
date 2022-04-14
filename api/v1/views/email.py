@@ -7,6 +7,7 @@ views for email
 from rest_framework.generics import GenericAPIView
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework import status
+from openapi.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
@@ -73,6 +74,7 @@ class EmailClaimAPIView(GenericAPIView):
 
         raise NotFound
 
+    @extend_schema(summary='发送邮件', roles=['tenantadmin', 'globaladmin', 'generaluser'])
     def post(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         '''
         send email
@@ -85,6 +87,7 @@ class EmailClaimAPIView(GenericAPIView):
             status=status.HTTP_201_CREATED,
         )
 
+    @extend_schema(summary='检查邮件token', roles=['tenantadmin', 'globaladmin', 'generaluser'])
     def get(self, request, *args, **kwarg):  # pylint: disable=unused-argument
         '''
         check email token

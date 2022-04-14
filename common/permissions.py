@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
-class IsTenantAdmin(BasePermission):
+class Istenantadmin(BasePermission):
 
     def has_permission(self, request, view):
         

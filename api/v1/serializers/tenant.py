@@ -12,7 +12,7 @@ from rest_framework import serializers
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 from common.serializer import BaseDynamicFieldModelSerializer
-from inventory.models import Permission, Group, User
+from inventory.models import Permission, Group, User, UserTenantPermissionAndPermissionGroup
 from api.v1.fields.custom import (
     create_enum_field,
     create_foreign_key_field,
@@ -22,7 +22,7 @@ from api.v1.fields.custom import (
 )
 from ..pages import group, user
 from config.models import PasswordComplexity
-from arkid.settings import MENU
+
 import uuid
 
 
@@ -59,7 +59,12 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
             is_system_permission=True, codename=tenant.admin_perm_code
         ).first()
         if permission:
-            user.user_permissions.add(permission)
+            UserTenantPermissionAndPermissionGroup.objects.get_or_create(
+                is_del=False,
+                user=user,
+                tenant=tenant,
+                permission=permission,
+            )
         # 创建密码规则
         PasswordComplexity.active_objects.get_or_create(
             is_apply=True,
@@ -128,19 +133,19 @@ class TenantSerializer(BaseDynamicFieldModelSerializer):
             },
         )
         # 新建权限
-        content_type = ContentType.objects.get_for_model(Tenant)
-        items = MENU
-        for item in items:
-            codename = 'enter_{}'.format(uuid.uuid4())
-            Permission.objects.create(
-                name=item,
-                content_type=content_type,
-                codename=codename,
-                tenant=tenant,
-                app=None,
-                permission_category='入口',
-                is_system_permission=True,
-            )
+        # content_type = ContentType.objects.get_for_model(Tenant)
+        # items = MENU
+        # for item in items:
+        #     codename = 'enter_{}'.format(uuid.uuid4())
+        #     Permission.objects.create(
+        #         name=item,
+        #         content_type=content_type,
+        #         codename=codename,
+        #         tenant=tenant,
+        #         app=None,
+        #         permission_category='入口',
+        #         is_system_permission=True,
+        #     )
         return tenant
 
 
@@ -388,12 +393,12 @@ class TenantDesktopConfigSerializer(BaseDynamicFieldModelSerializer):
         return instance
 
 
-
 class TenantCollectInfoSerializer(serializers.Serializer):
 
     app_count = serializers.IntegerField(label=_('应用数'))
     user_count = serializers.IntegerField(label=_('用户数'))
     message_count = serializers.IntegerField(label=_('消息数'))
+
 
 class TenantCheckPermissionItemSerializer(serializers.Serializer):
 
@@ -410,6 +415,17 @@ class TenantCheckPermissionSerializer(serializers.Serializer):
     is_all_application = serializers.BooleanField(label=_("是否可以所有应用"))
     permissions = serializers.ListField(
         child=TenantCheckPermissionItemSerializer(), label=_('权限'), default=[]
+    )
+
+
+class TenantUserPermissionSerializer(serializers.Serializer):
+    is_globaladmin = serializers.BooleanField(label=_("是否是超级管理员"))
+    is_tenantadmin = serializers.BooleanField(label=_("是否是租户管理员"))
+    en_names = serializers.ListField(
+        child=serializers.CharField(), label=_('用户权限组'), default=[]
+    )
+    global_en_names = serializers.ListField(
+        child=serializers.CharField(), label=_('超级管理员特殊权限组'), default=[]
     )
 
 

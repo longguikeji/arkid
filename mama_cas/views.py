@@ -100,13 +100,16 @@ class TokenRequiredMixin(AccessMixin):
         user = request.user
         # 租户
         tenant = user.tenant
-        # app
-        from app.models import App
-        app = App.valid_objects.filter(
-            tenant=tenant,
-            type='Cas',
-        ).first()
-        return user.check_app_permission(tenant, app)
+        if tenant:
+            # app
+            from app.models import App
+            app = App.valid_objects.filter(
+                tenant=tenant,
+                type='Cas',
+            ).first()
+            return user.check_app_permission(tenant, app)
+        else:
+            return True
 
     def check_token(self, request):
         token = request.GET.get('token', '')

@@ -47,6 +47,7 @@ django-celery-beat = "*"
 pypinyin = "*"
 random-password-generator = "*"
 kerberos = "*"
+pyjwt = "*"
 
 [requires]
 python_version = "3.8"

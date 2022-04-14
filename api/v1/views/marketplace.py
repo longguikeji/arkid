@@ -8,6 +8,7 @@ from api.v1.serializers.market_extension import MarketPlaceExtensionSerializer, 
 from rest_framework.decorators import action
 from openapi.utils import extend_schema
 from drf_spectacular.utils import OpenApiParameter
+from perm.custom_access import ApiAccessPermission
 from rest_framework import generics
 from django.http.response import JsonResponse
 from rest_framework.permissions import IsAuthenticated
@@ -15,48 +16,12 @@ from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthen
 
 
 @extend_schema(
-    roles=['global admin'],
+    roles=['globaladmin'],
     tags=['market-extension'],
-            parameters=[
-            OpenApiParameter(
-                name='tags',
-                type={'type': 'string'},
-                location=OpenApiParameter.QUERY,
-                required=False,
-            ),
-            OpenApiParameter(
-                name='type',
-                type={'type': 'string'},
-                location=OpenApiParameter.QUERY,
-                required=False,
-            ),
-            OpenApiParameter(
-                name='scope',
-                type={'type': 'string'},
-                location=OpenApiParameter.QUERY,
-                required=False,
-            ),
-            OpenApiParameter(
-                name='installed',
-                type={'type': 'string'},
-                enum=['已安装','未安装'],
-                location=OpenApiParameter.QUERY,
-                description='是否已安装',
-                required=False,
-            ),
-            OpenApiParameter(
-                name='enabled',
-                type={'type': 'string'},
-                enum=['已启用','未启用'],
-                location=OpenApiParameter.QUERY,
-                description='是否已启用',
-                required=False,
-            ),
-        ]
 )
 class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = MarketPlaceExtensionSerializer
@@ -121,7 +86,57 @@ class MarketPlaceViewSet(viewsets.ReadOnlyModelViewSet):
         return None
 
 
-@extend_schema(roles=['global admin'], tags=['market-extension'])
+    @extend_schema(
+        roles=['globaladmin', 'pluginmanage.pluginconfig'],
+        summary='插件市场列表',
+        parameters=[
+            OpenApiParameter(
+                name='tags',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='type',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='scope',
+                type={'type': 'string'},
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name='installed',
+                type={'type': 'string'},
+                enum=['已安装','未安装'],
+                location=OpenApiParameter.QUERY,
+                description='是否已安装',
+                required=False,
+            ),
+            OpenApiParameter(
+                name='enabled',
+                type={'type': 'string'},
+                enum=['已启用','未启用'],
+                location=OpenApiParameter.QUERY,
+                description='是否已启用',
+                required=False,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['globaladmin'],
+        summary='插件市场插件详情'
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+@extend_schema(roles=['globaladmin'], tags=['market-extension'], summary='插件市场标签')
 class MarketPlaceTagsViewSet(generics.RetrieveAPIView):
 
     serializer_class = MarketPlaceExtensionTagsSerializer

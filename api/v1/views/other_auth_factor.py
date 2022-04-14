@@ -11,6 +11,7 @@ from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from login_register_config.models import OtherAuthFactor
 from rest_framework.decorators import action
+from perm.custom_access import ApiAccessPermission
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
@@ -26,12 +27,12 @@ OtherAuthFactorPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'], summary='删除其它认证因素'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'], summary='批量修改其它认证因素'),
 )
 @extend_schema(
     tags=['other_auth_factor'],
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     parameters=[
         OpenApiParameter(
             name='tenant',
@@ -45,7 +46,7 @@ class OtherAuthFactorViewSet(BaseViewSet):
 
     model = OtherAuthFactor
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = OtherAuthFactorSerializer
 
@@ -78,31 +79,40 @@ class OtherAuthFactorViewSet(BaseViewSet):
         return obj
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'],
         responses=OtherAuthFactorListSerializer,
+        summary='其它认证因素列表'
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'],
         request=OtherAuthFactorPolymorphicProxySerializer,
         responses=OtherAuthFactorPolymorphicProxySerializer,
+        summary='其它认证因素修改'
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'],
         request=OtherAuthFactorPolymorphicProxySerializer,
         responses=OtherAuthFactorPolymorphicProxySerializer,
+        summary='其它认证因素创建'
     )
     def create(self, request, *args, **kwargs):
+        tenant_uuid = self.request.query_params.get('tenant')
+        if not tenant_uuid:
+            tenant = None
+        else:
+            tenant = Tenant.valid_objects.filter(uuid=tenant_uuid).first()
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.otherauthfactor'],
         responses=OtherAuthFactorPolymorphicProxySerializer,
+        summary='其它认证因素获取'
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)

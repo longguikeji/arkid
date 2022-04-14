@@ -1,6 +1,10 @@
 from api.v1.serializers.permission import PermissionSerializer
 from common.serializer import BaseDynamicFieldModelSerializer
-from inventory.models import Group, Permission, User, CustomUser, CustomField
+from inventory.models import(
+    Group, Permission, User,
+    CustomUser, CustomField, UserMenuData,
+    UserAppData,
+)
 from rest_framework import serializers
 from .group import GroupSerializer, GroupBaseSerializer
 from api.v1.fields.custom import (
@@ -415,7 +419,15 @@ class UserAppDataSerializer(serializers.ModelSerializer):
     data = serializers.ListField(label=_('数据'))
 
     class Meta:
-        model = User
+        model = UserAppData
+        fields = ['data']
+
+
+class UserMenuDataSerializer(serializers.ModelSerializer):
+    # data = serializers.Js(label=_('数据'))
+
+    class Meta:
+        model = UserMenuData
         fields = ['data']
 
 

@@ -14,6 +14,7 @@ from backend_login.models import BackendLogin
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
+from perm.custom_access import ApiAccessPermission
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from common.code import Code
 
@@ -25,15 +26,15 @@ BackendLoginPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'], summary='后台登录方式删除'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'], summary='后台登录方式修改'),
 )
 @extend_schema(tags=['backend_login'])
 class BackendLoginViewSet(BaseViewSet):
 
     model = BackendLogin 
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = BackendLoginSerializer
     pagination_class = DefaultListPaginator
@@ -60,34 +61,37 @@ class BackendLoginViewSet(BaseViewSet):
         obj = BackendLogin.valid_objects.filter(**kwargs).first()
         return obj
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=BackendLoginListSerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'], responses=BackendLoginListSerializer, summary='后台登录方式列表')
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         request=BackendLoginPolymorphicProxySerializer,
         responses=BackendLoginPolymorphicProxySerializer,
+        summary='后台登录方式修改'
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         request=BackendLoginPolymorphicProxySerializer,
         responses=BackendLoginPolymorphicProxySerializer,
+        summary='后台登录方式创建'
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=BackendLoginPolymorphicProxySerializer)
+    @extend_schema(roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'], responses=BackendLoginPolymorphicProxySerializer, summary='后台登录方式获取')
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         request=BackendLoginReorderSerializer,
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式修改'
     )
     @action(detail=False, methods=['post'])
     def batch_update(self, request, *args, **kwargs):
@@ -113,32 +117,36 @@ class BackendLoginViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式上移'
     )
     @action(detail=True, methods=['get'])
     def move_up(self, request, *args, **kwargs):
         return self._do_actual_move('up', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式下移'
     )
     @action(detail=True, methods=['get'])
     def move_down(self, request, *args, **kwargs):
         return self._do_actual_move('down', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式置顶'
     )
     @action(detail=True, methods=['get'])
     def move_top(self, request, *args, **kwargs):
         return self._do_actual_move('top', request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'authfactor.backendauth'],
         responses=BackendLoginReorderSerializer,
+        summary='后台登录方式置底'
     )
     @action(detail=True, methods=['get'])
     def move_bottom(self, request, *args, **kwargs):

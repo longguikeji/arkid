@@ -21,6 +21,7 @@ from jwcrypto.common import JWException
 from jwcrypto.jwt import JWTExpired
 from oauthlib.oauth2.rfc6749 import utils
 from oauthlib.openid import RequestValidator
+from tasks.tasks import update_user_apppermission
 
 from .exceptions import FatalClientError
 from .models import (
@@ -33,7 +34,6 @@ from .models import (
 )
 from .scopes import get_scopes_backend
 from .settings import oauth2_settings
-
 
 log = logging.getLogger("oauth2_provider")
 
@@ -602,6 +602,11 @@ class OAuth2Validator(RequestValidator):
             self._create_access_token(expires, request, token)
 
     def _create_access_token(self, expires, request, token, source_refresh_token=None):
+        client = request.client
+        client_id = client.client_id
+        # 更新用户权限
+        update_user_apppermission.delay(client_id, request.user.id)
+        # 颁发access_token
         id_token = token.get("id_token", None)
         if id_token:
             id_token = IDToken.objects.get(token=id_token)

@@ -3,6 +3,7 @@ from common.paginator import DefaultListPaginator
 from drf_spectacular.utils import extend_schema_view
 from openapi.utils import extend_schema
 from rest_framework import mixins, viewsets, status
+from perm.custom_access import ApiAccessPermission
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -19,9 +20,9 @@ import json
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['tenant admin', 'global admin']),
-    retrieve=extend_schema(roles=['tenant admin', 'global admin']),
-    destory=extend_schema(roles=['tenant admin', 'global admin']),
+    list=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='webhook发送历史列表'),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='webhook发送历史详情'),
+    destory=extend_schema(roles=['tenantadmin', 'globaladmin'], summary='webhook发送历史删除'),
 )
 @extend_schema(tags=['webhook_histroy'])
 class WebhookTriggerHistoryViewSet(
@@ -32,7 +33,7 @@ class WebhookTriggerHistoryViewSet(
     viewsets.GenericViewSet,
 ):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = WebhookTriggerHistorySerializer
@@ -66,7 +67,8 @@ class WebhookTriggerHistoryViewSet(
         return obj
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
+        summary='webhook重新发送'
     )
     @action(detail=True, methods=['get'])
     def retry(self, request, *args, **kwargs):

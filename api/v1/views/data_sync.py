@@ -9,6 +9,7 @@ from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from data_sync.models import DataSyncConfig
 from rest_framework.decorators import action
+from perm.custom_access import ApiAccessPermission
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
@@ -22,11 +23,11 @@ DataSyncPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 
 @extend_schema_view(
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'], summary='删除数据同步设置'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'], summary='批量更新数据同步设置'),
 )
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
+    roles=['tenantadmin', 'globaladmin'],
     tags=['data_sync'],
     parameters=[
         OpenApiParameter(
@@ -42,7 +43,7 @@ class DataSyncViewSet(BaseViewSet):
 
     model = DataSyncConfig
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = DataSyncSerializer
     pagination_class = DefaultListPaginator
@@ -74,30 +75,36 @@ class DataSyncViewSet(BaseViewSet):
         return obj
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'], responses=DataSyncListSerializer
+        roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'],
+        responses=DataSyncListSerializer,
+        summary='数据更新列表',
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'],
         request=DataSyncPolymorphicProxySerializer,
         responses=DataSyncPolymorphicProxySerializer,
+        summary='修改数据更新',
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'],
         request=DataSyncPolymorphicProxySerializer,
         responses=DataSyncPolymorphicProxySerializer,
+        summary='创建数据更新',
     )
     def create(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'linkidentity.datasync'],
         responses=DataSyncPolymorphicProxySerializer,
+        summary='获取数据更新',
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)

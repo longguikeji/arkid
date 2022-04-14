@@ -49,7 +49,7 @@ from api.v1.serializers.tenant import TenantSerializer
 
 @extend_schema(
     tags=['password-login-register'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     responses=PasswordLoginResponseSerializer,
 )
 class PasswordLoginView(APIView):
@@ -77,7 +77,6 @@ class PasswordLoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         ip = get_client_ip(request)
-
         # 图片验证码信息
         is_open_authcode = config.data.get('is_open_authcode', False)
         error_number_open_authcode = config.data.get('error_number_open_authcode', 0)
@@ -172,7 +171,7 @@ class PasswordLoginView(APIView):
 
 @extend_schema(
     tags=['email-login-register'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
     responses=PasswordRegisterResponseSerializer,
 )
 class PasswordRegisterView(APIView):
@@ -292,7 +291,7 @@ class PasswordRegisterView(APIView):
 
 @extend_schema(
     tags=['password-login-register'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
 )
 class LoginFieldsView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
@@ -316,7 +315,7 @@ class LoginFieldsView(generics.RetrieveAPIView):
 
 @extend_schema(
     tags=['password-login-register'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
 )
 class RegisterFieldsView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]

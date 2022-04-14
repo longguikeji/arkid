@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from runtime import get_app_runtime
 from openapi.utils import extend_schema
+from perm.custom_access import ApiAccessPermission
 from api.v1.serializers.storage import UploadSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
@@ -15,10 +16,10 @@ from tenant.models import (
 )
 
 
-@extend_schema(tags = ['upload'], roles=['general user', 'tenant admin', 'global admin'])
+@extend_schema(tags = ['upload'], roles=['generaluser', 'tenantadmin', 'globaladmin'], summary='上传文件')
 class UploadAPIView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = UploadSerializer
 

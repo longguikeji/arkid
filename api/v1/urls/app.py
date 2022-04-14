@@ -43,4 +43,9 @@ urlpatterns = [
         views_app.AppListAPIView.as_view(),
         name='tenant-app-list',
     ),
+    re_path(
+        r'^app/app_permission_check/',
+        views_app.AppPermissionCheckView.as_view(),
+        name='app-permission-check',
+    ),
 ]

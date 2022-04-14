@@ -41,11 +41,18 @@ class Permission(BaseModel):
         models.CASCADE,
         verbose_name=_('content type'),
         related_name='upermission_content_type',
+        default=None,
+        null=True,
+        blank=True,
     )
     codename = models.CharField(_('codename'), max_length=100)
     # 用户扩展的权限字段
     tenant = models.ForeignKey(
-        'tenant.Tenant', blank=False, null=True, on_delete=models.PROTECT
+        'tenant.Tenant',
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
     )
     app = models.ForeignKey(
         App,
@@ -54,11 +61,30 @@ class Permission(BaseModel):
         null=True,
         blank=True,
     )
-    permission_category = models.CharField(_('权限类型'), blank=False, null=True, default='', max_length=64)
-    is_system_permission = models.BooleanField(
-        default=True,
-        verbose_name='是否是系统权限'
+    permission_category = models.CharField(_('权限类型'), blank=True, null=True, default='', max_length=64)
+    is_system_permission = models.BooleanField(default=True, verbose_name='是否是系统权限')
+    # 权限字段扩展(兼容读取api)
+    action = models.CharField(_('动作'), blank=True, null=True, default='', max_length=256)
+    operation_id = models.CharField(_('操作id'), blank=True, null=True, default='', max_length=256)
+    description = models.CharField(_('描述'), blank=True, null=True, default='', max_length=512)
+    request_url = models.CharField(_('请求地址'), blank=True, null=True, default='', max_length=256)
+    request_type = models.CharField(_('请求方法'), blank=True, null=True, default='', max_length=256)
+    # 如果是分组权限则有此字段
+    group_info = models.ForeignKey(
+        'inventory.Group',
+        blank=True,
+        null=True,
+        default=None,
+        on_delete=models.CASCADE,
+        verbose_name='分组',
     )
+    # 是否更新
+    is_update = models.BooleanField(default=False, verbose_name='是否更新')
+    base_code = models.CharField(_('应用code'), blank=True, null=True, default='', max_length=256)
+    # 扩展需求
+    sort_id = models.IntegerField(_('sort_id'), default=-1)
+    container = models.JSONField(blank=True, default=[])
+    parent_sort_id = models.IntegerField(_('parent_sort_id'), default=-1)
 
     objects = PermissionManager()
 
@@ -83,10 +109,11 @@ class Permission(BaseModel):
 
     natural_key.dependencies = ['contenttypes.contenttype']
 
-
+    
 class PermissionGroup(BaseModel):
 
     name = models.CharField(_('name'), max_length=255)
+    en_name = models.CharField(_('en_name'), blank=False, null=True, default='', max_length=255)
     permissions = models.ManyToManyField(
         Permission,
         blank=True,
@@ -102,7 +129,30 @@ class PermissionGroup(BaseModel):
         blank=False,
         null=True,
         default=None,
-        on_delete=models.PROTECT
+        on_delete=models.CASCADE
+    )
+    parent = models.ForeignKey(
+        'self',
+        default=None,
+        null=True,
+        blank=True,
+        verbose_name='父分组',
+        on_delete=models.CASCADE,
+    )
+    title = models.CharField(_('顶级标题'), blank=False, null=True, default='', max_length=255)
+    base_code = models.CharField(_('应用code'), blank=True, null=True, default='', max_length=256)
+    # 是否更新
+    is_update = models.BooleanField(default=False, verbose_name='是否更新')
+    # 扩展需求
+    sort_id = models.IntegerField(_('sort_id'), default=-1)
+    container = models.JSONField(blank=True, default=[])
+    parent_sort_id = models.IntegerField(_('parent_sort_id'), default=-1)
+    app = models.ForeignKey(
+        App,
+        models.CASCADE,
+        default=None,
+        null=True,
+        blank=True,
     )
 
     @property
@@ -166,18 +216,18 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         related_name="user_set",
         related_query_name="user",
     )
-    user_permissions = models.ManyToManyField(
-        'inventory.Permission',
-        blank=True,
-        related_name="user_permission_set",
-        related_query_name="user_permission",
-    )
-    user_permissions_group = models.ManyToManyField(
-        'inventory.PermissionGroup',
-        blank=True,
-        related_name="user_permission_groups_set",
-        related_query_name="user_permission_groups",
-    )
+    # user_permissions = models.ManyToManyField(
+    #     'inventory.Permission',
+    #     blank=True,
+    #     related_name="user_permission_set",
+    #     related_query_name="user_permission",
+    # )
+    # user_permissions_group = models.ManyToManyField(
+    #     'inventory.PermissionGroup',
+    #     blank=True,
+    #     related_name="user_permission_groups_set",
+    #     related_query_name="user_permission_groups",
+    # )
     is_platform_user = models.BooleanField(default=False, verbose_name='是否是平台用户')
 
     _password = None
@@ -207,36 +257,79 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
         '''
         检查app权限
         '''
-        childmanager_result = False
-        try:
-            from extension_root.childmanager.models import ChildManager
-            childmanager_result = ChildManager.valid_objects.filter(tenant=tenant, user=self).exists()
-        except:
-            print('没有子管理员的插件')
-        if self.is_superuser is False and tenant.has_admin_perm(self) is False and childmanager_result is False:
+        from django.db.models import Q
+        if self.is_superuser is False and tenant.has_admin_perm(self) is False:
             # 权限
             permission = Permission.active_objects.filter(
                 is_system_permission=True,
                 tenant=tenant,
                 app=app,
             ).first()
-            permission_result = self.user_permissions.filter(
-                uuid=permission.uuid
-            ).exists()
-            if permission_result is True:
-                return permission_result
-            # 看下组权限
-            permissiongroups = PermissionGroup.active_objects.filter(permissions__uuid=permission.uuid)
-            if permissiongroups is None:
-                return False
-            user_permissions_groups = self.user_permissions_group.all()
-            if user_permissions_groups is None:
-                return False
-            for user_permissions_group in user_permissions_groups:
-                for permissiongroup in permissiongroups:
-                    if user_permissions_group == permissiongroup:
+            # 用户权限分组
+            user = self
+            permissiongroups = PermissionGroup.valid_objects.filter(
+                permissions=permission
+            )
+
+            # 当前用户所拥有的权限分组
+            user_permission_groups = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                user=user,
+                tenant=tenant
+            )
+            user_permissions_groups = []
+            user_permissions = []
+            for user_permission_group in user_permission_groups:
+                # 权限分组
+                if user_permission_group.permissiongroup is not None:
+                    user_permissions_groups.append(user_permission_group.permissiongroup)
+                # 权限
+                if user_permission_group.permission is not None:
+                    user_permissions.append(user_permission_group.permission)
+
+            permissions_groups_ids = []
+            for permissiongroup in permissiongroups:
+                for user_permissions_group in user_permissions_groups:
+                    if user_permissions_group.id == permissiongroup.id:
                         return True
+                # 数据补充
+                permissions_groups_ids.append(permissiongroup.id)
+            # 用户权限
+            for user_permission in user_permissions:
+                if user_permission.id == permission.id:
+                    return True
+            # 用户组权限
+            groups = user.groups.filter(tenant=tenant).all()
+            group_ids = []
+            for group in groups:
+                # 本体
+                group_ids.append(group.id)
+                # 父分组
+                group.parent_groups(group_ids)
+            if group_ids:
+                return Group.valid_objects.filter(
+                    Q(permissions=permission)|Q(permissions_groups__id__in=permissions_groups_ids),
+                    id__in=group_ids
+                ).exists()
             return False
+            # permission_result = self.user_permissions.filter(
+            #     uuid=permission.uuid
+            # ).exists()
+            # if permission_result is True:
+            #     return permission_result
+            # # 看下组权限
+            # permissiongroups = PermissionGroup.active_objects.filter(permissions__uuid=permission.uuid)
+            # if permissiongroups is None:
+            #     return False
+            # user_permissions_groups = self.user_permissions_group.all()
+            # if user_permissions_groups is None:
+            #     return False
+            # # 权限组循环
+            # for user_permissions_group in user_permissions_groups:
+            #     for permissiongroup in permissiongroups:
+            #         if user_permissions_group == permissiongroup:
+            #             return True
+            # # 要考虑父分组的情况
+            # return False
         else:
             return True
 
@@ -383,7 +476,7 @@ class User(AbstractSCIMUserMixin, AbstractUser, BaseModel):
 
 class UserPassword(BaseModel):
 
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     password = models.CharField(max_length=128, blank=False, null=True)
 
     def __str__(self) -> str:
@@ -453,6 +546,33 @@ class Group(AbstractSCIMGroupMixin, BaseModel):
         for group in groups:
             uuids.append(str(group.uuid))
             group.child_groups(uuids)
+    
+    def parent_groups(self, ids):
+        '''
+        所有的父分组
+        '''
+        parent = self.parent
+        if parent is None:
+            return ids
+        else:
+            ids.append(parent.id)
+            parent.parent_groups(ids)
+
+
+class UserTenantPermissionAndPermissionGroup(BaseModel):
+    '''
+    用户对应租户权限组和权限
+    '''
+
+    user = models.ForeignKey(
+        'inventory.User',
+        related_name='main_user',
+        verbose_name='用户',
+        on_delete=models.CASCADE,
+    )
+    tenant = models.ForeignKey('tenant.Tenant', blank=True, null=True, on_delete=models.CASCADE, verbose_name='租户')
+    permission = models.ForeignKey('inventory.Permission', default=None, blank=True, null=True, on_delete=models.CASCADE, verbose_name='权限')
+    permissiongroup = models.ForeignKey('inventory.PermissionGroup', default=None,blank=True, null=True, on_delete=models.CASCADE, verbose_name='权限组')
 
 
 class Invitation(BaseModel):
@@ -637,8 +757,39 @@ class UserAppData(BaseModel):
 
     DEFAULT_VALUE = ""
 
-    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
+    tenant = models.ForeignKey(Tenant, default=None, null=True, on_delete=models.PROTECT, verbose_name='租户')
     data = models.JSONField(verbose_name='数据内容')
+
+    def __str__(self) -> str:
+        return f'User: {self.user.username}'
+
+
+class UserMenuData(BaseModel):
+    '''
+    用户Menu数据(方便前端存储调整后的页面位置数据)
+    '''
+
+    DEFAULT_VALUE = ""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    data = models.JSONField(verbose_name='数据内容')
+
+    def __str__(self) -> str:
+        return f'User: {self.user.username}'
+
+
+class UserAppPermissionResult(BaseModel):
+    '''
+    用户app权限结果
+    '''
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    app = models.ForeignKey(App, on_delete=models.PROTECT, verbose_name='App')
+    result = models.CharField(max_length=1024, blank=True, null=True, verbose_name='权限结果')
+    is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
     def __str__(self) -> str:
         return f'User: {self.user.username}'

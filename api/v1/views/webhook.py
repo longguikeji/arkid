@@ -1,5 +1,6 @@
 from rest_framework.permissions import IsAuthenticated
 
+from perm.custom_access import ApiAccessPermission
 from drf_spectacular.utils import extend_schema_view
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
@@ -17,19 +18,19 @@ from .base import BaseViewSet
 
 
 @extend_schema_view(
-    list=extend_schema(roles=['tenant admin', 'global admin']),
-    retrieve=extend_schema(roles=['tenant admin', 'global admin']),
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    update=extend_schema(roles=['tenant admin', 'global admin']),
-    create=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
+    list=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook列表'),
+    retrieve=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook详情'),
+    destroy=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook删除'),
+    update=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook修改'),
+    create=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook创建'),
+    partial_update=extend_schema(roles=['tenantadmin', 'globaladmin', 'expansionable.webhook'], summary='webhook更新'),
 )
 @extend_schema(
     tags=['webhook'],
 )
 class WebhookViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = WebhookSerializer
@@ -56,3 +57,7 @@ class WebhookViewSet(BaseViewSet):
 
         obj = Webhook.valid_objects.filter(**kwargs).first()
         return obj
+    
+    def create(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+        return super().create(request, *args, **kwargs)

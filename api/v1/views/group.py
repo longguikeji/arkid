@@ -1,7 +1,7 @@
 import json
 import io
 import datetime
-from inventory.models import Group
+from inventory.models import Group, UserTenantPermissionAndPermissionGroup
 from api.v1.serializers.group import (
     GroupSerializer,
     GroupListResponseSerializer,
@@ -12,6 +12,7 @@ from api.v1.serializers.group import (
 from common.paginator import DefaultListPaginator
 from .base import BaseViewSet
 from openapi.utils import extend_schema
+from perm.custom_access import ApiAccessPermission
 from drf_spectacular.utils import extend_schema_view, OpenApiParameter
 from drf_spectacular.openapi import OpenApiTypes
 from rest_framework.response import Response
@@ -30,7 +31,7 @@ from django.db import transaction
 
 @extend_schema_view(
     list=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser', 'usermanage.groupmanage'],
         responses=GroupSerializer,
         parameters=[
             OpenApiParameter(
@@ -47,32 +48,38 @@ from django.db import transaction
                 required=False,
             ),
         ],
+        summary='分组列表',
     ),
     create=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
         request=GroupCreateRequestSerializer,
         responses=GroupSerializer,
+        summary='分组创建',
     ),
     retrieve=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'generaluser', 'usermanage.groupmanage'],
         responses=GroupSerializer,
+        summary='分组获取',
     ),
     update=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
         request=GroupSerializer,
         responses=GroupSerializer,
+        summary='分组更新',
     ),
     destroy=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
+        summary='分组删除',
     ),
     partial_update=extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
+        summary='分组更新',
     ),
 )
 @extend_schema(tags=['group'])
 class GroupViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     model = Group
@@ -84,6 +91,7 @@ class GroupViewSet(BaseViewSet):
         user = self.request.user
         context = self.get_serializer_context()
         tenant = context['tenant']
+
         # 分组
         parent = self.request.query_params.get('parent', None)
         name = self.request.query_params.get('name', None)
@@ -102,30 +110,43 @@ class GroupViewSet(BaseViewSet):
 
         qs = Group.valid_objects.filter(**kwargs)
         # 用户
-        if tenant.has_admin_perm(user) is False:
-            childmanager = ChildManager.valid_objects.filter(tenant=tenant, user=user).first()
-            if childmanager:
-                # 所在分组 所在分组的下级分组 指定分组与账号
-                manager_visible = childmanager.manager_visible
-                uuids = []
-                if '所在分组' in manager_visible:
-                    for group in user.groups.all():
-                        uuids.append(group.uuid_hex)
-                if '所在分组的下级分组' in manager_visible:
-                    for group in user.groups.all():
-                        group_uuids = []
-                        group.child_groups(group_uuids)
-                        uuids.extend(group_uuids)
-                if '指定分组与账号' in manager_visible:
-                    assign_group = childmanager.assign_group
-                    uuids.extend(assign_group)
-                qs = qs.filter(uuid__in=uuids)
+        if user.is_superuser is False and tenant.has_admin_perm(user) is False:
+            userpermissions = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+                tenant=tenant,
+                user=user,
+                permission__group_info__isnull=False,
+            )
+            group_ids = []
+            for userpermission in userpermissions:
+                group_info = userpermission.permission.group_info
+                group_ids.append(group_info.id)
+            if len(group_ids) == 0:
+                group_ids.append(0)
+            if parent is not None:
+                qs = qs.filter(id__in=group_ids)
+            # childmanager = ChildManager.valid_objects.filter(tenant=tenant, user=user).first()
+            # if childmanager:
+            #     # 所在分组 所在分组的下级分组 指定分组与账号
+            #     manager_visible = childmanager.manager_visible
+            #     uuids = []
+            #     if '所在分组' in manager_visible:
+            #         for group in user.groups.all():
+            #             uuids.append(group.uuid_hex)
+            #     if '所在分组的下级分组' in manager_visible:
+            #         for group in user.groups.all():
+            #             group_uuids = []
+            #             group.child_groups(group_uuids)
+            #             uuids.extend(group_uuids)
+            #     if '指定分组与账号' in manager_visible:
+            #         assign_group = childmanager.assign_group
+            #         uuids.extend(assign_group)
+            #     qs = qs.filter(uuid__in=uuids)
         return qs.order_by('id')
 
     def get_object(self):
         context = self.get_serializer_context()
         tenant = context['tenant']
-
+  
         kwargs = {
             'tenant': tenant,
             'uuid': self.kwargs['pk'],
@@ -138,20 +159,25 @@ class GroupViewSet(BaseViewSet):
     def destroy(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
+
         group = self.get_object()
+
+        # 删除相应的权限
         ret = super().destroy(request, *args, **kwargs)
         transaction.on_commit(lambda: WebhookManager.group_deleted(tenant.uuid, group))
         return ret
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin'],
         request=GroupImportSerializer,
         responses=GroupImportSerializer,
+        summary='分组导入',
     )
     @action(detail=False, methods=['post'])
     def group_import(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
+
         support_content_types = [
             'application/csv',
             'text/csv',
@@ -213,13 +239,15 @@ class GroupViewSet(BaseViewSet):
             )
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'usermanage.groupmanage'],
+        summary='分组导出',
         responses={(200, 'application/octet-stream'): OpenApiTypes.BINARY},
     )
     @action(detail=False, methods=['get'])
     def group_export(self, request, *args, **kwargs):
         context = self.get_serializer_context()
         tenant = context['tenant']
+
         kwargs = {
             'tenant': tenant,
         }

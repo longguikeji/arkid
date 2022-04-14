@@ -7,6 +7,11 @@ from api.v1.serializers.setup import (
 )
 
 
+@extend_schema(
+    summary='获取前端的url',
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    # responses=PasswordLoginResponseSerializer,
+)
 class GetFrontendUrlAPIView(APIView):
     permission_classes = []
     authentication_classes = []

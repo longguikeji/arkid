@@ -25,9 +25,10 @@ class Tenant(BaseModel):
         return f'tenant_admin_{self.uuid}'
 
     def has_admin_perm(self, user: 'User'):
+        from inventory.models import UserTenantPermissionAndPermissionGroup
         return (
             user.is_superuser
-            or user.user_permissions.filter(codename=self.admin_perm_code).count() > 0
+            or UserTenantPermissionAndPermissionGroup.valid_objects.filter(user=user, tenant=self, permission__codename=self.admin_perm_code).count() > 0
         )
 
     @property

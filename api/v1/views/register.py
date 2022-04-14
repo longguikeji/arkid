@@ -21,7 +21,8 @@ from django.utils.translation import gettext_lazy as _
 
 @extend_schema(
     tags=['register-api'],
-    roles=['general user', 'tenant admin', 'global admin'],
+    roles=['generaluser', 'tenantadmin', 'globaladmin'],
+    summary='注册'
     # responses=PasswordLoginResponseSerializer,
 )
 class RegisterView(APIView):

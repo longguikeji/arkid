@@ -1,6 +1,5 @@
 from typing import Sized
 from data_sync.models import DataSyncConfig
-import pymssql
 from scim_server.schemas.core2_enterprise_user import Core2EnterpriseUser
 from scim_server.schemas.core2_group import Core2Group
 from scim_server.protocol.path import Path
@@ -27,6 +26,7 @@ def load_config(tenant_uuid):
 
 
 def get_connection(db_config):
+    import pymssql
     conn = pymssql.connect(
         db_config.get('server'),
         db_config.get('user'),

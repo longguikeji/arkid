@@ -1,3 +1,5 @@
+import jwt
+import json
 from .base import BaseViewSet
 from common.code import Code
 from rest_framework.response import Response
@@ -14,10 +16,12 @@ from api.v1.serializers.app import (
 )
 from common.paginator import DefaultListPaginator
 from django.http.response import JsonResponse
+from rest_framework.views import APIView
 from openapi.utils import extend_schema
 from drf_spectacular.utils import PolymorphicProxySerializer
 from runtime import get_app_runtime
 from provisioning.models import Config
+from inventory.models import Permission, UserAppPermissionResult
 from schema.models import Schema, AppProfile
 from rest_framework.decorators import action
 from oauth2_provider.models import Application
@@ -25,6 +29,7 @@ from drf_spectacular.utils import extend_schema_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from drf_spectacular.utils import OpenApiParameter
+from perm.custom_access import ApiAccessPermission
 from django.utils.translation import gettext_lazy as _
 from common.code import Code
 from webhook.manager import WebhookManager
@@ -41,8 +46,7 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
 
 @extend_schema_view(
     list=extend_schema(
-        roles=['tenant admin', 'global admin'],
-        responses=AppSerializer,
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         parameters=[
             OpenApiParameter(
                 name='name',
@@ -52,15 +56,13 @@ AppPolymorphicProxySerializer = PolymorphicProxySerializer(
             ),
         ],
     ),
-    destroy=extend_schema(roles=['tenant admin', 'global admin']),
-    partial_update=extend_schema(roles=['tenant admin', 'global admin']),
 )
 @extend_schema(
     tags=['app'],
 )
 class AppViewSet(BaseViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = AppSerializer
@@ -72,6 +74,7 @@ class AppViewSet(BaseViewSet):
         kwargs = {
         }
         tenant = context['tenant']
+
         if name is not None:
             kwargs['name'] = name
         qs = App.active_objects.filter(tenant=tenant).filter(**kwargs).order_by('id')
@@ -92,7 +95,8 @@ class AppViewSet(BaseViewSet):
         )
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
+        summary='租户app删除'
     )
     @transaction.atomic()
     def destroy(self, request, *args, **kwargs):
@@ -103,14 +107,18 @@ class AppViewSet(BaseViewSet):
         transaction.on_commit(lambda: WebhookManager.app_deleted(tenant.uuid, app))
         return ret
 
-    @extend_schema(roles=['tenant admin', 'global admin'], responses=AppListSerializer)
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
+        summary='租户app列表'
+    )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         request=AppPolymorphicProxySerializer,
         responses=AppPolymorphicProxySerializer,
+        summary='租户app修改'
     )
     def update(self, request, *args, **kwargs):
         data = request.data.get('data', '')
@@ -131,11 +139,14 @@ class AppViewSet(BaseViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'],
+        roles=['tenantadmin', 'globaladmin', 'appmanage'],
         request=AppPolymorphicProxySerializer,
         responses=AppPolymorphicProxySerializer,
+        summary='租户app创建',
     )
     def create(self, request, *args, **kwargs):
+        context = self.get_serializer_context()
+
         data = request.data.get('data', '')
         if data:
             redirect_uris = data.get('redirect_uris', '')
@@ -154,14 +165,17 @@ class AppViewSet(BaseViewSet):
         return super().create(request, *args, **kwargs)
 
     @extend_schema(
-        roles=['tenant admin', 'global admin'], responses=AppPolymorphicProxySerializer
+        roles=['tenantadmin', 'globaladmin', 'generaluser', 'appmanage'],
+        responses=AppPolymorphicProxySerializer, summary='租户app获取'
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
+        roles=['tenantadmin', 'globaladmin'], 
         request=AddAuthTmplSerializer,
         responses=AddAuthTmplSerializer,
+        summary='租户app添加auth_tmpl'
     )
     @action(detail=True, methods=['post'])
     def add_auth_tmpl(self, request, *args, **kwargs):
@@ -184,9 +198,9 @@ class AppViewSet(BaseViewSet):
         return Response({'error': Code.OK.value})
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
     serializer_class = AppProvisioningSerializer
 
@@ -197,8 +211,29 @@ class AppProvisioningView(generics.RetrieveUpdateAPIView):
         config, is_created = Config.valid_objects.get_or_create(app=app)
         return config
 
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='app配置获取'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='app配置更新'
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='app配置修改'
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningMappingView(generics.ListCreateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -217,10 +252,10 @@ class AppProvisioningMappingView(generics.ListCreateAPIView):
         return mapping
 
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningMappingDetailView(generics.RetrieveUpdateDestroyAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = AppProvisioningMappingSerializer
@@ -236,11 +271,38 @@ class AppProvisioningMappingDetailView(generics.RetrieveUpdateDestroyAPIView):
         ).first()
         return map
 
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='应用权限mapping详情'
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='应用权限mapping修改'
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='应用权限mapping修改'
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin'],
+        summary='应用权限mapping删除'
+    )
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningProfileView(generics.ListCreateAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = AppProvisioningProfileSerializer
@@ -255,11 +317,19 @@ class AppProvisioningProfileView(generics.ListCreateAPIView):
         )
         return profile
 
+    @extend_schema(summary='app配置信息列表', roles=['tenantadmin', 'globaladmin'])
+    def get(self, request, *args, **kwargs):
+        return super(AppProvisioningProfileView, self).get(request, *args, **kwargs)
 
-@extend_schema(roles=['tenant admin', 'global admin'], tags=['app'])
+    @extend_schema(summary='app配置信息创建', roles=['tenantadmin', 'globaladmin'])
+    def post(self, request, *args, **kwargs):
+        return super(AppProvisioningProfileView, self).post(request, *args, **kwargs)
+
+
+@extend_schema(roles=['tenantadmin', 'globaladmin'], tags=['app'])
 class AppProvisioningProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = AppProvisioningProfileSerializer
@@ -274,15 +344,32 @@ class AppProvisioningProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
             uuid=profile_uuid, provisioning_config=config
         ).first()
         return profile
+    
+    @extend_schema(summary='app配置详情获取', roles=['tenantadmin', 'globaladmin'])
+    def get(self, request, *args, **kwargs):
+        return super(AppProvisioningProfileDetailView, self).get(request, *args, **kwargs)
+    
+    @extend_schema(summary='app配置详情修改', roles=['tenantadmin', 'globaladmin'])
+    def put(self, request, *args, **kwargs):
+        return super(AppProvisioningProfileDetailView, self).put(request, *args, **kwargs)
+    
+    @extend_schema(summary='app配置详情修改', roles=['tenantadmin', 'globaladmin'])
+    def patch(self, request, *args, **kwargs):
+        return super(AppProvisioningProfileDetailView, self).patch(request, *args, **kwargs)
+    
+    @extend_schema(summary='app配置详情删除', roles=['tenantadmin', 'globaladmin'])
+    def delete(self, request, *args, **kwargs):
+        return super(AppProvisioningProfileDetailView, self).delete(request, *args, **kwargs)
 
 
 @extend_schema(
-    roles=['tenant admin', 'global admin'],
-    tags=['app']
+    roles=['tenantadmin', 'globaladmin', 'authmanage.permissionmanage'],
+    tags=['app'],
+    summary='租户app列表'
 )
 class AppListAPIView(generics.ListAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
     authentication_classes = [ExpiringTokenAuthentication]
 
     serializer_class = AppNewListSerializer
@@ -297,3 +384,61 @@ class AppListAPIView(generics.ListAPIView):
 
         qs = App.active_objects.filter(**kwargs).order_by('id')
         return qs
+
+
+@extend_schema(roles=['tenantadmin', 'globaladmin', 'generaluser'], tags=['tenant'])
+class AppPermissionCheckView(APIView):
+
+    permission_classes = []
+    authentication_classes = []
+
+    @extend_schema(
+        roles=['tenantadmin', 'globaladmin', 'generaluser'],
+        summary='权限鉴定'
+    )
+    def get(self, request):
+        id_token = request.META.get('HTTP_ID_TOKEN', '')
+        payload = self.id_token_reverse(id_token)
+        client_id = payload.get('aud', None)
+        user_uuid = payload.get('sub_uuid', '')
+        tenant_uuid = payload.get('tenant_uuid', '')
+        # user_uuid = 'c59b055f-726b-4ba4-b550-15c0c69a680e'
+        # tenant_uuid = '3efed4d9-f2ee-455e-b868-6f60ea8fdff6'
+        # client_id = 'NuLbozhXNrMFYpkhKZlfaf724OaoQSSYlACGE5rF'
+        # 存在性判断
+        if client_id is None:
+            return JsonResponse(data={'error_code': Code.CLIENT_ID_ERROR.value, 'error_msg': 'client_id not exists'})
+        if tenant_uuid is None:
+            return JsonResponse(data={'error_code': Code.TENANT_NO_EXISTS.value, 'error_msg': 'tenant not exists'})
+        if user_uuid is None:
+            return JsonResponse(data={'error_code': Code.USER_EXISTS_ERROR.value, 'error_msg': 'user not exists'})
+        # 准备数据
+        tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        # TODO 后面这里可以改为筛选所有app
+        apps = App.valid_objects.filter(
+            type__in=['OIDC-Platform'],
+            tenant=tenant,
+        )
+        app_temp = None
+        for app in apps:
+            data = app.data
+            app_client_id = data.get('client_id', '')
+            if app_client_id == client_id:
+                app_temp = app
+                break
+        userappp_permission = UserAppPermissionResult.valid_objects.filter(
+            tenant=tenant,
+            user__uuid=user_uuid,
+            app=app_temp,
+        ).first()
+        if userappp_permission:
+            return JsonResponse(data={'error': Code.OK.value, 'result': userappp_permission.result, 'error_msg': 'request success'})
+        else:
+            return JsonResponse(data={'error': Code.USER_PERMISSION_EXISTS_ERROR.value, 'error_msg': 'user permission not exists'})
+    
+    def id_token_reverse(self, id_token):
+        try:
+            payload = jwt.decode(id_token, options={"verify_signature": False})
+            return payload
+        except Exception:
+            raise Exception("unable to parse id_token")

@@ -28,6 +28,7 @@ from ..signals import app_authorized
 from .mixins import OAuthLibMixin
 from config import get_app_config
 from arkid.settings import LOGIN_URL
+from inventory.models import Permission
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 
@@ -61,7 +62,6 @@ class TokenRequiredMixin(AccessMixin):
                 redirect_url = '{}{}?next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, next_uri)
             else: 
                 redirect_url = '{}{}?slug=null&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, next_uri)
-
         return redirect_url
 
     def dispatch(self, request, *args, **kwargs):
@@ -160,9 +160,11 @@ class TokenRequiredMixin(AccessMixin):
                 tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         
         if not tenant:
-            host = get_app_config().get_host().split('://')[-1]
-            request_host = request.get_host().split(':')[0]
-            slug = request_host.replace('.' + host, '')
+            # host = get_app_config().get_host().split('://')[-1]
+            # request_host = request.get_host().split(':')[0]
+            # slug = request_host.replace('.' + host, '')
+            # tenant = Tenant.objects.filter(slug=slug).first()
+            slug = request.GET.get("slug")
             tenant = Tenant.objects.filter(slug=slug).first()
 
         try:
@@ -227,7 +229,6 @@ class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
 
 
 RFC3339 = "%Y-%m-%dT%H:%M:%SZ"
-
 
 class AuthorizationView(BaseAuthorizationView, FormView):
     """

@@ -1,6 +1,6 @@
 from inspect import Parameter
 from common.serializer import BaseDynamicFieldModelSerializer
-from inventory.models import Group, Permission
+from inventory.models import Group, Permission, UserTenantPermissionAndPermissionGroup
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from api.v1.fields.custom import create_foreign_key_field, create_foreign_field
@@ -9,6 +9,8 @@ from ..pages import group, permission
 from django.utils.translation import gettext_lazy as _
 from webhook.manager import WebhookManager
 from django.db import transaction
+
+import uuid
 
 
 class GroupBaseSerializer(serializers.ModelSerializer):
@@ -89,7 +91,6 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         parent = Group.valid_objects.filter(uuid=parent_uuid).first()
 
         o: Group = Group.valid_objects.create(tenant=tenant, name=name, parent=parent)
-
         # if set_permissions is not None:
         #     o.permissions.clear()
         #     for p_uuid in set_permissions:
@@ -116,6 +117,7 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
             parent = Group.valid_objects.filter(uuid=parent_uuid).first()
             instance.parent = parent
 
+        # 更新分组权限
         # if set_permissions is not None:
         #     instance.permissions.clear()
         #     for p_uuid in set_permissions:
@@ -126,13 +128,25 @@ class GroupSerializer(BaseDynamicFieldModelSerializer):
         #     instance.permissions.clear()
 
         instance.save()
+
         transaction.on_commit(
             lambda: WebhookManager.group_updated(self.context['tenant'].uuid, instance)
         )
         return instance
 
     def get_children(self, instance):
-        qs = Group.valid_objects.filter(parent=instance).order_by('id')
+        userpermissions = UserTenantPermissionAndPermissionGroup.valid_objects.filter(
+            tenant=instance.tenant,
+            user=self.context['request'].user,
+            permission__group_info__isnull=False,
+        )
+        group_ids = []
+        for userpermission in userpermissions:
+            group_info = userpermission.permission.group_info
+            group_ids.append(group_info.id)
+        if len(group_ids) == 0:
+            group_ids.append(0)
+        qs = Group.valid_objects.filter(id__in=group_ids,parent=instance).order_by('id')
         return [GroupBaseSerializer(q).data for q in qs]
 
 
