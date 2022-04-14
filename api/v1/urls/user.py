@@ -38,6 +38,7 @@ urlpatterns = [
     ),
     path('user/logout/', views_user.UserLogoutView.as_view(), name='user-logout'),
     path('user/logoff/', views_user.UserLogoffView.as_view(), name='user-logoff'),
+    url(r'^user/freeze/(?P<id>[\w]+)/', views_user.UserFreezeView.as_view(), name='user-freeze'),
     path('user/token_expire/', views_user.UserTokenExpireView.as_view(),
          name='user-token-expire'),
     path(

@@ -47,6 +47,7 @@ from api.v1.serializers.user import (
     UserTokenExpireSerializer,
     UserAppDataSerializer,
     UserListSerializer,
+    UserFreezeSerializer
 )
 from api.v1.serializers.app import AppBaseInfoSerializer
 from api.v1.serializers.sms import ResetPWDSMSClaimSerializer
@@ -884,7 +885,32 @@ class UserLogoffView(generics.RetrieveAPIView):
         User.objects.filter(id=user.id).delete()
         return Response({"is_succeed": True})
 
+@extend_schema(tags=['user'])
+class UserFreezeView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated, ApiAccessPermission]
+    authentication_classes = [ExpiringTokenAuthentication]
 
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        responses=UserFreezeSerializer,
+        request=UserFreezeSerializer,
+        summary='用户冻结',
+    )
+    def post(self, request, id):
+        user = User.valid_objects.filter(uuid=id).first()
+        is_active = request.data.get("is_active")
+        user.is_active = is_active
+        user.save()
+        return Response({"is_succeed": True})
+
+    @extend_schema(
+        roles=['generaluser', 'tenantadmin', 'globaladmin'],
+        responses=UserFreezeSerializer,
+        summary='用户冻结',
+    )
+    def get(self, request, id):
+        user = User.valid_objects.filter(uuid=id).first()
+        return Response({"is_active": user.is_active})
 @extend_schema(tags=['user'])
 class UserTokenExpireView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, ApiAccessPermission]
