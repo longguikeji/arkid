@@ -6,11 +6,9 @@ from ninja import Schema, Query, ModelSchema
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant
+from arkid.core.extension import AuthFactorExtension
 from arkid.core.translation import gettext_default as _
-
-
-class LoginPageIn(Schema):
-    tenant: str
+from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
 
 
 class ButtonRedirectSchema(Schema):
@@ -41,11 +39,15 @@ class ButtonSchema(Schema):
     delay: Optional[int] = Field(title=_('delay','点击后延时（单位：秒）'))
     agreement: Optional[ButtonAgreementSchema] = Field(title=_('agreement','隐私声明'))
 
+
 class LOGIN_FORM_ITEM_TYPES(str, Enum):
     text = _('text', '普通文本框')
     password = _('password','密码')
+    hidden = _('hidden','隐藏')
+
 
 class LoginFormItemSchema(Schema):
+    value: Any
     type: LOGIN_FORM_ITEM_TYPES = Field(title=_('type','种类'))
     placeholder: Optional[str] = Field(title=_('placeholder','文字提示'))
     name: str = Field(title=_('name','名字'))
@@ -53,7 +55,7 @@ class LoginFormItemSchema(Schema):
 
 
 class LoginFormSchema(Schema):
-    title: str = Field(title=_('title', '表单名'))
+    label: str = Field(title=_('label', '表单名'))
     items: List[LoginFormItemSchema] = Field(title=_('items', '表单项'))
     submit: ButtonSchema = Field(title=_('submit','表单提交'))
 
@@ -72,7 +74,7 @@ class LoginPageSchema(Schema):
 class LoginPageTenantSchema(ModelSchema):
     class Config:
         model = Tenant
-        model_fields = ['uuid', 'name', 'slug', 'icon']
+        model_fields = ['id', 'name', 'slug', 'icon']
         # validate = False
 
 class LoginPageOut(Schema):
@@ -80,42 +82,59 @@ class LoginPageOut(Schema):
     tenant: LoginPageTenantSchema
 
 
-register_event('CREATE_LOGIN_PAGE_AUTH_FACTOR', '认证因素生成登录页面')
-register_event('CREATE_LOGIN_PAGE_RULES', '登录页面生成规则')
+register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, '认证因素生成登录页面')
+register_event(CREATE_LOGIN_PAGE_RULES, '登录页面生成规则')
 
 
-@api.get("/login_page/", response=LoginPageOut, auth=None)
+@api.get("/tenant/{tenant_id}/login_page/", response=LoginPageOut, auth=None)
 @operation(LoginPageOut)
-def login_page(request, data: LoginPageIn = Query(...)):
-    tenant_uuid = data.tenant
-    tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-    request.tenant = tenant
-
+def login_page(request, tenant_id: str):
+    tenant = request.tenant
     login_pages = []
-    responses = dispatch_event(Event(tag='CREATE_LOGIN_PAGE_AUTH_FACTOR', tenant=tenant, data={'request': request}))
+    responses = dispatch_event(Event(tag=CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, data={'request': request}))
     for _, response in responses:
         login_pages.append(response)
 
-    dispatch_event(Event(tag='CREATE_LOGIN_PAGE_RULES', tenant=tenant, data={'request': request, 'login_pages': login_pages}))
+    dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, data={'request': request, 'login_pages': login_pages}))
     
-    login_page_forms = []
-    for login_page, extension in login_pages:
-        login_page_forms.extend(login_page['data']['login']['forms'])
-    login_forms_submit = {"label": "登录", "http": {"url": "/api/v1/auth/?tenant=tenant_uuid&request_uuid=rqeuset_uuid", "method": "post"}}
-    register_forms_submit = {}
+    data = {}
+    for (login_page, ext), _ in login_pages:
+        for k,v in login_page.items():
+            if not data.get(k):
+                data[k] = v
+            else:
+                if not data[k].get('bottoms'):
+                    data[k]['bottoms'] = v.get('bottoms')
+                else:
+                    data[k]['bottoms'].extend(v.get('bottoms',[]))
+                if not data[k].get('forms'):
+                    data[k]['forms'] = v.get('forms')
+                else:
+                    data[k]['forms'].extend(v.get('forms',[]))
+                if not data[k].get('extend'):
+                    data[k]['extend'] = v.get('extend')
+                else:
+                    data[k]['extend']['buttons'].extend(v.get('extend', {}).get('buttons', []))
+            if not data[k].get('name'):
+                data[k]['name'] = k
 
-    # page_uuid = uuid.uuid4().hex
+    if data.get(AuthFactorExtension.RESET_PASSWORD):
+        bottom = {"label": "忘记密码", "gopage": AuthFactorExtension.RESET_PASSWORD}
+        data[AuthFactorExtension.LOGIN]['bottoms'].insert(0, bottom)
+        bottom = {"prepend": "已有账号，", "label": "立即登录", "gopage": AuthFactorExtension.LOGIN}
+        data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)
     
+    if data.get(AuthFactorExtension.REGISTER):
+        bottom = {"prepend": "还没有账号，", "label": "立即注册", "gopage": AuthFactorExtension.REGISTER}
+        data[AuthFactorExtension.LOGIN]['bottoms'].insert(0, bottom)
+        bottom = {"prepend": "已有账号，", "label": "立即登录", "gopage": AuthFactorExtension.LOGIN}
+        data[AuthFactorExtension.REGISTER]['bottoms'].insert(0, bottom)
+
+    if data.get(AuthFactorExtension.REGISTER) and data.get(AuthFactorExtension.RESET_PASSWORD):
+        bottom = {"prepend": "还没有账号，", "label": "立即注册", "gopage": AuthFactorExtension.REGISTER}
+        data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)
+
     return {
-        # 'rquest_uuid': uuid.uuid4().hex,
-        # 'header': 'requst_id'
-        # '': 'requst_id'
         'tenant': tenant, 
-        'data': {
-            'login': [],
-            'password': [],
-            'register': [],
-        }
+        'data': data,
     }
-
-    # response = register_and_dispatch_event(tag='AUTO_LOGIN', name=_('自动登录'), tenant=tenant)

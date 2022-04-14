@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'oauth2_provider',
     'arkid.core',
-    'api',
     'arkid.extension',
 ]
 
@@ -53,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'arkid.core.tenant_middleware.TenantMiddleware',
 ]
 
 ROOT_URLCONF = 'arkid.urls'

@@ -3,6 +3,9 @@ from django.dispatch import Signal
 from arkid.core.translation import gettext_default as _
 
 
+event_id_map = {}
+
+
 class EventType:
 
     def __init__(self, tag, name, data_model=None, description='') -> None:
@@ -15,10 +18,21 @@ class EventType:
 
 class Event:
 
-    def __init__(self, tag, tenant, data=None) -> None:
+    def __init__(self, tag, tenant, request=None, response=None, data=None, uuid=None) -> None:
         self.tag = tag
         self.tenant = tenant
+        self._request = request
+        self._response = response
         self.data = data
+        self.uuid = uuid
+
+    @property
+    def request(self):
+        return self._request
+
+    @property
+    def response(self):
+        return self._response
 
 
 tag_map_signal: Dict[str, Event] = {}
@@ -64,8 +78,10 @@ def dispatch_event(event, sender=None):
     #     event.data = event_type.data_model(**event.data)
     return event_type.signal.send(sender=sender, event=event)
 
+
 class EventDisruptionData(Exception):
     pass
+
 
 def break_event_loop(data):
     raise EventDisruptionData(data)
@@ -102,11 +118,20 @@ def decorator_listen_event(tag, **kwargs):
     return _decorator
 
 
-def listen_event(tag, func, listener=None, **kwargs):
-    def signal_func(**kwargs2):
-        return func(**kwargs2), listener
+def remove_event_id(event):
+    if event.uuid:
+        event_id_map.pop(event.uuid, None)
 
-    # kwargs['listener'] = listener
+
+def listen_event(tag, func, listener=None, **kwargs):
+    def signal_func(sender, event, **kwargs2):
+        if event.uuid and event_id_map.get(event.uuid,{}).get(func):
+            return event_id_map.get(event.uuid,{}).get(func), listener
+        
+        res = func(sender=sender, event=event, **kwargs2)
+        if event.uuid:
+            event_id_map[event.uuid] = {func: res}
+        return res, listener
 
     if isinstance(tag, (list, tuple)):
         for t in tag:
@@ -122,6 +147,7 @@ def listen_event(tag, func, listener=None, **kwargs):
         else:
             temp_listens[tag] = (signal_func, kwargs)
 
+
 def unlisten_event(tag, func, **kwargs):
     if isinstance(tag, (list, tuple)):
         for t in tag:
@@ -134,11 +160,6 @@ def unlisten_event(tag, func, **kwargs):
             event_type.signal.disconnect(func, **kwargs)
 
 
-# SEND_SMS_CODE = 'SEND_SMS_CODE'
-
-# from pydantic import BaseModel
-
-# class SendSMSCodeDataModel(BaseModel):
-#     code: str
-
-# register(tag=SEND_SMS_CODE, name=_('发送短信验证码'), data_model=SendSMSCodeDataModel)
+# events
+CREATE_LOGIN_PAGE_AUTH_FACTOR = 'CREATE_LOGIN_PAGE_AUTH_FACTOR'
+CREATE_LOGIN_PAGE_RULES = 'CREATE_LOGIN_PAGE_RULES'
