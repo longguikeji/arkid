@@ -57,12 +57,17 @@ extend_schema_tags(
                 'description': '编辑',
                 'icon': 'el-icon-edit'
             },
+            'freeze': {
+                'tag': 'user.freeze',
+                'description': '冻结',
+                'icon': 'el-icon-edit'
+            },
             'delete': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
                 'method': 'delete',
                 'description': '删除',
                 'icon': 'el-icon-delete'
-            }
+            },
         }
     }
 )
@@ -105,6 +110,28 @@ extend_schema_tags(
             'update': {
                 'path': '/api/v1/tenant/{parent_lookup_tenant}/user/{id}/',
                 'method': 'put',
+                'description': '确定'
+            }
+        }
+    }
+)
+
+user_freeze_tag = 'user.freeze'
+user_freeze_name = '冻结用户'
+
+extend_schema_tags(
+    user_freeze_tag,
+    user_freeze_name,
+    {
+        'type': 'form_page',
+        'init': {
+            'path': '/api/v1/user/freeze/{id}/',
+            'method': 'get'
+        },
+        'global': {
+            'update': {
+                'path': '/api/v1/user/freeze/{id}/',
+                'method': 'post',
                 'description': '确定'
             }
         }
