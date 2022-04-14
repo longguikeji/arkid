@@ -39,6 +39,7 @@ jobs:
       run: |
         sed -i "s@https://mirrors.aliyun.com/pypi/simple@https://pypi.python.org/simple@g" requirements.txt;
         sed -i "s@https://mirrors.aliyun.com/pypi/simple@https://pypi.python.org/simple@g" requirements-dev.txt;
+        sed -i "s@https://mirrors.aliyun.com/pypi/simple@https://pypi.python.org/simple@g" devops/pip.conf;
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
