@@ -893,11 +893,12 @@ class UserFreezeView(generics.GenericAPIView):
     @extend_schema(
         roles=['generaluser', 'tenantadmin', 'globaladmin'],
         responses=UserFreezeSerializer,
+        request=UserFreezeSerializer,
         summary='用户冻结',
     )
     def post(self, request, id):
         user = User.valid_objects.filter(uuid=id).first()
-        is_active = request.date.get("is_active")
+        is_active = request.data.get("is_active")
         user.is_active = is_active
         user.save()
         return Response({"is_succeed": True})
