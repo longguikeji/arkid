@@ -111,11 +111,13 @@ class UserSerializer(BaseDynamicFieldModelSerializer):
             'bind_info',
             'custom_user',
             'created',
+            'is_active'
         )
 
         extra_kwargs = {
             'uuid': {'read_only': True},
-            'bind_info': {'read_only': True}
+            'bind_info': {'read_only': True},
+            'is_active': {'read_only': True}
         }
 
     def get_groups(self, instance):
@@ -247,6 +249,7 @@ class UserListResponsesSerializer(UserSerializer):
             'city',
             'job_title',
             'bind_info',
+            'is_active'
         )
 
 

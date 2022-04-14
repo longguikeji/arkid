@@ -129,7 +129,7 @@ extend_schema_tags(
             'method': 'get'
         },
         'global': {
-            'update': {
+            'freeze': {
                 'path': '/api/v1/user/freeze/{id}/',
                 'method': 'post',
                 'description': '确定'
