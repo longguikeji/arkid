@@ -11,9 +11,6 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
 
 
-class LoginPageIn(Schema):
-    tenant: str
-
 class ButtonRedirectSchema(Schema):
     url: str = Field(title=_('URL','重定向地址'))
     params : Optional[dict] = Field(title=_('params','重定向参数'))
@@ -58,7 +55,7 @@ class LoginFormItemSchema(Schema):
 
 
 class LoginFormSchema(Schema):
-    title: str = Field(title=_('title', '表单名'))
+    label: str = Field(title=_('label', '表单名'))
     items: List[LoginFormItemSchema] = Field(title=_('items', '表单项'))
     submit: ButtonSchema = Field(title=_('submit','表单提交'))
 
@@ -89,13 +86,10 @@ register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth facto
 register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules','登录页面生成规则'))
 
 
-@api.get("/login_page/", response=LoginPageOut, auth=None)
+@api.get("/tenant/{tenant_id}/login_page/", response=LoginPageOut, auth=None)
 @operation(LoginPageOut)
-def login_page(request, data: LoginPageIn = Query(...)):
-    tenant_id = data.tenant
-    tenant = Tenant.objects.filter(uuid=tenant_id).first()
-    request.tenant = tenant
-
+def login_page(request, tenant_id: str):
+    tenant = request.tenant
     login_pages = []
     responses = dispatch_event(Event(tag=CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, request=request))
     for _, response in responses:
@@ -104,8 +98,8 @@ def login_page(request, data: LoginPageIn = Query(...)):
     dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, request=request, data=login_pages))
     
     data = {}
-    for login_page, _ in login_pages:
-        for k,v in login_page['data'].items():
+    for (login_page, ext), _ in login_pages:
+        for k,v in login_page.items():
             if not data.get(k):
                 data[k] = v
             else:

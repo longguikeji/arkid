@@ -1,17 +1,18 @@
-from abc import abstractclassmethod
+from abc import ABC, abstractmethod
 from typing import Union, Literal
 from typing_extensions import Annotated
 from pydantic import Field
 from django.urls import include, re_path
 from pathlib import Path
 from arkid import config
+from types import SimpleNamespace
 from collections import OrderedDict
 from django.apps import apps
 from django.conf import settings
 from django.core import management
 from arkid.core import api as core_api, pages as core_page, routers as core_routers, event as core_event
 from arkid.core import urls as core_urls, expand as core_expand, models as core_models, translation as core_translation
-from arkid.extension.models import TenantExtensionConfig, Extension
+from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
 from ninja import Schema
 from pydantic import Field
 from arkid.core.translation import gettext_default as _
@@ -31,7 +32,7 @@ class ExtensionConfigSchema(Schema):
 
 config_schema_map = {}
 
-class Extension:
+class Extension(ABC):
 
     def __init__(self, package, version, description, labels, homepage, logo, author) -> None:
         self.package = package
@@ -111,7 +112,7 @@ class Extension:
         else:
             raise Exception('非法的扩展字段类对应的父类')
 
-        data = OrderedDict(
+        data = SimpleNamespace(
             table = table,
             field = alias or model_field,
             extension = self.name,
@@ -214,7 +215,7 @@ class Extension:
 
         
     def get_tenant_configs(self, tenant):
-        ext = Extension.objects.filter(package=self.package, version=self.version).first()
+        ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
         configs = TenantExtensionConfig.objects.filter(tenant=tenant, extension=ext).all()
         return configs
 
@@ -225,7 +226,7 @@ class Extension:
         TenantExtensionConfig.objects.get(uuid=uuid).update(config=config)
 
     def create_tenant_config(self, tenant, config):
-        ext = Extension.objects.filter(package=self.package, version=self.version).first()
+        ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
         TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config)
 
     def load(self):
@@ -269,22 +270,22 @@ class AuthFactorExtension(Extension):
         self.listen_event(self.password_event_tag, self.reset_password)
         self.listen_event(core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.create_response)
 
-    @abstractclassmethod
+    @abstractmethod
     def authenticate(self, event, **kwargs):
         pass
 
     def auth_success(self, user):
         return user
     
-    def auth_failed(self, event):
+    def auth_failed(self, event, data):
         core_event.remove_event_id(event)
-        core_event.break_event_loop(event.data)
+        core_event.break_event_loop(data)
 
-    @abstractclassmethod
+    @abstractmethod
     def register(self, event, **kwargs):
         pass
     
-    @abstractclassmethod
+    @abstractmethod
     def reset_password(self, event, **kwargs):
         pass
     
@@ -308,27 +309,27 @@ class AuthFactorExtension(Extension):
         }
         configs = self.get_tenant_configs(event.tenant)
         for config in configs:
-            if config.login_enabled:
+            if config.config.get("login_enabled"):
                 self.create_login_page(event, config)
-            if config.register_enabled:
+            if config.config.get("register_enabled"):
                 self.create_register_page(event, config)
-            if config.reset_password_enabled:
+            if config.config.get("reset_password_enabled"):
                 self.create_password_page(event, config)
         self.create_other_page(event, config)
         return self.data
         
     def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):
         default = {
-            "login": ("登录", "/api/v1/auth/?tenant=tenant_id"),
-            "register": ("登录", "/api/v1/register/?tenant=tenant_id"),
-            "password": ("登录", "/api/v1/reset_password/?tenant=tenant_id"),
+            "login": ("登录", f"/api/v1/auth/?tenant=tenant_id&event_tag={self.auth_event_tag}"),
+            "register": ("登录", f"/api/v1/register/?tenant=tenant_id&event_tag={self.register_event_tag}"),
+            "password": ("登录", f"/api/v1/reset_password/?tenant=tenant_id&event_tag={self.password_event_tag}"),
         }
         if not submit_label:
             submit_label, useless = default.get(page_name)
         if not submit_url:
             useless, submit_url = default.get(page_name)
 
-        items.append({"type": "hidden", "name": "config_id", "value": config.uuid})
+        items.append({"type": "hidden", "name": "config_id", "value": config.id})
         self.data[page_name]['forms'].append({
             'label': label,
             'items': items,
@@ -345,19 +346,19 @@ class AuthFactorExtension(Extension):
         self.data[page_name]['extend']['title'] = title
         self.data[page_name]['extend']['buttons'].append(buttons)
 
-    @abstractclassmethod
+    @abstractmethod
     def create_login_page(self, event, config):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def create_register_page(self, event, config):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def create_password_page(self, event, config):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def create_other_page(self, event, config):
         pass
     

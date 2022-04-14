@@ -15,7 +15,7 @@ class ExtensionConfigSchemaOut(Schema):
     config_id: str
 
 
-@api.post("/{tenant_id}/extension/config", response=ExtensionConfigSchemaOut, auth=None)
+@api.post("/{tenant_id}/extension/config/", response=ExtensionConfigSchemaOut, auth=None)
 def create_extension_config(request, tenant_id: str, data: ExtensionConfigSchemaIn):
     config = TenantExtensionConfig.objects.create(
         tenant_id=tenant_id,

@@ -124,11 +124,11 @@ def remove_event_id(event):
 
 
 def listen_event(tag, func, listener=None, **kwargs):
-    def signal_func(event, **kwargs2):
+    def signal_func(sender, event, **kwargs2):
         if event.uuid and event_id_map.get(event.uuid,{}).get(func):
             return event_id_map.get(event.uuid,{}).get(func), listener
         
-        res = func(**kwargs2)
+        res = func(sender=sender, event=event, **kwargs2)
         if event.uuid:
             event_id_map[event.uuid] = {func: res}
         return res, listener

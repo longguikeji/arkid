@@ -1,6 +1,7 @@
 import re
 from arkid.core.extension import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.error import ErrorCode
+from arkid.core.models import User
 from .models import UserPassword
 from pydantic import Field
 from typing import List, Optional
@@ -33,11 +34,18 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         self.register_config_schema(BaseAuthFactorSchema, 'package2')
         
     def authenticate(self, event, **kwargs):
-        print(**kwargs)
         tenant = event.tenant
-        request = event.data.request
+        request = event.request
         username = request.POST.get('username')
         password = request.POST.get('password')
+        
+        user = User.objects.filter(username=username)
+        if user:
+            user_password = UserPassword.objects.filter(user=user, password=password)
+            if user_password:
+                return self.auth_success(user)
+        
+        return self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username or password not correct'})
 
     def register(self, event, **kwargs):
         tenant = event.tenant
@@ -98,10 +106,39 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         pass
 
     def create_login_page(self, event, config):
-        pass
+        items = [
+            {
+                "type": "text",
+                "name": "username",
+                "placeholder": "用户名"
+            },
+            {
+                "type": "password",
+                "name": "password",
+                "placeholder": "密码"
+            },
+        ]
+        self.add_page_form(config, self.LOGIN, "密码登录", items)
 
     def create_register_page(self, event, config):
-        pass
+        items = [
+            {
+                "type": "text",
+                "name": "username",
+                "placeholder": "用户名"
+            },
+            {
+                "type": "password",
+                "name": "password",
+                "placeholder": "密码"
+            },
+            {
+                "type": "password",
+                "name": "checkpassword",
+                "placeholder": "密码确认"
+            },
+        ]
+        self.add_page_form(config, self.REGISTER, "用户名密码注册", items)
 
     def create_password_page(self, event, config):
         pass
