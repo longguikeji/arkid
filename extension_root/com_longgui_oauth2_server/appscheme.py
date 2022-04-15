@@ -1,7 +1,7 @@
 from enum import Enum
 from ninja import Schema
 from oauth2_provider.models import Application
-from django.utils.translation import gettext_lazy as _
+from arkid.core.translation import gettext_default as _
 from typing import Optional
 from pydantic import Field
 
@@ -28,7 +28,7 @@ class GRANT_TYPE(str, Enum):
     openid_hybrid = _('OpenID connect hybrid','OpenID链接')
 
 
-class OAuth2ConfigInSchema(Schema):
+class ConfigBaseSchema(Schema):
 
     skip_authorization: bool = Field(title=_('skip authorization', '是否跳过验证'), default=False)
     redirect_uris: str = Field(title=_('redirect uris', '回调地址'))
@@ -36,48 +36,43 @@ class OAuth2ConfigInSchema(Schema):
     grant_type: GRANT_TYPE = Field(title=_('type','授权类型'))
 
 
-class Oauth2ConfigOutSchema(OAuth2ConfigInSchema):
+class Oauth2ConfigSchema(ConfigBaseSchema):
 
     # 输出的比输入的额外多了一些字段
-    client_id: str = Field(title=_('client id','客户端id'))
-    client_secret: str = Field(title=('client secret','客户端密钥'))
-    authorize: str = Field(title=('authorize','授权url'))
-    token: str = Field(title=('token','获取token地址'))
-    userinfo: str = Field(title=('userinfo','用户信息地址'))
-    logout: str = Field(title=('logout', '退出登录地址'))
+    client_id: str = Field(title=_('client id','客户端id'), readonly=True)
+    client_secret: str = Field(title=_('client secret','客户端密钥'), readonly=True)
+    authorize: str = Field(title=_('authorize','授权url'), readonly=True)
+    token: str = Field(title=_('token','获取token地址'), readonly=True)
+    userinfo: str = Field(title=_('userinfo','用户信息地址'), readonly=True)
+    logout: str = Field(title=_('logout', '退出登录地址'), readonly=True)
 
 
 class OAuth2AppSchema(AppBaseSchema):
 
     logo: str = Field(title=_('logo', '请选择图标'))
     url: str = Field(title=_('url', 'app url'))
-    data: Oauth2ConfigOutSchema = Field(title=_('data', '数据'))
+    data: Oauth2ConfigSchema = Field(title=_('data', '数据'))
 
 
 class ALGORITHM_TYPE(str, Enum):
 
-    '' = _('No OIDC support','不支持OIDC')
     RS256 = _('RSA with SHA-2 256','RS256加密')
     HS256 = _('HMAC with SHA-2 256','HS256加密')
 
-class OIDCConfigInSchema(OAuth2ConfigInSchema):
 
-    algorithm = serializers.ChoiceField(choices=Application.ALGORITHM_TYPES, default=Application.NO_ALGORITHM)
+class OIDCConfigSchema(ConfigBaseSchema):
 
-
-class OIDCConfigOutSchema(OIDCConfigInSchema):
-
-    # 输出的比输入的额外多了一些字段
-    client_id: str = Field(title=_('client id','客户端id'))
-    client_secret: str = Field(title=('client secret','客户端密钥'))
-    authorize: str = Field(title=('authorize','授权url'))
-    token: str = Field(title=('token','获取token地址'))
-    userinfo: str = Field(title=('userinfo','用户信息地址'))
-    logout: str = Field(title=('logout', '退出登录地址'))
+    algorithm: ALGORITHM_TYPE = Field(title=_('algorithm','加密类型'))
+    client_id: str = Field(title=_('client id','客户端id'), readonly=True)
+    client_secret: str = Field(title=_('client secret','客户端密钥'), readonly=True)
+    authorize: str = Field(title=_('authorize','授权url'), readonly=True)
+    token: str = Field(title=_('token','获取token地址'), readonly=True)
+    userinfo: str = Field(title=_('userinfo','用户信息地址'), readonly=True)
+    logout: str = Field(title=_('logout', '退出登录地址'), readonly=True)
 
 
 class OIDCAppSchema(AppBaseSchema):
 
     logo: str = Field(title=_('logo', '请选择图标'))
     url: str = Field(title=_('url', 'app url'))
-    data: OIDCConfigOutSchema = Field(title=_('data', '数据'))
+    data: OIDCConfigSchema = Field(title=_('data', '数据'))

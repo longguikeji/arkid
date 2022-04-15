@@ -15,10 +15,12 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, View
+from arkid.core.models import ExpiringToken
 # from rest_framework.authtoken.models import Token
 
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
+from arkid.config import get_app_config
 from ..http import OAuth2ResponseRedirect
 from ..models import get_access_token_model, get_application_model
 from django.contrib.auth.mixins import AccessMixin
@@ -186,7 +188,42 @@ log = logging.getLogger("oauth2_provider")
 class TokenRequiredMixin(AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+        is_authenticated = self.check_token(request, *args, **kwargs)
+        if is_authenticated:
+            if self.check_permission(request) is False:
+                return HttpResponseRedirect(self.get_return_url(self.get_login_url(), '您没有使用oauth应用的权限'))
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            return self.handle_no_permission()
+
+    def check_token(self, request, *args, **kwargs):
+        token = request.GET.get('token', '')
+        request.META['HTTP_AUTHORIZATION'] = 'Token ' + token
+
+        try:
+            token = ExpiringToken.objects.get(token=token)
+            if token:
+                if not token.user.is_active:
+                    return False
+                if token.expired():
+                    return False
+                user = token.user
+                request.user = user
+                return True
+            return False
+        except AuthenticationFailed:
+            return False
+
+    def handle_no_permission(self):
+        return self._redirect_to_login()
+
+    def _redirect_to_login(self):
+        return HttpResponseRedirect(self.get_login_url())
+    
+    def get_login_url(self):
+        host = get_app_config().get_frontend_host()
+        login_url = host + '/login'
+        return login_url
 
 
 class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
@@ -409,7 +446,6 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
             template = Template(application.custom_template) 
             rendered_template = template.render(RequestContext(request))
-            print(rendered_template)
             return HttpResponse(rendered_template)
 
             # return TemplateResponse(request, template, {})
