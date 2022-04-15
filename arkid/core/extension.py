@@ -315,7 +315,7 @@ class AuthFactorExtension(Extension):
                 self.create_register_page(event, config)
             if config.config.get("reset_password_enabled"):
                 self.create_password_page(event, config)
-        self.create_other_page(event, config)
+            self.create_other_page(event, config)
         return self.data
         
     def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):

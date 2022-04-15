@@ -168,18 +168,18 @@ class ExpandModel(models.Model):
 
         extension_tables = {}
         for q in queryset:
-            if q.extension_table not in extension_tables:
-                extension_model_obj = q.extension_model_cls()
-                extension_model_obj.user = self
-                extension_tables[q.extension_table] = extension_model_obj
-            else:
-                extension_model_obj = extension_tables[q.extension_table]
-
             if hasattr(self, q.field):
+                if q.extension_table not in extension_tables:
+                    extension_model_obj = q.extension_model_cls()
+                    extension_model_obj.user = self
+                    extension_tables[q.extension_table] = extension_model_obj
+                else:
+                    extension_model_obj = extension_tables[q.extension_table]
+
                 setattr(extension_model_obj, q.extension_field, getattr(self, q.field))
 
-        for obj in extension_tables.values():
-            obj.save()
+        for extension_model_obj in extension_tables.values():
+            extension_model_obj.save()
 
     @transaction.atomic()
     def delete(self, *args, **kwargs):

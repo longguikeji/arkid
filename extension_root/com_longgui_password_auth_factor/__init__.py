@@ -13,6 +13,7 @@ from django.contrib.auth.hashers import (
     is_password_usable,
     make_password,
 )
+from django.db import transaction
 
 
 class PasswordAuthFactorSchema(BaseAuthFactorSchema):
@@ -46,21 +47,20 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        user = User.objects.filter(username=username, tenants=tenant)
+        user = User.objects.filter(username=username, tenant=tenant).first()
         if user:
-            user_password = UserPassword.objects.filter(user=user)
+            user_password = UserPassword.objects.filter(user=user).first()
             if user_password:
                 if check_password(password, user_password.password):
                     return self.auth_success(user)
         
         return self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username or password not correct'})
 
+    @transaction.atomic()
     def register(self, event, **kwargs):
         tenant = event.tenant
         request = event.request
-        username = request.POST.get('username')
         password = request.POST.get('password')
-        # register_fields = request.POST.get('register_fields')
 
         config = self.get_current_config(event)
         ret, message = self.check_password_complexity(password, config)
@@ -86,17 +86,17 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             if user:
                 self.auth_failed(event, data={'error': ErrorCode.USERNAME_EXISTS_ERROR.value, 'message': f'{field}字段用户已存在'})
 
-        user = User.objects.create()
+        # user = User.objects.create(tenant=tenant)
+        user = User(tenant=tenant)
         for k in fields:
             if request.POST.get(k):
                 setattr(user, k, request.POST.get(k))
-        user.paasword = make_password(password)
+        user.password = make_password(password)
         user.save()
-        user.tenants.add(tenant)
-        user.save()
+        tenant.users.add(user)
+        tenant.save()
 
-        data = {'error': ErrorCode.OK.value, 'user': user}
-        return data
+        return user
 
     def reset_password(self, event, **kwargs):
         pass

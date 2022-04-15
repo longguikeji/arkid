@@ -4,9 +4,11 @@ from pydantic import Field
 from ninja import Schema, Query, ModelSchema
 from arkid.core.event import register_event, dispatch_event, Event
 from arkid.core.api import api, operation
-from arkid.core.models import Tenant, ExpiringToken
+from arkid.core.models import Tenant, ExpiringToken, User
 from arkid.core.translation import gettext_default as _
 from arkid.core.token import refresh_token
+from arkid.core.error import ErrorCode
+from arkid.core.schema import ResponseSchema, UserSchemaOut
 
 
 class RegisterTenantSchema(ModelSchema):
@@ -16,9 +18,13 @@ class RegisterTenantSchema(ModelSchema):
         # validate = False
 
 
-class RegisterOut(Schema):
-    data: Dict[str, Optional[Any]]
-    tenant: RegisterTenantSchema
+class RegisterDataOut(Schema):
+    user: UserSchemaOut
+    token: str
+
+
+class RegisterOut(ResponseSchema):
+    data: RegisterDataOut
 
 
 @api.post("/tenant/{tenant_id}/register/", response=RegisterOut, auth=None)
@@ -32,11 +38,9 @@ def register(request, tenant_id: str, event_tag: str):
     if len(responses) < 1:
         return {'error': 'error_code', 'message': '认证插件未启用'}
 
-    response = responses[0]
-    _, (response, _) = response
-    user = response.get('user')
-    
+    useless, (user, useless) = responses[0]
+
     # 生成 token
     token = refresh_token(user)
 
-    return {'data': {'token': token, 'user': user.id.hex}}
+    return {'error': ErrorCode.OK.value, 'data': {'user': user, 'token': token}}

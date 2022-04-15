@@ -14,4 +14,4 @@ class UserPassword(UserExpandAbstract):
 
         app_label = "com_longgui_password_auth_factor"
 
-    password = models.CharField(_("Password", "密码"), max_length=40)
+    password = models.CharField(_("Password", "密码"), max_length=256)
