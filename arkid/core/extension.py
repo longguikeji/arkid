@@ -116,7 +116,7 @@ class Extension(ABC):
             table = table,
             field = alias or model_field,
             extension = self.name,
-            extension_model = model_cls._meta.model_name,
+            extension_model_cls = model_cls,
             extension_table = model_cls._meta.db_table,
             extension_field = model_field,
         )

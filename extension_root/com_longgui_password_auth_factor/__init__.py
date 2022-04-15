@@ -82,15 +82,16 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': '所有用户标识至少填一个'})
 
         for field in fields:
-            user = self._get_register_user(tenant, field=request.POST.get(field))
+            user = self._get_register_user(tenant, field, request.POST.get(field))
             if user:
                 self.auth_failed(event, data={'error': ErrorCode.USERNAME_EXISTS_ERROR.value, 'message': f'{field}字段用户已存在'})
 
-        fields_dict = {k: v for k, v in request.POST if k in fields}
-        user = User(
-            password=make_password(password),
-            **fields_dict,
-        )
+        user = User.objects.create()
+        for k in fields:
+            if request.POST.get(k):
+                setattr(user, k, request.POST.get(k))
+        user.paasword = make_password(password)
+        user.save()
         user.tenants.add(tenant)
         user.save()
 

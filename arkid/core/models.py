@@ -19,6 +19,13 @@ class Tenant(BaseModel):
     slug = models.SlugField(verbose_name=_('slug', '短链接标识'), unique=True)
     icon = models.URLField(verbose_name=_('icon', '图标'), blank=True)
 
+    # users = models.ManyToManyField(
+    #     'User',
+    #     blank=False,
+    #     related_name="tenant_user_set",
+    #     related_query_name="user",
+    # )
+
     def __str__(self) -> str:
         return f'Tenant: {self.name}'
 
@@ -28,10 +35,15 @@ class User(ExpandModel, BaseModel):
     class Meta(object):
         verbose_name = _("user", "用户")
         verbose_name_plural = _("user", "用户")
+        # unique_together = [['username', 'tenant']]
 
     username = models.CharField(max_length=128, blank=False)
     avatar = models.URLField(verbose_name=_('Avatar','头像'), blank=True)
     is_platform_user = models.BooleanField(default=False, verbose_name=_('is platform user','是否是平台用户'))
+
+    # tenant = models.ForeignKey(
+    #     'Tenant', blank=False, on_delete=models.PROTECT
+    # )
 
     tenants = models.ManyToManyField(
         'Tenant',

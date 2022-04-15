@@ -35,8 +35,4 @@ class TenantMiddleware:
 
         # Code to be executed for each request/response after
         # the view is called.
-
-        # if request.META.get('Content-Type') == "application/json":
-        #     request.data = json.loads()
-
         return response

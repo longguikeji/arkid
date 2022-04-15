@@ -169,9 +169,8 @@ class ExpandModel(models.Model):
         extension_tables = {}
         for q in queryset:
             if q.extension_table not in extension_tables:
-                extension = getattr(extension_root, q.extension)
-                extension_model = getattr(extension, q.extension_model)
-                extension_model_obj = extension_model()
+                extension_model_obj = q.extension_model_cls()
+                extension_model_obj.user = self
                 extension_tables[q.extension_table] = extension_model_obj
             else:
                 extension_model_obj = extension_tables[q.extension_table]
@@ -193,9 +192,7 @@ class ExpandModel(models.Model):
         extension_tables = {}
         for q in queryset:
             if q.extension_table not in extension_tables:
-                extension = getattr(extension_root, q.extension)
-                extension_model = getattr(extension, q.extension_model)
-                extension_model_obj = extension_model()
+                extension_model_obj = q.extension_model_cls()
                 extension_tables[q.extension_table] = extension_model_obj
             else:
                 extension_model_obj = extension_tables[q.extension_table]

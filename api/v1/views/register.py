@@ -39,4 +39,4 @@ def register(request, tenant_id: str, event_tag: str):
     # 生成 token
     token = refresh_token(user)
 
-    return {'data': {'token': token, 'user': user.uuid.hex}}
+    return {'data': {'token': token, 'user': user.id.hex}}
