@@ -68,7 +68,7 @@ class Extension(ABC):
 
     @property
     def full_name(self):
-        return f'{Path(self.ext_dir).parent}.{self.name}'
+        return str(self.ext_dir).replace('/','.')
 
     def migrate_extension(self) -> None:
         extension_migrate_foldname = Path(self.ext_dir) / 'migrations'

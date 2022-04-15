@@ -2,7 +2,6 @@ from django.db import models
 from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
 from django.db import transaction
-import extension_root
 
 
 class TenantExpandAbstract(BaseModel):

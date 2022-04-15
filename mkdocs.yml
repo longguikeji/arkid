@@ -4,6 +4,8 @@ site_name: ArkID
 theme:
   name: "mkdocs"
 
+docs_dir: "root/"
+
 plugins:
   - search
   - mkdocstrings:
@@ -16,6 +18,4 @@ plugins:
             - "import django"
             - "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')"
             - "django.setup()"
-      watch:
-        - extension_root/
 

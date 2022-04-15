@@ -8,7 +8,6 @@ ipython = "*"
 pre-commit = "*"
 pylint = "*"
 autopep8 = "*"
-mkdocstrings = "*"
 
 [packages]
 django-ninja = ">=0.17.0"
@@ -19,6 +18,8 @@ mysqlclient = "*"
 oauth2_provider = "*"
 toml = "*"
 aliyunsdkcore = "*"
+mkdocstrings = "*"
+mkdocs = "*"
 
 [requires]
 python_version = "3.8"

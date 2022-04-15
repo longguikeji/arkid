@@ -26,7 +26,7 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
-
+    
     id = models.UUIDField(verbose_name='UUID', default=uuid.uuid4, editable=True, unique=True, primary_key=True)
 
     is_del = models.BooleanField(default=False, verbose_name='是否删除')

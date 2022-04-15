@@ -1,6 +1,5 @@
 from distutils import core
 import re
-from attr import fields
 from arkid.core.extension import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.error import ErrorCode
 from arkid.core.models import User
