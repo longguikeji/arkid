@@ -417,7 +417,7 @@ class AppPermissionCheckView(APIView):
         # TODO 后面这里可以改为筛选所有app
         apps = App.valid_objects.filter(
             type__in=['OIDC-Platform'],
-            tenant=tenant,
+            # tenant=tenant,
         )
         app_temp = None
         for app in apps:
@@ -427,7 +427,7 @@ class AppPermissionCheckView(APIView):
                 app_temp = app
                 break
         userappp_permission = UserAppPermissionResult.valid_objects.filter(
-            tenant=tenant,
+            # tenant=tenant,
             user__uuid=user_uuid,
             app=app_temp,
         ).first()

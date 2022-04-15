@@ -160,10 +160,12 @@ class TokenRequiredMixin(AccessMixin):
                 tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
         
         if not tenant:
-            # host = get_app_config().get_host().split('://')[-1]
-            # request_host = request.get_host().split(':')[0]
-            # slug = request_host.replace('.' + host, '')
-            # tenant = Tenant.objects.filter(slug=slug).first()
+            host = get_app_config().get_host().split('://')[-1]
+            request_host = request.get_host().split(':')[0]
+            slug = request_host.replace('.' + host, '')
+            tenant = Tenant.objects.filter(slug=slug).first()
+        
+        if not tenant:
             slug = request.GET.get("slug")
             tenant = Tenant.objects.filter(slug=slug).first()
 
