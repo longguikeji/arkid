@@ -1,0 +1,21 @@
+# mkdocs.yml
+site_name: ArkID
+
+theme:
+  name: "mkdocs"
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            rendering_opt: "value"
+          setup_commands:
+            - "import os"
+            - "import django"
+            - "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')"
+            - "django.setup()"
+      watch:
+        - extension_root/
+

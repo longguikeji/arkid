@@ -33,6 +33,8 @@ class ExtensionConfigSchema(Schema):
 config_schema_map = {}
 
 class Extension(ABC):
+    """插件基类
+    """
 
     def __init__(self, package, version, description, labels, homepage, logo, author) -> None:
         self.package = package

@@ -8,6 +8,7 @@ ipython = "*"
 pre-commit = "*"
 pylint = "*"
 autopep8 = "*"
+mkdocstrings = "*"
 
 [packages]
 django-ninja = ">=0.17.0"
