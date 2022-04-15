@@ -1,8 +1,21 @@
 # mkdocs.yml
 site_name: ArkID
 
+
+
 theme:
-  name: "mkdocs"
+  name: "material"
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tracking
+    - navigation.tabs.sticky
+    - navigation.indexes
+    - navigation.top
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/space-station
 
 docs_dir: "root/"
 
@@ -19,3 +32,25 @@ plugins:
             - "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')"
             - "django.setup()"
 
+
+repo_url: https://github.com/longguikeji/arkid
+repo_name: longguikeji/arkid
+edit_uri: ""
+
+extra:
+  homepage: https://saas.arkid.cc
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/longguikeji/arkid
+      name: longguikeji/arkid
+    - icon: fontawesome/solid/paper-plane
+      link: mailto:support@longguikeji.com
+      name: 技术支持
+    - icon: fontawesome/solid/link
+      link: https://saas.arkid.cc
+      name: 中心ArkID
+
+copyright: Copyright &copy; 2018 - 2022 龙归科技
+
+markdown_extensions:
+  - meta

@@ -26,9 +26,10 @@ Event = core_event.Event
 EventType = core_event.EventType
 
 
-class ExtensionConfigSchema(Schema):
-    pass
-
+def create_extension_config_schema(schema_cls, **field_definitions):
+    for schema in config_schema_map.values():
+        core_api.add_fields(schema, **field_definitions)
+    core_api.add_fields(schema_cls, __root__=(Union[tuple(config_schema_map.values())], Field(discriminator='package'))) # type: ignore
 
 config_schema_map = {}
 
@@ -192,27 +193,12 @@ class Extension(ABC):
         new_schema = create_schema(TenantExtensionConfig,
             name=self.package+'_config', 
             fields=['id'],
-            custom_fields=[("data", schema, Field()), ("package", Literal[package or self.package], Field())], # type: ignore
+            custom_fields=[
+                ("package", Literal[package or self.package], Field()),  # type: ignore
+                ("data", schema, Field())
+            ],
         )
         config_schema_map[package or self.package] = new_schema
-        if len(config_schema_map) > 1:
-            core_api.add_fields(ExtensionConfigSchema, config=(Union[tuple(config_schema_map.values())], Field(discriminator='package'))) # type: ignore
-        else:
-            core_api.add_fields(ExtensionConfigSchema, config=new_schema)
-        # schema = type(self.full_name+'_config', (Schema,), dict((config: schema)=Field(), (package: Literal[package or self.package]) = Field())
-
-        # core_api.add_fields(schema, package=(Literal[package or self.package], package or self.package)) # type: ignore
-
-        # if Union[None, str] in ExtensionConfigSchemaRoot.__args__:
-        #     ExtensionConfigSchemaRoot.__args__ = (Union[schema, None],)
-        # elif type(None) in ExtensionConfigSchemaRoot.__args__[0].__args__:
-        #     ExtensionConfigSchemaRoot.__args__ = (Union[ExtensionConfigSchemaRoot.__args__[0], schema],)
-        # else:
-        #     ExtensionConfigSchemaRoot.__args__ = (Union[tuple(list(ExtensionConfigSchemaRoot.__args__[0].__args__) + [schema])],) # type: ignore
-        # ExtensionConfigSchemaRoot.__origin__ = ExtensionConfigSchemaRoot.__args__[0]
-        
-        # if len(ExtensionConfigSchemaRoot.__args__[0].__args__) >= 2:
-        #     ExtensionConfigSchemaRoot.__metadata__ = (Field(discriminator='package'),)
 
 
         

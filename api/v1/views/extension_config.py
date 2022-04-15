@@ -4,12 +4,18 @@ from arkid.core.api import api
 from typing import Union
 from typing_extensions import Annotated
 from pydantic import Field
-from arkid.core.extension import ExtensionConfigSchema
+from arkid.core.extension import set_extension_config_schema
 from arkid.extension.models import TenantExtensionConfig, Extension
 
 
-class ExtensionConfigSchemaIn(ExtensionConfigSchema):
-    extension_id: str 
+class ExtensionConfigSchemaIn(Schema):
+    # extension_id: str 
+    pass
+
+set_extension_config_schema(
+    ExtensionConfigSchemaIn,
+    extension_id=str
+)
 
 class ExtensionConfigSchemaOut(Schema):
     config_id: str

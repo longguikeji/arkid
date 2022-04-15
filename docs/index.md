@@ -1,1 +1,0 @@
-::: arkid.core.extension.Extension
