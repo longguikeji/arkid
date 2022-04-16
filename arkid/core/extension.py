@@ -27,6 +27,22 @@ EventType = core_event.EventType
 
 
 def create_extension_config_schema(schema_cls, **field_definitions):
+    """创建插件配置的Schema
+    schema_cls只接受一个空定义的Schema
+    Examples:
+        >>> from ninja import Schema
+        >>> from pydantic import Field
+        >>> class ExampleExtensionConfigSchema(Schema):
+        >>>     pass
+        >>> create_extension_config_schema(
+        >>>     ExampleExtensionConfigSchema, 
+        >>>     field_name=( field_type, Field(...) )
+        >>> )
+
+    Args:
+        schema_cls (ninja.Schema): 需要创建的Schema class
+        field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
+    """
     for schema in config_schema_map.values():
         core_api.add_fields(schema, **field_definitions)
     core_api.add_fields(schema_cls, __root__=(Union[tuple(config_schema_map.values())], Field(discriminator='package'))) # type: ignore
