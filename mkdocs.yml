@@ -5,7 +5,7 @@ site_name: ArkID
 
 theme:
   name: "material"
-  custom_dir: docs/overrides
+  # custom_dir: docs/overrides
   features:
     - navigation.instant
     - navigation.tabs
