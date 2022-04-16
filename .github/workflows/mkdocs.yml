@@ -1,0 +1,15 @@
+name: mkdocs
+on:
+  push:
+    branches:
+      - v2.5-dev 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - run: pip install -r reuirements.txt
+      - run: mkdocs gh-deploy --force
