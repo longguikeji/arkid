@@ -1,9 +1,10 @@
 .md-grid {
-    max-width: none;
-    margin-left: 6rem;
-    margin-right: 6rem;
+    /* max-width: 65rem; */
+    /* margin-left: 6rem;
+    margin-right: 6rem; */
 }
 .md-sidebar {
-    min-width: 12.1rem;
-    width: auto;
+    /* min-width: 15rem; */
+    /* max-width: ;
+    width: auto; */
 }

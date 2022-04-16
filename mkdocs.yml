@@ -5,6 +5,7 @@ site_name: ArkID
 
 theme:
   name: "material"
+  custom_dir: docs/overrides
   features:
     - navigation.instant
     - navigation.tabs
@@ -13,9 +14,23 @@ theme:
     - navigation.indexes
     - navigation.top
     - toc.follow
+    - content.tabs.link
   icon:
     repo: fontawesome/brands/github
     logo: material/space-station
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to light mode
 
 docs_dir: "docs/"
 
@@ -26,12 +41,15 @@ plugins:
         python:
           rendering:
             show_source: false
-            rendering_opt: "value"
+            show_root_heading: true
+            # rendering_opt: "value"
           setup_commands:
             - "import os"
             - "import django"
             - "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')"
             - "django.setup()"
+      watch:
+        - arkid/core
 
 
 repo_url: https://github.com/longguikeji/arkid
@@ -55,9 +73,13 @@ extra:
 copyright: Copyright &copy; 2018 - 2022 龙归科技
 
 markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true 
   - meta
+  - attr_list
   - toc:
-        # permalink: "#"
+      permalink: "#"
         # baselevel: 0
         # separator: "_"
 

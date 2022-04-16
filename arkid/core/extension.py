@@ -28,6 +28,7 @@ EventType = core_event.EventType
 
 def create_extension_config_schema(schema_cls, **field_definitions):
     """创建插件配置的Schema
+    
     schema_cls只接受一个空定义的Schema
     Examples:
         >>> from ninja import Schema
@@ -72,8 +73,6 @@ class Extension(ABC):
         # self.config_schema_map = 
         self.lang_code = None
 
-    class ConfigSchema:
-        pass
 
     @property
     def ext_dir(self):
@@ -194,9 +193,6 @@ class Extension(ABC):
         self.front_routers.append((router, primary))
 
     def register_front_pages(self, page):
-        """
-        primary: 一级路由名字，由 core_routers 文件提供定义
-        """
         page.tag = self.package + '_' + page.tag
 
         core_page.register_front_pages(page)
