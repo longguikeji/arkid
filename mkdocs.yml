@@ -5,7 +5,7 @@ site_name: ArkID
 
 theme:
   name: "material"
-  # custom_dir: docs/overrides
+  custom_dir: docs/overrides
   features:
     - navigation.instant
     - navigation.tabs
@@ -13,8 +13,10 @@ theme:
     - navigation.tabs.sticky
     - navigation.indexes
     - navigation.top
+    - navigation.expand
     - toc.follow
     - content.tabs.link
+    - content.code.annotate
   icon:
     repo: fontawesome/brands/github
     logo: material/space-station
@@ -60,15 +62,23 @@ extra:
 copyright: Copyright &copy; 2018 - 2022 龙归科技
 
 markdown_extensions:
+  - def_list
+  - admonition
+  - pymdownx.details
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true 
   - meta
   - attr_list
+  - md_in_html
   - toc:
       permalink: "#"
         # baselevel: 0
         # separator: "_"
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
 
 extra_css:
   - stylesheets/extra.css

@@ -9,7 +9,7 @@ title: 首页
 
 [官方网站](https://arkid.cc){ .md-button .md-button--primary }
 [中心SaaS网站](https://saas.arkid.cc){ .md-button }
-[快速开始](%20%20%20快速开始/){ .md-button }
+[官方文档](https://longguikeji.github.io/arkid/){ .md-button }
 
 ------
 ## 功能特点
@@ -38,7 +38,7 @@ title: 首页
 ### 权限集中
 * 支持RBAC，ABAC的权限管理
 * 支持统一存储和分配权限
-* 统一权限验证，支持三方系统自主鉴权
+* 统一权限验证，支持第三方权限系统集成
 ### 数据同步
 * 支持SCIM协议，跨系统同步用户与组织架构数据
 * 支持包括用户，组织架构，认证，权限等各类数据同步
