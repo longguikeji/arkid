@@ -277,7 +277,7 @@ REQUESTLOGS = {
 # Celery settings
 CELERY_BROKER = 'redis://localhost:6379'
 CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_TIMEZONE = TIME_ZONE
+CELERY_TIMEZONE = 'Asia/Shanghai'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 #: Only add pickle to this list if your broker is secured
