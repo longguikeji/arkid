@@ -44,7 +44,7 @@ repo_name: longguikeji/arkid
 edit_uri: ""
 
 extra:
-  homepage: https://saas.arkid.cc
+  homepage: https://longguikeji.github.io/arkid/
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/longguikeji/arkid
