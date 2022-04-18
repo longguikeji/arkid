@@ -39,17 +39,17 @@ def load_config(tenant_uuid):
 
 
 def get_ad_connection(data):
-    host = data.get('host')
-    port = data.get('port')
-    use_tls = data.get('tls')
-    bind_dn = data.get('bind_dn')
-    bind_password = data.get('bind_password')
+    host = data.get("host")
+    port = data.get("port")
+    use_tls = data.get("tls")
+    bind_dn = data.get("bind_dn")
+    bind_password = data.get("bind_password")
     server = Server(
         host=host,
         port=port,
         use_ssl=use_tls,
         # get_info=ldap3.NONE,
-        # connect_timeout=self.connect_timeout,
+        connect_timeout=data.get("connect_timeout", 5),
     )
     conn = Connection(
         server,
@@ -57,6 +57,6 @@ def get_ad_connection(data):
         password=bind_password,
         auto_bind=True,
         # raise_exceptions=False,
-        # receive_timeout=self.receive_timeout,
+        receive_timeout=data.get("receive_timeout", 60),
     )
     return conn

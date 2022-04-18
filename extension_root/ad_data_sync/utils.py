@@ -2,6 +2,18 @@ import json
 import ldap3
 from data_sync.models import DataSyncConfig
 from ldap3 import Server, Connection
+from scim_server.schemas.core2_group import Core2Group
+from scim_server.schemas.core2_enterprise_user import Core2EnterpriseUser
+from scim_server.schemas.schema_identifiers import SchemaIdentifiers
+from scim_server.protocol.path import Path
+from scim_server.utils import (
+    compose_core2_user,
+    compose_enterprise_extension,
+    compose_core2_group,
+    compose_core2_group_member,
+)
+from scim_server.schemas.member import Member
+from common.logger import logger
 
 
 def load_config(tenant_uuid):
@@ -40,17 +52,18 @@ def load_config(tenant_uuid):
 
 
 def get_ad_connection(data):
-    host = data.get('host')
-    port = data.get('port')
-    use_tls = data.get('tls')
-    bind_dn = data.get('bind_dn')
-    bind_password = data.get('bind_password')
+    logger.info(f"Get AD Connection with config: {data}")
+    host = data.get("host")
+    port = data.get("port")
+    use_tls = data.get("tls")
+    bind_dn = data.get("bind_dn")
+    bind_password = data.get("bind_password")
     server = Server(
         host=host,
         port=port,
         use_ssl=use_tls,
-        # get_info=ldap3.NONE,
-        # connect_timeout=self.connect_timeout,
+        get_info=ldap3.ALL,
+        connect_timeout=data.get("connect_timeout"),
     )
     conn = Connection(
         server,
@@ -58,6 +71,52 @@ def get_ad_connection(data):
         password=bind_password,
         auto_bind=True,
         # raise_exceptions=False,
-        # receive_timeout=self.receive_timeout,
+        receive_timeout=data.get("receive_timeout"),
     )
     return conn
+
+
+def get_scim_group(value_dict, members, group_attr_map):
+    # remove "{}" from objectGUID value
+    value_dict["objectGUID"] = value_dict["objectGUID"].strip("{}")
+    for m in members:
+        m["objectGUID"] = m["objectGUID"].strip("{}")
+
+    group = Core2Group()
+    group.members = []
+    for app_attr, value in value_dict.items():
+        scim_attr_expression = group_attr_map.get(app_attr)
+        if not scim_attr_expression:
+            continue
+        scim_path = Path.create(scim_attr_expression)
+        compose_core2_group(group, scim_path, value)
+
+    for item in members:
+        member = Member()
+        for app_attr, value in item.items():
+            scim_attr_expression = group_attr_map.get(app_attr)
+            if not scim_attr_expression:
+                continue
+            scim_path = Path.create(scim_attr_expression)
+            compose_core2_group_member(member, scim_path, value)
+        group.members.append(member)
+    return group
+
+
+def get_scim_user(value_dict, user_attr_map):
+    # remove "{}" from objectGUID value
+    value_dict["objectGUID"] = value_dict["objectGUID"].strip("{}")
+    user = Core2EnterpriseUser()
+    for app_attr, value in value_dict.items():
+        scim_attr_expression = user_attr_map.get(app_attr)
+        if not scim_attr_expression:
+            continue
+        scim_path = Path.create(scim_attr_expression)
+        if (
+            scim_path.schema_identifier
+            and scim_path.schema_identifier == SchemaIdentifiers.Core2EnterpriseUser
+        ):
+            compose_enterprise_extension(user, scim_path, value)
+        else:
+            compose_core2_user(user, scim_path, value)
+    return user

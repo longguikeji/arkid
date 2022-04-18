@@ -131,7 +131,7 @@ class ArkidDataSyncClientProvider(DataSyncProvider):
         scim_server = DataSyncConfig.objects.filter(uuid=scim_server_uuid).first()
         data['scim_server_name'] = scim_server.name
         data['user_url'] = scim_server.data['user_url']
-        data['user_url'] = scim_server.data['user_url']
+        data['group_url'] = scim_server.data['group_url']
         return data
 
     @classmethod
@@ -142,5 +142,5 @@ class ArkidDataSyncClientProvider(DataSyncProvider):
         scim_server = DataSyncConfig.objects.filter(uuid=scim_server_uuid).first()
         data['scim_server_name'] = scim_server.name
         data['user_url'] = scim_server.data['user_url']
-        data['user_url'] = scim_server.data['user_url']
+        data['group_url'] = scim_server.data['group_url']
         return data

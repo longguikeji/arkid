@@ -157,11 +157,11 @@ post_save.connect(receiver=tenant_saved, sender=Tenant)
 
 post_save.connect(receiver=app_saved, sender=App)
 
-post_save.connect(receiver=user_saved, sender=User)
-post_save.connect(receiver=group_saved, sender=Group)
+# post_save.connect(receiver=user_saved, sender=User)
+# post_save.connect(receiver=group_saved, sender=Group)
 
-# 如果用post_delete, 取不到用户的租户信息
-pre_delete.connect(receiver=user_deleted, sender=User)
-pre_delete.connect(receiver=group_deleted, sender=Group)
+# # 如果用post_delete, 取不到用户的租户信息
+# pre_delete.connect(receiver=user_deleted, sender=User)
+# pre_delete.connect(receiver=group_deleted, sender=Group)
 
-m2m_changed.connect(receiver=user_groups_changed, sender=User.groups.through)
+# m2m_changed.connect(receiver=user_groups_changed, sender=User.groups.through)
