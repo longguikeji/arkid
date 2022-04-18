@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 global_pages = []
 
-FROM_PAGE_TYPE = 'form_page'
+FORM_PAGE_TYPE = 'form_page'
 TABLE_PAGE_TYPE = 'table_page'
 TREE_PAGE_TYPE = 'tree_page'
 
