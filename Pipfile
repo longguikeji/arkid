@@ -18,6 +18,9 @@ mysqlclient = "*"
 oauth2_provider = "*"
 toml = "*"
 aliyunsdkcore = "*"
+mkdocstrings = "*"
+mkdocs = "*"
+mkdocs-material = "*"
 
 [requires]
 python_version = "3.8"

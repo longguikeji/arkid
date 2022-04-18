@@ -1,0 +1,84 @@
+# mkdocs.yml
+site_name: ArkID
+
+
+
+theme:
+  name: "material"
+  custom_dir: docs/overrides
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tracking
+    - navigation.tabs.sticky
+    - navigation.indexes
+    - navigation.top
+    - navigation.expand
+    - toc.follow
+    - content.tabs.link
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/space-station
+
+docs_dir: "docs/"
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_source: false
+            show_root_heading: true
+            # rendering_opt: "value"
+          setup_commands:
+            - "import os"
+            - "import django"
+            - "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')"
+            - "django.setup()"
+      watch:
+        - arkid/core
+
+
+repo_url: https://github.com/longguikeji/arkid
+repo_name: longguikeji/arkid
+edit_uri: ""
+
+extra:
+  homepage: https://longguikeji.github.io/arkid/
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/longguikeji/arkid
+      name: longguikeji/arkid
+    - icon: fontawesome/solid/paper-plane
+      link: mailto:support@longguikeji.com
+      name: 技术支持
+    - icon: fontawesome/solid/link
+      link: https://saas.arkid.cc
+      name: 中心ArkID
+
+
+copyright: Copyright &copy; 2018 - 2022 龙归科技
+
+markdown_extensions:
+  - def_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true 
+  - meta
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: "#"
+        # baselevel: 0
+        # separator: "_"
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+extra_css:
+  - stylesheets/extra.css

@@ -11,10 +11,11 @@ class CoreConfig(AppConfig):
                 slug='',
                 name="platform tenant",
             )
-            user, created = User.objects.get_or_create(
+            user, _ = User.objects.get_or_create(
                 username="admin",
+                tenant=tenant,
             )
-            user.tenants.add(tenant)
-            user.save()
+            tenant.users.add(user)
+            tenant.save()
         except:
             pass

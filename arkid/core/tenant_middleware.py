@@ -1,4 +1,5 @@
 import re
+import json
 from arkid.core.models import Tenant
 
 
@@ -34,5 +35,4 @@ class TenantMiddleware:
 
         # Code to be executed for each request/response after
         # the view is called.
-
         return response

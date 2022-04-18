@@ -1,1 +1,1 @@
-from . import loginpage, auth, extension_config,user
+from . import loginpage, auth, extension_config, user, register

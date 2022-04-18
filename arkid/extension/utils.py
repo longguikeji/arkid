@@ -91,7 +91,8 @@ def delete_extension_folder(extension) -> None:
 
 
 def import_extension(ext_dir: str) -> any:
-    ext_name = f'{Path(ext_dir).parent}.{Path(ext_dir).name}'
+    ext_name = str(ext_dir).replace('/','.')
+        
     ext = importlib.import_module(ext_name)
     if ext and hasattr(ext, 'extension'):
         ext.extension.ext_dir = ext_dir
@@ -103,7 +104,7 @@ def import_extension(ext_dir: str) -> any:
 
 
 def load_extension(ext_dir: str) -> any:
-    ext_name = f'{Path(ext_dir).parent}.{Path(ext_dir).name}'
+    ext_name = str(ext_dir).replace('/','.')
     ext = importlib.import_module(ext_name)
     if ext and hasattr(ext, 'extension'):
         ext.extension.ext_dir = ext_dir

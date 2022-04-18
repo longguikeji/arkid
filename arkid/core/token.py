@@ -1,9 +1,12 @@
-from arkid.core.models import ExpiringToken
+import os
+import binascii
+
+
+def generate_token():
+    return binascii.hexlify(os.urandom(20)).decode()
 
 
 def refresh_token(user):
-    token, created = ExpiringToken.objects.get_or_create(user=user)
-    if not created:
-        token = token.refresh_token()
-    user_token = token.token
-    return user_token
+    from arkid.core.models import ExpiringToken
+    token, _ = ExpiringToken.objects.update_or_create(user=user, defaults={"token": generate_token()})
+    return token.token

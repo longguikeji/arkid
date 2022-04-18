@@ -1,10 +1,18 @@
+from distutils import core
 import re
 from arkid.core.extension import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.error import ErrorCode
+from arkid.core.models import User
 from .models import UserPassword
 from pydantic import Field
 from typing import List, Optional
 from arkid.core.translation import gettext_default as _
+from django.contrib.auth.hashers import (
+    check_password,
+    is_password_usable,
+    make_password,
+)
+from django.db import transaction
 
 
 class PasswordAuthFactorSchema(BaseAuthFactorSchema):
@@ -29,21 +37,30 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def load(self):
         super().load()
         self.register_extend_field(UserPassword, "password")
-        self.register_config_schema(PasswordAuthFactorSchema, self.package)
-        # self.register_config_schema(BaseAuthFactorSchema, 'package2')
+        self.register_config_schema(PasswordAuthFactorSchema)
+        self.register_config_schema(BaseAuthFactorSchema, 'package2')
         
     def authenticate(self, event, **kwargs):
-        print(**kwargs)
-        tenant = event.tenant
-        request = event.data.request
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-    def register(self, event, **kwargs):
         tenant = event.tenant
         request = event.request
         username = request.POST.get('username')
         password = request.POST.get('password')
+
+        user = User.objects.filter(username=username, tenant=tenant).first()
+        if user:
+            user_password = UserPassword.objects.filter(user=user).first()
+            if user_password:
+                if check_password(password, user_password.password):
+                    return self.auth_success(user)
+        
+        return self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username or password not correct'})
+
+    @transaction.atomic()
+    def register(self, event, **kwargs):
+        tenant = event.tenant
+        request = event.request
+        password = request.POST.get('password')
+
         config = self.get_current_config(event)
         ret, message = self.check_password_complexity(password, config)
         if not ret:
@@ -52,47 +69,33 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 'message': message,
             }
             return data
-
-        if 'username' in request.POST:
-            field_name = 'username'
-        elif 'email' in request.POST:
-            field_name = 'email'
+        
+        register_fields = config.config.get('register_enabled_field_names')
+        if not register_fields:
+            fields = ['username']
+            if request.POST.get('username') is None:
+                self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username不能为空'})
         else:
-            for key in request.POST:
-                if key not in ('password', 'checkpassword'):
-                    field_name = key
-                    break
+            fields = [k for k in register_fields if request.POST.get(k) is not None]
+            if not fields:
+                self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': '所有用户标识至少填一个'})
 
-        field_value = request.POST.get(field_name)
-        user = self._get_register_user(field_name, field_value)
-        if user:
-            data = {
-                'error': ErrorCode.USERNAME_EXISTS_ERROR.value,
-                'message': _('username already exists'),
-            }
-            return data
-        # username字段也填入默认值
-        if field_name in ('username', 'email'):
-            kwargs = {field_name: field_value}
-            if field_name == 'email':
-                kwargs.update(username=field_value)
-            user = User.objects.create(
-                is_del=False,
-                is_active=True,
-                **kwargs,
-            )
-        else:
-            user = User.objects.create(
-                is_del=False,
-                is_active=True,
-                username=field_value,
-            )
-            CustomUser.objects.create(user=user, data={field_name: field_value})
+        for field in fields:
+            user = self._get_register_user(tenant, field, request.POST.get(field))
+            if user:
+                self.auth_failed(event, data={'error': ErrorCode.USERNAME_EXISTS_ERROR.value, 'message': f'{field}字段用户已存在'})
 
-        user.set_password(password)
+        # user = User.objects.create(tenant=tenant)
+        user = User(tenant=tenant)
+        for k in fields:
+            if request.POST.get(k):
+                setattr(user, k, request.POST.get(k))
+        user.password = make_password(password)
         user.save()
-        data = {'error': ErrorCode.OK.value, 'user': user}
-        return data
+        tenant.users.add(user)
+        tenant.save()
+
+        return user
 
     def reset_password(self, event, **kwargs):
         pass
@@ -151,7 +154,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 return False, title
         return True, None
 
-    def _get_register_user(self, field_name, field_value):
+    def _get_register_user(self, tenant, field_name, field_value):
         # user = None
         # if field_name in ('username', 'email'):
         #     user = .active_objects.filter(**{field_name: field_value}).first()
