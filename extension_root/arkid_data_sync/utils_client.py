@@ -11,9 +11,9 @@ def get_data(url):
 
 def gen_user_attributes(user):
     data = {
-        "first_name": user["name"]["givenName"],
-        "last_name": user["name"]["familyName"],
-        "nickname": user["name"]["formatted"],
+        "first_name": user["name"].get("givenName", "") if user.get("name") else "",
+        "last_name": user["name"].get("familyName", "") if user.get("name") else "",
+        "nickname": user["name"].get("formatted", "") if user.get("name") else "",
         # "employee_id": user[
         #     "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
         # ].get("employeeNumber"),
