@@ -53,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'arkid.core.tenant_middleware.TenantMiddleware',
+    'arkid.core.request_json_data_middleware.JSONMiddleware',
 ]
 
 ROOT_URLCONF = 'arkid.urls'
@@ -60,7 +61,7 @@ ROOT_URLCONF = 'arkid.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

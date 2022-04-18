@@ -5,6 +5,7 @@ from pydantic import Field
 from django.urls import include, re_path
 from pathlib import Path
 from arkid import config
+from types import SimpleNamespace
 from collections import OrderedDict
 from django.apps import apps
 from django.conf import settings
@@ -25,13 +26,33 @@ Event = core_event.Event
 EventType = core_event.EventType
 
 
-class ExtensionConfigSchema(Schema):
-    pass
+def create_extension_config_schema(schema_cls, **field_definitions):
+    """创建插件配置的Schema
+    
+    schema_cls只接受一个空定义的Schema
+    Examples:
+        >>> from ninja import Schema
+        >>> from pydantic import Field
+        >>> class ExampleExtensionConfigSchema(Schema):
+        >>>     pass
+        >>> create_extension_config_schema(
+        >>>     ExampleExtensionConfigSchema, 
+        >>>     field_name=( field_type, Field(...) )
+        >>> )
 
+    Args:
+        schema_cls (ninja.Schema): 需要创建的Schema class
+        field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
+    """
+    for schema in config_schema_map.values():
+        core_api.add_fields(schema, **field_definitions)
+    core_api.add_fields(schema_cls, __root__=(Union[tuple(config_schema_map.values())], Field(discriminator='package'))) # type: ignore
 
 config_schema_map = {}
 
 class Extension(ABC):
+    """插件基类
+    """
 
     def __init__(self, package, version, description, labels, homepage, logo, author) -> None:
         self.package = package
@@ -52,8 +73,6 @@ class Extension(ABC):
         # self.config_schema_map = 
         self.lang_code = None
 
-    class ConfigSchema:
-        pass
 
     @property
     def ext_dir(self):
@@ -65,7 +84,7 @@ class Extension(ABC):
 
     @property
     def full_name(self):
-        return f'{Path(self.ext_dir).parent}.{self.name}'
+        return str(self.ext_dir).replace('/','.')
 
     def migrate_extension(self) -> None:
         extension_migrate_foldname = Path(self.ext_dir) / 'migrations'
@@ -111,11 +130,11 @@ class Extension(ABC):
         else:
             raise Exception('非法的扩展字段类对应的父类')
 
-        data = OrderedDict(
+        data = SimpleNamespace(
             table = table,
             field = alias or model_field,
             extension = self.name,
-            extension_model = model_cls._meta.model_name,
+            extension_model_cls = model_cls,
             extension_table = model_cls._meta.db_table,
             extension_field = model_field,
         )
@@ -174,9 +193,6 @@ class Extension(ABC):
         self.front_routers.append((router, primary))
 
     def register_front_pages(self, page):
-        """
-        primary: 一级路由名字，由 core_routers 文件提供定义
-        """
         page.tag = self.package + '_' + page.tag
 
         core_page.register_front_pages(page)
@@ -189,27 +205,12 @@ class Extension(ABC):
         new_schema = create_schema(TenantExtensionConfig,
             name=self.package+'_config', 
             fields=['id'],
-            custom_fields=[("data", schema, Field()), ("package", Literal[package or self.package], Field())], # type: ignore
+            custom_fields=[
+                ("package", Literal[package or self.package], Field()),  # type: ignore
+                ("data", schema, Field())
+            ],
         )
         config_schema_map[package or self.package] = new_schema
-        if len(config_schema_map) > 1:
-            core_api.add_fields(ExtensionConfigSchema, config=(Union[tuple(config_schema_map.values())], Field(discriminator='package'))) # type: ignore
-        else:
-            core_api.add_fields(ExtensionConfigSchema, config=new_schema)
-        # schema = type(self.full_name+'_config', (Schema,), dict((config: schema)=Field(), (package: Literal[package or self.package]) = Field())
-
-        # core_api.add_fields(schema, package=(Literal[package or self.package], package or self.package)) # type: ignore
-
-        # if Union[None, str] in ExtensionConfigSchemaRoot.__args__:
-        #     ExtensionConfigSchemaRoot.__args__ = (Union[schema, None],)
-        # elif type(None) in ExtensionConfigSchemaRoot.__args__[0].__args__:
-        #     ExtensionConfigSchemaRoot.__args__ = (Union[ExtensionConfigSchemaRoot.__args__[0], schema],)
-        # else:
-        #     ExtensionConfigSchemaRoot.__args__ = (Union[tuple(list(ExtensionConfigSchemaRoot.__args__[0].__args__) + [schema])],) # type: ignore
-        # ExtensionConfigSchemaRoot.__origin__ = ExtensionConfigSchemaRoot.__args__[0]
-        
-        # if len(ExtensionConfigSchemaRoot.__args__[0].__args__) >= 2:
-        #     ExtensionConfigSchemaRoot.__metadata__ = (Field(discriminator='package'),)
 
 
         
@@ -218,11 +219,11 @@ class Extension(ABC):
         configs = TenantExtensionConfig.objects.filter(tenant=tenant, extension=ext).all()
         return configs
 
-    def get_config_by_id(self, uuid):
-        return TenantExtensionConfig.objects.get(uuid=uuid)
+    def get_config_by_id(self, id):
+        return TenantExtensionConfig.objects.get(id=id)
     
-    def update_tenant_config(self, uuid,  config):
-        TenantExtensionConfig.objects.get(uuid=uuid).update(config=config)
+    def update_tenant_config(self, id,  config):
+        TenantExtensionConfig.objects.get(id=id).update(config=config)
 
     def create_tenant_config(self, tenant, config):
         ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
@@ -276,9 +277,9 @@ class AuthFactorExtension(Extension):
     def auth_success(self, user):
         return user
     
-    def auth_failed(self, event):
+    def auth_failed(self, event, data):
         core_event.remove_event_id(event)
-        core_event.break_event_loop(event.data)
+        core_event.break_event_loop(data)
 
     @abstractmethod
     def register(self, event, **kwargs):
@@ -314,14 +315,14 @@ class AuthFactorExtension(Extension):
                 self.create_register_page(event, config)
             if config.config.get("reset_password_enabled"):
                 self.create_password_page(event, config)
-        self.create_other_page(event, config)
+            self.create_other_page(event, config)
         return self.data
         
     def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):
         default = {
-            "login": ("登录", "/api/v1/auth/?tenant=tenant_id"),
-            "register": ("登录", "/api/v1/register/?tenant=tenant_id"),
-            "password": ("登录", "/api/v1/reset_password/?tenant=tenant_id"),
+            "login": ("登录", f"/api/v1/auth/?tenant=tenant_id&event_tag={self.auth_event_tag}"),
+            "register": ("登录", f"/api/v1/register/?tenant=tenant_id&event_tag={self.register_event_tag}"),
+            "password": ("登录", f"/api/v1/reset_password/?tenant=tenant_id&event_tag={self.password_event_tag}"),
         }
         if not submit_label:
             submit_label, useless = default.get(page_name)
@@ -362,7 +363,7 @@ class AuthFactorExtension(Extension):
         pass
     
     def get_current_config(self, event):
-        config_id = event.POST.get('config_id')
+        config_id = event.request.POST.get('config_id')
         return self.get_config_by_id(config_id)
 
 

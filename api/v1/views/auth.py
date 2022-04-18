@@ -8,6 +8,9 @@ from arkid.core.api import api, operation
 from arkid.core.models import Tenant, ExpiringToken
 from arkid.core.translation import gettext_default as _
 from arkid.core.token import refresh_token
+from arkid.core.error import ErrorCode
+from arkid.core.schema import ResponseSchema, UserSchemaOut
+
 
 class AuthTenantSchema(ModelSchema):
     class Config:
@@ -16,30 +19,29 @@ class AuthTenantSchema(ModelSchema):
         # validate = False
 
 
-class AuthOut(Schema):
-    data: Dict[str, Optional[Any]]
-    tenant: AuthTenantSchema
+class AuthDataOut(Schema):
+    user: UserSchemaOut
+    token: str
 
 
-@api.post("/auth/", response=AuthOut, auth=None)
+class AuthOut(ResponseSchema):
+    data: AuthDataOut
+
+
+@api.post("/tenant/{tenant_id}/auth/", response=AuthOut, auth=None)
 @operation(AuthOut, use_id=True)
-def auth(request):
-    tenant_id = data.tenant
-    tenant = Tenant.objects.filter(uuid=tenant_id).first()
-    request.tenant = tenant
-
+def auth(request, tenant_id: str, event_tag: str):
+    tenant = request.tenant
     request_id = request.META.get('request_id')
 
     # 认证
-    responses = dispatch_event(Event(tag=data.tag, tenant=tenant, request=request, uuid=request_id))
-    if len(responses) < 1:
+    responses = dispatch_event(Event(tag=event_tag, tenant=tenant, request=request, uuid=request_id))
+    if not responses:
         return {'error': 'error_code', 'message': '认证插件未启用'}
 
-    response = responses[0]
-    _, (response, _) = response
-    user = response.get('user')
+    useless, (user, useless) = responses[0]
     
     # 生成 token
     token = refresh_token(user)
 
-    return {'data': {'token': token, 'user': user.uuid.hex}}
+    return {'error': ErrorCode.OK.value, 'data': {'user': user, 'token': token}}

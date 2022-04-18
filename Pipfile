@@ -17,8 +17,14 @@ redis = "*"
 mysqlclient = "*"
 toml = "*"
 aliyunsdkcore = "*"
+<<<<<<< HEAD
 jwcrypto = "*"
 oauthlib = "*"
+=======
+mkdocstrings = "*"
+mkdocs = "*"
+mkdocs-material = "*"
+>>>>>>> b65b982bf00506733a5033ac385ba005f5d310c1
 
 [requires]
 python_version = "3.8"

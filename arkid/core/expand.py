@@ -2,7 +2,6 @@ from django.db import models
 from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
 from django.db import transaction
-import extension_root
 
 
 class TenantExpandAbstract(BaseModel):
@@ -168,19 +167,18 @@ class ExpandModel(models.Model):
 
         extension_tables = {}
         for q in queryset:
-            if q.extension_table not in extension_tables:
-                extension = getattr(extension_root, q.extension)
-                extension_model = getattr(extension, q.extension_model)
-                extension_model_obj = extension_model()
-                extension_tables[q.extension_table] = extension_model_obj
-            else:
-                extension_model_obj = extension_tables[q.extension_table]
-
             if hasattr(self, q.field):
+                if q.extension_table not in extension_tables:
+                    extension_model_obj = q.extension_model_cls()
+                    extension_model_obj.user = self
+                    extension_tables[q.extension_table] = extension_model_obj
+                else:
+                    extension_model_obj = extension_tables[q.extension_table]
+
                 setattr(extension_model_obj, q.extension_field, getattr(self, q.field))
 
-        for obj in extension_tables.values():
-            obj.save()
+        for extension_model_obj in extension_tables.values():
+            extension_model_obj.save()
 
     @transaction.atomic()
     def delete(self, *args, **kwargs):
@@ -193,9 +191,7 @@ class ExpandModel(models.Model):
         extension_tables = {}
         for q in queryset:
             if q.extension_table not in extension_tables:
-                extension = getattr(extension_root, q.extension)
-                extension_model = getattr(extension, q.extension_model)
-                extension_model_obj = extension_model()
+                extension_model_obj = q.extension_model_cls()
                 extension_tables[q.extension_table] = extension_model_obj
             else:
                 extension_model_obj = extension_tables[q.extension_table]
