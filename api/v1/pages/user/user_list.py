@@ -36,7 +36,6 @@ user_edit_page = pages.FrontPage(
 user_edit_page.add_global_action(
     [
         pages.FrontAction(
-            tag="user.edit",
             method="post",
             name=_("确认"),
             path="/api/v1/tenant/{tenant_id}/users/{id}/"
