@@ -69,8 +69,15 @@ user_create_page.add_global_action(
 page.add_local_action(
     [
         pages.FrontAction(
-            name="编辑用户",
-            page=user_edit_page
+            name=_("编辑用户"),
+            page=user_edit_page,
+            icon="el-icon-update"
+        ),
+        pages.FrontAction(
+            name=_("删除用户"),
+            method="delete",
+            path="/api/v1/tenant/{tenant_id}/users/{id}/",
+            icon="el-icon-delete"
         )
     ]
 )
@@ -79,7 +86,8 @@ page.add_global_action(
     [
         pages.FrontAction(
             name="创建用户",
-            page=user_create_page
+            page=user_create_page,
+            icon="el-icon-plus"
         )
     ]
 )
