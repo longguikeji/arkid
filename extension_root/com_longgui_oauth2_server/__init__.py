@@ -1,19 +1,19 @@
-from arkid.core import extension
+from arkid.core.extension.app_protocol import AppProtocolExtension
 from .appscheme import (
-    OIDCAppSchema, OAuth2AppSchema
+    Oauth2ConfigSchema, OIDCConfigSchema,
 )
 from oauth2_provider.models import Application
 from arkid.config import get_app_config
 
-class OAuth2ServerExtension(extension.Extension):
+class OAuth2ServerExtension(AppProtocolExtension):
 
     def load(self):
         super().load()
         # 加载url地址
         self.load_urls()
         # 加载相应的配置文件
-        # self.register_config_schema(OIDCAppSchema, self.package)
-        # self.register_config_schema(OAuth2AppSchema, self.package)
+        self.register_config_schema(OIDCConfigSchema, 'OIDC', self.package)
+        self.register_config_schema(Oauth2ConfigSchema, 'OAuth2' ,self.package)
 
 
     def load_urls(self):
@@ -25,7 +25,8 @@ class OAuth2ServerExtension(extension.Extension):
 
         self.register_routers(urls, True)
     
-    def create(self, tenant, app, data):
+    def create_app(self, tenant, app, data):
+
         client_type = data.get('client_type')
         skip_authorization = data.get('skip_authorization')
         redirect_uris = data.get('redirect_uris')
@@ -93,6 +94,15 @@ class OAuth2ServerExtension(extension.Extension):
 
         app.data = uniformed_data
         app.save()
+
+    def create_app(self, event, config):
+        return True
+
+    def update_app(self, event, config):
+        return True
+
+    def delete_app(self, event, config):
+        return True
 
 extension = OAuth2ServerExtension(
     package='com.longgui.oauth2_server',

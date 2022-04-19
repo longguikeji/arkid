@@ -6,7 +6,7 @@ from ninja import Schema, Query, ModelSchema
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant
-from arkid.core.extension import AuthFactorExtension
+from arkid.core.extension.auth_factor import AuthFactorExtension
 from arkid.core.translation import gettext_default as _
 from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
 

@@ -5,15 +5,6 @@ from arkid.core.translation import gettext_default as _
 from typing import Optional
 from pydantic import Field
 
-class AppBaseSchema(Schema):
-
-    type: str = Field(title=_('type', '类型'))
-    logo: str = Field(title=_('logo', '图标'))
-    name: str = Field(title=_('name', '名称'))
-    url: str = Field(title=_('url', '主页地址'))
-    description: str = Field(title=_('description', '描述'))
-    data: Optional[dict] = Field(title=_('data','数据'))
-
 
 class CLIENT_TYPE(str, Enum):
     confidential = _('Confidential', '私密')
@@ -47,11 +38,9 @@ class Oauth2ConfigSchema(ConfigBaseSchema):
     logout: str = Field(title=_('logout', '退出登录地址'), readonly=True)
 
 
-class OAuth2AppSchema(AppBaseSchema):
+# class OAuth2AppSchema(AppBaseSchema):
 
-    logo: str = Field(title=_('logo', '请选择图标'))
-    url: str = Field(title=_('url', 'app url'))
-    data: Oauth2ConfigSchema = Field(title=_('data', '数据'))
+#     data: Oauth2ConfigSchema = Field(title=_('data', '数据'))
 
 
 class ALGORITHM_TYPE(str, Enum):
@@ -71,8 +60,6 @@ class OIDCConfigSchema(ConfigBaseSchema):
     logout: str = Field(title=_('logout', '退出登录地址'), readonly=True)
 
 
-class OIDCAppSchema(AppBaseSchema):
+# class OIDCAppSchema(AppBaseSchema):
 
-    logo: str = Field(title=_('logo', '请选择图标'))
-    url: str = Field(title=_('url', 'app url'))
-    data: OIDCConfigSchema = Field(title=_('data', '数据'))
+#     data: OIDCConfigSchema = Field(title=_('data', '数据'))

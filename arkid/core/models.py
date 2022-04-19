@@ -5,6 +5,7 @@ from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
 # from oauth2_provider.generators import generate_client_secret
 from arkid.core.expand import ExpandManager, ExpandModel
+from arkid.extension.models import TenantExtensionConfig
 from arkid.core.token import generate_token
 
 
@@ -98,10 +99,12 @@ class App(ExpandModel, BaseModel):
     url = models.CharField(max_length=1024, blank=True, verbose_name=_('url','地址'))
     logo = models.CharField(max_length=1024, blank=True, null=True, default='', verbose_name=_('logo','图标'))
     description = models.TextField(blank=True, null=True, verbose_name=_('description','描述'))
-    type = models.CharField(max_length=128, verbose_name=_('type','类型'))
-    data = models.JSONField(blank=True, default=dict, verbose_name=_('data','配置'))
+    type = models.CharField(max_length=128, default='', verbose_name=_('type','类型'))
     secret = models.CharField(
         max_length=255, blank=True, null=True, default='', verbose_name=_('secret','密钥')
+    )
+    config = models.OneToOneField(
+        TenantExtensionConfig, blank=False, default=None, on_delete=models.PROTECT
     )
 
     def __str__(self) -> str:
