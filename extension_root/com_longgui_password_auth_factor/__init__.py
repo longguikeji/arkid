@@ -1,6 +1,6 @@
 from distutils import core
 import re
-from arkid.core.extension import AuthFactorExtension, BaseAuthFactorSchema
+from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.error import ErrorCode
 from arkid.core.models import User
 from .models import UserPassword
