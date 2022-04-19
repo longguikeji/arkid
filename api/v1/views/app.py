@@ -1,157 +1,49 @@
-from email import message
-from typing import Any, Dict, Optional, List
-from ninja import Schema, Query, ModelSchema
-from arkid.core.event import Event, register_event, dispatch_event
-from arkid.core.api import api, operation
-from arkid.core.models import Tenant, User
-from arkid.core.extension import AuthFactorExtension
+from ninja import Schema
+from pydantic import Field
+from arkid.core.api import api
+from arkid.core.models import App
+from django.db import transaction
 from arkid.core.translation import gettext_default as _
-from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
-from arkid.common.logger import logger
+from arkid.extension.models import TenantExtensionConfig
+from arkid.core.event import Event, register_event, dispatch_event
+from arkid.core.extension.app_protocol import create_app_protocol_extension_config_schema
+from arkid.core.event import CREATE_APP, UPDATE_APP, DELETE_APP
 
-# ------------- 用户列表接口 --------------
+register_event(CREATE_APP, _('create app','创建应用'))
+register_event(UPDATE_APP, _('update app','修改应用'))
+register_event(DELETE_APP, _('delete app','删除应用'))
 
-class UserListInSchema(Schema):
+class AppConfigSchemaIn(Schema):
     pass
 
-class UserListOutSchema(ModelSchema):
-     class Config:
-        model = User
-        model_fields = ['id', 'username', 'avatar', 'is_platform_user']
-        
-@api.get("/tenant/{tenant_id}/users/",response=List[UserListOutSchema], auth=None)
-@operation(List[UserListOutSchema])
-def user_list(request, tenant_id: str,data: UserListInSchema=Query(...)):
-    users = User.objects.filter(tenant__id=tenant_id).all()
-    return users
+create_app_protocol_extension_config_schema(
+    AppConfigSchemaIn,
+)
 
-# ------------- 创建用户接口 --------------
 
-class UserCreateInQuerySchema(Schema):
-    pass
+class AppConfigSchemaOut(Schema):
+    config_id: str
 
-class UserCreateInSchema(ModelSchema):
-    class Config:
-        model = User
-        model_fields = ['username', 'avatar', 'is_platform_user']
-        
-class UserCreateOutSchema(Schema):
-    status:bool = Field(
-        title=_("状态")
-    )
-    
-    message:str = Field(
-        title=_("状态说明")
-    )
-        
-@api.post("/tenant/{tenant_id}/users/",response=UserCreateOutSchema, auth=None)
-@operation(UserCreateOutSchema)
-def user_create(request, tenant_id: str,data:UserCreateInSchema, query_data: UserCreateInQuerySchema=Query(...)):
-    status = True,
-    message = ""
-    try:
-        users = User.objects.create(tenant__id=tenant_id,**data.dict())
-    except Exception as e:
-        status = False
-        message= f'{_("创建用户失败")}:{str(e)}'
-        logger.error(message)
-    finally:
-        return {
-            "status": status,
-            "message": message
-        }
-        
-    
-    return users
 
-# ------------- 删除用户接口 --------------
-
-class UserDeleteInSchema(Schema):
-    pass
-        
-class UserDeleteOutSchema(Schema):
-    status:bool = Field(
-        title=_("状态")
-    )
-    
-    message:str = Field(
-        title=_("状态说明")
-    )
-        
-@api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOutSchema, auth=None)
-@operation(UserDeleteOutSchema)
-def user_delete(request, tenant_id: str,id:str,data: UserDeleteInSchema=Query(...)):
-    status = True,
-    message = ""
-    try:
-        user = User.active_objects.get(tenant__id=tenant_id,id=id)
-        user.delete()
-    except User.DoesNotExist:
-        status = False
-        message= _("指定的用户不存在。")
-        logger.error(message)
-    except Exception as e:
-        status = False
-        message= f'{_("删除用户失败")}:{str(e)}'
-        logger.error(message)
-    finally:
-        return {
-            "status": status,
-            "message": message
-        }
-        
-# ------------- 更新用户接口 --------------
-class UserUpdateInSchema(ModelSchema):
-    class Config:
-        model = User
-        model_fields = ['avatar']
-
-class UserUpdateInQuerySchema(Schema):
-    pass
-        
-class UserUpdateOutSchema(Schema):
-    status:bool = Field(
-        title=_("状态")
-    )
-    
-    message:str = Field(
-        title=_("状态说明")
-    )
-        
-@api.put("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOutSchema, auth=None)
-@operation(UserUpdateOutSchema)
-def user_update(request, tenant_id: str,id:str,data:UserUpdateInSchema,query_data: UserUpdateInQuerySchema=Query(...)):
-    status = True,
-    message = ""
-    try:
-        user = User.active_objects.get(tenant__id=tenant_id,id=id)
-        user.avatar = data.avatar
-        user.save()
-    except User.DoesNotExist:
-        status = False
-        message= _("指定的用户不存在。")
-        logger.error(message)
-    except Exception as e:
-        status = False
-        message= f'{_("更新用户失败")}:{str(e)}'
-        logger.error(message)
-    finally:
-        return {
-            "status": status,
-            "message": message
-        }
-        
-# ------------- 获取用户接口 --------------
-class UserInSchema(Schema):
-    pass
-
-class UserOutSchema(ModelSchema):
-     class Config:
-        model = User
-        model_fields = ['id', 'username', 'avatar', 'is_platform_user']
-        
-@api.get("/tenant/{tenant_id}/users/{id}/",response=UserOutSchema, auth=None)
-@operation(UserOutSchema)
-def user_list(request, tenant_id: str,id:str,data: UserInSchema=Query(...)):
-    user = User.active_objects.get(tenant__id=tenant_id,id=id)
-    return user
+@transaction.atomic
+@api.post("/{tenant_id}/app/", response=AppConfigSchemaOut, auth=None)
+def create_app_config(request, tenant_id: str, data: AppConfigSchemaIn):
+    tenant = request.tenant
+    # 事件分发
+    results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
+    for func, (result, extension) in results:
+        if result:
+            # 创建config
+            config = extension.create_tenant_config(tenant, data.config.data.dict())
+            # 创建app
+            app = App()
+            app.name = data.name
+            app.url = data.url
+            app.logo = data.logo
+            app.type = data.app_type
+            app.description = data.description
+            app.config = config
+            app.tenant_id = tenant_id
+            app.save()
+            break
+    return {"app_id": app.id.hex}
