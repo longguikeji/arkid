@@ -32,7 +32,12 @@ def create_app_protocol_extension_config_schema(schema_cls, **field_definitions)
     """
     for schema in app_protocol_schema_map.values():
         core_api.add_fields(schema, **field_definitions)
-    core_api.add_fields(schema_cls, data=(Union[tuple(app_protocol_schema_map.values())], Field(discriminator='app_type'))) # type: ignore
+    if len(app_protocol_schema_map.values()) == 0:
+        core_api.add_fields(schema_cls) # type: ignore
+    elif len(app_protocol_schema_map.values()) == 1:
+        core_api.add_fields(schema_cls, __root__=app_protocol_schema_map.values()[0]) # type: ignore
+    else:
+        core_api.add_fields(schema_cls, data=(Union[tuple(app_protocol_schema_map.values())], Field(discriminator='app_type'))) # type: ignore
 
 
 class AppProtocolExtension(Extension):

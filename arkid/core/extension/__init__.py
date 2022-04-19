@@ -46,7 +46,13 @@ def create_extension_config_schema(schema_cls, **field_definitions):
     """
     for schema in config_schema_map.values():
         core_api.add_fields(schema, **field_definitions)
-    core_api.add_fields(schema_cls, __root__=(Union[tuple(config_schema_map.values())], Field(discriminator='package'))) # type: ignore
+    if len(config_schema_map.values()) == 0:
+        core_api.add_fields(schema_cls) # type: ignore
+    elif len(config_schema_map.values()) == 1:
+        core_api.add_fields(schema_cls, __root__=config_schema_map.values()[0]) # type: ignore
+    else:
+        core_api.add_fields(schema_cls, __root__=(Union[tuple(config_schema_map.values())], Field(discriminator='package'))) # type: ignore
+        
 
 config_schema_map = {}
 
