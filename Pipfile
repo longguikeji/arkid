@@ -22,6 +22,7 @@ oauthlib = "*"
 mkdocstrings = "*"
 mkdocs = "*"
 mkdocs-material = "*"
+pyjwt = "*"
 
 [requires]
 python_version = "3.8"

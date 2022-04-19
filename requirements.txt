@@ -57,3 +57,4 @@ wrapt==1.14.0
 zipp==3.8.0
 jwcrypto==1.0
 oauthlib==3.2.0
+PyJWT==2.3.0
