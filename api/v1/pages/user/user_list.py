@@ -24,7 +24,6 @@ page = pages.FrontPage(
 )
 
 user_edit_page = pages.FrontPage(
-    tag="user.edit",
     name=_("编辑用户"),
     type=pages.FORM_PAGE_TYPE,
     init_action=pages.FrontAction(
@@ -45,7 +44,6 @@ user_edit_page.add_global_action(
 )
 
 user_create_page = pages.FrontPage(
-    tag="user.create",
     name=_("创建用户"),
     type=pages.FORM_PAGE_TYPE,
     init_action=pages.FrontAction(
@@ -57,7 +55,6 @@ user_create_page = pages.FrontPage(
 user_create_page.add_global_action(
     [
         pages.FrontAction(
-            tag="user.create",
             method="post",
             name=_("确认"),
             path="/api/v1/tenant/{tenant_id}/users/"
