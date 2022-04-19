@@ -22,19 +22,21 @@ create_app_protocol_extension_config_schema(
 
 
 class AppConfigSchemaOut(Schema):
-    config_id: str
+    app_id: str
 
 
 @transaction.atomic
 @api.post("/{tenant_id}/app/", response=AppConfigSchemaOut, auth=None)
 def create_app_config(request, tenant_id: str, data: AppConfigSchemaIn):
+    # 此处多了一层data需要多次获取
+    data = data.data
     tenant = request.tenant
     # 事件分发
     results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
-    for func, (result, extension) in results:
+    for func, ((result, extension), item) in results:
         if result:
             # 创建config
-            config = extension.create_tenant_config(tenant, data.config.data.dict())
+            config = extension.create_tenant_config(tenant, data.config.dict())
             # 创建app
             app = App()
             app.name = data.name
