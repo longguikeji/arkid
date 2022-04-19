@@ -1,11 +1,11 @@
 from django.contrib import admin
 from .models import(
-    User, UserGroup,
+    User, UserGroup, Tenant,
     App, AppGroup, Permission,
     Approve, ExpiringToken, TenantConfig,
 )
 
-# admin.site.register(Tenant)
+admin.site.register(Tenant)
 admin.site.register(User)
 admin.site.register(UserGroup)
 admin.site.register(App)
