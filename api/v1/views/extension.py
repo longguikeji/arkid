@@ -29,6 +29,17 @@ def unload_extension(request, extension_id: str):
         return {}
 
 
+@api.post("/extensions/{extension_id}/load/", auth=None)
+def load_extension(request, extension_id: str):
+    extension = Extension.objects.filter(id=extension_id).first()
+    if extension:
+        ext = import_extension(extension.ext_dir)
+        ext.start()
+        return {'extension_id': ext.model.id.hex}
+    else:
+        return {}
+
+
 # @api.get("/extensions", response=List[ExtensionOut])
 # def list_extensions(request, status: str = None):
 #     if not status:
