@@ -134,6 +134,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CONFIG_FILE = 'arkid.toml'
 CONFIG_LOCAL_FILE = 'arkid.local.toml'
 
+# 默认分页条数
+NINJA_PAGINATION_PER_PAGE = 20
+
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, "settings_local.py")):
     exec(open(os.path.join(BASE_DIR, "settings_local.py")).read())

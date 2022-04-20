@@ -1,14 +1,19 @@
 from ninja import Schema
-from typing import Union, Literal
 from pydantic import Field
-from arkid.core.api import api
+from ninja import ModelSchema
 from arkid.core.models import App
+from arkid.core.api import api
 from django.db import transaction
+from ninja.pagination import paginate
+from arkid.core.error import ErrorCode
+from typing import Union, Literal, List
+from django.shortcuts import get_object_or_404
 from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.extension.app_protocol import create_app_protocol_extension_config_schema, app_protocol_schema_map
 from arkid.core.event import CREATE_APP, UPDATE_APP, DELETE_APP
+from extension_root.com_longgui_oauth2_server.appscheme import OIDCConfigSchema
 
 register_event(CREATE_APP, _('create app','创建应用'))
 register_event(UPDATE_APP, _('update app','修改应用'))
@@ -21,15 +26,48 @@ register_event(DELETE_APP, _('delete app','删除应用'))
 # create_app_protocol_extension_config_schema(
 #     AppConfigSchemaIn,
 # )
-AppConfigSchemaIn = create_app_protocol_extension_config_schema('AppConfigSchemaIn')
+# AppConfigSchemaIn = create_app_protocol_extension_config_schema('AppConfigSchemaIn')
+
+class AppConfigSchemaIn(Schema):
+    pass
+
+create_app_protocol_extension_config_schema(
+    AppConfigSchemaIn,
+)
 
 class AppConfigSchemaOut(Schema):
     app_id: str
 
 
+class AppListSchemaOut(ModelSchema):
+
+    class Config:
+        model = App
+        model_fields = ['id', 'name', 'url', 'logo', 'type']
+
+
+class ConfigSchemaOut(ModelSchema):
+
+    class Config:
+        model = TenantExtensionConfig
+        model_fields = ['config']
+
+
+class AppSchemaOut(ModelSchema):
+
+    config: ConfigSchemaOut
+
+    class Config:
+        model = App
+        model_fields = ['id', 'name', 'url', 'logo', 'description', 'type', 'config']
+
+
 @transaction.atomic
-@api.post("/{tenant_id}/app/", response=AppConfigSchemaOut, auth=None)
+@api.post("/{tenant_id}/apps", response=AppConfigSchemaOut, auth=None)
 def create_app_config(request, tenant_id: str, data: AppConfigSchemaIn):
+    '''
+    app创建
+    '''
     # 此处多了一层data需要多次获取
     data = data.data
     tenant = request.tenant
@@ -51,3 +89,46 @@ def create_app_config(request, tenant_id: str, data: AppConfigSchemaIn):
             app.save()
             break
     return {"app_id": app.id.hex}
+
+@api.get("/{tenant_id}/apps", response=List[AppListSchemaOut], auth=None)
+@paginate
+def list_apps(request, tenant_id: str):
+    '''
+    app列表
+    '''
+    apps = App.valid_objects.filter(
+        tenant_id=tenant_id
+    )
+    return apps
+
+@api.get("/{tenant_id}/apps/{app_id}", response=AppSchemaOut, auth=None)
+def get_app(request, tenant_id: str, app_id: str):
+    '''
+    获取app
+    '''
+    app = get_object_or_404(App, id=app_id, is_del=False)
+    return app
+
+@api.delete("/{tenant_id}/apps/{app_id}", auth=None)
+def delete_app(request, tenant_id: str, app_id: str):
+    '''
+    删除app
+    '''
+    tenant = request.tenant
+    app = get_object_or_404(App, id=app_id, is_del=False)
+    # 分发事件开始
+    app.app_type = app.type
+    dispatch_event(Event(tag=DELETE_APP, tenant=tenant, request=request, data=app))
+    # 分发事件结束
+    app.delete()
+    return {'error': ErrorCode.OK.value}
+
+@api.put("/{tenant_id}/apps/{app_id}", auth=None)
+def update_app(request, tenant_id: str, app_id: str, payload: AppConfigSchemaIn):
+    # 此处多了一层data需要多次获取
+    data = data.data
+    tenant = request.tenant
+    app = get_object_or_404(App, id=app_id, is_del=False)
+    
+    app.save()
+    return {"success": True}
