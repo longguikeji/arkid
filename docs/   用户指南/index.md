@@ -24,56 +24,56 @@
 
 ### 租户管理员
 
-`应用管理`
+**应用管理**
 :  
 [应用管理](){.md-button}
 
-`用户管理`
+**用户管理**
 :  
 [用户列表](){.md-button}
 [用户分组](){.md-button}
 [账号生命周期](){.md-button}
 
-`认证管理`
+**认证管理**
 :  
 [认证因素](){.md-button}
 [第三方登录](){.md-button}
 [自动登录](){.md-button}
 [认证规则](){.md-button}
 
-`授权管理`
+**授权管理**
 :  
 [权限列表](){.md-button}
 [权限分组](){.md-button}
 [权限管理](){.md-button}
 [授权规则](){.md-button}
 
-`审批管理`
+**审批管理**
 :  
 [动作配置](){.md-button}
 [审批系统](){.md-button}
 [审批请求](){.md-button}
 
-`身份数据源`
+**身份数据源**
 :  
 [应用接入协议](){ .md-button }
 [数据同步](){ .md-button }
 
-`扩展能力`
+**扩展能力**
 :  
 [WebHook](){ .md-button }
 [OpenAPI](){ .md-button }
 [事件列表](){ .md-button }
 [多语言](){ .md-button }
 
-`日志与图表`
+**日志与图表**
 :  
 [用户日志](){ .md-button }
 [管理员日志](){ .md-button }
 [日志配置](){ .md-button }
 [图表展示](){ .md-button }
 
-`租户管理`
+**租户管理**
 :  
 [租户配置](){ .md-button }
 [子管理员](){ .md-button }
