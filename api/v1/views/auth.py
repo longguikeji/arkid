@@ -12,6 +12,9 @@ from arkid.core.error import ErrorCode
 from arkid.core.schema import ResponseSchema, UserSchemaOut
 
 
+class AuthIn(Schema):
+    username: str
+
 class AuthTenantSchema(ModelSchema):
     class Config:
         model = Tenant
@@ -30,7 +33,7 @@ class AuthOut(ResponseSchema):
 
 @api.post("/tenant/{tenant_id}/auth/", response=AuthOut, auth=None)
 @operation(AuthOut, use_id=True)
-def auth(request, tenant_id: str, event_tag: str):
+def auth(request, tenant_id: str, event_tag: str, data: AuthIn):
     tenant = request.tenant
     request_id = request.META.get('request_id')
 

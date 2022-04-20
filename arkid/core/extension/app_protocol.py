@@ -11,7 +11,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.models import App
 from arkid.core import api as core_api, event as core_event
 from pydantic import create_model as create_pydantic_model
-from arkid.core.extension import create_extension_config_schema_from_schema_list
+from arkid.core.extension import create_config_schema_from_schema_list
 
 
 app_protocol_schema_map = {}
@@ -36,7 +36,7 @@ def create_app_protocol_extension_config_schema(schema_cls_name, **field_definit
     """
     temp = []
     for app_type, package_schema_map in app_protocol_schema_map.items():
-        new_schema = create_extension_config_schema_from_schema_list(
+        new_schema = create_config_schema_from_schema_list(
             schema_cls_name+app_type, 
             package_schema_map.values(),
             'package',
@@ -44,7 +44,7 @@ def create_app_protocol_extension_config_schema(schema_cls_name, **field_definit
         )
         temp.append(new_schema)
 
-    return create_extension_config_schema_from_schema_list(
+    return create_config_schema_from_schema_list(
         schema_cls_name,
         temp,
         'app_type',

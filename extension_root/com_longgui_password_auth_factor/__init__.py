@@ -64,6 +64,8 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         super().load()
         self.register_extend_field(UserPassword, "password")
         self.register_config_schema(PasswordAuthFactorSchema)
+        from api.v1.views.auth import AuthIn
+        self.register_extend_api(AuthIn, password=str)
         
     def authenticate(self, event, **kwargs):
         tenant = event.tenant
