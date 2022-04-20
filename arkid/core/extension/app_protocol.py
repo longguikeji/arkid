@@ -11,6 +11,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.models import App
 from arkid.core import api as core_api, event as core_event
 from pydantic import create_model as create_pydantic_model
+from arkid.core.extension import create_extension_config_schema_from_schema_list
 
 
 app_protocol_schema_map = {}
@@ -33,33 +34,22 @@ def create_app_protocol_extension_config_schema(schema_cls_name, **field_definit
         schema_cls (ninja.Schema): 需要创建的Schema class
         field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
     """
-    from django.db import models
-    class EmptyModel(models.Model):
-        pass
-
     temp = []
     for app_type, package_schema_map in app_protocol_schema_map.items():
-        for schema in package_schema_map.values():
-            core_api.add_fields(schema, **field_definitions)
-        # temp.append(Annotated[Union[tuple(package_schema_map.values())], Field(discriminator='package')]) # type: ignore
-        new_schema = create_schema(EmptyModel,
-            name=schema_cls_name, 
-            exclude=['id'],
-            custom_fields=[
-                # ("app_type", Literal[app_type], Field()),
-                ("__root__", Union[tuple(package_schema_map.values())], Field(discriminator='package')) # type: ignore
-            ],
+        new_schema = create_extension_config_schema_from_schema_list(
+            schema_cls_name+app_type, 
+            package_schema_map.values(),
+            'package',
+            **field_definitions,
         )
         temp.append(new_schema)
 
-    new_schema = create_schema(EmptyModel,
-        name=schema_cls_name, 
-        exclude=['id'],
-        custom_fields=[
-            ("__root__", Union[tuple(temp)], Field(discriminator='app_type')) # type: ignore
-        ],
+    return create_extension_config_schema_from_schema_list(
+        schema_cls_name,
+        temp,
+        'app_type',
+        depth=1,
     )
-    return new_schema
 
 
 class AppProtocolExtension(Extension):
@@ -74,7 +64,7 @@ class AppProtocolExtension(Extension):
 
     def register_config_schema(self, schema, app_type, package=None,**kwargs):
         # 父类
-        super().register_config_schema(schema, package, **kwargs)
+        super().register_config_schema(schema, package +'_'+ app_type, **kwargs)
         package = package or self.package
         new_schema = create_schema(App,
             name=package + '_' + app_type + '_config',
