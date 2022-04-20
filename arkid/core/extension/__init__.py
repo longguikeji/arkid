@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union, Literal
+from typing import Union, Literal, Any, List, Optional, Tuple, Type
 from typing_extensions import Annotated
 from pydantic import Field
 from django.urls import include, re_path
@@ -17,6 +17,7 @@ from ninja import Schema
 from pydantic import Field
 from arkid.core.translation import gettext_default as _
 from ninja.orm import create_schema
+from django.db.models import Model
 
 
 
@@ -25,24 +26,76 @@ app_config = config.get_app_config()
 Event = core_event.Event
 EventType = core_event.EventType
 
+def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema) :
+    """提供给插件用来创建Schema的方法
+    
+    注意:
+        插件必须使用此方法来定义Schema,避免与其它Schema的命名冲突
+
+    Args:
+        name (str): Schema的类名
+        package (str): 如果是插件调用的该方法,一定要将插件的package传过来,以避免命名冲突
+        fields (Optional[List[Tuple[str, Any, Any]]], optional): Schema的字段定义
+        base_schema (Type[Schema], optional): Schema的基类. 默认为: ninja.Schema
+
+    Returns:
+        ninja.Schema : 创建的Schema类
+    """
+    from django.db import models
+    class EmptyModel(models.Model):
+        pass
+    
+    if package:
+        name = package + '_' + name
+    return create_schema(EmptyModel,
+            name=name, 
+            exclude=['id'],
+            custom_fields=fields,
+            base_class=base_schema,
+        )
+
+def create_extension_schema_from_django_model(
+        model: Type[Model],
+        *,
+        name: str = "",
+        depth: int = 0,
+        fields: Optional[List[str]] = None,
+        exclude: Optional[List[str]] = None,
+        custom_fields: Optional[List[Tuple[str, Any, Any]]] = None,
+        base_class: Type[Schema] = Schema,) :
+    """提供给插件通过Django.Model创建Schema的方法
+
+    注意:
+        插件必须使用此方法来定义Schema,避免与其它Schema的命名冲突
+        
+    Args:
+        model (Type[Model]): 基于的 Django Model
+        name (str, optional): Schema的类名. 
+        depth (int, optional): 遍历Django Model的深度. 
+        fields (Optional[List[str]], optional): 从Django Model中获取的字段名, 如果是所有的就设为 \_\_all\_\_ . 
+        exclude (Optional[List[str]], optional): 从Django Model中排除的字段名. 
+        custom_fields (Optional[List[Tuple[str, Any, Any]]], optional): 添加的自定义字段. 
+        base_class (Type[Schema], optional): Schema的基类. 
+
+    Returns:
+        ninjia.Schema: 新创建的Schema类
+    """
+    return create_schema(model=model, name=name, depth=depth,fields=fields, exclude=exclude, custom_fields=custom_fields, base_class=base_class)
+    
+
 def create_extension_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
     
     for schema in schema_list:
         core_api.add_fields(schema, **field_definitions)
-    
-    from django.db import models
-    class EmptyModel(models.Model):
-        pass
     
     if len(schema_list) == 0:
         return Schema
     elif len(schema_list) == 1:
         return list(schema_list)[0]
     else:
-        return create_schema(EmptyModel,
-            name=schema_cls_name, 
-            exclude=['id'],
-            custom_fields=[
+        return create_extension_schema(
+            schema_cls_name, 
+            fields=[
                 ("__root__", Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)) # type: ignore
             ],
         )
@@ -234,7 +287,6 @@ class Extension(ABC):
             ],
         )
         config_schema_map[package] = new_schema
-
 
         
     def get_tenant_configs(self, tenant):
