@@ -38,7 +38,6 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         super().load()
         self.register_extend_field(UserPassword, "password")
         self.register_config_schema(PasswordAuthFactorSchema)
-        self.register_config_schema(BaseAuthFactorSchema, 'package2')
         
     def authenticate(self, event, **kwargs):
         tenant = event.tenant

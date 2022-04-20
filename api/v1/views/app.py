@@ -1,4 +1,5 @@
 from ninja import Schema
+from typing import Union, Literal
 from pydantic import Field
 from arkid.core.api import api
 from arkid.core.models import App
@@ -6,20 +7,21 @@ from django.db import transaction
 from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig
 from arkid.core.event import Event, register_event, dispatch_event
-from arkid.core.extension.app_protocol import create_app_protocol_extension_config_schema
+from arkid.core.extension.app_protocol import create_app_protocol_extension_config_schema, app_protocol_schema_map
 from arkid.core.event import CREATE_APP, UPDATE_APP, DELETE_APP
 
 register_event(CREATE_APP, _('create app','创建应用'))
 register_event(UPDATE_APP, _('update app','修改应用'))
 register_event(DELETE_APP, _('delete app','删除应用'))
 
-class AppConfigSchemaIn(Schema):
-    pass
+# class AppConfigSchemaIn(Schema):
+#     __root__: Union[tuple(app_protocol_schema_map.values())] = Field(discriminator='app_type') # type: ignore
+    # pass
 
-create_app_protocol_extension_config_schema(
-    AppConfigSchemaIn,
-)
-
+# create_app_protocol_extension_config_schema(
+#     AppConfigSchemaIn,
+# )
+AppConfigSchemaIn = create_app_protocol_extension_config_schema('AppConfigSchemaIn')
 
 class AppConfigSchemaOut(Schema):
     app_id: str

@@ -8,13 +8,10 @@ from arkid.core.extension import create_extension_config_schema
 from arkid.extension.models import TenantExtensionConfig, Extension
 
 
-class ExtensionConfigSchemaIn(Schema):
-    # extension_id: str 
-    pass
 
-create_extension_config_schema(
-    ExtensionConfigSchemaIn,
-    extension_id=str
+ExtensionConfigSchemaIn = create_extension_config_schema(
+    'ExtensionConfigSchemaIn',
+    extension_id=str,
 )
 
 class ExtensionConfigSchemaOut(Schema):

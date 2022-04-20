@@ -25,8 +25,30 @@ app_config = config.get_app_config()
 Event = core_event.Event
 EventType = core_event.EventType
 
+def create_extension_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
+    
+    for schema in schema_list:
+        core_api.add_fields(schema, **field_definitions)
+    
+    from django.db import models
+    class EmptyModel(models.Model):
+        pass
+    
+    if len(schema_list) == 0:
+        return Schema
+    elif len(schema_list) == 1:
+        return list(schema_list)[0]
+    else:
+        return create_schema(EmptyModel,
+            name=schema_cls_name, 
+            exclude=['id'],
+            custom_fields=[
+                ("__root__", Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)) # type: ignore
+            ],
+        )
 
-def create_extension_config_schema(schema_cls, **field_definitions):
+
+def create_extension_config_schema(schema_cls_name, **field_definitions):
     """创建插件配置的Schema
     
     schema_cls只接受一个空定义的Schema
@@ -41,18 +63,12 @@ def create_extension_config_schema(schema_cls, **field_definitions):
         >>> )
 
     Args:
-        schema_cls (ninja.Schema): 需要创建的Schema class
+        schema_cls_name (ninja.Schema): 需要创建的 Schema Class 的名字
         field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
     """
-    for schema in config_schema_map.values():
-        core_api.add_fields(schema, **field_definitions)
-    if len(config_schema_map.values()) == 0:
-        core_api.add_fields(schema_cls) # type: ignore
-    elif len(config_schema_map.values()) == 1:
-        core_api.add_fields(schema_cls, __root__=config_schema_map.values()[0]) # type: ignore
-    else:
-        core_api.add_fields(schema_cls, __root__=(Union[tuple(config_schema_map.values())], Field(discriminator='package'))) # type: ignore
-        
+    return create_extension_config_schema_from_schema_list(schema_cls_name, config_schema_map.values(), 'package', **field_definitions)
+    
+
 
 config_schema_map = {}
 
@@ -208,15 +224,16 @@ class Extension(ABC):
         # class XxSchema(Schema):
         #     config: schema
             # package: Literal[package or self.package] # type: ignore
+        package = package or self.package
         new_schema = create_schema(TenantExtensionConfig,
-            name=self.package+'_config', 
+            name=package+'_config', 
             fields=['id'],
             custom_fields=[
-                ("package", Literal[package or self.package], Field()),  # type: ignore
+                ("package", Literal[package], Field()),  # type: ignore
                 ("config", schema, Field())
             ],
         )
-        config_schema_map[package or self.package] = new_schema
+        config_schema_map[package] = new_schema
 
 
         
