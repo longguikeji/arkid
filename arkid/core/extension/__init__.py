@@ -47,12 +47,14 @@ def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str
     
     if package:
         name = package + '_' + name
-    return create_schema(EmptyModel,
+    schema = create_schema(EmptyModel,
             name=name, 
             exclude=['id'],
             custom_fields=fields,
             base_class=base_schema,
         )
+    schema.class_name = name
+    return schema
 
 def create_extension_schema_from_django_model(
         model: Type[Model],
@@ -361,3 +363,12 @@ class Extension(ABC):
             if not core_translation.extension_lang_maps[self.lang_code]:
                 core_translation.extension_lang_maps.pop(self.lang_code)
             core_translation.lang_maps = core_translation.reset_lang_maps()
+            
+        self.urls = []
+        self.extend_fields = []
+        self.events = []
+        self.event_tags = []
+        self.extend_apis = []
+        self.front_routers = []
+        self.front_pages = []
+        self.config_schema_list = []
