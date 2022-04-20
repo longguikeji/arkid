@@ -1,9 +1,12 @@
+from django.urls import reverse
+from arkid.config import get_app_config
 from arkid.core.extension.app_protocol import AppProtocolExtension
 from .appscheme import (
     Oauth2ConfigSchema, OIDCConfigSchema,
 )
 from oauth2_provider.models import Application
-from arkid.config import get_app_config
+from oauth2_provider.urls import urlpatterns as urls
+
 
 class OAuth2ServerExtension(AppProtocolExtension):
 
@@ -17,92 +20,63 @@ class OAuth2ServerExtension(AppProtocolExtension):
 
 
     def load_urls(self):
-        from django.urls import include, re_path
-
-        urls = [
-            re_path(r'^o/', include('oauth2_provider.urls'))
-        ]
-
         self.register_routers(urls, True)
-    
-    def create_app(self, tenant, app, data):
-
-        client_type = data.get('client_type')
-        skip_authorization = data.get('skip_authorization')
-        redirect_uris = data.get('redirect_uris')
-        authorization_grant_type = data.get('grant_type')
-        algorithm = data.get('algorithm')
-        host = get_app_config().get_frontend_host()
-
-        obj = Application()
-        obj.name = app.id
-        obj.client_type = client_type
-        obj.skip_authorization = skip_authorization
-        obj.redirect_uris = redirect_uris
-        if algorithm and app.type == 'OIDC':
-            obj.algorithm = algorithm
-        obj.authorization_grant_type = authorization_grant_type
-        obj.save()
-
-        uniformed_data = {
-            'client_type': client_type,
-            'redirect_uris': redirect_uris,
-            'grant_type': authorization_grant_type,
-            'client_id': obj.client_id,
-            'client_secret': obj.client_secret,
-            'skip_authorization': obj.skip_authorization,
-            'userinfo': host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[tenant.uuid]),
-            'authorize': host+reverse("api:oauth2_authorization_server:authorize", args=[tenant.uuid]),
-            'token': host+reverse("api:oauth2_authorization_server:token", args=[tenant.uuid]),
-        }
-        if algorithm and app.type == 'OIDC':
-            uniformed_data['algorithm'] = obj.algorithm
-            uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oauth-user-logout", args=[tenant.uuid])
-
-        app.data = uniformed_data
-        app.save()
-
-    def update(self, tenant, app, data):
-        client_type = data.get('client_type')
-        redirect_uris = data.get('redirect_uris')
-        skip_authorization = data.get('skip_authorization')
-        authorization_grant_type = data.get('grant_type')
-        algorithm = data.get('algorithm')
-        host = get_app_config().get_host()
-        obj = Application.objects.filter(name=app.id).first()
-        obj.client_type = client_type
-        obj.redirect_uris = redirect_uris
-        obj.skip_authorization = skip_authorization
-        obj.authorization_grant_type = authorization_grant_type
-        if algorithm and app.type == 'OIDC':
-            obj.algorithm = algorithm
-        obj.save()
-        uniformed_data = {
-            'client_type': client_type,
-            'redirect_uris': redirect_uris,
-            'grant_type': authorization_grant_type,
-            'client_id': obj.client_id,
-            'client_secret': obj.client_secret,
-            'skip_authorization': obj.skip_authorization,
-            'userinfo': host+reverse("api:oauth2_authorization_server:oauth-user-info", args=[tenant.uuid]),
-            'authorize': host+reverse("api:oauth2_authorization_server:authorize", args=[tenant.uuid]),
-            'token': host+reverse("api:oauth2_authorization_server:token", args=[tenant.uuid]),
-        }
-        if algorithm and app.type == 'OIDC':
-            uniformed_data['algorithm'] = obj.algorithm
-            uniformed_data['logout'] = host+reverse("api:oauth2_authorization_server:oauth-user-logout", args=[tenant.uuid])
-
-        app.data = uniformed_data
-        app.save()
 
     def create_app(self, event, config):
-        return True
+        return self.update_app_data(event, config, True)
 
     def update_app(self, event, config):
-        return True
+        return self.update_app_data(event, config, False)
 
     def delete_app(self, event, config):
+        # 删除应用
+        Application.objects.filter(name=app.id).delete()
         return True
+
+    def update_app_data(self, event, config, is_create):
+        '''
+        创建应用程序
+        '''
+        app = event.data
+        tenant = event.tenant
+        host = get_app_config().get_frontend_host()
+
+        client_type = config.client_type.value
+        redirect_uris = config.redirect_uris
+        grant_type = config.grant_type.value
+        skip_authorization = config.skip_authorization
+        app_type = app.app_type
+        algorithm = config.algorithm.value
+
+        obj = Application()
+        if is_create is False:
+            obj = Application.objects.filter(name=app.id).first()
+        obj.name = app.id
+        obj.client_type = client_type
+        obj.redirect_uris = redirect_uris
+        obj.skip_authorization = skip_authorization
+        obj.authorization_grant_type = grant_type
+        if algorithm and app_type == 'OIDC':
+            obj.algorithm = algorithm
+        obj.save()
+        # 更新地址信息
+        self.update_url_data(tenant.id, config, obj)
+        return True
+    
+    def update_url_data(self, tenant_id, config, obj):
+        '''
+        更新配置中的url信息
+        '''
+        host = get_app_config().get_frontend_host()
+
+        config.userinfo = host+reverse("com_longgui_oauth2_server:oauth-user-info", args=[tenant_id])
+        config.authorize = host+reverse("com_longgui_oauth2_server:authorize", args=[tenant_id])
+        config.token = host+reverse("com_longgui_oauth2_server:token", args=[tenant_id])
+        config.logout = host+reverse("com_longgui_oauth2_server:oauth-user-logout", args=[tenant_id])
+        config.client_id = obj.client_id
+        config.client_secret = obj.client_secret
+        config.skip_authorization = obj.skip_authorization
+
 
 extension = OAuth2ServerExtension(
     package='com.longgui.oauth2_server',

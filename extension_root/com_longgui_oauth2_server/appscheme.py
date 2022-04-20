@@ -7,16 +7,16 @@ from pydantic import Field
 
 
 class CLIENT_TYPE(str, Enum):
-    confidential = _('Confidential', '私密')
-    public = _('Public','公开')
+    confidential = _('confidential', '私密')
+    public = _('public','公开')
 
 
 class GRANT_TYPE(str, Enum):
-    authorization_code = _('Authorization code', '私密')
-    implicit = _('Implicit','公开')
-    password = _('Resource owner password-based','密码')
-    client_credentials = _('Client credentials','客户端凭据')
-    openid_hybrid = _('OpenID connect hybrid','OpenID链接')
+    authorization_code = _('authorization-code', '私密')
+    implicit = _('implicit','公开')
+    password = _('password','密码')
+    client_credentials = _('client-credentials','客户端凭据')
+    openid_hybrid = _('openid-hybrid','OpenID链接')
 
 
 class ConfigBaseSchema(Schema):
@@ -45,8 +45,8 @@ class Oauth2ConfigSchema(ConfigBaseSchema):
 
 class ALGORITHM_TYPE(str, Enum):
 
-    RS256 = _('RSA with SHA-2 256','RS256加密')
-    HS256 = _('HMAC with SHA-2 256','HS256加密')
+    RS256 = _('RS256','RS256加密')
+    HS256 = _('HS256','HS256加密')
 
 
 class OIDCConfigSchema(ConfigBaseSchema):
