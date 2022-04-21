@@ -268,7 +268,7 @@ class Extension(ABC):
         self.front_routers.append((router, primary))
 
     def register_front_pages(self, page):
-        page.tag = self.package + '_' + page.tag
+        page["tag"] = core_page.gen_tag(page.tag,self.package)
 
         core_page.register_front_pages(page)
         self.front_pages.append(page)
