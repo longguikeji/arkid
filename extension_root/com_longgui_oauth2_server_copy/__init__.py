@@ -79,7 +79,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
 
 
 extension = OAuth2ServerExtension(
-    package='com.longgui.oauth2_server',
+    package='com.longgui.oauth2_server_copy',
     description='OAuth2认证服务',
     version='1.0',
     labels='oauth',

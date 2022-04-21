@@ -13,24 +13,50 @@ from django.contrib.auth.hashers import (
     make_password,
 )
 from django.db import transaction
+from arkid.core.extension import create_extension_schema
 
+package = "com.longgui.password_auth_factor"
 
-class PasswordAuthFactorSchema(BaseAuthFactorSchema):
-    reset_password_enabled: Optional[bool] = Field(deprecated=True)
+PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',package, 
+        [
+            ('reset_password_enabled', Optional[bool] , Field(deprecated=True)),
+            ('login_enabled_field_names', List[str],
+                Field(
+                    default=[], 
+                    title=_('login_enabled_field_names', '启用密码登录的字段'),
+                    url='/api/v1/login_fields?tenant={tenant_id}'
+                )
+            ),
+            ('register_enabled_field_names', List[str],
+                Field(
+                    default=[], 
+                    title=_('register_enabled_field_names', '启用密码注册的字段'),
+                    url='/api/v1/register_fields?tenant={tenant_id}'
+                )
+            ),
+            ('is_apply', bool , Field(default=False, title=_('is_apply', '是否启用密码校验'))),
+            ('regular', str, Field(default='', title=_('regular', '密码校验正则表达式'))),
+            ('title', str, Field(default='', title=_('title', '密码校验提示信息'))),
+        ],
+        BaseAuthFactorSchema,
+    )
+
+# class PasswordAuthFactorSchema(BaseAuthFactorSchema):
+#     reset_password_enabled: Optional[bool] = Field(deprecated=True)
     
-    login_enabled_field_names: List[str] = Field(
-        default=[], 
-        title=_('login_enabled_field_names', '启用密码登录的字段'),
-        url='/api/v1/login_fields?tenant={tenant_id}'
-    )
-    register_enabled_field_names: List[str] = Field(
-        default=[], 
-        title=_('register_enabled_field_names', '启用密码注册的字段'),
-        url='/api/v1/register_fields?tenant={tenant_id}'
-    )
-    is_apply: bool = Field(default=False, title=_('is_apply', '是否启用密码校验'))
-    regular: str = Field(default='', title=_('regular', '密码校验正则表达式'))
-    title: str = Field(default='', title=_('title', '密码校验提示信息'))    
+#     login_enabled_field_names: List[str] = Field(
+#         default=[], 
+#         title=_('login_enabled_field_names', '启用密码登录的字段'),
+#         url='/api/v1/login_fields?tenant={tenant_id}'
+#     )
+#     register_enabled_field_names: List[str] = Field(
+#         default=[], 
+#         title=_('register_enabled_field_names', '启用密码注册的字段'),
+#         url='/api/v1/register_fields?tenant={tenant_id}'
+#     )
+#     is_apply: bool = Field(default=False, title=_('is_apply', '是否启用密码校验'))
+#     regular: str = Field(default='', title=_('regular', '密码校验正则表达式'))
+#     title: str = Field(default='', title=_('title', '密码校验提示信息'))    
 
 
 class PasswordAuthFactorExtension(AuthFactorExtension):
@@ -38,6 +64,8 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         super().load()
         self.register_extend_field(UserPassword, "password")
         self.register_config_schema(PasswordAuthFactorSchema)
+        from api.v1.schema.auth import AuthIn
+        self.register_extend_api(AuthIn, password=str)
         
     def authenticate(self, event, **kwargs):
         tenant = event.tenant
@@ -172,7 +200,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
 
 
 extension = PasswordAuthFactorExtension(
-    package="com.longgui.password_auth_factor",
+    package=package,
     description="Password 认证因素",
     version='1.0',
     labels='auth_factor',
