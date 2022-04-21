@@ -16,7 +16,7 @@ router = routers.FrontRouter(
 page = pages.FrontPage(
     tag=user_list_tag,
     name=user_list_name,
-    type=pages.TABLE_PAGE_TYPE,
+    page_type=pages.FrontPageType.TABLE_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/users/',
         method='get'
@@ -25,7 +25,7 @@ page = pages.FrontPage(
 
 user_edit_page = pages.FrontPage(
     name=_("编辑用户"),
-    type=pages.FORM_PAGE_TYPE,
+    page_type=pages.FrontPageType.FORM_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/users/{id}/',
         method='get'
@@ -37,15 +37,25 @@ user_edit_page.add_global_action(
         pages.FrontAction(
             method="post",
             name=_("确认"),
-            path="/api/v1/tenant/{tenant_id}/users/{id}/"
+            path="/api/v1/tenant/{tenant_id}/users/{id}/",
+            icon="icon-confirm"
         ),
-        
+        pages.FrontAction(
+            name=_("取消"),
+            action_type=pages.FrontActionType.CANCEL_ACTION,
+            icon="icon-cancel"
+        ),
+        pages.FrontAction(
+            name=_("重置"),
+            action_type=pages.FrontActionType.RESET_ACTION,
+            icon="icon-reset"
+        ),
     ]
 )
 
 user_create_page = pages.FrontPage(
-    name=_("创建用户"),
-    type=pages.FORM_PAGE_TYPE,
+    name=_("创建一个新的用户"),
+    page_type=pages.FrontPageType.FORM_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/users/',
         method='post'
@@ -57,23 +67,37 @@ user_create_page.add_global_action(
         pages.FrontAction(
             method="post",
             name=_("确认"),
-            path="/api/v1/tenant/{tenant_id}/users/"
-        )
+            path="/api/v1/tenant/{tenant_id}/users/",
+            action_type=pages.FrontActionType.DIRECT_ACTION,
+            icon="icon-confirm"
+        ),
+        pages.FrontAction(
+            name=_("取消"),
+            action_type=pages.FrontActionType.CANCEL_ACTION,
+            icon="icon-cancel"
+        ),
+        pages.FrontAction(
+            name=_("重置"),
+            action_type=pages.FrontActionType.RESET_ACTION,
+            icon="icon-reset"
+        ),
     ]
 )
 
 page.add_local_action(
     [
         pages.FrontAction(
-            name=_("编辑用户"),
+            name=_("编辑"),
             page=user_edit_page,
-            icon="el-icon-update"
+            icon="icon-edit",
+            action_type=pages.FrontActionType.OPEN_ACTION
         ),
         pages.FrontAction(
-            name=_("删除用户"),
+            name=_("删除"),
             method="delete",
             path="/api/v1/tenant/{tenant_id}/users/{id}/",
-            icon="el-icon-delete"
+            icon="icon-delete",
+            action_type=pages.FrontActionType.DIRECT_ACTION
         )
     ]
 )
@@ -81,11 +105,14 @@ page.add_local_action(
 page.add_global_action(
     [
         pages.FrontAction(
-            name="创建用户",
+            name="创建",
             page=user_create_page,
-            icon="el-icon-plus"
+            icon="icon-create",
+            action_type=pages.FrontActionType.OPEN_ACTION
         )
     ]
 )
 
 pages.register_front_pages(page)
+pages.register_front_pages(user_create_page)
+pages.register_front_pages(user_edit_page)

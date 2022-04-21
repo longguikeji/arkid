@@ -5,7 +5,6 @@ from ninja import Schema, Query, ModelSchema
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant, User
-from arkid.core.extension import AuthFactorExtension
 from arkid.core.translation import gettext_default as _
 from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
 from arkid.common.logger import logger
@@ -56,15 +55,11 @@ def user_create(request, tenant_id: str,data:UserCreateInSchema, query_data: Use
         status = False
         message= f'{_("创建用户失败")}:{str(e)}'
         logger.error(message)
-    finally:
-        return {
-            "status": status,
-            "message": message
-        }
-        
-    
-    return users
 
+    return {
+        "status": status,
+        "message": message
+    }
 # ------------- 删除用户接口 --------------
 
 class UserDeleteInSchema(Schema):
@@ -87,19 +82,18 @@ def user_delete(request, tenant_id: str,id:str,data: UserDeleteInSchema=Query(..
     try:
         user = User.active_objects.get(tenant__id=tenant_id,id=id)
         user.delete()
-    except User.DoesNotExist:
+    except User.DoesNotExist as uerr:
         status = False
         message= _("指定的用户不存在。")
-        logger.error(message)
-    except Exception as e:
+        logger.error(uerr)
+    except Exception as err:
         status = False
-        message= f'{_("删除用户失败")}:{str(e)}'
+        message= f'{_("删除用户失败")}:{str(err)}'
         logger.error(message)
-    finally:
-        return {
-            "status": status,
-            "message": message
-        }
+    return {
+        "status": status,
+        "message": message
+    }
         
 # ------------- 更新用户接口 --------------
 class UserUpdateInSchema(ModelSchema):
