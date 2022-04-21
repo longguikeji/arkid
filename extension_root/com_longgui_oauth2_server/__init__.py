@@ -25,11 +25,11 @@ class OAuth2ServerExtension(AppProtocolExtension):
         config = event.data.config
         return self.update_app_data(event, config, True)
 
-    def update_app(self, event, config):
+    def update_app(self, event):
         config = event.data.config
         return self.update_app_data(event, config, False)
 
-    def delete_app(self, event, config):
+    def delete_app(self, event):
         # 删除应用
         Application.objects.filter(name=event.data.id).delete()
         return True
