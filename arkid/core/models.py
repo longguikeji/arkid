@@ -34,7 +34,7 @@ class Tenant(BaseModel):
         return f'Tenant: {self.name}'
 
 
-class User(ExpandModel, BaseModel):
+class User(BaseModel, ExpandModel):
     
     class Meta(object):
         verbose_name = _("user", "用户")
@@ -57,7 +57,7 @@ class User(ExpandModel, BaseModel):
     # )
 
 
-class UserGroup(ExpandModel, BaseModel):
+class UserGroup(BaseModel, ExpandModel):
 
     class Meta(object):
         verbose_name = _("User Group","用户分组")
@@ -90,7 +90,7 @@ class UserGroup(ExpandModel, BaseModel):
         return UserGroup.valid_objects.filter(parent=self).order_by('id')
 
 
-class App(ExpandModel, BaseModel):
+class App(BaseModel, ExpandModel):
 
     class Meta(object):
         verbose_name = _("APP","应用")
@@ -110,12 +110,13 @@ class App(ExpandModel, BaseModel):
     config = models.OneToOneField(
         TenantExtensionConfig, blank=False, default=None, on_delete=models.PROTECT
     )
+    package = models.CharField(max_length=128, blank=True, null=True, default='', verbose_name=_('package','包名'))
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'
 
 
-class AppGroup(ExpandModel, BaseModel):
+class AppGroup(BaseModel, ExpandModel):
 
     class Meta(object):
         verbose_name = _("APP Group","应用分组")
@@ -148,7 +149,7 @@ class AppGroup(ExpandModel, BaseModel):
         return AppGroup.valid_objects.filter(parent=self).order_by('id')
 
 
-class PermissionAbstract(ExpandModel, BaseModel):
+class PermissionAbstract(BaseModel, ExpandModel):
 
     class Meta(object):
         abstract = True
@@ -220,7 +221,7 @@ class Permission(PermissionAbstract):
         return Permission.valid_objects.filter(parent=self).order_by('id')
 
 
-class Approve(ExpandModel, BaseModel):
+class Approve(BaseModel, ExpandModel):
 
     class Meta(object):
         verbose_name = _('Approve',"审批动作")
@@ -290,7 +291,7 @@ class ExpiringToken(models.Model):
         return self.token
 
 
-class TenantConfig(ExpandModel, BaseModel):
+class TenantConfig(BaseModel, ExpandModel):
 
     class Meta(object):
         verbose_name = _('Tenant Config',"租户配置")

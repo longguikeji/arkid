@@ -34,13 +34,11 @@ def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str
     
     注意:
         插件必须使用此方法来定义Schema,避免与其它Schema的命名冲突
-
     Args:
         name (str): Schema的类名
         package (str): 如果是插件调用的该方法,一定要将插件的package传过来,以避免命名冲突
         fields (Optional[List[Tuple[str, Any, Any]]], optional): Schema的字段定义
         base_schema (Type[Schema], optional): Schema的基类. 默认为: ninja.Schema
-
     Returns:
         ninja.Schema : 创建的Schema类
     """
@@ -66,7 +64,6 @@ def create_extension_schema_from_django_model(
         custom_fields: Optional[List[Tuple[str, Any, Any]]] = None,
         base_class: Type[Schema] = Schema,) :
     """提供给插件通过Django.Model创建Schema的方法
-
     注意:
         插件必须使用此方法来定义Schema,避免与其它Schema的命名冲突
         
@@ -78,7 +75,6 @@ def create_extension_schema_from_django_model(
         exclude (Optional[List[str]], optional): 从Django Model中排除的字段名. 
         custom_fields (Optional[List[Tuple[str, Any, Any]]], optional): 添加的自定义字段. 
         base_class (Type[Schema], optional): Schema的基类. 
-
     Returns:
         ninjia.Schema: 新创建的Schema类
     """
@@ -348,7 +344,7 @@ class Extension(ABC):
         return TenantExtensionConfig.objects.get(id=id)
     
     def update_tenant_config(self, id,  config):
-        return TenantExtensionConfig.objects.get(id=id).update(config=config)
+        return TenantExtensionConfig.objects.filter(id=id).update(config=config)
 
     def create_tenant_config(self, tenant, config):
         ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()

@@ -12,6 +12,11 @@ class RootSchema(Schema):
             return getattr(self, item)
         return getattr(self.__root__, item)
 
+    def __setattr__(self, item, value):
+        if not hasattr(self, "__root__"):
+            return setattr(self, item, value)
+        return setattr(self.__root__, item, value)
+
     def dict(self):
         if not hasattr(self, "__root__"):
             return super().dict()

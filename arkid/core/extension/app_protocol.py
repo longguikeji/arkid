@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from cProfile import label
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core.models import App
