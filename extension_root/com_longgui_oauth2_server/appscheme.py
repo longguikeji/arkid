@@ -59,7 +59,3 @@ class OIDCConfigSchema(ConfigBaseSchema):
     userinfo: str = Field(title=_('userinfo','用户信息地址'), readonly=True, default='')
     logout: str = Field(title=_('logout', '退出登录地址'), readonly=True, default='')
 
-
-# class OIDCAppSchema(AppBaseSchema):
-
-#     data: OIDCConfigSchema = Field(title=_('data', '数据'))

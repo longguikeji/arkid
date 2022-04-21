@@ -35,6 +35,10 @@ class AuthFactorExtension(Extension):
         self.listen_event(self.password_event_tag, self.reset_password)
         self.listen_event(core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.create_response)
 
+    def register_auth_factor_schema(self, schema, auth_factor_type):
+        self.register_config_schema(schema, self.package + '_' + auth_factor_type)
+        self.register_composite_config_schema(schema, auth_factor_type, exclude=['extension'])
+    
     @abstractmethod
     def authenticate(self, event, **kwargs):
         pass

@@ -28,7 +28,7 @@ class AppProtocolExtension(Extension):
 
     def register_app_protocol_schema(self, schema, app_type):
         self.register_config_schema(schema, self.package + '_' + app_type)
-        self.register_composite_config_schema(schema, app_type)
+        self.register_composite_config_schema(schema, app_type, exclude=['secret'])
 
     @abstractmethod
     def create_app(self, event, **kwargs):

@@ -6,8 +6,12 @@ from .appscheme import (
 )
 from oauth2_provider.models import Application
 from oauth2_provider.urls import urlpatterns as urls
+from arkid.core.extension import create_extension_schema
 
+package='com.longgui.oauth2_server'
 
+OIDCConfigSchema = create_extension_schema('OIDCConfigSchema',package, base_schema=OIDCConfigSchema)
+Oauth2ConfigSchema = create_extension_schema('Oauth2ConfigSchema',package, base_schema=Oauth2ConfigSchema)
 class OAuth2ServerExtension(AppProtocolExtension):
 
     def load(self):
@@ -80,7 +84,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
 
 
 extension = OAuth2ServerExtension(
-    package='com.longgui.oauth2_server',
+    package=package,
     description='OAuth2认证服务',
     version='1.0',
     labels='oauth',

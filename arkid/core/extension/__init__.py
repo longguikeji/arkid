@@ -4,6 +4,8 @@ from typing_extensions import Annotated
 from pydantic import Field
 from django.urls import include, re_path
 from pathlib import Path
+
+from requests import delete
 from arkid import config
 from types import SimpleNamespace
 from collections import OrderedDict
@@ -43,14 +45,14 @@ def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str
         ninja.Schema : 创建的Schema类
     """
     if package:
-        name = package + '_' + name
+        name = package.replace('.','_') + '_' + name
     schema = create_schema(EmptyModel,
             name=name, 
             exclude=['id'],
             custom_fields=fields,
             base_class=base_schema,
         )
-    schema.class_name = name
+    schema.name = name
     return schema
 
 
@@ -93,9 +95,14 @@ def get_root_schema(schema_list, discriminator, depth = 0):
 extension_schema_map = {}
 def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
     
+    new_schema_list = []
     for schema in schema_list:
+        schema = create_extension_schema(schema_cls_name + '_' + schema.name, base_schema=schema)
         core_api.add_fields(schema, **field_definitions)
-
+        new_schema_list.append(schema)
+        
+    schema_list = new_schema_list
+    
     if len(schema_list) == 0:
         schema = create_extension_schema(schema_cls_name)
     elif len(schema_list) == 1:
@@ -280,14 +287,16 @@ class Extension(ABC):
 
     def register_config_schema(self, schema, schema_tag=None):
         schema_tag = schema_tag or self.package
+        name = schema_tag+'_config'
         new_schema = create_schema(TenantExtensionConfig,
-            name = schema_tag+'_config', 
+            name = name, 
             fields = ['id'],
             custom_fields=[
                 ("package", Literal[schema_tag], Field()),  # type: ignore
                 ("config", schema, Field())
             ],
         )
+        new_schema.name = name
         self.__class__.extension_config_schema_map[schema_tag] = new_schema
         self.config_schema_list.append(schema_tag)
 
@@ -320,17 +329,20 @@ class Extension(ABC):
         for created_ext_config_schema in cls.created_extension_config_schema_list:
             core_api.add_fields(created_ext_config_schema, __root__=(root_type, root_field))
 
-    def register_composite_config_schema(self, schema, composite_value, package=None):
+    def register_composite_config_schema(self, schema, composite_value, exclude=[], package=None):
         package = package or self.package
+        exclude.extend(['is_del', 'is_active', 'updated', 'created', 'tenant'])
+        name = package + '_' + composite_value + '_config'
         new_schema = create_schema(self.__class__.composite_model,
-            name=package + '_' + composite_value + '_config',
-            exclude=['is_del', 'is_active', 'updated', 'created', 'tenant', 'secret'],
+            name=name,
+            exclude=exclude,
             custom_fields=[
                 (self.__class__.composite_key, Literal[composite_value], Field()), # type: ignore
                 ("package", Literal[package], Field()), # type: ignore
                 ("config", schema, Field()),
             ],
         )
+        new_schema.name = name
         if composite_value not in self.__class__.composite_schema_map:
             self.composite_schema_map[composite_value] = {}
         self.composite_schema_map[composite_value][package] = new_schema
@@ -366,52 +378,36 @@ class Extension(ABC):
             >>> )
 
         Args:
-            schema_cls (ninja.Schema): 需要创建的Schema class
+            schema_cls_name (ninja.Schema): 需要创建的Schema class的名字
             field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
         """
-        temp_name = {}
-        temp_list = {}
-        for composite_key, package_schema_map in cls.composite_schema_map.items():
-            schema_name = schema_cls_name + composite_key
-            new_schema = create_config_schema_from_schema_list(
-                schema_name, 
-                package_schema_map.values(),
-                'package',
-                **field_definitions,
-            )
-            temp_name[composite_key] = schema_name
-            temp_list[composite_key] = new_schema
 
         schema = create_config_schema_from_schema_list(
             schema_cls_name,
-            temp_list.values(),
+            [],
             cls.composite_key,
             depth=1,
         )
-        cls.created_composite_schema_list.append((schema, temp_list, temp_name))
+        cls.created_composite_schema_list.append((schema, field_definitions))
+        cls.refresh_all_created_composite_schema()
         return schema
 
     @classmethod
     def refresh_all_created_composite_schema(cls):
         if not hasattr(cls, "created_composite_schema_list"):
             return
-        for created_ext_config_schema, temp_list, temp_name in cls.created_composite_schema_list:
-            deleted_keys = []
-            for composite_key,schema_name in temp_name.items():
-                if cls.composite_schema_map.get(composite_key):
-                    
-                    new_schema = create_config_schema_from_schema_list(
-                        schema_name, 
-                        cls.composite_schema_map[composite_key].values(),
-                        'package',
-                    )
-                    # 这里每次创建新的Schema会导致在reload之后，原来的Schema并不会被销毁而产生内存泄露
-                    temp_list[composite_key] = new_schema
-                else:
-                    deleted_keys.append(composite_key)
-            for key in deleted_keys:
-                temp_list.pop(key)
-                temp_name.pop(key)
+        for created_ext_config_schema, field_definitions in cls.created_composite_schema_list:
+            temp_list = {}
+            for composite_key, package_schema_map in cls.composite_schema_map.items():
+                schema_name = created_ext_config_schema.name + composite_key
+                new_schema = create_config_schema_from_schema_list(
+                    schema_name, 
+                    package_schema_map.values(),
+                    'package',
+                    **field_definitions,
+                )
+                temp_list[composite_key] = new_schema
+            
 
             root_type, root_field = get_root_schema(temp_list.values(), cls.composite_key, depth=1)
             core_api.add_fields(created_ext_config_schema, __root__=(root_type, root_field))
@@ -448,10 +444,16 @@ class Extension(ABC):
             core_event.unregister_event(tag)
         for schema_tag in self.config_schema_list:
             self.__class__.extension_config_schema_map.pop(schema_tag, None)
-            self.__class__.refresh_all_created_extension_config_schema()
-        for k,v in self.composite_schema_map.items():
+        self.__class__.refresh_all_created_extension_config_schema()
+        
+        delete_ks = []
+        for k,v in self.__class__.composite_schema_map.items():
             v.pop(self.package, None)
-            self.__class__.refresh_all_created_composite_schema()
+            if not self.__class__.composite_schema_map[k]:
+                delete_ks.append(k)
+        for k in delete_ks:
+            self.__class__.composite_schema_map.pop(k)
+        self.__class__.refresh_all_created_composite_schema()
 
         if self.lang_code:
             core_translation.extension_lang_maps[self.lang_code].pop(self.name)

@@ -41,29 +41,11 @@ PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',pa
         BaseAuthFactorSchema,
     )
 
-# class PasswordAuthFactorSchema(BaseAuthFactorSchema):
-#     reset_password_enabled: Optional[bool] = Field(deprecated=True)
-    
-#     login_enabled_field_names: List[str] = Field(
-#         default=[], 
-#         title=_('login_enabled_field_names', '启用密码登录的字段'),
-#         url='/api/v1/login_fields?tenant={tenant_id}'
-#     )
-#     register_enabled_field_names: List[str] = Field(
-#         default=[], 
-#         title=_('register_enabled_field_names', '启用密码注册的字段'),
-#         url='/api/v1/register_fields?tenant={tenant_id}'
-#     )
-#     is_apply: bool = Field(default=False, title=_('is_apply', '是否启用密码校验'))
-#     regular: str = Field(default='', title=_('regular', '密码校验正则表达式'))
-#     title: str = Field(default='', title=_('title', '密码校验提示信息'))    
-
-
 class PasswordAuthFactorExtension(AuthFactorExtension):
     def load(self):
         super().load()
         self.register_extend_field(UserPassword, "password")
-        self.register_config_schema(PasswordAuthFactorSchema)
+        self.register_auth_factor_schema(PasswordAuthFactorSchema, 'password')
         from api.v1.schema.auth import AuthIn
         self.register_extend_api(AuthIn, password=str)
         
