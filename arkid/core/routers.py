@@ -22,14 +22,14 @@ class FrontRouter(OrderedDict):
         super().__init__(*args, **kwargs)
 
     def add_child(self, child):
-        if not self.children:
-            self.children = []
-        self.children.append(child)
+        if not self["children"]:
+            self["children"] = []
+        self["children"].append(child)
 
     def remove_child(self, child):
-        if not self.children:
+        if not self["children"]:
             return
-        self.children.remove(child)
+        self["children"].remove(child)
 
     def change_page_tag(self, header):
         if self['page']:
