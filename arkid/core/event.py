@@ -18,11 +18,12 @@ class EventType:
 
 class Event:
 
-    def __init__(self, tag, tenant, request=None, response=None, data=None, uuid=None) -> None:
+    def __init__(self, tag, tenant, request=None, response=None, packages=None, data=None, uuid=None) -> None:
         self.tag = tag
         self.tenant = tenant
         self._request = request
         self._response = response
+        self.packages = packages
         self.data = data
         self.uuid = uuid
 

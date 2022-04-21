@@ -7,17 +7,15 @@ from django.db import transaction
 from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig
 from arkid.core.event import Event, register_event, dispatch_event
-from arkid.core.extension.app_protocol import AppProtocolExtension
+from arkid.core.extension.app_protocol import create_app_protocol_extension_config_schema, app_protocol_schema_map
 from arkid.core.event import CREATE_APP, UPDATE_APP, DELETE_APP
-from arkid.core.schema import RootSchema
-
 
 register_event(CREATE_APP, _('create app','创建应用'))
 register_event(UPDATE_APP, _('update app','修改应用'))
 register_event(DELETE_APP, _('delete app','删除应用'))
 
 
-AppConfigSchemaIn = AppProtocolExtension.create_composite_config_schema('AppConfigSchemaIn')
+AppConfigSchemaIn = xxExstsion.create_app_protocol_extension_config_schema(xxExstsion, 'AppConfigSchemaIn')
 
 class AppConfigSchemaOut(Schema):
     app_id: str

@@ -6,6 +6,74 @@ from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core import event as core_event
 
+
+auth_factor_schema_map = {}
+created_auth_factor_schema_list = []
+
+def create_auth_factor_extension_config_schema(schema_cls_name, **field_definitions):
+    """创建应用协议类插件配置的Schema
+    
+    schema_cls只接受一个空定义的Schema
+    Examples:
+        >>> from ninja import Schema
+        >>> from pydantic import Field
+        >>> class ExampleExtensionConfigSchema(Schema):
+        >>>     pass
+        >>> create_auth_factor_extension_config_schema(
+        >>>     ExampleExtensionConfigSchema, 
+        >>>     field_name=( field_type, Field(...) )
+        >>> )
+
+    Args:
+        schema_cls (ninja.Schema): 需要创建的Schema class
+        field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
+    """
+    temp_name = {}
+    temp_list = {}
+    for app_type, package_schema_map in auth_factor_schema_map.items():
+        schema_name = schema_cls_name+app_type
+        new_schema = create_config_schema_from_schema_list(
+            schema_name, 
+            package_schema_map.values(),
+            'package',
+            **field_definitions,
+        )
+        temp_name[app_type] = schema_name
+        temp_list[app_type] = new_schema
+
+    schema = create_config_schema_from_schema_list(
+        schema_cls_name,
+        temp_list.values(),
+        'app_type',
+        depth=1,
+    )
+    created_auth_factor_schema_list.append((schema, temp_list, temp_name))
+    return schema
+
+
+def refresh_all_created_auth_factor_schema():
+    for created_ext_config_schema, temp_list, temp_name in created_auth_factor_schema_list:
+        deleted_keys = []
+        for app_type,schema_name in temp_name.items():
+            if auth_factor_schema_map.get(app_type):
+                
+                new_schema = create_config_schema_from_schema_list(
+                    schema_name, 
+                    auth_factor_schema_map[app_type].values(),
+                    'package',
+                )
+                # 这里每次创建新的Schema会导致在reload之后，原来的Schema并不会被销毁而产生内存泄露
+                temp_list[app_type] = new_schema
+            else:
+                deleted_keys.append(app_type)
+        for key in deleted_keys:
+            temp_list.pop(key)
+            temp_name.pop(key)
+
+        root_type, root_field = get_root_schema(temp_list.values(), 'app_type', depth=1)
+        core_api.add_fields(created_ext_config_schema, __root__=(root_type, root_field))
+        
+
 class AuthFactorExtension(Extension):
     LOGIN = 'login'
     REGISTER = 'register'

@@ -14,10 +14,9 @@ class OAuth2ServerExtension(AppProtocolExtension):
         # 加载url地址
         self.load_urls()
         # 加载相应的配置文件
-        self.register_config_schema(OIDCConfigSchema, 'OIDC', self.package)
-        self.register_config_schema(Oauth2ConfigSchema, 'OAuth2' ,self.package)
+        self.register_app_protocol_schema(OIDCConfigSchema, 'OIDC')
+        self.register_app_protocol_schema(Oauth2ConfigSchema, 'OAuth2')
         super().load()
-
 
     def load_urls(self):
         self.register_routers(urls, True)
