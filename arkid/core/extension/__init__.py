@@ -19,6 +19,7 @@ from arkid.core.translation import gettext_default as _
 from ninja.orm import create_schema
 from django.db.models import Model
 from arkid.common.logger import logger
+from arkid.core.models import EmptyModel
 
 
 app_config = config.get_app_config()
@@ -41,10 +42,6 @@ def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str
     Returns:
         ninja.Schema : 创建的Schema类
     """
-    from django.db import models
-    class EmptyModel(models.Model):
-        pass
-    
     if package:
         name = package + '_' + name
     schema = create_schema(EmptyModel,
