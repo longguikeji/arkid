@@ -18,7 +18,7 @@ page = pages.FrontPage(
     page_type = pages.FrontPageType.TABLE_PAGE,
     init_action=pages.FrontAction(
         path = '/api/v1/tenant/{tenant_id}/app/',
-        method = 'get'
+        method = pages.FrontActionMethod.GET
     )
 )
 

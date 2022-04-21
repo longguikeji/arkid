@@ -48,14 +48,14 @@ class FrontPage(OrderedDict):
     """ 前端页面配置类
     """
     def __init__(self, name:str, page_type:FrontPageType, init_action, tag:str=None, tag_pre:str=None, *args, **kwargs):
-        """初始化
+        """初始化函数
 
         Args:
-            name (_type_): _description_
-            type (_type_): _description_
-            init_action (_type_): _description_
-            tag (str, optional): _description_. Defaults to None.
-            tag_pre (str, optional): _description_. Defaults to None.
+            name (str): 页面名称
+            page_type (FrontPageType): 页面类型
+            init_action (FrontAction|OrderedDict): 初始化动作
+            tag (str, optional): 标识. Defaults to None.
+            tag_pre (str, optional): 标识前缀. Defaults to None.
         """
         self["tag"] = gen_tag(tag,tag_pre)
         self["name"] = name
@@ -64,6 +64,11 @@ class FrontPage(OrderedDict):
         super().__init__(*args, **kwargs)
 
     def add_global_action(self, actions):
+        """ 添加全局动作
+
+        Args:
+            actions (FrontAction|OrderedDict)): 动作列表
+        """
         if not isinstance(actions, tuple) or not isinstance(actions, list):
             actions = list(actions)
         if not self.get('global'):
@@ -71,6 +76,11 @@ class FrontPage(OrderedDict):
         self['global'].extend(actions)
     
     def add_local_action(self, actions):
+        """ 添加表单动作
+
+        Args:
+            actions (FrontAction|OrderedDict)): 动作列表
+        """
         if not isinstance(actions, tuple) or not isinstance(actions, list):
             actions = list(actions)
         if not self.get('local'):
@@ -78,6 +88,11 @@ class FrontPage(OrderedDict):
         self['local'].extend(actions)  
 
     def add_node_action(self, actions):
+        """ 添加树节点动作
+
+        Args:
+            actions (FrontAction|OrderedDict)): 动作列表
+        """
         if not isinstance(actions, tuple) or not isinstance(actions, list):
             actions = list(actions)
         if not self.get('node'):
@@ -108,10 +123,40 @@ class FrontActionType(Enum):
     URL_ACTION = 'url'
     PASSWORD_ACTION = 'password'
 
+class FrontActionMethod(Enum):
+    """前端动作类型枚举类
+    
+    ActionMethod 动作方法 [可扩展]:
+    
+    >>> get
+    >>> post
+    >>> put
+    >>> delete
+    """
+    
+    GET = 'get'
+    POST = 'post'
+    PUT = 'put'
+    DELETE = 'delete'
+
 
 class FrontAction(OrderedDict):
-    def __init__(self, tag=None, action_type:FrontActionType=None,name=None, page=None, path=None, method=None, icon=None,tag_pre:str=None, *args, **kwargs):
-        
+    """前端页面动作类
+    """
+    
+    def __init__(self, tag:str=None, action_type:FrontActionType=None,name:str=None, page=None, path:str=None, method:FrontActionMethod=None, icon:str=None,tag_pre:str=None, *args, **kwargs):
+        """初始化函数
+
+        Args:
+            tag (str, optional): 标识. Defaults to None.
+            action_type (FrontActionType, optional): 动作类型. Defaults to None.
+            name (str, optional): 名称. Defaults to None.
+            page (FrontPage|str, optional): 指向页面,此处存储页面的标识. Defaults to None.
+            path (str, optional): 请求路径. Defaults to None.
+            method (FrontActionMethod, optional): 请求方法. Defaults to None.
+            icon (str, optional): 图标名称. Defaults to None.
+            tag_pre (str, optional): 标识前缀. Defaults to None.
+        """
         self["tag"] = gen_tag(tag,tag_pre)
         
         if name:
@@ -122,7 +167,7 @@ class FrontAction(OrderedDict):
         if path:
             self["path"] = path
         if method:
-            self["method"] = method
+            self["method"] = method.value
         if icon:
             self["icon"] = icon
             
@@ -132,12 +177,22 @@ class FrontAction(OrderedDict):
 
 
 def register_front_pages(pages):
+    """注册前端页面
+
+    Args:
+        pages (List|FrontPage): 前端页面
+    """
     if not isinstance(pages, tuple) or not isinstance(pages, list):
         pages = [pages]
     global_pages.extend(pages)
 
 
 def unregister_front_pages(pages):
+    """卸载页面
+
+    Args:
+        pages (List|FrontPage): 前端页面
+    """
     if not isinstance(pages, tuple) or not isinstance(pages, list):
         pages = [pages]
 

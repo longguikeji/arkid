@@ -19,7 +19,7 @@ page = pages.FrontPage(
     page_type=pages.FrontPageType.TABLE_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/users/',
-        method='get'
+        method=pages.FrontActionMethod.GET
     )
 )
 
@@ -28,14 +28,14 @@ user_edit_page = pages.FrontPage(
     page_type=pages.FrontPageType.FORM_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/users/{id}/',
-        method='get'
+        method=pages.FrontActionMethod.GET
     )
 )
 
 user_edit_page.add_global_action(
     [
         pages.FrontAction(
-            method="post",
+            method=pages.FrontActionMethod.POST,
             name=_("确认"),
             path="/api/v1/tenant/{tenant_id}/users/{id}/",
             icon="icon-confirm"
@@ -58,14 +58,14 @@ user_create_page = pages.FrontPage(
     page_type=pages.FrontPageType.FORM_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/users/',
-        method='post'
+        method=pages.FrontActionMethod.POST
     )
 )
 
 user_create_page.add_global_action(
     [
         pages.FrontAction(
-            method="post",
+            method=pages.FrontActionMethod.POST,
             name=_("确认"),
             path="/api/v1/tenant/{tenant_id}/users/",
             action_type=pages.FrontActionType.DIRECT_ACTION,
@@ -94,7 +94,7 @@ page.add_local_action(
         ),
         pages.FrontAction(
             name=_("删除"),
-            method="delete",
+            method=pages.FrontActionMethod.DELETE,
             path="/api/v1/tenant/{tenant_id}/users/{id}/",
             icon="icon-delete",
             action_type=pages.FrontActionType.DIRECT_ACTION
