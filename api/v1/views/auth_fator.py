@@ -16,7 +16,7 @@ class AuthFatorSchemaOut(Schema):
     config_id: str
 
 @transaction.atomic
-@api.post("/{tenant_id}/auth_fator/", response=AuthFatorSchemaOut, auth=None)
+@api.post("/{tenant_id}/auth_fator/", response=AuthFatorSchemaOut, tags=['认证因素'], auth=None)
 def create_auth_fator(request, tenant_id: str, data: AuthFatorSchemaIn):
     config = TenantExtensionConfig()
     config.tenant = request.tenant
@@ -31,7 +31,7 @@ class AuthFatorListSchemaOut(Schema):
     # data: List[AuthFatorSchemaIn]
     pass
 
-@api.get("/{tenant_id}/auth_fator/", response=AuthFatorListSchemaOut, auth=None)
+@api.get("/{tenant_id}/auth_fator/", response=AuthFatorListSchemaOut, tags=['认证因素'], auth=None)
 def create_auth_fator(request, tenant_id: str):
     extensions = Extension.active_objects.filter(type=AuthFactorExtension.TYPE).all()
     configs = TenantExtensionConfig.active_objects.filter(extension__in=extensions)

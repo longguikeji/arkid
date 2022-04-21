@@ -86,7 +86,7 @@ register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth facto
 register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules','登录页面生成规则'))
 
 
-@api.get("/tenant/{tenant_id}/login_page/", response=LoginPageOut, auth=None)
+@api.get("/tenant/{tenant_id}/login_page/", response=LoginPageOut,tags=['登录与注册'], auth=None)
 @operation(LoginPageOut)
 def login_page(request, tenant_id: str):
     tenant = request.tenant

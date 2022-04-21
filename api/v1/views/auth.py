@@ -6,7 +6,7 @@ from arkid.core.error import ErrorCode
 from api.v1.schema.auth import AuthIn, AuthOut
 
 
-@api.post("/tenant/{tenant_id}/auth/", response=AuthOut, auth=None)
+@api.post("/tenant/{tenant_id}/auth/", response=AuthOut, tags=['登录与注册'], auth=None)
 @operation(AuthOut, use_id=True)
 def auth(request, tenant_id: str, event_tag: str, data: AuthIn):
     tenant = request.tenant

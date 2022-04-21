@@ -56,7 +56,7 @@ class ConfigSchemaOut(ModelSchema):
 
 
 @transaction.atomic
-@api.post("/{tenant_id}/apps", response=AppConfigSchemaOut, auth=None)
+@api.post("/{tenant_id}/apps", response=AppConfigSchemaOut, tags=['应用'], auth=None)
 def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
     '''
     app创建
@@ -85,7 +85,7 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
             break
     return {"app_id": app.id.hex}
 
-@api.get("/{tenant_id}/apps", response=List[AppListSchemaOut], auth=None)
+@api.get("/{tenant_id}/apps", response=List[AppListSchemaOut], tags=['应用'], auth=None)
 @paginate
 def list_apps(request, tenant_id: str):
     '''
@@ -96,7 +96,7 @@ def list_apps(request, tenant_id: str):
     )
     return apps
 
-@api.get("/{tenant_id}/apps/{app_id}", response=AppSchemaOut, auth=None)
+@api.get("/{tenant_id}/apps/{app_id}", response=AppSchemaOut, tags=['应用'], auth=None)
 def get_app(request, tenant_id: str, app_id: str):
     '''
     获取app
@@ -114,7 +114,7 @@ def get_app(request, tenant_id: str, app_id: str):
     }
     return result
 
-@api.delete("/{tenant_id}/apps/{app_id}", auth=None)
+@api.delete("/{tenant_id}/apps/{app_id}", tags=['应用'], auth=None)
 def delete_app(request, tenant_id: str, app_id: str):
     '''
     删除app
@@ -128,7 +128,7 @@ def delete_app(request, tenant_id: str, app_id: str):
     app.delete()
     return {'error': ErrorCode.OK.value}
 
-@api.put("/{tenant_id}/apps/{app_id}", auth=None)
+@api.put("/{tenant_id}/apps/{app_id}", tags=['应用'], auth=None)
 def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
     '''
     修改app

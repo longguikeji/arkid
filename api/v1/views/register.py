@@ -26,7 +26,7 @@ class RegisterOut(ResponseSchema):
     data: RegisterDataOut
 
 
-@api.post("/tenant/{tenant_id}/register/", response=RegisterOut, auth=None)
+@api.post("/tenant/{tenant_id}/register/", response=RegisterOut, tags=['登录与注册'], auth=None)
 @operation(RegisterOut, use_id=True)
 def register(request, tenant_id: str, event_tag: str):
     tenant = request.tenant

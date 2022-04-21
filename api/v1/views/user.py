@@ -19,7 +19,7 @@ class UserListOutSchema(ModelSchema):
         model = User
         model_fields = ['id', 'username', 'avatar', 'is_platform_user']
         
-@api.get("/tenant/{tenant_id}/users/",response=List[UserListOutSchema], auth=None)
+@api.get("/tenant/{tenant_id}/users/",response=List[UserListOutSchema], tags=['用户'], auth=None)
 @operation(List[UserListOutSchema])
 def user_list(request, tenant_id: str,data: UserListInSchema=Query(...)):
     users = User.objects.filter(tenant__id=tenant_id).all()
@@ -44,7 +44,7 @@ class UserCreateOutSchema(Schema):
         title=_("状态说明")
     )
         
-@api.post("/tenant/{tenant_id}/users/",response=UserCreateOutSchema, auth=None)
+@api.post("/tenant/{tenant_id}/users/",response=UserCreateOutSchema, tags=['用户'], auth=None)
 @operation(UserCreateOutSchema)
 def user_create(request, tenant_id: str,data:UserCreateInSchema, query_data: UserCreateInQuerySchema=Query(...)):
     status = True,
@@ -74,7 +74,7 @@ class UserDeleteOutSchema(Schema):
         title=_("状态说明")
     )
         
-@api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOutSchema, auth=None)
+@api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOutSchema, tags=['用户'], auth=None)
 @operation(UserDeleteOutSchema)
 def user_delete(request, tenant_id: str,id:str,data: UserDeleteInSchema=Query(...)):
     status = True,
@@ -113,7 +113,7 @@ class UserUpdateOutSchema(Schema):
         title=_("状态说明")
     )
         
-@api.put("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOutSchema, auth=None)
+@api.put("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOutSchema, tags=['用户'], auth=None)
 @operation(UserUpdateOutSchema)
 def user_update(request, tenant_id: str,id:str,data:UserUpdateInSchema,query_data: UserUpdateInQuerySchema=Query(...)):
     status = True,
@@ -145,7 +145,7 @@ class UserOutSchema(ModelSchema):
         model = User
         model_fields = ['id', 'username', 'avatar', 'is_platform_user']
         
-@api.get("/tenant/{tenant_id}/users/{id}/",response=UserOutSchema, auth=None)
+@api.get("/tenant/{tenant_id}/users/{id}/",response=UserOutSchema, tags=['用户'], auth=None)
 @operation(UserOutSchema)
 def user_list(request, tenant_id: str,id:str,data: UserInSchema=Query(...)):
     user = User.active_objects.get(tenant__id=tenant_id,id=id)

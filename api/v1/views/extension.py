@@ -18,7 +18,7 @@ class ExtensionConfigSchemaOut(Schema):
     config_id: str
 
 
-@api.post("/extensions/{extension_id}/unload/", auth=None)
+@api.post("/extensions/{extension_id}/unload/",  tags=['插件'], auth=None)
 def unload_extension(request, extension_id: str):
     extension = ExtensionModel.objects.filter(id=extension_id).first()
     if extension:
@@ -29,7 +29,7 @@ def unload_extension(request, extension_id: str):
         return {}
 
 
-@api.post("/extensions/{extension_id}/load/", auth=None)
+@api.post("/extensions/{extension_id}/load/", tags=['插件'], auth=None)
 def load_extension(request, extension_id: str):
     extension = ExtensionModel.objects.filter(id=extension_id).first()
     if extension:
