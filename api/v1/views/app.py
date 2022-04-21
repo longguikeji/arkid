@@ -62,7 +62,7 @@ class ConfigSchemaOut(ModelSchema):
 
 @transaction.atomic
 @api.post("/{tenant_id}/apps", response=AppConfigSchemaOut, auth=None)
-def create_app_config(request, tenant_id: str, data_1: AppConfigSchemaIn):
+def create_app(request, tenant_id: str, data_1: AppConfigSchemaIn):
     '''
     app创建
     '''
