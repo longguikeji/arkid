@@ -62,11 +62,10 @@ class ConfigSchemaOut(ModelSchema):
 
 @transaction.atomic
 @api.post("/{tenant_id}/apps", response=AppConfigSchemaOut, auth=None)
-def create_app(request, tenant_id: str, data_1: AppConfigSchemaIn):
+def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
     '''
     app创建
     '''
-    data = data_1.__root__
     data.id = uuid.uuid4()
     tenant = request.tenant
     
@@ -135,11 +134,11 @@ def delete_app(request, tenant_id: str, app_id: str):
     return {'error': ErrorCode.OK.value}
 
 @api.put("/{tenant_id}/apps/{app_id}", auth=None)
-def update_app(request, tenant_id: str, app_id: str, data_1: AppConfigSchemaIn):
+def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
     '''
     修改app
     '''
-    data = data_1.__root__
+    # data = data_1.__root__
     tenant = request.tenant
     # 分发事件开始
     results = dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=data))

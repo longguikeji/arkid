@@ -9,6 +9,10 @@ from arkid.extension.models import TenantExtensionConfig
 from arkid.core.token import generate_token
 
 
+class EmptyModel(models.Model):
+    pass
+
+
 class Tenant(BaseModel):
 
     class Meta(object):

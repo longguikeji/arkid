@@ -108,7 +108,7 @@ def load_extension(ext_dir: str) -> any:
     ext = importlib.import_module(ext_name)
     if ext and hasattr(ext, 'extension'):
         ext.extension.ext_dir = ext_dir
-        ext.extension.load()
+        ext.extension.start()
         logger.info(f'{ext_name} load success')
         return ext.extension
     else:

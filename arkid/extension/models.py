@@ -8,10 +8,9 @@ class Extension(BaseModel):
     class Meta(object):
         verbose_name = _("插件")
         verbose_name_plural = _("插件")
-        unique_together = [['package', 'version']]
 
     labels = models.CharField(max_length=128, verbose_name=_('标签'))
-    package = models.CharField(max_length=128, verbose_name=_('标识'))
+    package = models.CharField(max_length=128, verbose_name=_('标识'), unique=True)
     ext_dir = models.CharField(max_length=1024, verbose_name=_('完整路径名'))
     name = models.CharField(max_length=128, verbose_name=_('名称'))
     version = models.CharField(max_length=128, verbose_name=_('版本'))

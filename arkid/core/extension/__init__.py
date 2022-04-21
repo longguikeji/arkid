@@ -18,7 +18,8 @@ from pydantic import Field
 from arkid.core.translation import gettext_default as _
 from ninja.orm import create_schema
 from django.db.models import Model
-
+from arkid.common.logger import logger
+from arkid.core.models import EmptyModel
 
 
 app_config = config.get_app_config()
@@ -39,18 +40,16 @@ def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str
     Returns:
         ninja.Schema : 创建的Schema类
     """
-    from django.db import models
-    class EmptyModel(models.Model):
-        pass
-    
     if package:
         name = package + '_' + name
-    return create_schema(EmptyModel,
+    schema = create_schema(EmptyModel,
             name=name, 
             exclude=['id'],
             custom_fields=fields,
             base_class=base_schema,
         )
+    schema.class_name = name
+    return schema
 
 def create_extension_schema_from_django_model(
         model: Type[Model],
@@ -79,24 +78,34 @@ def create_extension_schema_from_django_model(
     return create_schema(model=model, name=name, depth=depth,fields=fields, exclude=exclude, custom_fields=custom_fields, base_class=base_class)
     
 
-def create_extension_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
+def get_root_schema(schema_list, discriminator, depth = 0):
+    if len(schema_list) == 0:
+        return Schema, Field()
+    elif len(schema_list) == 1:
+        return list(schema_list)[0],Field()
+    else:
+        return Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)
+
+def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
     
     for schema in schema_list:
         core_api.add_fields(schema, **field_definitions)
-    
+
     if len(schema_list) == 0:
         return Schema
     elif len(schema_list) == 1:
         return list(schema_list)[0]
     else:
+        root_type, root_field = Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)
         return create_extension_schema(
             schema_cls_name, 
             fields=[
-                ("__root__", Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)) # type: ignore
+                ("__root__", root_type, root_field) # type: ignore
             ],
         )
 
-
+extension_config_schema_map = {}
+created_extension_config_schema_list = []
 def create_extension_config_schema(schema_cls_name, **field_definitions):
     """创建插件配置的Schema
     
@@ -114,11 +123,16 @@ def create_extension_config_schema(schema_cls_name, **field_definitions):
         schema_cls_name (ninja.Schema): 需要创建的 Schema Class 的名字
         field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
     """
-    return create_extension_config_schema_from_schema_list(schema_cls_name, config_schema_map.values(), 'package', **field_definitions)
+    ext_schema = create_config_schema_from_schema_list(schema_cls_name, extension_config_schema_map.values(), 'package', **field_definitions)
+    created_extension_config_schema_list.append(ext_schema)
+    return ext_schema
     
 
+def refresh_all_created_extension_config_schema():
+    root_type, root_field = get_root_schema(extension_config_schema_map.values(), 'package')
+    for created_ext_config_schema in created_extension_config_schema_list:
+        core_api.add_fields(created_ext_config_schema, __root__=(root_type, root_field))
 
-config_schema_map = {}
 
 class Extension(ABC):
     """插件基类
@@ -140,9 +154,16 @@ class Extension(ABC):
         self.extend_apis = []
         self.front_routers = []
         self.front_pages = []
-        # self.config_schema_map = 
+        self.config_schema_list = []
         self.lang_code = None
 
+    @property
+    def model(self):
+        extension = ExtensionModel.objects.filter(package=self.package).first()
+        if not extension:
+            raise Exception(f'cannot find {self.package} in database')
+        else:
+            return extension
 
     @property
     def ext_dir(self):
@@ -223,7 +244,7 @@ class Extension(ABC):
             return func(event=event, **kwargs2)
 
         core_event.listen_event(tag, signal_func, listener=self)
-        self.events.extend((tag, signal_func))        
+        self.events.append((tag, signal_func))        
 
     def register_event(self, tag, name, data_model=None, description=''):
         tag = self.package + '_' + tag
@@ -236,7 +257,7 @@ class Extension(ABC):
 
     def register_extend_api(self, api_schema_cls, **field_definitions):
         core_api.add_fields(api_schema_cls, **field_definitions)
-        self.extend_apis.append((api_schema_cls, field_definitions.keys()))
+        self.extend_apis.append((api_schema_cls, list(field_definitions.keys())))
         
     def register_languge(self, lang_code:str = 'en', lang_maps={}):
         self.lang_code = lang_code
@@ -268,21 +289,18 @@ class Extension(ABC):
         core_page.register_front_pages(page)
         self.front_pages.append(page)
 
-    def register_config_schema(self, schema, package=None, **kwargs):
-        # class XxSchema(Schema):
-        #     config: schema
-            # package: Literal[package or self.package] # type: ignore
-        package = package or self.package
+    def register_config_schema(self, schema, schema_tag=None, **kwargs):
+        schema_tag = schema_tag or self.package
         new_schema = create_schema(TenantExtensionConfig,
-            name=package+'_config', 
+            name=schema_tag+'_config', 
             fields=['id'],
             custom_fields=[
-                ("package", Literal[package], Field()),  # type: ignore
+                ("package", Literal[schema_tag], Field()),  # type: ignore
                 ("config", schema, Field())
             ],
         )
-        config_schema_map[package] = new_schema
-
+        extension_config_schema_map[schema_tag] = new_schema
+        self.config_schema_list.append(schema_tag)
         
     def get_tenant_configs(self, tenant):
         ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
@@ -299,8 +317,19 @@ class Extension(ABC):
         ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
         return TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config)
 
+    @abstractmethod
     def load(self):
-        self.migrate_extension()
+        pass
+
+    def start(self):
+        try:
+            self.migrate_extension()
+        except Exception as e:
+            print(e)
+            logger.error(e)
+        self.load()
+        refresh_all_created_extension_config_schema()
+        
         # self.install_requirements() sys.modeles
 
     def unload(self):
@@ -317,9 +346,21 @@ class Extension(ABC):
             core_page.unregister_front_pages(page)
         for tag in self.event_tags:
             core_event.unregister_event(tag)
+        for schema_tag in self.config_schema_list:
+            extension_config_schema_map.pop(schema_tag, None)
+            refresh_all_created_extension_config_schema()
 
         if self.lang_code:
             core_translation.extension_lang_maps[self.lang_code].pop(self.name)
             if not core_translation.extension_lang_maps[self.lang_code]:
                 core_translation.extension_lang_maps.pop(self.lang_code)
             core_translation.lang_maps = core_translation.reset_lang_maps()
+            
+        self.urls = []
+        self.extend_fields = []
+        self.events = []
+        self.event_tags = []
+        self.extend_apis = []
+        self.front_routers = []
+        self.front_pages = []
+        self.config_schema_list = []
