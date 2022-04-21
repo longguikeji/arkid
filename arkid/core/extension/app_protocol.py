@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from cProfile import label
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core.models import App
@@ -6,11 +7,20 @@ from arkid.core import api as core_api, event as core_event
 
 
 class AppProtocolExtension(Extension):
+    
+    TYPE = "app_protocol"
+    
+    
     composite_schema_map = {}
     created_composite_schema_list = []
     composite_key = 'app_type'
     composite_model = App
-
+    
+    @property
+    def type(self):
+        return AppProtocolExtension.TYPE
+    
+    
     def load(self):
         super().load()
         self.listen_event(core_event.CREATE_APP, self.create_app)

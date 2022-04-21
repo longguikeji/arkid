@@ -94,24 +94,29 @@ def get_root_schema(schema_list, discriminator, depth = 0):
         return Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)
 
 
+extension_schema_map = {}
 def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
     
     for schema in schema_list:
         core_api.add_fields(schema, **field_definitions)
 
     if len(schema_list) == 0:
-        return Schema
+        schema = create_extension_schema(schema_cls_name)
     elif len(schema_list) == 1:
-        return list(schema_list)[0]
+        # schema = list(schema_list)[0]
+        schema = create_extension_schema(schema_cls_name, base_schema=list(schema_list)[0])
     else:
         root_type, root_field = Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)
-        return create_extension_schema(
+        
+        schema = create_extension_schema(
             schema_cls_name, 
             fields=[
                 ("__root__", root_type, root_field) # type: ignore
             ],
             base_schema=RootSchema,
         )
+        extension_schema_map[schema_cls_name] = schema
+    return schema
 
 
 class Extension(ABC):
@@ -119,6 +124,10 @@ class Extension(ABC):
     """
     extension_config_schema_map = {}
     created_extension_config_schema_list = []
+
+    @property
+    def type(self):
+        return 'base'
 
     def __init__(self, package, version, description, labels, homepage, logo, author) -> None:
         self.package = package
@@ -276,8 +285,8 @@ class Extension(ABC):
     def register_config_schema(self, schema, schema_tag=None):
         schema_tag = schema_tag or self.package
         new_schema = create_schema(TenantExtensionConfig,
-            name=schema_tag+'_config', 
-            fields=['id'],
+            name = schema_tag+'_config', 
+            fields = ['id'],
             custom_fields=[
                 ("package", Literal[schema_tag], Field()),  # type: ignore
                 ("config", schema, Field())

@@ -9,6 +9,7 @@ class Extension(BaseModel):
         verbose_name = _("插件")
         verbose_name_plural = _("插件")
 
+    type = models.CharField(max_length=64, default="base", verbose_name=_('类型'))
     labels = models.CharField(max_length=128, verbose_name=_('标签'))
     package = models.CharField(max_length=128, verbose_name=_('标识'), unique=True)
     ext_dir = models.CharField(max_length=1024, verbose_name=_('完整路径名'))
