@@ -5,8 +5,22 @@ from abc import abstractmethod
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core import event as core_event
+from arkid.extension.models import TenantExtensionConfig
 
 class AuthFactorExtension(Extension):
+    
+    TYPE = "auth_factor"
+    
+    
+    composite_schema_map = {}
+    created_composite_schema_list = []
+    composite_key = 'type'
+    composite_model = TenantExtensionConfig
+    
+    @property
+    def type(self):
+        return AuthFactorExtension.TYPE
+    
     LOGIN = 'login'
     REGISTER = 'register'
     RESET_PASSWORD = 'password'

@@ -26,6 +26,7 @@ class ExtensionLoader:
         for ext in exts:
             Extension.objects.update_or_create(
                 defaults={
+                    'type': ext.type,
                     'labels': ext.labels,
                     'ext_dir': str(ext.ext_dir),
                     'name': ext.name,

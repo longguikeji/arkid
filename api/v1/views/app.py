@@ -11,27 +11,22 @@ from django.shortcuts import get_object_or_404
 from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig
 from arkid.core.event import Event, register_event, dispatch_event
-from arkid.core.extension.app_protocol import create_app_protocol_extension_config_schema, app_protocol_schema_map
+from arkid.core.extension.app_protocol import AppProtocolExtension
 from arkid.core.event import CREATE_APP, UPDATE_APP, DELETE_APP
-from extension_root.com_longgui_oauth2_server.appscheme import OIDCConfigSchema
+from arkid.core.schema import RootSchema
 
 import uuid
+
 
 register_event(CREATE_APP, _('create app','创建应用'))
 register_event(UPDATE_APP, _('update app','修改应用'))
 register_event(DELETE_APP, _('delete app','删除应用'))
 
-# class AppConfigSchemaIn(Schema):
-#     __root__: Union[tuple(app_protocol_schema_map.values())] = Field(discriminator='app_type') # type: ignore
-    # pass
 
-# create_app_protocol_extension_config_schema(
-#     AppConfigSchemaIn,
-# )
-AppConfigSchemaIn = create_app_protocol_extension_config_schema('AppConfigSchemaIn')
+AppConfigSchemaIn = AppProtocolExtension.create_composite_config_schema('AppConfigSchemaIn')
 
 
-AppSchemaOut = create_app_protocol_extension_config_schema('AppSchemaOut')
+AppSchemaOut = AppProtocolExtension.create_composite_config_schema('AppSchemaOut')
 
 class AppConfigSchemaOut(Schema):
     app_id: str

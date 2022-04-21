@@ -4,12 +4,12 @@ from arkid.core.api import api
 from typing import Union
 from typing_extensions import Annotated
 from pydantic import Field
-from arkid.core.extension import create_extension_config_schema
+from arkid.core.extension import Extension
 from arkid.extension.utils import import_extension
-from arkid.extension.models import TenantExtensionConfig, Extension
+from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
 
 
-ExtensionConfigSchemaIn = create_extension_config_schema(
+ExtensionConfigSchemaIn = Extension.create_extension_config_schema(
     'ExtensionConfigSchemaIn',
     extension_id=str,
 )
@@ -20,7 +20,7 @@ class ExtensionConfigSchemaOut(Schema):
 
 @api.post("/extensions/{extension_id}/unload/", auth=None)
 def unload_extension(request, extension_id: str):
-    extension = Extension.objects.filter(id=extension_id).first()
+    extension = ExtensionModel.objects.filter(id=extension_id).first()
     if extension:
         ext = import_extension(extension.ext_dir)
         ext.unload()
@@ -31,7 +31,7 @@ def unload_extension(request, extension_id: str):
 
 @api.post("/extensions/{extension_id}/load/", auth=None)
 def load_extension(request, extension_id: str):
-    extension = Extension.objects.filter(id=extension_id).first()
+    extension = ExtensionModel.objects.filter(id=extension_id).first()
     if extension:
         ext = import_extension(extension.ext_dir)
         ext.start()
