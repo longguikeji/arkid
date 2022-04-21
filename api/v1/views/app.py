@@ -66,7 +66,7 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
     
     # 事件分发
     results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
-    for func, ((result, extension), item) in results:
+    for func, (result, extension) in results:
         if result:
             # 创建config
             config = extension.create_tenant_config(tenant, data.config.dict())
@@ -137,7 +137,7 @@ def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
     tenant = request.tenant
     # 分发事件开始
     results = dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=data))
-    for func, ((result, extension), item) in results:
+    for func, (result, extension) in results:
         # 修改app信息
         app = get_object_or_404(App, id=app_id, is_del=False)
         app.name = data.name
@@ -150,6 +150,6 @@ def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
         # app.tenant_id = tenant_id
         app.save()
         # 修改config
-        config = extension.update_tenant_config(app.config.id, data.config.dict())
+        extension.update_tenant_config(app.config.id, data.config.dict())
         break
     return {'error': ErrorCode.OK.value}

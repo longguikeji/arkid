@@ -31,14 +31,14 @@ class AppProtocolExtension(Extension):
         self.register_composite_config_schema(schema, app_type)
 
     @abstractmethod
-    def create_app(self, event):
+    def create_app(self, event, **kwargs):
         pass
 
     @abstractmethod
-    def update_app(self, event):
+    def update_app(self, event, **kwargs):
         pass
 
     @abstractmethod
-    def delete_app(self, event):
+    def delete_app(self, event, **kwargs):
         pass
     

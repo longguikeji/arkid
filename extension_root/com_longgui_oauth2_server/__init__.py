@@ -21,15 +21,15 @@ class OAuth2ServerExtension(AppProtocolExtension):
     def load_urls(self):
         self.register_routers(urls, True)
 
-    def create_app(self, event):
+    def create_app(self, event, **kwargs):
         config = event.data.config
         return self.update_app_data(event, config, True)
 
-    def update_app(self, event):
+    def update_app(self, event, **kwargs):
         config = event.data.config
         return self.update_app_data(event, config, False)
 
-    def delete_app(self, event):
+    def delete_app(self, event, **kwargs):
         # 删除应用
         Application.objects.filter(name=event.data.id).delete()
         return True

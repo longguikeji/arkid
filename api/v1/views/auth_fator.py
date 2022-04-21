@@ -9,12 +9,6 @@ from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.extension.auth_factor import AuthFactorExtension
-from arkid.core.event import CREATE_APP, UPDATE_APP, DELETE_APP
-
-register_event(CREATE_APP, _('create app','创建应用'))
-register_event(UPDATE_APP, _('update app','修改应用'))
-register_event(DELETE_APP, _('delete app','删除应用'))
-
 
 AuthFatorSchemaIn = AuthFactorExtension.create_composite_config_schema('AuthFatorSchemaIn')
 
