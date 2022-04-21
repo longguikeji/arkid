@@ -1,6 +1,5 @@
 from enum import Enum
 from typing import Any, Dict, Optional, List
-from pydantic import Field
 from ninja import Schema, Query, ModelSchema
 from arkid.core.event import register_event, dispatch_event, Event
 from arkid.core.api import api, operation
