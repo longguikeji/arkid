@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Union, Literal, Any, List, Optional, Tuple, Type
 from typing_extensions import Annotated
-from attr import fields
 from pydantic import Field
 from django.urls import include, re_path
 from pathlib import Path
