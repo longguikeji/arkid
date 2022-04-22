@@ -3,10 +3,10 @@ EXPOSE 80
 WORKDIR /var/arkid
 ARG DEBIAN=http://mirrors.aliyun.com/debian
 ARG DEBIANSRT=http://mirrors.aliyun.com/debian-security
-ARG PIP="-i https://mirrors.aliyun.com/pypi/simple/"
+ARG PIP="https://mirrors.aliyun.com/pypi/simple/"
 #ARG DEBIAN=http://deb.debian.org/debian
 #ARG DEBIANSRT=http://security.debian.org/debian-security
-#ARG PIP="-i https://pypi.python.org/simple"
+#ARG PIP="https://pypi.python.org/simple"
 
 RUN set -eux; \
     sed -i 's/MinProtocol = TLSv1.2/MinProtocol = TLSv1.0/g' /etc/ssl/openssl.cnf; \
@@ -27,17 +27,7 @@ RUN set -eux; \
 ADD requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-FROM build_deps as run_lint
-ADD requirements-dev.txt ./
-RUN pip install --no-cache-dir -r requirements-dev.txt
 ADD . .
-# ARG base_commit_id=""
-RUN pre-commit install \
-    && .git/hooks/pre-commit
-
-FROM build_deps as build
-ADD . .
-RUN pip install mysqlclient==1.4.6 $PIP; \
-    chmod +x docker-entrypoint.sh
+RUN chmod +x docker-entrypoint.sh
 ENTRYPOINT ["/var/arkid/docker-entrypoint.sh"]
 CMD ["tini", "--", "/usr/local/bin/python3.8", "manage.py", "runserver", "0.0.0.0:80"]
