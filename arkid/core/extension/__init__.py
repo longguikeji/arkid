@@ -80,7 +80,9 @@ def create_extension_schema_from_django_model(
     Returns:
         ninjia.Schema: 新创建的Schema类
     """
-    return create_schema(model=model, name=name, depth=depth,fields=fields, exclude=exclude, custom_fields=custom_fields, base_class=base_class)
+    schema = create_schema(model=model, name=name, depth=depth,fields=fields, exclude=exclude, custom_fields=custom_fields, base_class=base_class)
+    schema.name = name
+    return schema
     
 
 def get_root_schema(schema_list, discriminator, depth = 0):

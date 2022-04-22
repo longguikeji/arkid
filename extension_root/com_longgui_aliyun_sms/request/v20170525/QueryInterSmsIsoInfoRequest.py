@@ -17,7 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from aliyunsdkcore.request import RpcRequest
+from ...aliyunsdkcore.request import RpcRequest
 
 class QueryInterSmsIsoInfoRequest(RpcRequest):
 
