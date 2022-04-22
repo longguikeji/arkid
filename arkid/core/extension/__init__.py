@@ -23,7 +23,6 @@ from ninja.orm import create_schema
 from django.db.models import Model
 from arkid.common.logger import logger
 from arkid.core.models import EmptyModel
-from arkid.core.schema import RootSchema
 
 
 app_config = config.get_app_config()
@@ -385,11 +384,12 @@ class Extension(ABC):
             field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
         """
 
-        schema = create_config_schema_from_schema_list(
-            schema_cls_name,
-            [],
-            cls.composite_key,
-            depth=1,
+        schema = create_extension_schema(
+            schema_cls_name, 
+            fields=[
+                ("__root__", str, Field(depth=1)) # type: ignore
+            ],
+            base_schema=RootSchema,
         )
         cls.created_composite_schema_list.append((schema, field_definitions))
         cls.refresh_all_created_composite_schema()
