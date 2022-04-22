@@ -10,3 +10,5 @@ router = routers.FrontRouter(
         user_list.router,
     ],
 )
+
+# router.change_page_tag('core')
