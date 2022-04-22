@@ -7,7 +7,7 @@ import urllib.parse
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.template import Template
-from  django.template import RequestContext
+from django.template import RequestContext
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
@@ -37,11 +37,10 @@ log = logging.getLogger("oauth2_provider")
 
 
 class TokenRequiredMixin(AccessMixin):
-
     def get_login_url(self):
         full_path = self.request.get_full_path()
         next_uri = urllib.parse.quote(full_path)
-        
+
         # # 地址加租户uuid参数
         uuid_re = r"[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}"
         path = self.request.path
@@ -50,29 +49,46 @@ class TokenRequiredMixin(AccessMixin):
             tenant_uuid = res.group(0)
             tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
             if tenant and tenant.slug:
-                redirect_url = '{}{}?next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, next_uri)
+                redirect_url = '{}{}?next={}'.format(
+                    get_app_config().get_slug_frontend_host(tenant.slug),
+                    LOGIN_URL,
+                    next_uri,
+                )
             else:
-                redirect_url = '{}{}?tenant={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, tenant_uuid, next_uri)
+                redirect_url = '{}{}?tenant={}&next={}'.format(
+                    get_app_config().get_frontend_host(),
+                    LOGIN_URL,
+                    tenant_uuid,
+                    next_uri,
+                )
         else:
             host = get_app_config().get_host().split('://')[-1]
             request_host = self.request.get_host().split(':')[0]
             slug = request_host.replace('.' + host, '')
             tenant = Tenant.objects.filter(slug=slug).first()
             if tenant and tenant.slug:
-                redirect_url = '{}{}?next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, next_uri)
-            else: 
-                redirect_url = '{}{}?slug=null&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, next_uri)
+                redirect_url = '{}{}?next={}'.format(
+                    get_app_config().get_slug_frontend_host(tenant.slug),
+                    LOGIN_URL,
+                    next_uri,
+                )
+            else:
+                redirect_url = '{}{}?slug=null&next={}'.format(
+                    get_app_config().get_frontend_host(), LOGIN_URL, next_uri
+                )
         return redirect_url
 
     def dispatch(self, request, *args, **kwargs):
         is_authenticated = self.check_token(request, *args, **kwargs)
         if is_authenticated:
             if self.check_permission(request) is False:
-                return HttpResponseRedirect(self.get_return_url(self.get_login_url(), '您没有使用oauth应用的权限'))
+                return HttpResponseRedirect(
+                    self.get_return_url(self.get_login_url(), '您没有使用oauth应用的权限')
+                )
             return super().dispatch(request, *args, **kwargs)
         else:
             return self.handle_no_permission()
-    
+
     def get_return_url(self, url, alert):
         '''
         取得回调地址
@@ -81,15 +97,14 @@ class TokenRequiredMixin(AccessMixin):
             str_url = url
             token_index = str_url.find('%26token')
             str_url_before = str_url[0:token_index]
-            str_url_after_index = str_url.find('%26', token_index+1)
+            str_url_after_index = str_url.find('%26', token_index + 1)
             str_url_after = ''
             if str_url_after_index != -1:
                 str_url_after = str_url[str_url_after_index:]
-            url = str_url_before+str_url_after
+            url = str_url_before + str_url_after
             url = '{}&is_alert={}'.format(url, alert)
         return url
-        
-    
+
     def check_permission(self, request):
         '''
         权限检查
@@ -104,10 +119,11 @@ class TokenRequiredMixin(AccessMixin):
             return False
 
         from app.models import App
+
         app = App.valid_objects.filter(
             tenant=tenant,
             type__in=['OIDC', 'OAuth2'],
-            data__client_id = client_id,
+            data__client_id=client_id,
         ).first()
         if app and user.check_app_permission(tenant, app) is True:
             return True
@@ -115,9 +131,9 @@ class TokenRequiredMixin(AccessMixin):
         # OIDC-Platform
         app = App.valid_objects.filter(
             type__in=['OIDC-Platform'],
-            data__client_id = client_id,
+            data__client_id=client_id,
         ).first()
-        # ToDo 
+        # ToDo
         # 验证是否购买
         if app:
             return True
@@ -125,7 +141,7 @@ class TokenRequiredMixin(AccessMixin):
         # arkstore 特殊处理
         app = App.valid_objects.filter(
             type__in=['OIDC-Platform'],
-            data__client_id = client_id,
+            data__client_id=client_id,
             name='arkstore',
         ).first()
         if app:
@@ -133,6 +149,7 @@ class TokenRequiredMixin(AccessMixin):
 
         # arkid_saas 特殊处理
         from oauth2_provider.models import Application
+
         app = Application.objects.filter(
             name='arkid_saas',
             client_id=client_id,
@@ -152,22 +169,24 @@ class TokenRequiredMixin(AccessMixin):
             tenant = Tenant.objects.get(uuid=tenant_uuid)
 
         if not tenant:
-            uuid_re = r"[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}"
+            uuid_re = (
+                r"[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}"
+            )
             path = self.request.path
             res = re.search(uuid_re, path)
             if res:
                 tenant_uuid = res.group(0)
                 tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
-        
+
         if not tenant:
             host = get_app_config().get_host().split('://')[-1]
             request_host = request.get_host().split(':')[0]
             slug = request_host.replace('.' + host, '')
             tenant = Tenant.objects.filter(slug=slug).first()
-        
+
         if not tenant:
-            slug = request.GET.get("slug")
-            tenant = Tenant.objects.filter(slug=slug).first()
+            tenant_uuid = request.GET.get("tenant_uuid")
+            tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
 
         try:
             res = ExpiringTokenAuthentication().authenticate(request)
@@ -232,6 +251,7 @@ class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
 
 RFC3339 = "%Y-%m-%dT%H:%M:%SZ"
 
+
 class AuthorizationView(BaseAuthorizationView, FormView):
     """
     Implements an endpoint to handle *Authorization Requests* as in :rfc:`4.1.1` and prompting the
@@ -269,7 +289,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             "state": self.oauth2_data.get("state", None),
             "response_type": self.oauth2_data.get("response_type", None),
             "code_challenge": self.oauth2_data.get("code_challenge", None),
-            "code_challenge_method": self.oauth2_data.get("code_challenge_method", None),
+            "code_challenge_method": self.oauth2_data.get(
+                "code_challenge_method", None
+            ),
             "claims": self.oauth2_data.get("claims", None),
         }
         return initial_data
@@ -286,7 +308,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         if form.cleaned_data.get("code_challenge", False):
             credentials["code_challenge"] = form.cleaned_data.get("code_challenge")
         if form.cleaned_data.get("code_challenge_method", False):
-            credentials["code_challenge_method"] = form.cleaned_data.get("code_challenge_method")
+            credentials["code_challenge_method"] = form.cleaned_data.get(
+                "code_challenge_method"
+            )
         if form.cleaned_data.get("nonce", False):
             credentials["nonce"] = form.cleaned_data.get("nonce")
         if form.cleaned_data.get("claims", False):
@@ -297,7 +321,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
         try:
             uri, headers, body, status = self.create_authorization_response(
-                request=self.request, scopes=scopes, credentials=credentials, allow=allow
+                request=self.request,
+                scopes=scopes,
+                credentials=credentials,
+                allow=allow,
             )
         except OAuthToolkitError as error:
             return self.error_response(error, application)
@@ -316,7 +343,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             application = get_application_model().objects.get(client_id=client_id)
             try:
                 uri, headers, body, status = self.create_authorization_response(
-                    request=self.request, scopes=scopes, credentials=credentials, allow=allow
+                    request=self.request,
+                    scopes=scopes,
+                    credentials=credentials,
+                    allow=allow,
                 )
             except OAuthToolkitError as error:
                 return self.error_response(error, application)
@@ -341,7 +371,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         # at this point we know an Application instance with such client_id exists in the database
 
         # TODO: Cache this!
-        application = get_application_model().objects.get(client_id=credentials["client_id"])
+        application = get_application_model().objects.get(
+            client_id=credentials["client_id"]
+        )
         kwargs["application"] = application
         kwargs["client_id"] = credentials["client_id"]
         kwargs["redirect_uri"] = credentials["redirect_uri"]
@@ -363,7 +395,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
 
         # Check to see if the user has already granted access and return
         # a successful response depending on "approval_prompt" url parameter
-        require_approval = request.GET.get("approval_prompt", oauth2_settings.REQUEST_APPROVAL_PROMPT)
+        require_approval = request.GET.get(
+            "approval_prompt", oauth2_settings.REQUEST_APPROVAL_PROMPT
+        )
 
         try:
             # If skip_authorization field is True, skip the authorization screen even
@@ -372,7 +406,10 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # are already approved.
             if application.skip_authorization:
                 uri, headers, body, status = self.create_authorization_response(
-                    request=self.request, scopes=" ".join(scopes), credentials=credentials, allow=True
+                    request=self.request,
+                    scopes=" ".join(scopes),
+                    credentials=credentials,
+                    allow=True,
                 )
                 return self.redirect(uri, application)
 
@@ -380,7 +417,9 @@ class AuthorizationView(BaseAuthorizationView, FormView):
                 tokens = (
                     get_access_token_model()
                     .objects.filter(
-                        user=request.user, application=kwargs["application"], expires__gt=timezone.now()
+                        user=request.user,
+                        application=kwargs["application"],
+                        expires__gt=timezone.now(),
                     )
                     .all()
                 )
@@ -406,7 +445,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             request.session['credentials'] = credentials
             request.session['scopes'] = scopes
 
-            template = Template(application.custom_template) 
+            template = Template(application.custom_template)
             rendered_template = template.render(RequestContext(request))
             print(rendered_template)
             return HttpResponse(rendered_template)
@@ -414,7 +453,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
             # return TemplateResponse(request, template, {})
 
             # response = HttpResponse(application.custom_template)
-            # return response 
+            # return response
 
     def redirect(self, redirect_to, application, token=None):
 
