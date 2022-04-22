@@ -5,14 +5,6 @@ user_list_tag = 'user_list'
 user_list_name = '用户列表'
 
 
-router = routers.FrontRouter(
-    path=user_list_tag,
-    name='用户管理',
-    icon='user',
-    page=user_list_tag,
-)
-
-
 page = pages.FrontPage(
     tag=user_list_tag,
     name=user_list_name,
@@ -111,6 +103,14 @@ page.add_global_action(
             action_type=pages.FrontActionType.OPEN_ACTION
         )
     ]
+)
+
+
+router = routers.FrontRouter(
+    path=user_list_tag,
+    name='用户管理',
+    icon='user',
+    page=page,
 )
 
 pages.register_front_pages(page)

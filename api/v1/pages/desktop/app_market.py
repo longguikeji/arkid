@@ -5,10 +5,10 @@ app_market_name = '应用市集'
 
 
 router = routers.FrontRouter(
-    path=app_market_tag,
+    path="",
     name=app_market_name,
     icon='app',
-    page=app_market_tag,
+    page=[app_market_tag],
 )
 
 
