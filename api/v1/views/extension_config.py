@@ -6,7 +6,7 @@ from typing_extensions import Annotated
 from pydantic import Field
 from arkid.core.extension import Extension
 from arkid.extension.models import TenantExtensionConfig
-
+from arkid.core.schema import RootSchema
 
 ExtensionConfigSchemaIn = Extension.create_extension_config_schema(
     'ExtensionConfigSchemaIn',
@@ -22,7 +22,7 @@ def create_extension_config(request, tenant_id: str, data: ExtensionConfigSchema
     config = TenantExtensionConfig.objects.create(
         tenant_id=tenant_id,
         extension_id=data.extension_id,
-        config = data.config.data.dict(),
+        config = data.config.dict(),
     )
     return {"config_id": config.id.hex}
 

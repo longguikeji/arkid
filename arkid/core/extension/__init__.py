@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union, Literal, Any, List, Optional, Tuple, Type
 from typing_extensions import Annotated
+from attr import fields
 from pydantic import Field
 from django.urls import include, re_path
 from pathlib import Path
@@ -94,7 +95,7 @@ def get_root_schema(schema_list, discriminator, depth = 0):
 
 
 extension_schema_map = {}
-def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
+def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, base_schema=Schema, **field_definitions):
     
     new_schema_list = []
     for schema in schema_list:
@@ -105,7 +106,7 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
     schema_list = new_schema_list
     
     if len(schema_list) == 0:
-        schema = create_extension_schema(schema_cls_name)
+        schema = create_extension_schema(schema_cls_name, base_schema=base_schema)
     elif len(schema_list) == 1:
         # schema = list(schema_list)[0]
         schema = create_extension_schema(schema_cls_name, base_schema=list(schema_list)[0])
@@ -154,7 +155,7 @@ class Extension(ABC):
 
     @property
     def model(self):
-        extension = ExtensionModel.objects.filter(package=self.package).first()
+        extension = ExtensionModel.valid_objects.filter(package=self.package).first()
         if not extension:
             raise Exception(f'cannot find {self.package} in database')
         else:
@@ -243,9 +244,9 @@ class Extension(ABC):
         core_event.listen_event(tag, signal_func, listener=self)
         self.events.append((tag, signal_func))        
 
-    def register_event(self, tag, name, data_model=None, description=''):
+    def register_event(self, tag, name, data_schema=None, description=''):
         tag = self.package + '_' + tag
-        core_event.register_event(tag, name, data_model, description)
+        core_event.register_event(tag, name, data_schema, description)
         self.event_tags.append(tag)
         return tag
 
@@ -321,15 +322,25 @@ class Extension(ABC):
             schema_cls_name (ninja.Schema): 需要创建的 Schema Class 的名字
             field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
         """
-        ext_schema = create_config_schema_from_schema_list(schema_cls_name, cls.extension_config_schema_map.values(), 'package', **field_definitions)
-        cls.created_extension_config_schema_list.append(ext_schema)
-        return ext_schema
+        
+        temp_schema = create_config_schema_from_schema_list(schema_cls_name, cls.extension_config_schema_map.values(), 'package', **field_definitions)
+        schema = create_extension_schema(
+            schema_cls_name+'temp', 
+            fields=[
+                ("__root__", temp_schema, Field()) # type: ignore
+            ],
+            base_schema=RootSchema,
+        )
+        cls.created_extension_config_schema_list.append( (schema,field_definitions) )
+        # cls.refresh_all_created_extension_config_schema()
+        return schema
         
     @classmethod
     def refresh_all_created_extension_config_schema(cls):
-        root_type, root_field = get_root_schema(cls.extension_config_schema_map.values(), 'package')
-        for created_ext_config_schema in cls.created_extension_config_schema_list:
-            core_api.add_fields(created_ext_config_schema, __root__=(root_type, root_field))
+        # root_type, root_field = get_root_schema(cls.extension_config_schema_map.values(), 'package')
+        for schema,field_definitions in cls.created_extension_config_schema_list:
+            temp_schema = create_config_schema_from_schema_list(schema.name+'temp', cls.extension_config_schema_map.values(), 'package', **field_definitions)
+            core_api.add_fields(schema, __root__=(temp_schema, Field()))
 
     def register_composite_config_schema(self, schema, composite_value, exclude=[], package=None):
         package = package or self.package
@@ -350,40 +361,27 @@ class Extension(ABC):
         self.composite_schema_map[composite_value][package] = new_schema
         
     def get_tenant_configs(self, tenant):
-        ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
-        configs = TenantExtensionConfig.objects.filter(tenant=tenant, extension=ext).all()
+        ext = ExtensionModel.valid_objects.filter(package=self.package, version=self.version).first()
+        configs = TenantExtensionConfig.valid_objects.filter(tenant=tenant, extension=ext).all()
+        return configs
+
+    def get_active_tenant_configs(self, tenant):
+        ext = ExtensionModel.valid_objects.filter(package=self.package, version=self.version).first()
+        configs = TenantExtensionConfig.active_objects.filter(tenant=tenant, extension=ext).all()
         return configs
 
     def get_config_by_id(self, id):
-        return TenantExtensionConfig.objects.get(id=id)
+        return TenantExtensionConfig.valid_objects.get(id=id)
     
     def update_tenant_config(self, id,  config):
-        return TenantExtensionConfig.objects.filter(id=id).update(config=config)
+        return TenantExtensionConfig.valid_objects.filter(id=id).update(config=config)
 
     def create_tenant_config(self, tenant, config):
-        ext = ExtensionModel.objects.filter(package=self.package, version=self.version).first()
+        ext = ExtensionModel.valid_objects.filter(package=self.package, version=self.version).first()
         return TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config)
 
     @classmethod
     def create_composite_config_schema(cls, schema_cls_name, **field_definitions):
-        """创建应用协议类插件配置的Schema
-        
-        schema_cls只接受一个空定义的Schema
-        Examples:
-            >>> from ninja import Schema
-            >>> from pydantic import Field
-            >>> class ExampleExtensionConfigSchema(Schema):
-            >>>     pass
-            >>> create_generic_config_schema(
-            >>>     ExampleExtensionConfigSchema, 
-            >>>     field_name=( field_type, Field(...) )
-            >>> )
-
-        Args:
-            schema_cls_name (ninja.Schema): 需要创建的Schema class的名字
-            field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
-        """
-
         schema = create_extension_schema(
             schema_cls_name, 
             fields=[

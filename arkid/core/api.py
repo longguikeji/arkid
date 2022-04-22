@@ -120,7 +120,7 @@ def operation(respnose_model, use_id=False):
             tag = tag,
             name = operation.summary,
             description = operation.description,
-            data_model = ApiEventData
+            data_schema = ApiEventData
         )
 
         old_view_func = operation.view_func

@@ -1,24 +1,53 @@
 from typing import Dict
 from django.dispatch import Signal
 from arkid.core.translation import gettext_default as _
-
+from ninja import Schema
+from arkid.core.models import Tenant
+from django.http import HttpRequest, HttpResponse
 
 event_id_map = {}
 
 
 class EventType:
 
-    def __init__(self, tag, name, data_model=None, description='') -> None:
+    def __init__(self, tag: str, name: str, data_schema: Schema = None, result_schema: Schema = None, request_schema: Schema = None, response_schema:  Schema = None, description: str = '') -> None:
+        """事件类型用于注册
+        注意:
+            event request 切勿修改
+
+        Args:
+            tag (str): 事件类型唯一标识
+            name (str): 事件类型名字
+            data_schema (Schema, optional): 输入data的Schema
+            result_schema (Schema, optional): 事件处理回调函数 return 结果 Schema
+            request_schema (Schema, optional): django http request Schema
+            response_schema (Schema, optional): django http response Schema
+            description (str, optional): 事件类型描述
+        """
         self.signal = Signal()
         self.tag = tag
         self.name = name
-        self.data_model = data_model
+        self.data_schema = data_schema
+        self.result_schema = result_schema
+        self.request_schema = request_schema
+        self.response_schema = response_schema
         self.description = description
 
 
 class Event:
 
-    def __init__(self, tag, tenant, request=None, response=None, packages=None, data=None, uuid=None) -> None:
+    def __init__(self, tag: str, tenant: Tenant, request: HttpRequest=None, response: HttpResponse=None, packages: str=None, data=None, uuid: str=None) -> None:
+        """事件
+
+        Args:
+            tag (str): 事件类型唯一标识
+            tenant (Tenant): 租户
+            request (HttpRequest, optional): django http request
+            response (HttpResponse, optional): django http response
+            packages (str, optional): 插件package标识
+            data (_type_, optional): 事件data
+            uuid (str, optional): 事件包含的request_uuid
+        """
         self.tag = tag
         self.tenant = tenant
         self._request = request
@@ -40,8 +69,8 @@ tag_map_signal: Dict[str, Event] = {}
 temp_listens:Dict[str, tuple] = {}
 
 
-def register_event(tag, name, data_model=None, description=''):
-    register_event_type(EventType(tag=tag, name=name, data_model=data_model, description=description))
+def register_event(tag, name, data_schema=None, description=''):
+    register_event_type(EventType(tag=tag, name=name, data_schema=data_schema, description=description))
 
 
 def register_event_type(event_type: EventType):
@@ -61,7 +90,7 @@ def register_event_type(event_type: EventType):
     #     methods = ['event'],
     #     path = tag,
     #     view_func = view_func,
-    #     response = event_type.data_model,
+    #     response = event_type.data_schema,
     #     operation_id = tag + '_event',
     #     summary = event_type.name,
     #     description = event_type.description,
@@ -79,8 +108,8 @@ def dispatch_event(event, sender=None):
     event_type = tag_map_signal.get(event.tag)
     if not event_type:
         return
-    # if event_type.data_model:
-    #     event.data = event_type.data_model(**event.data)
+    # if event_type.data_schema:
+    #     event.data = event_type.data_schema(**event.data)
     return event_type.signal.send(sender=sender, event=event)
 
 
@@ -92,8 +121,8 @@ def break_event_loop(data):
     raise EventDisruptionData(data)
 
 
-def register_and_dispatch_event(tag, name, tenant, description='', data_model=None, data=None):
-    register_event(tag, name, data_model, description)
+def register_and_dispatch_event(tag, name, tenant, description='', data_schema=None, data=None):
+    register_event(tag, name, data_schema, description)
     return dispatch_event(Event(tag, tenant, data))
 
 
@@ -171,3 +200,13 @@ CREATE_LOGIN_PAGE_RULES = 'CREATE_LOGIN_PAGE_RULES'
 CREATE_APP = 'CREATE_APP'
 UPDATE_APP = 'UPDATE_APP'
 DELETE_APP = 'DELETE_APP'
+SEND_SMS = 'SEND_SMS'
+
+
+# register events
+register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor','认证因素生成登录页面'))
+register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules','登录页面生成规则'))
+register_event(CREATE_APP, _('create app','创建应用'))
+register_event(UPDATE_APP, _('update app','修改应用'))
+register_event(DELETE_APP, _('delete app','删除应用'))
+register_event(SEND_SMS, _('send sms','发送短信'))
