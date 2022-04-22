@@ -12,7 +12,7 @@
 ## 事件
 ::: arkid.core.event
 
-## 前度页面
+## 前端页面
 ::: arkid.core.pages
 
 ## 前端路由
