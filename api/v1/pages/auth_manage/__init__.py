@@ -1,10 +1,11 @@
-from . import auth_factor
+from . import auth_factor,auth_rules
 from arkid.core import routers
 
-auth_router = routers.FrontRouter(
+router = routers.FrontRouter(
     path='auth',
     name='认证管理',
     children=[
-        auth_factor.router
+        auth_factor.router,
+        auth_rules.router
     ],
 )
