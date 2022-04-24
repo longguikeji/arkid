@@ -1,4 +1,4 @@
-from . import app_list
+from . import app_list,app_protocol
 from arkid.core import routers
 
 
@@ -8,5 +8,6 @@ router = routers.FrontRouter(
     icon='app',
     children=[
         app_list.router,
+        app_protocol.router
     ],
 )

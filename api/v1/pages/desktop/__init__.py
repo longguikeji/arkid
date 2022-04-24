@@ -1,17 +1,19 @@
-from . import app_market
+from . import app_list
+from .. import mine
 from arkid.core import routers,pages
-
-
-desktop_page = pages.GridPage(
-    name="桌面",
-    tag="descktop"
-)
-
-desktop_page.children = [app_market.page]
 
 router = routers.FrontRouter(
     path='desktop',
     name='桌面',
     icon='home',
-    page=[desktop_page]
+    children=[
+        app_list.router,
+    ],
 )
+
+router.mobile_children = [
+    # mine.auth_manage.router,
+    mine.router,
+]
+
+router.hidden = True

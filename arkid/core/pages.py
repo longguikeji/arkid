@@ -147,26 +147,57 @@ class FrontPage(DeepSN):
         """
         self.tag = gen_tag(self.tag,tag_pre)
 
+    def dict(self):
+        return super().dict()
+
 class FormPage(FrontPage):
-    page_type = FrontPageType.FORM_PAGE
+    """表单页面
+    """
+    def __init__(self, *args, **kwargs):
+        self.type = FrontPageType.FORM_PAGE.value
+        super().__init__(*args, **kwargs)
 
 class TablePage(FrontPage):
-    page_type = FrontPageType.GRID_PAGE
+    """表格页面
+    """
+    def __init__(self, *args, **kwargs):
+        self.type = FrontPageType.TABLE_PAGE.value
+        super().__init__(*args, **kwargs)
 
 class TreePage(FrontPage):
-    page_type = FrontPageType.TREE_PAGE
+    """树形页面
+    """
+    def __init__(self, *args, **kwargs):
+        self.type = FrontPageType.TREE_PAGE.value
+        super().__init__(*args, **kwargs)
 
 class DescriptionPage(FrontPage):
-    page_type = FrontPageType.DESCRIPTION_PAGE
+    """描述页面
+    """
+    def __init__(self, *args, **kwargs):
+        self.type = FrontPageType.DESCRIPTION_PAGE.value
+        super().__init__(*args, **kwargs)
 
 class ListPage(FrontPage):
-    page_type = FrontPageType.LIST_PAGE
+    """列表页面
+    """
+    def __init__(self, *args, **kwargs):
+        self.type = FrontPageType.LIST_PAGE.value
+        super().__init__(*args, **kwargs)
 
 class CardsPage(FrontPage):
-    page_type = FrontPageType.CARDS_PAGE
+    """卡片列表
+    """
+    def __init__(self, *args, **kwargs):
+        self.type = FrontPageType.CARDS_PAGE.value
+        super().__init__(*args, **kwargs)
 
 class GridPage(FrontPage):
-    page_type = FrontPageType.GRID_PAGE
+    """网格页面
+    """
+    def __init__(self, *args, **kwargs):
+        self.type = FrontPageType.GRID_PAGE.value
+        super().__init__(*args, **kwargs)
 
 
 class FrontActionType(Enum):

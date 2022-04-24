@@ -1,13 +1,11 @@
-from . import app_market
-from arkid.core import routers,pages
+from arkid.core import routers
+from arkid.core.translation import gettext_default as _
 
-
-mine_router = routers.FrontRouter(
+router = routers.FrontRouter(
     path='mine',
-    name='桌面',
-    icon='home',
+    name=_('我的'),
     children=[
     ]
 )
 
-mine_router.hidden = True
+router.hidden = True
