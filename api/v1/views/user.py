@@ -22,7 +22,7 @@ class UserListOutSchema(ModelSchema):
 @api.get("/tenant/{tenant_id}/users/",response=List[UserListOutSchema], tags=['用户'], auth=None)
 @operation(List[UserListOutSchema])
 def user_list(request, tenant_id: str,data: UserListInSchema=Query(...)):
-    users = User.objects.filter(tenant__id=tenant_id).all()
+    users = User.expand_objects.filter(tenant__id=tenant_id).all()
     return users
 
 # ------------- 创建用户接口 --------------
@@ -50,7 +50,7 @@ def user_create(request, tenant_id: str,data:UserCreateInSchema, query_data: Use
     status = True,
     message = ""
     try:
-        users = User.objects.create(tenant__id=tenant_id,**data.dict())
+        users = User.expand_objects.create(tenant__id=tenant_id,**data.dict())
     except Exception as e:
         status = False
         message= f'{_("创建用户失败")}:{str(e)}'
@@ -80,7 +80,7 @@ def user_delete(request, tenant_id: str,id:str,data: UserDeleteInSchema=Query(..
     status = True,
     message = ""
     try:
-        user = User.active_objects.get(tenant__id=tenant_id,id=id)
+        user = User.expand_objects.get(tenant__id=tenant_id,id=id)
         user.delete()
     except User.DoesNotExist as uerr:
         status = False
@@ -119,7 +119,7 @@ def user_update(request, tenant_id: str,id:str,data:UserUpdateInSchema,query_dat
     status = True,
     message = ""
     try:
-        user = User.active_objects.get(tenant__id=tenant_id,id=id)
+        user = User.expand_objects.get(tenant__id=tenant_id,id=id)
         user.avatar = data.avatar
         user.save()
     except User.DoesNotExist:
@@ -148,5 +148,5 @@ class UserOutSchema(ModelSchema):
 @api.get("/tenant/{tenant_id}/users/{id}/",response=UserOutSchema, tags=['用户'], auth=None)
 @operation(UserOutSchema)
 def user_list(request, tenant_id: str,id:str,data: UserInSchema=Query(...)):
-    user = User.active_objects.get(tenant__id=tenant_id,id=id)
+    user = User.expand_objects.get(tenant__id=tenant_id,id=id)
     return user
