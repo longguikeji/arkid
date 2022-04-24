@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from uuid import uuid4
 from enum import Enum
+from arkid.common import DeepSN
 global_pages = {}
 
 class FrontPageType(Enum):
@@ -45,7 +46,7 @@ def gen_tag(tag:str=None,tag_pre:str=None) -> str:
     global_tags.append(tag)
     return tag
 
-class FrontPage(OrderedDict):
+class FrontPage(DeepSN):
     """ 前端页面配置类
 
     Examples:
@@ -86,7 +87,7 @@ class FrontPage(OrderedDict):
         >>>     ]
         >>> )
     """
-    def __init__(self, name:str, page_type:FrontPageType, init_action, tag:str=None, tag_pre:str=None, *args, **kwargs):
+    def __init__(self, name:str, tag:str=None, tag_pre:str=None, *args, **kwargs):
         """初始化函数
 
         Args:
@@ -96,10 +97,8 @@ class FrontPage(OrderedDict):
             tag (str, optional): 标识. 
             tag_pre (str, optional): 标识前缀. 
         """
-        self["tag"] = gen_tag(tag,tag_pre)
-        self["name"] = name
-        self["type"] = page_type.value
-        self["init"] = init_action
+        self.tag = gen_tag(tag,tag_pre)
+        self.name = name
         super().__init__(*args, **kwargs)
 
     def add_global_action(self, actions):
@@ -110,9 +109,9 @@ class FrontPage(OrderedDict):
         """
         if not isinstance(actions, tuple) or not isinstance(actions, list):
             actions = list(actions)
-        if not self.get('global'):
-            self['global'] = []
-        self['global'].extend(actions)
+        if not hasattr(self,"global_action"):
+            self.global_action = []
+        self.global_action.extend(actions)
     
     def add_local_action(self, actions):
         """ 添加表单动作
@@ -122,9 +121,9 @@ class FrontPage(OrderedDict):
         """
         if not isinstance(actions, tuple) or not isinstance(actions, list):
             actions = list(actions)
-        if not self.get('local'):
-            self['local'] = []
-        self['local'].extend(actions)  
+        if not hasattr(self,"local_action"):
+            self.local_action = []
+        self.local_action.extend(actions)  
 
     def add_node_action(self, actions):
         """ 添加树节点动作
@@ -134,9 +133,9 @@ class FrontPage(OrderedDict):
         """
         if not isinstance(actions, tuple) or not isinstance(actions, list):
             actions = list(actions)
-        if not self.get('node'):
-            self['node'] = []
-        self['node'].extend(actions)
+        if not hasattr(self,'node'):
+            self.node = []
+        self.node.extend(actions)
 
     def add_tag_pre(self,tag_pre:str):
         """添加标识前缀
@@ -146,7 +145,28 @@ class FrontPage(OrderedDict):
         Args:
             tag_pre (str): 前缀
         """
-        self["tag"] = gen_tag(self["tag"],tag_pre)
+        self.tag = gen_tag(self.tag,tag_pre)
+
+class FormPage(FrontPage):
+    page_type = FrontPageType.FORM_PAGE
+
+class TablePage(FrontPage):
+    page_type = FrontPageType.GRID_PAGE
+
+class TreePage(FrontPage):
+    page_type = FrontPageType.TREE_PAGE
+
+class DescriptionPage(FrontPage):
+    page_type = FrontPageType.DESCRIPTION_PAGE
+
+class ListPage(FrontPage):
+    page_type = FrontPageType.LIST_PAGE
+
+class CardsPage(FrontPage):
+    page_type = FrontPageType.CARDS_PAGE
+
+class GridPage(FrontPage):
+    page_type = FrontPageType.GRID_PAGE
 
 
 class FrontActionType(Enum):
@@ -193,7 +213,7 @@ class FrontActionMethod(Enum):
     DELETE = 'delete'
 
 
-class FrontAction(OrderedDict):
+class FrontAction(DeepSN):
     """ 前端页面动作类
 
     Examples:
@@ -228,22 +248,22 @@ class FrontAction(OrderedDict):
             icon (str, optional): 图标名称. 
             tag_pre (str, optional): 标识前缀. 
         """
-        self["tag"] = gen_tag(tag,tag_pre)
+        self.tag = gen_tag(tag,tag_pre)
         
         if name:
-            self["name"] = name
+            self.name = name
         # 指向page的tag
         if page:
-            self["page"] = page["tag"] if isinstance(page,FrontPage) else page
+            self.page = page.tag if isinstance(page,FrontPage) else page
         if path:
-            self["path"] = path
+            self.path = path
         if method:
-            self["method"] = method.value
+            self.method = method.value
         if icon:
-            self["icon"] = icon
+            self.icon = icon
             
         if action_type:
-            self["type"] = action_type.value
+            self.type = action_type.value
         super().__init__(*args, **kwargs)
 
     def add_tag_pre(self,tag_pre:str):
@@ -252,7 +272,7 @@ class FrontAction(OrderedDict):
         Args:
             tag_pre (str): 标识前缀
         """
-        self["tag"] = gen_tag(self["tag"],tag_pre)
+        self.tag = gen_tag(self.tag,tag_pre)
 
 def register_front_pages(pages):
     """注册前端页面
@@ -264,7 +284,7 @@ def register_front_pages(pages):
         pages = [pages]
     
     for page in pages:
-        global_pages[page["tag"]] = page
+        global_pages[page.tag] = page
 
 
 def unregister_front_pages(pages):
@@ -277,9 +297,9 @@ def unregister_front_pages(pages):
         pages = [pages]
 
     for page in pages:
-        global_pages.pop(page["tag"])
+        global_pages.pop(page.tag)
 
 def get_global_pages():
     """获取页面列表
     """
-    return list(global_pages.values())
+    return [ item.dict() for item in list(global_pages.values()) ]

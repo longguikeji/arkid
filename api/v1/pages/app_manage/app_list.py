@@ -5,19 +5,17 @@ app_list_tag = 'app_list'
 app_list_name = '应用列表'
 
 
-page = pages.FrontPage(
+page = pages.TablePage(
     tag=app_list_tag,
     name=app_list_name,
-    page_type=pages.FrontPageType.TABLE_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/apps/',
         method=pages.FrontActionMethod.GET
     )
 )
 
-app_edit_page = pages.FrontPage(
+app_edit_page = pages.FormPage(
     name=_("编辑应用"),
-    page_type=pages.FrontPageType.FORM_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/apps/{id}/',
         method=pages.FrontActionMethod.GET
@@ -45,9 +43,8 @@ app_edit_page.add_global_action(
     ]
 )
 
-app_create_page = pages.FrontPage(
+app_create_page = pages.FormPage(
     name=_("创建一个新的应用"),
-    page_type=pages.FrontPageType.FORM_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/apps/',
         method=pages.FrontActionMethod.POST

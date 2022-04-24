@@ -5,19 +5,17 @@ user_list_tag = 'user_list'
 user_list_name = '用户列表'
 
 
-page = pages.FrontPage(
+page = pages.TablePage(
     tag=user_list_tag,
     name=user_list_name,
-    page_type=pages.FrontPageType.TABLE_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/users/',
         method=pages.FrontActionMethod.GET
     )
 )
 
-user_edit_page = pages.FrontPage(
+user_edit_page = pages.FormPage(
     name=_("编辑用户"),
-    page_type=pages.FrontPageType.FORM_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/users/{id}/',
         method=pages.FrontActionMethod.GET
@@ -45,9 +43,8 @@ user_edit_page.add_global_action(
     ]
 )
 
-user_create_page = pages.FrontPage(
+user_create_page = pages.FormPage(
     name=_("创建一个新的用户"),
-    page_type=pages.FrontPageType.FORM_PAGE,
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/users/',
         method=pages.FrontActionMethod.POST
