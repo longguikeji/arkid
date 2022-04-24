@@ -82,10 +82,6 @@ class LoginPageOut(Schema):
     tenant: LoginPageTenantSchema
 
 
-register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor','认证因素生成登录页面'))
-register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules','登录页面生成规则'))
-
-
 @api.get("/tenant/{tenant_id}/login_page/", response=LoginPageOut,tags=['登录与注册'], auth=None)
 @operation(LoginPageOut)
 def login_page(request, tenant_id: str):

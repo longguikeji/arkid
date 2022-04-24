@@ -18,11 +18,6 @@ from arkid.core.schema import RootSchema
 import uuid
 
 
-register_event(CREATE_APP, _('create app','创建应用'))
-register_event(UPDATE_APP, _('update app','修改应用'))
-register_event(DELETE_APP, _('delete app','删除应用'))
-
-
 AppConfigSchemaIn = AppProtocolExtension.create_composite_config_schema('AppConfigSchemaIn')
 
 
