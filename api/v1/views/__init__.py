@@ -12,5 +12,7 @@ from . import (
     approve_action,
     auth_rules,
     auto_auth,
-    third_auth
+    third_auth,
+    permission_sync,
+    scim_sync
 )
