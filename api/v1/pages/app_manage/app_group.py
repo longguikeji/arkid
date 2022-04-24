@@ -5,7 +5,7 @@ app_group_tag = 'app_group'
 app_group_name = '应用分组'
 
 
-page = pages.TablePage(
+page = pages.TreePage(
     tag=app_group_tag,
     name=app_group_name,
     init_action=pages.FrontAction(
@@ -13,6 +13,28 @@ page = pages.TablePage(
         method=pages.FrontActionMethod.GET
     )
 )
+
+group_apps_page = pages.TablePage(
+    name='组内应用',
+    init_action=pages.FrontAction(
+        path='/api/v1/tenant/{tenant_id}/app_groups/{app_group_id}/apps/',
+        method=pages.FrontActionMethod.GET
+    ),
+)
+
+group_apps_page.add_local_action(
+    [
+        pages.FrontAction(
+            name=_("删除"),
+            method=pages.FrontActionMethod.DELETE,
+            path="/api/v1/tenant/{tenant_id}/app_groups/{app_group_id}/apps/{id}/",
+            icon="icon-delete",
+            action_type=pages.FrontActionType.DIRECT_ACTION
+        )
+    ]
+)
+
+page.set_next(group_apps_page)
 
 edit_page = pages.FormPage(
     name=_("编辑应用分组"),
@@ -108,7 +130,7 @@ router = routers.FrontRouter(
     name='应用分组',
     page=page,
 )
-
+pages.register_front_pages(group_apps_page)
 pages.register_front_pages(page)
 pages.register_front_pages(create_page)
 pages.register_front_pages(edit_page)

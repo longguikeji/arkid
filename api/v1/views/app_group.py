@@ -32,4 +32,14 @@ def delete_app_group(request, tenant_id: str, id: str):
     """
     return {}
 
+@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/", tags=[_("应用分组")])
+def get_apps_from_group(request, tenant_id: str, group_id: str):
+    """ 将应用移除出应用分组,TODO
+    """
+    return {}
 
+@api.delete("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/{id}/", tags=[_("应用分组")])
+def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str):
+    """ 将应用移除出应用分组,TODO
+    """
+    return {}

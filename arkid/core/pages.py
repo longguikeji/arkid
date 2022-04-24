@@ -171,6 +171,9 @@ class TreePage(FrontPage):
         self.type = FrontPageType.TREE_PAGE.value
         super().__init__(*args, **kwargs)
 
+    def set_next(self,next):
+        self.next = next.tag if isinstance(next,FrontPage) else next
+
 class DescriptionPage(FrontPage):
     """描述页面
     """
