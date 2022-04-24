@@ -9,5 +9,8 @@ from . import (
     auth_fator,
     mine,
     app_group,
-    approve_action
+    approve_action,
+    auth_rules,
+    auto_auth,
+    third_auth
 )
