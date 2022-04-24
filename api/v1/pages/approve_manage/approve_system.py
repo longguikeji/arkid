@@ -14,7 +14,7 @@ page = FormPage(
 
 register_front_pages(page)
 
-router = router = FrontRouter(
+router = FrontRouter(
     path=approve_system_tag,
     name=approve_system_name,
     icon='app',

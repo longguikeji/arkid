@@ -14,7 +14,7 @@ page = FormPage(
 
 register_front_pages(page)
 
-router = router = FrontRouter(
+router = FrontRouter(
     path=bi_systems_tag,
     name=bi_systems_name,
     page=page,
