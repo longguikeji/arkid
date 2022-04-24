@@ -8,5 +8,6 @@ from . import (
     user,
     auth_fator,
     mine,
-    app_group
+    app_group,
+    approve_action
 )

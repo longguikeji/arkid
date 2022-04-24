@@ -14,7 +14,7 @@ page = pages.TablePage(
     )
 )
 
-app_edit_page = pages.FormPage(
+edit_page = pages.FormPage(
     name=_("编辑应用分组"),
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/app_groups/{id}/',
@@ -22,7 +22,7 @@ app_edit_page = pages.FormPage(
     )
 )
 
-app_edit_page.add_global_action(
+edit_page.add_global_action(
     [
         pages.FrontAction(
             method=pages.FrontActionMethod.POST,
@@ -43,7 +43,7 @@ app_edit_page.add_global_action(
     ]
 )
 
-app_create_page = pages.FormPage(
+create_page = pages.FormPage(
     name=_("创建一个新的应用分组"),
     init_action=pages.FrontAction(
         path='/api/v1/tenant/{tenant_id}/app_groups/',
@@ -51,7 +51,7 @@ app_create_page = pages.FormPage(
     )
 )
 
-app_create_page.add_global_action(
+create_page.add_global_action(
     [
         pages.FrontAction(
             method=pages.FrontActionMethod.POST,
@@ -77,7 +77,7 @@ page.add_local_action(
     [
         pages.FrontAction(
             name=_("编辑"),
-            page=app_edit_page,
+            page=edit_page,
             icon="icon-edit",
             action_type=pages.FrontActionType.OPEN_ACTION
         ),
@@ -95,7 +95,7 @@ page.add_global_action(
     [
         pages.FrontAction(
             name="创建",
-            page=app_create_page,
+            page=create_page,
             icon="icon-create",
             action_type=pages.FrontActionType.OPEN_ACTION
         )
@@ -110,5 +110,5 @@ router = routers.FrontRouter(
 )
 
 pages.register_front_pages(page)
-pages.register_front_pages(app_create_page)
-pages.register_front_pages(app_edit_page)
+pages.register_front_pages(create_page)
+pages.register_front_pages(edit_page)
