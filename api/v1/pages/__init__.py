@@ -5,7 +5,8 @@ from . import (
     approve_manage,
     auth_manage,
     charts_manage,
-    data_source_manage
+    data_source_manage,
+    developer_manage,
 )
 from arkid.core import routers
 
@@ -18,6 +19,7 @@ routers.register_front_routers(
         approve_manage.router,
         auth_manage.router,
         charts_manage.router,
-        data_source_manage.router
+        data_source_manage.router,
+        developer_manage.router
     ]
 )

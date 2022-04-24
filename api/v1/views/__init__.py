@@ -14,5 +14,6 @@ from . import (
     auto_auth,
     third_auth,
     permission_sync,
-    scim_sync
+    scim_sync,
+    webhook,
 )
