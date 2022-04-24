@@ -1,10 +1,10 @@
 from . import (
     loginpage, 
     auth, 
-    extension_config, 
     register, 
     app, 
-    extension, 
+    extension,
+    tenant_extension,
     user,
     auth_fator,
     mine,
@@ -15,4 +15,5 @@ from . import (
     third_auth,
     permission_sync,
     scim_sync
+    send_sms,
 )

@@ -9,7 +9,7 @@ from pydantic import BaseModel
 class SendSMSCodeDataModel(BaseModel):
     code: str
 
-register(tag=SEND_SMS_CODE, name=_('发送短信验证码'), data_model=SendSMSCodeDataModel)
+register(tag=SEND_SMS_CODE, name=_('发送短信验证码'), data_schema=SendSMSCodeDataModel)
 
 @listen_event([SEND_SMS_CODE])
 def print_result(event, **kwargs):

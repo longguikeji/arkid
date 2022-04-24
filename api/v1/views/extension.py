@@ -9,7 +9,7 @@ from arkid.extension.utils import import_extension
 from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
 
 
-ExtensionConfigSchemaIn = Extension.create_extension_config_schema(
+ExtensionConfigSchemaIn = Extension.create_config_schema(
     'ExtensionConfigSchemaIn',
     extension_id=str,
 )
@@ -18,8 +18,10 @@ class ExtensionConfigSchemaOut(Schema):
     config_id: str
 
 
-@api.post("/extensions/{extension_id}/unload/",  tags=['插件'], auth=None)
+@api.post("/extensions/{extension_id}/unload/",  tags=['平台插件'], auth=None)
 def unload_extension(request, extension_id: str):
+    """卸载插件
+    """
     extension = ExtensionModel.objects.filter(id=extension_id).first()
     if extension:
         ext = import_extension(extension.ext_dir)
@@ -29,8 +31,10 @@ def unload_extension(request, extension_id: str):
         return {}
 
 
-@api.post("/extensions/{extension_id}/load/", tags=['插件'], auth=None)
+@api.post("/extensions/{extension_id}/load/", tags=['平台插件'], auth=None)
 def load_extension(request, extension_id: str):
+    """加载插件
+    """
     extension = ExtensionModel.objects.filter(id=extension_id).first()
     if extension:
         ext = import_extension(extension.ext_dir)
@@ -39,6 +43,14 @@ def load_extension(request, extension_id: str):
     else:
         return {}
 
+ExtensionProfileGetSchemaOut = Extension.create_profile_schema('ExtensionProfileGetSchemaOut')
+
+@api.post("/extensions/{extension_id}/profile/", response=ExtensionProfileGetSchemaOut, tags=['平台插件'], auth=None)
+def get_extension_profile(request, extension_id: str):
+    """获取插件启动配置
+    """
+    extension = ExtensionModel.objects.filter(id=extension_id).first()
+    return extension
 
 # @api.get("/extensions", response=List[ExtensionOut])
 # def list_extensions(request, status: str = None):
