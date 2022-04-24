@@ -7,5 +7,6 @@ from . import (
     extension, 
     user,
     auth_fator,
-    mine
+    mine,
+    app_group
 )
