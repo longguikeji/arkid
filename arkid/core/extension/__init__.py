@@ -15,7 +15,7 @@ from django.core import management
 from arkid.core import api as core_api, pages as core_page, routers as core_routers, event as core_event
 from arkid.core import urls as core_urls, expand as core_expand, models as core_models, translation as core_translation
 from arkid.core.schema import RootSchema
-from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
+from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel, TenantExtension
 from ninja import Schema
 from pydantic import Field
 from arkid.core.translation import gettext_default as _
@@ -44,7 +44,8 @@ def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str
         ninja.Schema : 创建的Schema类
     """
     if package:
-        name = package.replace('.','_') + '_' + name
+        name = package + '_' + name
+    name = name.replace('.','_')
     schema = create_schema(EmptyModel,
             name=name, 
             exclude=['id'],
@@ -82,7 +83,9 @@ def create_extension_schema_from_django_model(
     schema = create_schema(model=model, name=name, depth=depth,fields=fields, exclude=exclude, custom_fields=custom_fields, base_class=base_class)
     schema.name = name
     return schema
-    
+
+def create_empty_root_schema(name):
+    return create_extension_schema(name, fields=[("__root__", str, Field())],base_schema=RootSchema,)
 
 def get_root_schema(schema_list, discriminator, depth = 0):
     if len(schema_list) == 0:
@@ -94,22 +97,20 @@ def get_root_schema(schema_list, discriminator, depth = 0):
 
 
 extension_schema_map = {}
-def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, base_schema=Schema, **field_definitions):
-    
-    new_schema_list = []
-    for schema in schema_list:
-        schema = create_extension_schema(schema_cls_name + '_' + schema.name, base_schema=schema)
-        core_api.add_fields(schema, **field_definitions)
-        new_schema_list.append(schema)
-        
-    schema_list = new_schema_list
-    
+def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
     if len(schema_list) == 0:
-        schema = create_extension_schema(schema_cls_name, base_schema=base_schema)
+        schema = create_extension_schema(schema_cls_name+'0')
     elif len(schema_list) == 1:
         # schema = list(schema_list)[0]
-        schema = create_extension_schema(schema_cls_name, base_schema=list(schema_list)[0])
+        schema = create_extension_schema(schema_cls_name+'1', base_schema=list(schema_list)[0])
     else:
+        new_schema_list = []
+        for schema in schema_list:
+            schema = create_extension_schema(schema_cls_name + '_' + schema.name, base_schema=schema)
+            core_api.add_fields(schema, **field_definitions)
+            new_schema_list.append(schema)
+            
+        schema_list = new_schema_list
         root_type, root_field = Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)
         
         schema = create_extension_schema(
@@ -126,8 +127,16 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
 class Extension(ABC):
     """插件基类
     """
+    extension_profile_schema_map = {}
+    created_extension_profile_schema_list = []
+    
+    extension_settings_schema_map = {}
+    created_extension_settings_schema_list = []
+    
     extension_config_schema_map = {}
     created_extension_config_schema_list = []
+    
+    
 
     @property
     def type(self):
@@ -149,6 +158,8 @@ class Extension(ABC):
         self.extend_apis = []
         self.front_routers = []
         self.front_pages = []
+        self.profile_schema_list = []
+        self.settings_schema_list = []
         self.config_schema_list = []
         self.lang_code = None
 
@@ -287,59 +298,159 @@ class Extension(ABC):
         core_page.register_front_pages(page)
         self.front_pages.append(page)
 
-    def register_config_schema(self, schema, schema_tag=None):
+################################################################################
+#### Base 
+    
+    def register_base_schema(self, schema, type, model, fields, schema_map, schema_list, schema_tag=None):
         schema_tag = schema_tag or self.package
-        name = schema_tag+'_config'
-        new_schema = create_schema(TenantExtensionConfig,
+        name = schema_tag.replace('.','_')+'_'+type
+        new_schema = create_schema(model,
             name = name, 
-            fields = ['id'],
+            fields = fields,
             custom_fields=[
                 ("package", Literal[schema_tag], Field()),  # type: ignore
-                ("config", schema, Field())
+                (type, schema, Field())
             ],
         )
         new_schema.name = name
-        self.__class__.extension_config_schema_map[schema_tag] = new_schema
-        self.config_schema_list.append(schema_tag)
+        schema_map[schema_tag] = new_schema
+        schema_list.append(schema_tag)
 
     @classmethod
-    def create_extension_config_schema(cls, schema_cls_name, **field_definitions):
-        """创建插件配置的Schema
-        
-        schema_cls只接受一个空定义的Schema
-        Examples:
-            >>> from ninja import Schema
-            >>> from pydantic import Field
-            >>> class ExampleExtensionConfigSchema(Schema):
-            >>>     pass
-            >>> create_extension_config_schema(
-            >>>     ExampleExtensionConfigSchema, 
-            >>>     field_name=( field_type, Field(...) )
-            >>> )
-
+    def create_base_schema(cls, name:str, created_schema_list:list, schema_map, **field_definitions):
+        """创建并返回插件配置的Schema
         Args:
-            schema_cls_name (ninja.Schema): 需要创建的 Schema Class 的名字
+            name (str): 需要创建的 Schema Class 的名字
+            created_schema_list (list): 列表，用于保存创建好的Schema
             field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
         """
-        
-        temp_schema = create_config_schema_from_schema_list(schema_cls_name, cls.extension_config_schema_map.values(), 'package', **field_definitions)
-        schema = create_extension_schema(
-            schema_cls_name+'temp', 
-            fields=[
-                ("__root__", temp_schema, Field()) # type: ignore
-            ],
-            base_schema=RootSchema,
-        )
-        cls.created_extension_config_schema_list.append( (schema,field_definitions) )
-        # cls.refresh_all_created_extension_config_schema()
+        schema = create_empty_root_schema(name)
+        cls.refresh_one_created_base_schema(schema, field_definitions, schema_map)
+        created_schema_list.append( (schema,field_definitions) )
         return schema
         
     @classmethod
-    def refresh_all_created_extension_config_schema(cls):
-        # root_type, root_field = get_root_schema(cls.extension_config_schema_map.values(), 'package')
-        for schema,field_definitions in cls.created_extension_config_schema_list:
-            temp_schema = create_config_schema_from_schema_list(schema.name+'temp', cls.extension_config_schema_map.values(), 'package', **field_definitions)
-            core_api.add_fields(schema, __root__=(temp_schema, Field()))
+    def refresh_all_created_base_schema(cls, created_schema_list, schema_map):
+        for schema,field_definitions in created_schema_list:
+            cls.refresh_one_created_base_schema(schema, field_definitions, schema_map)
+    
+    @classmethod
+    def refresh_one_created_base_schema(cls, schema, field_definitions, schema_map):
+        temp_schema = create_config_schema_from_schema_list(schema.name+'_temp', schema_map.values(), 'package', **field_definitions)
+        core_api.add_fields(schema, __root__=(temp_schema, Field()))
+
+################################################################################
+
+################################################################################
+#### Profile 
+
+    def register_profile_schema(self, schema, schema_tag=None):
+        self.register_base_schema(
+            schema, 'profile', ExtensionModel, 
+            ['id','is_active','use_platform_config'],
+            self.__class__.extension_profile_schema_map,
+            self.profile_schema_list, schema_tag
+        )
+
+    @classmethod
+    def create_profile_schema(cls, name:str, **field_definitions):
+        """创建并返回插件配置的Schema
+        Args:
+            name (str): 需要创建的 Schema Class 的名字
+            field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
+        """
+        return cls.create_base_schema(name, cls.created_extension_profile_schema_list, cls.extension_profile_schema_map, **field_definitions)
+        
+    @classmethod
+    def refresh_all_created_profile_schema(cls):
+        cls.refresh_all_created_base_schema(cls.created_extension_profile_schema_list, cls.extension_profile_schema_map)
+    
+################################################################################
+
+
+################################################################################
+#### Settings 
+
+    def register_settings_schema(self, schema, schema_tag=None):
+        self.register_base_schema(
+            schema, 'settings', TenantExtension, 
+            ['id','is_active','use_platform_config'],
+            self.__class__.extension_settings_schema_map,
+            self.settings_schema_list, schema_tag
+        )
+
+    @classmethod
+    def create_settings_schema(cls, name:str, **field_definitions):
+        """创建并返回插件 租户配置(settings) 的Schema
+        Args:
+            name (str): 需要创建的 Schema Class 的名字
+            field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
+        """
+        return cls.create_base_schema(name, cls.created_extension_settings_schema_list, cls.extension_settings_schema_map, **field_definitions)
+        
+    @classmethod
+    def refresh_all_created_settings_schema(cls):
+        cls.refresh_all_created_base_schema(cls.created_extension_settings_schema_list, cls.extension_settings_schema_map)
+
+    def get_tenant_settings(self, tenant):
+        ext = ExtensionModel.valid_objects.filter(package=self.package).first()
+        settings = TenantExtension.valid_objects.filter(tenant=tenant, extension=ext).first()
+        return settings
+
+    def create_tenant_settings(self, tenant, settings):
+        ext = ExtensionModel.valid_objects.filter(package=self.package).first()
+        return TenantExtension.objects.create(tenant=tenant, extension=ext, settings=settings)
+    
+################################################################################
+
+################################################################################
+#### Config 
+    
+    def register_config_schema(self, schema, schema_tag=None):
+        self.register_base_schema(
+            schema, 'config', TenantExtensionConfig, 
+            ['id','name'],
+            self.__class__.extension_config_schema_map,
+            self.config_schema_list, schema_tag
+        )
+
+    @classmethod
+    def create_config_schema(cls, name:str, **field_definitions):
+        """创建并返回插件 运行时配置 的Schema
+        Args:
+            name (str): 需要创建的 Schema Class 的名字
+            field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
+        """
+        return cls.create_base_schema(name, cls.created_extension_config_schema_list, cls.extension_config_schema_map, **field_definitions)
+        
+    @classmethod
+    def refresh_all_created_config_schema(cls):
+        cls.refresh_all_created_base_schema(cls.created_extension_config_schema_list, cls.extension_config_schema_map)
+        
+    def get_tenant_configs(self, tenant):
+        ext = ExtensionModel.valid_objects.filter(package=self.package).first()
+        configs = TenantExtensionConfig.valid_objects.filter(tenant=tenant, extension=ext).all()
+        return configs
+
+    def get_config_by_id(self, id):
+        return TenantExtensionConfig.valid_objects.get(id=id)
+    
+    def update_tenant_config(self, id,  config, name):
+        return TenantExtensionConfig.valid_objects.filter(id=id).update(config=config, name=name)
+
+    def create_tenant_config(self, tenant, config, name):
+        ext = ExtensionModel.valid_objects.filter(package=self.package).first()
+        return TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config, name=name)
+    
+    def delete_tenant_config(self, tenant, config):
+        ext = ExtensionModel.valid_objects.filter(package=self.package).first()
+        return TenantExtensionConfig.objects.delete(tenant=tenant, extension=ext, config=config)
+
+################################################################################
+
+
+################################################################################
+#### Composite Config 
 
     def register_composite_config_schema(self, schema, composite_value, exclude=[], package=None):
         package = package or self.package
@@ -358,27 +469,7 @@ class Extension(ABC):
         if composite_value not in self.__class__.composite_schema_map:
             self.composite_schema_map[composite_value] = {}
         self.composite_schema_map[composite_value][package] = new_schema
-        
-    def get_tenant_configs(self, tenant):
-        ext = ExtensionModel.valid_objects.filter(package=self.package, version=self.version).first()
-        configs = TenantExtensionConfig.valid_objects.filter(tenant=tenant, extension=ext).all()
-        return configs
-
-    def get_active_tenant_configs(self, tenant):
-        ext = ExtensionModel.valid_objects.filter(package=self.package, version=self.version).first()
-        configs = TenantExtensionConfig.active_objects.filter(tenant=tenant, extension=ext).all()
-        return configs
-
-    def get_config_by_id(self, id):
-        return TenantExtensionConfig.valid_objects.get(id=id)
     
-    def update_tenant_config(self, id,  config):
-        return TenantExtensionConfig.valid_objects.filter(id=id).update(config=config)
-
-    def create_tenant_config(self, tenant, config):
-        ext = ExtensionModel.valid_objects.filter(package=self.package, version=self.version).first()
-        return TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config)
-
     @classmethod
     def create_composite_config_schema(cls, schema_cls_name, **field_definitions):
         schema = create_extension_schema(
@@ -391,7 +482,7 @@ class Extension(ABC):
         cls.created_composite_schema_list.append((schema, field_definitions))
         cls.refresh_all_created_composite_schema()
         return schema
-
+    
     @classmethod
     def refresh_all_created_composite_schema(cls):
         if not hasattr(cls, "created_composite_schema_list"):
@@ -411,6 +502,11 @@ class Extension(ABC):
 
             root_type, root_field = get_root_schema(temp_list.values(), cls.composite_key, depth=1)
             core_api.add_fields(created_ext_config_schema, __root__=(root_type, root_field))
+            
+################################################################################
+
+
+    
 
     @abstractmethod
     def load(self):
@@ -423,7 +519,9 @@ class Extension(ABC):
             print(e)
             logger.error(e)
         self.load()
-        self.__class__.refresh_all_created_extension_config_schema()
+        self.__class__.refresh_all_created_profile_schema()
+        self.__class__.refresh_all_created_settings_schema()
+        self.__class__.refresh_all_created_config_schema()
         self.__class__.refresh_all_created_composite_schema()
         
         # self.install_requirements() sys.modeles
@@ -442,9 +540,15 @@ class Extension(ABC):
             core_page.unregister_front_pages(page)
         for tag in self.event_tags:
             core_event.unregister_event(tag)
+        for schema_tag in self.profile_schema_list:
+            self.__class__.extension_profile_schema_map.pop(schema_tag, None)
+        self.__class__.refresh_all_created_profile_schema()
+        for schema_tag in self.settings_schema_list:
+            self.__class__.extension_settings_schema_map.pop(schema_tag, None)
+        self.__class__.refresh_all_created_settings_schema()
         for schema_tag in self.config_schema_list:
             self.__class__.extension_config_schema_map.pop(schema_tag, None)
-        self.__class__.refresh_all_created_extension_config_schema()
+        self.__class__.refresh_all_created_config_schema()
         
         delete_ks = []
         for k,v in self.__class__.composite_schema_map.items():
@@ -468,4 +572,6 @@ class Extension(ABC):
         self.extend_apis = []
         self.front_routers = []
         self.front_pages = []
+        self.profile_schema_list = []
+        self.settings_schema_list = []
         self.config_schema_list = []

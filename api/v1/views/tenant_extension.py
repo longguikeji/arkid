@@ -5,26 +5,46 @@ from typing import Union
 from typing_extensions import Annotated
 from pydantic import Field
 from arkid.core.extension import Extension
-from arkid.extension.models import TenantExtensionConfig
+from arkid.extension.models import TenantExtensionConfig, TenantExtension
 from arkid.core.schema import RootSchema
 
-ExtensionConfigSchemaIn = Extension.create_extension_config_schema(
+ExtensionConfigSchemaIn = Extension.create_config_schema(
     'ExtensionConfigSchemaIn',
-    extension_id=str,
 )
 
-class ExtensionConfigSchemaOut(Schema):
+
+class ExtensionConfigCreateSchemaOut(Schema):
     config_id: str
 
 
-@api.post("/{tenant_id}/extension/config/", response=ExtensionConfigSchemaOut,  tags=['插件配置'], auth=None)
-def create_extension_config(request, tenant_id: str, data: ExtensionConfigSchemaIn):
+@api.post("/{tenant_id}/extension/{extension_id}/config/", response=ExtensionConfigCreateSchemaOut,  tags=['租户插件'], auth=None)
+def create_extension_config(request, tenant_id: str, extension_id: str, data: ExtensionConfigSchemaIn):
+    '''租户下，创建插件运行时配置'''
     config = TenantExtensionConfig.objects.create(
         tenant_id=tenant_id,
-        extension_id=data.extension_id,
-        config = data.config.dict(),
+        extension_id=extension_id,
+        config=data.config.dict(),
     )
     return {"config_id": config.id.hex}
+
+
+ExtensionSettingsCreateIn = Extension.create_settings_schema(
+    'ExtensionSettingsCreateIn')
+
+
+class ExtensionSettingsCreateOut(Schema):
+    settings_id: str
+
+
+@api.post("/{tenant_id}/extension/{extension_id}/settings/", response=ExtensionSettingsCreateOut,  tags=['租户插件'], auth=None)
+def create_extension_settings(request, tenant_id: str, extension_id: str, data: ExtensionSettingsCreateIn):
+    '''租户下，创建插件配置'''
+    settings = TenantExtension.objects.create(
+        tenant_id=tenant_id,
+        extension_id=extension_id,
+        settings=data.settings.dict(),
+    )
+    return {"settings_id": settings.id.hex}
 
 
 # @api.get("/extensions/{extension_id}", response=ExtensionDetailOut)
