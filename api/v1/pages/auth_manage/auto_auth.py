@@ -1,6 +1,4 @@
 # 自动认证
-
-# 自动认证
 from arkid.core import routers, pages
 from arkid.core.translation import gettext_default as _
 
