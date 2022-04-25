@@ -1,20 +1,23 @@
-# 应用协议
-from arkid.core.routers import FrontRouter
+from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
-from arkid.core.pages import FormPage,register_front_pages
 
-tag = "app_protocol"
-name = _("应用协议")
+tag = 'app_protocol'
+name = '应用协议'
 
 
-page = FormPage(name=name,tag=tag)
+page = pages.TablePage(tag=tag, name=name)
 
-register_front_pages(page)
+pages.register_front_pages(page)
 
-router = FrontRouter(
+router = routers.FrontRouter(
     path=tag,
     name=name,
-    icon='app',
     page=page,
 )
 
+page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/app_protocols/',
+        method=actions.FrontActionMethod.GET,
+    ),
+)

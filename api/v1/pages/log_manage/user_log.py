@@ -1,10 +1,11 @@
+from arkid.core.translation import gettext_default as _
 from arkid.core import routers, pages, actions
 
 tag = 'user_log'
 name = '用户行为日志'
 
 page = pages.TablePage(tag = tag, name = name)
-detail_page = pages.DescriptionPage()
+detail_page = pages.DescriptionPage(name=_("日志详情"))
 
 pages.register_front_pages(page)
 pages.register_front_pages(detail_page)

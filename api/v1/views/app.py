@@ -148,3 +148,9 @@ def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
         extension.update_tenant_config(app.config.id, data.config.dict())
         break
     return {'error': ErrorCode.OK.value}
+
+@api.get("/tenant/{tenant_id}/apps/{app_id}/permissions/",tags=[_("应用")])
+def get_app_permissions(request, tenant_id: str,app_id:str):
+    """ 应用权限列表,TODO
+    """
+    return []

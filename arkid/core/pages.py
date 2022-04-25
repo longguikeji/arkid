@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 from arkid.common import DeepSN
 from arkid.common.utils import gen_tag
 from arkid.core.actions import FrontAction
@@ -222,8 +223,19 @@ class TabsPage(FrontPage):
     """网格页面
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, pages:list=[],*args, **kwargs):
+        self.add_pages(pages)
         super().__init__(type=FrontPageType.TABS_PAGE, *args, **kwargs)
+
+    def add_pages(self,pages:list=[]):
+        if not pages:
+            return
+            
+        if not isinstance(pages, tuple) or not isinstance(pages, list):
+            pages = list(pages)
+        if not hasattr(self, "node_action"):
+            self.node_action = []
+        self.node_action.extend(pages)
 
 def register_front_pages(pages):
     """注册前端页面
