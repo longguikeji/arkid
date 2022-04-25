@@ -52,7 +52,7 @@ user_create_page.add_global_actions(
     ]
 )
 
-page.add_local_action(
+page.add_local_actions(
     [
         pages.FrontAction(
             name=_("编辑"),

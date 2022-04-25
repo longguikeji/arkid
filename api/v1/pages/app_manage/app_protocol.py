@@ -17,3 +17,4 @@ router = FrontRouter(
     icon='app',
     page=page,
 )
+
