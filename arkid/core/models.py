@@ -166,7 +166,12 @@ class PermissionAbstract(BaseModel, ExpandModel):
     name = models.CharField(verbose_name=_('Name','名称'), max_length=255)
     code = models.CharField(verbose_name=_('Code','编码'), max_length=100)
     tenant = models.ForeignKey(
-        'Tenant', default=None, on_delete=models.PROTECT, verbose_name=_('Tenant','租户')
+        'Tenant',
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        verbose_name=_('Tenant','租户')
     )
     app = models.ForeignKey(
         App,
@@ -219,6 +224,22 @@ class Permission(PermissionAbstract):
     @property
     def children(self):
         return Permission.valid_objects.filter(parent=self).order_by('id')
+
+
+class ApiPermission(PermissionAbstract):
+
+    class Meta(object):
+        verbose_name = _('ApiPermission', '接口权限')
+        verbose_name_plural = _('ApiPermission', '接口权限')
+
+    operation_id = models.CharField((_('操作id')), blank=True, null=True, default='', max_length=256)
+    request_url = models.CharField((_('请求地址')), blank=True, null=True, default='', max_length=256)
+    request_type = models.CharField((_('请求方法')), blank=True, null=True, default='', max_length=256)
+    is_update = models.BooleanField(default=False, verbose_name='是否更新')
+    base_code = models.CharField((_('应用code')), blank=True, null=True, default='', max_length=256)
+
+    def __str__(self) -> str:
+        return (f"{self.name}")
 
 
 class Approve(BaseModel, ExpandModel):
