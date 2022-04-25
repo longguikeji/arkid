@@ -23,7 +23,7 @@ create_page = pages.FormPage(
     )
 )
 
-create_page.add_global_action(
+create_page.add_global_actions(
     [
         pages.FrontAction(
             method=pages.FrontActionMethod.POST,
@@ -32,20 +32,12 @@ create_page.add_global_action(
             action_type=pages.FrontActionType.DIRECT_ACTION,
             icon="icon-confirm"
         ),
-        pages.FrontAction(
-            name=_("取消"),
-            action_type=pages.FrontActionType.CANCEL_ACTION,
-            icon="icon-cancel"
-        ),
-        pages.FrontAction(
-            name=_("重置"),
-            action_type=pages.FrontActionType.RESET_ACTION,
-            icon="icon-reset"
-        ),
+        pages.CancelAction(),
+        pages.ResetAction(),
     ]
 )
 
-page.add_global_action(
+page.add_global_actions(
     [
         pages.FrontAction(
             name="创建",
