@@ -10,7 +10,7 @@ def get_openapi_schema(self, path_prefix: Optional[str] = None) -> OpenAPISchema
     schema = get_schema(api=self, path_prefix=path_prefix)
     schema["routers"] = routers.get_global_routers()
     schema["pages"] = pages.get_global_pages()
-    schema["navs"] = actions.get_nav_actions()
+    # schema["navs"] = actions.get_nav_actions()
     # permissions = get_permissions(self)
     # schema["permissions"] = permissions
     

@@ -71,7 +71,7 @@ class FrontPage(DeepSN):
         >>> )
     """
 
-    def __init__(self, name: str, tag: str = None, tag_pre: str = None, *args, **kwargs):
+    def __init__(self, name: str, tag: str = None, tag_pre: str = None, type:FrontPageType=FrontPageType.TABLE_PAGE,*args, **kwargs):
         """初始化函数
 
         Args:
@@ -85,9 +85,10 @@ class FrontPage(DeepSN):
         """
         self.tag = gen_tag(tag, tag_pre)
         self.name = name
+        self.type = type.value
         super().__init__(*args, **kwargs)
         
-    def create_actions(self, init_action:FrontAction = None, global_actions: list = None, local_actions: list = None, node_actions:list=None):
+    def create_actions(self, init_action:FrontAction = None, global_actions: list = [], local_actions: list = [], node_actions:list=[]):
         self.init_action = init_action
         self.add_global_actions(global_actions)
         self.add_local_actions(local_actions)
@@ -99,6 +100,9 @@ class FrontPage(DeepSN):
         Args:
             actions (FrontAction|OrderedDict)): 动作列表
         """
+        if not actions:
+            return
+
         if not isinstance(actions, tuple) or not isinstance(actions, list):
             actions = list(actions)
         if not hasattr(self, "global_action"):
@@ -111,6 +115,9 @@ class FrontPage(DeepSN):
         Args:
             actions (FrontAction|OrderedDict)): 动作列表
         """
+        if not actions:
+            return
+
         if not isinstance(actions, tuple) or not isinstance(actions, list):
             actions = list(actions)
         if not hasattr(self, "local_action"):
@@ -123,11 +130,14 @@ class FrontPage(DeepSN):
         Args:
             actions (FrontAction|OrderedDict)): 动作列表
         """
+        if not actions:
+            return
+            
         if not isinstance(actions, tuple) or not isinstance(actions, list):
             actions = list(actions)
-        if not hasattr(self, "local_action"):
-            self.local_action = []
-        self.local_action.extend(actions)
+        if not hasattr(self, "node_action"):
+            self.node_action = []
+        self.node_action.extend(actions)
 
     def add_tag_pre(self, tag_pre: str):
         """添加标识前缀

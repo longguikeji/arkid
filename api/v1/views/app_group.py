@@ -33,7 +33,7 @@ def delete_app_group(request, tenant_id: str, id: str):
     return {}
 
 @api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/", tags=[_("应用分组")])
-def get_apps_from_group(request, tenant_id: str, group_id: str):
+def get_apps_from_group(request, tenant_id: str, app_group_id: str):
     """ 获取当前分组的应用列表,TODO
     """
     return {}
@@ -45,13 +45,13 @@ def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str):
     return {}
 
 @api.post("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/", tags=[_("应用分组")])
-def update_apps_from_group(request, tenant_id: str, group_id: str):
+def update_apps_from_group(request, tenant_id: str, app_group_id: str):
     """ 更新当前分组的应用列表,TODO
     """
     return {}
 
 @api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/select_apps/", tags=[_("应用分组")])
-def get_select_apps(request, tenant_id: str, group_id: str):
+def get_select_apps(request, tenant_id: str, app_group_id: str):
     """ 获取所有应用并附加是否在当前分组的状态,TODO
     """
     return {}

@@ -5,7 +5,6 @@ class DeepSN(SimpleNamespace):
     def dict(self):
         _data = {}
         for key,val in self.__dict__.items():
-            
             if isinstance(val,DeepSN):
                 _data[key] = val.dict()
             elif isinstance(val,list):

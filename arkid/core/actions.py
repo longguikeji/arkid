@@ -4,6 +4,7 @@ from arkid.common import DeepSN
 from arkid.common.utils import gen_tag
 from arkid.core.translation import gettext_default as _
 
+
 class FrontActionType(Enum):
     """前端动作类型枚举类
 
@@ -71,8 +72,8 @@ class FrontAction(DeepSN):
     """
 
     def __init__(self, action_type: FrontActionType, tag: str = None, path: str = None, method: FrontActionMethod = None,
-                name: str = None, page=None, page_tag=None, icon: str = None, tag_pre: str = None, next_action = None,
-                result_page = None, result_page_tag = None, *args, **kwargs):
+                 name: str = None, page=None, page_tag=None, icon: str = None, tag_pre: str = None, next_action=None,
+                 result_page=None, result_page_tag=None, *args, **kwargs):
         """初始化函数
 
         Args:
@@ -86,7 +87,7 @@ class FrontAction(DeepSN):
             tag_pre (str, optional): 标识前缀.
         """
         self.type = action_type.value
-        
+
         self.tag = gen_tag(tag, tag_pre)
 
         if name:
@@ -99,17 +100,17 @@ class FrontAction(DeepSN):
         if path:
             self.path = path
         if method:
-            self.method = method
+            self.method = method.value
         if icon:
             self.icon = icon
-            
+
         if next_action:
             self.next_action = next_action
         if result_page:
             self.result_page = result_page.tag
         if result_page_tag:
             self.result_page = result_page_tag
-        
+
         super().__init__(*args, **kwargs)
 
     def add_tag_pre(self, tag_pre: str):
@@ -164,32 +165,37 @@ class ConfirmAction(DirectAction):
     def __init__(self, path: str, *args, **kwargs):
         self.name = _("确认")
         self.path = path
-        self.icon="icon-confirm"
-        self.method=FrontActionMethod.POST.value
+        self.icon = "icon-confirm"
+        self.method = FrontActionMethod.POST.value
         super().__init__(*args, **kwargs)
 
 
 class DeleteAction(DirectAction):
     def __init__(self, path: str, *args, **kwargs):
-        self.name = _("删除"),
+        self.name = _("删除")
         self.method = FrontActionMethod.DELETE.value,
-        self.icon="icon-delete",
+        self.icon = "icon-delete"
         self.path = path
         super().__init__(*args, **kwargs)
 
-class  CreateAction(OpenAction):
+
+class CreateAction(OpenAction):
     def __init__(self, page, *args, **kwargs):
-        self.name=_("创建"),
-        self.icon="icon-create",
+        self.name = _("创建")
+        self.icon = "icon-create"
         super().__init__(page=page, *args, **kwargs)
 
-class  EditAction(OpenAction):
+
+class EditAction(OpenAction):
     def __init__(self, page, *args, **kwargs):
-        self.name=_("编辑"),
-        self.icon="icon-edit",
+        self.name = _("编辑")
+        self.icon = "icon-edit"
         super().__init__(page=page, *args, **kwargs)
+
 
 nav_actions = {}
+
+
 def register_nav_actions(actions):
     """注册前端页面
 

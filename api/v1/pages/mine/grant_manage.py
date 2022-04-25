@@ -32,10 +32,12 @@ page.create_actions(
         path='/api/v1/mine/tenant/{tenant_id}/permissions/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=actions.OpenAction(
-        name=_("申请权限"),
-        page=permission_page
-    )
+    global_actions=[
+        actions.OpenAction(
+            name=_("申请权限"),
+            page=permission_page
+        )
+    ]
 )
 
 permission_page.create_actions(
