@@ -86,7 +86,7 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
             break
     return {"app_id": app.id.hex}
 
-@api.get("/{tenant_id}/apps", response=List[AppListSchemaOut], tags=['应用'], auth=AuthBearer())
+@api.get("/{tenant_id}/apps", response=List[AppListSchemaOut], tags=['应用'], auth=None)
 @paginate
 def list_apps(request, tenant_id: str):
     '''
