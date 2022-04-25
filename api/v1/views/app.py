@@ -8,6 +8,7 @@ from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
 from typing import Union, Literal, List
 from django.shortcuts import get_object_or_404
+from arkid.perm.custom_access import AuthBearer
 from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig
 from arkid.core.event import Event, register_event, dispatch_event
@@ -85,7 +86,7 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
             break
     return {"app_id": app.id.hex}
 
-@api.get("/{tenant_id}/apps", response=List[AppListSchemaOut], tags=['应用'], auth=None)
+@api.get("/{tenant_id}/apps", response=List[AppListSchemaOut], tags=['应用'], auth=AuthBearer())
 @paginate
 def list_apps(request, tenant_id: str):
     '''
