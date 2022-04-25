@@ -188,3 +188,35 @@ class  EditAction(OpenAction):
         self.name=_("编辑"),
         self.icon="icon-edit",
         super().__init__(page=page, *args, **kwargs)
+
+nav_actions = {}
+def register_nav_actions(actions):
+    """注册前端页面
+
+    Args:
+        pages (List|FrontPage): 前端页面
+    """
+    if not isinstance(actions, tuple) or not isinstance(actions, list):
+        actions = [actions]
+
+    for action in actions:
+        nav_actions[action.tag] = action
+
+
+def unregister_nav_actions(actions):
+    """卸载页面
+
+    Args:
+        pages (List|FrontPage): 前端页面
+    """
+    if not isinstance(actions, tuple) or not isinstance(actions, list):
+        actions = [actions]
+
+    for action in actions:
+        nav_actions.pop(action.tag)
+
+
+def get_nav_actions():
+    """获取页面列表
+    """
+    return [item.dict() for item in list(nav_actions.values())]

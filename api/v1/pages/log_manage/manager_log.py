@@ -1,7 +1,7 @@
 from arkid.core import routers, pages, actions
 
-tag = 'user_log'
-name = '用户行为日志'
+tag = 'manager_log'
+name = '管理员行为日志'
 
 page = pages.TablePage(tag = tag, name = name)
 detail_page = pages.DescriptionPage()
@@ -17,7 +17,7 @@ router = routers.FrontRouter(
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/user_log/',
+        path='/api/v1/tenant/{tenant_id}/manager_log/',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions=[

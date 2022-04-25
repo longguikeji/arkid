@@ -1,0 +1,1 @@
+# 租户下的 extension的settings  config 

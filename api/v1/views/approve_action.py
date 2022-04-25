@@ -8,7 +8,7 @@ def get_approve_actions(request, tenant_id: str):
     """
     return []
 
-@api.get("/tenant/{tenant_id}/approve_actions/{id}/", tags=[_("审批动作")])
+@api.get(operation_id="",path="/tenant/{tenant_id}/approve_actions/{id}/", tags=[_("审批动作")])
 def get_approve_action(request, tenant_id: str, id: str):
     """ 获取审批动作,TODO
     """

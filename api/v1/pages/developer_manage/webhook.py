@@ -1,138 +1,103 @@
 # Webhook
-from arkid.core import routers, pages
+from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
-webhook_tag = 'webhook'
-webhook_name = 'Webhook'
+tag = 'webhook'
+name = 'Webhook'
 
 
-page = pages.TablePage(
-    tag=webhook_tag,
-    name=webhook_name,
-    init_action=pages.FrontAction(
-        path='/api/v1/tenant/{tenant_id}/webhooks/',
-        method=pages.FrontActionMethod.GET,
-        action_type=pages.FrontActionType.DIRECT_ACTION
-    )
-)
+page = pages.TablePage(tag=tag,name=name)
+edit_page = pages.FormPage( name=_("编辑Webhook") )
+create_page = pages.FormPage( name=_("创建一个新的Webhook") )
+history_page = pages.TablePage( tag="webhook_history", name=_("webhook历史记录"))
+history_detail_page = pages.DescriptionPage(name=_("webhook历史记录详情"))
 
-edit_page = pages.FormPage(
-    name=_("编辑Webhook"),
-    init_action=pages.FrontAction(
-        path='/api/v1/tenant/{tenant_id}/webhooks/{id}/',
-        method=pages.FrontActionMethod.GET,
-        action_type=pages.FrontActionType.DIRECT_ACTION
-    )
-)
-
-edit_page.add_global_actions(
-    [
-        pages.ConfirmAction(path="/api/v1/tenant/{tenant_id}/webhooks/{id}/"),
-        pages.CancelAction(),
-        pages.ResetAction(),
-    ]
-)
-
-create_page = pages.FormPage(
-    name=_("创建一个新的Webhook"),
-    init_action=pages.FrontAction(
-        path='/api/v1/tenant/{tenant_id}/webhooks/',
-        method=pages.FrontActionMethod.POST,
-        action_type=pages.FrontActionType.DIRECT_ACTION
-    )
-)
-
-create_page.add_global_actions(
-    [
-        pages.FrontAction(
-            method=pages.FrontActionMethod.POST,
-            name=_("确认"),
-            path="/api/v1/tenant/{tenant_id}/webhooks/",
-            action_type=pages.FrontActionType.DIRECT_ACTION,
-            icon="icon-confirm"
-        ),
-        pages.CancelAction(),
-        pages.ResetAction(),
-    ]
-)
-
-history_page = pages.TablePage(
-    name=_("webhook历史记录"),
-    tag="webhook_history",
-    init_action=pages.FrontAction(
-        path='/api/v1/tenant/{tenant_id}/webhooks/{webhook_id}/histories/',
-        method=pages.FrontActionMethod.GET,
-        action_type=pages.FrontActionType.DIRECT_ACTION
-    )
-)
-
-history_page.add_local_action(
-    [
-        pages.FrontAction(
-            name=_("查阅"),
-            path='/api/v1/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/',
-            method=pages.FrontActionMethod.GET,
-            action_type=pages.FrontActionType.DIRECT_ACTION
-        ),
-        pages.FrontAction(
-            name=_("重试"),
-            path='/api/v1/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/retry/',
-            method=pages.FrontActionMethod.GET,
-            action_type=pages.FrontActionType.DIRECT_ACTION
-        ),
-        pages.FrontAction(
-            name=_("删除"),
-            method=pages.FrontActionMethod.DELETE,
-            path='/api/v1/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/',
-            icon="icon-delete",
-            action_type=pages.FrontActionType.DIRECT_ACTION
-        )
-    ]
-)
-
-page.add_local_action(
-    [
-        pages.FrontAction(
-            name=_("历史记录"),
-            page=history_page,
-            icon="icon-edit",
-            action_type=pages.FrontActionType.OPEN_ACTION
-        ),
-        pages.FrontAction(
-            name=_("编辑"),
-            page=edit_page,
-            icon="icon-edit",
-            action_type=pages.FrontActionType.OPEN_ACTION
-        ),
-        pages.FrontAction(
-            name=_("删除"),
-            method=pages.FrontActionMethod.DELETE,
-            path="/api/v1/tenant/{tenant_id}/webhooks/{id}/",
-            icon="icon-delete",
-            action_type=pages.FrontActionType.DIRECT_ACTION
-        )
-    ]
-)
-
-page.add_global_actions(
-    [
-        pages.FrontAction(
-            name="创建",
-            page=create_page,
-            icon="icon-create",
-            action_type=pages.FrontActionType.OPEN_ACTION
-        )
-    ]
-)
-
+pages.register_front_pages(page)
+pages.register_front_pages(history_page)
+pages.register_front_pages(create_page)
+pages.register_front_pages(edit_page)
+pages.register_front_pages(history_detail_page)
 
 router = routers.FrontRouter(
-    path=webhook_tag,
-    name=webhook_name,
+    path=tag,
+    name=name,
     page=page,
 )
 
-pages.register_front_pages(history_page)
-pages.register_front_pages(page)
-pages.register_front_pages(create_page)
-pages.register_front_pages(edit_page)
+page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/webhooks/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    global_actions = [
+        actions.CreateAction(
+            page=create_page,
+        )
+    ],
+    local_actions = [
+        actions.OpenAction(
+            name=_("历史记录"),
+            page=history_page,
+            icon="icon-edit",
+        ),
+        actions.EditAction(
+            page=edit_page,
+        ),
+        actions.DeleteAction(
+            path="/api/v1/tenant/{tenant_id}/webhooks/{id}/"
+        )
+    ]
+)
+
+edit_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/webhooks/{id}/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    global_actions = [
+        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/webhooks/{id}/"),
+        actions.CancelAction(),
+        actions.ResetAction(),
+    ]
+)
+
+create_page.create_actions(
+    # name=_("创建一个新的Webhook"),
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/webhooks/',
+        method=actions.FrontActionMethod.POST
+    ),
+    global_actions = [
+        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/webhooks/"),
+        actions.CancelAction(),
+        actions.ResetAction(),
+    ]
+)
+
+history_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/webhooks/{webhook_id}/histories/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    local_actions = [
+        actions.OpenAction(
+            name=_("查阅"),
+            page=history_detail_page
+        ),
+        actions.DirectAction(
+            name=_("重试"),
+            path='/api/v1/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/retry/',
+            method=actions.FrontActionMethod.GET,
+        ),
+        actions.DeleteAction(
+            path='/api/v1/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/',
+        )
+    ]
+)
+
+history_detail_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/',
+        method=actions.FrontActionMethod.GET,
+    )
+)

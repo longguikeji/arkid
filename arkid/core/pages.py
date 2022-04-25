@@ -29,13 +29,6 @@ class FrontPageType(Enum):
     CARDS_PAGE = 'cards'
     GRID_PAGE = 'grid'
 
-
-global_tags = []  # 全局tag列表
-
-
-
-
-
 class FrontPage(DeepSN):
     """ 前端页面配置类
 
@@ -94,10 +87,11 @@ class FrontPage(DeepSN):
         self.name = name
         super().__init__(*args, **kwargs)
         
-    def create_actions(self, init_action:FrontAction = None, global_actions: list = None, local_actions: list = None):
+    def create_actions(self, init_action:FrontAction = None, global_actions: list = None, local_actions: list = None, node_actions:list=None):
         self.init_action = init_action
         self.add_global_actions(global_actions)
-        self.add_local_action(local_actions)
+        self.add_local_actions(local_actions)
+        self.add_node_actions(node_actions)
         
     def add_global_actions(self, actions):
         """ 添加全局动作
@@ -111,7 +105,19 @@ class FrontPage(DeepSN):
             self.global_action = []
         self.global_action.extend(actions)
 
-    def add_local_action(self, actions):
+    def add_local_actions(self, actions):
+        """ 添加表单动作
+
+        Args:
+            actions (FrontAction|OrderedDict)): 动作列表
+        """
+        if not isinstance(actions, tuple) or not isinstance(actions, list):
+            actions = list(actions)
+        if not hasattr(self, "local_action"):
+            self.local_action = []
+        self.local_action.extend(actions)
+    
+    def add_node_actions(self, actions):
         """ 添加表单动作
 
         Args:
@@ -143,7 +149,7 @@ class SelectPage(FrontPage):
         self.select = select
         super().__init__(*args, **kwargs)
 
-    def create_actions(self, select:bool=False,*args, **kwargs):
+    def create_actions(self, select:bool=True,*args, **kwargs):
         self.select = select
         return super().create_actions(*args, **kwargs)
 
@@ -167,22 +173,8 @@ class TablePage(SelectPage):
 class TreePage(SelectPage):
     """树形页面
     """
-
-    def create_actions(self, init_action: FrontAction = None, global_actions: list = None, local_actions: list = None, node_actions:list = None):
-        self.add_node_action(node_actions)
-        return super().create_actions(init_action, global_actions, local_actions)
-
-    def add_node_action(self, actions):
-        """ 添加表单动作
-
-        Args:
-            actions (FrontAction|OrderedDict)): 动作列表
-        """
-        if not isinstance(actions, tuple) or not isinstance(actions, list):
-            actions = list(actions)
-        if not hasattr(self, "local_action"):
-            self.local_action = []
-        self.local_action.extend(actions)
+    def __init__(self, *args, **kwargs):
+        super().__init__(type=FrontPageType.TREE_PAGE, *args, **kwargs)
 
 
 class DescriptionPage(FrontPage):
@@ -215,6 +207,13 @@ class GridPage(FrontPage):
 
     def __init__(self, *args, **kwargs):
         super().__init__(type=FrontPageType.GRID_PAGE, *args, **kwargs)
+
+class TabsPage(FrontPage):
+    """网格页面
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(type=FrontPageType.TABS_PAGE, *args, **kwargs)
 
 def register_front_pages(pages):
     """注册前端页面

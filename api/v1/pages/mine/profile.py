@@ -1,10 +1,10 @@
 from arkid.core.translation import gettext_default as _
 from arkid.core import actions, pages, routers
 
-tag = "mine_switch_tenant"
-name = _("切换租户")
+tag = "mine_profile"
+name = _("个人资料")
 
-page = pages.CardsPage(
+page = pages.FormPage(
     tag=tag,
     name=name
 )
@@ -18,13 +18,12 @@ router = routers.FrontRouter(
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/mine/tenants/',
+        path='/mine/tenant/{tenant_id}/profile/',
         method=actions.FrontActionMethod.GET
     ),
-    node_actions=[
-        actions.DirectAction(
-            path='/api/v1/mine/switch_tenant/{tenant_id}/',
-            method=actions.FrontActionMethod.GET
-        )
+    global_actions = [
+        actions.ConfirmAction(path="/mine/tenant/{tenant_id}/profile/"),
+        actions.CancelAction(),
+        actions.ResetAction(),
     ]
 )
