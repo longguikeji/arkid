@@ -1,94 +1,66 @@
-# 认证规则
-from arkid.core import routers, pages
+from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
-auth_rule_tag = 'auth_rule'
-auth_rule_name = '认证规则'
+tag = 'auth_rule'
+name = '认证规则'
 
 
-page = pages.TablePage(
-    tag=auth_rule_tag,
-    name=auth_rule_name,
-    init_action=pages.FrontAction(
-        path='/api/v1/tenant/{tenant_id}/auth_rules/',
-        method=pages.FrontActionMethod.GET
-    )
-)
+page = pages.TablePage(tag=tag, name=name)
+edit_page = pages.FormPage(name=_("编辑认证规则"))
+create_page = pages.FormPage(name=_("创建一个新的认证规则"))
 
-edit_page = pages.FormPage(
-    name=_("编辑认证规则"),
-    init_action=pages.FrontAction(
-        path='/api/v1/tenant/{tenant_id}/auth_rules/{id}/',
-        method=pages.FrontActionMethod.GET
-    )
-)
-
-edit_page.add_global_actions(
-    [
-        pages.ConfirmAction(path="/api/v1/tenant/{tenant_id}/auth_rules/{id}/"),
-        pages.CancelAction(),
-        pages.ResetAction(),
-    ]
-)
-
-create_page = pages.FormPage(
-    name=_("创建一个新的认证规则"),
-    init_action=pages.FrontAction(
-        path='/api/v1/tenant/{tenant_id}/auth_rules/',
-        method=pages.FrontActionMethod.POST
-    )
-)
-
-create_page.add_global_actions(
-    [
-        pages.FrontAction(
-            method=pages.FrontActionMethod.POST,
-            name=_("确认"),
-            path="/api/v1/tenant/{tenant_id}/auth_rules/",
-            action_type=pages.FrontActionType.DIRECT_ACTION,
-            icon="icon-confirm"
-        ),
-        pages.CancelAction(),
-        pages.ResetAction(),
-    ]
-)
-
-page.add_local_action(
-    [
-        pages.FrontAction(
-            name=_("编辑"),
-            page=edit_page,
-            icon="icon-edit",
-            action_type=pages.FrontActionType.OPEN_ACTION
-        ),
-        pages.FrontAction(
-            name=_("删除"),
-            method=pages.FrontActionMethod.DELETE,
-            path="/api/v1/tenant/{tenant_id}/auth_rules/{id}/",
-            icon="icon-delete",
-            action_type=pages.FrontActionType.DIRECT_ACTION
-        )
-    ]
-)
-
-page.add_global_actions(
-    [
-        pages.FrontAction(
-            name="创建",
-            page=create_page,
-            icon="icon-create",
-            action_type=pages.FrontActionType.OPEN_ACTION
-        )
-    ]
-)
-
+pages.register_front_pages(page)
+pages.register_front_pages(edit_page)
+pages.register_front_pages(create_page)
 
 router = routers.FrontRouter(
-    path=auth_rule_tag,
-    name=auth_rule_name,
+    path=tag,
+    name=name,
     page=page,
 )
 
-pages.register_front_pages(page)
-pages.register_front_pages(create_page)
-pages.register_front_pages(edit_page)
+page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/auth_rules/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    global_actions=[
+        actions.CreateAction(
+            page=create_page,
+        )
+    ],
+    local_actions=[
+        actions.EditAction(
+            page=edit_page,
+        ),
+        actions.DeleteAction(
+            path="/api/v1/tenant/{tenant_id}/auth_rules/{id}/",
+        )
+    ],
+)
+
+edit_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/auth_rules/{id}/',
+        method=actions.FrontActionMethod.GET
+    ),
+    global_actions=[
+        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/auth_rules/{id}/"),
+        actions.CancelAction(),
+        actions.ResetAction(),
+    ]
+)
+
+create_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/auth_rules/',
+        method=actions.FrontActionMethod.POST
+    ),
+    global_actions=[
+        actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/auth_rules/",
+        ),
+        actions.CancelAction(),
+        actions.ResetAction(),
+    ]
+)
