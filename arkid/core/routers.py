@@ -102,10 +102,11 @@ def register_front_routers(routers, primary: str = ''):
     if not isinstance(routers, tuple) or not isinstance(routers, list):
         routers = list(routers)
 
-    for primary_router in routers:
-        if primary == primary_router.path:
-            for router in routers:
-                primary_router.add_child(router)
+    # for primary_router in routers:
+    #     if primary == primary_router.path:
+    #         for router in routers:
+    #             primary_router.add_child(router)
+    #         continue
     global_routers.extend(routers)
 
 
@@ -119,11 +120,11 @@ def unregister_front_routers(routers, primary: str = ''):
     if not isinstance(routers, tuple) or not isinstance(routers, list):
         routers = list(routers)
 
-    for primary_router in routers:
-        if primary == primary_router.path:
-            for router in routers:
-                primary_router.remove_child(router)
-            return
+    # for primary_router in routers:
+    #     if primary == primary_router.path:
+    #         for router in routers:
+    #             primary_router.remove_child(router)
+    #         continue
 
     for router in routers:
         global_routers.remove(router)
