@@ -63,7 +63,7 @@ class FrontRouter(DeepSN):
         Args:
             child (OrderedDict): 子路由描述
         """
-        if not self.children:
+        if not hasattr(self,"children"):
             self.children = []
         self.children.append(child)
 

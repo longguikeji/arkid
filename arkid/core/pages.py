@@ -157,11 +157,13 @@ class SelectPage(FrontPage):
     """
 
     def __init__(self, select: bool = False, *args, **kwargs):
-        self.select = select
+        if select:
+            self.select = select
         super().__init__(*args, **kwargs)
 
-    def create_actions(self, select:bool=True,*args, **kwargs):
-        self.select = select
+    def create_actions(self, select:bool=False,*args, **kwargs):
+        if select:
+            self.select = select
         return super().create_actions(*args, **kwargs)
 
 

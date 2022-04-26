@@ -7,6 +7,7 @@ from pydantic import Field
 from arkid.core.extension import Extension
 from arkid.extension.models import TenantExtensionConfig, TenantExtension
 from arkid.core.schema import RootSchema
+from arkid.core.translation import gettext_default as _
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
     'ExtensionConfigSchemaIn',
@@ -102,3 +103,21 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
 #     extension = get_object_or_404(Extension, uuid=extension_id)
 #     extension.delete()
 #     return {"success": True}
+
+@api.get("/tenant/{tenant_id}/extensions/", tags=[_("租户插件")])
+def get_extensions(request, tenant_id: str):
+    """ 租户插件列表,TODO
+    """
+    return []
+
+@api.get("/tenant/{tenant_id}/extensions/{id}/", tags=[_("租户插件")])
+def get_extension(request, tenant_id: str, id: str):
+    """ 获取租户插件,TODO
+    """
+    return {}
+
+@api.delete("/tenant/{tenant_id}/extensions/{id}/", tags=[_("租户插件")])
+def delete_extension(request, tenant_id: str, id: str):
+    """ 删除租户插件,TODO
+    """
+    return {}
