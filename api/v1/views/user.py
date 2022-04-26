@@ -21,7 +21,7 @@ class UserListOutSchema(ModelSchema):
         
 @api.get("/tenant/{tenant_id}/users/",response=List[UserListOutSchema], tags=['用户'], auth=None)
 @operation(List[UserListOutSchema])
-def user_list(request, tenant_id: str,data: UserListInSchema=Query(...)):
+def user_list(request, tenant_id: str, data: UserListInSchema=Query(...)):
     users = User.expand_objects.filter(tenant__id=tenant_id).all()
     return users
 
