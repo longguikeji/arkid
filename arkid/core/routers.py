@@ -57,7 +57,7 @@ class FrontRouter(DeepSN):
             self.url = url
         super().__init__(*args, **kwargs)
 
-    def add_child(self, child):
+    def add_children(self, child):
         """添加子路由
 
         Args:
@@ -92,7 +92,7 @@ class FrontRouter(DeepSN):
             for child in self.children:
                 child.change_page_tag(header)
 
-def register_front_routers(routers, primary: str = ''):
+def register_front_routers(routers, primary: FrontRouter = None):
     """注册前端路由
 
     Args:
@@ -102,15 +102,13 @@ def register_front_routers(routers, primary: str = ''):
     if not isinstance(routers, tuple) or not isinstance(routers, list):
         routers = list(routers)
 
-    # for primary_router in routers:
-    #     if primary == primary_router.path:
-    #         for router in routers:
-    #             primary_router.add_child(router)
-    #         continue
+    if primary:
+        primary.add_children(routers)
+        return
     global_routers.extend(routers)
 
 
-def unregister_front_routers(routers, primary: str = ''):
+def unregister_front_routers(routers, primary: FrontRouter = None):
     """卸载前端路由
 
     Args:
@@ -120,12 +118,11 @@ def unregister_front_routers(routers, primary: str = ''):
     if not isinstance(routers, tuple) or not isinstance(routers, list):
         routers = list(routers)
 
-    # for primary_router in routers:
-    #     if primary == primary_router.path:
-    #         for router in routers:
-    #             primary_router.remove_child(router)
-    #         continue
-
+    if primary:
+        for router in routers:
+            primary.remove_child(router)
+        return
+        
     for router in routers:
         global_routers.remove(router)
 
