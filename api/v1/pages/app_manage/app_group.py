@@ -28,11 +28,6 @@ page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/app_groups/',
         method=actions.FrontActionMethod.GET,
-        next_action=actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/app_groups/{app_group_id}/apps/',
-            method=actions.FrontActionMethod.GET,
-            result_page=group_apps_page
-        )
     ),
     global_actions=[
         actions.CreateAction(
