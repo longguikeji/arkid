@@ -106,7 +106,6 @@ def register_front_routers(routers, primary: str = ''):
         if primary == primary_router.path:
             for router in routers:
                 primary_router.add_child(router)
-            return
     global_routers.extend(routers)
 
 

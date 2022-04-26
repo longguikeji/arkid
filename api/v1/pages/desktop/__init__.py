@@ -3,7 +3,7 @@ from .. import mine
 from arkid.core import routers,pages
 
 router = routers.FrontRouter(
-    path='',
+    path='desktop',
     name='桌面',
     icon='home',
     page=app_list.page
