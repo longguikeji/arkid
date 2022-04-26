@@ -6,11 +6,17 @@ from scim_server.service.query_response import QueryResponse
 
 
 class ProviderBase:
-    BulkFeatureSupport = BulkRequestsFeature.create_unsupported_feature()
     TypeSchema = []
-    ServiceConfiguration = Core2ServiceConfiguration(
-        BulkFeatureSupport, False, True, False, True, False
-    )
+    config_data = {
+        "authenticationSchemes": [{"type":"oauth2", "name": "OAuth2", "description": "OAuth2"}],
+        "bulk": {"supported": False, "maxOperations":0, "maxPayloadSize":0},
+        "etag": {"supported": False},
+        "filter": {"supported": True, "maxResults": 200},
+        "changePassword": {"supported": False},
+        "patch": {"supported": True},
+        "sort": {"supported": False},
+    }
+    ServiceConfiguration = Core2ServiceConfiguration(**config_data)
     Types = []
 
     @property

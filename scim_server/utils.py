@@ -9,8 +9,8 @@ from scim_server.schemas.name import Name
 from scim_server.schemas.phone_number import PhoneNumber
 from scim_server.schemas.role import Role
 from scim_server.schemas.schema_identifiers import SchemaIdentifiers
-from scim_server.schemas.extension_attribute_enterprise_user2 import (
-    ExtensionAttributeEnterpriseUser2,
+from scim_server.schemas.extension_attribute_enterprise_user import (
+    ExtensionAttributeEnterpriseUser,
 )
 from scim_server.schemas.manager import Manager
 
@@ -23,7 +23,7 @@ def compose_enterprise_extension(user, scim_path, value):
     if user.enterprise_extension:
         extension = user.enterprise_extension
     else:
-        extension = ExtensionAttributeEnterpriseUser2()
+        extension = ExtensionAttributeEnterpriseUser()
         user.enterprise_extension = extension
     if scim_path.attribute_path == 'manager':
         compose_manager(user, scim_path, value)

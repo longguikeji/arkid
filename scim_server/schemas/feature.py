@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-from scim_server.schemas.feature_base import FeatureBase
+from pydantic import BaseModel
 
 
-class Feature(FeatureBase):
-    # def __init__(self, supported):
-    #     self.supported = supported
-    pass
+class Feature(BaseModel):
+    supported: bool
+    # @property
+    # def supported(self):
+    #     return self._supported
+
+    # @supported.setter
+    # def supported(self, value):
+    #     self._supported = value

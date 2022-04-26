@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from scim_server.schemas.attribute_names import AttributeNames
 from pydantic import BaseModel
-
+from typing import Optional
 
 class TypedItem(BaseModel):
-    item_type: str
-    primary: bool
+    type: Optional[str]
+    primary: Optional[bool]
     # @property
     # def item_type(self):
     #     if not hasattr(self, '_item_type'):
