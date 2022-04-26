@@ -173,7 +173,7 @@ class ConfirmAction(DirectAction):
 class DeleteAction(DirectAction):
     def __init__(self, path: str, *args, **kwargs):
         self.name = _("删除")
-        self.method = FrontActionMethod.DELETE.value,
+        self.method = FrontActionMethod.DELETE.value
         self.icon = "icon-delete"
         self.path = path
         super().__init__(*args, **kwargs)
