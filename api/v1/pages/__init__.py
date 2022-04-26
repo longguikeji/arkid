@@ -10,6 +10,8 @@ from . import (
     log_manage,
     mine,
     permission_manage,
+    platform_admin,
+    tenant_manage
 )
 from arkid.core import routers
 
@@ -26,6 +28,8 @@ routers.register_front_routers(
         developer_manage.router,
         log_manage.router,
         mine.router,
-        permission_manage.router
+        permission_manage.router,
+        platform_admin.router,
+        tenant_manage.router
     ]
 )

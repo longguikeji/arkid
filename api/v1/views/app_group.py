@@ -49,11 +49,13 @@ class AppGroupCreateQueryIn(Schema):
 class AppGroupCreateOut(Schema):
     pass
 
-@api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=[_("应用分组")])
+@api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=[_("应用分组")],auth=None)
 @operation(AppGroupCreateOut)
 def create_app_group(request, tenant_id: str, data: AppGroupCreateIn, query_data: AppGroupCreateQueryIn=Query(...)):
     """ 创建应用分组,TODO
     """
+    group = AppGroup.expand_objects.create(**data)
+
     return {}
 
 
