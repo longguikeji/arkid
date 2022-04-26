@@ -72,7 +72,7 @@ class FrontAction(DeepSN):
     """
 
     def __init__(self, action_type: FrontActionType, tag: str = None, path: str = None, method: FrontActionMethod = None,
-                 name: str = None, page=None, page_tag=None, icon: str = None, tag_pre: str = None, next_action=None,
+                 name: str = None, page=None, page_tag=None, icon: str = None, tag_pre: str = None,
                  result_page=None, result_page_tag=None, *args, **kwargs):
         """初始化函数
 
@@ -103,9 +103,6 @@ class FrontAction(DeepSN):
             self.method = method.value
         if icon:
             self.icon = icon
-
-        if next_action:
-            self.next_action = next_action
         if result_page:
             self.result_page = result_page.tag
         if result_page_tag:

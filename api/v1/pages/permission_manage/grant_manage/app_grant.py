@@ -15,11 +15,6 @@ page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/apps/',
         method=actions.FrontActionMethod.GET,
-        next_action=actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/apps/{app_id}/permissions/',
-            method=actions.FrontActionMethod.GET,
-            result_page=app_permission_page
-        )
     ),
     node_actions=[
         actions.DirectAction(

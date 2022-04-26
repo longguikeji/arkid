@@ -17,11 +17,6 @@ page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/user_groups/',
         method=actions.FrontActionMethod.GET,
-        next_action=actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/',
-            method=actions.FrontActionMethod.GET,
-            result_page=group_permission_page
-        )
     ),
     node_actions=[
         actions.DirectAction(
