@@ -1,11 +1,17 @@
-from ninja.security import HttpBearer
-from arkid.core.models import ExpiringToken
+# from arkid.core.api import api
+# from ninja import Schema
 
-class AuthBearer(HttpBearer):
+# class Message(Schema):
+#     detail: str
 
-    def authenticate(self, request, token):
-        expiring_token = ExpiringToken.objects.filter(token=token).first()
-        if expiring_token:
-            if expiring_token.expired(request.tenant) is False:
-                return True
-        return False
+# def permission_check(func):
+#     from functools import wraps
+#     @wraps(func)
+#     def decorator(*args, **kwargs):
+#         func.view_func = func
+#         # 取得 operation_id
+#         operation_id = api.get_openapi_operation_id(func)
+#         result = func(*args, **kwargs)
+#         return result
+#     return decorator
+    
