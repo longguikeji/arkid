@@ -17,4 +17,5 @@ from . import (
     scim_sync,
     webhook,
     send_sms,
+    tenant
 )
