@@ -49,12 +49,12 @@ def get_mine_approves(request, tenant_id: str):
     return []
 
 @api.get("/mine/switch_tenant/{id}/",tags=[_("我的")],auth=None)
-def get_mine_switch_tenant(request,tenant_id):
+def get_mine_switch_tenant(request,id):
     """ 租户开关,TODO
     """
     context = {}
-    tenant = Tenant.active_objects.get(id=tenant_id)
-    context['tenant_id'] = tenant_id
+    tenant = Tenant.active_objects.get(id=id)
+    context['tenant_id'] = id
     context['slug'] = tenant.slug
     
     return render(request,template_name='switch_tenant.html', context=context)
