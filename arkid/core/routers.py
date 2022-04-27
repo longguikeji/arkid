@@ -1,10 +1,9 @@
-from collections import OrderedDict
+from arkid.common import DeepSN
 from arkid.core.pages import FrontPage
 
 global_routers = []
 
-
-class FrontRouter(OrderedDict):
+class FrontRouter(DeepSN):
     """_前端路由类
 
     Examples:
@@ -36,19 +35,26 @@ class FrontRouter(OrderedDict):
             page (FrontPage, optional): 页面. Defaults to None.
             url (str, optional): 链接地址. Defaults to None.
         """
-        self['path'] = path
+        self.path = path
         if name:
-            self['name'] = name
+            self.name = name
         if icon:
-            self['icon'] = icon
+            self.icon = icon
         if children:
-            self['children'] = children
+            self.children = children
         if redirect:
-            self['redirect'] = redirect
+            self.redirect = redirect
         if page:
-            self['page'] = page["tag"] if isinstance(page,FrontPage) else page
+            if isinstance(page,list):
+                self.page = []
+                for p in page:
+                    self.page.append(
+                        p.tag if isinstance(p,FrontPage) else p
+                    )
+            else:
+                self.page = page.tag if isinstance(page,FrontPage) else page
         if url:
-            self['url'] = url
+            self.url = url
         super().__init__(*args, **kwargs)
 
     def add_child(self, child):
@@ -57,9 +63,9 @@ class FrontRouter(OrderedDict):
         Args:
             child (OrderedDict): 子路由描述
         """
-        if not self["children"]:
-            self["children"] = []
-        self["children"].append(child)
+        if not self.children:
+            self.children = []
+        self.children.append(child)
 
     def remove_child(self, child):
         """移除子路由
@@ -67,9 +73,9 @@ class FrontRouter(OrderedDict):
         Args:
             child (OrderedDict): 子路由描述
         """
-        if not self["children"]:
+        if not self.children:
             return
-        self["children"].remove(child)
+        self.children.remove(child)
 
     def change_page_tag(self, header):
         """更改页面标识，主要用于插件中添加标识前缀以注明该页面来源
@@ -80,12 +86,11 @@ class FrontRouter(OrderedDict):
             header (str): 页面标识前缀
         """
         if hasattr(self,"page"):
-            self['page']:FrontPage
-            self['page'].add_tag_pre(header)
+            self.page:FrontPage
+            self.page.add_tag_pre(header)
         if hasattr(self,"children"):
-            for child in self['children']:
+            for child in self.children:
                 child.change_page_tag(header)
-
 
 def register_front_routers(routers, primary: str = ''):
     """注册前端路由
@@ -98,11 +103,10 @@ def register_front_routers(routers, primary: str = ''):
         routers = list(routers)
 
     for primary_router in routers:
-        if primary == primary_router["path"]:
+        if primary == primary_router.path:
             for router in routers:
                 primary_router.add_child(router)
             return
-
     global_routers.extend(routers)
 
 
@@ -124,3 +128,6 @@ def unregister_front_routers(routers, primary: str = ''):
 
     for router in routers:
         global_routers.remove(router)
+
+def get_global_routers():
+    return [ item.dict() for item in global_routers ]
