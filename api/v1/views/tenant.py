@@ -12,7 +12,7 @@ class TenantListOut(ModelSchema):
         model = Tenant
         model_fields = ["name", "slug", "icon"]
 
-@api.get("/tenants/", response=List[TenantListOut],tags=[_("租户管理")])
+@api.get("/tenants/", response=List[TenantListOut],tags=[_("租户管理")],auth=None)
 @operation(List[TenantListOut])
 def get_tenant_list(request,query_data:TenantListQueryIn=Query(...)):
     """ 获取租户列表
@@ -32,7 +32,7 @@ class TenantOut(ModelSchema):
 
 @api.get("/tenants/{id}/", response=TenantOut,tags=[_("租户管理")])
 @operation(TenantOut)
-def get_tenant(request, id: str,query_data:TenantQueryIn=Query(...)):
+def get_tenant(request, id: str, query_data:TenantQueryIn=Query(...), auth=None):
     """ 获取租户
     """
     tenant = Tenant.active_objects.get(id=id)
@@ -49,7 +49,7 @@ class TenantCreateQueryIn(Schema):
 class TenantCreateOut(Schema):
     pass
 
-@api.post("/tenants/",response=TenantCreateOut,tags=[_("租户管理")])
+@api.post("/tenants/",response=TenantCreateOut,tags=[_("租户管理")],auth=None)
 @operation(TenantCreateOut)
 def create_tenant(request, tenant_id: str,data:TenantCreateIn,query_data:TenantCreateQueryIn=Query(...)):
     """ 创建租户
@@ -70,7 +70,7 @@ class TenantUpdateQueryIn(Schema):
 class TenantUpdateOut(Schema):
     pass
 
-@api.put("/tenants/{id}/", response=TenantUpdateOut,tags=[_("租户管理")])
+@api.put("/tenants/{id}/", response=TenantUpdateOut,tags=[_("租户管理")],auth=None)
 @operation(TenantUpdateOut)
 def update_tenant(request, id: str,data:TenantUpdateIn,query_data:TenantUpdateQueryIn=Query(...)):
     """ 编辑租户
@@ -85,7 +85,7 @@ class TenantDeleteQueryIn(Schema):
 class TenantDeleteOut(Schema):
     pass
 
-@api.delete("/tenants/{id}/", response=TenantDeleteOut, tags=[_("租户管理")])
+@api.delete("/tenants/{id}/", response=TenantDeleteOut, tags=[_("租户管理")],auth=None)
 @operation(TenantDeleteOut)
 def delete_tenant(request, id: str, query_data:TenantDeleteQueryIn=Query(...)):
     """ 删除租户
@@ -101,7 +101,7 @@ class TenantConfigQueryIn(Schema):
 class TenantConfigOut(Schema):
     pass
 
-@api.get("/tenants/{id}/config/", response=TenantConfigOut, tags=[_("租户管理")])
+@api.get("/tenants/{id}/config/", response=TenantConfigOut, tags=[_("租户管理")],auth=None)
 @operation(TenantConfigOut)
 def get_tenant_config(request, id: str,query_data:TenantConfigQueryIn=Query(...)):
     """ 获取租户配置,TODO
@@ -117,7 +117,7 @@ class TenantConfigUpdateIn(Schema):
 class TenantConfigUpdateOut(Schema):
     pass
 
-@api.post("/tenants/{id}/config/", response=TenantConfigUpdateOut,tags=[_("租户管理")])
+@api.post("/tenants/{id}/config/", response=TenantConfigUpdateOut,tags=[_("租户管理")],auth=None)
 @operation(TenantConfigUpdateOut)
 def update_tenant_config(request, id: str,data:TenantConfigUpdateIn,query_data:TenantConfigUpdateQueryIn=Query(...)):
     """ 编辑租户配置,TODO

@@ -235,9 +235,9 @@ class TabsPage(FrontPage):
             
         if not isinstance(pages, tuple) or not isinstance(pages, list):
             pages = list(pages)
-        if not hasattr(self, "node_action"):
-            self.node_action = []
-        self.node_action.extend(pages)
+        if not hasattr(self, "pages"):
+            self.pages = []
+        self.pages.extend(pages)
 
 def register_front_pages(pages):
     """注册前端页面
