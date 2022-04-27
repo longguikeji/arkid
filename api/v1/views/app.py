@@ -8,6 +8,7 @@ from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
 from typing import Union, Literal, List
 from django.shortcuts import get_object_or_404
+from arkid.perm.custom_access import AuthBearer
 from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig
 from arkid.core.event import Event, register_event, dispatch_event
