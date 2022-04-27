@@ -75,7 +75,7 @@ class GlobalAuth(HttpBearer):
             if not token.user.is_active:
                 raise Exception(_('User inactive or deleted','用户无效或被删除'))
 
-            if token.expired():
+            if token.expired(request.tenant):
                 raise Exception(_('Token has expired','秘钥已经过期'))
                 
         except ExpiringToken.DoesNotExist:
