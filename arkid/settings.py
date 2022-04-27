@@ -149,5 +149,4 @@ LANGUAGES = [
 ]
 
 LOCALE_PATHS = [
-    # '/home/guancy/longgui/arkid/extension_root/com_longgui_international_en_us/locale'
 ]

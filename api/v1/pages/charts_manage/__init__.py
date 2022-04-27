@@ -1,11 +1,12 @@
 # 图表展示
 from arkid.core import routers
-from . import bi_systems
+from . import bi_systems,charts
 
 router = routers.FrontRouter(
     path='charts',
     name='图表展示',
     children=[
-        bi_systems.router
+        charts.router,
+        bi_systems.router,
     ]
 )
