@@ -1,5 +1,6 @@
 import re
 import json
+from django.urls import resolve
 from arkid.core.models import Tenant
 
 
@@ -30,9 +31,18 @@ class TenantMiddleware:
         #     tenant = Tenant.active_objects.filter(slug=slug).first()
         
         request.tenant = tenant
-
+        request.operation_id = self.get_operation_id(request)
         response = self.get_response(request)
 
         # Code to be executed for each request/response after
         # the view is called.
         return response
+
+    def get_operation_id(self, request):
+        view_func, _, _ = resolve(request.path)
+        try:
+            klass = view_func.__self__
+            operation, _ = klass._find_operation(request)
+            return operation.operation_id or klass.api.get_openapi_operation_id(operation)
+        except:
+            return ''

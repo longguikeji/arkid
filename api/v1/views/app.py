@@ -90,7 +90,7 @@ def list_apps(request, tenant_id: str):
     )
     return apps
 
-@api.get("/{tenant_id}/apps/{app_id}", response=AppSchemaOut, tags=['应用'], auth=None)
+@api.get("/{tenant_id}/apps/{app_id}", response=AppSchemaOut, tags=['应用'])
 def get_app(request, tenant_id: str, app_id: str):
     '''
     获取app
