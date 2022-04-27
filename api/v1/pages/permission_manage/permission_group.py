@@ -43,10 +43,8 @@ page.create_actions(
         )
     ],
     node_actions=[
-        actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/',
-            method=actions.FrontActionMethod.GET,
-            result_page=group_permissions_page
+        actions.CascadeAction(
+            page=group_permissions_page
         )
     ]
 )

@@ -18,6 +18,7 @@ class FrontActionType(Enum):
     - node 节点点击类型(页面中将隐藏该操作)
     - url 内外链接类型
     - password 编辑密码类型
+    - cascade 级联类型
     ```
     """
 
@@ -28,6 +29,7 @@ class FrontActionType(Enum):
     IMPORT_ACTION = 'import'
     URL_ACTION = 'url'
     PASSWORD_ACTION = 'password'
+    CASCADE_ACTION = 'cascade'
 
 
 class FrontActionMethod(Enum):
@@ -72,8 +74,7 @@ class FrontAction(DeepSN):
     """
 
     def __init__(self, action_type: FrontActionType, tag: str = None, path: str = None, method: FrontActionMethod = None,
-                 name: str = None, page=None, page_tag=None, icon: str = None, tag_pre: str = None,
-                 result_page=None, result_page_tag=None, *args, **kwargs):
+                 name: str = None, page=None, page_tag=None, icon: str = None, tag_pre: str = None, *args, **kwargs):
         """初始化函数
 
         Args:
@@ -103,10 +104,6 @@ class FrontAction(DeepSN):
             self.method = method.value
         if icon:
             self.icon = icon
-        if result_page:
-            self.result_page = result_page.tag
-        if result_page_tag:
-            self.result_page = result_page_tag
 
         super().__init__(*args, **kwargs)
 
@@ -157,6 +154,10 @@ class PasswordAction(FrontAction):
     def __init__(self, *args, **kwargs):
         super().__init__(action_type=FrontActionType.PASSWORD_ACTION, *args, **kwargs)
 
+class CascadeAction(FrontAction):
+    def __init__(self, page, *args, **kwargs):
+        super().__init__(action_type=FrontActionType.CASCADE_ACTION, page=page, *args, **kwargs)
+
 
 class ConfirmAction(DirectAction):
     def __init__(self, path: str, *args, **kwargs):
@@ -188,6 +189,8 @@ class EditAction(OpenAction):
         self.name = _("编辑")
         self.icon = "icon-edit"
         super().__init__(page=page, *args, **kwargs)
+
+
 
 
 nav_actions = {}

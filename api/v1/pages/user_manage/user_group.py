@@ -43,10 +43,8 @@ page.create_actions(
         )
     ],
     node_actions=[
-        actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/users/',
-            method=actions.FrontActionMethod.GET,
-            result_page=group_users_page
+        actions.CascadeAction(
+            page=group_users_page
         )
     ]
 )
