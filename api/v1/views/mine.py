@@ -48,7 +48,7 @@ def get_mine_approves(request, tenant_id: str):
     """
     return []
 
-@api.get("/mine/switch_tenant/{tenant_id}/",tags=[_("我的")],auth=None)
+@api.get("/mine/switch_tenant/{id}/",tags=[_("我的")],auth=None)
 def get_mine_switch_tenant(request,tenant_id):
     """ 租户开关,TODO
     """

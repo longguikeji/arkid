@@ -23,8 +23,8 @@ page.create_actions(
         method=actions.FrontActionMethod.GET
     ),
     node_actions=[
-        actions.DirectAction(
-            path='/api/v1/mine/switch_tenant/{tenant_id}/',
+        actions.URLAction(
+            path='/api/v1/mine/switch_tenant/{id}/',
             method=actions.FrontActionMethod.GET
         )
     ]
