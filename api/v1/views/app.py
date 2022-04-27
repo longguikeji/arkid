@@ -109,7 +109,7 @@ def get_app(request, tenant_id: str, app_id: str):
     }
     return result
 
-@api.delete("/{tenant_id}/apps/{app_id}", tags=['应用'], auth=None)
+@api.delete("/{tenant_id}/apps/{app_id}", tags=['应用'])
 def delete_app(request, tenant_id: str, app_id: str):
     '''
     删除app
