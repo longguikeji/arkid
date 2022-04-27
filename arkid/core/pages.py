@@ -237,7 +237,9 @@ class TabsPage(FrontPage):
             pages = list(pages)
         if not hasattr(self, "pages"):
             self.pages = []
-        self.pages.extend(pages)
+        
+        for item in pages:
+            self.pages.append(item.tag if isinstance(item,FrontPage) else item)
 
 def register_front_pages(pages):
     """注册前端页面
