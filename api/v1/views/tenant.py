@@ -1,20 +1,22 @@
 from typing import List
-from ninja import ModelSchema, Query, Schema
+from ninja import Field, ModelSchema, Query, Schema
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
 
 class TenantListQueryIn(Schema):
-    pass
+    name:str = Field(
+        default=None,
+    )
         
 class TenantListOut(ModelSchema):
     class Config:
         model = Tenant
-        model_fields = ["name", "slug", "icon"]
+        model_fields = ["id","name", "slug", "icon"]
 
 @api.get("/tenants/", response=List[TenantListOut],tags=[_("租户管理")],auth=None)
-@operation(List[TenantListOut])
-def get_tenant_list(request,query_data:TenantListQueryIn=Query(...)):
+# @operation(List[TenantListOut])
+def get_tenant_list(request, query_data:TenantListQueryIn=Query(...)):
     """ 获取租户列表
     """
 
@@ -28,7 +30,7 @@ class TenantQueryIn(Schema):
 class TenantOut(ModelSchema):
     class Config:
         model = Tenant
-        model_fields = ["name"]
+        model_fields = ["id","name"]
 
 @api.get("/tenants/{id}/", response=TenantOut,tags=[_("租户管理")])
 @operation(TenantOut)
@@ -41,28 +43,24 @@ def get_tenant(request, id: str, query_data:TenantQueryIn=Query(...), auth=None)
 class TenantCreateIn(ModelSchema):
     class Config:
         model = Tenant
-        model_fields = ["name"]
+        model_fields = ["id","name","slug","icon"]
 
-class TenantCreateQueryIn(Schema):
-    pass
-        
 class TenantCreateOut(Schema):
     pass
 
 @api.post("/tenants/",response=TenantCreateOut,tags=[_("租户管理")],auth=None)
-@operation(TenantCreateOut)
-def create_tenant(request, tenant_id: str,data:TenantCreateIn,query_data:TenantCreateQueryIn=Query(...)):
+def create_tenant(request, data:TenantCreateIn):
     """ 创建租户
     """
 
-    tenant = Tenant.valid_objects.create(**data)
+    tenant = Tenant.valid_objects.create(**data.dict())
 
     return {}
 
 class TenantUpdateIn(ModelSchema):
     class Config:
         model = Tenant
-        model_fields = ["name","slug","icon"]
+        model_fields = ["id","name","slug","icon"]
 
 class TenantUpdateQueryIn(Schema):
     pass

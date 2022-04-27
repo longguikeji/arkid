@@ -1,5 +1,8 @@
+from typing import List
 from django.shortcuts import render
+from ninja import ModelSchema, Schema
 from arkid.core.api import api
+from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
 
 
@@ -62,8 +65,14 @@ def get_mine_logout(request):
     """
     return {}
 
-@api.get("/mine/tenants/",tags=[_("我的")])
+class MineTenantsOut(ModelSchema):
+    class Config:
+        model = Tenant
+        model_fields=["id","name","slug","icon"]
+
+@api.get("/mine/tenants/",response=List[MineTenantsOut],tags=[_("我的")],auth=None)
 def get_mine_tenants(request):
     """ 获取我的租户,TODO
     """
-    return {}
+    tenants = Tenant.active_objects.all()
+    return tenants

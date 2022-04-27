@@ -33,7 +33,7 @@ def delete_permission_group(request, tenant_id: str, id: str):
     return {}
 
 @api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", tags=[_("权限分组")])
-def get_permissions_from_group(request, tenant_id: str, group_id: str):
+def get_permissions_from_group(request, tenant_id: str, permission_group_id: str):
     """ 获取当前分组的权限列表,TODO
     """
     return {}
@@ -45,13 +45,13 @@ def remove_permission_from_group(request, tenant_id: str, permission_group_id: s
     return {}
 
 @api.post("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", tags=[_("权限分组")])
-def update_permissions_from_group(request, tenant_id: str, group_id: str):
+def update_permissions_from_group(request, tenant_id: str, permission_group_id: str):
     """ 更新当前分组的权限列表,TODO
     """
     return {}
 
 @api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/select_permissions/", tags=[_("权限分组")])
-def get_select_permissions(request, tenant_id: str, group_id: str):
+def get_select_permissions(request, tenant_id: str, permission_group_id: str):
     """ 获取所有权限并附加是否在当前分组的状态,TODO
     """
     return {}
