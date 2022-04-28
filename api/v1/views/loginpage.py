@@ -94,7 +94,7 @@ def login_page(request, tenant_id: str):
     dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, request=request, data=login_pages))
     
     data = {}
-    for (login_page, ext), useless in login_pages:
+    for login_page, ext in login_pages:
         for k,v in login_page.items():
             if not data.get(k):
                 data[k] = v
