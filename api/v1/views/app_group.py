@@ -1,5 +1,4 @@
 from typing import List
-from attr import field
 from ninja import Field, ModelSchema, Query, Schema
 from requests import Response
 from arkid.core.api import api,operation
