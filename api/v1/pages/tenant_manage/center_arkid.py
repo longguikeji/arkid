@@ -22,7 +22,5 @@ page.create_actions(
     ),
     global_actions = [
         actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/center_arkid/"),
-        actions.CancelAction(),
-        actions.ResetAction(),
     ]
 )

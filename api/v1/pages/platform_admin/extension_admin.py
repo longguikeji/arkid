@@ -47,8 +47,7 @@ edit_page.create_actions(
     ),
     global_actions=[
         actions.ConfirmAction(path="/api/v1/extensions/{id}/"),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )
 
@@ -61,7 +60,6 @@ create_page.create_actions(
         actions.ConfirmAction(
             path="/api/v1/extensions/",
         ),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )

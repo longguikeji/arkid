@@ -23,7 +23,6 @@ page.create_actions(
     ),
     global_actions = [
         actions.ConfirmAction(path="/mine/tenant/{tenant_id}/profile/"),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )

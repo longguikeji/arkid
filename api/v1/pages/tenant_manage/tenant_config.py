@@ -20,7 +20,6 @@ page.create_actions(
     ),
     global_actions = [
         actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/tenant_config/"),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )

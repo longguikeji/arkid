@@ -37,8 +37,7 @@ platform_config_page.create_actions(
     ),
     global_actions=[
         actions.ConfirmAction(path="/api/v1/platform_config/"),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )
 
@@ -69,8 +68,7 @@ edit_page.create_actions(
     ),
     global_actions=[
         actions.ConfirmAction(path="/api/v1/tenants/{id}/"),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )
 
@@ -83,7 +81,6 @@ create_page.create_actions(
         actions.ConfirmAction(
             path="/api/v1/tenants/",
         ),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )

@@ -46,8 +46,7 @@ edit_page.create_actions(
     ),
     global_actions=[
         actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/account_lifes/{id}/"),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )
 
@@ -60,7 +59,6 @@ create_page.create_actions(
         actions.ConfirmAction(
             path="/api/v1/tenant/{tenant_id}/account_lifes/",
         ),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )

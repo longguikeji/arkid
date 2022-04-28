@@ -47,7 +47,6 @@ permission_page.create_actions(
     ),
     global_actions=[
         actions.ConfirmAction(path="/api/v1/mine/tenant/{tenant_id}/permissions/"),
-        actions.CancelAction(),
-        actions.ResetAction(),
+
     ]
 )
