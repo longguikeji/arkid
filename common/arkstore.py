@@ -133,7 +133,7 @@ def install_arkstore_extension(tenant, token, extension_uuid):
         app['data'] = {}
         create_tenant_app(tenant, app)
     elif res['type'] == 'extension':
-        download_arkstore_extension(token, extension_uuid)
+        download_arkstore_extension(tenant, token, extension_uuid, res)
     else:
         raise Exception(f"unkown arkstore app and extension type: res['type']")
 
@@ -149,16 +149,11 @@ def get_arkid_saas_app_detail(saas_token, saas_tenant_uuid, saas_app_uuid):
     return resp
 
 
-def download_arkstore_extension(access_token, extension_uuid):
+def download_arkstore_extension(tenant, token, extension_uuid, extension_detail):
     import config
     from pathlib import Path
-
-    ext_detail_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_uuid}'
-    headers = {'Authorization': f'Token {access_token}'}
-    resp = requests.get(ext_detail_url, headers=headers)
-    if resp.status_code != 200:
-        return 'failed'
-    extension_name = resp.json()['name']
+    access_token = get_arkstore_access_token(tenant, token)
+    extension_name = extension_detail['name']
 
     app_config = config.get_app_config()
     extension_root = app_config.extension.root
