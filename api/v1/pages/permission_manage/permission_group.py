@@ -79,7 +79,6 @@ edit_permissions_page.create_actions(
         actions.ConfirmAction(
             path="/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/"
         ),
-        actions.CancelAction()
     ]
 )
 

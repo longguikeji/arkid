@@ -79,7 +79,6 @@ edit_users_page.create_actions(
         actions.ConfirmAction(
             path="/tenant/{tenant_id}/user_groups/{user_group_id}/users/"
         ),
-        actions.CancelAction()
     ]
 )
 

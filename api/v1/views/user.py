@@ -154,25 +154,25 @@ def user_list(request, tenant_id: str,id:str,data: UserInSchema=Query(...)):
     return user
 
 
-@api.get("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=[_("用户")])
+@api.get("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=["用户"],auth=None)
 def get_user_permissions(request, tenant_id: str,user_id:str):
     """ 用户权限列表,TODO
     """
     return []
 
-@api.post("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=[_("用户")])
+@api.post("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=["用户"],auth=None)
 def update_user_permissions(request, tenant_id: str,user_id:str):
     """ 更新用户权限列表,TODO
     """
     return []
 
-@api.delete("/tenant/{tenant_id}/users/{user_id}/permissions/{id}/",tags=[_("用户")])
+@api.delete("/tenant/{tenant_id}/users/{user_id}/permissions/{id}/",tags=["用户"],auth=None)
 def delete_user_permissions(request, tenant_id: str,user_id:str,id:str):
     """ 删除用户权限,TODO
     """
     return []
 
-@api.get("/tenant/{tenant_id}/users/{user_id}/all_permissions/",tags=[_("用户")])
+@api.get("/tenant/{tenant_id}/users/{user_id}/all_permissions/",tags=["用户"],auth=None)
 def get_user_all_permissions(request, tenant_id: str,user_id:str):
     """ 获取所有权限并附带是否已授权给用户状态,TODO
     """

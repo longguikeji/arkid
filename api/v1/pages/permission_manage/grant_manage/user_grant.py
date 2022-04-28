@@ -52,6 +52,5 @@ update_user_permission_page.create_actions(
         actions.ConfirmAction(
             path='/api/v1/tenant/{tenant_id}/users/{user_id}/permissions/',
         ),
-        actions.CancelAction(),
     ]
 )

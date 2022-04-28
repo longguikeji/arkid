@@ -104,19 +104,19 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
 #     extension.delete()
 #     return {"success": True}
 
-@api.get("/tenant/{tenant_id}/extensions/", tags=[_("租户插件")])
+@api.get("/tenant/{tenant_id}/extensions/", tags=["租户插件"],auth=None)
 def get_extensions(request, tenant_id: str):
     """ 租户插件列表,TODO
     """
     return []
 
-@api.get("/tenant/{tenant_id}/extensions/{id}/", tags=[_("租户插件")])
+@api.get("/tenant/{tenant_id}/extensions/{id}/", tags=["租户插件"],auth=None)
 def get_extension(request, tenant_id: str, id: str):
     """ 获取租户插件,TODO
     """
     return {}
 
-@api.delete("/tenant/{tenant_id}/extensions/{id}/", tags=[_("租户插件")])
+@api.delete("/tenant/{tenant_id}/extensions/{id}/", tags=["租户插件"],auth=None)
 def delete_extension(request, tenant_id: str, id: str):
     """ 删除租户插件,TODO
     """

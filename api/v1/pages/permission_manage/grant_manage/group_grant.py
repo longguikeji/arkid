@@ -52,6 +52,5 @@ update_group_permission_page.create_actions(
         actions.ConfirmAction(
             path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/',
         ),
-        actions.CancelAction(),
     ]
 )

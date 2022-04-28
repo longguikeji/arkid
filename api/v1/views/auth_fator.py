@@ -42,20 +42,20 @@ def get_auth_fator_list(request, tenant_id: str):
     configs = TenantExtensionConfig.active_objects.filter(extension__in=extensions)
     return {"data": configs}
 
-@api.get("/tenant/{tenant_id}/auth_fators/{id}/", tags=[_("认证因素")])
+@api.get("/tenant/{tenant_id}/auth_fators/{id}/", tags=["认证因素"],auth=None)
 def get_auth_fator(request, tenant_id: str, id: str):
     """ 获取认证因素,TODO
     """
     return {}
 
 
-@api.put("/tenant/{tenant_id}/auth_fators/{id}/", tags=[_("认证因素")])
+@api.put("/tenant/{tenant_id}/auth_fators/{id}/", tags=["认证因素"],auth=None)
 def update_auth_fator(request, tenant_id: str, id: str):
     """ 编辑认证因素,TODO
     """
     return {}
 
-@api.delete("/tenant/{tenant_id}/auth_fators/{id}/", tags=[_("认证因素")])
+@api.delete("/tenant/{tenant_id}/auth_fators/{id}/", tags=["认证因素"],auth=None)
 def delete_auth_fator(request, tenant_id: str, id: str):
     """ 删除认证因素,TODO
     """

@@ -15,7 +15,7 @@ class AppGroupListOut(ModelSchema):
         model = AppGroup
         model_fields = ["name"]
 
-@api.get("/tenant/{tenant_id}/app_groups/", response=List[AppGroupListOut],tags=[_("应用分组")])
+@api.get("/tenant/{tenant_id}/app_groups/", response=List[AppGroupListOut],tags=["应用分组"],auth=None)
 @operation(List[AppGroupListOut])
 def get_app_groups(request, tenant_id: str, query_data: AppGroupListQueryIn=Query(...)):
     """ 应用分组列表,TODO
@@ -31,7 +31,7 @@ class AppGroupOut(ModelSchema):
         model = AppGroup
         model_fields = ["name"]
 
-@api.get("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupOut, tags=[_("应用分组")])
+@api.get("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupOut, tags=["应用分组"],auth=None)
 @operation(AppGroupOut)
 def get_app_group(request, tenant_id: str, id: str, query_data: AppGroupQueryIn=Query(...)):
     """ 获取应用分组,TODO
@@ -49,7 +49,7 @@ class AppGroupCreateQueryIn(Schema):
 class AppGroupCreateOut(Schema):
     pass
 
-@api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=[_("应用分组")],auth=None)
+@api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=["应用分组"],auth=None)
 @operation(AppGroupCreateOut)
 def create_app_group(request, tenant_id: str, data: AppGroupCreateIn, query_data: AppGroupCreateQueryIn=Query(...)):
     """ 创建应用分组,TODO
@@ -70,7 +70,7 @@ class AppGroupUpdateQueryIn(Schema):
 class AppGroupUpdateOut(Schema):
     pass
 
-@api.put("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupUpdateOut,tags=[_("应用分组")])
+@api.put("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupUpdateOut,tags=["应用分组"],auth=None)
 @operation(AppGroupUpdateOut)
 def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn, query_data: AppGroupUpdateQueryIn=Query(...)):
     """ 编辑应用分组,TODO
@@ -83,7 +83,7 @@ class AppGroupDeleteQueryIn(Schema):
 class AppGroupDeleteOut(Schema):
     pass
 
-@api.delete("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupDeleteOut, tags=[_("应用分组")])
+@api.delete("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupDeleteOut, tags=["应用分组"],auth=None)
 @operation(AppGroupDeleteOut)
 def delete_app_group(request, tenant_id: str, id: str,query_data: AppGroupDeleteQueryIn=Query(...)):
     """ 删除应用分组,TODO
@@ -96,7 +96,7 @@ class GroupAppsQueryIn(Schema):
 class GroupAppsOut(Schema):
     pass
 
-@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/",response=List[GroupAppsOut],tags=[_("应用分组")])
+@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/",response=List[GroupAppsOut],tags=["应用分组"],auth=None)
 @operation(List[GroupAppsOut])
 def get_apps_from_group(request, tenant_id: str, app_group_id: str, query_data: GroupAppsQueryIn=Query(...)):
     """ 获取当前分组的应用列表,TODO
@@ -109,7 +109,7 @@ class GroupAppRemoveQueryIn(Schema):
 class GroupAppRemoveOut(Schema):
     pass
 
-@api.delete("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/{id}/",response=GroupAppRemoveOut, tags=[_("应用分组")])
+@api.delete("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/{id}/",response=GroupAppRemoveOut, tags=["应用分组"],auth=None)
 @operation(GroupAppRemoveOut)
 def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str, query_data: GroupAppRemoveQueryIn=Query(...)):
     """ 将应用移除出应用分组,TODO
@@ -125,7 +125,7 @@ class GroupAppUpdateQueryIn(Schema):
 class GroupAppUpdateOut(Schema):
     pass
 
-@api.post("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/", response=GroupAppUpdateOut,tags=[_("应用分组")])
+@api.post("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/", response=GroupAppUpdateOut,tags=["应用分组"],auth=None)
 @operation(GroupAppUpdateOut)
 def update_apps_from_group(request, tenant_id: str, app_group_id: str,data: GroupAppUpdateIn, query_data: GroupAppUpdateQueryIn=Query(...)):
     """ 更新当前分组的应用列表,TODO
@@ -138,7 +138,7 @@ class GroupAllAppQueryIn(Schema):
 class GroupAllAppOut(Schema):
     pass
 
-@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/select_apps/",response=List[GroupAllAppOut], tags=[_("应用分组")])
+@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/select_apps/",response=List[GroupAllAppOut], tags=["应用分组"],auth=None)
 @operation(List[GroupAllAppOut])
 def get_select_apps(request, tenant_id: str, app_group_id: str, query_data: GroupAllAppQueryIn=Query(...)):
     """ 获取所有应用并附加是否在当前分组的状态,TODO

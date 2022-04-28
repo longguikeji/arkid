@@ -77,7 +77,6 @@ edit_apps_page.create_actions(
         actions.ConfirmAction(
             path="/tenant/{tenant_id}/app_groups/{app_group_id}/apps/"
         ),
-        actions.CancelAction()
     ]
 )
 

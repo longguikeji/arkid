@@ -126,20 +126,6 @@ class OpenAction(FrontAction):
         super().__init__(action_type=FrontActionType.OPEN_ACTION, *args, **kwargs)
 
 
-class CancelAction(FrontAction):
-    """取消"""
-
-    def __init__(self, *args, **kwargs):
-        self.name = _("取消")
-        super().__init__(action_type=FrontActionType.CANCEL_ACTION, *args, **kwargs)
-
-
-class ResetAction(FrontAction):
-    def __init__(self, *args, **kwargs):
-        self.name = _("重置")
-        super().__init__(action_type=FrontActionType.RESET_ACTION, *args, **kwargs)
-
-
 class ImportAction(FrontAction):
     def __init__(self, *args, **kwargs):
         super().__init__(action_type=FrontActionType.IMPORT_ACTION, *args, **kwargs)
