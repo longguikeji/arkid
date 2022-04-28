@@ -242,6 +242,25 @@ class ApiPermission(PermissionAbstract):
         return (f"{self.name}")
 
 
+class GroupPermission(PermissionAbstract):
+
+    class Meta(object):
+        verbose_name = _('GroupPermission', '分组权限')
+        verbose_name_plural = _('GroupPermission', '分组权限')
+
+    group = models.ForeignKey(
+        'UserGroup',
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        verbose_name=_('UserGroup','分组')
+    )
+
+    def __str__(self) -> str:
+        return (f"{self.name}")
+
+
 class Approve(BaseModel, ExpandModel):
 
     class Meta(object):
