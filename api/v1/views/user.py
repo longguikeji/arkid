@@ -11,18 +11,20 @@ from arkid.common.logger import logger
 
 # ------------- 用户列表接口 --------------
 
-class UserListInSchema(Schema):
-    pass
+class UserListQueryIn(Schema):
+    name:str = Field(
+        default=None
+    )
 
-class UserListOutSchema(ModelSchema):
+class UserListOut(ModelSchema):
      class Config:
         model = User
         model_fields = ['id', 'username', 'avatar', 'is_platform_user']
         
-@api.get("/tenant/{tenant_id}/users/",response=List[UserListOutSchema], tags=['用户'], auth=None)
-@operation(List[UserListOutSchema])
-def user_list(request, tenant_id: str, data: UserListInSchema=Query(...)):
-    users = User.expand_objects.filter(tenant__id=tenant_id).all()
+@api.get("/tenant/{tenant_id}/users/",response=List[UserListOut], tags=['用户'], auth=None)
+@operation(List[UserListOut])
+def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
+    users = User.expand_objects.all()
     return users
 
 # ------------- 创建用户接口 --------------

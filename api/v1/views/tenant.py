@@ -24,17 +24,14 @@ def get_tenant_list(request, query_data:TenantListQueryIn=Query(...)):
 
     return tenants
 
-class TenantQueryIn(Schema):
-    pass
-        
 class TenantOut(ModelSchema):
     class Config:
         model = Tenant
         model_fields = ["id","name"]
 
-@api.get("/tenants/{id}/", response=TenantOut,tags=[_("租户管理")])
+@api.get("/tenants/{id}/", response=TenantOut,tags=[_("租户管理")],auth=None)
 @operation(TenantOut)
-def get_tenant(request, id: str, query_data:TenantQueryIn=Query(...), auth=None):
+def get_tenant(request, id: str):
     """ 获取租户
     """
     tenant = Tenant.active_objects.get(id=id)
@@ -43,7 +40,7 @@ def get_tenant(request, id: str, query_data:TenantQueryIn=Query(...), auth=None)
 class TenantCreateIn(ModelSchema):
     class Config:
         model = Tenant
-        model_fields = ["id","name","slug","icon"]
+        model_fields = ["name","slug","icon"]
 
 class TenantCreateOut(Schema):
     pass
@@ -60,21 +57,18 @@ def create_tenant(request, data:TenantCreateIn):
 class TenantUpdateIn(ModelSchema):
     class Config:
         model = Tenant
-        model_fields = ["id","name","slug","icon"]
-
-class TenantUpdateQueryIn(Schema):
-    pass
+        model_fields = ["name"]
         
 class TenantUpdateOut(Schema):
     pass
 
-@api.put("/tenants/{id}/", response=TenantUpdateOut,tags=[_("租户管理")],auth=None)
+@api.post("/tenants/{id}/", response=TenantUpdateOut,tags=[_("租户管理")],auth=None)
 @operation(TenantUpdateOut)
-def update_tenant(request, id: str,data:TenantUpdateIn,query_data:TenantUpdateQueryIn=Query(...)):
+def update_tenant(request, id: str, data:TenantUpdateIn):
     """ 编辑租户
     """
     tenant = Tenant.active_objects.get(id=id)
-    tenant.update(**data)
+    tenant.update(**data.dict())
     return {}
 
 class TenantDeleteQueryIn(Schema):
