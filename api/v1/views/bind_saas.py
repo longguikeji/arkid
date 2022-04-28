@@ -16,6 +16,7 @@ from django.conf import settings
 from perm.custom_access import ApiAccessPermission
 from oauth2_provider.models import Application
 from api.v1.serializers.bind_saas import ArkIDBindSaasSerializer, ArkIDBindSaasCreateSerializer
+from common.arkstore import create_tenant_oidc_app
 
 
 @extend_schema(tags=["arkid"])
@@ -59,6 +60,8 @@ class ArkIDBindSaasAPIView(GenericAPIView):
             'saas_tenant_uuid': resp['saas_tenant_uuid'],
             'saas_tenant_slug': resp['saas_tenant_slug'],
         }
+        self.create_arkidstore_login_app(tenant, resp['saas_tenant_slug'])
+        self.create_arkid_saas_login_app(tenant, resp['saas_tenant_slug'])
         return Response(data, HTTP_200_OK)
 
     @extend_schema(roles=['globaladmin'], request=ArkIDBindSaasSerializer, summary='查询saas绑定信息')
@@ -67,6 +70,9 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         查询 saas 绑定信息
         """
         bind_info = self.get_bind_info(tenant_uuid)
+        tenant = Tenant.objects.get(uuid=tenant_uuid)
+        self.create_arkidstore_login_app(tenant, bind_info['saas_tenant_slug'])
+        self.create_arkid_saas_login_app(tenant, bind_info['saas_tenant_slug'])
         return Response(bind_info, HTTP_200_OK)
 
     @extend_schema(roles=['tenantadmin', 'globaladmin'], request=ArkIDBindSaasSerializer)
@@ -76,6 +82,8 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         """
         tenant = Tenant.objects.get(uuid=tenant_uuid)
         bind_info = self.update_saas_binding(tenant, request)
+        self.create_arkidstore_login_app(tenant, bind_info['saas_tenant_slug'])
+        self.create_arkid_saas_login_app(tenant, bind_info['saas_tenant_slug'])
         return Response(bind_info, HTTP_200_OK)
 
     def get_bind_info(self, tenant_uuid):
@@ -132,9 +140,11 @@ class ArkIDBindSaasAPIView(GenericAPIView):
         return resp
 
     def create_arkidstore_login_app(self, tenant, saas_tenant_slug):
-        # url = f"{settings.ARKSTOER_URL.rstrip('/')}/api/v1/login?tenant_slug={resp['saas_tenant_slug']}"
-        pass
+        url = f"{settings.ARKSTOER_URL}/api/v1/login?tenant_slug={saas_tenant_slug}"
+        create_tenant_oidc_app(tenant, url, 'arkstore_login', 'arkidstore login')
 
     def create_arkid_saas_login_app(self, tenant, saas_tenant_slug):
-        # url = settings.ARKID_SAAS
-        pass
+        arkid_saas_url = settings.ARKSTOER_URL
+        http, host = arkid_saas_url.split('://', 1)
+        url = f"{http}://{saas_tenant_slug}.{host}"
+        create_tenant_oidc_app(tenant, url, 'arkdi_saas_login', 'arkid_saas login')
