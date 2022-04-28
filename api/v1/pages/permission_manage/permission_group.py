@@ -8,14 +8,14 @@ name = '权限分组'
 page = pages.TreePage(tag=tag,name=name)
 group_permissions_page = pages.TablePage(name=_("组内权限"))
 edit_permissions_page = pages.TablePage(name=_("更新组内权限"))
-create_page = pages.FormPage(name=_("创建权限分组"))
+
 edit_page = pages.FormPage(name=_("编辑权限分组"))
 
 
 pages.register_front_pages(page)
 pages.register_front_pages(group_permissions_page)
 pages.register_front_pages(edit_permissions_page)
-pages.register_front_pages(create_page)
+
 pages.register_front_pages(edit_page)
 
 router = routers.FrontRouter(
@@ -31,7 +31,7 @@ page.create_actions(
     ),
     global_actions=[
         actions.CreateAction(
-            page=create_page,
+            path='/api/v1/tenant/{tenant_id}/permission_groups/',
         )
     ],
     local_actions=[
@@ -95,15 +95,4 @@ edit_page.create_actions(
     ]
 )
 
-create_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/permission_groups/',
-        method=actions.FrontActionMethod.POST
-    ),
-    global_actions=[
-        actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/permission_groups/",
-        ),
 
-    ]
-)

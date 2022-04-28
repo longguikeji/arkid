@@ -178,10 +178,12 @@ class DeleteAction(DirectAction):
 
 
 class CreateAction(OpenAction):
-    def __init__(self, page, *args, **kwargs):
+    def __init__(self, path: str, *args, **kwargs):
         self.name = _("创建")
         self.icon = "icon-create"
-        super().__init__(page=page, *args, **kwargs)
+        self.method = FrontActionMethod.POST.value
+        self.path = path
+        super().__init__(*args, **kwargs)
 
 
 class EditAction(OpenAction):

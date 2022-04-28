@@ -9,13 +9,13 @@ page = pages.TabsPage(name=name,tag=tag)
 platform_config_page = pages.FormPage(name=_("平台配置"))
 tenant_list_page = pages.TablePage(name=_("租户管理"))
 edit_page = pages.FormPage(name=_("编辑租户"))
-create_page = pages.FormPage(name=_("创建一个新的租户"))
+
 
 pages.register_front_pages(page)
 pages.register_front_pages(tenant_list_page)
 pages.register_front_pages(platform_config_page)
 pages.register_front_pages(edit_page)
-pages.register_front_pages(create_page)
+
 
 router = routers.FrontRouter(
     path=tag,
@@ -48,7 +48,7 @@ tenant_list_page.create_actions(
     ),
     global_actions=[
         actions.CreateAction(
-            page=create_page,
+            path='/api/v1/tenants/',
         )
     ],
     local_actions=[
@@ -72,15 +72,4 @@ edit_page.create_actions(
     ]
 )
 
-create_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/tenants/',
-        method=actions.FrontActionMethod.POST
-    ),
-    global_actions=[
-        actions.ConfirmAction(
-            path="/api/v1/tenants/",
-        ),
 
-    ]
-)

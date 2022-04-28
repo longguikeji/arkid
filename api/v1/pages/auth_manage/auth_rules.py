@@ -7,11 +7,11 @@ name = '认证规则'
 
 page = pages.TablePage(tag=tag, name=name)
 edit_page = pages.FormPage(name=_("编辑认证规则"))
-create_page = pages.FormPage(name=_("创建一个新的认证规则"))
+
 
 pages.register_front_pages(page)
 pages.register_front_pages(edit_page)
-pages.register_front_pages(create_page)
+
 
 router = routers.FrontRouter(
     path=tag,
@@ -26,7 +26,7 @@ page.create_actions(
     ),
     global_actions=[
         actions.CreateAction(
-            page=create_page,
+            path='/api/v1/tenant/{tenant_id}/auth_rules/',
         )
     ],
     local_actions=[
@@ -50,15 +50,4 @@ edit_page.create_actions(
     ]
 )
 
-create_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/auth_rules/',
-        method=actions.FrontActionMethod.POST
-    ),
-    global_actions=[
-        actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/auth_rules/",
-        ),
 
-    ]
-)

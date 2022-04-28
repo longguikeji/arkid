@@ -8,14 +8,12 @@ name = '应用分组'
 page = pages.TreePage(tag=tag,name=name)
 group_apps_page = pages.TablePage(name=_("组内应用"))
 edit_apps_page = pages.TablePage(name=_("更新组内应用"))
-create_page = pages.FormPage(name=_("创建应用分组"))
 edit_page = pages.FormPage(name=_("编辑应用分组"))
 
 
 pages.register_front_pages(page)
 pages.register_front_pages(group_apps_page)
 pages.register_front_pages(edit_apps_page)
-pages.register_front_pages(create_page)
 pages.register_front_pages(edit_page)
 
 router = routers.FrontRouter(
@@ -31,7 +29,7 @@ page.create_actions(
     ),
     global_actions=[
         actions.CreateAction(
-            page=create_page,
+            path='/api/v1/tenant/{tenant_id}/app_groups/'
         )
     ],
     local_actions=[
@@ -91,19 +89,6 @@ edit_page.create_actions(
     ),
     global_actions=[
         actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/app_groups/{id}/"),
-
-    ]
-)
-
-create_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/app_groups/',
-        method=actions.FrontActionMethod.POST
-    ),
-    global_actions=[
-        actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/app_groups/",
-        ),
 
     ]
 )

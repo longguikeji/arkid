@@ -14,7 +14,7 @@ history_detail_page = pages.DescriptionPage(name=_("webhook历史记录详情"))
 
 pages.register_front_pages(page)
 pages.register_front_pages(history_page)
-pages.register_front_pages(create_page)
+
 pages.register_front_pages(edit_page)
 pages.register_front_pages(history_detail_page)
 
@@ -31,7 +31,7 @@ page.create_actions(
     ),
     global_actions = [
         actions.CreateAction(
-            page=create_page,
+            path=create_page,
         )
     ],
     local_actions = [
