@@ -19,10 +19,15 @@ extend_schema_tags(
                 'method': 'post',
                 'description': '购买'
             },
-            'download': {
+            'install': {
                 'path': '/api/v1/tenant/{tenant_uuid}/arkstore/install/{id}/',
                 'method': 'get',
-                'description': '下载'
+                'description': '安装'
+            },
+            'upgrade': {
+                'path': '/api/v1/tenant/{tenant_uuid}/arkstore/install/{id}/',
+                'method': 'get',
+                'description': '升级'
             }
         }
     }
