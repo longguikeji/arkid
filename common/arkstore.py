@@ -6,6 +6,8 @@ from runtime import get_app_runtime
 from django.conf import settings
 import datetime
 from inventory.models import User
+from django.utils.dateparse import parse_datetime
+from django.utils import timezone
 
 
 arkid_saas_token_cache = {}
@@ -280,10 +282,14 @@ def check_arkstore_purchased(tenant, token, app):
     if resp.status_code != 200:
         raise Exception(f'Error check_arkstore_purchased: {resp.status_code}')
     resp = resp.json()
-    if resp.get("use_end_time") is not None and resp.get("use_end_time") < datetime.ctime():
+    if resp.get("use_end_time") == '0':
         return True
+    if resp.get("use_end_time") is not None:
+        use_end_time = parse_datetime(resp["use_end_time"])
+        if use_end_time <= timezone.now():
+            return True
     if resp.get("max_users"):
         count = len(User.active_objects.filter(tenants=tenant).all())
-        if resp.get("max_users") is not None and resp.get("max_users") < count:
+        if resp.get("max_users") is not None and resp.get("max_users") <= count:
             return True
     return False
