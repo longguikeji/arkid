@@ -124,29 +124,16 @@ def install_arkstore_extension(tenant, token, extension_uuid):
     access_token = get_arkstore_access_token(tenant, token)
     res = get_arkstore_extension_detail(access_token, extension_uuid)
     if res['type'] == 'oidc':
-        saas_token, saas_tenant_uuid, saas_tenant_slug = get_saas_token(tenant, token)
-        app = get_arkid_saas_app_detail(saas_token, saas_tenant_uuid, res['saas_app_uuid'])
+        app = get_arkid_saas_app_detail(tenant, token, extension_uuid)
         create_tenant_oidc_app(tenant, app['url'], app['name'], app['description'], app['logo'])
     elif res['type'] == 'auto_form_fill':
-        saas_token, saas_tenant_uuid, saas_tenant_slug = get_saas_token(tenant, token)
-        app = get_arkid_saas_app_detail(saas_token, saas_tenant_uuid, res['saas_app_uuid'])
+        app = get_arkid_saas_app_detail(tenant, token, extension_uuid)
         app['data'] = {}
         create_tenant_app(tenant, app)
     elif res['type'] == 'extension':
         download_arkstore_extension(tenant, token, extension_uuid, res)
     else:
         raise Exception(f"unkown arkstore app and extension type: res['type']")
-
-
-def get_arkid_saas_app_detail(saas_token, saas_tenant_uuid, saas_app_uuid):
-    arkid_saas_app_url = settings.ARKID_SAAS + f'/api/v1/tenant/{saas_tenant_uuid}/app/{saas_app_uuid}/'
-    headers = {'Authorization': f'Token {saas_token}'}
-    params = {}
-    resp = requests.get(arkid_saas_app_url, params=params, headers=headers)
-    if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
-    resp = resp.json()
-    return resp
 
 
 def download_arkstore_extension(tenant, token, extension_uuid, extension_detail):
@@ -161,8 +148,11 @@ def download_arkstore_extension(tenant, token, extension_uuid, extension_detail)
     download_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_uuid}/download'
     headers = {'Authorization': f'Token {access_token}'}
     resp = requests.get(download_url, headers=headers)
+    if resp.status_code == 402:
+        resp = resp.json()
+        raise Exception(f"error: download failed, msg: {resp.get('msg')}")
     if resp.status_code != 200:
-        return {'error': 'download failed'}
+        raise Exception('error: download failed')
 
     # delete extension folder
     folder_name = Path(extension_root) / extension_name
@@ -249,7 +239,7 @@ def create_tenant_app(tenant, saas_app):
     return app
 
     
-def get_auto_fill_data(tenant, token, extension_uuid):
+def get_arkid_saas_app_detail(tenant, token, extension_uuid):
     saas_token, saas_tenant_uuid, saas_tenant_slug = get_saas_token(tenant, token)
     arkid_saas_app_url = settings.ARKID_SAAS + f'/api/v1/tenant/{saas_tenant_uuid}/arkid/saas/app'
     headers = {'Authorization': f'Token {saas_token}'}

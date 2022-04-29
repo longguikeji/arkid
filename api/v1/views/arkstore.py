@@ -16,7 +16,7 @@ from common.arkstore import (
     install_arkstore_extension,
     bind_arkstore_agent,
     get_arkstore_apps_and_extensions,
-    get_auto_fill_data,
+    get_arkid_saas_app_detail,
 )
 
 
@@ -128,5 +128,5 @@ class ArkStoreGetAutoFormFillDataView(GenericAPIView):
         extension_uuid = kwargs['pk']
         token = request.user.token
         tenant = Tenant.objects.get(uuid=tenant_uuid)
-        result = get_auto_fill_data(tenant, token, extension_uuid)
+        result = get_arkid_saas_app_detail(tenant, token, extension_uuid)
         return JsonResponse(result)
