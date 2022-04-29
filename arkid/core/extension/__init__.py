@@ -276,7 +276,7 @@ class Extension(ABC):
             core_translation.extension_lang_maps[lang_code][self.name] = lang_maps
         core_translation.lang_maps = core_translation.reset_lang_maps()
         
-    def register_front_routers(self, router, primary=''):
+    def register_front_routers(self, router, primary:core_routers.FrontRouter=None):
         """
         primary: 一级路由名字，由 core_routers 文件提供定义
         """

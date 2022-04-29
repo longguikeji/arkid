@@ -3,12 +3,10 @@ from .. import mine
 from arkid.core import routers,pages
 
 router = routers.FrontRouter(
-    path='desktop',
+    path='',
     name='桌面',
     icon='home',
-    children=[
-        app_list.router,
-    ],
+    page=app_list.page
 )
 
 router.mobile_children = [

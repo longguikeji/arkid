@@ -22,6 +22,7 @@ mkdocstrings = "*"
 mkdocs = "*"
 mkdocs-material = "*"
 pyjwt = "*"
+django-cors-headers = "*"
 
 [requires]
 python_version = "3.8"
