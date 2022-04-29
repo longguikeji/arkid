@@ -31,6 +31,7 @@ from arkid.settings import LOGIN_URL
 from inventory.models import Permission
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+from common.arkstore import check_arkstore_purchased
 
 
 log = logging.getLogger("oauth2_provider")
@@ -128,23 +129,22 @@ class TokenRequiredMixin(AccessMixin):
         if app and user.check_app_permission(tenant, app) is True:
             return True
 
-        # OIDC-Platform
-        app = App.valid_objects.filter(
-            type__in=['OIDC-Platform'],
-            data__client_id=client_id,
-        ).first()
-        # ToDo
-        # 验证是否购买
-        if app:
-            return True
-
         # arkstore 特殊处理
         app = App.valid_objects.filter(
             type__in=['OIDC-Platform'],
-            data__client_id=client_id,
+            data__client_id = client_id,
             name='arkstore',
         ).first()
         if app:
+            return True
+
+        # OIDC-Platform
+        app = App.valid_objects.filter(
+            type__in=['OIDC-Platform'],
+            data__client_id = client_id,
+        ).first()
+        token = request.GET.get('token', '')
+        if app and check_arkstore_purchased(tenant, token, app):
             return True
 
         # arkid_saas 特殊处理
