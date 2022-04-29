@@ -11,18 +11,20 @@ from arkid.common.logger import logger
 
 # ------------- 用户列表接口 --------------
 
-class UserListInSchema(Schema):
-    pass
+class UserListQueryIn(Schema):
+    name:str = Field(
+        default=None
+    )
 
-class UserListOutSchema(ModelSchema):
+class UserListOut(ModelSchema):
      class Config:
         model = User
         model_fields = ['id', 'username', 'avatar', 'is_platform_user']
         
-@api.get("/tenant/{tenant_id}/users/",response=List[UserListOutSchema], tags=['用户'], auth=None)
-@operation(List[UserListOutSchema])
-def user_list(request, tenant_id: str,data: UserListInSchema=Query(...)):
-    users = User.expand_objects.filter(tenant__id=tenant_id).all()
+@api.get("/tenant/{tenant_id}/users/",response=List[UserListOut], tags=['用户'], auth=None)
+@operation(List[UserListOut])
+def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
+    users = User.expand_objects.all()
     return users
 
 # ------------- 创建用户接口 --------------
@@ -150,3 +152,28 @@ class UserOutSchema(ModelSchema):
 def user_list(request, tenant_id: str,id:str,data: UserInSchema=Query(...)):
     user = User.expand_objects.get(tenant__id=tenant_id,id=id)
     return user
+
+
+@api.get("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=["用户"],auth=None)
+def get_user_permissions(request, tenant_id: str,user_id:str):
+    """ 用户权限列表,TODO
+    """
+    return []
+
+@api.post("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=["用户"],auth=None)
+def update_user_permissions(request, tenant_id: str,user_id:str):
+    """ 更新用户权限列表,TODO
+    """
+    return []
+
+@api.delete("/tenant/{tenant_id}/users/{user_id}/permissions/{id}/",tags=["用户"],auth=None)
+def delete_user_permissions(request, tenant_id: str,user_id:str,id:str):
+    """ 删除用户权限,TODO
+    """
+    return []
+
+@api.get("/tenant/{tenant_id}/users/{user_id}/all_permissions/",tags=["用户"],auth=None)
+def get_user_all_permissions(request, tenant_id: str,user_id:str):
+    """ 获取所有权限并附带是否已授权给用户状态,TODO
+    """
+    return []
