@@ -179,14 +179,19 @@ class TokenRequiredMixin(AccessMixin):
                 tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
 
         if not tenant:
+            tenant_uuid = request.GET.get("tenant_uuid")
+            if tenant_uuid:
+                tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+        
+        if not tenant:
             host = get_app_config().get_host().split('://')[-1]
             request_host = request.get_host().split(':')[0]
-            slug = request_host.replace('.' + host, '')
-            tenant = Tenant.objects.filter(slug=slug).first()
-
-        if not tenant:
-            tenant_uuid = request.GET.get("tenant_uuid")
-            tenant = Tenant.objects.filter(uuid=tenant_uuid).first()
+            if host == request_host:
+                slug = ''
+                tenant = Tenant.objects.filter(slug=slug).first()
+            elif request_host.endswith('.' + host) and request_host != ('.' + host):
+                slug = request_host[:-len('.' + host)]
+                tenant = Tenant.objects.filter(slug=slug).first()
 
         try:
             res = ExpiringTokenAuthentication().authenticate(request)
