@@ -32,12 +32,12 @@ page.create_actions(
         path='/api/v1/mine/tenant/{tenant_id}/permissions/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.OpenAction(
-            name=_("申请权限"),
+    global_actions={
+        'open': actions.OpenAction(
+            name=("申请权限"),
             page=permission_page
         )
-    ]
+    }
 )
 
 permission_page.create_actions(
@@ -45,8 +45,9 @@ permission_page.create_actions(
         path='/api/v1/mine/tenant/{tenant_id}/all_permissions/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.ConfirmAction(path="/api/v1/mine/tenant/{tenant_id}/permissions/"),
-
-    ]
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/mine/tenant/{tenant_id}/permissions/"
+        ),
+    }
 )

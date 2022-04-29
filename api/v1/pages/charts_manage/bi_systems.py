@@ -24,11 +24,11 @@ page.create_actions(
         path='/api/v1/tenant/{tenant_id}/bi_systems/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.CreateAction(
+    global_actions={
+        'create': actions.CreateAction(
             path='/api/v1/tenant/{tenant_id}/bi_systems/',
         )
-    ],
+    },
     local_actions=[
         actions.EditAction(
             page=edit_page,
@@ -44,10 +44,11 @@ edit_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/bi_systems/{id}/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/bi_systems/{id}/"),
-
-    ]
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/bi_systems/{id}/"
+        ),
+    }
 )
 
 

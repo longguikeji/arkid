@@ -35,12 +35,12 @@ user_permission_page.create_actions(
             path='/api/v1/tenant/{tenant_id}/users/{user_id}/permissions/{id}/'
         )
     ],
-    global_actions=[
-        actions.OpenAction(
-            name=_("添加用户分组权限"),
+    global_actions={
+        'open': actions.OpenAction(
+            name=("添加用户分组权限"),
             page=update_user_permission_page
         )
-    ]
+    }
 )
 
 update_user_permission_page.create_actions(
@@ -48,9 +48,9 @@ update_user_permission_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/users/{user_id}/all_permissions/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.ConfirmAction(
+    global_actions={
+        'confirm':actions.ConfirmAction(
             path='/api/v1/tenant/{tenant_id}/users/{user_id}/permissions/',
         ),
-    ]
+    }
 )

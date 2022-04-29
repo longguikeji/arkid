@@ -21,8 +21,9 @@ page.create_actions(
         path='/mine/tenant/{tenant_id}/profile/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions = [
-        actions.ConfirmAction(path="/mine/tenant/{tenant_id}/profile/"),
-
-    ]
+    global_actions = {
+        "confirm": actions.ConfirmAction(
+            path="/mine/tenant/{tenant_id}/profile/"
+        ),
+    }
 )

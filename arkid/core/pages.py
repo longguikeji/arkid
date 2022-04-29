@@ -104,11 +104,18 @@ class FrontPage(DeepSN):
         if not actions:
             return
 
-        if not isinstance(actions, tuple) or not isinstance(actions, list):
-            actions = list(actions)
+        # if not isinstance(actions, tuple) or not isinstance(actions, list):
+        #     actions = list(actions)
+
         if not hasattr(self, "global_action"):
-            self.global_action = []
-        self.global_action.extend(actions)
+            self.global_action = {}
+            
+        if not isinstance(actions,dict):
+            actions = {
+                gen_tag():actions
+            }
+            
+        self.global_action.update(actions)
 
     def add_local_actions(self, actions):
         """ 添加表单动作
