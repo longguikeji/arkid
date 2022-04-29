@@ -11,7 +11,7 @@ from scim_server.schemas.name import Name
 from scim_server.schemas.phone_number import PhoneNumber
 from scim_server.schemas.role import Role
 from scim_server.schemas.photo import Photo
-from scim_server.schemas.user_groups import UserGroups
+from scim_server.schemas.user_groups import UserGroup
 from scim_server.schemas.resource import Resource
 from typing import List, Optional
 from enum import Enum
@@ -42,11 +42,11 @@ class Core2UserBase(Resource):
     password: Optional[bool]
     ######################## multi-valued attributes ############
     emails: Optional[List[ElectroicMailAddress]]
-    phone_numbers: Optional[List[PhoneNumber]]
+    phoneNumbers: Optional[List[PhoneNumber]]
     ims: Optional[List[InstantMessaging]]
     photos: Optional[List[Photo]]
     address: Optional[List[Address]]
-    groups: Optional[List[UserGroups]]
+    groups: Optional[List[UserGroup]]
     # TODO entitlements,
     roles: Optional[List[Role]]
     # TODO x509Certificates

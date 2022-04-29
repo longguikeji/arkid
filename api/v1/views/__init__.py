@@ -15,5 +15,5 @@ from . import (
     third_auth,
     permission_sync,
     scim_sync
-    send_sms,
+    # send_sms,
 )

@@ -4,11 +4,13 @@ from enum import Enum
 from typing import Optional
 from pydantic import Field
 
+
 class TypeEnum(str, Enum):
     direct = 'direct'
     indirect = 'indirect'
 
-class UserGroups(TypedValue):
+
+class UserGroup(TypedValue):
     type: Optional[TypeEnum]
     ref: Optional[str] = Field(None, alias="$ref")
     display: Optional[str]

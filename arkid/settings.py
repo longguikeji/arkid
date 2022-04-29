@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'arkid.core',
     'arkid.extension',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -151,3 +152,16 @@ LANGUAGES = [
 LOCALE_PATHS = [
     # '/home/guancy/longgui/arkid/extension_root/com_longgui_international_en_us/locale'
 ]
+
+# Celery settings
+CELERY_BROKER = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_TIMEZONE = 'Asia/Shanghai'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+#: Only add pickle to this list if your broker is secured
+#: from unwanted access (see userguide/security.html)
+# CELERY_ACCEPT_CONTENT = ['json']
+CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
+# CELERY_TASK_SERIALIZER = 'json'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'max_retries': 0}

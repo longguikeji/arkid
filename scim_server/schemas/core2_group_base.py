@@ -6,8 +6,8 @@ from typing import List
 
 
 class GroupBase(Resource):
-    display_name: str
-    members: List[Member]
+    displayName: str
+    members: List[Member] = []
     # @property
     # def display_name(self):
     #     if not hasattr(self, '_display_name'):

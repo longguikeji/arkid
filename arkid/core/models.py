@@ -48,6 +48,7 @@ class User(BaseModel, ExpandModel):
     tenant = models.ForeignKey(
         'Tenant', blank=False, on_delete=models.PROTECT
     )
+    scim_external_id = models.CharField(max_length=128, blank=True, null=True)
 
     # tenants = models.ManyToManyField(
     #     'Tenant',
@@ -82,6 +83,7 @@ class UserGroup(BaseModel, ExpandModel):
         verbose_name=_('User List','用户列表')
     )
 
+    scim_external_id = models.CharField(max_length=128, blank=True, null=True)
     def __str__(self) -> str:
         return f'{self.name}'
 

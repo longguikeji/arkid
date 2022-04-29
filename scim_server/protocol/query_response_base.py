@@ -5,17 +5,18 @@ from scim_server.protocol.protocol_schema_identifiers import ProtocolSchemaIdent
 from scim_server.protocol.protocol_attribute_names import ProtocolAttributeNames
 from typing import List, Any
 
-class QueryResponseBase(Schematized):
-    resources:List[Any] = []
-    items_per_page:int = 0
-    start_index: int = 0
-    total_results: int = 0
 
-    def __init__(self, resources):
-        super().__init__()
-        if resources is None:
-            raise ArgumentNullException('resources')
-        self.resources = resources
+class QueryResponseBase(Schematized):
+    Resources: List[Any] = []
+    itemsPerPage: int = 0
+    startIndex: int = 0
+    totalResults: int = 0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # if resources is None:
+        #     raise ArgumentNullException('resources')
+        # self.Resources = resources
         self.add_schema(ProtocolSchemaIdentifiers.Version2ListResponse)
 
     # @property

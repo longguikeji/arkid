@@ -3,13 +3,17 @@ from scim_server.schemas.bulk_requests_feature import BulkRequestsFeature
 from scim_server.schemas.core2_service_configuration import Core2ServiceConfiguration
 from scim_server.exceptions import ArgumentNullException, ArgumentException
 from scim_server.service.query_response import QueryResponse
+from scim_server.schemas.core2_enterprise_user import Core2EnterpriseUser
+from scim_server.schemas.core2_group import Core2Group
 
 
 class ProviderBase:
     TypeSchema = []
     config_data = {
-        "authenticationSchemes": [{"type":"oauth2", "name": "OAuth2", "description": "OAuth2"}],
-        "bulk": {"supported": False, "maxOperations":0, "maxPayloadSize":0},
+        "authenticationSchemes": [
+            {"type": "oauth2", "name": "OAuth2", "description": "OAuth2"}
+        ],
+        "bulk": {"supported": False, "maxOperations": 0, "maxPayloadSize": 0},
         "etag": {"supported": False},
         "filter": {"supported": True, "maxResults": 200},
         "changePassword": {"supported": False},
@@ -51,7 +55,10 @@ class ProviderBase:
     def user_deserialization_behavior(self):
         return None
 
-    def create_async2(self, resource, correlation_identifier):
+    def create_user(self, request, resource, correlation_identifier):
+        pass
+
+    def create_group(self, request, resource, correlation_identifier):
         pass
 
     def create_async(self, request):
@@ -61,10 +68,19 @@ class ProviderBase:
             raise ArgumentException('Invalid Request')
         if not request.correlation_identifier:
             raise ArgumentException('Invalid Request')
-        result = self.create_async2(request.payload, request.correlation_identifier)
-        return result
 
-    def delete_async2(self, resource_identifier, correlation_identifier):
+        resource = request.payload
+        correlation_identifier = request.correlation_identifier
+        if isinstance(resource, Core2EnterpriseUser):
+            return self.create_user(request.request, resource, correlation_identifier)
+
+        if isinstance(resource, Core2Group):
+            return self.create_group(request.request, resource, correlation_identifier)
+
+    def delete_user(self, request, resource_identifier, correlation_identifier):
+        pass
+
+    def delete_group(self, request, resource_identifier, correlation_identifier):
         pass
 
     def delete_async(self, request):
@@ -74,23 +90,29 @@ class ProviderBase:
             raise ArgumentException('Invalid Request')
         if not request.correlation_identifier:
             raise ArgumentException('Invalid Request')
-        result = self.delete_async2(request.payload, request.correlation_identifier)
-        return result
+
+        resource = request.payload
+        correlation_identifier = request.correlation_identifier
+        if isinstance(resource, Core2EnterpriseUser):
+            return self.delete_user(request.request, resource, correlation_identifier)
+
+        if isinstance(resource, Core2Group):
+            return self.delete_group(request.request, resource, correlation_identifier)
 
     def paginate_query_async(self, request):
         if not request:
             raise ArgumentNullException('request')
 
         resources = self.query_async(request)
-        result = QueryResponse(resources)
-        result.total_results = result.items_per_page = len(resources)
-        result.start_index = 1 if resources else None
+        result = QueryResponse(Resources=resources)
+        result.totalResults = result.itemsPerPage = len(resources)
+        result.startIndex = 1 if resources else None
         return result
 
-    def process_async(self):
+    def query_users(self, request, parameters, correlation_identifier):
         pass
 
-    def query_async2(self, parameters, correlation_identifier):
+    def query_groups(self, request, parameters, correlation_identifier):
         pass
 
     def query_async(self, request):
@@ -100,10 +122,21 @@ class ProviderBase:
             raise ArgumentException('Invalid Request')
         if not request.correlation_identifier:
             raise ArgumentException('Invalid Request')
-        result = self.query_async2(request.payload, request.correlation_identifier)
-        return result
 
-    def replace_async2(self, resource, correlation_identifier):
+        parameters = request.payload
+        correlation_identifier = request.correlation_identifier
+        if parameters.path == 'Users':
+            return self.query_users(request.request, parameters, correlation_identifier)
+
+        if parameters.path == 'Groups':
+            return self.query_groups(
+                request.request, parameters, correlation_identifier
+            )
+
+    def replace_user(self, request, resource, correlation_identifier):
+        pass
+
+    def replace_group(self, request, resource, correlation_identifier):
         pass
 
     def replace_async(self, request):
@@ -113,23 +146,48 @@ class ProviderBase:
             raise ArgumentException('Invalid Request')
         if not request.correlation_identifier:
             raise ArgumentException('Invalid Request')
-        result = self.replace_async2(request.payload, request.correlation_identifier)
-        return result
 
-    def retrieve_async2(self, parameters, correlation_identifier):
+        resource = request.payload
+        correlation_identifier = request.correlation_identifier
+        if isinstance(resource, Core2EnterpriseUser):
+            return self.replace_user(request.request, resource, correlation_identifier)
+
+        if isinstance(resource, Core2Group):
+            return self.replace_group(request.request, resource, correlation_identifier)
+
+    def retrieve_user(self, request, parameters, correlation_identifier):
         pass
 
-    def retrieve_async(self, request):
+    def retrieve_group(self, request, parameters, correlation_identifier):
+        pass
+
+    def retrieve_async(
+        self,
+        request,
+    ):
         if not request:
             raise ArgumentNullException('request')
         if not request.payload:
             raise ArgumentException('Invalid Request')
         if not request.correlation_identifier:
             raise ArgumentException('Invalid Request')
-        result = self.retrieve_async2(request.payload, request.correlation_identifier)
-        return result
 
-    def update_async2(self, patch, correlation_identifier):
+        parameters = request.payload
+        correlation_identifier = request.correlation_identifier
+        if parameters.path == 'Users':
+            return self.retrieve_user(
+                request.request, parameters, correlation_identifier
+            )
+
+        if parameters.path == 'Users':
+            return self.retrieve_group(
+                request.request, parameters, correlation_identifier
+            )
+
+    def update_user(self, request, patch, correlation_identifier):
+        pass
+
+    def update_group(self, request, patch, correlation_identifier):
         pass
 
     def update_async(self, request):
@@ -139,5 +197,11 @@ class ProviderBase:
             raise ArgumentException('Invalid Request')
         if not request.correlation_identifier:
             raise ArgumentException('Invalid Request')
-        result = self.update_async2(request.payload, request.correlation_identifier)
-        return result
+
+        resource = request.payload
+        correlation_identifier = request.correlation_identifier
+        if isinstance(resource, Core2EnterpriseUser):
+            return self.update_user(request.request, resource, correlation_identifier)
+
+        if isinstance(resource, Core2Group):
+            return self.update_group(request.request, resource, correlation_identifier)
