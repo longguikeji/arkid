@@ -17,10 +17,10 @@ class RootSchema(Schema):
             return setattr(self, item, value)
         return setattr(self.__root__, item, value)
 
-    def dict(self):
+    def dict(self, **kwargs):
         if not hasattr(self, "__root__"):
-            return super().dict()
-        return self.__root__.dict()
+            return super().dict(**kwargs)
+        return self.__root__.dict(**kwargs)
 
 
 class UserSchemaOut(ModelSchema):

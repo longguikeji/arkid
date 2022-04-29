@@ -201,6 +201,9 @@ CREATE_APP = 'CREATE_APP'
 UPDATE_APP = 'UPDATE_APP'
 DELETE_APP = 'DELETE_APP'
 SEND_SMS = 'SEND_SMS'
+CREATE_GROUP = 'CREATE_GROUP'
+UPDATE_GROUP = 'UPDATE_GROUP'
+DELETE_GROUP = 'DELETE_GROUP'
 
 
 # register events
@@ -209,4 +212,7 @@ register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules','登录页�
 register_event(CREATE_APP, _('create app','创建应用'))
 register_event(UPDATE_APP, _('update app','修改应用'))
 register_event(DELETE_APP, _('delete app','删除应用'))
+register_event(CREATE_GROUP, _('create group','创建分组'))
+register_event(UPDATE_GROUP, _('update group','修改分组'))
+register_event(DELETE_GROUP, _('delete group','删除分组'))
 register_event(SEND_SMS, _('send sms','发送短信'))
