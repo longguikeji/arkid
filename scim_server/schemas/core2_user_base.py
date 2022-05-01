@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from scim_server.schemas.user_base import UserBase
 from scim_server.schemas.schema_identifiers import SchemaIdentifiers
 from scim_server.schemas.core2_metadata import Core2Metadata
 from scim_server.schemas.types import Types
@@ -11,32 +10,53 @@ from scim_server.schemas.instant_messaging import InstantMessaging
 from scim_server.schemas.name import Name
 from scim_server.schemas.phone_number import PhoneNumber
 from scim_server.schemas.role import Role
-from typing import List
+from scim_server.schemas.photo import Photo
+from scim_server.schemas.user_groups import UserGroup
+from scim_server.schemas.resource import Resource
+from typing import List, Optional
+from enum import Enum
 
 
-class Core2UserBase(UserBase):
-    metadata: Core2Metadata
-    active: bool
-    address: List[Address]
-    display_name: str
-    electronic_mail_addresses: ElectroicMailAddress
-    instant_messagings: InstantMessaging
-    locale: str
-    metadate: dict
-    name: str
-    nickname: str
-    phone_numbers: List[PhoneNumber]
-    preferred_language: str
-    roles: List[Role]
-    timezone: str
-    title: str
-    user_type: str
-    # def __init__(self):
-    #     super().__init__()
-    #     self.add_schema(SchemaIdentifiers.Core2User)
-    #     self.metadata = Core2Metadata()
-    #     self.metadata.resource_type = Types.User
-    #     self._custom_extension = {}
+class UserTypeEnum(str, Enum):
+    Contractor = "Contractor"
+    Employee = 'Employee'
+    Intern = 'Temp'
+    Temp = 'Temp'
+    External = 'External'
+    Unknown = 'Unknown'
+
+
+class Core2UserBase(Resource):
+    # meta: Core2Metadata
+    userName: str
+    name: Optional[Name]
+    displayName: Optional[str]
+    nickName: Optional[str]
+    profileUrl: Optional[str]
+    title: Optional[str]
+    userType: Optional[UserTypeEnum]
+    preferredLanguage: Optional[str]
+    locale: Optional[str]
+    timezone: Optional[str]
+    active: Optional[bool]
+    password: Optional[bool]
+    ######################## multi-valued attributes ############
+    emails: Optional[List[ElectroicMailAddress]]
+    phoneNumbers: Optional[List[PhoneNumber]]
+    ims: Optional[List[InstantMessaging]]
+    photos: Optional[List[Photo]]
+    address: Optional[List[Address]]
+    groups: Optional[List[UserGroup]]
+    # TODO entitlements,
+    roles: Optional[List[Role]]
+    # TODO x509Certificates
+    meta: Optional[Core2Metadata]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_schema(SchemaIdentifiers.Core2User)
+        self.meta = Core2Metadata(resourceType=Types.User)
+        # self._custom_extension = {}
 
     # @property
     # def active(self):

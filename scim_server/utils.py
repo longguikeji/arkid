@@ -9,8 +9,8 @@ from scim_server.schemas.name import Name
 from scim_server.schemas.phone_number import PhoneNumber
 from scim_server.schemas.role import Role
 from scim_server.schemas.schema_identifiers import SchemaIdentifiers
-from scim_server.schemas.extension_attribute_enterprise_user2 import (
-    ExtensionAttributeEnterpriseUser2,
+from scim_server.schemas.extension_attribute_enterprise_user import (
+    ExtensionAttributeEnterpriseUser,
 )
 from scim_server.schemas.manager import Manager
 
@@ -23,14 +23,14 @@ def compose_enterprise_extension(user, scim_path, value):
     if user.enterprise_extension:
         extension = user.enterprise_extension
     else:
-        extension = ExtensionAttributeEnterpriseUser2()
+        extension = ExtensionAttributeEnterpriseUser()
         user.enterprise_extension = extension
     if scim_path.attribute_path == 'manager':
         compose_manager(user, scim_path, value)
     elif scim_path.attribute_path == 'employeeNumber':
-        extension.employee_number = value
+        extension.employeeNumber = value
     elif scim_path.attribute_path == 'costCenter':
-        extension.cost_center = value
+        extension.costCenter = value
     elif scim_path.attribute_path == 'organization':
         extension.organization = value
     elif scim_path.attribute_path == 'division':
@@ -46,36 +46,36 @@ def compose_manager(user, scim_path, value):
     if not extension.manager:
         extension.manager = Manager()
     if scim_path.value_path.attribute_path == 'displayName':
-        extension.manager.display_name = value
+        extension.manager.displayName = value
     elif scim_path.value_path.attribute_path == 'value':
         extension.manager.value = value
 
 
 def compose_core2_user(user, scim_path, value):
     if scim_path.attribute_path == 'id':
-        user.identifier = value
+        user.id = value
     elif scim_path.attribute_path == 'active':
         user.active = bool(value)
     elif scim_path.attribute_path == 'addresses':
         compose_addresses(user, scim_path, value)
     elif scim_path.attribute_path == 'displayName':
-        user.display_name = value
+        user.displayName = value
     elif scim_path.attribute_path == 'emails':
         compose_emails(user, scim_path, value)
     elif scim_path.attribute_path == 'externalId':
-        user.external_identifier = value
+        user.externalId = value
     elif scim_path.attribute_path == 'name':
         compose_name(user, scim_path, value)
     elif scim_path.attribute_path == 'phoneNumbers':
         compose_phone_numbers(user, scim_path, value)
     elif scim_path.attribute_path == 'preferredLanguage':
-        user.preferred_language = value
+        user.preferredLanguage = value
     elif scim_path.attribute_path == 'roles':
         compose_roles(user, scim_path, value)
     elif scim_path.attribute_path == 'title':
         user.title = value
     elif scim_path.attribute_path == 'userName':
-        user.user_name = value
+        user.userName = value
 
 
 def compose_roles(user, scim_path, value):
@@ -87,7 +87,7 @@ def compose_roles(user, scim_path, value):
     if sub_attribute.attribute_path != 'type':
         return
     role = Role()
-    role.item_type = sub_attribute.comparison_value
+    role.type = sub_attribute.comparison_value
     role.value = value
     if user.roles:
         user.roles.append(role)
@@ -106,7 +106,7 @@ def compose_phone_numbers(user, scim_path, value):
     if sub_attribute.comparison_value not in ['fax', 'work', 'mobile']:
         return
     phone = PhoneNumber()
-    phone.item_type = sub_attribute.comparison_value
+    phone.type = sub_attribute.comparison_value
     phone.value = value
     if user.phone_numbers:
         user.phone_numbers.append(phone)
@@ -124,9 +124,9 @@ def compose_name(user, scim_path, value):
         name = Name()
         user.name = name
     if scim_path.value_path.attribute_path == 'familyName':
-        name.family_name = value
+        name.familyName = value
     elif scim_path.value_path.attribute_path == 'givenName':
-        name.given_name = value
+        name.givenName = value
     elif scim_path.value_path.attribute_path == 'formatted':
         name.formatted = value
 
@@ -140,7 +140,7 @@ def compose_emails(user, scim_path, value):
     if sub_attribute.attribute_path != 'type':
         return
     email = ElectroicMailAddress()
-    email.item_type = sub_attribute.comparison_value
+    email.type = sub_attribute.comparison_value
     email.value = value
     if user.electronic_mail_addresses:
         user.electronic_mail_addresses.append(email)
@@ -157,17 +157,17 @@ def compose_addresses(user, scim_path, value):
     if sub_attribute.attribute_path != 'type':
         return
     address = Address()
-    address.item_type = sub_attribute.comparison_value
+    address.type = sub_attribute.comparison_value
     if scim_path.value_path.attribute_path == AttributeNames.Country:
         address.country = value
     if scim_path.value_path.attribute_path == AttributeNames.Locality:
-        address.Locality = value
+        address.locality = value
     if scim_path.value_path.attribute_path == AttributeNames.PostalCode:
-        address.postal_code = value
+        address.postalCode = value
     if scim_path.value_path.attribute_path == AttributeNames.Region:
         address.region = value
     if scim_path.value_path.attribute_path == AttributeNames.StreetAddress:
-        address.street_address = value
+        address.streetAddress = value
     if scim_path.value_path.attribute_path == AttributeNames.Formatted:
         address.formatted = value
     if user.addresses:
@@ -178,13 +178,15 @@ def compose_addresses(user, scim_path, value):
 
 def compose_core2_group(group, scim_path, value):
     if scim_path.attribute_path == 'id':
-        group.identifier = value
+        group.id = value
     elif scim_path.attribute_path == 'displayName':
-        group.display_name = value
+        group.displayName = value
 
 
 def compose_core2_group_member(member, scim_path, value):
-    if scim_path.attribute_path == 'id':
+    if scim_path.attribute_path == 'value':
         member.value = value
-    elif scim_path.attribute_path == 'displayName':
-        member.display = value
+    elif scim_path.attribute_path == 'type':
+        member.type = value
+    elif scim_path.attribute_path == 'ref':
+        member.ref = value

@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-from scim_server.schemas.attribute_names import AttributeNames
+from pydantic import BaseModel, HttpUrl
+from datetime import datetime
+from typing import Optional
 
 
-class Core2Metadata:
-    resource_type: str
+class Core2Metadata(BaseModel):
+    resourceType: str
+    created: Optional[datetime] 
+    lastModified: Optional[datetime]
+    location: Optional[HttpUrl]
+    version: Optional[str]
 
     # @property
     # def resource_type(self):

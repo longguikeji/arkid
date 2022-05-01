@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 from scim_server.schemas.schematized import Schematized
 from scim_server.schemas.attribute_names import AttributeNames
-
+from typing import Optional
 
 class Resource(Schematized):
-    external_identifier: str
-    identifier = str
+    id:Optional[str] = None
+    externalId: Optional[str] = None
 
-    def __init__(self):
-        super().__init__()
+    # def __init__(self):
+    #     super().__init__()
 
     # @property
     # def external_identifier(self):
