@@ -22,6 +22,8 @@ mkdocstrings = "*"
 mkdocs = "*"
 mkdocs-material = "*"
 pyjwt = "*"
+django-celery-beat = "*"
+alibabacloud-dysmsapi20170525 = "*"
 
 [requires]
 python_version = "3.8"
