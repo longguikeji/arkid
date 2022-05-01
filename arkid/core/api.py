@@ -8,7 +8,7 @@ from ninja.security import HttpBearer
 from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
 from arkid.core.event import register_event, dispatch_event, Event, EventDisruptionData
-from arkid.core.models import ExpiringToken
+from arkid.core.models import ExpiringToken, ApiPermission
 
 
 def add_fields(cls, **field_definitions: Any):
@@ -75,9 +75,19 @@ class GlobalAuth(HttpBearer):
             if not token.user.is_active:
                 raise Exception(_('User inactive or deleted','用户无效或被删除'))
 
-            if token.expired():
+            if token.expired(request.tenant):
                 raise Exception(_('Token has expired','秘钥已经过期'))
-                
+
+            operation_id = request.operation_id
+            if operation_id:
+                # 权限鉴定
+                apipermission = ApiPermission.valid_objects.filter(
+                    operation_id=operation_id
+                ).first()
+                if apipermission:
+                    print('存在api权限')
+                else:
+                    print('不存在api权限')
         except ExpiringToken.DoesNotExist:
             logger.error(_("Invalid token","无效的秘钥"))
             return

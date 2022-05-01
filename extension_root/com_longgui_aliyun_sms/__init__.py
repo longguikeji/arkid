@@ -48,18 +48,22 @@ class AliyunSMSExtension(Extension):
         config_id = event.data.config_id
         template_params = event.data.template_params
         phone_number = event.data.phone_number
+        
+        settings = self.get_tenant_settings(tenant)
+        settings = SimpleNamespace(**settings.settings)
+        
         config = self.get_config_by_id(config_id).config
         config = SimpleNamespace(**config)
 
         aliyun_config = models.Config(
             # 您的AccessKey ID,
-            access_key_id=config.access_key_id,
+            access_key_id=settings.access_key_id,
             # 您的AccessKey Secret,
-            access_key_secret=config.access_key_secret,
+            access_key_secret=settings.access_key_secret,
             # 地域ID
-            region_id=config.region_id or None,
+            region_id=settings.region_id or None,
             # 访问的域名
-            endpoint=config.endpoint or None,
+            endpoint=settings.endpoint or None,
         )
 
         client = Client(aliyun_config)

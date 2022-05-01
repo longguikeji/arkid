@@ -13,7 +13,7 @@ class TranslationZhExtension(extension.Extension):
         super().load()
         
         self.register_languge(
-            'zh-hans',
+            '简体中文',
             {"data":"数据"}
         )
     

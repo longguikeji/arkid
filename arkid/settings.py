@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'oauth2_provider',
     'arkid.core',
     'arkid.extension',
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -138,6 +140,11 @@ CONFIG_LOCAL_FILE = 'arkid.local.toml'
 # 默认分页条数
 NINJA_PAGINATION_PER_PAGE = 20
 
+# Celery settings
+CELERY_BROKER = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_TIMEZONE = 'Asia/Shanghai'
+
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, "settings_local.py")):
     exec(open(os.path.join(BASE_DIR, "settings_local.py")).read())
@@ -165,3 +172,18 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 # CELERY_TASK_SERIALIZER = 'json'
 CELERY_BROKER_TRANSPORT_OPTIONS = {'max_retries': 0}
+
+X_FRAME_OPTIONS = 'ALLOWALL'
+
+# CORS
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = (
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+)

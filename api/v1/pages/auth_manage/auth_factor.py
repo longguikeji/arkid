@@ -1,67 +1,54 @@
-# 认证因素
-from arkid.core import routers, pages
+from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
-auth_factor_tag = 'auth_factor'
-auth_factor_name = '认证因素'
+tag = 'auth_factor'
+name = '认证因素'
 
 
-page = pages.TablePage(
-    tag=auth_factor_tag,
-    name=auth_factor_name,
-    init_action=pages.FrontAction(
-        path='/api/v1/tenant/{tenant_id}/auth_factor/',
-        method=pages.FrontActionMethod.GET
-    )
-)
+page = pages.TablePage(tag=tag, name=name)
+edit_page = pages.FormPage(name=_("编辑认证因素"))
 
-create_page = pages.FormPage(
-    name=_("创建一个新的认证因素"),
-    init_action=pages.FrontAction(
-        path='/api/v1/tenant/{tenant_id}/auth_factor/',
-        method=pages.FrontActionMethod.POST
-    )
-)
 
-create_page.add_global_action(
-    [
-        pages.FrontAction(
-            method=pages.FrontActionMethod.POST,
-            name=_("确认"),
-            path="/api/v1/tenant/{tenant_id}/auth_factor/",
-            action_type=pages.FrontActionType.DIRECT_ACTION,
-            icon="icon-confirm"
-        ),
-        pages.FrontAction(
-            name=_("取消"),
-            action_type=pages.FrontActionType.CANCEL_ACTION,
-            icon="icon-cancel"
-        ),
-        pages.FrontAction(
-            name=_("重置"),
-            action_type=pages.FrontActionType.RESET_ACTION,
-            icon="icon-reset"
-        ),
-    ]
-)
-
-page.add_global_action(
-    [
-        pages.FrontAction(
-            name="创建",
-            page=create_page,
-            icon="icon-create",
-            action_type=pages.FrontActionType.OPEN_ACTION
-        )
-    ]
-)
+pages.register_front_pages(page)
+pages.register_front_pages(edit_page)
 
 
 router = routers.FrontRouter(
-    path=auth_factor_tag,
-    name=auth_factor_name,
+    path=tag,
+    name=name,
     page=page,
 )
 
-pages.register_front_pages(page)
-pages.register_front_pages(create_page)
+page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/auth_factors/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    global_actions={
+        'create': actions.CreateAction(
+            path='/api/v1/tenant/{tenant_id}/auth_factors/',
+        )
+    },
+    local_actions=[
+        actions.EditAction(
+            page=edit_page,
+        ),
+        actions.DeleteAction(
+            path="/api/v1/tenant/{tenant_id}/auth_factors/{id}/",
+        )
+    ],
+)
+
+edit_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/auth_factors/{id}/',
+        method=actions.FrontActionMethod.GET
+    ),
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/auth_factors/{id}/"
+        ),
+    }
+)
+
+

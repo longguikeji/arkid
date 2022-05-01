@@ -52,13 +52,15 @@ def get_extension_profile(request, extension_id: str):
     extension = ExtensionModel.objects.filter(id=extension_id).first()
     return extension
 
-# @api.get("/extensions", response=List[ExtensionOut])
-# def list_extensions(request, status: str = None):
-#     if not status:
-#         qs = Extension.active_objects.filter(user=request.user)
-#     else:
-#         qs = Extension.active_objects.filter(user=request.user, status=status)
-#     return qs
+@api.get("/extensions/", tags=['平台插件'])
+def list_extensions(request, status: str = None):
+    """ 获取平台插件列表 TODO
+    """
+    if not status:
+        qs = Extension.active_objects.filter(user=request.user)
+    else:
+        qs = Extension.active_objects.filter(user=request.user, status=status)
+    return qs
 
 
 # @operation(roles=["tenant-user", "platform-user"])
@@ -96,8 +98,20 @@ def get_extension_profile(request, extension_id: str):
 #     return {"success": True}
 
 
-# @api.delete("/extensions/{extension_id}")
-# def delete_extension(request, extension_id: str):
-#     extension = get_object_or_404(Extension, uuid=extension_id)
-#     extension.delete()
-#     return {"success": True}
+@api.delete("/extensions/{id}/",tags=['平台插件'])
+def delete_extension(request, id: str):
+    """ 删除平台插件 TODO
+    """
+    return {"success": True}
+
+@api.post("/extensions/{id}/",tags=['平台插件'])
+def update_extension(request, id: str):
+    """ 更新平台插件 TODO
+    """
+    return {"success": True}
+
+@api.get("/extensions/{id}/",tags=['平台插件'])
+def get_extension(request, id: str):
+    """ 获取平台插件信息 TODO
+    """
+    return {"success": True}
