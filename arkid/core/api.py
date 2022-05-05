@@ -151,21 +151,21 @@ def operation(respnose_model=None, use_id=False, roles: Optional[List[str]] = No
             return response
         func.__name__ = old_view_func.__name__
         func.__module__ = old_view_func.__module__
+        if roles:
+            kwargs.update(roles=roles)
+            setattr(func, "arkid_extension", kwargs)
         operation.view_func = func
 
     def decorator(view_func):
-        # old_ninja_contribute_to_operation = getattr(view_func, '_ninja_contribute_to_operation', None)
-        # def ninja_contribute_to_operation(operation):
-        #     if old_ninja_contribute_to_operation:
-        #         old_ninja_contribute_to_operation(operation)
-        #     replace_view_func(operation)
+        old_ninja_contribute_to_operation = getattr(view_func, '_ninja_contribute_to_operation', None)
+        def ninja_contribute_to_operation(operation):
+            if old_ninja_contribute_to_operation:
+                old_ninja_contribute_to_operation(operation)
+            replace_view_func(operation)
             
-        # view_func._ninja_contribute_to_operation = partial(
-        #     ninja_contribute_to_operation
-        # )
-        if roles:
-            kwargs.update(roles=roles)
-            setattr(view_func, "arkid_extension", kwargs)
+        view_func._ninja_contribute_to_operation = partial(
+            ninja_contribute_to_operation
+        )
         return view_func
 
     return decorator
