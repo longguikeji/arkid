@@ -1,10 +1,11 @@
 import uuid
 import functools
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from pydantic.fields import ModelField
 from arkid.core.translation import gettext_default as _
 from ninja import NinjaAPI, Schema
 from ninja.security import HttpBearer
+from ninja.openapi.schema import OpenAPISchema
 from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
 from arkid.core.event import register_event, dispatch_event, Event, EventDisruptionData
@@ -112,7 +113,7 @@ api = ArkidApi(auth=GlobalAuth())
 api.get_openapi_schema = functools.partial(get_openapi_schema, api)
 
 
-def operation(respnose_model, use_id=False):
+def operation(respnose_model=None, use_id=False, roles: Optional[List[str]] = None, **kwargs):
     from functools import partial
 
     class ApiEventData(Schema):
@@ -153,15 +154,18 @@ def operation(respnose_model, use_id=False):
         operation.view_func = func
 
     def decorator(view_func):
-        old_ninja_contribute_to_operation = getattr(view_func, '_ninja_contribute_to_operation', None)
-        def ninja_contribute_to_operation(operation):
-            if old_ninja_contribute_to_operation:
-                old_ninja_contribute_to_operation(operation)
-            replace_view_func(operation)
+        # old_ninja_contribute_to_operation = getattr(view_func, '_ninja_contribute_to_operation', None)
+        # def ninja_contribute_to_operation(operation):
+        #     if old_ninja_contribute_to_operation:
+        #         old_ninja_contribute_to_operation(operation)
+        #     replace_view_func(operation)
             
-        view_func._ninja_contribute_to_operation = partial(
-            ninja_contribute_to_operation
-        )
+        # view_func._ninja_contribute_to_operation = partial(
+        #     ninja_contribute_to_operation
+        # )
+        if roles:
+            kwargs.update(roles=roles)
+            setattr(view_func, "arkid_extension", kwargs)
         return view_func
 
     return decorator
