@@ -1,21 +1,21 @@
-from arkid.core import routers, pages
+from arkid.core import routers, pages, actions
 
-app_list_tag = 'mine_app_list'
-app_list_name = '应用市集'
+tag = 'mine_app_list'
+name = '应用市集'
 
-page = pages.CardsPage(
-    tag = app_list_tag, 
-    name = app_list_name,
-    init_action=pages.FrontAction(
-        path = '/api/v1/tenant/{tenant_id}/mine/apps/',
-        method = pages.FrontActionMethod.GET
-    )
-)
+page = pages.CardsPage(tag = tag, name = name)
+
+pages.register_front_pages(page)
 
 router = routers.FrontRouter(
-    path=app_list_tag,
-    name=app_list_name,
+    path=tag,
+    name=name,
     page=page
 )
 
-pages.register_front_pages(page)
+page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/mine/tenant/{tenant_id}/apps/',
+        method=actions.FrontActionMethod.GET,
+    )
+)

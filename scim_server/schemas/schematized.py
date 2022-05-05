@@ -7,14 +7,14 @@ from typing import List
 
 
 class Schematized(BaseModel):
-    schemas: List[str]
+    schemas: List[str] = []
 
-    def __init__(self):
-        self._schemas = []
+    # def __init__(self):
+    #     self._schemas = []
 
     def add_schema(self, schema_identifier):
-        if schema_identifier not in self._schemas:
-            self._schemas.append(schema_identifier)
+        if schema_identifier not in self.schemas:
+            self.schemas.append(schema_identifier)
 
     def is_schema(self, schema):
         if not schema:

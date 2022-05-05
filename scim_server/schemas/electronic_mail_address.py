@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
-from scim_server.schemas.electronic_mail_address_base import ElectroicMailAddressBase
+from enum import Enum
+from .typed_value import TypedValue
 
-
-class ElectroicMailAddress(ElectroicMailAddressBase):
-    pass
+class TypeEnum(str, Enum):
+    home = "home"
+    other = 'other'
+    work = 'work'
+class ElectroicMailAddress(TypedValue):
+    type: TypeEnum 

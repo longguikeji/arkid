@@ -2,6 +2,7 @@ import re
 from copy import deepcopy
 from functools import reduce
 from typing import Dict, List
+from uuid import uuid4
 
 
 def deep_merge(*dicts: List[Dict], update=False) -> Dict:
@@ -178,3 +179,20 @@ def get_request_tenant(request):
         # 能够注册平台用户了
         tenant = Tenant.active_objects.filter(id=1).first()
     return tenant
+
+global_tags = []
+def gen_tag(tag: str = None, tag_pre: str = None) -> str:
+    """ 生成tag
+
+    Args:
+        tag (str, optional): tag字符串，可指定亦可动态生成. 
+        tag_pre (str, optional): tag前缀，一般可为插件名称或者其他. 
+
+    Returns:
+        str: tag字符串
+    """
+    tag = tag if tag else uuid4().hex
+    tag = f"{tag_pre}_{tag}" if tag_pre else tag
+    assert tag not in global_tags
+    global_tags.append(tag)
+    return tag

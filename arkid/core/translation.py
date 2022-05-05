@@ -5,8 +5,10 @@ lang_maps = {}
 
 default_lang_maps = {}
 
+default_lang_maps["简体中文"] = {}
+default_lang_maps["English"] = {}
 
-def gettext_default(id,msg=None,lang="zh-hans"):
+def gettext_default(id,msg=None,lang="简体中文"):
     if not msg:
         msg = id
     

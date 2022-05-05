@@ -19,26 +19,26 @@ class InMemoryUserProvider(ProviderBase):
         self.storage = Instance
 
     def create_async2(self, resource, correlation_identifier):
-        if resource.identifier is not None:
+        if resource.id is not None:
             raise BadRequestException()
 
-        if not resource.user_name:
+        if not resource.userName:
             raise BadRequestException()
 
         existing_users = self.storage.users.values()
         for item in existing_users:
-            if item.user_name == resource.user_name:
+            if item.userName == resource.userName:
                 raise ConflictException()
         resource_identifier = uuid.uuid4().hex
-        resource.identifier = resource_identifier
+        resource.id = resource_identifier
         self.storage.users[resource_identifier] = resource
 
-        return resource
+        return resource.dict()
 
     def delete_async2(self, resource_identifier, correlation_identifier):
         if not resource_identifier.identifier:
             raise BadRequestException()
-        identifier = resource_identifier.identifier
+        identifier = resource_identifier.id
 
         if identifier in self.storage.users:
             del self.storage.users[identifier]
@@ -48,7 +48,7 @@ class InMemoryUserProvider(ProviderBase):
             raise ArgumentNullException('parameters')
         if not correlation_identifier:
             raise ArgumentNullException('correlation_identifier')
-        if  parameters.alternate_filters is None:
+        if parameters.alternate_filters is None:
             raise ArgumentException('Invalid parameters')
 
         if not parameters.schema_identifier:
@@ -56,7 +56,7 @@ class InMemoryUserProvider(ProviderBase):
 
         if not parameters.alternate_filters:
             all_users = self.storage.users.values()
-            return all_users
+            return list(all_users)
 
         query_filter = parameters.alternate_filters[0]
         if not query_filter.attribute_path:
@@ -102,7 +102,7 @@ class InMemoryUserProvider(ProviderBase):
         for item in existing_users:
             if item.user_name == resource.user_name:
                 raise ConflictException()
-        if resource.identifier not in self.storage.users:
+        if resource.id not in self.storage.users:
             raise NotFoundException()
 
         self.storage.users[resource.identifier] = resource
