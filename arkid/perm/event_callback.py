@@ -21,7 +21,7 @@ class EventCall(object):
         core_event.listen_event(DELETE_APP, self.delete_app)
 
     def login(self, event, **kwargs):
-        from arkid.tasks.tasks import update_permission
+        from arkid.core.tasks.tasks import update_permission
         update_permission.delay()
 
 
