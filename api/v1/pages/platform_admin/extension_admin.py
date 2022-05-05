@@ -29,15 +29,15 @@ page.create_actions(
             path='/api/v1/extensions/',
         )
     },
-    local_actions=[
+    local_actions={
         # 加载/卸载 插件 TODO
-        actions.EditAction(
+        "edit": actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        "delete": actions.DeleteAction(
             path="/api/v1/extensions/{id}/",
         )
-    ],
+    },
 )
 
 edit_page.create_actions(

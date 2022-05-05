@@ -32,14 +32,14 @@ page.create_actions(
             path='/api/v1/tenant/{tenant_id}/app_groups/'
         )
     },
-    local_actions=[
-        actions.EditAction(
+    local_actions={
+        "edit": actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/app_groups/{id}/",
         )
-    ],
+    },
     node_actions=[
         actions.CascadeAction(
             page=group_apps_page
@@ -58,12 +58,12 @@ group_apps_page.create_actions(
             page=edit_apps_page,
         )
     },
-    local_actions=[
-        actions.DeleteAction(
+    local_actions={
+        "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/app_groups/{app_group_id}/apps/{id}/",
             icon="icon-delete",
         )
-    ],
+    },
 )
 
 
