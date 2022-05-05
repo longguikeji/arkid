@@ -10,6 +10,7 @@ from arkid.core.models import UserGroup, User
 from django.shortcuts import get_object_or_404
 from arkid.core.event import Event, dispatch_event
 from arkid.core.event import CREATE_GROUP, UPDATE_GROUP, DELETE_GROUP
+from uuid import UUID
 
 
 class UserGroupListSchemaOut(ModelSchema):
@@ -33,6 +34,8 @@ class UserGroupSchemaIn(ModelSchema):
 
 
 class UserGroupDetailSchemaOut(ModelSchema):
+
+    parent_id: UUID = None
 
     class Config:
         model = UserGroup
