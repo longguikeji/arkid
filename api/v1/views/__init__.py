@@ -8,6 +8,7 @@ from . import (
     user,
     auth_fator,
     mine,
+    group,
     app_group,
     approve_action,
     auth_rules,
