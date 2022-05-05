@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 from scim_server.schemas.attribute_names import AttributeNames
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl, Field
+from typing import Optional
 
 
 class Manager(BaseModel):
-    value: str
-    display_name: str
+    value: Optional[str]
+    ref: Optional[HttpUrl] = Field(None, alias="$ref")
+    displayName: Optional[str]
     # @classmethod
     # def from_dict(cls, d):
     #     obj = cls()

@@ -435,16 +435,15 @@ class Extension(ABC):
     def get_config_by_id(self, id):
         return TenantExtensionConfig.valid_objects.get(id=id)
     
-    def update_tenant_config(self, id,  config, name):
-        return TenantExtensionConfig.valid_objects.filter(id=id).update(config=config, name=name)
+    def update_tenant_config(self, id,  config, name, type):
+        return TenantExtensionConfig.valid_objects.filter(id=id).update(config=config, name=name,type=type)
 
-    def create_tenant_config(self, tenant, config, name):
+    def create_tenant_config(self, tenant, config, name, type):
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
-        return TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config, name=name)
+        return TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config, name=name, type=type)
     
-    def delete_tenant_config(self, tenant, config):
-        ext = ExtensionModel.valid_objects.filter(package=self.package).first()
-        return TenantExtensionConfig.objects.delete(tenant=tenant, extension=ext, config=config)
+    def delete_tenant_config(self, id):
+        return TenantExtensionConfig.objects.delete(id=id)
 
 ################################################################################
 

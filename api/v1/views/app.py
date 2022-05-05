@@ -13,7 +13,10 @@ from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.extension.app_protocol import AppProtocolExtension
-from arkid.core.event import CREATE_APP, UPDATE_APP, DELETE_APP
+from arkid.core.event import(
+    CREATE_APP, UPDATE_APP, DELETE_APP,
+    CREATE_APP_DONE,
+)
 
 import uuid
 
@@ -63,7 +66,7 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
     for func, (result, extension) in results:
         if result:
             # 创建config
-            config = extension.create_tenant_config(tenant, data.config.dict())
+            config = extension.create_tenant_config(tenant, data.config.dict(), data.name)
             # 创建app
             app = App()
             app.id = data.id
@@ -76,6 +79,8 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
             app.config = config
             app.tenant_id = tenant_id
             app.save()
+            # 创建app完成进行事件分发
+            dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
             break
     return {"app_id": app.id.hex}
 

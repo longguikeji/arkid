@@ -91,12 +91,14 @@ def delete_extension_folder(extension) -> None:
 
 
 def import_extension(ext_dir: str) -> any:
+    logger.info(f"Importing  {ext_dir}")
     ext_name = str(ext_dir).replace('/','.')
-    from pip._internal import main
-    requirements = str(ext_dir)+'/'+'requirements.txt'
-    main(['install', '-r', requirements])
+    # from pip._internal import main
+    # requirements = str(ext_dir)+'/'+'requirements.txt'
+    # main(['install', '-r', requirements])
     
     ext = importlib.import_module(ext_name)
+    logger.info(f"Imported  {ext}")
     if ext and hasattr(ext, 'extension'):
         ext.extension.ext_dir = ext_dir
         logger.info(f'{ext_name} import success')

@@ -21,12 +21,12 @@ page.create_actions(
         path='/api/v1/tenant/{tenant_id}/user_log/',
         method=actions.FrontActionMethod.GET,
     ),
-    local_actions=[
-        actions.OpenAction(
+    local_actions={
+        "open": actions.OpenAction(
             name=_("查阅"),
             page=detail_page
         )
-    ]
+    }
 )
 
 detail_page.create_actions(

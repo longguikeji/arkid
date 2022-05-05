@@ -27,19 +27,19 @@ page.create_actions(
         path='/api/v1/tenant/{tenant_id}/app_groups/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.CreateAction(
+    global_actions={
+        'create':actions.CreateAction(
             path='/api/v1/tenant/{tenant_id}/app_groups/'
         )
-    ],
-    local_actions=[
-        actions.EditAction(
+    },
+    local_actions={
+        "edit": actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/app_groups/{id}/",
         )
-    ],
+    },
     node_actions=[
         actions.CascadeAction(
             page=group_apps_page
@@ -52,18 +52,18 @@ group_apps_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/app_groups/{app_group_id}/apps/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.OpenAction(
+    global_actions={
+        "update":actions.OpenAction(
             name=_("添加应用"),
             page=edit_apps_page,
         )
-    ],
-    local_actions=[
-        actions.DeleteAction(
+    },
+    local_actions={
+        "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/app_groups/{app_group_id}/apps/{id}/",
             icon="icon-delete",
         )
-    ],
+    },
 )
 
 
@@ -73,11 +73,11 @@ edit_apps_page.create_actions(
         method=actions.FrontActionMethod.GET,
     ),
     select=True,
-    global_actions=[
-        actions.ConfirmAction(
+    global_actions={
+       'confirm': actions.ConfirmAction(
             path="/tenant/{tenant_id}/app_groups/{app_group_id}/apps/"
         ),
-    ]
+    }
 )
 
 
@@ -86,8 +86,9 @@ edit_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/app_groups/{id}/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/app_groups/{id}/"),
-
-    ]
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/app_groups/{id}/"
+        ),
+    }
 )

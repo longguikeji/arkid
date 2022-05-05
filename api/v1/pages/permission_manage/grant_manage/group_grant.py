@@ -30,17 +30,17 @@ group_permission_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/',
         method=actions.FrontActionMethod.GET
     ),
-    local_actions=[
-        actions.DeleteAction(
+    local_actions={
+        "delete": actions.DeleteAction(
             path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/{id}/'
         )
-    ],
-    global_actions=[
-        actions.OpenAction(
-            name=_("添加用户分组权限"),
+    },
+    global_actions={
+        'open': actions.OpenAction(
+            name=("添加用户分组权限"),
             page=update_group_permission_page
         )
-    ]
+    }
 )
 
 update_group_permission_page.create_actions(
@@ -48,9 +48,9 @@ update_group_permission_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.ConfirmAction(
+    global_actions={
+        'confirm':actions.ConfirmAction(
             path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/',
         ),
-    ]
+    }
 )

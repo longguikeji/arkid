@@ -20,6 +20,7 @@ from . import (
     scim_sync,
     webhook,
     send_sms,
+    permission,
     tenant,
     account_life,
     app_protocol,

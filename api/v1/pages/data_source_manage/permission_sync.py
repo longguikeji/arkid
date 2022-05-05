@@ -24,24 +24,24 @@ page.create_actions(
         path='/api/v1/tenant/{tenant_id}/permission_syncs/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.CreateAction(
+    global_actions={
+        'create': actions.CreateAction(
             path='/api/v1/tenant/{tenant_id}/permission_syncs/',
         )
-    ],
-    local_actions=[
-        actions.DirectAction(
+    },
+    local_actions={
+        "direct": actions.DirectAction(
             name=_("同步"),
             method=actions.FrontActionMethod.GET,
             path="/api/v1/tenant/{tenant_id}/permission_syncs/{id}/sync/",
         ),
-        actions.EditAction(
+        "edit": actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/permission_syncs/{id}/",
         )
-    ],
+    },
 )
 
 edit_page.create_actions(
@@ -49,10 +49,11 @@ edit_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/permission_syncs/{id}/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/permission_syncs/{id}/"),
-
-    ]
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/permission_syncs/{id}/"
+        ),
+    }
 )
 
 

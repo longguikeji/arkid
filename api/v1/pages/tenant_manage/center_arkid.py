@@ -20,7 +20,9 @@ page.create_actions(
         path="/api/v1/tenant/{tenant_id}/center_arkid/",
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions = [
-        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/center_arkid/"),
-    ]
+    global_actions = {
+        "confirm": actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/center_arkid/"
+        ),
+    }
 )

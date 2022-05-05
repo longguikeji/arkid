@@ -35,10 +35,11 @@ platform_config_page.create_actions(
         path='/api/v1/platform_config/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.ConfirmAction(path="/api/v1/platform_config/"),
-
-    ]
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/platform_config/"
+        ),
+    }
 )
 
 tenant_list_page.create_actions(
@@ -46,19 +47,19 @@ tenant_list_page.create_actions(
         path='/api/v1/tenants/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.CreateAction(
+    global_actions={
+        'create': actions.CreateAction(
             path='/api/v1/tenants/',
         )
-    ],
-    local_actions=[
-        actions.EditAction(
+    },
+    local_actions={
+        "edit": actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        "delete":actions.DeleteAction(
             path="/api/v1/tenants/{id}/",
         )
-    ],
+    },
 )
 
 edit_page.create_actions(
@@ -66,10 +67,11 @@ edit_page.create_actions(
         path='/api/v1/tenants/{id}/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.ConfirmAction(path="/api/v1/tenants/{id}/"),
-
-    ]
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/tenants/{id}/"
+        ),
+    }
 )
 
 

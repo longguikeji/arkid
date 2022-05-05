@@ -24,19 +24,19 @@ page.create_actions(
         path='/api/v1/tenant/{tenant_id}/auth_factors/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.CreateAction(
+    global_actions={
+        'create': actions.CreateAction(
             path='/api/v1/tenant/{tenant_id}/auth_factors/',
         )
-    ],
-    local_actions=[
-        actions.EditAction(
+    },
+    local_actions={
+        "edit": actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/auth_factors/{id}/",
         )
-    ],
+    },
 )
 
 edit_page.create_actions(
@@ -44,10 +44,11 @@ edit_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/auth_factors/{id}/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/auth_factors/{id}/"),
-
-    ]
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/auth_factors/{id}/"
+        ),
+    }
 )
 
 

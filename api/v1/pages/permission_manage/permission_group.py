@@ -29,19 +29,19 @@ page.create_actions(
         path='/api/v1/tenant/{tenant_id}/permission_groups/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.CreateAction(
+    global_actions={
+        'create': actions.CreateAction(
             path='/api/v1/tenant/{tenant_id}/permission_groups/',
         )
-    ],
-    local_actions=[
-        actions.EditAction(
+    },
+    local_actions={
+        "edit": actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/permission_groups/{id}/",
         )
-    ],
+    },
     node_actions=[
         actions.CascadeAction(
             page=group_permissions_page
@@ -54,18 +54,18 @@ group_permissions_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.OpenAction(
+    global_actions={
+        "update":actions.OpenAction(
             name=_("添加权限"),
             page=edit_permissions_page,
         )
-    ],
-    local_actions=[
-        actions.DeleteAction(
+    },
+    local_actions={
+        "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/{id}/",
             icon="icon-delete",
         )
-    ],
+    },
 )
 
 
@@ -75,11 +75,11 @@ edit_permissions_page.create_actions(
         method=actions.FrontActionMethod.GET,
     ),
     select=True,
-    global_actions=[
-        actions.ConfirmAction(
+    global_actions={
+       'confirm': actions.ConfirmAction(
             path="/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/"
         ),
-    ]
+    }
 )
 
 
@@ -88,10 +88,11 @@ edit_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/permission_groups/{id}/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/permission_groups/{id}/"),
-
-    ]
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/permission_groups/{id}/"
+        ),
+    }
 )
 
 
