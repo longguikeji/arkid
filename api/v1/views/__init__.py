@@ -17,4 +17,5 @@ from . import (
     permission_sync,
     scim_sync,
     send_sms,
+    permission,
 )
