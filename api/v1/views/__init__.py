@@ -15,14 +15,10 @@ from . import (
     auto_auth,
     third_auth,
     permission_sync,
-<<<<<<< HEAD
-    scim_sync,
-=======
     permission_rule,
     permission,
     scim_sync,
     webhook,
->>>>>>> feature-138
     send_sms,
     tenant,
     account_life,
