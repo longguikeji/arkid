@@ -34,14 +34,14 @@ page.create_actions(
             path='/api/v1/tenant/{tenant_id}/user_groups/',
         )
     },
-    local_actions=[
-        actions.EditAction(
+    local_actions={
+        "edit": actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/user_groups/{id}/",
         )
-    ],
+    },
     node_actions=[
         actions.CascadeAction(
             page=group_users_page
@@ -60,12 +60,12 @@ group_users_page.create_actions(
             page=edit_users_page,
         )
     },
-    local_actions=[
-        actions.DeleteAction(
+    local_actions={
+        "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/users/{id}/",
             icon="icon-delete",
         )
-    ],
+    },
 )
 
 

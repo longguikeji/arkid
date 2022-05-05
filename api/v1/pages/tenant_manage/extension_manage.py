@@ -30,14 +30,14 @@ page.create_actions(
             path='/api/v1/tenant/{tenant_id}/extensions/',
         )
     },
-    local_actions=[
-        actions.EditAction(
+    local_actions={
+        "edit": actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/extensions/{id}/",
         )
-    ],
+    },
 )
 
 edit_page.create_actions(
