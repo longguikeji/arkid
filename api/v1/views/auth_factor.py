@@ -20,8 +20,8 @@ class AuthFatorSchemaOut(Schema):
     config_id: str
 
 @transaction.atomic
-@api.post("/{tenant_id}/auth_fators/", response=AuthFatorSchemaOut, tags=['认证因素'], auth=None)
-def create_auth_fator(request, tenant_id: str, data: AuthFatorSchemaIn):
+@api.post("/tenant/{tenant_id}/auth_factors/", response=AuthFatorSchemaOut, tags=['认证因素'], auth=None)
+def create_auth_factor(request, tenant_id: str, data: AuthFatorSchemaIn):
     config = TenantExtensionConfig()
     config.tenant = request.tenant
     config.extension = Extension.active_objects.get(package=data.package)
@@ -33,30 +33,29 @@ def create_auth_fator(request, tenant_id: str, data: AuthFatorSchemaIn):
 AuthFatorListSchemaItem = AuthFactorExtension.create_composite_config_schema(
     'AuthFatorListSchemaItem',
 )
-class AuthFatorListSchemaOut(Schema):
-    data: List[AuthFatorListSchemaItem]
 
-@api.get("/{tenant_id}/auth_fators/", response=AuthFatorListSchemaOut, tags=['认证因素'], auth=None)
-def get_auth_fator_list(request, tenant_id: str):
+
+@api.get("/tenant/{tenant_id}/auth_factors/", response=List[AuthFatorListSchemaItem], tags=['认证因素'], auth=None)
+def get_auth_factor_list(request, tenant_id: str):
     extensions = Extension.active_objects.filter(type=AuthFactorExtension.TYPE).all()
-    configs = TenantExtensionConfig.active_objects.filter(extension__in=extensions)
-    return {"data": configs}
+    configs = TenantExtensionConfig.active_objects.filter(extension__in=extensions).all()
+    return configs
 
-@api.get("/tenant/{tenant_id}/auth_fators/{id}/", tags=["认证因素"],auth=None)
-def get_auth_fator(request, tenant_id: str, id: str):
+@api.get("/tenant/{tenant_id}/auth_factors/{id}/", tags=["认证因素"],auth=None)
+def get_auth_factor(request, tenant_id: str, id: str):
     """ 获取认证因素,TODO
     """
     return {}
 
 
-@api.put("/tenant/{tenant_id}/auth_fators/{id}/", tags=["认证因素"],auth=None)
-def update_auth_fator(request, tenant_id: str, id: str):
+@api.put("/tenant/{tenant_id}/auth_factors/{id}/", tags=["认证因素"],auth=None)
+def update_auth_factor(request, tenant_id: str, id: str):
     """ 编辑认证因素,TODO
     """
     return {}
 
-@api.delete("/tenant/{tenant_id}/auth_fators/{id}/", tags=["认证因素"],auth=None)
-def delete_auth_fator(request, tenant_id: str, id: str):
+@api.delete("/tenant/{tenant_id}/auth_factors/{id}/", tags=["认证因素"],auth=None)
+def delete_auth_factor(request, tenant_id: str, id: str):
     """ 删除认证因素,TODO
     """
     return {}
