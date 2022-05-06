@@ -16,6 +16,7 @@ class CoreConfig(AppConfig):
                 tenant=tenant,
             )
             tenant.users.add(user)
-            tenant.save()
+            tenant.save() 
+            # api的权限往 system permission 写
         except:
             pass

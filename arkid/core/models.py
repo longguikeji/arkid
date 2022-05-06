@@ -82,6 +82,9 @@ class UserGroup(BaseModel, ExpandModel):
         related_query_name="user",
         verbose_name=_('User List','用户列表')
     )
+    permission = models.ForeignKey(
+        'SystemPermission', blank=True, null=True, default=None,on_delete=models.PROTECT
+    )
 
     scim_external_id = models.CharField(max_length=128, blank=True, null=True)
     def __str__(self) -> str:
@@ -175,14 +178,7 @@ class PermissionAbstract(BaseModel, ExpandModel):
         on_delete=models.PROTECT,
         verbose_name=_('Tenant','租户')
     )
-    app = models.ForeignKey(
-        App,
-        models.PROTECT,
-        default=None,
-        null=True,
-        blank=True,
-        verbose_name=_('APP','应用')
-    )
+    
     category = models.CharField(
         choices=CATEGORY_CHOICES,
         default="other",
@@ -193,9 +189,40 @@ class PermissionAbstract(BaseModel, ExpandModel):
         default=True,
         verbose_name=_('System Permission','是否是系统权限')
     )
+    operation_id = models.CharField(verbose_name=_('Operation ID','操作id'), max_length=255, blank=True, null=True, default='')
+    describe = models.JSONField(blank=True, default=dict, verbose_name=_('describe', '描述'))
 
     def __str__(self):
         return '%s' % (self.name)
+
+
+class SystemPermission(PermissionAbstract):
+
+    class Meta(object):
+        verbose_name = _('SystemPermission', '系统权限')
+        verbose_name_plural = _('SystemPermission', '系统权限')
+
+    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=0, auto_created=True)
+
+    container = models.ManyToManyField(
+        'SystemPermission',
+        blank=True,
+        related_name="system_permission_set",
+        related_query_name="system_permission",
+        verbose_name=_('SystemPermission List','包含的系统权限')
+    )
+    parent = models.ForeignKey(
+        'SystemPermission',
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name='children',
+        verbose_name=_('Parent', '父权限分组')
+    )
+
+    @property
+    def children(self):
+        return SystemPermission.valid_objects.filter(parent=self).order_by('id')
 
 
 class Permission(PermissionAbstract):
@@ -204,6 +231,14 @@ class Permission(PermissionAbstract):
         verbose_name = _("Permission", "权限")
         verbose_name_plural = _("Permission", "权限")
 
+    app = models.ForeignKey(
+        App,
+        models.PROTECT,
+        default=None,
+        null=True,
+        blank=True,
+        verbose_name=_('APP','应用')
+    )
     parent = models.ForeignKey(
         'Permission',
         null=True,
@@ -212,7 +247,7 @@ class Permission(PermissionAbstract):
         related_name='children',
         verbose_name=_('Parent', '父权限分组')
     )
-    permissions = models.ManyToManyField(
+    container = models.ManyToManyField(
         'Permission',
         blank=True,
         related_name="permission_set",
@@ -228,39 +263,35 @@ class Permission(PermissionAbstract):
         return Permission.valid_objects.filter(parent=self).order_by('id')
 
 
-class ApiPermission(PermissionAbstract):
+class API(BaseModel):
 
     class Meta(object):
-        verbose_name = _('ApiPermission', '接口权限')
-        verbose_name_plural = _('ApiPermission', '接口权限')
+        verbose_name = _('API', '接口')
+        verbose_name_plural = _('API', '接口')
 
+    permission = models.ForeignKey(Permission, on_delete=models.CASCADE, verbose_name='权限')
     operation_id = models.CharField((_('操作id')), blank=True, null=True, default='', max_length=256)
-    request_url = models.CharField((_('请求地址')), blank=True, null=True, default='', max_length=256)
-    request_type = models.CharField((_('请求方法')), blank=True, null=True, default='', max_length=256)
+    describe = models.JSONField(blank=True, default=dict, verbose_name=_('describe', '描述'))
     is_update = models.BooleanField(default=False, verbose_name='是否更新')
-    base_code = models.CharField((_('应用code')), blank=True, null=True, default='', max_length=256)
 
     def __str__(self) -> str:
-        return (f"{self.name}")
+        return (f"{self.operation_id}")
 
 
-class GroupPermission(PermissionAbstract):
+class UserPermissionResult(BaseModel, ExpandModel):
 
     class Meta(object):
-        verbose_name = _('GroupPermission', '分组权限')
-        verbose_name_plural = _('GroupPermission', '分组权限')
+        verbose_name = _("UserPermissionResult", "用户权限结果")
+        verbose_name_plural = _("UserPermissionResult", "用户权限结果")
 
-    group = models.ForeignKey(
-        'UserGroup',
-        default=None,
-        null=True,
-        blank=True,
-        on_delete=models.PROTECT,
-        verbose_name=_('UserGroup','分组')
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    app = models.ForeignKey(App, default=None, null=True, blank=True, on_delete=models.PROTECT, verbose_name='App')
+    result = models.CharField(max_length=1024, blank=True, null=True, verbose_name='权限结果')
+    is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
     def __str__(self) -> str:
-        return (f"{self.name}")
+        return f'User: {self.user.username}'
 
 
 class Approve(BaseModel, ExpandModel):
