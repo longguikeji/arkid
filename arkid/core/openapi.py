@@ -14,6 +14,7 @@ def get_openapi_schema(self, path_prefix: Optional[str] = None) -> OpenAPISchema
     schema["routers"] = routers.get_global_routers()
     schema["pages"] = pages.get_global_pages()
     # schema["navs"] = actions.get_nav_actions()
+    # 直接从system permission表里拿，拿出来去拼
     permissions = get_permissions(self)
     schema["permissions"] = permissions
     
