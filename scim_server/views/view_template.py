@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from cmath import log
 import json
 import logging
 from django.views.generic import View
@@ -55,7 +56,7 @@ class ViewTemplate(View):
                 resource_query.pagination_parameters,
                 correlation_identifier,
             )
-            d = result.to_dict()
+            d = result.dict()
             return JsonResponse(d)
 
     def delete(self, request, *args, **kwargs):
@@ -70,13 +71,13 @@ class ViewTemplate(View):
         body = request.body
         try:
             d = json.loads(body)
-            resource = self.model_cls.from_dict(d)
+            resource = self.model_cls(**d)
         except Exception as e:
+            logger.exception(e)
             raise BadRequestException()
 
         correlation_identifier = try_get_request_identifier()
         result = self.adapter_provider.create(request, resource, correlation_identifier)
-        d = result.to_dict()
         return JsonResponse(d, status=201)
 
     def put(self, request, *args, **kwargs):

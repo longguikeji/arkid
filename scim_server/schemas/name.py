@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 from scim_server.schemas.attribute_names import AttributeNames
 from pydantic import BaseModel
+from typing import Optional
 
 
 class Name(BaseModel):
-    formatted: str
-    familiy_name: str
-    given_name: str
-    honorific_prefix: str
-    honorific_suffix: str
+    formatted: Optional[str] = None
+    familiyName: Optional[str] = None
+    givenName: Optional[str] = None
+    honorificPrefix: Optional[str] = None
+    honorificSuffix: Optional[str] = None
 
     # @property
     # def formatted(self):

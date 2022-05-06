@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 
-from scim_server.schemas.extension_attribute_enterprise_user_base import (
-    ExtensionAttributeEnterpriseUserBase,
-)
 from scim_server.schemas.attribute_names import AttributeNames
 from scim_server.schemas.manager import Manager
+from typing import Optional
+from pydantic import BaseModel
 
-
-class ExtensionAttributeEnterpriseUser2(ExtensionAttributeEnterpriseUserBase):
-    manager: Manager
+class ExtensionAttributeEnterpriseUser(BaseModel):
+    employeeNumber: Optional[str]
+    costCenter: Optional[str]
+    organization: Optional[str]
+    division: Optional[str]
+    department: Optional[str]
+    manager: Optional[Manager]
     # @classmethod
     # def from_dict(cls, d):
     #     obj = super().from_dict(d)

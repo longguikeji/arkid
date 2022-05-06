@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 
 from celery import Celery
@@ -16,4 +18,5 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
 
-from arkid.tasks import tasks
+
+from arkid.core.tasks import tasks

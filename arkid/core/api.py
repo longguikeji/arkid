@@ -1,10 +1,11 @@
 import uuid
 import functools
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from pydantic.fields import ModelField
 from arkid.core.translation import gettext_default as _
 from ninja import NinjaAPI, Schema
 from ninja.security import HttpBearer
+from ninja.openapi.schema import OpenAPISchema
 from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
 from arkid.core.event import register_event, dispatch_event, Event, EventDisruptionData
@@ -112,7 +113,7 @@ api = ArkidApi(auth=GlobalAuth())
 api.get_openapi_schema = functools.partial(get_openapi_schema, api)
 
 
-def operation(respnose_model, use_id=False):
+def operation(respnose_model=None, use_id=False, roles: Optional[List[str]] = None, **kwargs):
     from functools import partial
 
     class ApiEventData(Schema):
@@ -150,6 +151,9 @@ def operation(respnose_model, use_id=False):
             return response
         func.__name__ = old_view_func.__name__
         func.__module__ = old_view_func.__module__
+        if roles:
+            kwargs.update(roles=roles)
+            setattr(func, "arkid_extension", kwargs)
         operation.view_func = func
 
     def decorator(view_func):

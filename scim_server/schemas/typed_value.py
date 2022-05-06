@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 from scim_server.schemas.typed_item import TypedItem
 from scim_server.schemas.attribute_names import AttributeNames
-
+from typing import Optional
 
 class TypedValue(TypedItem):
-    value: str
+    value: Optional[str]
     # @property
     # def value(self):
     #     if not hasattr(self, '_value'):

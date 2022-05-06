@@ -44,3 +44,4 @@ class TenantExtensionConfig(BaseModel):
     extension = models.ForeignKey('Extension', blank=False, on_delete=models.PROTECT, verbose_name=_('插件'))
     config = models.JSONField(blank=True, default=dict, verbose_name=_('Runtime Config','运行时配置'))
     name = models.CharField(max_length=128, default='', verbose_name=_('名称'))
+    type = models.CharField(max_length=128, default='', verbose_name=_('类型'))
