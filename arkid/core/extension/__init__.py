@@ -184,8 +184,8 @@ class Extension(ABC):
         return str(self.ext_dir).replace('/','.')
 
     def migrate_extension(self) -> None:
-        extension_migrate_foldname = Path(self.ext_dir) / 'migrations'
-        if not extension_migrate_foldname.exists():
+        extension_models = Path(self.ext_dir) / 'models.py'
+        if not extension_models.exists():
             return
         settings.INSTALLED_APPS += (self.full_name, )
         apps.app_configs = OrderedDict()
@@ -193,7 +193,8 @@ class Extension(ABC):
         apps.clear_cache()
         apps.populate(settings.INSTALLED_APPS)
 
-        # management.call_command('makemigrations', self.name, interactive=False)
+        print(f'Makemigrations {self.name}')
+        management.call_command('makemigrations', self.name, interactive=False)
         print(f'Migrate {self.name}')
         management.call_command('migrate', self.name, interactive=False)
 
