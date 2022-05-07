@@ -1,6 +1,3 @@
-from distutils import core
-import re
-from tabnanny import check
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.error import ErrorCode
 from arkid.core.models import User
@@ -84,7 +81,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if not check_sms_code(mobile, sms_code):
             data = {
                 'error': ErrorCode.SMS_CODE_MISMATCH.value,
-                'message': _("sms code mismatched","收集验证码错误")
+                'message': _("sms code mismatched","手机验证码错误")
             }
             return data
 
