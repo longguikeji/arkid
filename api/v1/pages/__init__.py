@@ -29,7 +29,7 @@ routers.register_front_routers(
         log_manage.router,
         mine.router,
         permission_manage.router,
-        platform_admin.router,
-        tenant_manage.router
+        tenant_manage.router,
+        platform_admin.router
     ]
 )

@@ -10,6 +10,7 @@ from arkid.extension.models import TenantExtensionConfig
 from django.views import View
 from django.urls import re_path
 from django.http.response import FileResponse
+from arkid.core.event import CREATE_FRONT_THEME_CONFIG
 
 class FrontThemeExtension(Extension):
     
@@ -26,7 +27,7 @@ class FrontThemeExtension(Extension):
         return FrontThemeExtension.TYPE
 
     def load(self):
-        self.listen_event()
+        self.listen_event(CREATE_FRONT_THEME_CONFIG, self.create_front_theme_config)
         super().load()
 
     def register_front_theme(self, type, schema, css_file):
