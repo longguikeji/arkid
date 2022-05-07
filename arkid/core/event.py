@@ -208,6 +208,9 @@ DELETE_GROUP = 'DELETE_GROUP'
 CREATE_PERMISSION = 'CREATE_PERMISSION'
 UPDATE_PERMISSION = 'UPDATE_PERMISSION'
 DELETE_PERMISSION = 'DELETE_PERMISSION'
+CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
+UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
+DELETE_FRONT_THEME_CONFIG = 'DELETE_FRONT_THEME_CONFIG'
 
 
 # register events
@@ -224,3 +227,6 @@ register_event(SEND_SMS, _('send sms','发送短信'))
 register_event(CREATE_PERMISSION, _('create permission','创建权限'))
 register_event(UPDATE_PERMISSION, _('update permission','修改权限'))
 register_event(DELETE_PERMISSION, _('delete permission','删除权限'))
+register_event(CREATE_FRONT_THEME_CONFIG, _('Create Theme','添加主题'))
+register_event(UPDATE_FRONT_THEME_CONFIG, _('Update Theme','修改主题'))
+register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme','删除主题'))
