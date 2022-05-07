@@ -54,7 +54,8 @@ def permission_task(app_temp, api_info):
       app=app_temp,
       category='api',
       is_system=True,
-      base_code=base_code)
+      base_code=base_code
+    )
     for old_permission in old_permissions:
         old_permission.is_update = False
         old_permission.save()
