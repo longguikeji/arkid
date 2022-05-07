@@ -26,20 +26,20 @@ page.create_actions(
         path='/api/v1/tenant/{tenant_id}/front_theme/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions=[
-        actions.CreateAction(
+    global_actions={
+        'create':actions.CreateAction(
             name='添加主题',
             path='/api/v1/tenant/{tenant_id}/front_theme/',
         )
-    ],
-    local_actions=[
-        actions.EditAction(
+    },
+    local_actions={
+        'edit':actions.EditAction(
             page=edit_page,
         ),
-        actions.DeleteAction(
+        'delete':actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/front_theme/{id}/",
         )
-    ],
+    },
 )
 
 edit_page.create_actions(
@@ -47,9 +47,9 @@ edit_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/front_theme/{id}/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions=[
-        actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/front_theme/{id}/"),
-    ]
+    global_actions={
+        'confirm':actions.ConfirmAction(path="/api/v1/tenant/{tenant_id}/front_theme/{id}/"),
+    }
 )
 
 
