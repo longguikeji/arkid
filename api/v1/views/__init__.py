@@ -1,4 +1,5 @@
 from . import (
+    auth_factor,
     loginpage, 
     auth, 
     register, 
@@ -6,7 +7,6 @@ from . import (
     extension,
     tenant_extension,
     user,
-    auth_fator,
     mine,
     user_group,
     app_group,
