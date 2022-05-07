@@ -8,7 +8,7 @@ from . import (
     user,
     auth_fator,
     mine,
-    group,
+    user_group,
     app_group,
     approve_action,
     auth_rules,
@@ -30,7 +30,6 @@ from . import (
     permission_group,
     platform_config,
     devices,
-    user_group,
     languape,
     log,
 )

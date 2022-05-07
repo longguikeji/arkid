@@ -2,7 +2,7 @@
 from ninja import Schema
 from ninja import Field
 from ninja import ModelSchema
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from typing import List, Optional
 from django.db import transaction
 from ninja.pagination import paginate
@@ -11,6 +11,7 @@ from arkid.core.models import Permission
 from django.shortcuts import get_object_or_404
 from arkid.core.event import Event, dispatch_event
 from arkid.core.event import CREATE_PERMISSION, UPDATE_PERMISSION, DELETE_PERMISSION
+from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from uuid import UUID
 
 import uuid
@@ -48,7 +49,8 @@ class PermissionDetailSchemaOut(ModelSchema):
 
 
 @transaction.atomic
-@api.post("/{tenant_id}/permissions", response=PermissionSchemaOut, tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permissions", response=PermissionSchemaOut, tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_permission(request, tenant_id: str, data: PermissionSchemaIn):
     '''
     权限创建
@@ -70,7 +72,8 @@ def create_permission(request, tenant_id: str, data: PermissionSchemaIn):
     return {"permission_id": permission.id.hex}
 
 
-@api.get("/{tenant_id}/permissions", response=List[PermissionListSchemaOut], tags=['权限'], auth=None)
+@api.get("/tenant/{tenant_id}/permissions", response=List[PermissionListSchemaOut], tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate
 def list_permissions(request, tenant_id: str,  parent_id: str = None):
     '''
@@ -84,7 +87,8 @@ def list_permissions(request, tenant_id: str,  parent_id: str = None):
     return permissions
 
 
-@api.get("/{tenant_id}/permission/{permission_id}", response=PermissionDetailSchemaOut, tags=['权限'], auth=None)
+@api.get("/tenant/{tenant_id}/permission/{permission_id}", response=PermissionDetailSchemaOut, tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_permission(request, tenant_id: str, permission_id: str):
     '''
     获取权限
@@ -93,7 +97,8 @@ def get_permission(request, tenant_id: str, permission_id: str):
     return permission
 
 
-@api.put("/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
+@api.put("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_permission(request, tenant_id: str, permission_id: str, data: PermissionSchemaIn):
     '''
     修改权限
@@ -112,7 +117,8 @@ def update_permission(request, tenant_id: str, permission_id: str, data: Permiss
     return {'error': ErrorCode.OK.value}
 
 
-@api.delete("/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
+@api.delete("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_permission(request, tenant_id: str, permission_id: str):
     '''
     删除权限

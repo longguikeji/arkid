@@ -193,7 +193,7 @@ class Extension(ABC):
         apps.clear_cache()
         apps.populate(settings.INSTALLED_APPS)
 
-        # management.call_command('makemigrations', self.name, interactive=False)
+        management.call_command('makemigrations', self.name, interactive=False)
         print(f'Migrate {self.name}')
         management.call_command('migrate', self.name, interactive=False)
 
@@ -397,9 +397,9 @@ class Extension(ABC):
         settings = TenantExtension.valid_objects.filter(tenant=tenant, extension=ext).first()
         return settings
 
-    def create_tenant_settings(self, tenant, settings):
+    def create_tenant_settings(self, tenant, settings, type):
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
-        return TenantExtension.objects.create(tenant=tenant, extension=ext, settings=settings)
+        return TenantExtension.objects.create(tenant=tenant, extension=ext, settings=settings, type=type)
     
 ################################################################################
 
