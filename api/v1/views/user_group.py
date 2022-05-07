@@ -63,7 +63,7 @@ class UserGroupUserSchemaIn(Schema):
 
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/user_groups", response=UserGroupSchemaOut, tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/", response=UserGroupSchemaOut, tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_group(request, tenant_id: str, data: UserGroupSchemaIn):
     '''
@@ -81,7 +81,7 @@ def create_group(request, tenant_id: str, data: UserGroupSchemaIn):
     return {"group_id": group.id.hex}
 
 
-@api.get("/tenant/{tenant_id}/user_groups", response=List[UserGroupListSchemaOut], tags=['用户分组'], auth=None)
+@api.get("/tenant/{tenant_id}/user_groups/", response=List[UserGroupListSchemaOut], tags=['用户分组'], auth=None)
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate
 def list_groups(request, tenant_id: str,  parent_id: str = None):
