@@ -4,7 +4,6 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.token import refresh_token
 from arkid.core.error import ErrorCode
 from api.v1.schema.auth import AuthIn, AuthOut
-from arkid.perm import event_callback
 
 
 @api.post("/tenant/{tenant_id}/auth/", response=AuthOut, tags=['登录与注册'], auth=None)

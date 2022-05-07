@@ -16,7 +16,10 @@ class CoreConfig(AppConfig):
                 tenant=tenant,
             )
             tenant.users.add(user)
-            tenant.save() 
-            # api的权限往 system permission 写
+            tenant.save()
         except:
             pass
+        # 监听
+        from arkid.core.event import Event, dispatch_event, APP_START
+        from arkid.core import listener
+        dispatch_event(Event(tag=APP_START, tenant=tenant))
