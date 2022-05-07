@@ -2,7 +2,7 @@ from ninja import Schema
 from pydantic import Field
 from ninja import ModelSchema
 from arkid.core.models import App
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from django.db import transaction
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
@@ -13,6 +13,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.extension.app_protocol import AppProtocolExtension
+from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
     CREATE_APP, UPDATE_APP, DELETE_APP,
     CREATE_APP_DONE,
@@ -55,6 +56,7 @@ class ConfigSchemaOut(ModelSchema):
 
 @transaction.atomic
 @api.post("/tenant/{tenant_id}/apps/", response=AppConfigSchemaOut, tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
     '''
     app创建
@@ -85,6 +87,7 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
     return {"app_id": app.id.hex}
 
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListSchemaOut], tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate
 def list_apps(request, tenant_id: str):
     '''
@@ -96,6 +99,7 @@ def list_apps(request, tenant_id: str):
     return apps
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/", response=AppSchemaOut, tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app(request, tenant_id: str, app_id: str):
     '''
     获取app
@@ -115,6 +119,7 @@ def get_app(request, tenant_id: str, app_id: str):
     return result
 
 @api.delete("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_app(request, tenant_id: str, app_id: str):
     '''
     删除app
@@ -129,6 +134,7 @@ def delete_app(request, tenant_id: str, app_id: str):
     return {'error': ErrorCode.OK.value}
 
 @api.put("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
     '''
     修改app
@@ -154,7 +160,8 @@ def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
         break
     return {'error': ErrorCode.OK.value}
 
-@api.get("/tenant/{tenant_id}/apps/{app_id}/permissions/",tags=["应用"],auth=None)
+@api.get("/tenant/{tenant_id}/apps/{app_id}/permissions/", tags=["应用"], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app_permissions(request, tenant_id: str,app_id:str):
     """ 应用权限列表,TODO
     """

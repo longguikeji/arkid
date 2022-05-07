@@ -126,5 +126,6 @@ def unregister_front_routers(routers, primary: FrontRouter = None):
     for router in routers:
         global_routers.remove(router)
 
+
 def get_global_routers():
     return [ item.dict() for item in global_routers ]
