@@ -81,15 +81,27 @@ class ExternalIdpExtension(Extension):
         super().load()
 
     def login(self, request, settings_id):
+        """
+        处理前端登录页面，点击第三方登录按钮的逻辑
+        """
         pass
 
     def callback(self, request, settings_id):
+        """
+        处理第三方身份源的回调逻辑
+        """
         pass
 
     def bind(self, request, settings_id):
+        """
+        处理第三方身份源返回的user_id和ArkID的user之间的绑定
+        """
         pass
 
     def get_img_url(self):
+        """
+        返回第三方登录按钮的图片
+        """
         pass
 
     def register_external_idp_schema(self, idp_type, schema):
