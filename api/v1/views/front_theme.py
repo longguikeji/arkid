@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from uuid import UUID
 from django import dispatch
 from django.db.models import F
@@ -5,34 +6,46 @@ from ninja import Schema
 from pydantic import Field
 from typing import List
 from arkid.core.api import api
+from arkid.core.schema import RootSchema
 from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.core.extension.front_theme import FrontThemeExtension
 from arkid.core.event import dispatch_event, Event, CREATE_FRONT_THEME_CONFIG
 from arkid.extension.utils import import_extension
 
-FrontThemeListSchemaItem = FrontThemeExtension.create_composite_config_schema(
-    'FrontThemeListSchemaItem',
-)
-class FrontThemeListSchemaOut(Schema):
-    data: List[FrontThemeListSchemaItem]
+class FrontThemeListSchemaItem(Schema):
+    id:str = Field()
+    name:str = Field(title=_('配置名'))
+    package:str = Field(title=_('插件包名'))
+    type:str = Field(title=_('主题类型'))
+    css_url:str = Field(title=_('CSS文件地址'))
+    priority:int = Field(title=_('优先级'))
     
-@api.get("/tenant/{tenant_id}/front_theme/", response=FrontThemeListSchemaOut, tags=["前端主题"],auth=None)
+@api.get("/tenant/{tenant_id}/front_theme/", response=List[FrontThemeListSchemaItem], tags=["前端主题"],auth=None)
 def get_front_theme_list(request, tenant_id: str):
-    """ 前端主题配置列表"""
+    """ 前端主题配置列表 """
     extensions = Extension.active_objects.filter(type=FrontThemeExtension.TYPE).all()
-    configs = TenantExtensionConfig.active_objects.filter(extension__in=extensions).annotate(package=F('extension__package'))
-    return {"data": list(configs.values('package','id','name','type','config'))}
+    configs = TenantExtensionConfig.active_objects.filter(extension__in=extensions).annotate(package=F('extension__package')).values('package','id','name','type','config')
+    datas = []
+    for config in configs:
+        data = {
+            'id' : config['id'].hex,
+            'package' : config['package'],
+            'name' : config['name'],
+            'type' : config['type'],
+            'priority' : config['config']['priority'],
+            'css_url' : config['config']['css_url'],
+        }
+        datas.append(data)
+    return datas
 
-FrontThemeConfigGetOut = FrontThemeExtension.create_composite_config_schema('FrontThemeConfigGetOut')
-class GetFrontThemeOut(Schema):
-    data: FrontThemeConfigGetOut
+GetFrontThemeOut = FrontThemeExtension.create_composite_config_schema('GetFrontThemeOut')
 
 @api.get("/tenant/{tenant_id}/front_theme/{id}/", response=GetFrontThemeOut, tags=["前端主题"],auth=None)
 def get_front_theme(request, tenant_id: str, id: str):
-    """ 获取前端主题配置,TODO """
-    config = TenantExtensionConfig.active_objects.get(id=id)
-    return {"data":config}
+    """ 获取前端主题配置 """
+    config = TenantExtensionConfig.active_objects.filter(id=id).annotate(package=F('extension__package')).values('package','id','name','type','config').first()
+    return config
 
 CreateFrontThemeIn = FrontThemeExtension.create_composite_config_schema(
     'CreateFrontThemeIn',
@@ -43,25 +56,34 @@ class CreateFrontThemeOut(Schema):
 
 @api.post("/tenant/{tenant_id}/front_theme/", response=CreateFrontThemeOut, tags=["前端主题"],auth=None)
 def create_front_theme(request, tenant_id: str, data:CreateFrontThemeIn):
-    """ 创建前端主题配置,TODO """
+    """ 创建前端主题配置 """
     extension = Extension.active_objects.filter(package = data.package).first()
     if extension:
         ext = import_extension(extension.ext_dir)
         tenant = request.tenant
-        config = ext.create_tenant_config(tenant, data.config.dict(), data.name, data.type)
+        data = SimpleNamespace(**data.dict())
+        config = ext.create_tenant_config(tenant, data.config, data.name, data.type)
         return {'config_id':config.id.hex}
     return {'error':'无法找到{data.package}对应的插件'}
 
-@api.put("/tenant/{tenant_id}/front_theme/{id}/", tags=["前端主题"],auth=None)
-def update_front_theme(request, tenant_id: str, id: str):
-    """ 编辑前端主题配置,TODO
-    """
-    return {}
+
+@api.put("/tenant/{tenant_id}/front_theme/{id}/", response=CreateFrontThemeOut, tags=["前端主题"],auth=None)
+def update_front_theme(request, tenant_id: str, id: str, data: CreateFrontThemeIn):
+    """ 编辑前端主题配置,TODO """
+    extension = Extension.active_objects.filter(package = data.package).first()
+    if extension:
+        ext = import_extension(extension.ext_dir)
+        data = SimpleNamespace(**data.dict())
+        config = ext.update_tenant_config(id, data.config, data.name, data.type)
+        return {'config_id':config.id.hex}
+    return {'error':'无法找到{data.package}对应的插件'}
+
 
 @api.delete("/tenant/{tenant_id}/front_theme/{id}/", tags=["前端主题"],auth=None)
 def delete_front_theme(request, tenant_id: str, id: str):
-    """ 删除前端主题配置,TODO
-    """
-    return {}
+    """ 删除前端主题配置,TODO """
+    config = TenantExtensionConfig.objects.get(id=id)
+    config.delete()
+    return {'config_id': id}
 
 

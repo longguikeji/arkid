@@ -8,7 +8,7 @@ name = '主题设置'
 
 
 page = pages.TablePage(tag=tag, name=name)
-edit_page = pages.TablePage(name=_("编辑主题"))
+edit_page = pages.FormPage(name=_("编辑主题"))
 
 
 pages.register_front_pages(page)
