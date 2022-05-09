@@ -63,6 +63,11 @@ class Config(object):
         return self.host
 
     def get_frontend_host(self, schema=True):
+        from config.models import PlatformConfig
+        plat_config = PlatformConfig.valid_objects.filter().first()
+        if plat_config:
+            return plat_config.frontend_url
+
         if schema:
             return '{}://{}'.format(
                 'https' if self.https_enabled else 'http', self.frontend_host
