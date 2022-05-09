@@ -1,0 +1,1 @@
+from arkid.core.perm import event_listener

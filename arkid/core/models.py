@@ -263,21 +263,6 @@ class Permission(PermissionAbstract):
         return Permission.valid_objects.filter(parent=self).order_by('id')
 
 
-class API(BaseModel):
-
-    class Meta(object):
-        verbose_name = _('API', '接口')
-        verbose_name_plural = _('API', '接口')
-
-    permission = models.ForeignKey(Permission, on_delete=models.CASCADE, verbose_name='权限')
-    operation_id = models.CharField((_('操作id')), blank=True, null=True, default='', max_length=256)
-    describe = models.JSONField(blank=True, default=dict, verbose_name=_('describe', '描述'))
-    is_update = models.BooleanField(default=False, verbose_name='是否更新')
-
-    def __str__(self) -> str:
-        return (f"{self.operation_id}")
-
-
 class UserPermissionResult(BaseModel, ExpandModel):
 
     class Meta(object):
