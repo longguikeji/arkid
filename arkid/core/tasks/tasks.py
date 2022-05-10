@@ -1,11 +1,6 @@
-import os, django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
-django.setup()
+
 
 from arkid.config import get_app_config
-from arkid.extension.utils import import_extension
-from arkid.extension.models import TenantExtensionConfig, Extension
-from arkid.core.models import API, Permission
 from arkid.common.logger import logger
 from types import SimpleNamespace
 from celery import shared_task
@@ -15,6 +10,10 @@ import importlib
 
 @shared_task(bind=True)
 def sync(self, config_id, *args, **kwargs):
+    import os, django
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
+    django.setup()
+    from arkid.extension.models import TenantExtensionConfig, Extension
     try:
         logger.info("=== arkid.core.tasks.sync start...===")
         logger.info(f"config_id: {config_id}")
@@ -37,57 +36,116 @@ def sync(self, config_id, *args, **kwargs):
         raise self.retry(exc=exc, max_retries=max_retries, countdown=countdown)
 
 @app.task
-def update_permission():
-    host = get_app_config().get_host()
-    api_info = '{}/api/v1/openapi_redoc.json'.format(host)
-    permission_task(None, api_info)
+def update_system_permission():
+    import os, django
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
+    django.setup()
+    from arkid.core.models import SystemPermission
+    from arkid.core.openapi import get_permissions
+    from arkid.core.api import api
+    from django.db.models import Q
 
-def permission_task(app_temp, api_info):
-    response = requests.get(api_info)
-    response = response.json()
-    paths = response.get('paths')
-    path_keys = paths.keys()
-    info = response.get('info')
-    title = info.get('title')
-    base_code = title
-
-    # old_permissions = Permission.valid_objects.filter(tenant=None,
-    #   app=app_temp,
-    #   category='api',
-    #   is_system=True,
-    #   base_code=base_code
-    # )
-    # for old_permission in old_permissions:
-    #     old_permission.is_update = False
-    #     old_permission.save()
-    # else:
-    #     for path_key in path_keys:
-    #         item = paths.get(path_key)
-    #         item_keys = item.keys()
-    #         for item_key in item_keys:
-    #             request_obj = item.get(item_key)
-    #             request_type = item_key
-    #             request_url = path_key
-    #             summary = request_obj.get('summary', '')
-    #             operation_id = request_obj.get('operationId')
-    #             codename = 'api_{}'.format(uuid.uuid4())
-    #             permission, is_create = ApiPermission.objects.get_or_create(category='api',
-    #               is_system=True,
-    #               app=app_temp,
-    #               is_del=False,
-    #               operation_id=operation_id,
-    #               base_code=base_code)
-    #             if is_create is True:
-    #                 permission.codename = codename
-    #             permission.name = summary
-    #             permission.request_url = request_url
-    #             permission.request_type = request_type
-    #             permission.is_update = True
-    #             permission.save()
-    #     else:
-    #         ApiPermission.valid_objects.filter(tenant=None,
-    #           app=app_temp,
-    #           category='api',
-    #           is_system=True,
-    #           base_code=base_code,
-    #           is_update=False).delete()
+    permissions_data = get_permissions(api)
+    group_data = []
+    api_data = []
+    old_permissions = SystemPermission.valid_objects.filter(
+      Q(code__icontains='group_role') | Q(category='api'),
+      tenant=None,
+      is_system=True,
+    )
+    for old_permission in old_permissions:
+        old_permission.is_update = False
+        old_permission.save()
+    for permissions_item in permissions_data:
+        name = permissions_item.get('name', '')
+        sort_id = permissions_item.get('sort_id', 0)
+        type = permissions_item.get('type', '')
+        container = permissions_item.get('container', [])
+        operation_id = permissions_item.get('operation_id')
+        if type == 'group':
+          group_data.append(permissions_item)
+          systempermission = SystemPermission.valid_objects.filter(
+              tenant=None,
+              category='group',
+              is_system=True,
+              name=name,
+              code__icontains='group_role',
+          ).first()
+          if not systempermission:
+            systempermission = SystemPermission()
+            systempermission.category = 'group'
+            systempermission.is_system = True
+            systempermission.name = name
+            systempermission.code = 'group_role_{}'.format(uuid.uuid4())
+            systempermission.tenant = None
+            systempermission.operation_id = ''
+            systempermission.describe = {}
+          systempermission.is_update = True
+          systempermission.save()
+        else:
+          api_data.append(permissions_item)
+          systempermission, is_create = SystemPermission.objects.get_or_create(
+              category='api',
+              is_system=True,
+              is_del=False,
+              operation_id=operation_id,
+          )
+          if is_create is True:
+            systempermission.code = 'api_{}'.format(uuid.uuid4())
+          systempermission.name = name
+          systempermission.describe = {
+          }
+          systempermission.is_update = True
+          systempermission.save()
+        permissions_item['sort_real_id'] = systempermission.sort_id
+    # 单独处理分组问题
+    for group_item in group_data:
+        name = group_item.get('name', '')
+        container = group_item.get('container', [])
+        group_sort_ids = []
+        for api_item in api_data:
+            sort_id = api_item.get('sort_id', 0)
+            sort_real_id = api_item.get('sort_real_id', 0)
+            if sort_id in container:
+                group_sort_ids.append(sort_real_id)
+        # 系统权限
+        group_systempermission = SystemPermission.valid_objects.filter(  
+            tenant=None,
+            category='group',
+            is_system=True,
+            name=name,
+            code__icontains='group_role',
+        ).first()
+        api_systempermissions = SystemPermission.valid_objects.filter(
+            category='api',
+            is_system=True,
+            sort_id__in=group_sort_ids,
+        )
+        for api_systempermission in api_systempermissions:
+            group_systempermission.container.add(api_systempermission)
+        group_systempermission.describe = {
+            'sort_ids': group_sort_ids
+        }
+        group_systempermission.save()
+    # for group_item in group_data:
+    #     container = group_item.get('container', [])
+    #     group_systempermission = group_item.get('systempermission', None)
+    #     group_sort_ids = []
+    #     for api_item in api_data:
+    #         sort_id = api_item.get('sort_id', 0)
+    #         api_systempermission = api_item.get('systempermission', None)
+    #         if sort_id in container and api_systempermission:
+    #             group_systempermission.container.add(api_systempermission)
+    #             group_sort_ids.append(api_systempermission.sort_id)
+    #     # 保存新的排序id
+    #     group_systempermission.describe = {
+    #         'sort_ids': group_sort_ids
+    #     }
+    #     group_systempermission.save()
+    # 权限更新
+    SystemPermission.valid_objects.filter(
+      Q(code__icontains='group_role') | Q(category='api'),
+      tenant=None,
+      is_system=True,
+      is_update=False
+    ).delete()

@@ -20,6 +20,6 @@ class CoreConfig(AppConfig):
         except:
             pass
         # 监听
-        from arkid.core.event import Event, dispatch_event, APP_START
         from arkid.core import listener
-        dispatch_event(Event(tag=APP_START, tenant=tenant))
+        from arkid.core.event import Event, dispatch_event, APP_START
+        # dispatch_event(Event(tag=APP_START, tenant=tenant))

@@ -8,7 +8,7 @@ from oauth2_provider.models import Application
 from oauth2_provider.urls import urlpatterns as urls
 from arkid.core.extension import create_extension_schema
 
-package='com.longgui.oauth2_server'
+package='com.longgui.auth.oauth2_server'
 
 OIDCConfigSchema = create_extension_schema('OIDCConfigSchema',package, base_schema=OIDCConfigSchema)
 Oauth2ConfigSchema = create_extension_schema('Oauth2ConfigSchema',package, base_schema=Oauth2ConfigSchema)
