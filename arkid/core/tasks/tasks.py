@@ -43,11 +43,6 @@ def sync(self, config_id, *args, **kwargs):
 
 @app.task
 def update_system_permission():
-    import os, django
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
-    django.setup()
-
-
     permissions_data = get_permissions(api)
     group_data = []
     api_data = []
