@@ -6,7 +6,7 @@ from arkid.core.error import ErrorCode
 from api.v1.schema.auth import AuthIn, AuthOut
 from arkid.core.event import SEND_SMS
 from ninja import Schema
-
+from arkid.common import sms
 
 class SendSMSIn(Schema):
     config_id: str
@@ -19,8 +19,36 @@ class SendSMSIn(Schema):
 @operation(AuthOut, use_id=True)
 def send_sms(request, tenant_id: str, data: SendSMSIn):
     tenant = request.tenant
+    responses = sms.send_sms(
+        data.phone_number,
+        tenant,
+        request,
+        data.config_id,
+        data.template_params,
+    )
+    if not responses:
+        return {'error': 'error_code', 'message': '认证插件未启用'}
+    useless, (data, extension) = responses[0]
+    return data
 
-    responses = dispatch_event(Event(tag=SEND_SMS, tenant=tenant, request=request, data=data))
+
+class SendSMSCodeIn(Schema):
+    config_id: str
+    phone_number: str
+
+@api.post("/tenant/{tenant_id}/send_sms_code/", tags=['发送短信验证码'], auth=None)
+@operation(AuthOut, use_id=True)
+def send_sms_code(request, tenant_id: str, data: SendSMSCodeIn):
+    """ 发送短信验证码
+    """
+    tenant = request.tenant
+
+    responses = sms.send_sms_code(
+        data.phone_number,
+        tenant,
+        request,
+        data.config_id
+    )
     if not responses:
         return {'error': 'error_code', 'message': '认证插件未启用'}
     useless, (data, extension) = responses[0]

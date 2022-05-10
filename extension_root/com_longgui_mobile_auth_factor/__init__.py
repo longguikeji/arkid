@@ -13,21 +13,9 @@ package = "com.longgui.mobile_auth_factor"
 
 MobileAuthFactorSchema = create_extension_schema('MobileAuthFactorSchema',package, 
         [
-            ('reset_password_enabled', Optional[bool] , Field(deprecated=True)),
-            ('login_enabled_field_names', List[str],
-                Field(
-                    default=[], 
-                    title=_('login_enabled_field_names', '启用电话号码登录的字段'),
-                    url='/api/v1/login_fields?tenant={tenant_id}'
-                )
-            ),
-            ('register_enabled_field_names', List[str],
-                Field(
-                    default=[], 
-                    title=_('register_enabled_field_names', '启用电话号码注册的字段'),
-                    url='/api/v1/register_fields?tenant={tenant_id}'
-                )
-            ),
+            ('template_code', str , Field(title=_('template_code', '短信模板ID'))),
+            ('sign_name', str , Field(title=_('sign_name', 'sign_name'))),
+            ('sms_up_extend_code', str , Field(title=_('sms_up_extend_code', 'sms_up_extend_code'))),
         ],
         BaseAuthFactorSchema,
     )

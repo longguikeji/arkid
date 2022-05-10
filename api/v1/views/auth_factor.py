@@ -12,7 +12,8 @@ from arkid.core.extension.auth_factor import AuthFactorExtension
 from arkid.core.error import ErrorCode
 
 AuthFactorSchemaIn = AuthFactorExtension.create_composite_config_schema(
-    'AuthFactorSchemaIn'
+    'AuthFactorSchemaIn',
+    exclude=['id']
 )
 
 class AuthFactorSchemaOut(Schema):
