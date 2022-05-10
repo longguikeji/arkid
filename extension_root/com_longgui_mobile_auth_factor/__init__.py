@@ -91,12 +91,27 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             {
                 "type": "text",
                 "name": "mobile",
-                "placeholder": "手机号码"
+                "placeholder": "手机号码",
+                "append": {
+                    "label": "发送验证码",
+                    "http": {
+                        "url": "/tenant/{tenant_id}/send_sms_code/",
+                        "method": "post",
+                        "params": {
+                            "mobile": "mobile",
+                            "config_id": "config_id"
+                        },
+                        "payload": {
+                            "auth_code_length": 6
+                        }
+                    },
+                    "delay": 60
+                }
             },
             {
                 "type": "text",
                 "name": "sms_code",
-                "placeholder": "验证码"
+                "placeholder": "验证码",
             },
         ]
         self.add_page_form(config, self.LOGIN, "手机验证码登录", items)
@@ -106,7 +121,22 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             {
                 "type": "text",
                 "name": "mobile",
-                "placeholder": "手机号码"
+                "placeholder": "手机号码",
+                "append": {
+                    "label": "发送验证码",
+                    "http": {
+                        "url": "/tenant/{tenant_id}/send_sms_code/",
+                        "method": "post",
+                        "params": {
+                            "mobile": "mobile",
+                            "config_id": "config_id"
+                        },
+                        "payload": {
+                            "auth_code_length": 6
+                        }
+                    },
+                    "delay": 60
+                }
             },
             {
                 "type": "text",
@@ -117,7 +147,44 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         self.add_page_form(config, self.REGISTER, "手机验证码注册", items)
 
     def create_password_page(self, event, config):
-        pass
+        items = [
+            {
+                "type": "text",
+                "name": "mobile",
+                "placeholder": "手机号码",
+                "append": {
+                    "label": "发送验证码",
+                    "http": {
+                        "url": "/tenant/{tenant_id}/send_sms_code/",
+                        "method": "post",
+                        "params": {
+                            "mobile": "mobile",
+                            "config_id": "config_id"
+                        },
+                        "payload": {
+                            "auth_code_length": 6
+                        }
+                    },
+                    "delay": 60
+                }
+            },
+            {
+                "type": "text",
+                "name": "sms_code",
+                "placeholder": "验证码"
+            },
+            {
+                "type": "password",
+                "name": "password",
+                "placeholder": "密码"
+            },
+            {
+                "type": "password",
+                "name": "checkpassword",
+                "placeholder": "密码确认"
+            },
+        ]
+        self.add_page_form(config, self.RESET_PASSWORD, "手机验证码重置密码", items)
 
     def create_other_page(self, event, config):
         pass

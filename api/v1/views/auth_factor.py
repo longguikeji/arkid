@@ -26,7 +26,7 @@ def create_auth_factor(request, tenant_id: str, data: AuthFactorSchemaIn):
     config.tenant = request.tenant
     config.extension = Extension.active_objects.get(package=data.package)
     config.config = data.config.dict()
-    config.name = data.name
+    config.name = data.dict()["name"]
     config.type = data.type
     config.save()
     return {"config_id": config.id.hex}
