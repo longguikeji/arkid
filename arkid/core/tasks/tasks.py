@@ -1,5 +1,14 @@
+import os, django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
+django.setup()
 
-
+from arkid.extension.models import TenantExtensionConfig, Extension
+from arkid.core.models import SystemPermission
+from arkid.core.openapi import get_permissions
+from arkid.core.event import Event, dispatch_event, APP_START
+from arkid.core.models import Tenant
+from arkid.core.api import api
+from django.db.models import Q
 from arkid.config import get_app_config
 from arkid.common.logger import logger
 from types import SimpleNamespace
@@ -10,10 +19,7 @@ import importlib
 
 @shared_task(bind=True)
 def sync(self, config_id, *args, **kwargs):
-    import os, django
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
-    django.setup()
-    from arkid.extension.models import TenantExtensionConfig, Extension
+
     try:
         logger.info("=== arkid.core.tasks.sync start...===")
         logger.info(f"config_id: {config_id}")
@@ -40,10 +46,7 @@ def update_system_permission():
     import os, django
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
     django.setup()
-    from arkid.core.models import SystemPermission
-    from arkid.core.openapi import get_permissions
-    from arkid.core.api import api
-    from django.db.models import Q
+
 
     permissions_data = get_permissions(api)
     group_data = []
@@ -149,3 +152,21 @@ def update_system_permission():
       is_system=True,
       is_update=False
     ).delete()
+
+class ReadySingleton(object):
+    def __init__(self, *args, **kwargs):
+        pass
+        
+    @classmethod
+    def get_instance(cls, *args, **kwargs): 
+        if not hasattr(ReadySingleton, '_instance' ):
+            ReadySingleton._instance = ReadySingleton(*args, **kwargs)
+            # 只有celery第一次被启动时才会调用
+            tenant = Tenant.valid_objects.filter(
+                slug='',
+                name="platform tenant",
+            ).first()
+            dispatch_event(Event(tag=APP_START, tenant=tenant))
+        return ReadySingleton._instance
+
+ReadySingleton.get_instance()

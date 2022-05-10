@@ -21,5 +21,3 @@ class CoreConfig(AppConfig):
             pass
         # 监听
         from arkid.core import listener
-        from arkid.core.event import Event, dispatch_event, APP_START
-        # dispatch_event(Event(tag=APP_START, tenant=tenant))
