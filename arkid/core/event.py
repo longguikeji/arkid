@@ -208,9 +208,13 @@ DELETE_GROUP = 'DELETE_GROUP'
 CREATE_PERMISSION = 'CREATE_PERMISSION'
 UPDATE_PERMISSION = 'UPDATE_PERMISSION'
 DELETE_PERMISSION = 'DELETE_PERMISSION'
+
 CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
 DELETE_FRONT_THEME_CONFIG = 'DELETE_FRONT_THEME_CONFIG'
+
+APP_START = 'APP_START'
+
 
 
 # register events
@@ -223,6 +227,7 @@ register_event(DELETE_APP, _('delete app','删除应用'))
 register_event(CREATE_GROUP, _('create group','创建分组'))
 register_event(UPDATE_GROUP, _('update group','修改分组'))
 register_event(DELETE_GROUP, _('delete group','删除分组'))
+register_event(APP_START, _('app start','应用启动'))
 register_event(SEND_SMS, _('send sms','发送短信'))
 register_event(CREATE_PERMISSION, _('create permission','创建权限'))
 register_event(UPDATE_PERMISSION, _('update permission','修改权限'))
