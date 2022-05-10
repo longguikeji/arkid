@@ -26,7 +26,9 @@
 
 **应用管理**
 :  
-[应用管理](){.md-button}
+[应用列表](){.md-button}
+[应用分组](){ .md-button }
+[应用协议](){ .md-button }
 
 **用户管理**
 :  
@@ -50,37 +52,42 @@
 
 **审批管理**
 :  
-[动作配置](){.md-button}
+[审批动作](){.md-button}
 [审批系统](){.md-button}
 [审批请求](){.md-button}
 
 **身份数据源**
 :  
-[应用接入协议](){ .md-button }
-[数据同步](){ .md-button }
+[SCIM数据同步](){ .md-button }
+[权限数据同步](){ .md-button }
 
 **扩展能力**
 :  
 [WebHook](){ .md-button }
 [OpenAPI](){ .md-button }
 [事件列表](){ .md-button }
-[多语言](){ .md-button }
 
-**日志与图表**
+**日志管理**
 :  
 [用户日志](){ .md-button }
 [管理员日志](){ .md-button }
 [日志配置](){ .md-button }
+
+**图表分析**
+:  
 [图表展示](){ .md-button }
+[分析系统](){ .md-button }
 
 **租户管理**
 :  
 [租户配置](){ .md-button }
 [子管理员](){ .md-button }
+[主题设置](){ .md-button }
 [插件管理](){ .md-button }
-[中心平台绑定](){ .md-button }
+[中心平台](){ .md-button }
 
 ### 平台管理员
 :  
 [平台管理](){ .md-button }
 [插件管理](){ .md-button }
+[语言包管理](){ .md-button }

@@ -32,4 +32,5 @@ from . import (
     devices,
     languape,
     log,
+    front_theme,
 )
