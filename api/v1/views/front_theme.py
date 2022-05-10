@@ -67,15 +67,15 @@ def create_front_theme(request, tenant_id: str, data:CreateFrontThemeIn):
     return {'error':'无法找到{data.package}对应的插件'}
 
 
-@api.put("/tenant/{tenant_id}/front_theme/{id}/", response=CreateFrontThemeOut, tags=["前端主题"],auth=None)
+@api.post("/tenant/{tenant_id}/front_theme/{id}/", response=CreateFrontThemeOut, tags=["前端主题"],auth=None)
 def update_front_theme(request, tenant_id: str, id: str, data: CreateFrontThemeIn):
     """ 编辑前端主题配置,TODO """
     extension = Extension.active_objects.filter(package = data.package).first()
     if extension:
         ext = import_extension(extension.ext_dir)
         data = SimpleNamespace(**data.dict())
-        config = ext.update_tenant_config(id, data.config, data.name, data.type)
-        return {'config_id':config.id.hex}
+        ext.update_tenant_config(id, data.config, data.name, data.type)
+        return {'config_id': id}
     return {'error':'无法找到{data.package}对应的插件'}
 
 

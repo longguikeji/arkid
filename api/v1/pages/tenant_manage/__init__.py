@@ -7,9 +7,9 @@ router = routers.FrontRouter(
     name=_('租户管理'),
     children=[
         tenant_config.router,
-        extension_manage.router,
-        front_theme.router,
         child_manager.router,
+        front_theme.router,
+        extension_manage.router,
         center_arkid.router
     ]
 )

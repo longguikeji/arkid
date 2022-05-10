@@ -18,18 +18,18 @@ from arkid.core import routers
 
 routers.register_front_routers(
     [
+        mine.router,
         desktop.router,
-        user_manage.router,
         app_manage.router,
-        approve_manage.router,
+        user_manage.router,
         auth_manage.router,
-        charts_manage.router,
+        permission_manage.router,
+        approve_manage.router,
         data_source_manage.router,
         developer_manage.router,
         log_manage.router,
-        mine.router,
-        permission_manage.router,
+        charts_manage.router,
         tenant_manage.router,
-        platform_admin.router
+        platform_admin.router,
     ]
 )
