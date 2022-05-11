@@ -23,7 +23,7 @@ def send_sms(phone_number, tenant, request, config_id, template_params):
         "config_id": config_id,
         "template_params": template_params
     }
-    return dispatch_event(Event(tag=SEND_SMS, tenant=tenant, request=request, data={data}))
+    return dispatch_event(Event(tag=SEND_SMS, tenant=tenant, request=request, data=data))
 
 
 def send_sms_code(phone_number, tenant, request, config_id):

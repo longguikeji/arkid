@@ -23,7 +23,7 @@ MobileAuthFactorSchema = create_extension_schema('MobileAuthFactorSchema',packag
 class MobileAuthFactorExtension(AuthFactorExtension):
     def load(self):
         super().load()
-        self.register_extend_field(UserMobile, "mobile")
+        self.register_extend_field(UserMobile, "phone_number")
         self.register_auth_factor_schema(MobileAuthFactorSchema, 'mobile')
         from api.v1.schema.auth import AuthIn
         self.register_extend_api(AuthIn, mobile=str)
@@ -90,7 +90,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "mobile",
+                "name": "phone_number",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
@@ -98,7 +98,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                         "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
                         "method": "post",
                         "params": {
-                            "mobile": "mobile",
+                            "phone_number": "phone_number",
                             "config_id": "config_id"
                         },
                         "payload": {
@@ -120,7 +120,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "mobile",
+                "name": "phone_number",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
@@ -128,7 +128,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                         "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
                         "method": "post",
                         "params": {
-                            "mobile": "mobile",
+                            "phone_number": "phone_number",
                             "config_id": "config_id"
                         },
                         "payload": {
@@ -150,7 +150,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "mobile",
+                "name": "phone_number",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
@@ -158,7 +158,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                         "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
                         "method": "post",
                         "params": {
-                            "mobile": "mobile",
+                            "phone_number": "phone_number",
                             "config_id": "config_id"
                         },
                         "payload": {

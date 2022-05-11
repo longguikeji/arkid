@@ -89,9 +89,9 @@ class AuthFactorExtension(Extension):
         
     def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):
         default = {
-            "login": ("登录", f"/api/v1/auth/?tenant=tenant_id&event_tag={self.auth_event_tag}"),
-            "register": ("登录", f"/api/v1/register/?tenant=tenant_id&event_tag={self.register_event_tag}"),
-            "password": ("登录", f"/api/v1/reset_password/?tenant=tenant_id&event_tag={self.password_event_tag}"),
+            "login": ("登录", f"/api/v1/tenant/tenant_id/auth/?event_tag={self.auth_event_tag}"),
+            "register": ("登录", f"/api/v1/tenant/tenant_id/register/?event_tag={self.register_event_tag}"),
+            "password": ("登录", f"/api/v1/tenant/tenant_id/reset_password/?event_tag={self.password_event_tag}"),
         }
         if not submit_label:
             submit_label, useless = default.get(page_name)
