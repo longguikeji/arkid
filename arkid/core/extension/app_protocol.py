@@ -42,3 +42,14 @@ class AppProtocolExtension(Extension):
     def delete_app(self, event, **kwargs):
         pass
     
+    # def register_enter_view(self, view, path, type):
+    #     class EnterView(View):
+    #         def get(request):
+    #             # 权限判断
+    #             view.get(request)
+    #             pass
+    #     re_path(
+    #             path,
+    #             EnterView.as_view(),
+    #             name=f'{self.name}_{type}_enter',
+    #         )

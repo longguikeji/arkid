@@ -2,7 +2,7 @@ from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
 tag = 'charts'
-name = '图表分析'
+name = '图表展示'
 
 
 page = pages.DescriptionPage(tag=tag, name=name)

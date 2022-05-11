@@ -207,6 +207,7 @@ class PermissionAbstract(BaseModel, ExpandModel):
     describe = models.JSONField(
         blank=True, default=dict, verbose_name=_('describe', '描述')
     )
+    is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
     def __str__(self):
         return '%s' % (self.name)
@@ -217,9 +218,12 @@ class SystemPermission(PermissionAbstract):
         verbose_name = _('SystemPermission', '系统权限')
         verbose_name_plural = _('SystemPermission', '系统权限')
 
-    sort_id = models.IntegerField(
-        verbose_name=_('Sort ID', '序号'), default=0, auto_created=True
-    )
+    def anto_sort():
+        # 方法必须放在字段前面
+        count=SystemPermission.objects.count()
+        return 0 if (count == 0) else count
+
+    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=anto_sort)
 
     container = models.ManyToManyField(
         'SystemPermission',

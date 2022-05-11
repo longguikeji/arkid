@@ -21,9 +21,8 @@ class EventListener(object):
         core_event.listen_event(DELETE_APP, self.delete_app)
 
     def app_start(self, event, **kwargs):
-        pass
-        # from arkid.core.tasks.tasks import update_permission
-        # update_permission.delay()
+        from arkid.core.tasks.tasks import update_system_permission
+        update_system_permission.delay()
 
 
     def create_group(self, event, **kwargs):

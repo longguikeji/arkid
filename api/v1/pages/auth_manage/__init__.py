@@ -6,8 +6,8 @@ router = routers.FrontRouter(
     name='认证管理',
     children=[
         auth_factor.router,
-        auth_rules.router,
+        third_auth.router,
         auto_auth.router,
-        third_auth.router
+        auth_rules.router,
     ],
 )
