@@ -2,7 +2,7 @@ from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
 tag = 'permission_sync'
-name = '权限同步'
+name = '权限数据同步'
 
 
 page = pages.TablePage(tag=tag, name=name)

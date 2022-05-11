@@ -8,7 +8,7 @@ router = routers.FrontRouter(
     icon='app',
     children=[
         app_list.router,
+        app_group.router,
         app_protocol.router,
-        app_group.router
     ],
 )

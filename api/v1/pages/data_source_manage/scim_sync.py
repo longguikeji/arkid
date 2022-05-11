@@ -2,7 +2,7 @@ from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
 tag = 'scim_sync'
-name = '用户/群组数据同步'
+name = 'SCIM数据同步'
 
 
 page = pages.TablePage(tag=tag, name=name)
