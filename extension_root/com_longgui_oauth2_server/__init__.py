@@ -74,10 +74,10 @@ class OAuth2ServerExtension(AppProtocolExtension):
         '''
         host = get_app_config().get_frontend_host()
 
-        config.userinfo = host+reverse("com_longgui_oauth2_server:oauth-user-info", args=[tenant_id])
-        config.authorize = host+reverse("com_longgui_oauth2_server:authorize", args=[tenant_id])
-        config.token = host+reverse("com_longgui_oauth2_server:token", args=[tenant_id])
-        config.logout = host+reverse("com_longgui_oauth2_server:oauth-user-logout", args=[tenant_id])
+        config.userinfo = host+reverse("com_longgui_auth_oauth2_server:oauth-user-info", args=[tenant_id])
+        config.authorize = host+reverse("com_longgui_auth_oauth2_server:authorize", args=[tenant_id])
+        config.token = host+reverse("com_longgui_auth_oauth2_server:token", args=[tenant_id])
+        config.logout = host+reverse("com_longgui_auth_oauth2_server:oauth-user-logout", args=[tenant_id])
         config.client_id = obj.client_id
         config.client_secret = obj.client_secret
         config.skip_authorization = obj.skip_authorization

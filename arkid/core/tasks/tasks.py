@@ -135,20 +135,13 @@ def update_system_permission():
       is_update=False
     ).delete()
 
-class ReadySingleton(object):
-    def __init__(self, *args, **kwargs):
-        pass
-        
-    @classmethod
-    def get_instance(cls, *args, **kwargs): 
-        if not hasattr(ReadySingleton, '_instance' ):
-            ReadySingleton._instance = ReadySingleton(*args, **kwargs)
-            # 只有celery第一次被启动时才会调用
-            tenant = Tenant.valid_objects.filter(
-                slug='',
-                name="platform tenant",
-            ).first()
-            dispatch_event(Event(tag=APP_START, tenant=tenant))
-        return ReadySingleton._instance
+class ReadyCelery(object):
 
-ReadySingleton.get_instance()
+    def __init__(self):
+      tenant, _ = Tenant.objects.get_or_create(
+          slug='',
+          name="platform tenant",
+      )
+      dispatch_event(Event(tag=APP_START, tenant=tenant))
+
+ReadyCelery()
