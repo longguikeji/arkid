@@ -93,9 +93,9 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "name": "mobile",
                 "placeholder": "手机号码",
                 "append": {
-                    "label": "发送验证码",
+                    "title": "发送验证码",
                     "http": {
-                        "url": "/tenant/{tenant_id}/send_sms_code/",
+                        "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
@@ -123,9 +123,9 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "name": "mobile",
                 "placeholder": "手机号码",
                 "append": {
-                    "label": "发送验证码",
+                    "title": "发送验证码",
                     "http": {
-                        "url": "/tenant/{tenant_id}/send_sms_code/",
+                        "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
@@ -153,9 +153,9 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "name": "mobile",
                 "placeholder": "手机号码",
                 "append": {
-                    "label": "发送验证码",
+                    "title": "发送验证码",
                     "http": {
-                        "url": "/tenant/{tenant_id}/send_sms_code/",
+                        "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
