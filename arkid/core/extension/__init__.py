@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union, Literal, Any, List, Optional, Tuple, Type
 from typing_extensions import Annotated
+from attr import field
 from pydantic import Field
 from django.urls import include, re_path
 from pathlib import Path
@@ -30,7 +31,7 @@ app_config = config.get_app_config()
 Event = core_event.Event
 EventType = core_event.EventType
 
-def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema) :
+def create_extension_schema( name, package = '',fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]) :
     """提供给插件用来创建Schema的方法
     
     注意:
@@ -52,6 +53,7 @@ def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str
             custom_fields=fields,
             base_class=base_schema,
         )
+    core_api.remove_fields(schema, exclude)
     schema.name = name
     return schema
 
@@ -97,17 +99,26 @@ def get_root_schema(schema_list, discriminator, depth = 0):
 
 
 extension_schema_map = {}
-def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
+def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, exclude=[], depth = 0, **field_definitions):
+    fields = []
+    for k,t in field_definitions.items():
+        if isinstance(t,tuple):
+            t,f = t
+        else:
+            f = Field()
+        fields.append( (k,t,f) )
+    
     if len(schema_list) == 0:
-        schema = create_extension_schema(schema_cls_name+'0')
+        schema = create_extension_schema(schema_cls_name+'0', exclude=exclude, fields=fields)
     elif len(schema_list) == 1:
         # schema = list(schema_list)[0]
-        schema = create_extension_schema(schema_cls_name+'1', base_schema=list(schema_list)[0])
+        schema = create_extension_schema(schema_cls_name+'1', base_schema=list(schema_list)[0], exclude=exclude, fields=fields)
     else:
         new_schema_list = []
         for schema in schema_list:
             schema = create_extension_schema(schema_cls_name + '_' + schema.name, base_schema=schema)
             core_api.add_fields(schema, **field_definitions)
+            core_api.remove_fields(schema, exclude)
             new_schema_list.append(schema)
             
         schema_list = new_schema_list
@@ -470,7 +481,7 @@ class Extension(ABC):
         self.composite_schema_map[composite_value][package] = new_schema
     
     @classmethod
-    def create_composite_config_schema(cls, schema_cls_name, **field_definitions):
+    def create_composite_config_schema(cls, schema_cls_name, exclude=[], **field_definitions):
         schema = create_extension_schema(
             schema_cls_name, 
             fields=[
@@ -478,7 +489,7 @@ class Extension(ABC):
             ],
             base_schema=RootSchema,
         )
-        cls.created_composite_schema_list.append((schema, field_definitions))
+        cls.created_composite_schema_list.append((schema, field_definitions, exclude))
         cls.refresh_all_created_composite_schema()
         return schema
     
@@ -486,7 +497,7 @@ class Extension(ABC):
     def refresh_all_created_composite_schema(cls):
         if not hasattr(cls, "created_composite_schema_list"):
             return
-        for created_ext_config_schema, field_definitions in cls.created_composite_schema_list:
+        for created_ext_config_schema, field_definitions, exclude in cls.created_composite_schema_list:
             temp_list = {}
             for composite_key, package_schema_map in cls.composite_schema_map.items():
                 schema_name = created_ext_config_schema.name + composite_key
@@ -494,6 +505,7 @@ class Extension(ABC):
                     schema_name, 
                     package_schema_map.values(),
                     'package',
+                    exclude=exclude,
                     **field_definitions,
                 )
                 temp_list[composite_key] = new_schema

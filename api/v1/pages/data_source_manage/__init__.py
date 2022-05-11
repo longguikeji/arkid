@@ -6,7 +6,7 @@ router = routers.FrontRouter(
     path='data_source',
     name='身份数据源',
     children=[
+        scim_sync.router,
         permission_sync.router,
-        scim_sync.router
     ]
 )

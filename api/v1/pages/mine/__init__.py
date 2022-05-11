@@ -7,11 +7,11 @@ router = routers.FrontRouter(
     name=_('我的'),
     children=[
         profile.router,
-        approve_manage.router,
         auth_manage.router,
         grant_manage.router,
+        approve_manage.router,
         switch_tenant.router,
-        logout.router
+        logout.router,
     ]
 )
 
