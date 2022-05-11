@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'arkid.core.tenant_middleware.TenantMiddleware',
     'arkid.core.request_json_data_middleware.JSONMiddleware',
+    'arkid.core.approve_request_middleware.ApproveRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'arkid.urls'
