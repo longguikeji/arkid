@@ -3,8 +3,8 @@
 from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
-tag = 'arkid_approve_requests'
-name = '审批请求-ArkID'
+tag = 'default_approve_requests'
+name = '默认请求处理'
 
 
 page = pages.TablePage(tag=tag, name=name)

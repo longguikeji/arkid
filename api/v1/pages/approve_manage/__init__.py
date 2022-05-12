@@ -7,7 +7,7 @@ router = routers.FrontRouter(
     name='审批管理',
     children=[
         approve_action.router,
-        approve_system.router,
         all_approve_requests.router,
+        approve_system.router,
     ],
 )

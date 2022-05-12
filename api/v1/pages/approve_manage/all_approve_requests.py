@@ -4,7 +4,7 @@ from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
 tag = 'all_approve_requests'
-name = '审批请求-ALL'
+name = '审批请求'
 
 
 page = pages.TablePage(tag=tag, name=name)
