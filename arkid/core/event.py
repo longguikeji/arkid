@@ -65,7 +65,7 @@ class Event:
         return self._response
 
 
-tag_map_signal: Dict[str, Event] = {}
+tag_map_event_type: Dict[str, EventType] = {}
 temp_listens:Dict[str, tuple] = {}
 
 
@@ -75,9 +75,9 @@ def register_event(tag, name, data_schema=None, description=''):
 
 def register_event_type(event_type: EventType):
     tag = event_type.tag
-    if tag in tag_map_signal:
+    if tag in tag_map_event_type:
         return
-    tag_map_signal[tag] = event_type
+    tag_map_event_type[tag] = event_type
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
         listen_event(tag,func,listener,**kwargs)
@@ -99,13 +99,13 @@ def register_event_type(event_type: EventType):
 
 
 def unregister_event(tag):
-    tag_map_signal.pop(tag, None)
+    tag_map_event_type.pop(tag, None)
 
 
 def dispatch_event(event, sender=None):
     if not event.tenant:
         raise Warning("None Tenant!")
-    event_type = tag_map_signal.get(event.tag)
+    event_type = tag_map_event_type.get(event.tag)
     if not event_type:
         return
     # if event_type.data_schema:
@@ -140,11 +140,11 @@ def decorator_listen_event(tag, **kwargs):
 
         if isinstance(tag, (list, tuple)):
             for t in tag:
-                event_type = tag_map_signal.get(t)
+                event_type = tag_map_event_type.get(t)
                 if event_type:
                     event_type.signal.connect(signal_func, **kwargs)
         else:
-            event_type = tag_map_signal.get(tag)
+            event_type = tag_map_event_type.get(tag)
             if event_type:
                 event_type.signal.connect(signal_func, **kwargs)
         return func
@@ -169,13 +169,13 @@ def listen_event(tag, func, listener=None, **kwargs):
 
     if isinstance(tag, (list, tuple)):
         for t in tag:
-            event_type = tag_map_signal.get(t)
+            event_type = tag_map_event_type.get(t)
             if event_type:
                 event_type.signal.connect(signal_func, **kwargs)
             else:
                 temp_listens[t] = (func, listener, kwargs)
     else:
-        event_type = tag_map_signal.get(tag)
+        event_type = tag_map_event_type.get(tag)
         if event_type:
             event_type.signal.connect(signal_func, **kwargs)
         else:
@@ -185,11 +185,11 @@ def listen_event(tag, func, listener=None, **kwargs):
 def unlisten_event(tag, func, **kwargs):
     if isinstance(tag, (list, tuple)):
         for t in tag:
-            event_type = tag_map_signal.get(t)
+            event_type = tag_map_event_type.get(t)
             if event_type:
                 event_type.signal.disconnect(func, **kwargs)
     else:
-        event_type = tag_map_signal.get(tag)
+        event_type = tag_map_event_type.get(tag)
         if event_type:
             event_type.signal.disconnect(func, **kwargs)
 
