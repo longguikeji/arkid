@@ -104,7 +104,7 @@ def unregister_event(tag):
 
 def dispatch_event(event, sender=None):
     if not event.tenant:
-        raise Exception("None Tenant!")
+        raise Warning("None Tenant!")
     event_type = tag_map_signal.get(event.tag)
     if not event_type:
         return

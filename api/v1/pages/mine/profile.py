@@ -15,6 +15,7 @@ pages.register_front_pages(page)
 router = routers.FrontRouter(
     path=tag,
     name=name,
+    page=page,
 )
 
 page.add_pages([

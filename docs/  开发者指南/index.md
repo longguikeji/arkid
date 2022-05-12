@@ -1,5 +1,53 @@
+---
+template: comment.html
+---
+
 # 概述
+
+ArkID构建于：
+
+* [Django 4](https://docs.djangoproject.com/en/4.0/)
+* [Django-ninja](https://django-ninja.rest-framework.com/)
+* [Vue3](https://v3.cn.vuejs.org/)
+* [Bootstrap 5](https://v5.bootcss.com/)
 ## 插件是什么？
+
+插件的主要目的是为了尽可能满足用户的个性需求，并防止ArkID自身产品复杂度过高。
+
+插件就是一个独立的python模块。
+
 ## 插件能做什么？
+
+插件可以完整的使用Django与Django-ninja框架使用的完整功能外，
+
+ArkID为插件定义或提供如下功能：
+
+* 自定义新的API，或更新内核API
+* 自定义新的后端路由，前端路由，前端页面
+* 自定义新的Django Model，或扩展内核原有的Model
+* 自定义新的事件(Event)，或侦听内核事件
+* 自定义pip依赖
+* 自定义配置
+* 自定义文档
+* 自定义语言包
+
 ## 如何开发插件？
+
+将ArkID的仓库clone到本地，在**extension_root**目录下添加一个文件夹，该文件夹即为插件的主目录。
+在此目录中添加 **\_\_init\_\_.py** 文件，即为插件的**main**文件。
+
+在 **extension_root** 目录中，官方提供了多个默认插件，都是很好的示例。
+
+更多教学，参考 **[新手教程：开发第一个插件](%20%20%20新手教程/%20开发第一个插件/)**
+
+## 想分享或出售您的插件？
+
+官方提供了插件商店，开发者可以将该插件所在的 **github私有仓库链接** 或**zip包**上传，即可分享或出售您的插件。
+
+具体教程参考：**[插件发布](%20测试与发布/发布/)**
+
 ## 需要帮助？
+
+您需要任何帮助，都可以通过邮件随时联系我们，邮箱地址：**support@longguikeji.com**
+
+也可以在下面**评论**或 **[github论坛](https://github.com/longguikeji/arkid/discussions)** 中给我们提问或留言。
