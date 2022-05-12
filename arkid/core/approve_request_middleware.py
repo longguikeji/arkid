@@ -19,9 +19,15 @@ class ApproveRequestMiddleware:
     def __call__(self, request):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
+        response = self.get_response(request)
 
+        # Code to be executed for each request/response after
+        # the view is called.
+        return response
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
         tenant = request.tenant
-        path = request.path
+        path = ('/' + request.resolver_match.route).replace("<", "{").replace(">", "}")
         method = request.method
 
         user = self.get_user(request)
@@ -29,8 +35,9 @@ class ApproveRequestMiddleware:
             tenant=tenant, path=path, method=method
         ).first()
         if not user or not approve_action:
-            response = self.get_response(request)
-            return response
+            return None
+        if not approve_action.extension:
+            return None
 
         approve_request = ApproveRequest.valid_objects.filter(
             action=approve_action, user=user
@@ -53,17 +60,7 @@ class ApproveRequestMiddleware:
                 response = HttpResponse(status=401)
                 return response
             else:
-                response = self.get_response(request)
-                return response
-                # 测试如果通过后，重新执行ninja function view
-                # self.restore_request(approve_request)
-
-        # Code to be executed for each request/response after
-        # the view is called.
-        #
-
-    def process_view(self, request, view_func, view_args, view_kwargs):
-        return None
+                return None
 
     def get_user(self, request):
         auth_header = request.headers.get("Authorization")
