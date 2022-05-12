@@ -1,35 +1,84 @@
+from typing import List
+from ninja import Field, ModelSchema, Schema
 from arkid.core.api import api
 from arkid.core.translation import gettext_default as _
+from arkid.core.extension.auth_rule import AuthRuleExtension
+from arkid.extension.models import Extension, TenantExtensionConfig
+from arkid.core.error import ErrorCode
 
+class AuthRuleListOut(ModelSchema):
+    class Config:
+        model=TenantExtensionConfig
+        model_fields = ["id","name","type","extension"]
 
-@api.get("/tenant/{tenant_id}/auth_rules/", tags=["认证规则"],auth=None)
+@api.get("/tenant/{tenant_id}/auth_rules/",response=List[AuthRuleListOut],tags=[_("认证规则")],auth=None)
 def get_auth_rules(request, tenant_id: str):
-    """ 认证规则列表,TODO
+    """ 认证规则列表
     """
-    return []
+    extensions = Extension.active_objects.filter(type=AuthRuleExtension.TYPE).all()
+    configs = TenantExtensionConfig.active_objects.filter(tenant__id=tenant_id, extension__in=extensions).all()
+    return configs
 
-@api.get("/tenant/{tenant_id}/auth_rules/{id}/", tags=["认证规则"],auth=None)
+AuthRuleOut = AuthRuleExtension.create_composite_config_schema(
+    'AuthRuleOut'
+)
+
+@api.get("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleOut, tags=["认证规则"], auth=None)
 def get_auth_rule(request, tenant_id: str, id: str):
-    """ 获取认证规则,TODO
+    """ 获取认证规则
     """
-    return {}
+    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    return config
 
-@api.post("/tenant/{tenant_id}/auth_rules/", tags=["认证规则"],auth=None)
-def create_auth_rule(request, tenant_id: str):
-    """ 创建认证规则,TODO
+AuthRuleCreateIn = AuthRuleExtension.create_composite_config_schema(
+    'AuthRuleCreateIn',
+    exclude=['id']
+)
+
+class AuthRuleCreateOut(Schema):
+    config_id: str
+
+@api.post("/tenant/{tenant_id}/auth_rules/",response=AuthRuleCreateOut,tags=["认证规则"],auth=None)
+def create_auth_rule(request, tenant_id: str, data:AuthRuleCreateIn):
+    """ 创建认证规则
     """
-    return {}
+    config = TenantExtensionConfig()
+    config.tenant = request.tenant
+    config.extension = Extension.active_objects.get(package=data.package)
+    config.config = data.config.dict()
+    config.name = data.dict()["name"]
+    config.type = data.type
+    config.save()
+    return config
 
-@api.put("/tenant/{tenant_id}/auth_rules/{id}/", tags=["认证规则"],auth=None)
-def update_auth_rule(request, tenant_id: str, id: str):
-    """ 编辑认证规则,TODO
+AuthRuleUpdateIn = AuthRuleExtension.create_composite_config_schema(
+    'AuthRuleUpdateIn'
+)
+
+class AuthRuleUpdateOut(Schema):
+    error:bool = Field(
+        title=_("状态")
+    )
+
+@api.put("/tenant/{tenant_id}/auth_rules/{id}/",response=AuthRuleUpdateOut, tags=["认证规则"],auth=None)
+def update_auth_rule(request, tenant_id: str, id: str, data:AuthRuleUpdateIn):
+    """ 编辑认证规则
     """
-    return {}
+    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    config.update(**(data.dict()))
+    return config
 
-@api.delete("/tenant/{tenant_id}/auth_rules/{id}/", tags=["认证规则"],auth=None)
+class AuthRuleDeleteOut(Schema):
+    error:bool = Field(
+        title=_("状态")
+    )
+
+@api.delete("/tenant/{tenant_id}/auth_rules/{id}/",response=AuthRuleDeleteOut, tags=["认证规则"],auth=None)
 def delete_auth_rule(request, tenant_id: str, id: str):
-    """ 删除认证规则,TODO
+    """ 删除认证规则
     """
-    return {}
+    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    config.delete()
+    return {'error': ErrorCode.OK.value}
 
 
