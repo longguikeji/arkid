@@ -1,5 +1,14 @@
+import os, django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
+django.setup()
 
-
+from arkid.extension.models import TenantExtensionConfig, Extension
+from arkid.core.models import SystemPermission
+from arkid.core.openapi import get_permissions
+from arkid.core.event import Event, dispatch_event, APP_START
+from arkid.core.models import Tenant
+from arkid.core.api import api
+from django.db.models import Q
 from arkid.config import get_app_config
 from arkid.common.logger import logger
 from types import SimpleNamespace
@@ -10,10 +19,7 @@ import importlib
 
 @shared_task(bind=True)
 def sync(self, config_id, *args, **kwargs):
-    import os, django
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
-    django.setup()
-    from arkid.extension.models import TenantExtensionConfig, Extension
+
     try:
         logger.info("=== arkid.core.tasks.sync start...===")
         logger.info(f"config_id: {config_id}")
@@ -37,14 +43,6 @@ def sync(self, config_id, *args, **kwargs):
 
 @app.task
 def update_system_permission():
-    import os, django
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
-    django.setup()
-    from arkid.core.models import SystemPermission
-    from arkid.core.openapi import get_permissions
-    from arkid.core.api import api
-    from django.db.models import Q
-
     permissions_data = get_permissions(api)
     group_data = []
     api_data = []
@@ -98,50 +96,37 @@ def update_system_permission():
           systempermission.is_update = True
           systempermission.save()
         permissions_item['sort_real_id'] = systempermission.sort_id
+        permissions_item['systempermission'] = systempermission
     # 单独处理分组问题
     for group_item in group_data:
-        name = group_item.get('name', '')
-        container = group_item.get('container', [])
+        container = group_item.get('container', []) 
+        group_systempermission = group_item.get('systempermission', None)
         group_sort_ids = []
         for api_item in api_data:
             sort_id = api_item.get('sort_id', 0)
             sort_real_id = api_item.get('sort_real_id', 0)
-            if sort_id in container:
+            api_systempermission = api_item.get('systempermission', None)
+            
+            if sort_id in container and api_systempermission:
+                group_systempermission.container.add(api_systempermission)
                 group_sort_ids.append(sort_real_id)
-        # 系统权限
-        group_systempermission = SystemPermission.valid_objects.filter(  
-            tenant=None,
-            category='group',
-            is_system=True,
-            name=name,
-            code__icontains='group_role',
-        ).first()
-        api_systempermissions = SystemPermission.valid_objects.filter(
-            category='api',
-            is_system=True,
-            sort_id__in=group_sort_ids,
-        )
-        for api_systempermission in api_systempermissions:
-            group_systempermission.container.add(api_systempermission)
-        group_systempermission.describe = {
-            'sort_ids': group_sort_ids
-        }
+        # parent
+        parent = group_item.get('parent', -1)
+        describe = {'sort_ids': group_sort_ids}
+        if parent != -1:
+          parent_real = None
+          for group_next in group_data:
+            sort_id = group_next.get('sort_id', 0)
+            sort_real_id = group_next.get('sort_real_id', 0)
+            group_next_permission = group_next.get('systempermission', None)
+            if sort_id == parent and group_next_permission:
+              group_systempermission.parent = group_next_permission
+              describe['parent'] = sort_real_id
+              break
+        else:
+          group_systempermission.parent = None
+        group_systempermission.describe = describe
         group_systempermission.save()
-    # for group_item in group_data:
-    #     container = group_item.get('container', [])
-    #     group_systempermission = group_item.get('systempermission', None)
-    #     group_sort_ids = []
-    #     for api_item in api_data:
-    #         sort_id = api_item.get('sort_id', 0)
-    #         api_systempermission = api_item.get('systempermission', None)
-    #         if sort_id in container and api_systempermission:
-    #             group_systempermission.container.add(api_systempermission)
-    #             group_sort_ids.append(api_systempermission.sort_id)
-    #     # 保存新的排序id
-    #     group_systempermission.describe = {
-    #         'sort_ids': group_sort_ids
-    #     }
-    #     group_systempermission.save()
     # 权限更新
     SystemPermission.valid_objects.filter(
       Q(code__icontains='group_role') | Q(category='api'),
@@ -149,3 +134,14 @@ def update_system_permission():
       is_system=True,
       is_update=False
     ).delete()
+
+class ReadyCelery(object):
+
+    def __init__(self):
+      tenant, _ = Tenant.objects.get_or_create(
+          slug='',
+          name="platform tenant",
+      )
+      dispatch_event(Event(tag=APP_START, tenant=tenant))
+
+ReadyCelery()

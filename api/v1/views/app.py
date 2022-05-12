@@ -68,7 +68,7 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
     for func, (result, extension) in results:
         if result:
             # 创建config
-            config = extension.create_tenant_config(tenant, data.config.dict(), data.name)
+            config = extension.create_tenant_config(tenant, data.config.dict(), data.name, data.app_type)
             # 创建app
             app = App()
             app.id = data.id
@@ -156,7 +156,7 @@ def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
         # app.tenant_id = tenant_id
         app.save()
         # 修改config
-        extension.update_tenant_config(app.config.id, data.config.dict())
+        extension.update_tenant_config(app.config.id, data.config.dict(), data.app_type)
         break
     return {'error': ErrorCode.OK.value}
 
