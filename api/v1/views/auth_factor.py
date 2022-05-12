@@ -43,7 +43,7 @@ def get_auth_factor_list(request, tenant_id: str):
     """ 获取认证因素列表
     """
     extensions = Extension.active_objects.filter(type=AuthFactorExtension.TYPE).all()
-    configs = TenantExtensionConfig.active_objects.filter(extension__in=extensions).all()
+    configs = TenantExtensionConfig.active_objects.filter(tenant=request.tenant, extension__in=extensions).all()
     return configs
 
 AuthFactorOutSchema = AuthFactorExtension.create_composite_config_schema(
