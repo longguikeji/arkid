@@ -18,7 +18,7 @@ def auth(request, tenant_id: str, event_tag: str, data: AuthIn):
         return {'error': 'error_code', 'message': '认证插件未启用'}
 
     useless, (user, useless) = responses[0]
-    
+
     # 生成 token
     token = refresh_token(user)
 
