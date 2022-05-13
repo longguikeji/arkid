@@ -4,7 +4,7 @@ from arkid.core.models import(
 )
 from arkid.core.event import (
     CREATE_GROUP, DELETE_GROUP, CREATE_APP_DONE,
-    DELETE_APP, APP_START,
+    DELETE_APP, APP_START, USER_REGISTER,
 )
 
 import uuid
@@ -14,16 +14,23 @@ class EventListener(object):
     处理事件回调
     '''
     def __init__(self):
+        core_event.listen_event(USER_REGISTER, self.register)
+        core_event.listen_event(APP_START, self.app_start)
         core_event.listen_event(APP_START, self.app_start)
         core_event.listen_event(CREATE_GROUP, self.create_group)
         core_event.listen_event(DELETE_GROUP, self.delete_group)
         core_event.listen_event(CREATE_APP_DONE, self.create_app)
         core_event.listen_event(DELETE_APP, self.delete_app)
 
+    def register(self, event, **kwargs):
+        from arkid.core.tasks.tasks import update_single_user_system_permission
+        user = event.data
+        tenant = event.tenant
+        update_single_user_system_permission().delay(tenant.id, user.id)
+
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission
         update_system_permission.delay()
-
 
     def create_group(self, event, **kwargs):
         group = event.data
@@ -41,6 +48,9 @@ class EventListener(object):
         group.permission = systempermission
         group.save()
         return True
+    
+    def create_tenant(sele, event, **kwargs):
+        pass
 
 
     def delete_group(self, event, **kwargs):

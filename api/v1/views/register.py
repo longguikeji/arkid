@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional, List
 from ninja import Schema, Query, ModelSchema
-from arkid.core.event import register_event, dispatch_event, Event
+from arkid.core.event import register_event, dispatch_event, Event, USER_REGISTER
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant, ExpiringToken, User
 from arkid.core.translation import gettext_default as _
@@ -38,6 +38,9 @@ def register(request, tenant_id: str, event_tag: str):
         return {'error': 'error_code', 'message': '认证插件未启用'}
 
     useless, (user, useless) = responses[0]
+
+    # 用户注册和登录
+    dispatch_event(Event(tag=USER_REGISTER, tenant=tenant, request=request, data=user))
 
     # 生成 token
     token = refresh_token(user)

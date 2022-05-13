@@ -56,6 +56,26 @@ class Tenant(BaseModel):
                     if check_result == 1:
                         return True
         return False
+    
+    def create_tenant_admin_permission(self):
+        systempermission, _ = SystemPermission.objects.get_or_create(
+            tenant=self,
+            code=self.admin_perm_code,
+            is_system=True,
+        )
+        systempermission.name = self.name+' manage'
+        systempermission.category = 'other'
+        systempermission.is_update = True
+        systempermission.save()
+        return systempermission
+    
+    def create_tenant_user_admin_permission(self, user):
+        # 此处无法使用celery和event, event会出现无法回调，celery启动时如果调用，会自己调用自己
+        from arkid.core.perm.permission_data import PermissionData
+        systempermission = self.create_tenant_admin_permission()
+        # 给用户添加管理员权限
+        permissiondata = PermissionData()
+        permissiondata.add_system_permission_to_user(self.id, user.id, systempermission.id)
 
 
 class User(BaseModel, ExpandModel):
