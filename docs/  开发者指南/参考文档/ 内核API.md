@@ -1,8 +1,5 @@
 # 内核API
 
-## 插件
-::: arkid.core.extension
-
 ## API
 ::: arkid.core.api
 

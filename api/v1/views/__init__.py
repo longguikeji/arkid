@@ -33,4 +33,5 @@ from . import (
     languape,
     log,
     front_theme,
+    event_list,
 )

@@ -35,6 +35,9 @@ def import_permission(scheme):
         describe = systempermission.describe
         if systempermission.category == 'group':
             item['container'] = describe.get('sort_ids', [])
+            parent = describe.get('parent', -1)
+            if parent != -1:
+                item['parent'] = parent
         else:
             item['container'] = []
             item['operation_id'] = systempermission.operation_id
@@ -56,6 +59,17 @@ roles = [
         "name": PLATFORM_ADMIN,
         "sort_id": 2,
         "type": "group",
+    },
+    {
+        "name": "分组",
+        "sort_id": 3,
+        "type": "group",
+    },
+    {
+        "name": "分组1",
+        "sort_id": 4,
+        "type": "group",
+        "parent": 3
     },
 ]
 

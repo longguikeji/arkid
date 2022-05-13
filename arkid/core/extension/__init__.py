@@ -266,7 +266,7 @@ class Extension(ABC):
         self.events.append((tag, signal_func))        
 
     def register_event(self, tag, name, data_schema=None, description=''):
-        tag = self.package + '_' + tag
+        tag = self.package + '.' + tag
         core_event.register_event(tag, name, data_schema, description)
         self.event_tags.append(tag)
         return tag
