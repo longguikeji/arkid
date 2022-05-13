@@ -35,6 +35,34 @@ class PermissionData(object):
         )
         return tenant
     
+    def api_system_permission_check(self, tenant, user, operation_id):
+        '''
+        检查api接口权限
+        '''
+        systempermission = SystemPermission.valid_objects.filter(tenant=None, is_system=True, operation_id=operation_id, category='api').first()
+        if systempermission:
+            sort_id = systempermission.sort_id
+            permission_result_arr = self.get_permission_result(tenant, user, None)
+            if permission_result_arr and len(permission_result_arr) > sort_id and int(permission_result_arr[sort_id]) == 0:
+                return False
+        return True
+    
+    def get_permission_result(self, tenant, user, app):
+        '''
+        取得用户解码后的权限数组
+        '''
+        userpermissionresult = UserPermissionResult.valid_objects.filter(
+            user=user,
+            tenant=tenant,
+            app=app,
+        ).first()
+        compress = Compress()
+        permission_result_arr = []
+        if userpermissionresult:
+            permission_result = compress.decrypt(userpermissionresult.result)
+            permission_result_arr = list(permission_result)
+            return permission_result_arr
+
     def add_system_permission_to_user(self, tenant_id, user_id, permission_id):
         '''
         给某个用户增加系统权限
@@ -43,7 +71,19 @@ class PermissionData(object):
         user = User.valid_objects.filter(id=user_id).first()
         permission = SystemPermission.valid_objects.filter(id=permission_id).first()
         if tenant and user:
-            self.update_arkid_single_user_permission(tenant, user, permission)
+            self.update_arkid_single_user_permission(tenant, user, permission, 1)
+        else:
+            print('不存在租户或者用户无法更新')
+    
+    def remove_system_permission_to_user(self, tenant_id, user_id, permission_id):
+        '''
+        给某个用户删除系统权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        user = User.valid_objects.filter(id=user_id).first()
+        permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+        if tenant and user:
+            self.update_arkid_single_user_permission(tenant, user, permission, 0)
         else:
             print('不存在租户或者用户无法更新')
 
@@ -54,7 +94,7 @@ class PermissionData(object):
         tenant = Tenant.valid_objects.filter(id=tenant_id).first()
         user = User.valid_objects.filter(id=user_id).first()
         if tenant and user:
-            self.update_arkid_single_user_permission(tenant, user, None)
+            self.update_arkid_single_user_permission(tenant, user, None, None)
         else:
             print('不存在租户或者用户无法更新')
 
@@ -265,7 +305,7 @@ class PermissionData(object):
                     userpermissionresult.result = compress_str_result
                     userpermissionresult.save()
 
-    def update_arkid_single_user_permission(self, tenant, auth_user, pass_permission):
+    def update_arkid_single_user_permission(self, tenant, auth_user, pass_permission, permission_value):
         '''
         更新指定用户权限
         '''
@@ -303,7 +343,7 @@ class PermissionData(object):
             if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
                 continue
             if pass_permission != None and data_item.id == pass_permission.id:
-                data_item.is_pass = 1
+                data_item.is_pass = permission_value
                 continue
             # 如果是超级管理员直接就通过
             if auth_user.is_superuser:
