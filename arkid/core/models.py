@@ -33,6 +33,30 @@ class Tenant(BaseModel):
     def __str__(self) -> str:
         return f'Tenant: {self.name}'
 
+    @property
+    def admin_perm_code(self):
+        return f'tenant_admin_{self.id}'
+
+    def has_admin_perm(self, user: 'User'):
+        if user.is_superuser:
+            return True
+        else:
+            systempermission = SystemPermission.valid_objects.filter(tenant=self, code=self.admin_perm_code, is_system=True).first()
+            if systempermission:
+                userpermissionresult = UserPermissionResult.valid_objects.filter(
+                    user=auth_user,
+                    tenant=tenant,
+                    app=None,
+                ).first()
+                if userpermissionresult:
+                    compress = Compress()
+                    permission_result = compress.decrypt(userpermissionresult.result)
+                    permission_result_arr = list(permission_result)
+                    check_result = int(permission_result_arr[systempermission.sort_id])
+                    if check_result == 1:
+                        return True
+        return False
+
 
 class User(BaseModel, ExpandModel):
     
@@ -56,6 +80,10 @@ class User(BaseModel, ExpandModel):
     #     related_name="user_tenant_set",
     #     related_query_name="tenant",
     # )
+
+    @property
+    def is_superuser(self):
+        return True if self.id == User.valid_objects.order_by('-created').first().id else False
 
 
 class UserGroup(BaseModel, ExpandModel):
