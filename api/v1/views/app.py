@@ -45,6 +45,12 @@ class ConfigSchemaOut(ModelSchema):
         model_fields = ['config']
 
 
+class ConfigOpenApiVersionSchemaOut(Schema):
+
+    version: str = Field(title=_('version','应用版本'), default='')
+    openapi_uris: str = Field(title=_('openapi uris','接口文档地址'), default='')
+
+
 # class AppSchemaOut(ModelSchema):
 
 #     config: AppConfigSchemaIn
@@ -118,6 +124,35 @@ def get_app(request, tenant_id: str, app_id: str):
     }
     return result
 
+@api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionSchemaOut, tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_app_openapi_version(request, tenant_id: str, app_id: str):
+    '''
+    获取app的openapi地址和版本
+    '''
+    app = get_object_or_404(App, id=app_id, is_del=False)
+    app_config = app.config.config
+    result = {
+        'version': app_config.get('version', ''),
+        'openapi_uris': app_config.get('openapi_uris', '')
+    }
+    return result
+
+
+@api.put("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpenApiVersionSchemaOut):
+    '''
+    获取app的openapi地址和版本
+    '''
+    app = get_object_or_404(App, id=app_id, is_del=False)
+    config = app.config
+    app_config = config.config
+    app_config['version'] = data.version
+    app_config['openapi_uris'] = data.openapi_uris
+    config.save()
+    return {'error': ErrorCode.OK.value}
+
 @api.delete("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_app(request, tenant_id: str, app_id: str):
@@ -141,6 +176,7 @@ def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
     '''
     # data = data_1.__root__
     tenant = request.tenant
+    data.id = app_id
     # 分发事件开始
     results = dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=data))
     for func, (result, extension) in results:
@@ -156,7 +192,7 @@ def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
         # app.tenant_id = tenant_id
         app.save()
         # 修改config
-        extension.update_tenant_config(app.config.id, data.config.dict(), data.app_type)
+        extension.update_tenant_config(app.config.id, data.config.dict(), app.name, data.app_type)
         break
     return {'error': ErrorCode.OK.value}
 
