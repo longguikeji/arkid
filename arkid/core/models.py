@@ -299,6 +299,13 @@ class Permission(PermissionAbstract):
         verbose_name = _("Permission", "权限")
         verbose_name_plural = _("Permission", "权限")
 
+    # def anto_sort():
+    #     # 方法必须放在字段前面(有bug不同应用之间会互相占用)
+    #     count=Permission.objects.count()
+    #     return 0 if (count == 0) else count
+
+    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=0)
+
     app = models.ForeignKey(
         App,
         models.PROTECT,

@@ -16,7 +16,7 @@ from arkid.core.extension.app_protocol import AppProtocolExtension
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
     CREATE_APP, UPDATE_APP, DELETE_APP,
-    CREATE_APP_DONE,
+    CREATE_APP_DONE, SET_APP_OPENAPI_VERSION,
 )
 
 import uuid
@@ -148,9 +148,16 @@ def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpe
     app = get_object_or_404(App, id=app_id, is_del=False)
     config = app.config
     app_config = config.config
-    app_config['version'] = data.version
-    app_config['openapi_uris'] = data.openapi_uris
+    if data.version and data.openapi_uris:
+        if data.version != app_config['version'] or data.openapi_uris != app_config['openapi_uris']:
+            # 只有版本或接口发生变化时才调用事件
+            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
+        app_config['version'] = data.version
+        app_config['openapi_uris'] = data.openapi_uris
     config.save()
+    # from arkid.core.perm.permission_data import PermissionData
+    # permissiondata = PermissionData()
+    # permissiondata.update_app_permission(tenant_id, app_id)
     return {'error': ErrorCode.OK.value}
 
 @api.delete("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)

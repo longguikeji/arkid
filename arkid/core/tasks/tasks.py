@@ -40,6 +40,14 @@ def sync(self, config_id, *args, **kwargs):
         raise self.retry(exc=exc, max_retries=max_retries, countdown=countdown)
 
 @app.task
+def update_app_permission(tenant_id, app_id):
+    '''
+    更新应用权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_app_permission(tenant_id, app_id)
+
+@app.task
 def update_system_permission():
     '''
     更新系统权限
