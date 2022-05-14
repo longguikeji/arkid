@@ -5,6 +5,7 @@ from arkid.core.models import(
 from arkid.core.event import (
     CREATE_GROUP, DELETE_GROUP, CREATE_APP_DONE,
     DELETE_APP, APP_START, USER_REGISTER,
+    SET_APP_OPENAPI_VERSION, UPDATE_APP_USER_API_PERMISSION,
 )
 
 import uuid
@@ -21,6 +22,8 @@ class EventListener(object):
         core_event.listen_event(DELETE_GROUP, self.delete_group)
         core_event.listen_event(CREATE_APP_DONE, self.create_app)
         core_event.listen_event(DELETE_APP, self.delete_app)
+        core_event.listen_event(SET_APP_OPENAPI_VERSION, self.set_app_openapi_version)
+        core_event.listen_event(UPDATE_APP_USER_API_PERMISSION, self.update_app_user_api_permission)
 
     def register(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_single_user_system_permission
@@ -31,6 +34,20 @@ class EventListener(object):
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission
         update_system_permission.delay()
+
+    def set_app_openapi_version(self, event, **kwargs):
+        from arkid.core.tasks.tasks import update_app_permission
+        app = event.data
+        tenant = event.tenant
+        update_app_permission.delay(tenant.id, app.id)
+    
+    def update_app_user_api_permission(self, event, **kwargs):
+        from arkid.core.tasks.tasks import update_single_user_app_permission
+        app = event.data
+        # 把用户赋在app上给过来
+        user = app.user
+        tenant = event.tenant
+        update_single_user_app_permission.delay(tenant.id, user.id, app.id)
 
     def create_group(self, event, **kwargs):
         group = event.data
