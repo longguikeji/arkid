@@ -64,6 +64,14 @@ def update_single_user_system_permission(tenant_id, user_id):
     permissiondata.update_single_user_system_permission(tenant_id, user_id)
 
 @app.task
+def update_single_user_app_permission(tenant_id, user_id, app_id):
+    '''
+    更新单个用户的应用权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_single_user_app_permission(tenant_id, user_id, app_id)
+
+@app.task
 def add_system_permission_to_user(self, tenant_id, user_id, permission_id):
     '''
     添加系统权限给用户

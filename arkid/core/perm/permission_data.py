@@ -331,7 +331,7 @@ class PermissionData(object):
 
     def update_arkid_single_user_permission(self, tenant, auth_user, pass_permission, permission_value):
         '''
-        更新指定用户权限
+        更新指定用户系统权限
         '''
         is_tenant_admin = tenant.has_admin_perm(auth_user)
         system_permissions = SystemPermission.valid_objects.order_by('sort_id')
@@ -647,3 +647,131 @@ class PermissionData(object):
                 userpermissionresult.is_update = True
                 userpermissionresult.result = compress_str_result
                 userpermissionresult.save()
+
+    def update_single_user_app_permission(self, tenant_id, user_id, app_id):
+        '''
+        更新单个用户的应用权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        user = User.valid_objects.filter(id=user_id).first()
+        app = App.valid_objects.filter(id=app_id).first()
+        if tenant and user and app:
+            self.update_app_single_user_permission_detail(tenant, user, app, None, None)
+        else:
+            print('不存在租户或者用户或者应用无法更新')
+    
+    def update_app_single_user_permission_detail(self, tenant, auth_user, app, pass_permission, permission_value):
+        '''
+        更新指定用户应用权限
+        '''
+        is_tenant_admin = tenant.has_admin_perm(auth_user)
+        permissions = Permission.valid_objects.filter(app=app, tenant=tenant).order_by('sort_id')
+        data_dict = {}
+        for permission in permissions:
+            data_dict[permission.sort_id] = permission
+        # 取得当前用户权限数据
+        userpermissionresult = UserPermissionResult.valid_objects.filter(
+            user=auth_user,
+            tenant=tenant,
+            app=app,
+        ).first()
+        compress = Compress()
+        permission_result = ''
+        if userpermissionresult:
+            permission_result = compress.decrypt(userpermissionresult.result)
+        # 对数据进行一次排序
+        data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
+
+        permission_result_arr = []
+        if permission_result:
+            permission_result_arr = list(permission_result)
+            if len(permission_result_arr) < len(data_dict.keys()):
+                # 如果原来的权限数目比较少，增加了新的权限，需要先补0
+                diff = len(data_dict.keys()) - len(permission_result_arr)
+                for i in range(diff):
+                    permission_result_arr.append(0)
+            for data_item in data_dict.values():
+                sort_id = data_item.sort_id
+                sort_id_result = int(permission_result_arr[sort_id])
+                if sort_id_result == 1:
+                    data_item.is_pass = 1
+                else:
+                    data_item.is_pass = 0
+        # 权限检查
+        for data_item in data_dict.values():
+            # 如果是通过就不查验
+            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                continue
+            if pass_permission != None and data_item.id == pass_permission.id:
+                data_item.is_pass = permission_value
+                continue
+            # 如果是超级管理员直接就通过
+            if auth_user.is_superuser:
+                data_item.is_pass = 1
+            else:
+                if data_item.name == 'normal-user':
+                    data_item.is_pass = 1
+                    describe = data_item.describe
+                    container = describe.get('sort_ids')
+                    if container:
+                        for item in container:
+                            data_dict.get(item).is_pass = 1
+                elif data_item.name == 'tenant-admin' and is_tenant_admin:
+                    data_item.is_pass = 1
+                    describe = data_item.describe
+                    container = describe.get('sort_ids')
+                    if container:
+                        for item in container:
+                            data_dict.get(item).is_pass = 1
+                elif data_item.name == 'platform-admin':
+                    # 平台管理员默认有所有权限所有这里没必要做处理
+                    pass
+                elif hasattr(data_item, 'is_pass') == False:
+                    data_item.is_pass = 0
+                else:
+                    data_item.is_pass = 0
+        # 产生结果字符串
+        if permission_result:
+            for data_item in data_dict.values():
+                permission_result_arr[data_item.sort_id] = data_item.is_pass
+        else:
+            for data_item in data_dict.values():
+                permission_result_arr.append(data_item.is_pass)
+        permission_result = "".join(map(str, permission_result_arr))
+        compress_str_result = compress.encrypt(permission_result)
+        if compress_str_result:
+            userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
+                is_del=False,
+                user=auth_user,
+                tenant=tenant,
+                app=app,
+            )
+            userpermissionresult.is_update = True
+            userpermissionresult.result = compress_str_result
+            userpermissionresult.save()
+
+    def add_app_permission_to_user(self, tenant_id, app_id, user_id, permission_id):
+        '''
+        给某个用户增加应用权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        user = User.valid_objects.filter(id=user_id).first()
+        app = App.valid_objects.filter(id=app_id).first()
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+        if tenant and user:
+            self.update_app_single_user_permission_detail(tenant, user, app, permission, 1)
+        else:
+            print('不存在租户或者用户无法更新')
+    
+    def remove_app_permission_to_user(self, tenant_id, user_id, app_id, permission_id):
+        '''
+        给某个用户删除应用权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        user = User.valid_objects.filter(id=user_id).first()
+        app = App.valid_objects.filter(id=app_id).first()
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+        if tenant and user:
+            self.update_app_single_user_permission_detail(tenant, user, app, permission, 0)
+        else:
+            print('不存在租户或者用户无法更新')

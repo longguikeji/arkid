@@ -155,9 +155,6 @@ def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpe
         app_config['version'] = data.version
         app_config['openapi_uris'] = data.openapi_uris
     config.save()
-    # from arkid.core.perm.permission_data import PermissionData
-    # permissiondata = PermissionData()
-    # permissiondata.update_app_permission(tenant_id, app_id)
     return {'error': ErrorCode.OK.value}
 
 @api.delete("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)
