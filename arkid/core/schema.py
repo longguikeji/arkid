@@ -37,7 +37,11 @@ class UserSchemaOut(ModelSchema):
 
 class ResponseSchema(Schema):
     error: Optional[str] = Field(
-        default="0"
+        default="0",
+        hidden=True,
     )
-    message: Optional[str]
+    message: Optional[str] = Field(
+        default="",
+        hidden=True
+    )
     data: Optional[dict]
