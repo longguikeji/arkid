@@ -17,7 +17,6 @@ class EventListener(object):
     def __init__(self):
         core_event.listen_event(USER_REGISTER, self.register)
         core_event.listen_event(APP_START, self.app_start)
-        core_event.listen_event(APP_START, self.app_start)
         core_event.listen_event(CREATE_GROUP, self.create_group)
         core_event.listen_event(DELETE_GROUP, self.delete_group)
         core_event.listen_event(CREATE_APP_DONE, self.create_app)
