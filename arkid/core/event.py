@@ -103,6 +103,7 @@ def unregister_event(tag):
 
 
 def dispatch_event(event, sender=None):
+    print(event.tag)
     if not event.tenant:
         raise Warning("None Tenant!")
     event_type = tag_map_event_type.get(event.tag)

@@ -1,11 +1,13 @@
 
+from abc import abstractmethod
+from enum import Enum
 from ninja import Schema
 from pydantic import Field
-from abc import abstractmethod
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core import event as core_event
 from arkid.extension.models import TenantExtensionConfig
+from arkid.core.extension import auth_factor
 
 class AuthRuleExtension(Extension):
     
@@ -20,13 +22,38 @@ class AuthRuleExtension(Extension):
     @property
     def type(self):
         return AuthRuleExtension.TYPE
-    
-    LOGIN = 'login'
-    REGISTER = 'register'
-    RESET_PASSWORD = 'password'
 
     def load(self):
         super().load()
+
+        # 认证前规则
+        self.listen_event("api_v1_views_auth_auth_pre", self.before_auth)
+
+        self.listen_event("api_v1_views_auth_auth", self.after_auth)
+
+    def after_auth(self,event,**kwargs):
+        if event.response["error"]:
+            self.auth_fail(event,**kwargs)
+        else:
+            self.auth_success(event,**kwargs)
+
+    @abstractmethod
+    def auth_success(self, event, **kwargs):
+        """ 认证成功规则
+        """
+        pass
+
+    @abstractmethod
+    def auth_fail(self, event, **kwargs):
+        """ 认证失败规则
+        """
+        pass
+
+    @abstractmethod
+    def before_auth(self, event, **kwargs):
+        """ 认证前规则
+        """
+        pass
 
     def register_auth_rule_schema(self, schema, auth_rule_type):
         self.register_config_schema(schema, self.package + '_' + auth_rule_type)
@@ -38,6 +65,4 @@ class AuthRuleExtension(Extension):
 
 
 class BaseAuthRuleSchema(Schema):
-    login_enabled: bool = Field(default=True, title=_('login_enabled', '启用登录'))
-    register_enabled: bool = Field(default=True, title=_('register_enabled', '启用注册'))
-    reset_password_enabled: bool = Field(default=True, title=_('reset_password_enabled', '启用重置密码'))
+    main_auth_factor: str = Field(title=_('main_auth_factor', '主认证因素'))

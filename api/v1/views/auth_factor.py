@@ -2,7 +2,7 @@ from ninja import ModelSchema, Schema
 from typing import Union, Literal, List, Optional
 from pydantic import Field
 from arkid.core import extension
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from django.db import transaction
 from arkid.core.schema import RootSchema
 from arkid.core.translation import gettext_default as _
@@ -39,6 +39,7 @@ class AuthFactorListOutSchema(ModelSchema):
         model_fields = ["id","name","type","extension"]
 
 @api.get("/tenant/{tenant_id}/auth_factors/", response=List[AuthFactorListOutSchema], tags=['认证因素'], auth=None)
+@operation(List[AuthFactorListOutSchema])
 def get_auth_factor_list(request, tenant_id: str):
     """ 获取认证因素列表
     """
