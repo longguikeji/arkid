@@ -447,7 +447,22 @@ class Extension(ABC):
         return TenantExtensionConfig.valid_objects.get(id=id)
     
     def update_tenant_config(self, id,  config, name, type):
-        return TenantExtensionConfig.valid_objects.filter(id=id).update(config=config, name=name,type=type)
+        tenantextensionconfig = TenantExtensionConfig.valid_objects.filter(id=id).first()
+        if tenantextensionconfig:
+            tenantextensionconfig.name = name
+            tenantextensionconfig.type = type
+
+            # 只更新提供的字段，不提供的字段不更新，防止冲掉已经写入的其它字段
+            default_config = tenantextensionconfig.config
+            config_keys = config.keys()
+            for key in config_keys:
+                default_config[key] = config.get(key)
+
+            tenantextensionconfig.config = default_config
+            tenantextensionconfig.save()
+            return True
+        else:
+            return False 
 
     def create_tenant_config(self, tenant, config, name, type):
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
