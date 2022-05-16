@@ -1,4 +1,4 @@
-from ninja import Schema, ModelSchema
+from ninja import Field, Schema, ModelSchema
 from arkid.core.models import User
 from typing import Optional
 
@@ -36,6 +36,8 @@ class UserSchemaOut(ModelSchema):
 
 
 class ResponseSchema(Schema):
-    error: Optional[str]
+    error: Optional[str] = Field(
+        default="0"
+    )
     message: Optional[str]
     data: Optional[dict]

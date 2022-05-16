@@ -28,6 +28,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         )
 
     def before_auth(self, event, **kwargs):
+        
         pass
 
     def auth_success(self, event, **kwargs):
