@@ -9,8 +9,16 @@ event_id_map = {}
 
 
 class EventType:
-
-    def __init__(self, tag: str, name: str, data_schema: Schema = None, result_schema: Schema = None, request_schema: Schema = None, response_schema:  Schema = None, description: str = '') -> None:
+    def __init__(
+        self,
+        tag: str,
+        name: str,
+        data_schema: Schema = None,
+        result_schema: Schema = None,
+        request_schema: Schema = None,
+        response_schema: Schema = None,
+        description: str = '',
+    ) -> None:
         """事件类型用于注册
         注意:
             event request 切勿修改
@@ -35,8 +43,16 @@ class EventType:
 
 
 class Event:
-
-    def __init__(self, tag: str, tenant: Tenant, request: HttpRequest=None, response: HttpResponse=None, packages: str=None, data=None, uuid: str=None) -> None:
+    def __init__(
+        self,
+        tag: str,
+        tenant: Tenant,
+        request: HttpRequest = None,
+        response: HttpResponse = None,
+        packages: str = None,
+        data=None,
+        uuid: str = None,
+    ) -> None:
         """事件
 
         Args:
@@ -66,11 +82,13 @@ class Event:
 
 
 tag_map_signal: Dict[str, Event] = {}
-temp_listens:Dict[str, tuple] = {}
+temp_listens: Dict[str, tuple] = {}
 
 
 def register_event(tag, name, data_schema=None, description=''):
-    register_event_type(EventType(tag=tag, name=name, data_schema=data_schema, description=description))
+    register_event_type(
+        EventType(tag=tag, name=name, data_schema=data_schema, description=description)
+    )
 
 
 def register_event_type(event_type: EventType):
@@ -80,9 +98,9 @@ def register_event_type(event_type: EventType):
     tag_map_signal[tag] = event_type
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
-        listen_event(tag,func,listener,**kwargs)
+        listen_event(tag, func, listener, **kwargs)
         del temp_listens[tag]
-    
+
     # 将事件声明在OpenAPI的文档中
     # def view_func():
     #     pass
@@ -121,13 +139,14 @@ def break_event_loop(data):
     raise EventDisruptionData(data)
 
 
-def register_and_dispatch_event(tag, name, tenant, description='', data_schema=None, data=None):
+def register_and_dispatch_event(
+    tag, name, tenant, description='', data_schema=None, data=None
+):
     register_event(tag, name, data_schema, description)
     return dispatch_event(Event(tag, tenant, data))
 
 
 def decorator_listen_event(tag, **kwargs):
-
     def _decorator(func):
         def signal_func(event, **kwargs2):
             # 判断租户是否启用该插件
@@ -159,9 +178,9 @@ def remove_event_id(event):
 
 def listen_event(tag, func, listener=None, **kwargs):
     def signal_func(sender, event, **kwargs2):
-        if event.uuid and event_id_map.get(event.uuid,{}).get(func):
-            return event_id_map.get(event.uuid,{}).get(func), listener
-        
+        if event.uuid and event_id_map.get(event.uuid, {}).get(func):
+            return event_id_map.get(event.uuid, {}).get(func), listener
+
         res = func(sender=sender, event=event, **kwargs2)
         if event.uuid:
             event_id_map[event.uuid] = {func: res}
@@ -213,25 +232,33 @@ CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
 DELETE_FRONT_THEME_CONFIG = 'DELETE_FRONT_THEME_CONFIG'
 
+CREATE_ACCOUNT_LIFE_CONFIG = 'CREATE_ACCOUNT_LIFE_CONFIG'
+UPDATE_ACCOUNT_LIFE_CONFIG = 'UPDATE_ACCOUNT_LIFE_CONFIG'
+DELETE_ACCOUNT_LIFE_CONFIG = 'DELETE_ACCOUNT_LIFE_CONFIG'
+
 APP_START = 'APP_START'
 
 
-
 # register events
-register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor','认证因素生成登录页面'))
-register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules','登录页面生成规则'))
-register_event(CREATE_APP, _('create app','创建应用'))
-register_event(CREATE_APP_DONE, _('create app done','创建应用完成'))
-register_event(UPDATE_APP, _('update app','修改应用'))
-register_event(DELETE_APP, _('delete app','删除应用'))
-register_event(CREATE_GROUP, _('create group','创建分组'))
-register_event(UPDATE_GROUP, _('update group','修改分组'))
-register_event(DELETE_GROUP, _('delete group','删除分组'))
-register_event(APP_START, _('app start','应用启动'))
-register_event(SEND_SMS, _('send sms','发送短信'))
-register_event(CREATE_PERMISSION, _('create permission','创建权限'))
-register_event(UPDATE_PERMISSION, _('update permission','修改权限'))
-register_event(DELETE_PERMISSION, _('delete permission','删除权限'))
-register_event(CREATE_FRONT_THEME_CONFIG, _('Create Theme','添加主题'))
-register_event(UPDATE_FRONT_THEME_CONFIG, _('Update Theme','修改主题'))
-register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme','删除主题'))
+register_event(
+    CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
+)
+register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules', '登录页面生成规则'))
+register_event(CREATE_APP, _('create app', '创建应用'))
+register_event(CREATE_APP_DONE, _('create app done', '创建应用完成'))
+register_event(UPDATE_APP, _('update app', '修改应用'))
+register_event(DELETE_APP, _('delete app', '删除应用'))
+register_event(CREATE_GROUP, _('create group', '创建分组'))
+register_event(UPDATE_GROUP, _('update group', '修改分组'))
+register_event(DELETE_GROUP, _('delete group', '删除分组'))
+register_event(APP_START, _('app start', '应用启动'))
+register_event(SEND_SMS, _('send sms', '发送短信'))
+register_event(CREATE_PERMISSION, _('create permission', '创建权限'))
+register_event(UPDATE_PERMISSION, _('update permission', '修改权限'))
+register_event(DELETE_PERMISSION, _('delete permission', '删除权限'))
+register_event(CREATE_FRONT_THEME_CONFIG, _('Create Theme', '添加主题'))
+register_event(UPDATE_FRONT_THEME_CONFIG, _('Update Theme', '修改主题'))
+register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme', '删除主题'))
+register_event(CREATE_ACCOUNT_LIFE_CONFIG, _('Create Account Life', '添加生命周期'))
+register_event(UPDATE_ACCOUNT_LIFE_CONFIG, _('Update Account Life', '更新生命周期'))
+register_event(DELETE_ACCOUNT_LIFE_CONFIG, _('Delete Account Life', '删除生命周期'))

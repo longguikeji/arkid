@@ -77,11 +77,6 @@ class ScimSyncConfigSchemaOut(Schema):
     config: dict
 
 
-ScimSyncSchemaOut = ScimSyncExtension.create_composite_config_schema(
-    'ScimSyncSchemaOut'
-)
-
-
 @api.get(
     "/tenant/{tenant_id}/scim_syncs/",
     response=List[ScimSyncListSchemaOut],
@@ -92,7 +87,7 @@ ScimSyncSchemaOut = ScimSyncExtension.create_composite_config_schema(
 def get_scim_syncs(request, tenant_id: str):
     """用户数据同步配置列表,TODO"""
     configs = TenantExtensionConfig.valid_objects.filter(
-        tenant_id=tenant_id, type="scim_sync"
+        tenant_id=tenant_id, extension__type="scim_sync"
     )
     return configs
 
