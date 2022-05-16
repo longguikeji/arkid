@@ -136,20 +136,20 @@ def get_app_openapi_version(request, tenant_id: str, app_id: str):
         'version': app_config.get('version', ''),
         'openapi_uris': app_config.get('openapi_uris', '')
     }
-    from arkid.core.models import Tenant, User
-    from arkid.core.perm.permission_data import PermissionData
-    tenant, _ = Tenant.objects.get_or_create(
-      slug='',
-      name="platform tenant",
-    )
-    auth_user, _ = User.objects.get_or_create(
-        username="hanbin",
-        tenant=tenant,
-    )
-    tenant.users.add(auth_user)
-    tenant.save()
-    permissiondata = PermissionData()
-    permissiondata.update_single_user_system_permission(tenant.id, auth_user.id)
+    # from arkid.core.models import Tenant, User
+    # from arkid.core.perm.permission_data import PermissionData
+    # tenant, _ = Tenant.objects.get_or_create(
+    #   slug='',
+    #   name="platform tenant",
+    # )
+    # auth_user, _ = User.objects.get_or_create(
+    #     username="hanbin",
+    #     tenant=tenant,
+    # )
+    # tenant.users.add(auth_user)
+    # tenant.save()
+    # permissiondata = PermissionData()
+    # permissiondata.update_single_user_system_permission(tenant.id, auth_user.id)
     return result
 
 
