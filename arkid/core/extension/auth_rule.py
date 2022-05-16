@@ -37,7 +37,7 @@ class AuthRuleExtension(Extension):
     def check_before_auth(self, event, **kwargs):
         auth_factor_config = event.data["auth_factor_config"]
         config = self.get_current_config(event)
-        if config.config["main_auth_fator"]:
+        if config.config.get("main_auth_fator", None):
             if config.config["main_auth_fator"] == auth_factor_config.id.hex:
                 return self.before_auth(event, auth_factor_config=auth_factor_config, **kwargs)
         else:
