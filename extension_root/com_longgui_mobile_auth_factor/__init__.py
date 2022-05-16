@@ -41,7 +41,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                     error_code = ErrorCode.USER_NOT_IN_TENANT_ERROR.value
                     message = _('Can not find user in tenant',"该租户下未找到对应用户。")
                 else:
-                    return self.auth_success(user_mobile.user)
+                    return self.auth_success(user_mobile.user,event)
             else:
                 error_code = ErrorCode.SMS_CODE_MISMATCH.value
                 message = _('sms code mismatched',"手机验证码错误")

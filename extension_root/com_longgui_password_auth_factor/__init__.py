@@ -60,7 +60,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             user_password = UserPassword.objects.filter(user=user).first()
             if user_password:
                 if check_password(password, user_password.password):
-                    return self.auth_success(user)
+                    return self.auth_success(user, event)
         
         return self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username or password not correct'})
 

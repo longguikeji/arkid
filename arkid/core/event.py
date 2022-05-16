@@ -218,6 +218,10 @@ CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
 DELETE_FRONT_THEME_CONFIG = 'DELETE_FRONT_THEME_CONFIG'
 
+BEFORE_AUTH = 'BEFORE_AUTH'
+AUTH_SUCCESS = 'AUTH_SUCCESS'
+AUTH_FAIL = 'AUTH_FAIL'
+
 APP_START = 'APP_START'
 
 
@@ -243,3 +247,6 @@ register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme','删除主题'))
 register_event(USER_REGISTER, _('user register','用户注册'))
 register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version','设置应用接口和版本'))
 register_event(UPDATE_APP_USER_API_PERMISSION, _('update app user api permission','更新应用的用户接口权限'))
+register_event(BEFORE_AUTH, _('before_auth','认证前'))
+register_event(AUTH_SUCCESS, _('auth success','认证成功'))
+register_event(AUTH_FAIL, _('auth fail','认证失败'))
