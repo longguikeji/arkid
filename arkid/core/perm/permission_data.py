@@ -160,6 +160,7 @@ class PermissionData(object):
                 systempermission.save()
             else:
                 api_data.append(permissions_item)
+
                 systempermission, is_create = SystemPermission.objects.get_or_create(
                     category='api',
                     is_system=True,
@@ -238,10 +239,10 @@ class PermissionData(object):
             else:
                 if auth_user.id.hex in userpermissionresults_dict:
                     userpermissionresult_obj = userpermissionresults_dict.get(auth_user.id.hex)
-                    permission_result_arr = list(userpermissionresult_obj)
                     auth_user_permission_result = compress.decrypt(userpermissionresult_obj.result)
                     auth_user_permission_result_arr = list(auth_user_permission_result)
-                    check_result = int(permission_result_arr[systempermission.sort_id])
+                    
+                    check_result = int(auth_user_permission_result_arr[systempermission.sort_id])
                     if check_result == 1:
                         auth_user.is_tenant_admin = True
                     else:
@@ -251,8 +252,17 @@ class PermissionData(object):
         # 权限数据
         system_permissions = SystemPermission.valid_objects.order_by('sort_id')
         data_dict = {}
+        data_group_parent_child = {}
         for system_permission in system_permissions:
             data_dict[system_permission.sort_id] = system_permission
+            if system_permission.parent:
+                parent_id_hex = system_permission.parent.id.hex
+                if parent_id_hex not in data_group_parent_child:
+                    data_group_parent_child[parent_id_hex] = [system_permission]
+                else:
+                    temp_data_group = data_group_parent_child[parent_id_hex]
+                    temp_data_group.append(system_permission)
+                    data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
         # 计算每一个用户的权限情况
         for auth_user in auth_users:
@@ -269,6 +279,22 @@ class PermissionData(object):
                         diff = len(data_dict.keys()) - len(permission_result_arr)
                         for i in range(diff):
                             permission_result_arr.append(0)
+                    # 提前把有父子关系的权限处理好
+                    for data_item in data_dict.values():
+                        sort_id = data_item.sort_id
+                        sort_id_result = int(permission_result_arr[sort_id])
+                        if sort_id_result == 1:
+                            if data_item.category == 'group':
+                                # 如果用户对某一个分组有权限，则对该分组的所有下属分组都有权限。
+                                group_id_hex = data_item.id.hex
+                                if group_id_hex in data_group_parent_child:
+                                    # 递归<查找>
+                                    await_result = []
+                                    self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                                    for parent_child_item in await_result:
+                                        parent_child_sort_id = parent_child_item.sort_id
+                                        permission_result_arr[parent_child_sort_id] = '1'
+                    # 权限更新设置
                     for data_item in data_dict.values():
                         sort_id = data_item.sort_id
                         sort_id_result = int(permission_result_arr[sort_id])
@@ -295,6 +321,8 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
+                        else:
+                            data_dict.get(item).is_pass = 0
                     elif data_item.name == 'tenant-admin' and auth_user.is_tenant_admin:
                         data_item.is_pass = 1
                         describe = data_item.describe
@@ -302,9 +330,10 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
+                        else:
+                            data_dict.get(item).is_pass = 0
                     elif data_item.name == 'platform-admin':
-                        # 平台管理员默认有所有权限所有这里没必要做处理
-                        pass
+                        data_item.is_pass = 0
                     elif hasattr(data_item, 'is_pass') == False:
                         data_item.is_pass = 0
                     else:
@@ -336,8 +365,17 @@ class PermissionData(object):
         is_tenant_admin = tenant.has_admin_perm(auth_user)
         system_permissions = SystemPermission.valid_objects.order_by('sort_id')
         data_dict = {}
+        data_group_parent_child = {}
         for system_permission in system_permissions:
             data_dict[system_permission.sort_id] = system_permission
+            if system_permission.parent:
+                parent_id_hex = system_permission.parent.id.hex
+                if parent_id_hex not in data_group_parent_child:
+                    data_group_parent_child[parent_id_hex] = [system_permission]
+                else:
+                    temp_data_group = data_group_parent_child[parent_id_hex]
+                    temp_data_group.append(system_permission)
+                    data_group_parent_child[parent_id_hex] = temp_data_group
         # 取得当前用户权限数据
         userpermissionresult = UserPermissionResult.valid_objects.filter(
             user=auth_user,
@@ -350,7 +388,6 @@ class PermissionData(object):
             permission_result = compress.decrypt(userpermissionresult.result)
         # 对数据进行一次排序
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
-
         permission_result_arr = []
         if permission_result:
             permission_result_arr = list(permission_result)
@@ -359,10 +396,27 @@ class PermissionData(object):
                 diff = len(data_dict.keys()) - len(permission_result_arr)
                 for i in range(diff):
                     permission_result_arr.append(0)
+            # 提前把有父子关系的权限处理好
             for data_item in data_dict.values():
                 sort_id = data_item.sort_id
                 sort_id_result = int(permission_result_arr[sort_id])
                 if sort_id_result == 1:
+                    if data_item.category == 'group':
+                        # 如果用户对某一个分组有权限，则对该分组的所有下属分组都有权限。
+                        group_id_hex = data_item.id.hex
+                        if group_id_hex in data_group_parent_child:
+                            # 递归<查找>
+                            await_result = []
+                            self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                            for parent_child_item in await_result:
+                                parent_child_sort_id = parent_child_item.sort_id
+                                permission_result_arr[parent_child_sort_id] = '1'
+            # 权限更新设置
+            for data_item in data_dict.values():
+                sort_id = data_item.sort_id
+                sort_id_result = int(permission_result_arr[sort_id])
+                if sort_id_result == 1:
+                    # 这里权限同步更新
                     data_item.is_pass = 1
                 else:
                     data_item.is_pass = 0
@@ -385,6 +439,8 @@ class PermissionData(object):
                     if container:
                         for item in container:
                             data_dict.get(item).is_pass = 1
+                    else:
+                        data_dict.get(item).is_pass = 0
                 elif data_item.name == 'tenant-admin' and is_tenant_admin:
                     data_item.is_pass = 1
                     describe = data_item.describe
@@ -392,9 +448,10 @@ class PermissionData(object):
                     if container:
                         for item in container:
                             data_dict.get(item).is_pass = 1
+                    else:
+                        data_dict.get(item).is_pass = 0
                 elif data_item.name == 'platform-admin':
-                    # 平台管理员默认有所有权限所有这里没必要做处理
-                    pass
+                    data_item.is_pass = 0
                 elif hasattr(data_item, 'is_pass') == False:
                     data_item.is_pass = 0
                 else:
@@ -418,6 +475,19 @@ class PermissionData(object):
             userpermissionresult.is_update = True
             userpermissionresult.result = compress_str_result
             userpermissionresult.save()
+    
+    def process_chilld(self, find_dict, id_hex, result):
+        '''
+        递归查找分组
+        '''
+        items = find_dict.get(id_hex, None)
+        if items is None:
+            return
+        else:
+            for item in items:
+                result.append(item)
+                item_id_hex = item.id.hex
+                self.process_chilld(find_dict, item_id_hex, result)
 
     def get_app_permission_by_api_url(self, app):
         '''
@@ -557,10 +627,9 @@ class PermissionData(object):
             else:
                 if auth_user.id.hex in userpermissionresults_dict:
                     userpermissionresult_obj = userpermissionresults_dict.get(auth_user.id.hex)
-                    permission_result_arr = list(userpermissionresult_obj)
                     auth_user_permission_result = compress.decrypt(userpermissionresult_obj.result)
                     auth_user_permission_result_arr = list(auth_user_permission_result)
-                    check_result = int(permission_result_arr[systempermission.sort_id])
+                    check_result = int(auth_user_permission_result_arr[systempermission.sort_id])
                     if check_result == 1:
                         auth_user.is_tenant_admin = True
                     else:
@@ -570,8 +639,17 @@ class PermissionData(object):
         # 权限数据
         permissions = Permission.valid_objects.filter(app=app, tenant=tenant).order_by('sort_id')
         data_dict = {}
+        data_group_parent_child = {}
         for permission in permissions:
             data_dict[permission.sort_id] = permission
+            if permission.parent:
+                parent_id_hex = permission.parent.id.hex
+                if parent_id_hex not in data_group_parent_child:
+                    data_group_parent_child[parent_id_hex] = [permission]
+                else:
+                    temp_data_group = data_group_parent_child[parent_id_hex]
+                    temp_data_group.append(permission)
+                    data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
         # 计算每一个用户的权限情况
         for auth_user in auth_users:
@@ -588,6 +666,22 @@ class PermissionData(object):
                         diff = len(data_dict.keys()) - len(permission_result_arr)
                         for i in range(diff):
                             permission_result_arr.append(0)
+                    # 提前把有父子关系的权限处理好
+                    for data_item in data_dict.values():
+                        sort_id = data_item.sort_id
+                        sort_id_result = int(permission_result_arr[sort_id])
+                        if sort_id_result == 1:
+                            if data_item.category == 'group':
+                                # 如果用户对某一个分组有权限，则对该分组的所有下属分组都有权限。
+                                group_id_hex = data_item.id.hex
+                                if group_id_hex in data_group_parent_child:
+                                    # 递归<查找>
+                                    await_result = []
+                                    self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                                    for parent_child_item in await_result:
+                                        parent_child_sort_id = parent_child_item.sort_id
+                                        permission_result_arr[parent_child_sort_id] = '1'
+                    # 权限更新设置
                     for data_item in data_dict.values():
                         sort_id = data_item.sort_id
                         sort_id_result = int(permission_result_arr[sort_id])
@@ -614,6 +708,8 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
+                        else:
+                            data_item.is_pass = 0
                     elif data_item.name == 'tenant-admin' and auth_user.is_tenant_admin:
                         data_item.is_pass = 1
                         describe = data_item.describe
@@ -621,9 +717,11 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
+                        else:
+                            data_item.is_pass = 0
                     elif data_item.name == 'platform-admin':
                         # 平台管理员默认有所有权限所有这里没必要做处理
-                        pass
+                        data_item.is_pass = 0
                     elif hasattr(data_item, 'is_pass') == False:
                         data_item.is_pass = 0
                     else:
@@ -667,8 +765,17 @@ class PermissionData(object):
         is_tenant_admin = tenant.has_admin_perm(auth_user)
         permissions = Permission.valid_objects.filter(app=app, tenant=tenant).order_by('sort_id')
         data_dict = {}
+        data_group_parent_child = {}
         for permission in permissions:
             data_dict[permission.sort_id] = permission
+            if permission.parent:
+                parent_id_hex = permission.parent.id.hex
+                if parent_id_hex not in data_group_parent_child:
+                    data_group_parent_child[parent_id_hex] = [permission]
+                else:
+                    temp_data_group = data_group_parent_child[parent_id_hex]
+                    temp_data_group.append(permission)
+                    data_group_parent_child[parent_id_hex] = temp_data_group
         # 取得当前用户权限数据
         userpermissionresult = UserPermissionResult.valid_objects.filter(
             user=auth_user,
@@ -690,6 +797,22 @@ class PermissionData(object):
                 diff = len(data_dict.keys()) - len(permission_result_arr)
                 for i in range(diff):
                     permission_result_arr.append(0)
+            # 提前把有父子关系的权限处理好
+            for data_item in data_dict.values():
+                sort_id = data_item.sort_id
+                sort_id_result = int(permission_result_arr[sort_id])
+                if sort_id_result == 1:
+                    if data_item.category == 'group':
+                        # 如果用户对某一个分组有权限，则对该分组的所有下属分组都有权限。
+                        group_id_hex = data_item.id.hex
+                        if group_id_hex in data_group_parent_child:
+                            # 递归<查找>
+                            await_result = []
+                            self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                            for parent_child_item in await_result:
+                                parent_child_sort_id = parent_child_item.sort_id
+                                permission_result_arr[parent_child_sort_id] = '1'
+            # 权限更新设置
             for data_item in data_dict.values():
                 sort_id = data_item.sort_id
                 sort_id_result = int(permission_result_arr[sort_id])
@@ -716,6 +839,8 @@ class PermissionData(object):
                     if container:
                         for item in container:
                             data_dict.get(item).is_pass = 1
+                    else:
+                        data_item.is_pass = 0
                 elif data_item.name == 'tenant-admin' and is_tenant_admin:
                     data_item.is_pass = 1
                     describe = data_item.describe
@@ -723,9 +848,11 @@ class PermissionData(object):
                     if container:
                         for item in container:
                             data_dict.get(item).is_pass = 1
+                    else:
+                        data_item.is_pass = 0
                 elif data_item.name == 'platform-admin':
                     # 平台管理员默认有所有权限所有这里没必要做处理
-                    pass
+                    data_item.is_pass = 0
                 elif hasattr(data_item, 'is_pass') == False:
                     data_item.is_pass = 0
                 else:
