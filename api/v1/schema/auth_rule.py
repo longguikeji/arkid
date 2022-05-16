@@ -19,7 +19,7 @@ class AuthRuleListOut(ResponseSchema):
 
 class AuthRuleOut(ResponseSchema):
     data: AuthRuleExtension.create_composite_config_schema(
-        'AuthRuleOut'
+        'AuthRuleDataOut'
     )
 
 AuthRuleCreateIn = AuthRuleExtension.create_composite_config_schema(

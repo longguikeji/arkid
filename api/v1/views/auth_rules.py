@@ -65,7 +65,7 @@ def create_auth_rule(request, tenant_id: str, data: AuthRuleCreateIn):
     config.save()
     return {"data":{"config_id": config.id.hex}}
 
-@api.put("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleUpdateOut, tags=["认证规则"], auth=None)
+@api.post("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleUpdateOut, tags=["认证规则"], auth=None)
 @operation(AuthRuleUpdateOut)
 def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
     """ 编辑认证规则
@@ -82,6 +82,7 @@ def delete_auth_rule(request, tenant_id: str, id: str):
     """ 删除认证规则
     """
     config = TenantExtensionConfig.active_objects.get(
-        tenant__id=tenant_id, id=id)
+        tenant__id=tenant_id, id=id
+    )
     config.delete()
     return {"data":{'error': ErrorCode.OK.value}}
