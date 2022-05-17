@@ -10,7 +10,7 @@ event_id_map = {}
 
 class EventType:
 
-    def __init__(self, tag: str, name: str, data_schema: Schema = None, result_schema: Schema = None, request_schema: Schema = None, response_schema:  Schema = None, description: str = '') -> None:
+    def __init__(self, tag: str, name: str, data_schema: Schema = None, result_schema: Schema = None, request_schema: Schema = None, response_schema:  Schema = None, description: str = ''):
         """事件类型用于注册
         注意:
             event request 切勿修改
@@ -36,7 +36,7 @@ class EventType:
 
 class Event:
 
-    def __init__(self, tag: str, tenant: Tenant, request: HttpRequest=None, response: HttpResponse=None, packages: str=None, data=None, uuid: str=None) -> None:
+    def __init__(self, tag: str, tenant: Tenant, request: HttpRequest=None, response: HttpResponse=None, packages: str=None, data=None, uuid: str=None):
         """事件
 
         Args:
@@ -103,8 +103,8 @@ def unregister_event(tag):
 
 
 def dispatch_event(event, sender=None):
-    if not event.tenant:
-        raise Warning("None Tenant!")
+    # if not event.tenant:
+    #     raise Warning("None Tenant!")
     event_type = tag_map_event_type.get(event.tag)
     if not event_type:
         return
