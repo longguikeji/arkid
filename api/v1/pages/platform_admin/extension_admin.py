@@ -7,7 +7,7 @@ name = '插件商店'
 
 page = pages.TabsPage(tag=tag, name=name)
 store_page = pages.TablePage(name='插件商店')
-download_page = pages.CardsPage(name='已安装')
+download_page = pages.TablePage(name='已安装')
 edit_page = pages.FormPage(name=_("编辑插件"))
 
 
@@ -25,7 +25,7 @@ router = routers.FrontRouter(
 
 page.add_pages([
     store_page,
-    # download_page
+    download_page
 ])
 
 store_page.create_actions(
