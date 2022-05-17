@@ -9,8 +9,16 @@ event_id_map = {}
 
 
 class EventType:
-
-    def __init__(self, tag: str, name: str, data_schema: Schema = None, result_schema: Schema = None, request_schema: Schema = None, response_schema:  Schema = None, description: str = '') -> None:
+    def __init__(
+        self,
+        tag: str,
+        name: str,
+        data_schema: Schema = None,
+        result_schema: Schema = None,
+        request_schema: Schema = None,
+        response_schema: Schema = None,
+        description: str = '',
+    ) -> None:
         """事件类型用于注册
         注意:
             event request 切勿修改
@@ -35,8 +43,16 @@ class EventType:
 
 
 class Event:
-
-    def __init__(self, tag: str, tenant: Tenant, request: HttpRequest=None, response: HttpResponse=None, packages: str=None, data=None, uuid: str=None) -> None:
+    def __init__(
+        self,
+        tag: str,
+        tenant: Tenant,
+        request: HttpRequest = None,
+        response: HttpResponse = None,
+        packages: str = None,
+        data=None,
+        uuid: str = None,
+    ) -> None:
         """事件
 
         Args:
@@ -70,7 +86,9 @@ temp_listens:Dict[str, tuple] = {}
 
 
 def register_event(tag, name, data_schema=None, description=''):
-    register_event_type(EventType(tag=tag, name=name, data_schema=data_schema, description=description))
+    register_event_type(
+        EventType(tag=tag, name=name, data_schema=data_schema, description=description)
+    )
 
 
 def register_event_type(event_type: EventType):
@@ -80,9 +98,9 @@ def register_event_type(event_type: EventType):
     tag_map_event_type[tag] = event_type
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
-        listen_event(tag,func,listener,**kwargs)
+        listen_event(tag, func, listener, **kwargs)
         del temp_listens[tag]
-    
+
     # 将事件声明在OpenAPI的文档中
     # def view_func():
     #     pass
@@ -121,13 +139,14 @@ def break_event_loop(data):
     raise EventDisruptionData(data)
 
 
-def register_and_dispatch_event(tag, name, tenant, description='', data_schema=None, data=None):
+def register_and_dispatch_event(
+    tag, name, tenant, description='', data_schema=None, data=None
+):
     register_event(tag, name, data_schema, description)
     return dispatch_event(Event(tag, tenant, data))
 
 
 def decorator_listen_event(tag, **kwargs):
-
     def _decorator(func):
         def signal_func(event, **kwargs2):
             # 判断租户是否启用该插件
@@ -159,9 +178,9 @@ def remove_event_id(event):
 
 def listen_event(tag, func, listener=None, **kwargs):
     def signal_func(sender, event, **kwargs2):
-        if event.uuid and event_id_map.get(event.uuid,{}).get(func):
-            return event_id_map.get(event.uuid,{}).get(func), listener
-        
+        if event.uuid and event_id_map.get(event.uuid, {}).get(func):
+            return event_id_map.get(event.uuid, {}).get(func), listener
+
         res = func(sender=sender, event=event, **kwargs2)
         if event.uuid:
             event_id_map[event.uuid] = {func: res}
@@ -217,8 +236,15 @@ CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
 DELETE_FRONT_THEME_CONFIG = 'DELETE_FRONT_THEME_CONFIG'
 
-APP_START = 'APP_START'
+CREATE_ACCOUNT_LIFE_CONFIG = 'CREATE_ACCOUNT_LIFE_CONFIG'
+UPDATE_ACCOUNT_LIFE_CONFIG = 'UPDATE_ACCOUNT_LIFE_CONFIG'
+DELETE_ACCOUNT_LIFE_CONFIG = 'DELETE_ACCOUNT_LIFE_CONFIG'
 
+CREATE_APPROVE_SYSTEM_CONFIG = 'CREATE_APPROVE_SYSTEM_CONFIG'
+UPDATE_APPROVE_SYSTEM_CONFIG = 'UPDATE_APPROVE_SYSTEM_CONFIG'
+DELETE_APPROVE_SYSTEM_CONFIG = 'DELETE_APPROVE_SYSTEM_CONFIG'
+
+APP_START = 'APP_START'
 
 
 # register events
@@ -242,3 +268,9 @@ register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme','删除主题'))
 register_event(USER_REGISTER, _('user register','用户注册'))
 register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version','设置应用接口和版本'))
 register_event(UPDATE_APP_USER_API_PERMISSION, _('update app user api permission','更新应用的用户接口权限'))
+register_event(CREATE_ACCOUNT_LIFE_CONFIG, _('Create Account Life', '添加生命周期'))
+register_event(UPDATE_ACCOUNT_LIFE_CONFIG, _('Update Account Life', '更新生命周期'))
+register_event(DELETE_ACCOUNT_LIFE_CONFIG, _('Delete Account Life', '删除生命周期'))
+register_event(CREATE_APPROVE_SYSTEM_CONFIG, _('Create Approve System', '添加审批系统'))
+register_event(UPDATE_APPROVE_SYSTEM_CONFIG, _('Update Approve System', '更新审批系统'))
+register_event(DELETE_APPROVE_SYSTEM_CONFIG, _('Delete Approve System', '删除审批系统'))
