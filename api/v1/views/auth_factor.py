@@ -65,7 +65,7 @@ def create_auth_factor(request, tenant_id: str, data: AuthFactorCreateIn):
     config.name = data.dict()["name"]
     config.type = data.type
     config.save()
-    return {"data": {"config_id": config.id.hex}}
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
 @api.post("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorUpdateOut, tags=["认证因素"], auth=None)
@@ -76,7 +76,7 @@ def update_auth_factor(request, tenant_id: str, id: str, data: AuthFactorUpdateI
     config = TenantExtensionConfig.active_objects.get(
         tenant__id=tenant_id, id=id)
     config.update(**(data.dict()))
-    return {"data": {"config_id": config.id.hex}}
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
 @api.delete("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorDeleteOut, tags=["认证因素"], auth=None)

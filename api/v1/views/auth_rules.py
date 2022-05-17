@@ -65,7 +65,7 @@ def create_auth_rule(request, tenant_id: str, data: AuthRuleCreateIn):
     config.name = data.dict()["name"]
     config.type = data.type
     config.save()
-    return {"data": {"config_id": config.id.hex}}
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
 @api.post("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleUpdateOut, tags=["认证规则"], auth=None)
@@ -80,7 +80,7 @@ def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
     config.config = data.config.dict()
     config.name = data.dict()["name"]
     config.save()
-    return {"data": {"config_id": config.id.hex}}
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
 @api.delete("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleDeleteOut, tags=["认证规则"], auth=None)

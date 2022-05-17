@@ -28,7 +28,7 @@ AuthRuleCreateIn = AuthRuleExtension.create_composite_config_schema(
 )
 
 class AuthRuleCreateOut(ResponseSchema):
-    config_id: str
+    pass
 
 
 AuthRuleUpdateIn = AuthRuleExtension.create_composite_config_schema(

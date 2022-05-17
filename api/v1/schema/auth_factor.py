@@ -28,7 +28,7 @@ AuthFactorCreateIn = AuthFactorExtension.create_composite_config_schema(
 )
 
 class AuthFactorCreateOut(ResponseSchema):
-    config_id: str
+    pass
 
 
 AuthFactorUpdateIn = AuthFactorExtension.create_composite_config_schema(
