@@ -3,15 +3,18 @@ from distutils.command.config import config
 from typing import List
 from ninja import Field, ModelSchema, Schema
 from arkid.core.api import api, operation
+from ninja.pagination import paginate
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auth_rule import AuthRuleExtension
 from arkid.extension.models import Extension, TenantExtensionConfig
 from arkid.core.error import ErrorCode
-from api.v1.schema.auth_rule import AuthRuleCreateIn, AuthRuleCreateOut, AuthRuleDeleteOut, AuthRuleListOut, AuthRuleOut, AuthRuleUpdateIn, AuthRuleUpdateOut
+from api.v1.schema.auth_rule import AuthRuleCreateIn, AuthRuleCreateOut, AuthRuleDeleteOut, AuthRuleListItemOut, AuthRuleListOut, AuthRuleOut, AuthRuleUpdateIn, AuthRuleUpdateOut
+from arkid.core.pagenation import CustomPagination
 
 
-@api.get("/tenant/{tenant_id}/auth_rules/", response=AuthRuleListOut, tags=[_("认证规则")], auth=None)
+@api.get("/tenant/{tenant_id}/auth_rules/", response=List[AuthRuleListItemOut], tags=[_("认证规则")], auth=None)
 @operation(AuthRuleListOut)
+@paginate(CustomPagination)
 def get_auth_rules(request, tenant_id: str):
     """ 认证规则列表
     """
@@ -19,17 +22,15 @@ def get_auth_rules(request, tenant_id: str):
         type=AuthRuleExtension.TYPE).all()
     configs = TenantExtensionConfig.active_objects.filter(
         tenant__id=tenant_id, extension__in=extensions).all()
-    return {
-        "data": [
-            {
-                "id": config.id.hex,
-                "type": config.type,
-                "name": config.name,
-                "extension_name": config.extension.name,
-                "extension_package": config.extension.package,
-            } for config in configs
-        ]
-    }
+    return [
+        {
+            "id": config.id.hex,
+            "type": config.type,
+            "name": config.name,
+            "extension_name": config.extension.name,
+            "extension_package": config.extension.package,
+        } for config in configs
+    ]
 
 
 @api.get("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleOut, tags=["认证规则"], auth=None)
@@ -46,10 +47,11 @@ def get_auth_rule(request, tenant_id: str, id: str):
             "id": config.id.hex,
             "type": config.type,
             "package": config.extension.package,
-            "name":config.name,
-            "config":config.config
+            "name": config.name,
+            "config": config.config
         }
     }
+
 
 @api.post("/tenant/{tenant_id}/auth_rules/", response=AuthRuleCreateOut, tags=["认证规则"], auth=None)
 @operation(AuthRuleCreateOut)
@@ -63,7 +65,8 @@ def create_auth_rule(request, tenant_id: str, data: AuthRuleCreateIn):
     config.name = data.dict()["name"]
     config.type = data.type
     config.save()
-    return {"data":{"config_id": config.id.hex}}
+    return {"data": {"config_id": config.id.hex}}
+
 
 @api.post("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleUpdateOut, tags=["认证规则"], auth=None)
 @operation(AuthRuleUpdateOut)
@@ -71,9 +74,13 @@ def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
     """ 编辑认证规则
     """
     config = TenantExtensionConfig.active_objects.get(
-        tenant__id=tenant_id, id=id)
-    config.update(**(data.dict()))
-    return {"data":{"config_id": config.id.hex}}
+        tenant__id=tenant_id,
+        id=id
+    )
+    config.config = data.config.dict()
+    config.name = data.dict()["name"]
+    config.save()
+    return {"data": {"config_id": config.id.hex}}
 
 
 @api.delete("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleDeleteOut, tags=["认证规则"], auth=None)
@@ -85,4 +92,4 @@ def delete_auth_rule(request, tenant_id: str, id: str):
         tenant__id=tenant_id, id=id
     )
     config.delete()
-    return {"data":{'error': ErrorCode.OK.value}}
+    return {"data": {'error': ErrorCode.OK.value}}

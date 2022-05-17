@@ -36,9 +36,8 @@ def create_group(request, tenant_id: str, data: UserGroupIn):
     return {"data":{"group_id": group.id.hex}}
 
 
-@api.get("/tenant/{tenant_id}/user_groups/", response=List[UserGroupListItemOut], tags=['用户分组'], auth=None)
+@api.get("/tenant/{tenant_id}/user_groups/", response=UserGroupListOut, tags=['用户分组'], auth=None)
 @operation(UserGroupListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate(CustomPagination)
 def list_groups(request, tenant_id: str,  parent_id: str = None):
     '''
     分组列表
@@ -48,7 +47,7 @@ def list_groups(request, tenant_id: str,  parent_id: str = None):
     )
     if parent_id:
         usergroups = usergroups.filter(parent_id=parent_id)
-    return usergroups
+    return {"data": list(usergroups.all())}
 
 
 @api.get("/tenant/{tenant_id}/user_groups/{group_id}", response=UserGroupDetailOut, tags=['用户分组'], auth=None)

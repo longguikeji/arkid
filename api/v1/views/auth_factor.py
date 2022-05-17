@@ -2,16 +2,19 @@ from distutils.command.build_ext import extension_name_re
 from distutils.command.config import config
 from typing import List
 from ninja import Field, ModelSchema, Schema
+from ninja.pagination import paginate
 from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auth_factor import AuthFactorExtension
 from arkid.extension.models import Extension, TenantExtensionConfig
 from arkid.core.error import ErrorCode
-from api.v1.schema.auth_factor import AuthFactorCreateIn, AuthFactorCreateOut, AuthFactorDeleteOut, AuthFactorListOut, AuthFactorOut, AuthFactorUpdateIn, AuthFactorUpdateOut
+from api.v1.schema.auth_factor import AuthFactorCreateIn, AuthFactorCreateOut, AuthFactorDeleteOut, AuthFactorListItemOut, AuthFactorListOut, AuthFactorOut, AuthFactorUpdateIn, AuthFactorUpdateOut
+from arkid.core.pagenation import CustomPagination
 
 
-@api.get("/tenant/{tenant_id}/auth_factors/", response=AuthFactorListOut, tags=[_("认证因素")], auth=None)
+@api.get("/tenant/{tenant_id}/auth_factors/", response=List[AuthFactorListItemOut], tags=[_("认证因素")], auth=None)
 @operation(AuthFactorListOut)
+@paginate(CustomPagination)
 def get_auth_factors(request, tenant_id: str):
     """ 认证因素列表
     """
@@ -19,17 +22,15 @@ def get_auth_factors(request, tenant_id: str):
         type=AuthFactorExtension.TYPE).all()
     configs = TenantExtensionConfig.active_objects.filter(
         tenant__id=tenant_id, extension__in=extensions).all()
-    return {
-        "data": [
-            {
-                "id": config.id.hex,
-                "type": config.type,
-                "name": config.name,
-                "extension_name": config.extension.name,
-                "extension_package": config.extension.package,
-            } for config in configs
-        ]
-    }
+    return [
+        {
+            "id": config.id.hex,
+            "type": config.type,
+            "name": config.name,
+            "extension_name": config.extension.name,
+            "extension_package": config.extension.package,
+        } for config in configs
+    ]
 
 
 @api.get("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorOut, tags=["认证因素"], auth=None)
@@ -46,10 +47,11 @@ def get_auth_factor(request, tenant_id: str, id: str):
             "id": config.id.hex,
             "type": config.type,
             "package": config.extension.package,
-            "name":config.name,
-            "config":config.config
+            "name": config.name,
+            "config": config.config
         }
     }
+
 
 @api.post("/tenant/{tenant_id}/auth_factors/", response=AuthFactorCreateOut, tags=["认证因素"], auth=None)
 @operation(AuthFactorCreateOut)
@@ -63,7 +65,8 @@ def create_auth_factor(request, tenant_id: str, data: AuthFactorCreateIn):
     config.name = data.dict()["name"]
     config.type = data.type
     config.save()
-    return {"data":{"config_id": config.id.hex}}
+    return {"data": {"config_id": config.id.hex}}
+
 
 @api.post("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorUpdateOut, tags=["认证因素"], auth=None)
 @operation(AuthFactorUpdateOut)
@@ -73,7 +76,7 @@ def update_auth_factor(request, tenant_id: str, id: str, data: AuthFactorUpdateI
     config = TenantExtensionConfig.active_objects.get(
         tenant__id=tenant_id, id=id)
     config.update(**(data.dict()))
-    return {"data":{"config_id": config.id.hex}}
+    return {"data": {"config_id": config.id.hex}}
 
 
 @api.delete("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorDeleteOut, tags=["认证因素"], auth=None)
@@ -85,4 +88,4 @@ def delete_auth_factor(request, tenant_id: str, id: str):
         tenant__id=tenant_id, id=id
     )
     config.delete()
-    return {"data":{'error': ErrorCode.OK.value}}
+    return {"data": {'error': ErrorCode.OK.value}}

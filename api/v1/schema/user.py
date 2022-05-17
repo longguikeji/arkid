@@ -39,7 +39,7 @@ class UserOut(ResponseSchema):
 class UserUpdateIn(ModelSchema):
     class Config:
         model = User
-        model_fields = ['avatar']
+        model_fields = ['avatar','is_platform_user']
         
 class UserUpdateOut(ResponseSchema):
     pass

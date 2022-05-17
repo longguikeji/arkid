@@ -28,7 +28,7 @@ class CustomPagination(PaginationBase):
         items = list(queryset)[page*limit : page*limit+limit]
         return {
             'items': items,
-            'total': queryset.count(),
+            'total': len(list(queryset)),
             "previous": f"{request.path}?page={page-1}&limit={limit}" if page > 1 else "",
-            "next": f"{request.path}?page={page+1}&limit={limit}" if (page+1) * limit < queryset.count() else ""
+            "next": f"{request.path}?page={page+1}&limit={limit}" if (page+1) * limit < len(list(queryset)) else ""
         }

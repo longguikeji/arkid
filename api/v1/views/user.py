@@ -8,15 +8,18 @@ from arkid.core.models import Tenant, User
 from arkid.core.translation import gettext_default as _
 from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
 from arkid.common.logger import logger
-from api.v1.schema.user import UserCreateIn, UserCreateOut, UserDeleteOut, UserListOut, UserListQueryIn, UserOut, UserUpdateIn, UserUpdateOut
+from api.v1.schema.user import UserCreateIn, UserCreateOut, UserDeleteOut, UserListItemOut, UserListOut, UserListQueryIn, UserOut, UserUpdateIn, UserUpdateOut
 from arkid.core.error import ErrorCode
+from arkid.core.pagenation import CustomPagination
+from ninja.pagination import paginate
 
 # ------------- 用户列表接口 --------------        
-@api.get("/tenant/{tenant_id}/users/",response=UserListOut, tags=['用户'], auth=None)
+@api.get("/tenant/{tenant_id}/users/",response=List[UserListItemOut], tags=['用户'], auth=None)
 @operation(UserListOut)
+@paginate(CustomPagination)
 def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
     users = User.expand_objects.filter(is_del=False,is_active=True)
-    return {"data":list(users)}
+    return list(users)
 
 # ------------- 创建用户接口 --------------
 @api.post("/tenant/{tenant_id}/users/",response=UserCreateOut, tags=['用户'], auth=None)
@@ -36,9 +39,9 @@ def user_delete(request, tenant_id: str,id:str):
     return {"error":0}
         
 # ------------- 更新用户接口 --------------
-@api.put("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOut, tags=['用户'], auth=None)
+@api.post("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOut, tags=['用户'], auth=None)
 @operation(UserUpdateOut)
-def user_update(request, tenant_id: str,id:str,data:UserUpdateIn):
+def user_update(request, tenant_id: str,id:str, data:UserUpdateIn):
 
     user = User.expand_objects.get(tenant__id=tenant_id,id=id)
     user.avatar = data.avatar
