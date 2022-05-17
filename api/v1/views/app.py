@@ -21,6 +21,8 @@ from arkid.core.event import(
 
 import uuid
 
+from arkid.core.pagenation import CustomPagination
+
 
 AppConfigSchemaIn = AppProtocolExtension.create_composite_config_schema('AppConfigSchemaIn')
 
@@ -94,7 +96,7 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
 
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListSchemaOut], tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate
+@paginate(CustomPagination)
 def list_apps(request, tenant_id: str):
     '''
     app列表
