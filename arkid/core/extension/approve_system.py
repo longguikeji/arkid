@@ -16,28 +16,7 @@ from typing import List
 from ninja.pagination import paginate
 from django.shortcuts import get_object_or_404
 from arkid.core.error import ErrorCode
-
-
-class ApproveRequestOut(ModelSchema):
-    class Config:
-        model = ApproveRequest
-        model_fields = ['id', 'status']
-
-    username: str
-    path: str
-    method: str
-
-    @staticmethod
-    def resolve_username(obj):
-        return obj.user.username
-
-    @staticmethod
-    def resolve_path(obj):
-        return obj.action.path
-
-    @staticmethod
-    def resolve_method(obj):
-        return obj.action.method
+from arkid.common.logger import logger
 
 
 class ApproveSystemExtension(Extension):
@@ -54,42 +33,25 @@ class ApproveSystemExtension(Extension):
         return ApproveSystemExtension.TYPE
 
     def load(self):
-        @api.get(
-            "/tenant/{tenant_id}/approve_system_arkid/approve_requests/",
-            response=List[ApproveRequestOut],
-            tags=['审批请求'],
-            auth=None,
-            operation_id=f'{self.name}_list_approve_requests',
+        self.listen_event(
+            core_event.CREATE_APPROVE_SYSTEM_CONFIG, self.create_approve_system_config
         )
-        @paginate
-        def approve_request_list(request, tenant_id: str):
-            requests = ApproveRequest.valid_objects.filter(
-                action__extension__type=self.type
-            )
-            return requests
-
-        @api.put(
-            "/tenant/{tenant_id}/approve_system_arkid/approve_requests/{request_id}/",
-            # response=ApproveRequestOut,
-            tags=['审批请求'],
-            auth=None,
-            operation_id=f'{self.name}_process_approve_request',
+        self.listen_event(
+            core_event.UPDATE_APPROVE_SYSTEM_CONFIG, self.update_approve_system_config
         )
-        def approve_request_process(
-            request, tenant_id: str, request_id: str, action: str = ''
-        ):
-            approve_request = get_object_or_404(ApproveRequest, id=request_id)
-            if action == "pass":
-                approve_request.status = "pass"
-                approve_request.save()
-                response = self.restore_request(approve_request)
-                return response
-            elif action == "deny":
-                approve_request.status = "deny"
-                approve_request.save()
-                return {'error': ErrorCode.OK.value}
-
+        self.listen_event(
+            core_event.DELETE_APPROVE_SYSTEM_CONFIG, self.delete_approve_system_config
+        )
         super().load()
+
+    def create_approve_system_config(self, event, **kwargs):
+        pass
+
+    def update_approve_system_config(self, event, **kwargs):
+        pass
+
+    def delete_approve_system_config(self, event, **kwargs):
+        pass
 
     def register_approve_system_schema(self, schema, system_type):
         self.register_config_schema(schema, self.package + '_' + system_type)
@@ -97,7 +59,8 @@ class ApproveSystemExtension(Extension):
             schema, system_type, exclude=['extension']
         )
 
-    def restore_request(self, approve_request):
+    @classmethod
+    def restore_request(cls, approve_request):
         environ = approve_request.environ
         body = approve_request.body
         environ["wsgi.input"] = io.BytesIO(body)
@@ -108,5 +71,7 @@ class ApproveSystemExtension(Extension):
         klass = view_func.__self__
         operation, _ = klass._find_operation(request)
         response = operation.run(request, **kwargs)
-        print(response)
+        logger.info(
+            f'{approve_request.action.method}:{approve_request.action.path}', response
+        )
         return response

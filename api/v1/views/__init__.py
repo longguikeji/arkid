@@ -1,9 +1,9 @@
 from . import (
     auth_factor,
-    loginpage, 
-    auth, 
-    register, 
-    app, 
+    loginpage,
+    auth,
+    register,
+    app,
     extension,
     tenant_extension,
     user,
@@ -33,5 +33,7 @@ from . import (
     languape,
     log,
     front_theme,
+    approve_request,
+    approve_system,
     event_list,
 )
