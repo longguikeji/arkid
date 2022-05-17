@@ -6,7 +6,6 @@ from arkid.core.schema import ResponseSchema
 
 
 class CustomPagination(PaginationBase):
-    # only `skip` param, defaults to 5 per page
     class Input(Schema):
         page: int = Field(
             default=0
@@ -18,7 +17,7 @@ class CustomPagination(PaginationBase):
 
     class Output(ResponseSchema):
         items: List[Any]
-        total: int
+        count: int
         previous: str
         next: str
 
