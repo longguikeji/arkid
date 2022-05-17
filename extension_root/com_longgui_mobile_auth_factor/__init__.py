@@ -23,7 +23,7 @@ MobileAuthFactorSchema = create_extension_schema('MobileAuthFactorSchema',packag
 class MobileAuthFactorExtension(AuthFactorExtension):
     def load(self):
         super().load()
-        self.register_extend_field(UserMobile, "phone_number")
+        self.register_extend_field(UserMobile, "mobile")
         self.register_auth_factor_schema(MobileAuthFactorSchema, 'mobile')
         from api.v1.schema.auth import AuthIn
         self.register_extend_api(AuthIn, mobile=str)
