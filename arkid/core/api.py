@@ -79,16 +79,14 @@ class GlobalAuth(HttpBearer):
             if token.expired(request.tenant):
                 raise Exception(_('Token has expired','秘钥已经过期'))
 
-            # operation_id = request.operation_id
-            # if operation_id:
-            #     # 权限鉴定
-            #     apipermission = ApiPermission.valid_objects.filter(
-            #         operation_id=operation_id
-            #     ).first()
-            #     if apipermission:
-            #         print('存在api权限')
-            #     else:
-            #         print('不存在api权限')
+            operation_id = request.operation_id
+            if operation_id:
+                from arkid.core.perm.permission_data import PermissionData
+                permissiondata = PermissionData()
+                if token.user and request.tenant:
+                    result =permissiondata.api_system_permission_check(request.tenant, token.user, operation_id)
+                    if result == True:
+                        raise Exception(_('You do not have api permission','你没有这个接口的权限'))
         except ExpiringToken.DoesNotExist:
             logger.error(_("Invalid token","无效的秘钥"))
             return

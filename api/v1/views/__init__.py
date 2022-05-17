@@ -35,4 +35,5 @@ from . import (
     front_theme,
     approve_request,
     approve_system,
+    event_list,
 )

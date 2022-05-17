@@ -41,7 +41,7 @@ class Compress(object):
     
     def _encrypt(self, test_str):
         '''
-        识别带0b1的
+        加密带0b1的
         '''
         int_2 = int(test_str, 2)
         int_64 = self.encode_b64(int_2)
@@ -49,7 +49,7 @@ class Compress(object):
     
     def encrypt(self, test_str):
         '''
-        识别不带0b1的
+        加密不带0b1的
         '''
         test_str = '0b1{}'.format(test_str)
         return self._encrypt(test_str)

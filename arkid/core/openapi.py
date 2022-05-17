@@ -71,6 +71,12 @@ roles = [
         "type": "group",
         "parent": 3
     },
+    {
+        "name": "分组1.1",
+        "sort_id": 5,
+        "type": "group",
+        "parent": 4
+    },
 ]
 
 def get_permissions(api):

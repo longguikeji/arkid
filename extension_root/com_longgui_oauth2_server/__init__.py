@@ -8,6 +8,8 @@ from oauth2_provider.models import Application
 from oauth2_provider.urls import urlpatterns as urls
 from arkid.core.extension import create_extension_schema
 
+import uuid
+
 package='com.longgui.auth.oauth2_server'
 
 OIDCConfigSchema = create_extension_schema('OIDCConfigSchema',package, base_schema=OIDCConfigSchema)
@@ -55,8 +57,10 @@ class OAuth2ServerExtension(AppProtocolExtension):
 
         obj = Application()
         if is_create is False:
-            obj = Application.objects.filter(name=app.id).first()
-        obj.name = app.id
+            uuid_id = uuid.UUID(app.id)
+            obj = Application.objects.filter(name=uuid_id).first()
+        else:
+            obj.name = app.id
         obj.client_type = client_type
         obj.redirect_uris = redirect_uris
         obj.skip_authorization = skip_authorization

@@ -81,8 +81,8 @@ class Event:
         return self._response
 
 
-tag_map_signal: Dict[str, Event] = {}
-temp_listens: Dict[str, tuple] = {}
+tag_map_event_type: Dict[str, EventType] = {}
+temp_listens:Dict[str, tuple] = {}
 
 
 def register_event(tag, name, data_schema=None, description=''):
@@ -93,9 +93,9 @@ def register_event(tag, name, data_schema=None, description=''):
 
 def register_event_type(event_type: EventType):
     tag = event_type.tag
-    if tag in tag_map_signal:
+    if tag in tag_map_event_type:
         return
-    tag_map_signal[tag] = event_type
+    tag_map_event_type[tag] = event_type
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
         listen_event(tag, func, listener, **kwargs)
@@ -117,13 +117,13 @@ def register_event_type(event_type: EventType):
 
 
 def unregister_event(tag):
-    tag_map_signal.pop(tag, None)
+    tag_map_event_type.pop(tag, None)
 
 
 def dispatch_event(event, sender=None):
     if not event.tenant:
         raise Warning("None Tenant!")
-    event_type = tag_map_signal.get(event.tag)
+    event_type = tag_map_event_type.get(event.tag)
     if not event_type:
         return
     # if event_type.data_schema:
@@ -159,11 +159,11 @@ def decorator_listen_event(tag, **kwargs):
 
         if isinstance(tag, (list, tuple)):
             for t in tag:
-                event_type = tag_map_signal.get(t)
+                event_type = tag_map_event_type.get(t)
                 if event_type:
                     event_type.signal.connect(signal_func, **kwargs)
         else:
-            event_type = tag_map_signal.get(tag)
+            event_type = tag_map_event_type.get(tag)
             if event_type:
                 event_type.signal.connect(signal_func, **kwargs)
         return func
@@ -188,13 +188,13 @@ def listen_event(tag, func, listener=None, **kwargs):
 
     if isinstance(tag, (list, tuple)):
         for t in tag:
-            event_type = tag_map_signal.get(t)
+            event_type = tag_map_event_type.get(t)
             if event_type:
                 event_type.signal.connect(signal_func, **kwargs)
             else:
                 temp_listens[t] = (func, listener, kwargs)
     else:
-        event_type = tag_map_signal.get(tag)
+        event_type = tag_map_event_type.get(tag)
         if event_type:
             event_type.signal.connect(signal_func, **kwargs)
         else:
@@ -204,11 +204,11 @@ def listen_event(tag, func, listener=None, **kwargs):
 def unlisten_event(tag, func, **kwargs):
     if isinstance(tag, (list, tuple)):
         for t in tag:
-            event_type = tag_map_signal.get(t)
+            event_type = tag_map_event_type.get(t)
             if event_type:
                 event_type.signal.disconnect(func, **kwargs)
     else:
-        event_type = tag_map_signal.get(tag)
+        event_type = tag_map_event_type.get(tag)
         if event_type:
             event_type.signal.disconnect(func, **kwargs)
 
@@ -227,6 +227,10 @@ DELETE_GROUP = 'DELETE_GROUP'
 CREATE_PERMISSION = 'CREATE_PERMISSION'
 UPDATE_PERMISSION = 'UPDATE_PERMISSION'
 DELETE_PERMISSION = 'DELETE_PERMISSION'
+USER_REGISTER = 'USER_REGISTER'
+CREATE_SYSTEM_TENANT = 'CREATE_SYSTEM_TENANT'
+SET_APP_OPENAPI_VERSION = 'SET_APP_OPENAPI_VERSION'
+UPDATE_APP_USER_API_PERMISSION = 'UPDATE_APP_USER_API_PERMISSION'
 
 CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
@@ -244,25 +248,26 @@ APP_START = 'APP_START'
 
 
 # register events
-register_event(
-    CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
-)
-register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules', '登录页面生成规则'))
-register_event(CREATE_APP, _('create app', '创建应用'))
-register_event(CREATE_APP_DONE, _('create app done', '创建应用完成'))
-register_event(UPDATE_APP, _('update app', '修改应用'))
-register_event(DELETE_APP, _('delete app', '删除应用'))
-register_event(CREATE_GROUP, _('create group', '创建分组'))
-register_event(UPDATE_GROUP, _('update group', '修改分组'))
-register_event(DELETE_GROUP, _('delete group', '删除分组'))
-register_event(APP_START, _('app start', '应用启动'))
-register_event(SEND_SMS, _('send sms', '发送短信'))
-register_event(CREATE_PERMISSION, _('create permission', '创建权限'))
-register_event(UPDATE_PERMISSION, _('update permission', '修改权限'))
-register_event(DELETE_PERMISSION, _('delete permission', '删除权限'))
-register_event(CREATE_FRONT_THEME_CONFIG, _('Create Theme', '添加主题'))
-register_event(UPDATE_FRONT_THEME_CONFIG, _('Update Theme', '修改主题'))
-register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme', '删除主题'))
+register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor','认证因素生成登录页面'))
+register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules','登录页面生成规则'))
+register_event(CREATE_APP, _('create app','创建应用'))
+register_event(CREATE_APP_DONE, _('create app done','创建应用完成'))
+register_event(UPDATE_APP, _('update app','修改应用'))
+register_event(DELETE_APP, _('delete app','删除应用'))
+register_event(CREATE_GROUP, _('create group','创建分组'))
+register_event(UPDATE_GROUP, _('update group','修改分组'))
+register_event(DELETE_GROUP, _('delete group','删除分组'))
+register_event(APP_START, _('app start','应用启动'))
+register_event(SEND_SMS, _('send sms','发送短信'))
+register_event(CREATE_PERMISSION, _('create permission','创建权限'))
+register_event(UPDATE_PERMISSION, _('update permission','修改权限'))
+register_event(DELETE_PERMISSION, _('delete permission','删除权限'))
+register_event(CREATE_FRONT_THEME_CONFIG, _('Create Theme','添加主题'))
+register_event(UPDATE_FRONT_THEME_CONFIG, _('Update Theme','修改主题'))
+register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme','删除主题'))
+register_event(USER_REGISTER, _('user register','用户注册'))
+register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version','设置应用接口和版本'))
+register_event(UPDATE_APP_USER_API_PERMISSION, _('update app user api permission','更新应用的用户接口权限'))
 register_event(CREATE_ACCOUNT_LIFE_CONFIG, _('Create Account Life', '添加生命周期'))
 register_event(UPDATE_ACCOUNT_LIFE_CONFIG, _('Update Account Life', '更新生命周期'))
 register_event(DELETE_ACCOUNT_LIFE_CONFIG, _('Delete Account Life', '删除生命周期'))

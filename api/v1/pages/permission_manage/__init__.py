@@ -6,9 +6,9 @@ router = routers.FrontRouter(
     path='permission_manage',
     name=_('权限管理'),
     children=[
+        permission_list.router,
+        permission_group.router,
         grant_manage.router,
         grant_rules.router,
-        permission_group.router,
-        permission_list.router
     ]
 )
