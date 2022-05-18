@@ -232,6 +232,11 @@ USER_REGISTER = 'USER_REGISTER'
 CREATE_SYSTEM_TENANT = 'CREATE_SYSTEM_TENANT'
 SET_APP_OPENAPI_VERSION = 'SET_APP_OPENAPI_VERSION'
 UPDATE_APP_USER_API_PERMISSION = 'UPDATE_APP_USER_API_PERMISSION'
+CREATE_GROUP_PERMISSION = 'CREATE_GROUP_PERMISSION'
+UPDATE_GROUP_PERMISSION = 'UPDATE_GROUP_PERMISSION'
+DELETE_GROUP_PERMISSION = 'DELETE_GROUP_PERMISSION'
+REMOVE_GROUP_PERMISSION_PERMISSION = 'REMOVE_GROUP_PERMISSION_PERMISSION'
+UPDATE_GROUP_PERMISSION_PERMISSION = 'UPDATE_GROUP_PERMISSION_PERMISSION'
 
 CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
@@ -269,6 +274,11 @@ register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme','删除主题'))
 register_event(USER_REGISTER, _('user register','用户注册'))
 register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version','设置应用接口和版本'))
 register_event(UPDATE_APP_USER_API_PERMISSION, _('update app user api permission','更新应用的用户接口权限'))
+register_event(CREATE_GROUP_PERMISSION, _('create group permission','创建权限分组'))
+register_event(UPDATE_GROUP_PERMISSION, _('update group permission','修改权限分组'))
+register_event(DELETE_GROUP_PERMISSION, _('delete group permission','删除权限分组'))
+register_event(REMOVE_GROUP_PERMISSION_PERMISSION, _('update group permission permission','移除权限分组的权限'))
+register_event(UPDATE_GROUP_PERMISSION_PERMISSION, _('delete group permission permission','更改权限分组的权限'))
 register_event(CREATE_ACCOUNT_LIFE_CONFIG, _('Create Account Life', '添加生命周期'))
 register_event(UPDATE_ACCOUNT_LIFE_CONFIG, _('Update Account Life', '更新生命周期'))
 register_event(DELETE_ACCOUNT_LIFE_CONFIG, _('Delete Account Life', '删除生命周期'))
