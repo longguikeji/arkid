@@ -44,7 +44,7 @@ class UserGroupIn(ModelSchema):
 
     parent_id: str = Field(
         field="id",
-        page=select_usergroup_parent_page,
+        page=select_usergroup_parent_page.tag,
         link="parent_id"
     )
 
