@@ -7,7 +7,7 @@ from typing import List, Optional
 from django.db import transaction
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
-from arkid.core.models import Permission
+from arkid.core.models import Permission, SystemPermission
 from django.shortcuts import get_object_or_404
 from arkid.core.event import Event, dispatch_event
 from arkid.core.event import CREATE_PERMISSION, UPDATE_PERMISSION, DELETE_PERMISSION
@@ -18,6 +18,8 @@ import uuid
 
 
 class PermissionListSchemaOut(ModelSchema):
+
+    app_id: UUID = Field(default=None)
 
     class Config:
         model = Permission
@@ -30,8 +32,14 @@ class PermissionSchemaOut(Schema):
 
 class PermissionSchemaIn(ModelSchema):
 
-    app_id: str = None
-    parent_id: str = None
+    app_id: str
+
+    class Config:
+        model = Permission
+        model_fields = ['name', 'category']
+
+
+class PermissionEditSchemaIn(ModelSchema):
 
     class Config:
         model = Permission
@@ -60,10 +68,8 @@ def create_permission(request, tenant_id: str, data: PermissionSchemaIn):
     permission.name = data.name
     permission.category = data.category
     permission.code = 'other_{}'.format(uuid.uuid4())
-    if data.parent_id:
-        permission.parent_id = data.parent_id
-    if data.app_id:
-        permission.app_id = data.app_id
+    permission.parent = None
+    permission.app_id = data.app_id
     permission.is_system = False
     permission.save()
     # 分发事件开始
@@ -75,16 +81,20 @@ def create_permission(request, tenant_id: str, data: PermissionSchemaIn):
 @api.get("/tenant/{tenant_id}/permissions", response=List[PermissionListSchemaOut], tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate
-def list_permissions(request, tenant_id: str,  parent_id: str = None):
+def list_permissions(request, tenant_id: str,  app_id: str = None):
     '''
     权限列表
     '''
     permissions = Permission.valid_objects.filter(
         tenant_id=tenant_id
     )
-    if parent_id:
-        permissions = permissions.filter(parent_id=parent_id)
-    return permissions
+    systempermissions = SystemPermission.valid_objects.all()
+
+    if app_id:
+        systempermissions = systempermissions.filter(app_id=app_id)
+        permissions = permissions.filter(app_id=app_id)
+
+    return list(systempermissions)+list(permissions)
 
 
 @api.get("/tenant/{tenant_id}/permission/{permission_id}", response=PermissionDetailSchemaOut, tags=['权限'], auth=None)
@@ -94,22 +104,21 @@ def get_permission(request, tenant_id: str, permission_id: str):
     获取权限
     '''
     permission = get_object_or_404(Permission, id=permission_id, is_del=False)
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    permissiondata.update_app_all_user_permission(request.tenant, permission.app)
     return permission
 
 
 @api.put("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_permission(request, tenant_id: str, permission_id: str, data: PermissionSchemaIn):
+def update_permission(request, tenant_id: str, permission_id: str, data: PermissionEditSchemaIn):
     '''
     修改权限
     '''
     permission = get_object_or_404(Permission, id=permission_id, is_del=False)
     permission.name = data.name
     permission.category = data.category
-    if data.parent_id:
-        permission.parent_id = data.parent_id
-    if data.app_id:
-        permission.app_id = data.app_id
     permission.save()
     # 分发事件开始
     dispatch_event(Event(tag=UPDATE_PERMISSION, tenant=request.tenant, request=request, data=permission))
@@ -124,8 +133,8 @@ def delete_permission(request, tenant_id: str, permission_id: str):
     删除权限
     '''
     permission = get_object_or_404(Permission, id=permission_id, is_del=False)
+    permission.delete()
     # 分发事件开始
     dispatch_event(Event(tag=DELETE_PERMISSION, tenant=request.tenant, request=request, data=permission))
     # 分发事件结束
-    permission.delete()
     return {'error': ErrorCode.OK.value}

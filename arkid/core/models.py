@@ -81,6 +81,17 @@ class Tenant(BaseModel):
             # 给用户添加管理员权限
             permissiondata = PermissionData()
             permissiondata.add_system_permission_to_user(self.id, user.id, systempermission.id)
+    
+    @property
+    def is_platform_tenant(self):
+        '''
+        是否是平台租户
+        '''
+        tenant = Tenant.valid_objects.order_by('id').first()
+        if tenant.id == self.id:
+            return True
+        else:
+            return False
 
 
 class User(BaseModel, ExpandModel):
@@ -266,6 +277,7 @@ class PermissionAbstract(BaseModel, ExpandModel):
 
 
 class SystemPermission(PermissionAbstract):
+
     class Meta(object):
         verbose_name = _('SystemPermission', '系统权限')
         verbose_name_plural = _('SystemPermission', '系统权限')
@@ -300,6 +312,7 @@ class SystemPermission(PermissionAbstract):
 
 
 class Permission(PermissionAbstract):
+
     class Meta(object):
         verbose_name = _("Permission", "权限")
         verbose_name_plural = _("Permission", "权限")
@@ -309,7 +322,7 @@ class Permission(PermissionAbstract):
     #     count=Permission.objects.count()
     #     return 0 if (count == 0) else count
 
-    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=0)
+    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=-1)
 
     app = models.ForeignKey(
         App,
@@ -338,10 +351,18 @@ class Permission(PermissionAbstract):
     def __str__(self) -> str:
         return f'{self.name}'
 
+    def save(self, *args, **kwargs):
+        if self.sort_id == -1:
+            permission = Permission.objects.filter(tenant=self.tenant, app_id = self.app_id).order_by('-sort_id').first()
+            if permission:
+                self.sort_id = permission.sort_id + 1
+            else:
+                self.sort_id = 0
+        super().save(*args, **kwargs)
+
     @property
     def children(self):
         return Permission.valid_objects.filter(parent=self).order_by('id')
-
 
 class UserPermissionResult(BaseModel, ExpandModel):
     class Meta(object):
@@ -361,7 +382,6 @@ class UserPermissionResult(BaseModel, ExpandModel):
     result = models.CharField(
         max_length=1024, blank=True, null=True, verbose_name='权限结果'
     )
-    is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
     def __str__(self) -> str:
         return f'User: {self.user.username}'
