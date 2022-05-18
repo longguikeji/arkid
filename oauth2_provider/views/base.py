@@ -190,8 +190,8 @@ class TokenRequiredMixin(AccessMixin):
     def dispatch(self, request, *args, **kwargs):
         is_authenticated = self.check_token(request, *args, **kwargs)
         if is_authenticated:
-            if self.check_permission(request) is False:
-                return HttpResponseRedirect(self.get_return_url(self.get_login_url(), '您没有使用oauth应用的权限'))
+            # if self.check_permission(request) is False:
+            #     return HttpResponseRedirect(self.get_return_url(self.get_login_url(), '您没有使用oauth应用的权限'))
             return super().dispatch(request, *args, **kwargs)
         else:
             return self.handle_no_permission()
@@ -205,13 +205,13 @@ class TokenRequiredMixin(AccessMixin):
             if token:
                 if not token.user.is_active:
                     return False
-                if token.expired():
+                if token.expired(tenant=request.tenant):
                     return False
                 user = token.user
                 request.user = user
                 return True
             return False
-        except AuthenticationFailed:
+        except Exception as e:
             return False
 
     def handle_no_permission(self):
@@ -261,10 +261,10 @@ class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):
         else:
             allowed_schemes = application.get_allowed_schemes()
         # 即将绑定的用户
-        key_obj = Token.objects.filter(user=self.request.user).first()
-        if key_obj:
-            token = key_obj.key
-            redirect_to = "{}&token={}".format(redirect_to, token)
+        # key_obj = Token.objects.filter(user=self.request.user).first()
+        # if key_obj:
+        #     token = key_obj.key
+        #     redirect_to = "{}&token={}".format(redirect_to, token)
         return OAuth2ResponseRedirect(redirect_to, allowed_schemes)
 
 

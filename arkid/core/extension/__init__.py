@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Union, Literal, Any, List, Optional, Tuple, Type
+from pyclbr import Function
+from typing import Union, Literal, Any, List, Optional, Tuple, Type, Callable
 from typing_extensions import Annotated
+from uuid import UUID
+from attr import field
 from pydantic import Field
 from django.urls import include, re_path
 from pathlib import Path
+from ninja.constants import NOT_SET
 
 from requests import delete
 from arkid import config
@@ -22,15 +26,15 @@ from arkid.core.translation import gettext_default as _
 from ninja.orm import create_schema
 from django.db.models import Model
 from arkid.common.logger import logger
-from arkid.core.models import EmptyModel
-
+from arkid.core.models import EmptyModel, Tenant
+from functools import partial
 
 app_config = config.get_app_config()
 
 Event = core_event.Event
 EventType = core_event.EventType
 
-def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema) :
+def create_extension_schema( name, package = '',fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]) :
     """提供给插件用来创建Schema的方法
     
     注意:
@@ -52,6 +56,7 @@ def create_extension_schema( name, package = '', fields: Optional[List[Tuple[str
             custom_fields=fields,
             base_class=base_schema,
         )
+    core_api.remove_fields(schema, exclude)
     schema.name = name
     return schema
 
@@ -97,17 +102,26 @@ def get_root_schema(schema_list, discriminator, depth = 0):
 
 
 extension_schema_map = {}
-def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, depth = 0, **field_definitions):
+def create_config_schema_from_schema_list(schema_cls_name, schema_list, discriminator, exclude=[], depth = 0, **field_definitions):
+    fields = []
+    for k,t in field_definitions.items():
+        if isinstance(t,tuple):
+            t,f = t
+        else:
+            f = Field()
+        fields.append( (k,t,f) )
+    
     if len(schema_list) == 0:
-        schema = create_extension_schema(schema_cls_name+'0')
+        schema = create_extension_schema(schema_cls_name+'0', exclude=exclude, fields=fields)
     elif len(schema_list) == 1:
         # schema = list(schema_list)[0]
-        schema = create_extension_schema(schema_cls_name+'1', base_schema=list(schema_list)[0])
+        schema = create_extension_schema(schema_cls_name+'1', base_schema=list(schema_list)[0], exclude=exclude, fields=fields)
     else:
         new_schema_list = []
         for schema in schema_list:
             schema = create_extension_schema(schema_cls_name + '_' + schema.name, base_schema=schema)
             core_api.add_fields(schema, **field_definitions)
+            core_api.remove_fields(schema, exclude)
             new_schema_list.append(schema)
             
         schema_list = new_schema_list
@@ -125,7 +139,9 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
 
 
 class Extension(ABC):
-    """插件基类
+    """
+    Args:
+        name (str, ): 插件名字，package中点“.”替换为下划线"_"
     """
     extension_profile_schema_map = {}
     created_extension_profile_schema_list = []
@@ -142,7 +158,18 @@ class Extension(ABC):
     def type(self):
         return 'base'
 
-    def __init__(self, package, version, description, labels, homepage, logo, author) -> None:
+    def __init__(self, package:str, version:str, description:str, labels:List[str], homepage:str, logo:str, author:str):
+        """_summary_
+
+        Args:
+            package (str): 插件包名，唯一标识
+            version (str): 版本号
+            description (str): 描述
+            labels (List[str]): 标签
+            homepage (str): 主页，URL
+            logo (str): 插件的图标
+            author (str): 作者
+        """
         self.package = package
         self.version = version
         self.description = description
@@ -151,6 +178,7 @@ class Extension(ABC):
         self.logo = logo
         self.author = author
         self.name = self.package.replace('.', '_')
+        self.apis = []
         self.urls = []
         self.extend_fields = []
         self.events = []
@@ -165,6 +193,7 @@ class Extension(ABC):
 
     @property
     def model(self):
+        """插件对应数据库model"""
         extension = ExtensionModel.valid_objects.filter(package=self.package).first()
         if not extension:
             raise Exception(f'cannot find {self.package} in database')
@@ -173,6 +202,7 @@ class Extension(ABC):
 
     @property
     def ext_dir(self):
+        """插件完整路径，用.分隔"""
         return self._ext_dir
 
     @ext_dir.setter
@@ -181,6 +211,7 @@ class Extension(ABC):
 
     @property
     def full_name(self):
+        """插件完整路径，用/分隔"""
         return str(self.ext_dir).replace('/','.')
 
     def migrate_extension(self) -> None:
@@ -198,7 +229,84 @@ class Extension(ABC):
         print(f'Migrate {self.name}')
         management.call_command('migrate', self.name, interactive=False)
 
-    def register_routers(self, urls_ext, tenant_urls=False):
+    def register_api(
+        self, 
+        path: str,
+        method: str,
+        view_func: Callable,
+        *,
+        tenant_path: bool = False,
+        auth: Any = NOT_SET,
+        response: Any = NOT_SET,
+        operation_id: Optional[str] = None,
+        summary: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        deprecated: Optional[bool] = None,
+        by_alias: bool = False,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        url_name: Optional[str] = None,
+        include_in_schema: bool = True,):
+        """Django-ninja的方式注册自定义API
+
+        Args:
+            path (str): 请求路径
+            method (str): 请求方法,值为：GET，POST，DELETE，PUT等
+            view_func (Callable): api方法
+            tenant_path (bool, optional): 是否需要tenant开头，为Ture时，path前自动加上'/tenant/{tenant_id}'的结构. Defaults to False.
+            auth (Any, optional): 认证方法. Defaults to NOT_SET.
+            response (Any, optional): response schema. Defaults to NOT_SET.
+            operation_id (Optional[str], optional):  Defaults to None.
+            summary (Optional[str], optional):  Defaults to None.
+            description (Optional[str], optional):  Defaults to None.
+            tags (Optional[List[str]], optional):  Defaults to None.
+            deprecated (Optional[bool], optional):  Defaults to None.
+            by_alias (bool, optional):  Defaults to False.
+            exclude_unset (bool, optional):  Defaults to False.
+            exclude_defaults (bool, optional):  Defaults to False.
+            exclude_none (bool, optional):  Defaults to False.
+            url_name (Optional[str], optional):  Defaults to None.
+            include_in_schema (bool, optional):  Defaults to True.
+
+        Returns:
+            str: 真实的地址path
+        """
+        path = '/' + self.name + path
+        
+        if tenant_path:
+            path = '/tenant/{tenant_id}' + path
+        
+        self.apis.append((path, method))
+        
+        core_api.api.default_router.add_api_operation(
+            path,
+            [method],
+            view_func,
+            auth=auth is NOT_SET and core_api.api.auth or auth,
+            response=response,
+            operation_id=operation_id,
+            summary=summary,
+            description=description,
+            tags=tags,
+            deprecated=deprecated,
+            by_alias=by_alias,
+            exclude_unset=exclude_unset,
+            exclude_defaults=exclude_defaults,
+            exclude_none=exclude_none,
+            url_name=url_name,
+            include_in_schema=include_in_schema,
+        )
+        return path
+    
+    def register_routers(self, urls_ext:List[partial], tenant_urls=False):
+        """注册路由
+
+        Args:
+            urls_ext (List[partial]): 需要注册的路由
+            tenant_urls (bool, optional): 是否要添加 tenant/{tenant_id}/ 前缀. Defaults to False.
+        """
         if tenant_urls:
             urls_ext = [re_path(r'tenant/(?P<tenant_id>[\w-]+)/', include((urls_ext, 'extension'), namespace=f'{self.name}'))]
             self.urls.extend(urls_ext)
@@ -208,7 +316,27 @@ class Extension(ABC):
             self.urls.extend(urls_ext)
             core_urls.register(urls_ext)
 
-    def register_extend_field(self, model_cls, model_field, alias=None):
+    def register_extend_field(self, 
+                              model_cls:Union[
+                                  core_expand.TenantExpandAbstract,
+                                  core_expand.UserExpandAbstract,
+                                  core_expand.UserGroupExpandAbstract,
+                                  core_expand.AppExpandAbstract,
+                                  core_expand.AppGroupExpandAbstract,
+                                  core_expand.PermissionExpandAbstract,
+                                  core_expand.ApproveExpandAbstract,
+                                  core_expand.TenantConfigExpandAbstract,
+                                ], model_field:str, alias:str=None):
+        """注册扩展数据库字段，对原本数据库字段进行扩展
+
+        Args:
+            model_cls (Union[ core_expand.TenantExpandAbstract, core_expand.UserExpandAbstract, core_expand.UserGroupExpandAbstract, core_expand.AppExpandAbstract, core_expand.AppGroupExpandAbstract, core_expand.PermissionExpandAbstract, core_expand.ApproveExpandAbstract, core_expand.TenantConfigExpandAbstract, ]): 扩展定义的model
+            model_field (str): 扩展的字段
+            alias (str, optional): 扩展字段在原model中的别名. None意味着就使用model_field作为其在原model中的别名
+
+        Raises:
+            Exception: 非法的扩展字段类对应的父类
+        """
         if issubclass(model_cls, core_expand.TenantExpandAbstract):
             table = core_models.Tenant._meta.db_table
         elif issubclass(model_cls, core_expand.UserExpandAbstract):
@@ -240,7 +368,13 @@ class Extension(ABC):
         self.extend_fields.append(data)
         core_expand.field_expand_map.append(data)
 
-    def listen_event(self, tag, func):
+    def listen_event(self, tag:str, func:Function):
+        """侦听事件
+
+        Args:
+            tag (str): 事件的tag
+            func (Function): 回调函数, event, **kwargs为必有参数。其中只有当前插件的package在event.packages中时，该插件才响应该事件。
+        """
         def signal_func(event, **kwargs2):
             # 判断租户是否启用该插件
             # tenant
@@ -256,19 +390,50 @@ class Extension(ABC):
         self.events.append((tag, signal_func))        
 
     def register_event(self, tag, name, data_schema=None, description=''):
-        tag = self.package + '_' + tag
+        """注册事件
+
+        Args:
+            tag (str): 事件标识
+            name (str): 事件名字
+            data_schema (schema class, optional): event.data的schema. Defaults to None.
+            description (str, optional): 事件描述. Defaults to ''.
+
+        Returns:
+            str: 真实事件标识tag，为self.package +'.'+ tag
+        """
+        tag = self.package + '.' + tag
         core_event.register_event(tag, name, data_schema, description)
         self.event_tags.append(tag)
         return tag
 
     def dispatch_event(self, event):
+        """抛出事件
+
+        Args:
+            event (Event): 事件实例
+
+        Returns:
+            (tuple[Function, Result]): 事件处理的返回值
+        """
         return core_event.dispatch_event(event=event, sender=self)
 
     def register_extend_api(self, api_schema_cls, **field_definitions):
+        """注册扩展内核API
+
+        Args:
+            api_schema_cls (class): API Schema Class
+            field_definitions (name=tuple(Type,Field())): 需要增加的字段，example：name=(str, Field(title='名字'))
+        """
         core_api.add_fields(api_schema_cls, **field_definitions)
         self.extend_apis.append((api_schema_cls, list(field_definitions.keys())))
         
     def register_languge(self, lang_code:str = 'en', lang_maps={}):
+        """注册语言包
+
+        Args:
+            lang_code (str, optional): 语言代码. Defaults to 'en'.
+            lang_maps (dict, optional): 语言键值对. Defaults to {}.
+        """
         self.lang_code = lang_code
         if lang_code in core_translation.extension_lang_maps.keys():
             core_translation.extension_lang_maps[lang_code][self.name] = lang_maps
@@ -276,10 +441,13 @@ class Extension(ABC):
             core_translation.extension_lang_maps[lang_code] = {}
             core_translation.extension_lang_maps[lang_code][self.name] = lang_maps
         core_translation.lang_maps = core_translation.reset_lang_maps()
-        
+
     def register_front_routers(self, router, primary:core_routers.FrontRouter=None):
-        """
-        primary: 一级路由名字，由 core_routers 文件提供定义
+        """注册前端路由
+
+        Args:
+            router (core_routers.FrontRouter): 前端路由实例
+            primary (core_routers.FrontRouter, optional): 一级路由名字，由 core_routers 文件提供定义. Defaults to None.
         """
         router.path = self.package
         router.change_page_tag(self.package)
@@ -292,10 +460,13 @@ class Extension(ABC):
         core_routers.register_front_routers(router, primary)
         self.front_routers.append((router, primary))
 
-    def register_front_pages(self, page):
-        page:core_page.FrontPage
-        page.add_tag_pre(self.package)
+    def register_front_pages(self, page:core_page.FrontPage):
+        """注册前端页面
 
+        Args:
+            page (core_pages.FrontPage): 前端页面
+        """
+        page.add_tag_pre(self.package)
         core_page.register_front_pages(page)
         self.front_pages.append(page)
 
@@ -319,12 +490,6 @@ class Extension(ABC):
 
     @classmethod
     def create_base_schema(cls, name:str, created_schema_list:list, schema_map, **field_definitions):
-        """创建并返回插件配置的Schema
-        Args:
-            name (str): 需要创建的 Schema Class 的名字
-            created_schema_list (list): 列表，用于保存创建好的Schema
-            field_definitions (Any): 任意数量的field,格式为: field_name=(field_type, Field(...))
-        """
         schema = create_empty_root_schema(name)
         cls.refresh_one_created_base_schema(schema, field_definitions, schema_map)
         created_schema_list.append( (schema,field_definitions) )
@@ -345,7 +510,13 @@ class Extension(ABC):
 ################################################################################
 #### Profile 
 
-    def register_profile_schema(self, schema, schema_tag=None):
+    def register_profile_schema(self, schema, schema_tag:str=None):
+        """注册插件配置 profile schema
+
+        Args:
+            schema (class): schema的类
+            schema_tag (str, optional): shema的标识, 默认为self.package
+        """
         self.register_base_schema(
             schema, 'profile', ExtensionModel, 
             ['id','is_active','use_platform_config'],
@@ -373,6 +544,12 @@ class Extension(ABC):
 #### Settings 
 
     def register_settings_schema(self, schema, schema_tag=None):
+        """注册插件的 租户配置 settings schema
+
+        Args:
+            schema (class): schema的类
+            schema_tag (str, optional): shema的标识, 默认为self.package
+        """
         self.register_base_schema(
             schema, 'settings', TenantExtension, 
             ['id','is_active','use_platform_config'],
@@ -393,14 +570,14 @@ class Extension(ABC):
     def refresh_all_created_settings_schema(cls):
         cls.refresh_all_created_base_schema(cls.created_extension_settings_schema_list, cls.extension_settings_schema_map)
 
-    def get_tenant_settings(self, tenant):
+    def get_tenant_settings(self, tenant:Tenant):
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
         settings = TenantExtension.valid_objects.filter(tenant=tenant, extension=ext).first()
         return settings
 
-    def create_tenant_settings(self, tenant, settings):
+    def create_tenant_settings(self, tenant, settings, type):
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
-        return TenantExtension.objects.create(tenant=tenant, extension=ext, settings=settings)
+        return TenantExtension.objects.create(tenant=tenant, extension=ext, settings=settings, type=type)
     
 ################################################################################
 
@@ -408,6 +585,12 @@ class Extension(ABC):
 #### Config 
     
     def register_config_schema(self, schema, schema_tag=None):
+        """注册插件的 运行时配置 config schema
+
+        Args:
+            schema (class): schema的类
+            schema_tag (str, optional): shema的标识, 默认为self.package
+        """
         self.register_base_schema(
             schema, 'config', TenantExtensionConfig, 
             ['id','name'],
@@ -433,11 +616,26 @@ class Extension(ABC):
         configs = TenantExtensionConfig.valid_objects.filter(tenant=tenant, extension=ext).all()
         return configs
 
-    def get_config_by_id(self, id):
+    def get_config_by_id(self, id:UUID):
         return TenantExtensionConfig.valid_objects.get(id=id)
     
     def update_tenant_config(self, id,  config, name, type):
-        return TenantExtensionConfig.valid_objects.filter(id=id).update(config=config, name=name,type=type)
+        tenantextensionconfig = TenantExtensionConfig.valid_objects.filter(id=id).first()
+        if tenantextensionconfig:
+            tenantextensionconfig.name = name
+            tenantextensionconfig.type = type
+
+            # 只更新提供的字段，不提供的字段不更新，防止冲掉已经写入的其它字段
+            default_config = tenantextensionconfig.config
+            config_keys = config.keys()
+            for key in config_keys:
+                default_config[key] = config.get(key)
+
+            tenantextensionconfig.config = default_config
+            tenantextensionconfig.save()
+            return True
+        else:
+            return False 
 
     def create_tenant_config(self, tenant, config, name, type):
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
@@ -453,6 +651,14 @@ class Extension(ABC):
 #### Composite Config 
 
     def register_composite_config_schema(self, schema, composite_value, exclude=[], package=None):
+        """注册复合类型 运行时配置 的Schema
+
+        Args:
+            schema (class): Schema类
+            composite_value (str): 复合类型
+            exclude (list, optional): 从schema的字段中删掉的字段列表. Defaults to [].
+            package (str, optional): 自定义package名字，不传就使用self.package， 正常情况不用设置.
+        """
         package = package or self.package
         exclude.extend(['is_del', 'is_active', 'updated', 'created', 'tenant'])
         name = package + '_' + composite_value + '_config'
@@ -471,7 +677,16 @@ class Extension(ABC):
         self.composite_schema_map[composite_value][package] = new_schema
     
     @classmethod
-    def create_composite_config_schema(cls, schema_cls_name, **field_definitions):
+    def create_composite_config_schema(cls, schema_cls_name, exclude=[], **field_definitions):
+        """创造复合类型 运行时配置 的Schema
+
+        Args:
+            schema_cls_name (str): 复合类型运行时配置的Schema的名字
+            exclude (list, optional): 去掉的字段列表. Defaults to [].
+
+        Returns:
+            Schema: 创建好的Schema
+        """
         schema = create_extension_schema(
             schema_cls_name, 
             fields=[
@@ -479,7 +694,7 @@ class Extension(ABC):
             ],
             base_schema=RootSchema,
         )
-        cls.created_composite_schema_list.append((schema, field_definitions))
+        cls.created_composite_schema_list.append((schema, field_definitions, exclude))
         cls.refresh_all_created_composite_schema()
         return schema
     
@@ -487,7 +702,7 @@ class Extension(ABC):
     def refresh_all_created_composite_schema(cls):
         if not hasattr(cls, "created_composite_schema_list"):
             return
-        for created_ext_config_schema, field_definitions in cls.created_composite_schema_list:
+        for created_ext_config_schema, field_definitions, exclude in cls.created_composite_schema_list:
             temp_list = {}
             for composite_key, package_schema_map in cls.composite_schema_map.items():
                 schema_name = created_ext_config_schema.name + composite_key
@@ -495,6 +710,7 @@ class Extension(ABC):
                     schema_name, 
                     package_schema_map.values(),
                     'package',
+                    exclude=exclude,
                     **field_definitions,
                 )
                 temp_list[composite_key] = new_schema
@@ -510,6 +726,7 @@ class Extension(ABC):
 
     @abstractmethod
     def load(self):
+        """抽象方法，插件加载的入口方法"""
         pass
 
     def start(self):
@@ -527,7 +744,14 @@ class Extension(ABC):
         # self.install_requirements() sys.modeles
 
     def unload(self):
+        """插件卸载"""
         core_urls.unregister(self.urls)
+        for path, method in self.apis:
+            path_view = core_api.api.default_router.path_operations[path]
+            for operation in path_view.operations:
+                if method in operation.methods:
+                    path_view.operations.remove(operation)
+                    break
         for tag, func in self.events:
             core_event.unlisten_event(tag, func)
         for field in self.extend_fields:
@@ -551,20 +775,22 @@ class Extension(ABC):
         self.__class__.refresh_all_created_config_schema()
         
         delete_ks = []
-        for k,v in self.__class__.composite_schema_map.items():
-            v.pop(self.package, None)
-            if not self.__class__.composite_schema_map[k]:
-                delete_ks.append(k)
-        for k in delete_ks:
-            self.__class__.composite_schema_map.pop(k)
-        self.__class__.refresh_all_created_composite_schema()
+        if hasattr(self.__class__, 'composite_schema_map'):
+            for k,v in self.__class__.composite_schema_map.items():
+                v.pop(self.package, None)
+                if not self.__class__.composite_schema_map[k]:
+                    delete_ks.append(k)
+            for k in delete_ks:
+                self.__class__.composite_schema_map.pop(k)
+            self.__class__.refresh_all_created_composite_schema()
 
         if self.lang_code:
             core_translation.extension_lang_maps[self.lang_code].pop(self.name)
             if not core_translation.extension_lang_maps[self.lang_code]:
                 core_translation.extension_lang_maps.pop(self.lang_code)
             core_translation.lang_maps = core_translation.reset_lang_maps()
-            
+        
+        self.apis = []
         self.urls = []
         self.extend_fields = []
         self.events = []

@@ -4,7 +4,7 @@ from . import bi_systems,charts
 
 router = routers.FrontRouter(
     path='charts',
-    name='图表展示',
+    name='图表分析',
     children=[
         charts.router,
         bi_systems.router,

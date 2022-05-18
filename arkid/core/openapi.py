@@ -14,12 +14,35 @@ def get_openapi_schema(self, path_prefix: Optional[str] = None) -> OpenAPISchema
     schema["routers"] = routers.get_global_routers()
     schema["pages"] = pages.get_global_pages()
     # schema["navs"] = actions.get_nav_actions()
-    permissions = get_permissions(self)
-    schema["permissions"] = permissions
-    
+    # 直接从system permission表里拿，拿出来去拼
+    # permissions = get_permissions(self)
+    # schema["permissions"] = permissions
+    import_permission(schema)
     schema["translation"] = translation.lang_maps
     
     return schema
+
+def import_permission(scheme):
+    from arkid.core.models import SystemPermission
+    systempermissions = SystemPermission.valid_objects.order_by('sort_id')
+    permissions = []
+    for systempermission in systempermissions:
+        item = {
+            'name': systempermission.name,
+            'sort_id': systempermission.sort_id,
+            'type': systempermission.category,
+        }
+        describe = systempermission.describe
+        if systempermission.category == 'group':
+            item['container'] = describe.get('sort_ids', [])
+            parent = describe.get('parent', -1)
+            if parent != -1:
+                item['parent'] = parent
+        else:
+            item['container'] = []
+            item['operation_id'] = systempermission.operation_id
+        permissions.append(item)
+    scheme["permissions"] = permissions
 
 roles = [
     {
@@ -37,6 +60,23 @@ roles = [
         "sort_id": 2,
         "type": "group",
     },
+    {
+        "name": "分组",
+        "sort_id": 3,
+        "type": "group",
+    },
+    {
+        "name": "分组1",
+        "sort_id": 4,
+        "type": "group",
+        "parent": 3
+    },
+    {
+        "name": "分组1.1",
+        "sort_id": 5,
+        "type": "group",
+        "parent": 4
+    },
 ]
 
 def get_permissions(api):
@@ -53,6 +93,7 @@ def get_permissions(api):
                 permission = get_permission(api, op, group_container, sort_id)
                 sort_id += 1
                 permissions.append(permission)
+
     for group in groups:
         if group["name"] in group_container:
             group["container"] = group_container[group["name"]]

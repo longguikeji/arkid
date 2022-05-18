@@ -2,7 +2,7 @@ from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
 tag = 'bi_system'
-name = 'BI系统'
+name = '分析系统'
 
 
 page = pages.TablePage(tag=tag, name=name)

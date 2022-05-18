@@ -4,7 +4,6 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.token import refresh_token
 from arkid.core.error import ErrorCode
 from api.v1.schema.auth import AuthIn, AuthOut
-from arkid.perm import event_callback
 
 
 @api.post("/tenant/{tenant_id}/auth/", response=AuthOut, tags=['登录与注册'], auth=None)
@@ -19,7 +18,7 @@ def auth(request, tenant_id: str, event_tag: str, data: AuthIn):
         return {'error': 'error_code', 'message': '认证插件未启用'}
 
     useless, (user, useless) = responses[0]
-    
+
     # 生成 token
     token = refresh_token(user)
 

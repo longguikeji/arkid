@@ -8,7 +8,9 @@ from oauth2_provider.models import Application
 from oauth2_provider.urls import urlpatterns as urls
 from arkid.core.extension import create_extension_schema
 
-package='com.longgui.oauth2_server'
+import uuid
+
+package='com.longgui.auth.oauth2_server'
 
 OIDCConfigSchema = create_extension_schema('OIDCConfigSchema',package, base_schema=OIDCConfigSchema)
 Oauth2ConfigSchema = create_extension_schema('Oauth2ConfigSchema',package, base_schema=Oauth2ConfigSchema)
@@ -55,8 +57,10 @@ class OAuth2ServerExtension(AppProtocolExtension):
 
         obj = Application()
         if is_create is False:
-            obj = Application.objects.filter(name=app.id).first()
-        obj.name = app.id
+            uuid_id = uuid.UUID(app.id)
+            obj = Application.objects.filter(name=uuid_id).first()
+        else:
+            obj.name = app.id
         obj.client_type = client_type
         obj.redirect_uris = redirect_uris
         obj.skip_authorization = skip_authorization
@@ -74,10 +78,10 @@ class OAuth2ServerExtension(AppProtocolExtension):
         '''
         host = get_app_config().get_frontend_host()
 
-        config.userinfo = host+reverse("com_longgui_oauth2_server:oauth-user-info", args=[tenant_id])
-        config.authorize = host+reverse("com_longgui_oauth2_server:authorize", args=[tenant_id])
-        config.token = host+reverse("com_longgui_oauth2_server:token", args=[tenant_id])
-        config.logout = host+reverse("com_longgui_oauth2_server:oauth-user-logout", args=[tenant_id])
+        config.userinfo = host+reverse("com_longgui_auth_oauth2_server:oauth-user-info", args=[tenant_id])
+        config.authorize = host+reverse("com_longgui_auth_oauth2_server:authorize", args=[tenant_id])
+        config.token = host+reverse("com_longgui_auth_oauth2_server:token", args=[tenant_id])
+        config.logout = host+reverse("com_longgui_auth_oauth2_server:oauth-user-logout", args=[tenant_id])
         config.client_id = obj.client_id
         config.client_secret = obj.client_secret
         config.skip_authorization = obj.skip_authorization

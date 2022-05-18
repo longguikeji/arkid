@@ -9,7 +9,7 @@ from ninja.openapi.schema import OpenAPISchema
 from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
 from arkid.core.event import register_event, dispatch_event, Event, EventDisruptionData
-from arkid.core.models import ExpiringToken, ApiPermission
+from arkid.core.models import ExpiringToken
 
 
 def add_fields(cls, **field_definitions: Any):
@@ -81,14 +81,12 @@ class GlobalAuth(HttpBearer):
 
             operation_id = request.operation_id
             if operation_id:
-                # 权限鉴定
-                apipermission = ApiPermission.valid_objects.filter(
-                    operation_id=operation_id
-                ).first()
-                if apipermission:
-                    print('存在api权限')
-                else:
-                    print('不存在api权限')
+                from arkid.core.perm.permission_data import PermissionData
+                permissiondata = PermissionData()
+                if token.user and request.tenant:
+                    result =permissiondata.api_system_permission_check(request.tenant, token.user, operation_id)
+                    if result == True:
+                        raise Exception(_('You do not have api permission','你没有这个接口的权限'))
         except ExpiringToken.DoesNotExist:
             logger.error(_("Invalid token","无效的秘钥"))
             return

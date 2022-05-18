@@ -6,6 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 from jwcrypto import jwk
+from urllib.parse import urlparse
 
 from ..models import get_application_model
 from ..settings import oauth2_settings
@@ -122,7 +123,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
 
         validator_class = oauth2_settings.OAUTH2_VALIDATOR_CLASS
         validator = validator_class()
-        oidc_claims = list(set(validator.get_discovery_claims(request)))
+        # oidc_claims = list(set(validator.get_discovery_claims(request)))
         scopes_class = oauth2_settings.SCOPES_BACKEND_CLASS
         scopes = scopes_class()
         scopes_supported = [scope for scope in scopes.get_available_scopes()]
@@ -140,7 +141,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             "token_endpoint_auth_methods_supported": (
                 oauth2_settings.OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED
             ),
-            "claims_supported": oidc_claims,
+            # "claims_supported": oidc_claims,
         }
         response = JsonResponse(data)
         response["Access-Control-Allow-Origin"] = "*"

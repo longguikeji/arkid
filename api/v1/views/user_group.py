@@ -165,7 +165,7 @@ def group_users_add(request, tenant_id: str, group_id: str, data:UserGroupUserSc
 
 @api.put("/tenant/{tenant_id}/user_groups/{group_id}/users", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def group_users_remove(request, tenant_id: str, group_id: str, data:UserGroupUserSchemaIn):
+def group_batch_users_remove(request, tenant_id: str, group_id: str, data:UserGroupUserSchemaIn):
     '''
     分组批量移除用户
     '''

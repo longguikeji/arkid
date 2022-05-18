@@ -9,7 +9,7 @@ router = routers.FrontRouter(
     children=[
         user_list.router,
         user_group.router,
-        devices.router,
+        # devices.router,
         account_life.router
     ],
 )

@@ -116,3 +116,16 @@ def update_tenant_config(request, id: str,data:TenantConfigUpdateIn,query_data:T
     """ 编辑租户配置,TODO
     """
     return {}
+
+class DefaultTenantOut(ModelSchema):
+    
+    class Config:
+        model = Tenant
+        model_fields = ["id", "name"]
+
+@api.get("/default_tenant/",response=DefaultTenantOut, tags=["租户管理"], auth=None)
+def default_tenant(request):
+    """ 获取当前域名下的默认租户(如无slug则为平台租户)
+    """
+    tenant = Tenant.active_objects.order_by("id").first()
+    return tenant

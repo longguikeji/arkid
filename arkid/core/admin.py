@@ -3,7 +3,7 @@ from .models import(
     User, UserGroup, Tenant,
     App, AppGroup, Permission,
     Approve, ExpiringToken, TenantConfig,
-    ApiPermission,
+    UserPermissionResult, SystemPermission,
 )
 
 admin.site.register(Tenant)
@@ -14,6 +14,6 @@ admin.site.register(AppGroup)
 admin.site.register(Permission)
 admin.site.register(Approve)
 admin.site.register(ExpiringToken)
-admin.site.register(ApiPermission)
+admin.site.register(SystemPermission)
+admin.site.register(UserPermissionResult)
 admin.site.register(TenantConfig)
-

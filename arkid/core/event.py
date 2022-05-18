@@ -10,7 +10,16 @@ event_id_map = {}
 
 class EventType:
 
-    def __init__(self, tag: str, name: str, data_schema: Schema = None, result_schema: Schema = None, request_schema: Schema = None, response_schema:  Schema = None, description: str = '') -> None:
+    def __init__(
+        self,
+        tag: str,
+        name: str,
+        data_schema: Schema = None,
+        result_schema: Schema = None,
+        request_schema: Schema = None,
+        response_schema: Schema = None,
+        description: str = '',
+    ):
         """事件类型用于注册
         注意:
             event request 切勿修改
@@ -35,8 +44,16 @@ class EventType:
 
 
 class Event:
-
-    def __init__(self, tag: str, tenant: Tenant, request: HttpRequest=None, response: HttpResponse=None, packages: str=None, data=None, uuid: str=None) -> None:
+    def __init__(
+        self,
+        tag: str,
+        tenant: Tenant,
+        request: HttpRequest = None,
+        response: HttpResponse = None,
+        packages: str = None,
+        data=None,
+        uuid: str = None,
+    ):
         """事件
 
         Args:
@@ -65,24 +82,26 @@ class Event:
         return self._response
 
 
-tag_map_signal: Dict[str, Event] = {}
+tag_map_event_type: Dict[str, EventType] = {}
 temp_listens:Dict[str, tuple] = {}
 
 
 def register_event(tag, name, data_schema=None, description=''):
-    register_event_type(EventType(tag=tag, name=name, data_schema=data_schema, description=description))
+    register_event_type(
+        EventType(tag=tag, name=name, data_schema=data_schema, description=description)
+    )
 
 
 def register_event_type(event_type: EventType):
     tag = event_type.tag
-    if tag in tag_map_signal:
+    if tag in tag_map_event_type:
         return
-    tag_map_signal[tag] = event_type
+    tag_map_event_type[tag] = event_type
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
-        listen_event(tag,func,listener,**kwargs)
+        listen_event(tag, func, listener, **kwargs)
         del temp_listens[tag]
-    
+
     # 将事件声明在OpenAPI的文档中
     # def view_func():
     #     pass
@@ -99,13 +118,13 @@ def register_event_type(event_type: EventType):
 
 
 def unregister_event(tag):
-    tag_map_signal.pop(tag, None)
+    tag_map_event_type.pop(tag, None)
 
 
 def dispatch_event(event, sender=None):
-    if not event.tenant:
-        raise Exception("None Tenant!")
-    event_type = tag_map_signal.get(event.tag)
+    # if not event.tenant:
+    #     raise Warning("None Tenant!")
+    event_type = tag_map_event_type.get(event.tag)
     if not event_type:
         return
     # if event_type.data_schema:
@@ -121,13 +140,14 @@ def break_event_loop(data):
     raise EventDisruptionData(data)
 
 
-def register_and_dispatch_event(tag, name, tenant, description='', data_schema=None, data=None):
+def register_and_dispatch_event(
+    tag, name, tenant, description='', data_schema=None, data=None
+):
     register_event(tag, name, data_schema, description)
     return dispatch_event(Event(tag, tenant, data))
 
 
 def decorator_listen_event(tag, **kwargs):
-
     def _decorator(func):
         def signal_func(event, **kwargs2):
             # 判断租户是否启用该插件
@@ -140,11 +160,11 @@ def decorator_listen_event(tag, **kwargs):
 
         if isinstance(tag, (list, tuple)):
             for t in tag:
-                event_type = tag_map_signal.get(t)
+                event_type = tag_map_event_type.get(t)
                 if event_type:
                     event_type.signal.connect(signal_func, **kwargs)
         else:
-            event_type = tag_map_signal.get(tag)
+            event_type = tag_map_event_type.get(tag)
             if event_type:
                 event_type.signal.connect(signal_func, **kwargs)
         return func
@@ -159,9 +179,9 @@ def remove_event_id(event):
 
 def listen_event(tag, func, listener=None, **kwargs):
     def signal_func(sender, event, **kwargs2):
-        if event.uuid and event_id_map.get(event.uuid,{}).get(func):
-            return event_id_map.get(event.uuid,{}).get(func), listener
-        
+        if event.uuid and event_id_map.get(event.uuid, {}).get(func):
+            return event_id_map.get(event.uuid, {}).get(func), listener
+
         res = func(sender=sender, event=event, **kwargs2)
         if event.uuid:
             event_id_map[event.uuid] = {func: res}
@@ -169,13 +189,13 @@ def listen_event(tag, func, listener=None, **kwargs):
 
     if isinstance(tag, (list, tuple)):
         for t in tag:
-            event_type = tag_map_signal.get(t)
+            event_type = tag_map_event_type.get(t)
             if event_type:
                 event_type.signal.connect(signal_func, **kwargs)
             else:
                 temp_listens[t] = (func, listener, kwargs)
     else:
-        event_type = tag_map_signal.get(tag)
+        event_type = tag_map_event_type.get(tag)
         if event_type:
             event_type.signal.connect(signal_func, **kwargs)
         else:
@@ -185,11 +205,11 @@ def listen_event(tag, func, listener=None, **kwargs):
 def unlisten_event(tag, func, **kwargs):
     if isinstance(tag, (list, tuple)):
         for t in tag:
-            event_type = tag_map_signal.get(t)
+            event_type = tag_map_event_type.get(t)
             if event_type:
                 event_type.signal.disconnect(func, **kwargs)
     else:
-        event_type = tag_map_signal.get(tag)
+        event_type = tag_map_event_type.get(tag)
         if event_type:
             event_type.signal.disconnect(func, **kwargs)
 
@@ -208,6 +228,24 @@ DELETE_GROUP = 'DELETE_GROUP'
 CREATE_PERMISSION = 'CREATE_PERMISSION'
 UPDATE_PERMISSION = 'UPDATE_PERMISSION'
 DELETE_PERMISSION = 'DELETE_PERMISSION'
+USER_REGISTER = 'USER_REGISTER'
+CREATE_SYSTEM_TENANT = 'CREATE_SYSTEM_TENANT'
+SET_APP_OPENAPI_VERSION = 'SET_APP_OPENAPI_VERSION'
+UPDATE_APP_USER_API_PERMISSION = 'UPDATE_APP_USER_API_PERMISSION'
+
+CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
+UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
+DELETE_FRONT_THEME_CONFIG = 'DELETE_FRONT_THEME_CONFIG'
+
+CREATE_ACCOUNT_LIFE_CONFIG = 'CREATE_ACCOUNT_LIFE_CONFIG'
+UPDATE_ACCOUNT_LIFE_CONFIG = 'UPDATE_ACCOUNT_LIFE_CONFIG'
+DELETE_ACCOUNT_LIFE_CONFIG = 'DELETE_ACCOUNT_LIFE_CONFIG'
+
+CREATE_APPROVE_SYSTEM_CONFIG = 'CREATE_APPROVE_SYSTEM_CONFIG'
+UPDATE_APPROVE_SYSTEM_CONFIG = 'UPDATE_APPROVE_SYSTEM_CONFIG'
+DELETE_APPROVE_SYSTEM_CONFIG = 'DELETE_APPROVE_SYSTEM_CONFIG'
+
+APP_START = 'APP_START'
 
 
 # register events
@@ -220,7 +258,20 @@ register_event(DELETE_APP, _('delete app','删除应用'))
 register_event(CREATE_GROUP, _('create group','创建分组'))
 register_event(UPDATE_GROUP, _('update group','修改分组'))
 register_event(DELETE_GROUP, _('delete group','删除分组'))
+register_event(APP_START, _('app start','应用启动'))
 register_event(SEND_SMS, _('send sms','发送短信'))
 register_event(CREATE_PERMISSION, _('create permission','创建权限'))
 register_event(UPDATE_PERMISSION, _('update permission','修改权限'))
 register_event(DELETE_PERMISSION, _('delete permission','删除权限'))
+register_event(CREATE_FRONT_THEME_CONFIG, _('Create Theme','添加主题'))
+register_event(UPDATE_FRONT_THEME_CONFIG, _('Update Theme','修改主题'))
+register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme','删除主题'))
+register_event(USER_REGISTER, _('user register','用户注册'))
+register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version','设置应用接口和版本'))
+register_event(UPDATE_APP_USER_API_PERMISSION, _('update app user api permission','更新应用的用户接口权限'))
+register_event(CREATE_ACCOUNT_LIFE_CONFIG, _('Create Account Life', '添加生命周期'))
+register_event(UPDATE_ACCOUNT_LIFE_CONFIG, _('Update Account Life', '更新生命周期'))
+register_event(DELETE_ACCOUNT_LIFE_CONFIG, _('Delete Account Life', '删除生命周期'))
+register_event(CREATE_APPROVE_SYSTEM_CONFIG, _('Create Approve System', '添加审批系统'))
+register_event(UPDATE_APPROVE_SYSTEM_CONFIG, _('Update Approve System', '更新审批系统'))
+register_event(DELETE_APPROVE_SYSTEM_CONFIG, _('Delete Approve System', '删除审批系统'))

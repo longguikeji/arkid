@@ -20,6 +20,8 @@ class RootSchema(Schema):
     def dict(self, **kwargs):
         if not hasattr(self, "__root__"):
             return super().dict(**kwargs)
+        if isinstance(self.__root__, list):
+            return [value.dict() for value in self.__root__]
         return self.__root__.dict(**kwargs)
 
 

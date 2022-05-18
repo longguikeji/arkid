@@ -15,7 +15,11 @@ class CoreConfig(AppConfig):
                 username="admin",
                 tenant=tenant,
             )
+            tenant.create_tenant_user_admin_permission(user)
             tenant.users.add(user)
             tenant.save()
+
         except:
             pass
+        # 监听
+        from arkid.core import listener

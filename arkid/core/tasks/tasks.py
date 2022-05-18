@@ -2,12 +2,14 @@ import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
 django.setup()
 
-from arkid.config import get_app_config
-from arkid.extension.utils import import_extension
 from arkid.extension.models import TenantExtensionConfig, Extension
-from arkid.core.models import ApiPermission
+from arkid.core.event import Event, dispatch_event, APP_START
+from arkid.core.perm.permission_data import PermissionData
+from arkid.config import get_app_config
 from arkid.common.logger import logger
+from arkid.core.models import Tenant
 from types import SimpleNamespace
+from arkid.core.api import api
 from celery import shared_task
 from .celery import app
 import requests, uuid
@@ -15,6 +17,7 @@ import importlib
 
 @shared_task(bind=True)
 def sync(self, config_id, *args, **kwargs):
+
     try:
         logger.info("=== arkid.core.tasks.sync start...===")
         logger.info(f"config_id: {config_id}")
@@ -37,56 +40,52 @@ def sync(self, config_id, *args, **kwargs):
         raise self.retry(exc=exc, max_retries=max_retries, countdown=countdown)
 
 @app.task
-def update_permission():
-    host = get_app_config().get_host()
-    api_info = '{}/api/v1/openapi_redoc.json'.format(host)
-    permission_task(None, api_info)
+def update_app_permission(tenant_id, app_id):
+    '''
+    更新应用权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_app_permission(tenant_id, app_id)
 
-def permission_task(app_temp, api_info):
-    response = requests.get(api_info)
-    response = response.json()
-    paths = response.get('paths')
-    path_keys = paths.keys()
-    info = response.get('info')
-    title = info.get('title')
-    base_code = title
-    old_permissions = ApiPermission.valid_objects.filter(tenant=None,
-      app=app_temp,
-      category='api',
-      is_system=True,
-      base_code=base_code)
-    for old_permission in old_permissions:
-        old_permission.is_update = False
-        old_permission.save()
-    else:
-        for path_key in path_keys:
-            item = paths.get(path_key)
-            item_keys = item.keys()
-            for item_key in item_keys:
-                request_obj = item.get(item_key)
-                request_type = item_key
-                request_url = path_key
-                summary = request_obj.get('summary', '')
-                operation_id = request_obj.get('operationId')
-                codename = 'api_{}'.format(uuid.uuid4())
-                permission, is_create = ApiPermission.objects.get_or_create(category='api',
-                  is_system=True,
-                  app=app_temp,
-                  is_del=False,
-                  operation_id=operation_id,
-                  base_code=base_code)
-                if is_create is True:
-                    permission.codename = codename
-                permission.name = summary
-                permission.request_url = request_url
-                permission.request_type = request_type
-                permission.is_update = True
-                permission.save()
+@app.task
+def update_system_permission():
+    '''
+    更新系统权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_system_permission()
 
-        else:
-            ApiPermission.valid_objects.filter(tenant=None,
-              app=app_temp,
-              category='api',
-              is_system=True,
-              base_code=base_code,
-              is_update=False).delete()
+@app.task
+def update_single_user_system_permission(tenant_id, user_id):
+    '''
+    更新单个用户的系统权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_single_user_system_permission(tenant_id, user_id)
+
+@app.task
+def update_single_user_app_permission(tenant_id, user_id, app_id):
+    '''
+    更新单个用户的应用权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_single_user_app_permission(tenant_id, user_id, app_id)
+
+@app.task
+def add_system_permission_to_user(self, tenant_id, user_id, permission_id):
+    '''
+    添加系统权限给用户
+    '''
+    permissiondata = PermissionData()
+    permissiondata.add_system_permission_to_user(tenant_id, user_id, permission_id)
+
+class ReadyCelery(object):
+
+    def __init__(self):
+        tenant, _ = Tenant.objects.get_or_create(
+            slug='',
+            name="platform tenant",
+        )
+        dispatch_event(Event(tag=APP_START, tenant=tenant))
+
+ReadyCelery()
