@@ -56,6 +56,9 @@ class PermissionDetailSchemaOut(ModelSchema):
         model_fields = ['id', 'name', 'category']
 
 
+class PermissionStrSchemaOut(Schema):
+    result: str
+
 @transaction.atomic
 @api.post("/tenant/{tenant_id}/permissions", response=PermissionSchemaOut, tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -81,22 +84,13 @@ def create_permission(request, tenant_id: str, data: PermissionSchemaIn):
 @api.get("/tenant/{tenant_id}/permissions", response=List[PermissionListSchemaOut], tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate
-def list_permissions(request, tenant_id: str,  app_id: str = None, user_id: str = None):
+def list_permissions(request, tenant_id: str,  app_id: str = None, user_id: str = None, group_id: str = None):
     '''
     权限列表
     '''
-    permissions = Permission.valid_objects.filter(
-        tenant_id=tenant_id
-    )
-    systempermissions = SystemPermission.valid_objects.all()
-
-    if app_id:
-        systempermissions = systempermissions.filter(app_id=app_id)
-        permissions = permissions.filter(app_id=app_id)
-    if user_id:
-        pass
-
-    return list(systempermissions)+list(permissions)
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_permissions_by_search(tenant_id, app_id, user_id, group_id)
 
 
 @api.get("/tenant/{tenant_id}/permission/{permission_id}", response=PermissionDetailSchemaOut, tags=['权限'], auth=None)
@@ -137,3 +131,19 @@ def delete_permission(request, tenant_id: str, permission_id: str):
     dispatch_event(Event(tag=DELETE_PERMISSION, tenant=request.tenant, request=request, data=permission))
     # 分发事件结束
     return {'error': ErrorCode.OK.value}
+
+
+@api.get("/tenant/{tenant_id}/permissionstr", tags=['权限'], response=PermissionStrSchemaOut, auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_permission_str(request, tenant_id: str,  app_id: str = None):
+    '''
+    权限结果
+    '''
+    from arkid.core.models import User
+    # user = request.user
+    user, _ = User.objects.get_or_create(
+        username="hanbin",
+    )
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_permission_str(user, tenant_id, app_id)

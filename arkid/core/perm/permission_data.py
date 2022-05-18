@@ -2,7 +2,7 @@ from arkid.core.b64_compress import Compress
 from arkid.core.openapi import get_permissions
 from arkid.core.models import (
     UserPermissionResult, SystemPermission, User,
-    Tenant, App, Permission,
+    Tenant, App, Permission, UserGroup,
 )
 from arkid.core.api import api
 from django.db.models import Q
@@ -950,3 +950,91 @@ class PermissionData(object):
                     temp_data_group.append(permission)
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
+    
+    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id):
+        '''
+        根据应用，用户，分组查权限
+        '''
+        permissions = Permission.valid_objects.filter(
+            tenant_id=tenant_id
+        )
+        systempermissions = SystemPermission.valid_objects.all()
+
+        if app_id:
+            systempermissions = systempermissions.filter(id__isnull=True)
+            permissions = permissions.filter(app_id=app_id)
+        if user_id:
+            compress = Compress()
+            # 系统权限
+            userpermissionresult = UserPermissionResult.valid_objects.filter(
+                user_id=user_id,
+                tenant_id=tenant_id,
+                app=None
+            ).first()
+            permission_sort_ids = []
+            if userpermissionresult:
+                permission_result = compress.decrypt(userpermissionresult.result)
+                permission_result_arr = list(permission_result)
+                for index, item in enumerate(permission_result_arr):
+                    if int(item) == 1:
+                        permission_sort_ids.append(index)
+            if len(permission_sort_ids) == 0:
+                systempermissions = systempermissions.filter(id__isnull=True)
+            else:
+                systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+            # 应用权限
+            userpermissionresult = UserPermissionResult.valid_objects.filter(
+                user_id=user_id,
+                tenant_id=tenant_id,
+                app__isnull=False
+            ).first()
+            permission_sort_ids = []
+            if userpermissionresult:
+                permission_result = compress.decrypt(userpermissionresult.result)
+                permission_result_arr = list(permission_result)
+                for index, item in enumerate(permission_result_arr):
+                    if int(item) == 1:
+                        permission_sort_ids.append(index)
+            if len(permission_sort_ids) == 0:
+                permissions = permissions.filter(id__isnull=True)
+            else:
+                permissions = permissions.filter(sort_id__in=permission_sort_ids)
+        if group_id:
+            usergroup = UserGroup.valid_objects.filter(id=group_id).first()
+            if usergroup:
+                permission_ids = []
+                group_permissions = usergroup.permission.all()
+                for group_permission in group_permissions:
+                    permission_ids.append(group_permission.id)
+                if len(permission_ids) == 0:
+                    systempermissions = systempermissions.filter(id__isnull=True)
+                else:
+                    systempermissions = systempermissions.filter(id__in=permission_ids)
+                # 没有应用分组，只有系统分组
+                permissions = permissions.filter(id__isnull=True)
+        return list(permissions)+list(systempermissions)
+
+    def get_permission_str(self, user, tenant_id, app_id):
+        '''
+        获取权限字符串
+        '''
+        compress = Compress()
+        userpermissionresults = UserPermissionResult.valid_objects.filter(
+            user=user,
+            tenant_id=tenant_id,
+            app_id=app_id,
+        )
+        if app_id:
+            userpermissionresult = userpermissionresults.filter(
+                app_id=app_id,
+            ).first()
+
+        else:
+            userpermissionresult = userpermissionresults.filter(   
+                app__isnull=True,
+            ).first()
+        if userpermissionresult:
+            permission_result = compress.decrypt(userpermissionresult.result)
+            return {'result': permission_result}
+        else:
+            return {'result': ''}
