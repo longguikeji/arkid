@@ -41,46 +41,16 @@ class Tenant(BaseModel):
         return f'tenant_admin_{self.id}'
 
     def has_admin_perm(self, user: 'User'):
-        from arkid.core.b64_compress import Compress
-        if user.is_superuser:
-            return True
-        else:
-            systempermission = SystemPermission.valid_objects.filter(tenant=self, code=self.admin_perm_code, is_system=True).first()
-            if systempermission:
-                userpermissionresult = UserPermissionResult.valid_objects.filter(
-                    user=user,
-                    tenant=self,
-                    app=None,
-                ).first()
-                if userpermissionresult:
-                    compress = Compress()
-                    permission_result = compress.decrypt(userpermissionresult.result)
-                    permission_result_arr = list(permission_result)
-                    check_result = int(permission_result_arr[systempermission.sort_id])
-                    if check_result == 1:
-                        return True
-        return False
-    
-    def create_tenant_admin_permission(self):
-        systempermission, is_create = SystemPermission.objects.get_or_create(
-            tenant=self,
-            code=self.admin_perm_code,
-            is_system=True,
-        )
-        systempermission.name = self.name+' manage'
-        systempermission.category = 'other'
-        systempermission.is_update = True
-        systempermission.save()
-        return systempermission, is_create
+        from arkid.core.perm.permission_data import PermissionData
+        permissiondata = PermissionData()
+        result = permissiondata.has_admin_perm(self, user)
+        return result
     
     def create_tenant_user_admin_permission(self, user):
         # 此处无法使用celery和event, event会出现无法回调，celery启动时如果调用，会自己调用自己
         from arkid.core.perm.permission_data import PermissionData
-        systempermission, is_create = self.create_tenant_admin_permission()
-        if is_create:
-            # 给用户添加管理员权限
-            permissiondata = PermissionData()
-            permissiondata.add_system_permission_to_user(self.id, user.id, systempermission.id)
+        permissiondata = PermissionData()
+        permissiondata.create_tenant_user_admin_permission(self, user)
     
     @property
     def is_platform_tenant(self):

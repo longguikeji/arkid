@@ -1038,3 +1038,50 @@ class PermissionData(object):
             return {'result': permission_result}
         else:
             return {'result': ''}
+
+
+    def has_admin_perm(self, tenant, user):
+        '''
+        检查租户管理员权限
+        '''
+        if user.is_superuser:
+            return True
+        else:
+            systempermission = SystemPermission.valid_objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
+            if systempermission:
+                userpermissionresult = UserPermissionResult.valid_objects.filter(
+                    user=user,
+                    tenant=tenant,
+                    app=None,
+                ).first()
+                if userpermissionresult:
+                    compress = Compress()
+                    permission_result = compress.decrypt(userpermissionresult.result)
+                    permission_result_arr = list(permission_result)
+                    check_result = int(permission_result_arr[systempermission.sort_id])
+                    if check_result == 1:
+                        return True
+        return False
+    
+    def create_tenant_admin_permission(self, tenant):
+        '''
+        创建租户管理员权限
+        '''
+        systempermission, is_create = SystemPermission.objects.get_or_create(
+            tenant=tenant,
+            code=tenant.admin_perm_code,
+            is_system=True,
+        )
+        systempermission.name = tenant.name+' manage'
+        systempermission.category = 'other'
+        systempermission.is_update = True
+        systempermission.save()
+        return systempermission, is_create
+    
+    def create_tenant_user_admin_permission(self, tenant, user):
+        '''
+        创建租户管理员权限和租户管理员
+        '''
+        systempermission, is_create = self.create_tenant_admin_permission(tenant)
+        if is_create:
+            self.add_system_permission_to_user(tenant.id, user.id, systempermission.id)
