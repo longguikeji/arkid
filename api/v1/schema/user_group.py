@@ -17,8 +17,13 @@ class UserGroupListOut(ResponseSchema):
     data: List[UserGroupListItemOut]
 
 
-class UserGroupItemOut(Schema):
-    group_id: str
+class UserGroupItemOut(ModelSchema):
+
+    parent_id: str
+
+    class Config:
+        model = UserGroup
+        model_fields = ['id', 'name']
 
 class UserGroupOut(ResponseSchema):
     data: UserGroupItemOut
@@ -30,6 +35,17 @@ class UserGroupIn(ModelSchema):
     class Config:
         model = UserGroup
         model_fields = ['name']
+
+class UserGroupDeleteOut(ResponseSchema):
+    pass
+
+class UserGroupUserListItemOut(ModelSchema):
+    class Config:
+        model = User
+        model_fields = ['id', 'username']
+
+class UserGroupUserListOut(ResponseSchema):
+    data:List[UserGroupUserListItemOut]
 
 
 class UserGroupDetailItemOut(ModelSchema):

@@ -49,7 +49,7 @@ def get_mine_approves(request, tenant_id: str):
     return []
 
 @api.get("/mine/switch_tenant/{id}/",tags=["我的"],auth=None)
-def get_mine_switch_tenant(request,id):
+def get_mine_switch_tenant(request, id):
     """ 租户开关,TODO
     """
     context = {}
@@ -61,9 +61,10 @@ def get_mine_switch_tenant(request,id):
 
 @api.get("/mine/logout/",tags=["我的"],auth=None)
 def get_mine_logout(request):
-    """ 退出登录,TODO
+    """ 退出登录
     """
-    return {}
+    # request.token.expire()
+    return render(request,template_name='logout.html')
 
 class MineTenantsOut(ModelSchema):
     class Config:

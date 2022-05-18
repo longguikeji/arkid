@@ -13,7 +13,7 @@ from arkid.core.event import CREATE_GROUP, UPDATE_GROUP, DELETE_GROUP
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from uuid import UUID
 
-from api.v1.schema.user_group import UserGroupDetailOut, UserGroupIn, UserGroupItemOut, UserGroupListItemOut, UserGroupListOut, UserGroupOut, UserGroupUserIn, UserGroupUserOut
+from api.v1.schema.user_group import UserGroupDeleteOut, UserGroupDetailOut, UserGroupIn, UserGroupItemOut, UserGroupListItemOut, UserGroupListOut, UserGroupOut, UserGroupUserIn, UserGroupUserListItemOut, UserGroupUserListOut, UserGroupUserOut
 from arkid.core.pagenation import CustomPagination
 
 
@@ -50,17 +50,17 @@ def list_groups(request, tenant_id: str,  parent_id: str = None):
     return {"data": list(usergroups.all())}
 
 
-@api.get("/tenant/{tenant_id}/user_groups/{group_id}", response=UserGroupDetailOut, tags=['用户分组'], auth=None)
+@api.get("/tenant/{tenant_id}/user_groups/{group_id}/", response=UserGroupDetailOut, tags=['用户分组'], auth=None)
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_group(request, tenant_id: str, group_id: str):
     '''
     获取分组
     '''
     group = get_object_or_404(UserGroup, id=group_id, is_del=False)
-    return group
+    return {"data":group}
 
 
-@api.put("/tenant/{tenant_id}/user_groups/{group_id}", tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/{group_id}/", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_group(request, tenant_id: str, group_id: str, data: UserGroupIn):
     '''
@@ -77,7 +77,7 @@ def update_group(request, tenant_id: str, group_id: str, data: UserGroupIn):
     return {'error': ErrorCode.OK.value}
 
 
-@api.delete("/tenant/{tenant_id}/user_groups/{group_id}", tags=['用户分组'], auth=None)
+@api.delete("/tenant/{tenant_id}/user_groups/{group_id}/",response=UserGroupDeleteOut,tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_group(request, tenant_id: str, group_id: str):
     '''
@@ -91,17 +91,18 @@ def delete_group(request, tenant_id: str, group_id: str):
     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/user_groups/{group_id}/users", response=UserGroupUserOut, tags=['用户分组'], auth=None)
-@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/user_groups/{group_id}/users/", response=List[UserGroupUserListItemOut], tags=['用户分组'], auth=None)
+@operation(UserGroupUserListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
 def get_group_users(request, tenant_id: str, group_id: str):
     '''
     获取分组用户
     '''
     group = get_object_or_404(UserGroup, id=group_id, is_del=False)
-    return group
+    return group.users.all()
 
 
-@api.post("/tenant/{tenant_id}/user_groups/{group_id}/users", tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/{group_id}/users/", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def group_users_add(request, tenant_id: str, group_id: str, data:UserGroupUserIn):
     '''
@@ -117,7 +118,7 @@ def group_users_add(request, tenant_id: str, group_id: str, data:UserGroupUserIn
     return {'error': ErrorCode.OK.value}
 
 
-@api.put("/tenant/{tenant_id}/user_groups/{group_id}/users", tags=['用户分组'], auth=None)
+@api.put("/tenant/{tenant_id}/user_groups/{group_id}/users/", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def group_batch_users_remove(request, tenant_id: str, group_id: str, data:UserGroupUserIn):
     '''
@@ -133,7 +134,7 @@ def group_batch_users_remove(request, tenant_id: str, group_id: str, data:UserGr
     return {'error': ErrorCode.OK.value}
 
 
-@api.delete("/tenant/{tenant_id}/user_groups/{group_id}/users/{user_id}", tags=['用户分组'], auth=None)
+@api.delete("/tenant/{tenant_id}/user_groups/{group_id}/users/{user_id}/", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def group_users_remove(request, tenant_id: str, group_id: str, user_id: str):
     '''

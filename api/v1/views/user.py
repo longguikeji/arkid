@@ -36,18 +36,18 @@ def user_create(request, tenant_id: str,data:UserCreateIn):
 def user_delete(request, tenant_id: str,id:str):
     user = User.active_objects.get(tenant__id=tenant_id,id=id)
     user.delete()
-    return {"error":0}
+    return {"error":ErrorCode.OK.value}
         
 # ------------- 更新用户接口 --------------
 @api.post("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOut, tags=['用户'], auth=None)
 @operation(UserUpdateOut)
 def user_update(request, tenant_id: str,id:str, data:UserUpdateIn):
 
-    user = User.expand_objects.get(tenant__id=tenant_id,id=id)
-    user.avatar = data.avatar
+    user = User.active_objects.get(tenant__id=tenant_id,id=id)
+    user.avatar = data.avatar or user.avatar
     user.save()
 
-    return {"error":ErrorCode.ok.value}
+    return {"error":ErrorCode.OK.value}
 # ------------- 获取用户接口 --------------
         
 @api.get("/tenant/{tenant_id}/users/{id}/",response=UserOut, tags=['用户'], auth=None)
