@@ -17,7 +17,7 @@ class EmptyModel(models.Model):
     pass
 
 
-class Tenant(BaseModel):
+class Tenant(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("tenant", "租户")
         verbose_name_plural = _("tenant", "租户")

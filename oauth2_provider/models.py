@@ -77,7 +77,7 @@ class AbstractApplication(models.Model):
     id = models.BigAutoField(primary_key=True)
     client_id = models.CharField(max_length=100, unique=True, default=generate_client_id, db_index=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "core.User",
         related_name="%(app_label)s_%(class)s",
         null=True,
         blank=True,
@@ -264,7 +264,7 @@ class AbstractGrant(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s"
+        "core.User", on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s"
     )
     tenant = models.ForeignKey(
         Tenant,
@@ -336,7 +336,7 @@ class AbstractAccessToken(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "core.User",
         on_delete=models.CASCADE,
         blank=True,
         null=True,
@@ -454,7 +454,7 @@ class AbstractRefreshToken(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s"
+        "core.User", on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s"
     )
     token = models.CharField(max_length=255)
     application = models.ForeignKey(oauth2_settings.APPLICATION_MODEL, on_delete=models.CASCADE)
@@ -527,7 +527,7 @@ class AbstractIDToken(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "core.User",
         on_delete=models.CASCADE,
         blank=True,
         null=True,

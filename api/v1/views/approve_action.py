@@ -131,21 +131,3 @@ def delete_approve_action(request, tenant_id: str, id: str):
     else:
         action.delete()
         return {'error': ErrorCode.OK.value}
-
-
-from arkid.core.extension.approve_system import ApproveRequestOut
-
-
-@api.get(
-    "/tenant/{tenant_id}/approve_requests/",
-    tags=["审批动作"],
-    auth=None,
-    response=List[ApproveRequestOut],
-)
-def get_tenant_approve_requests(request, tenant_id: str):
-    """
-    返回当前租户所有审批请求
-    """
-    tenant = request.tenant
-    requests = ApproveRequest.valid_objects.filter(action__tenant=tenant)
-    return requests
