@@ -81,7 +81,7 @@ def create_permission(request, tenant_id: str, data: PermissionSchemaIn):
 @api.get("/tenant/{tenant_id}/permissions", response=List[PermissionListSchemaOut], tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate
-def list_permissions(request, tenant_id: str,  app_id: str = None):
+def list_permissions(request, tenant_id: str,  app_id: str = None, user_id: str = None):
     '''
     权限列表
     '''
@@ -93,6 +93,8 @@ def list_permissions(request, tenant_id: str,  app_id: str = None):
     if app_id:
         systempermissions = systempermissions.filter(app_id=app_id)
         permissions = permissions.filter(app_id=app_id)
+    if user_id:
+        pass
 
     return list(systempermissions)+list(permissions)
 
@@ -104,9 +106,6 @@ def get_permission(request, tenant_id: str, permission_id: str):
     获取权限
     '''
     permission = get_object_or_404(Permission, id=permission_id, is_del=False)
-    from arkid.core.perm.permission_data import PermissionData
-    permissiondata = PermissionData()
-    permissiondata.update_app_all_user_permission(request.tenant, permission.app)
     return permission
 
 
