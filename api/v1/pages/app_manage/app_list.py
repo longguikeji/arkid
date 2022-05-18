@@ -7,11 +7,11 @@ name = '应用列表'
 
 page = pages.TablePage(tag=tag, name=name)
 edit_page = pages.FormPage(name=_("编辑应用"))
-config_page = pages.FormPage(name=_("配置应用"))
+# config_page = pages.FormPage(name=_("配置应用"))
 
 pages.register_front_pages(page)
 pages.register_front_pages(edit_page)
-pages.register_front_pages(config_page)
+# pages.register_front_pages(config_page)
 
 router = routers.FrontRouter(
     path=tag,
@@ -31,11 +31,11 @@ page.create_actions(
         )
     },
     local_actions={
-        "config":actions.OpenAction(
-            name = _("配置"),
-            icon = "icon-edit",
-            page=config_page,
-        ),
+        # "config":actions.OpenAction(
+        #     name = _("配置"),
+        #     icon = "icon-edit",
+        #     page=config_page,
+        # ),
         "edit": actions.EditAction(
             page=edit_page,
         ),
@@ -57,14 +57,14 @@ edit_page.create_actions(
     }
 )
 
-config_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/apps/{id}/config/',
-        method=actions.FrontActionMethod.GET
-    ),
-    global_actions={
-       'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/apps/{id}/config/"
-        ),
-    }
-)
+# config_page.create_actions(
+#     init_action=actions.DirectAction(
+#         path='/api/v1/tenant/{tenant_id}/apps/{id}/config/',
+#         method=actions.FrontActionMethod.GET
+#     ),
+#     global_actions={
+#        'confirm': actions.ConfirmAction(
+#             path="/api/v1/tenant/{tenant_id}/apps/{id}/config/"
+#         ),
+#     }
+# )

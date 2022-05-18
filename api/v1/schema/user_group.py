@@ -1,10 +1,22 @@
 from typing import List
 from uuid import UUID
-from ninja import ModelSchema, Schema
+from ninja import Field, ModelSchema, Schema
 from requests import Response
 from arkid.core.models import User, UserGroup
 from arkid.core.schema import ResponseSchema
+from arkid.core import pages,actions
+from arkid.core.translation import gettext_default as _
 
+select_usergroup_parent_page = pages.TablePage(select=True,name=_("选择上级分组"))
+
+pages.register_front_pages(select_usergroup_parent_page)
+
+select_usergroup_parent_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/user_groups/',
+        method=actions.FrontActionMethod.GET
+    )
+)
 
 class UserGroupListItemOut(ModelSchema):
 
@@ -30,7 +42,11 @@ class UserGroupOut(ResponseSchema):
 
 class UserGroupIn(ModelSchema):
 
-    parent_id: str = None
+    parent_id: str = Field(
+        field="id",
+        page=select_usergroup_parent_page,
+        link="parent_id"
+    )
 
     class Config:
         model = UserGroup
@@ -54,7 +70,7 @@ class UserGroupDetailItemOut(ModelSchema):
 
     class Config:
         model = UserGroup
-        model_fields = ['id', 'name']
+        model_fields = ['id', 'name',"parent"]
 
 class UserGroupDetailOut(ResponseSchema):
     data:UserGroupDetailItemOut
