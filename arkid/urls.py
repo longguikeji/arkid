@@ -31,6 +31,7 @@ urlpatterns = [
     path("api/v1/login_process", login_view.LoginProcess.as_view()),
     path("api/redoc", redoc_view.Redoc.as_view()),
     path("api/openapi_redoc.json", redoc_view.RedocOpenAPI.as_view()),
+    path("api/v1/", include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
 
 urlpatterns += [path('api/v1/', include((core_urls.urlpatterns + bind_saas.urlpatterns, 'api'), namespace='api'))]
