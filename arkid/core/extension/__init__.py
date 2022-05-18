@@ -214,9 +214,9 @@ class Extension(ABC):
         """插件完整路径，用/分隔"""
         return str(self.ext_dir).replace('/','.')
 
-    def migrate_extension(self):
-        extension_migrate_foldname = Path(self.ext_dir) / 'migrations'
-        if not extension_migrate_foldname.exists():
+    def migrate_extension(self) -> None:
+        extension_models = Path(self.ext_dir) / 'models.py'
+        if not extension_models.exists():
             return
         settings.INSTALLED_APPS += (self.full_name, )
         apps.app_configs = OrderedDict()
@@ -224,6 +224,7 @@ class Extension(ABC):
         apps.clear_cache()
         apps.populate(settings.INSTALLED_APPS)
 
+        print(f'Makemigrations {self.name}')
         management.call_command('makemigrations', self.name, interactive=False)
         print(f'Migrate {self.name}')
         management.call_command('migrate', self.name, interactive=False)
