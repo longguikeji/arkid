@@ -30,9 +30,9 @@ class ExtensionLoader:
                     'labels': ext.labels,
                     'ext_dir': str(ext.ext_dir),
                     'name': ext.name,
+                    'version': ext.version,
                     'is_active': True,
                 },
                 package = ext.package,
-                version = ext.version
             )
         load_active_extensions()

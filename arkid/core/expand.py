@@ -170,7 +170,7 @@ class ExpandModel(models.Model):
             if hasattr(self, q.field):
                 if q.extension_table not in extension_tables:
                     extension_model_obj = q.extension_model_cls()
-                    extension_model_obj.user = self
+                    setattr(extension_model_obj, q.table_field, self)
                     extension_tables[q.extension_table] = extension_model_obj
                 else:
                     extension_model_obj = extension_tables[q.extension_table]
