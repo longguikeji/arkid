@@ -1,9 +1,11 @@
 from typing import List
 from django.shortcuts import render
 from ninja import ModelSchema, Schema
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
+from arkid.core.pagenation import CustomPagination
+from arkid.core.schema import ResponseSchema
 
 
 @api.get("/mine/tenant/{tenant_id}/apps/",tags=["我的"],auth=None)
@@ -66,14 +68,18 @@ def get_mine_logout(request):
     # request.token.expire()
     return render(request,template_name='logout.html')
 
-class MineTenantsOut(ModelSchema):
+class MineTenantListItemOut(ModelSchema):
     class Config:
         model = Tenant
         model_fields=["id","name","slug","icon"]
 
-@api.get("/mine/tenants/",response=List[MineTenantsOut],tags=["我的"],auth=None)
+class MineTenantListOut(ResponseSchema):
+    data: List[MineTenantListItemOut]
+
+@api.get("/mine/tenants/",response=MineTenantListOut,tags=["我的"],auth=None)
+@operation(MineTenantListOut)
 def get_mine_tenants(request):
     """ 获取我的租户,TODO
     """
     tenants = Tenant.active_objects.all()
-    return tenants
+    return {"data":tenants}
