@@ -259,7 +259,7 @@ class OAuth2ProviderSettings:
             delattr(self, "_user_settings")
 
     def oidc_issuer(self, request, tenant=''):
-        from config import get_app_config
+        from arkid.config import get_app_config
         host = get_app_config().get_host()
         """
         Helper function to get the OIDC issuer URL, either from the settings

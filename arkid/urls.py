@@ -14,13 +14,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 # from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from arkid.core.api import api as core_api
 from api import v1
 from arkid.login import view as login_view
 from arkid.core import urls as core_urls
 from arkid.redoc import view as redoc_view
 from scim_server import urls as scim_urls
+from api.v1.views import bind_saas
 
 
 urlpatterns = [
@@ -32,5 +33,5 @@ urlpatterns = [
     path("api/openapi_redoc.json", redoc_view.RedocOpenAPI.as_view()),
 ]
 
-urlpatterns += core_urls.urlpatterns
+urlpatterns += [path('api/v1/', include((core_urls.urlpatterns + bind_saas.urlpatterns, 'api'), namespace='api'))]
 urlpatterns += scim_urls.urlpatterns
