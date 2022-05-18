@@ -168,7 +168,7 @@ class App(BaseModel, ExpandModel):
         verbose_name=_('secret', '密钥'),
     )
     config = models.OneToOneField(
-        TenantExtensionConfig, blank=False, default=None, on_delete=models.PROTECT
+        TenantExtensionConfig, blank=True,null=True, default=None, on_delete=models.PROTECT
     )
     package = models.CharField(
         max_length=128,

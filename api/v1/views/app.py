@@ -22,7 +22,7 @@ from arkid.core.event import(
 import uuid
 
 from arkid.core.pagenation import CustomPagination
-
+from api.v1.schema.app import AppCreateIn, AppCreateOut, AppListItemOut, AppListOut
 
 AppConfigSchemaIn = AppProtocolExtension.create_composite_config_schema('AppConfigSchemaIn')
 
@@ -31,14 +31,6 @@ AppSchemaOut = AppProtocolExtension.create_composite_config_schema('AppSchemaOut
 
 class AppConfigSchemaOut(Schema):
     app_id: str
-
-
-class AppListSchemaOut(ModelSchema):
-
-    class Config:
-        model = App
-        model_fields = ['id', 'name', 'url', 'logo', 'type']
-
 
 class ConfigSchemaOut(ModelSchema):
 
@@ -63,39 +55,48 @@ class ConfigOpenApiVersionSchemaOut(Schema):
 
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/apps/", response=AppConfigSchemaOut, tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
+@api.post("/tenant/{tenant_id}/apps/", response=AppCreateOut, tags=['应用'], auth=None)
+@operation(AppCreateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def create_app(request, tenant_id: str, data: AppCreateIn):
     '''
     app创建
     '''
-    data.id = uuid.uuid4()
+    # data.id = uuid.uuid4()
     tenant = request.tenant
-    # 事件分发
-    results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
-    for func, (result, extension) in results:
-        if result:
-            # 创建config
-            config = extension.create_tenant_config(tenant, data.config.dict(), data.name, data.app_type)
-            # 创建app
-            app = App()
-            app.id = data.id
-            app.name = data.name
-            app.url = data.url
-            app.logo = data.logo
-            app.type = data.app_type
-            app.package = data.package
-            app.description = data.description
-            app.config = config
-            app.tenant_id = tenant_id
-            app.save()
-            # 创建app完成进行事件分发
-            dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
-            break
-    return {"app_id": app.id.hex}
 
-@api.get("/tenant/{tenant_id}/apps/", response=List[AppListSchemaOut], tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+    app = App()
+    app.name = data.name
+    app.url = data.url
+    app.logo = data.logo
+    app.description = data.description
+    app.tenant = tenant
+    app.save()    
+    # 事件分发
+    # results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
+    # for func, (result, extension) in results:
+    #     if result:
+    #         # 创建config
+    #         config = extension.create_tenant_config(tenant, data.config.dict(), data.name, data.app_type)
+    #         # 创建app
+    #         app = App()
+    #         app.id = data.id
+    #         app.name = data.name
+    #         app.url = data.url
+    #         app.logo = data.logo
+    #         app.type = data.app_type
+    #         app.package = data.package
+    #         app.description = data.description
+    #         app.config = config
+    #         app.tenant_id = tenant_id
+    #         app.save()
+    #         # 创建app完成进行事件分发
+    #         dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
+    #         break
+    # return {"app_id": app.id.hex}
+    return {"error":ErrorCode.OK.value}
+
+@api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
+@operation(AppListOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_apps(request, tenant_id: str):
     '''

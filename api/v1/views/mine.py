@@ -77,9 +77,8 @@ class MineTenantListOut(ResponseSchema):
     data: List[MineTenantListItemOut]
 
 @api.get("/mine/tenants/",response=MineTenantListOut,tags=["我的"],auth=None)
-@operation(MineTenantListOut)
 def get_mine_tenants(request):
     """ 获取我的租户,TODO
     """
     tenants = Tenant.active_objects.all()
-    return {"data":tenants}
+    return {"data":list(tenants)}
