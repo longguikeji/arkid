@@ -150,7 +150,6 @@ class ExpandManager(models.Manager):
             where_condition = f" WHERE {' AND '.join([f'{k} = {v}' for k,v in filters.items()])}"
 
         sql = select_sql  + f" FROM {table_name} " + join_sql + f" {where_condition} ORDER BY {table_name}.id"
-        print(sql)
         queryset = self.model.objects.raw(sql)
         return queryset
 
