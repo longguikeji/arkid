@@ -60,7 +60,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             user_password = UserPassword.objects.filter(user=user).first()
             if user_password:
                 if check_password(password, user_password.password):
-                    return self.auth_success(user)
+                    return self.auth_success(user, event)
         
         return self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username or password not correct'})
 
@@ -164,21 +164,13 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         return True, None
 
     def _get_register_user(self, tenant, field_name, field_value):
-        # user = None
-        # if field_name in ('username', 'email'):
-        #     user = .active_objects.filter(**{field_name: field_value}).first()
-        # else:
-        #     custom_field = CustomField.valid_objects.filter(
-        #         name=field_name, subject='user'
-        #     )
-        #     if not custom_field:
-        #         return None
-
-        #     custom_user = CustomUser.valid_objects.filter(data__name=field_name).first()
-        #     if custom_user:
-        #         user = custom_user.user
-        # return user
-        pass
+        user = None
+        if field_name in ('username', 'email'):
+            user = User.active_objects.filter(**{field_name: field_value}).first()
+        else:
+            # 获取港注册的用户
+            user = User.expand_objects.filter(**{field_name: field_value}).first()
+        return user
 
 
 extension = PasswordAuthFactorExtension(

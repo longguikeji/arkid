@@ -242,6 +242,10 @@ CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
 DELETE_FRONT_THEME_CONFIG = 'DELETE_FRONT_THEME_CONFIG'
 
+BEFORE_AUTH = 'BEFORE_AUTH'
+AUTH_SUCCESS = 'AUTH_SUCCESS'
+AUTH_FAIL = 'AUTH_FAIL'
+
 CREATE_ACCOUNT_LIFE_CONFIG = 'CREATE_ACCOUNT_LIFE_CONFIG'
 UPDATE_ACCOUNT_LIFE_CONFIG = 'UPDATE_ACCOUNT_LIFE_CONFIG'
 DELETE_ACCOUNT_LIFE_CONFIG = 'DELETE_ACCOUNT_LIFE_CONFIG'
@@ -268,12 +272,12 @@ register_event(SEND_SMS, _('send sms','发送短信'))
 register_event(CREATE_PERMISSION, _('create permission','创建权限'))
 register_event(UPDATE_PERMISSION, _('update permission','修改权限'))
 register_event(DELETE_PERMISSION, _('delete permission','删除权限'))
-register_event(CREATE_FRONT_THEME_CONFIG, _('Create Theme','添加主题'))
-register_event(UPDATE_FRONT_THEME_CONFIG, _('Update Theme','修改主题'))
-register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme','删除主题'))
 register_event(USER_REGISTER, _('user register','用户注册'))
 register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version','设置应用接口和版本'))
 register_event(UPDATE_APP_USER_API_PERMISSION, _('update app user api permission','更新应用的用户接口权限'))
+register_event(BEFORE_AUTH, _('before_auth','认证前'))
+register_event(AUTH_SUCCESS, _('auth success','认证成功'))
+register_event(AUTH_FAIL, _('auth fail','认证失败'))
 register_event(CREATE_GROUP_PERMISSION, _('create group permission','创建权限分组'))
 register_event(UPDATE_GROUP_PERMISSION, _('update group permission','修改权限分组'))
 register_event(DELETE_GROUP_PERMISSION, _('delete group permission','删除权限分组'))
