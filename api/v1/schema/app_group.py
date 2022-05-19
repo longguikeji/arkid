@@ -13,12 +13,12 @@ pages.register_front_pages(select_appgroup_parent_page)
 
 select_appgroup_parent_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/user_groups/',
+        path='/api/v1/tenant/{tenant_id}/app_groups/',
         method=actions.FrontActionMethod.GET
     ),
     node_actions=[
         actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/user_groups/',
+            path='/api/v1/tenant/{tenant_id}/app_groups/',
             method=actions.FrontActionMethod.GET
         )
     ],

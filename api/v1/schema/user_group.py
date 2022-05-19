@@ -7,7 +7,7 @@ from arkid.core.schema import ResponseSchema
 from arkid.core import pages,actions
 from arkid.core.translation import gettext_default as _
 
-select_usergroup_parent_page = pages.TablePage(select=True,name=_("选择上级分组"))
+select_usergroup_parent_page = pages.TreePage(select=True,name=_("选择上级分组"))
 
 pages.register_front_pages(select_usergroup_parent_page)
 
@@ -15,7 +15,13 @@ select_usergroup_parent_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/user_groups/',
         method=actions.FrontActionMethod.GET
-    )
+    ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/app_groups/',
+            method=actions.FrontActionMethod.GET
+        )
+    ],
 )
 
 class UserGroupListItemOut(ModelSchema):
