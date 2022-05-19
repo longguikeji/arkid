@@ -144,10 +144,10 @@ def get_permission_str(request, tenant_id: str,  app_id: str = None):
     权限结果字符串
     '''
     from arkid.core.models import User
-    # user = request.user
-    user, _ = User.objects.get_or_create(
-        username="hanbin",
-    )
+    user = request.user
+    # user, _ = User.objects.get_or_create(
+    #     username="hanbin",
+    # )
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
     return permissiondata.get_permission_str(user, tenant_id, app_id)
@@ -166,10 +166,10 @@ def user_add_permission(request, tenant_id: str, permission_id: str, user_id: st
     if isinstance(permission, SystemPermission):
         dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
-        # dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
-        from arkid.core.perm.permission_data import PermissionData
-        permissiondata = PermissionData()
-        permissiondata.add_app_permission_to_user(request.tenant.id, permission.app_id, permission.user_id, permission.id)
+        dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+        # from arkid.core.perm.permission_data import PermissionData
+        # permissiondata = PermissionData()
+        # permissiondata.add_app_permission_to_user(request.tenant.id, permission.app_id, permission.user_id, permission.id)
     return {'error': ErrorCode.OK.value}
 
 @api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/remove_permission", tags=['权限'], auth=None)

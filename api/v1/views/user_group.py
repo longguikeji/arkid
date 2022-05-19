@@ -192,11 +192,13 @@ def group_users_remove(request, tenant_id: str, group_id: str, user_id: str):
     group.save()
     return {'error': ErrorCode.OK.value}
 
-# @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/select_users/", tags=["用户分组"],auth=None)
-# def get_select_users(request, tenant_id: str, user_group_id: str):
-#     """ 获取所有用户并附加是否在当前分组的状态,TODO
-#     """
-#     return {}
+@api.get("/tenant/{tenant_id}/user_groups/{group_id}/select_users/", tags=["用户分组"],auth=None)
+def get_select_users(request, tenant_id: str, group_id: str):
+    """ 获取所有用户并附加是否在当前分组的状态
+    """
+    tenant = request.tenant
+    return {}
+
 # @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/",tags=["用户分组"],auth=None)
 # def get_user_group_all_permissions(request, tenant_id: str,user_group_id:str):
 #     """ 获取所有权限并附带是否已授权给用户分组状态,TODO
