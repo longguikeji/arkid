@@ -357,46 +357,46 @@ class UserPermissionResult(BaseModel, ExpandModel):
         return f'User: {self.user.username}'
 
 
-class Approve(BaseModel, ExpandModel):
-    class Meta(object):
-        verbose_name = _('Approve', "审批动作")
-        verbose_name_plural = _('Approve', "审批动作")
+# class Approve(BaseModel, ExpandModel):
+#     class Meta(object):
+#         verbose_name = _('Approve', "审批动作")
+#         verbose_name_plural = _('Approve', "审批动作")
 
-    STATUS_CHOICES = (
-        ('wait', _('Wait', '待审批')),
-        ('pass', _('Pass', '通过')),
-        ('deny', _('Deny', '拒绝')),
-    )
+#     STATUS_CHOICES = (
+#         ('wait', _('Wait', '待审批')),
+#         ('pass', _('Pass', '通过')),
+#         ('deny', _('Deny', '拒绝')),
+#     )
 
-    name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
-    code = models.CharField(verbose_name=_('Code', '编码'), max_length=100)
-    description = models.TextField(
-        blank=True, null=True, verbose_name=_('Description', '备注')
-    )
-    tenant = models.ForeignKey(
-        'Tenant', default=None, on_delete=models.PROTECT, verbose_name=_('Tenant', '租户')
-    )
-    app = models.ForeignKey(
-        App,
-        models.PROTECT,
-        default=None,
-        null=True,
-        blank=True,
-        verbose_name=_('APP', '应用'),
-    )
-    status = models.CharField(
-        choices=STATUS_CHOICES,
-        default="wait",
-        max_length=100,
-        verbose_name=_('Status', "状态"),
-    )
-    data = models.JSONField(
-        default=dict,
-        verbose_name=_('Data', "数据"),
-    )
+#     name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
+#     code = models.CharField(verbose_name=_('Code', '编码'), max_length=100)
+#     description = models.TextField(
+#         blank=True, null=True, verbose_name=_('Description', '备注')
+#     )
+#     tenant = models.ForeignKey(
+#         'Tenant', default=None, on_delete=models.PROTECT, verbose_name=_('Tenant', '租户')
+#     )
+#     app = models.ForeignKey(
+#         App,
+#         models.PROTECT,
+#         default=None,
+#         null=True,
+#         blank=True,
+#         verbose_name=_('APP', '应用'),
+#     )
+#     status = models.CharField(
+#         choices=STATUS_CHOICES,
+#         default="wait",
+#         max_length=100,
+#         verbose_name=_('Status', "状态"),
+#     )
+#     data = models.JSONField(
+#         default=dict,
+#         verbose_name=_('Data', "数据"),
+#     )
 
-    def __str__(self):
-        return '%s' % (self.name)
+#     def __str__(self):
+#         return '%s' % (self.name)
 
 
 class ExpiringToken(models.Model):
@@ -474,8 +474,8 @@ class TenantConfig(BaseModel, ExpandModel):
 
 class ApproveAction(BaseModel, ExpandModel):
     class Meta(object):
-        verbose_name = _('Approve', "审批动作")
-        verbose_name_plural = _('Approve', "审批动作")
+        verbose_name = _('Approve Action', "审批动作")
+        verbose_name_plural = _('Approve Action', "审批动作")
 
     name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
     path = models.CharField(verbose_name=_('Request Path', '请求路径'), max_length=100)
@@ -514,8 +514,8 @@ class ApproveRequest(BaseModel, ExpandModel):
     )
 
     class Meta(object):
-        verbose_name = _('Approve', "审批请求")
-        verbose_name_plural = _('Approve', "审批请求")
+        verbose_name = _('Approve Request', "审批请求")
+        verbose_name_plural = _('Approve Request', "审批请求")
 
     user = models.ForeignKey(
         'User',

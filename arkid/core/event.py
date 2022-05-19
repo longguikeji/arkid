@@ -4,12 +4,57 @@ from arkid.core.translation import gettext_default as _
 from ninja import Schema
 from arkid.core.models import Tenant
 from django.http import HttpRequest, HttpResponse
+from arkid.common.logger import logger
+from django.core.serializers import serialize
+from django.db import models
+from django.db.models.query import QuerySet
+from arkid.common.logger import logger
+import json
 
 event_id_map = {}
 
 
-class EventType:
+def webhook_event_handler(event, **kwargs):
 
+    from arkid.core.tasks.tasks import trigger_webhooks_for_event
+    tenant = event.tenant
+    payload = get_event_payload(event)
+    logger.info(f"Webhook is handling event: {payload}")
+    trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
+
+
+def get_event_payload(event):
+    data = event.data
+    if isinstance(data, models.Model):
+        data = serialize('json', [data])
+    elif type(data) is QuerySet:
+        data = serialize('json', data)
+
+    request = None
+    response = None
+
+    if event.request:
+        request = {
+            "body": str(event.request.body, encoding='utf-8'),
+        }
+
+    if event.response:
+        response = {
+            "body": str(event.response.body, encoding='utf-8'),
+            "status_code": event.response.status_code,
+        }
+    payload = {
+        "tag": event.tag,
+        "tenant": event.tenant.id.hex,
+        "request": request,
+        "response": response,
+        "data": data,
+        "uuid": event.uuid,
+    }
+    return json.dumps(payload)
+
+
+class EventType:
     def __init__(
         self,
         tag: str,
@@ -83,13 +128,14 @@ class Event:
 
 
 tag_map_event_type: Dict[str, EventType] = {}
-temp_listens:Dict[str, tuple] = {}
+temp_listens: Dict[str, tuple] = {}
 
 
 def register_event(tag, name, data_schema=None, description=''):
     register_event_type(
         EventType(tag=tag, name=name, data_schema=data_schema, description=description)
     )
+    listen_event(tag, webhook_event_handler)
 
 
 def register_event_type(event_type: EventType):
