@@ -21,8 +21,8 @@ from arkid.core.event import(
 
 import uuid
 
-
-AppConfigSchemaIn = AppProtocolExtension.create_composite_config_schema('AppConfigSchemaIn')
+from arkid.core.pagenation import CustomPagination
+from api.v1.schema.app import AppCreateIn, AppCreateOut, AppListItemOut, AppListOut, AppOut, AppUpdateIn, AppUpdateOut
 
 
 AppSchemaOut = AppProtocolExtension.create_composite_config_schema('AppSchemaOut')
@@ -61,13 +61,14 @@ class ConfigOpenApiVersionSchemaOut(Schema):
 
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/apps/", response=AppConfigSchemaOut, tags=['应用'], auth=None)
+@api.post("/tenant/{tenant_id}/apps/", response=AppCreateOut, tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
+def create_app(request, tenant_id: str, data: AppCreateIn):
     '''
     app创建
     '''
-    data.id = uuid.uuid4()
+    # data.id = uuid.uuid4()
+    setattr(data,"id",uuid.uuid4())
     tenant = request.tenant
     # 事件分发
     results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
@@ -78,7 +79,7 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
             # 创建app
             app = App()
             app.id = data.id
-            app.name = data.name
+            app.name = data.dict()["name"]
             app.url = data.url
             app.logo = data.logo
             app.type = data.app_type
@@ -90,11 +91,11 @@ def create_app(request, tenant_id: str, data: AppConfigSchemaIn):
             # 创建app完成进行事件分发
             dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
             break
-    return {"app_id": app.id.hex}
+    return {'error': ErrorCode.OK.value}
 
-@api.get("/tenant/{tenant_id}/apps/", response=List[AppListSchemaOut], tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate
+@api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
+@operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
 def list_apps(request, tenant_id: str):
     '''
     app列表
@@ -104,8 +105,8 @@ def list_apps(request, tenant_id: str):
     )
     return apps
 
-@api.get("/tenant/{tenant_id}/apps/{app_id}/", response=AppSchemaOut, tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/apps/{app_id}/", response=AppOut, tags=['应用'], auth=None)
+@operation(AppOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app(request, tenant_id: str, app_id: str):
     '''
     获取app
@@ -122,7 +123,7 @@ def get_app(request, tenant_id: str, app_id: str):
         'package': app.package,
         'config': app.config.config
     }
-    return result
+    return {"data":result}
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionSchemaOut, tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -190,8 +191,8 @@ def delete_app(request, tenant_id: str, app_id: str):
     return {'error': ErrorCode.OK.value}
 
 @api.put("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_app(request, tenant_id: str, app_id: str, data: AppConfigSchemaIn):
+@operation(AppUpdateOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def update_app(request, tenant_id: str, app_id: str, data: AppUpdateIn):
     '''
     修改app
     '''

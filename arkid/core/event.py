@@ -4,12 +4,57 @@ from arkid.core.translation import gettext_default as _
 from ninja import Schema
 from arkid.core.models import Tenant
 from django.http import HttpRequest, HttpResponse
+from arkid.common.logger import logger
+from django.core.serializers import serialize
+from django.db import models
+from django.db.models.query import QuerySet
+from arkid.common.logger import logger
+import json
 
 event_id_map = {}
 
 
-class EventType:
+def webhook_event_handler(event, **kwargs):
 
+    from arkid.core.tasks.tasks import trigger_webhooks_for_event
+    tenant = event.tenant
+    payload = get_event_payload(event)
+    logger.info(f"Webhook is handling event: {payload}")
+    trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
+
+
+def get_event_payload(event):
+    data = event.data
+    if isinstance(data, models.Model):
+        data = serialize('json', [data])
+    elif type(data) is QuerySet:
+        data = serialize('json', data)
+
+    request = None
+    response = None
+
+    if event.request:
+        request = {
+            "body": str(event.request.body, encoding='utf-8'),
+        }
+
+    if event.response:
+        response = {
+            "body": str(event.response.body, encoding='utf-8'),
+            "status_code": event.response.status_code,
+        }
+    payload = {
+        "tag": event.tag,
+        "tenant": event.tenant.id.hex,
+        "request": request,
+        "response": response,
+        "data": data,
+        "uuid": event.uuid,
+    }
+    return json.dumps(payload)
+
+
+class EventType:
     def __init__(
         self,
         tag: str,
@@ -83,13 +128,14 @@ class Event:
 
 
 tag_map_event_type: Dict[str, EventType] = {}
-temp_listens:Dict[str, tuple] = {}
+temp_listens: Dict[str, tuple] = {}
 
 
 def register_event(tag, name, data_schema=None, description=''):
     register_event_type(
         EventType(tag=tag, name=name, data_schema=data_schema, description=description)
     )
+    listen_event(tag, webhook_event_handler)
 
 
 def register_event_type(event_type: EventType):
@@ -248,6 +294,10 @@ CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
 DELETE_FRONT_THEME_CONFIG = 'DELETE_FRONT_THEME_CONFIG'
 
+BEFORE_AUTH = 'BEFORE_AUTH'
+AUTH_SUCCESS = 'AUTH_SUCCESS'
+AUTH_FAIL = 'AUTH_FAIL'
+
 CREATE_ACCOUNT_LIFE_CONFIG = 'CREATE_ACCOUNT_LIFE_CONFIG'
 UPDATE_ACCOUNT_LIFE_CONFIG = 'UPDATE_ACCOUNT_LIFE_CONFIG'
 DELETE_ACCOUNT_LIFE_CONFIG = 'DELETE_ACCOUNT_LIFE_CONFIG'
@@ -276,12 +326,12 @@ register_event(SEND_SMS, _('send sms','发送短信'))
 register_event(CREATE_PERMISSION, _('create permission','创建权限'))
 register_event(UPDATE_PERMISSION, _('update permission','修改权限'))
 register_event(DELETE_PERMISSION, _('delete permission','删除权限'))
-register_event(CREATE_FRONT_THEME_CONFIG, _('Create Theme','添加主题'))
-register_event(UPDATE_FRONT_THEME_CONFIG, _('Update Theme','修改主题'))
-register_event(DELETE_FRONT_THEME_CONFIG, _('Delete Theme','删除主题'))
 register_event(USER_REGISTER, _('user register','用户注册'))
 register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version','设置应用接口和版本'))
 register_event(UPDATE_APP_USER_API_PERMISSION, _('update app user api permission','更新应用的用户接口权限'))
+register_event(BEFORE_AUTH, _('before_auth','认证前'))
+register_event(AUTH_SUCCESS, _('auth success','认证成功'))
+register_event(AUTH_FAIL, _('auth fail','认证失败'))
 register_event(CREATE_GROUP_PERMISSION, _('create group permission','创建权限分组'))
 register_event(UPDATE_GROUP_PERMISSION, _('update group permission','修改权限分组'))
 register_event(DELETE_GROUP_PERMISSION, _('delete group permission','删除权限分组'))

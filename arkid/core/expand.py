@@ -1,3 +1,4 @@
+from webbrowser import get
 from django.db import models
 from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
@@ -76,13 +77,24 @@ class PermissionExpandAbstract(BaseModel):
     )
 
 
-class ApproveExpandAbstract(BaseModel):
+class ApproveActionExpandAbstract(BaseModel):
 
     class Meta:
         abstract = True
 
     approve = models.ForeignKey(
-        'core.Approve',
+        'core.ApproveAction',
+        blank=False,
+        on_delete=models.PROTECT,
+    )
+
+class ApproveRequestExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+
+    approve = models.ForeignKey(
+        'core.ApproveRequest',
         blank=False,
         on_delete=models.PROTECT,
     )
@@ -127,7 +139,7 @@ field_expand_map = []
 class ExpandManager(models.Manager):
     """ Enables changing the default queryset function. """
 
-    def get_queryset(self):
+    def get_queryset(self, filters:dict={}):
 
         model_name = self.model._meta.model_name
         table_name = self.model._meta.db_table
@@ -141,12 +153,35 @@ class ExpandManager(models.Manager):
         for q in queryset:
             select_sql = select_sql + f", {q.extension_table}.{q.extension_field} as {q.field}"
             if q.extension_table not in extension_tables:
-                join_sql = join_sql + f" JOIN {q.extension_table} on {table_name}.id = {q.extension_table}.{model_name}_id "
+                join_sql = join_sql + f" LEFT JOIN {q.extension_table} on {table_name}.id = {q.extension_table}.{model_name}_id "
                 extension_tables.add(q.extension_table)
-            
-        sql = select_sql  + f" FROM {table_name} " + join_sql + f" ORDER BY {table_name}.id"
         
+        where_condition = ""
+        if filters:
+            where_condition = f" WHERE {' AND '.join([f'{k} = {v}' for k,v in filters.items()])}"
+
+        sql = select_sql  + f" FROM {table_name} " + join_sql + f" {where_condition} ORDER BY {table_name}.id"
         queryset = self.model.objects.raw(sql)
+        return queryset
+
+    def make_filters(self,filters):
+        new_filters = {}
+        for k,v in filters.items():
+            key = f"{self.model._meta.db_table}.{k}"
+            if isinstance(v,str):
+                new_filters[key] = f"'{v}'"
+            else:
+                new_filters[key] = f"{v}"
+        return new_filters
+
+    def get(self, **filters):
+        filters = self.make_filters(filters)
+        queryset = self.get_queryset(filters)
+        return list(queryset)[0] if queryset else None
+
+    def filter(self,**filters):
+        filters = self.make_filters(filters)
+        queryset = self.get_queryset(filters)
         return queryset
 
 

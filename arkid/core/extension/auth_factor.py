@@ -5,6 +5,7 @@ from abc import abstractmethod
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core import event as core_event
+from arkid.core.event import Event, dispatch_event
 from arkid.extension.models import TenantExtensionConfig
 
 class AuthFactorExtension(Extension):
@@ -28,7 +29,7 @@ class AuthFactorExtension(Extension):
     def load(self):
         super().load()
         self.auth_event_tag = self.register_event('auth', '认证')
-        self.listen_event(self.auth_event_tag, self.authenticate)
+        self.listen_event(self.auth_event_tag, self.start_authenticate)
         self.register_event_tag = self.register_event('register', '注册')
         self.listen_event(self.register_event_tag, self.register)
         self.password_event_tag = self.register_event('password', '重置密码')
@@ -39,14 +40,21 @@ class AuthFactorExtension(Extension):
         self.register_config_schema(schema, self.package + '_' + auth_factor_type)
         self.register_composite_config_schema(schema, auth_factor_type, exclude=['extension'])
     
+    def start_authenticate(self,event,**kwargs):
+        config = self.get_current_config(event)
+        dispatch_event(Event(tag=core_event.BEFORE_AUTH, tenant=event.tenant, request=event.request, data={"auth_factor_config":config}))
+        return self.authenticate(event, **kwargs)
+
     @abstractmethod
     def authenticate(self, event, **kwargs):
         pass
 
-    def auth_success(self, user):
+    def auth_success(self, user, event, **kwargs):
+        dispatch_event(Event(tag=core_event.AUTH_SUCCESS, tenant=event.tenant, request=event.request, data=event.data))
         return user
     
-    def auth_failed(self, event, data):
+    def auth_failed(self, event, data, **kwargs):
+        dispatch_event(Event(tag=core_event.AUTH_FAIL, tenant=event.tenant, request=event.request, data=data))
         core_event.remove_event_id(event)
         core_event.break_event_loop(data)
 
@@ -89,9 +97,9 @@ class AuthFactorExtension(Extension):
         
     def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):
         default = {
-            "login": ("登录", f"/api/v1/auth/?tenant=tenant_id&event_tag={self.auth_event_tag}"),
-            "register": ("登录", f"/api/v1/register/?tenant=tenant_id&event_tag={self.register_event_tag}"),
-            "password": ("登录", f"/api/v1/reset_password/?tenant=tenant_id&event_tag={self.password_event_tag}"),
+            "login": ("登录", f"/api/v1/tenant/tenant_id/auth/?event_tag={self.auth_event_tag}"),
+            "register": ("登录", f"/api/v1/tenant/tenant_id/register/?event_tag={self.register_event_tag}"),
+            "password": ("登录", f"/api/v1/tenant/tenant_id/reset_password/?event_tag={self.password_event_tag}"),
         }
         if not submit_label:
             submit_label, useless = default.get(page_name)
