@@ -323,7 +323,8 @@ class Extension(ABC):
                                   core_expand.AppExpandAbstract,
                                   core_expand.AppGroupExpandAbstract,
                                   core_expand.PermissionExpandAbstract,
-                                  core_expand.ApproveExpandAbstract,
+                                  core_expand.ApproveActionExpandAbstract,
+                                  core_expand.ApproveRequestExpandAbstract,
                                   core_expand.TenantConfigExpandAbstract,
                                 ], model_field:str, alias:str=None):
         """注册扩展数据库字段，对原本数据库字段进行扩展

@@ -10,9 +10,9 @@ from typing import List
 from ninja.pagination import paginate
 from arkid.core.event import dispatch_event, Event
 from arkid.core.event import (
-    CREATE_APPROVE_SYSTEM_CONFIG,
-    UPDATE_APPROVE_SYSTEM_CONFIG,
-    DELETE_APPROVE_SYSTEM_CONFIG,
+    CREATE_ACCOUNT_LIFE_CONFIG,
+    UPDATE_ACCOUNT_LIFE_CONFIG,
+    DELETE_ACCOUNT_LIFE_CONFIG,
 )
 
 AccountLifeSchemaIn = AccountLifeExtension.create_composite_config_schema(
@@ -79,7 +79,7 @@ def create_account_life(request, tenant_id: str, data: AccountLifeSchemaIn):
     )
     dispatch_event(
         Event(
-            tag=CREATE_APPROVE_SYSTEM_CONFIG,
+            tag=CREATE_ACCOUNT_LIFE_CONFIG,
             tenant=tenant,
             request=request,
             data=extension_config,
@@ -106,7 +106,7 @@ def update_account_life(request, tenant_id: str, id: str, data: AccountLifeSchem
     extension_config.save()
     dispatch_event(
         Event(
-            tag=UPDATE_APPROVE_SYSTEM_CONFIG,
+            tag=UPDATE_ACCOUNT_LIFE_CONFIG,
             tenant=tenant,
             request=request,
             data=extension_config,
@@ -125,7 +125,7 @@ def delete_account_life(request, tenant_id: str, id: str):
     )
     dispatch_event(
         Event(
-            tag=DELETE_APPROVE_SYSTEM_CONFIG,
+            tag=DELETE_ACCOUNT_LIFE_CONFIG,
             tenant=tenant,
             request=request,
             data=extension_config,

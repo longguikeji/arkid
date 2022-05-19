@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'arkid.core',
     'arkid.extension',
     'django_celery_beat',
+    'webhook',
 ]
 
 MIDDLEWARE = [
@@ -132,9 +133,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -148,9 +147,9 @@ CONFIG_LOCAL_FILE = 'arkid.local.toml'
 NINJA_PAGINATION_PER_PAGE = 20
 
 # Celery settings
-CELERY_BROKER = 'redis://localhost:6379'
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_TIMEZONE = 'Asia/Shanghai'
+# CELERY_BROKER = 'redis://localhost:6379'
+# CELERY_BROKER_URL = 'redis://localhost:6379'
+# CELERY_TIMEZONE = 'Asia/Shanghai'
 
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, "settings_local.py")):

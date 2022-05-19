@@ -76,13 +76,24 @@ class PermissionExpandAbstract(BaseModel):
     )
 
 
-class ApproveExpandAbstract(BaseModel):
+class ApproveActionExpandAbstract(BaseModel):
 
     class Meta:
         abstract = True
 
     approve = models.ForeignKey(
-        'core.Approve',
+        'core.ApproveAction',
+        blank=False,
+        on_delete=models.PROTECT,
+    )
+
+class ApproveRequestExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+
+    approve = models.ForeignKey(
+        'core.ApproveRequest',
         blank=False,
         on_delete=models.PROTECT,
     )
