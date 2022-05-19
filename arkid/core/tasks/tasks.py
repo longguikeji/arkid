@@ -78,14 +78,3 @@ def add_system_permission_to_user(self, tenant_id, user_id, permission_id):
     '''
     permissiondata = PermissionData()
     permissiondata.add_system_permission_to_user(tenant_id, user_id, permission_id)
-
-class ReadyCelery(object):
-
-    def __init__(self):
-        tenant, _ = Tenant.objects.get_or_create(
-            slug='',
-            name="platform tenant",
-        )
-        dispatch_event(Event(tag=APP_START, tenant=tenant))
-
-ReadyCelery()
