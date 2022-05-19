@@ -56,6 +56,14 @@ def update_system_permission():
     permissiondata.update_system_permission()
 
 @app.task
+def update_arkid_all_user_permission():
+    '''
+    更新系统的全部用户权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_arkid_all_user_permission()
+
+@app.task
 def update_single_user_system_permission(tenant_id, user_id):
     '''
     更新单个用户的系统权限
