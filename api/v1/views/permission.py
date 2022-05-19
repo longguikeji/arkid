@@ -10,7 +10,11 @@ from arkid.core.error import ErrorCode
 from arkid.core.models import Permission, SystemPermission
 from django.shortcuts import get_object_or_404
 from arkid.core.event import Event, dispatch_event
-from arkid.core.event import CREATE_PERMISSION, UPDATE_PERMISSION, DELETE_PERMISSION
+from arkid.core.event import(
+    CREATE_PERMISSION, UPDATE_PERMISSION, DELETE_PERMISSION,
+    ADD_USER_SYSTEM_PERMISSION, ADD_USER_APP_PERMISSION,
+    REMOVE_USER_SYSTEM_PERMISSION, REMOVE_USER_APP_PERMISSION,
+)
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from uuid import UUID
 
@@ -137,13 +141,49 @@ def delete_permission(request, tenant_id: str, permission_id: str):
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_permission_str(request, tenant_id: str,  app_id: str = None):
     '''
-    权限结果
+    权限结果字符串
     '''
     from arkid.core.models import User
-    # user = request.user
-    user, _ = User.objects.get_or_create(
-        username="hanbin",
-    )
+    user = request.user
+    # user, _ = User.objects.get_or_create(
+    #     username="hanbin",
+    # )
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
     return permissiondata.get_permission_str(user, tenant_id, app_id)
+
+
+@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/add_permission", tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def user_add_permission(request, tenant_id: str, permission_id: str, user_id: str):
+    '''
+    添加用户权限
+    '''
+    permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+    if permission is None:
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+    permission.user_id = user_id
+    if isinstance(permission, SystemPermission):
+        dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    else:
+        dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+        # from arkid.core.perm.permission_data import PermissionData
+        # permissiondata = PermissionData()
+        # permissiondata.add_app_permission_to_user(request.tenant.id, permission.app_id, permission.user_id, permission.id)
+    return {'error': ErrorCode.OK.value}
+
+@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/remove_permission", tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def user_remove_permission(request, tenant_id: str, permission_id: str, user_id: str):
+    '''
+    移除用户权限
+    '''
+    permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+    if permission is None:
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+    permission.user_id = user_id
+    if isinstance(permission, SystemPermission):
+        dispatch_event(Event(tag=REMOVE_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    else:
+        dispatch_event(Event(tag=REMOVE_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    return {'error': ErrorCode.OK.value}

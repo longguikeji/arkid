@@ -271,6 +271,8 @@ SEND_SMS = 'SEND_SMS'
 CREATE_GROUP = 'CREATE_GROUP'
 UPDATE_GROUP = 'UPDATE_GROUP'
 DELETE_GROUP = 'DELETE_GROUP'
+GROUP_ADD_USER = 'GROUP_ADD_USER'
+GROUP_REMOVE_USER = 'GROUP_REMOVE_USER'
 CREATE_PERMISSION = 'CREATE_PERMISSION'
 UPDATE_PERMISSION = 'UPDATE_PERMISSION'
 DELETE_PERMISSION = 'DELETE_PERMISSION'
@@ -283,6 +285,10 @@ UPDATE_GROUP_PERMISSION = 'UPDATE_GROUP_PERMISSION'
 DELETE_GROUP_PERMISSION = 'DELETE_GROUP_PERMISSION'
 REMOVE_GROUP_PERMISSION_PERMISSION = 'REMOVE_GROUP_PERMISSION_PERMISSION'
 UPDATE_GROUP_PERMISSION_PERMISSION = 'UPDATE_GROUP_PERMISSION_PERMISSION'
+ADD_USER_SYSTEM_PERMISSION = 'ADD_USER_SYSTEM_PERMISSION'
+ADD_USER_APP_PERMISSION = 'ADD_USER_APP_PERMISSION'
+REMOVE_USER_SYSTEM_PERMISSION = 'REMOVE_USER_SYSTEM_PERMISSION'
+REMOVE_USER_APP_PERMISSION = 'REMOVE_USER_APP_PERMISSION'
 
 CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
@@ -313,6 +319,8 @@ register_event(DELETE_APP, _('delete app','删除应用'))
 register_event(CREATE_GROUP, _('create group','创建分组'))
 register_event(UPDATE_GROUP, _('update group','修改分组'))
 register_event(DELETE_GROUP, _('delete group','删除分组'))
+register_event(GROUP_ADD_USER, _('add user group','添加分组用户'))
+register_event(GROUP_REMOVE_USER, _('remove user group','移除分组用户'))
 register_event(APP_START, _('app start','应用启动'))
 register_event(SEND_SMS, _('send sms','发送短信'))
 register_event(CREATE_PERMISSION, _('create permission','创建权限'))
@@ -335,3 +343,7 @@ register_event(DELETE_ACCOUNT_LIFE_CONFIG, _('Delete Account Life', '删除生�
 register_event(CREATE_APPROVE_SYSTEM_CONFIG, _('Create Approve System', '添加审批系统'))
 register_event(UPDATE_APPROVE_SYSTEM_CONFIG, _('Update Approve System', '更新审批系统'))
 register_event(DELETE_APPROVE_SYSTEM_CONFIG, _('Delete Approve System', '删除审批系统'))
+register_event(ADD_USER_SYSTEM_PERMISSION, _('add user system permission','添加用户系统权限'))
+register_event(ADD_USER_APP_PERMISSION, _('add user app permission','添加用户应用权限'))
+register_event(REMOVE_USER_SYSTEM_PERMISSION, _('remove user system permission','移除用户系统权限'))
+register_event(REMOVE_USER_APP_PERMISSION, _('remove user app permission','移除用户应用权限'))

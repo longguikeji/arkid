@@ -23,12 +23,12 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name_plural = _("tenant", "租户")
 
     name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), unique=True)
+    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), blank=True, null=True, default='' ,unique=True)
     icon = models.URLField(verbose_name=_('icon', '图标'), blank=True)
 
     users = models.ManyToManyField(
         'User',
-        blank=False,
+        blank=True,
         related_name="tenant_user_set",
         related_query_name="user",
     )

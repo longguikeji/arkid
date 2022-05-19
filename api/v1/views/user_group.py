@@ -1,4 +1,5 @@
 
+from ninja import Field
 from ninja import Schema
 from ninja import ModelSchema
 from arkid.core.api import api, operation
@@ -9,13 +10,29 @@ from arkid.core.error import ErrorCode
 from arkid.core.models import UserGroup, User
 from django.shortcuts import get_object_or_404
 from arkid.core.event import Event, dispatch_event
-from arkid.core.event import CREATE_GROUP, UPDATE_GROUP, DELETE_GROUP
+from arkid.core.event import (
+    CREATE_GROUP, UPDATE_GROUP, DELETE_GROUP,
+    GROUP_ADD_USER, GROUP_REMOVE_USER,
+)
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from uuid import UUID
 
 from api.v1.schema.user_group import UserGroupDeleteOut, UserGroupDetailOut, UserGroupIn, UserGroupItemOut, UserGroupListItemOut, UserGroupListOut, UserGroupOut, UserGroupUserIn, UserGroupUserListItemOut, UserGroupUserListOut, UserGroupUserOut
 from arkid.core.pagenation import CustomPagination
 
+
+class UserGroupListSelectSchemaOut(Schema):
+
+    id: UUID = Field(default=None)
+    in_current: bool
+    username: str
+    avatar: str
+
+class UserGroupPermissionListSelectSchemaOut(Schema):
+
+    id: UUID = Field(default=None)
+    in_current: bool
+    name: str
 
 @transaction.atomic
 @api.post("/tenant/{tenant_id}/user_groups/", response=UserGroupOut, tags=['用户分组'], auth=None)
@@ -115,6 +132,9 @@ def group_users_add(request, tenant_id: str, group_id: str, data:UserGroupUserIn
         for user in users:
             group.users.add(user)
         group.save()
+        # 分发事件开始
+        result = dispatch_event(Event(tag=GROUP_ADD_USER, tenant=request.tenant, request=request, data=group))
+        # 分发事件结束
     return {'error': ErrorCode.OK.value}
 
 
@@ -131,6 +151,9 @@ def group_batch_users_remove(request, tenant_id: str, group_id: str, data:UserGr
         for user in users:
             group.users.remove(user)
         group.save()
+        # 分发事件开始
+        result = dispatch_event(Event(tag=GROUP_REMOVE_USER, tenant=request.tenant, request=request, data=group))
+        # 分发事件结束
     return {'error': ErrorCode.OK.value}
 
 
@@ -145,15 +168,38 @@ def group_users_remove(request, tenant_id: str, group_id: str, user_id: str):
     if user:
         group.users.remove(user)
     group.save()
+    # 分发事件开始
+    result = dispatch_event(Event(tag=GROUP_REMOVE_USER, tenant=request.tenant, request=request, data=group))
+    # 分发事件结束
     return {'error': ErrorCode.OK.value}
 
-# @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/select_users/", tags=["用户分组"],auth=None)
-# def get_select_users(request, tenant_id: str, user_group_id: str):
-#     """ 获取所有用户并附加是否在当前分组的状态,TODO
-#     """
-#     return {}
-# @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/",tags=["用户分组"],auth=None)
-# def get_user_group_all_permissions(request, tenant_id: str,user_group_id:str):
-#     """ 获取所有权限并附带是否已授权给用户分组状态,TODO
-#     """
-#     return []
+@api.get("/tenant/{tenant_id}/user_groups/{group_id}/select_users/", response=List[UserGroupListSelectSchemaOut], tags=["用户分组"],auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate
+def get_select_users(request, tenant_id: str, group_id: str):
+    """ 获取所有用户并附加是否在当前分组的状态
+    """
+    tenant = request.tenant
+    users = tenant.user_set.all()
+    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
+    group_users = group.users.all()
+    group_user_ids = []
+    for group_user in group_users:
+        group_user_ids.append(group_user.id.hex)
+    for user in users:
+        user_id_hex = user.id.hex
+        if user_id_hex in group_user_ids:
+            user.in_current = True
+        else:
+            user.in_current = False
+    return users
+
+@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/", response=List[UserGroupPermissionListSelectSchemaOut], tags=["用户分组"],auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate
+def get_user_group_all_permissions(request, tenant_id: str, user_group_id:str):
+    """ 获取所有权限并附带是否已授权给用户分组状态
+    """
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_user_group_all_permissions(tenant_id, user_group_id)

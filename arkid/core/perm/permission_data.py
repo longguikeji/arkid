@@ -58,7 +58,6 @@ class PermissionData(object):
         获取平台租户
         '''
         tenant, _ = Tenant.objects.get_or_create(
-            slug='',
             name="platform tenant",
         )
         return tenant
@@ -431,11 +430,11 @@ class PermissionData(object):
                     data_item.is_pass = 0
         # 权限检查
         for data_item in data_dict.values():
-            # 如果是通过就不查验
-            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
-                continue
             if pass_permission != None and data_item.id == pass_permission.id:
                 data_item.is_pass = permission_value
+                continue
+            # 如果是通过就不查验
+            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
                 continue
             # 如果是超级管理员直接就通过
             if auth_user.is_superuser:
@@ -840,11 +839,12 @@ class PermissionData(object):
                     data_item.is_pass = 0
         # 权限检查
         for data_item in data_dict.values():
-            # 如果是通过就不查验
-            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
-                continue
+            # 跳过的数据
             if pass_permission != None and data_item.id == pass_permission.id:
                 data_item.is_pass = permission_value
+                continue
+            # 如果是通过就不查验
+            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
                 continue
             # 如果是超级管理员直接就通过
             if auth_user.is_superuser:
@@ -908,7 +908,7 @@ class PermissionData(object):
         else:
             print('不存在租户或者用户无法更新')
     
-    def remove_app_permission_to_user(self, tenant_id, user_id, app_id, permission_id):
+    def remove_app_permission_to_user(self, tenant_id, app_id, user_id, permission_id):
         '''
         给某个用户删除应用权限
         '''
@@ -1085,3 +1085,23 @@ class PermissionData(object):
         systempermission, is_create = self.create_tenant_admin_permission(tenant)
         if is_create:
             self.add_system_permission_to_user(tenant.id, user.id, systempermission.id)
+
+    def get_user_group_all_permissions(self, tenant_id, user_group_id):
+        '''
+        获取所有权限并附带是否已授权给用户分组状态
+        '''
+        usergroup = UserGroup.valid_objects.filter(id=user_group_id).first()
+        permission = usergroup.permission
+        permission_id = None
+        if permission:
+            permission_id = permission.id.hex
+        # 用户分组
+        systempermissions = SystemPermission.valid_objects.filter(
+            Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
+        )
+        for systempermission in systempermissions:
+            if systempermission.id.hex == permission_id:
+                systempermission.in_current = True
+            else:
+                systempermission.in_current = False
+        return systempermissions
