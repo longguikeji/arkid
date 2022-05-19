@@ -431,11 +431,11 @@ class PermissionData(object):
                     data_item.is_pass = 0
         # 权限检查
         for data_item in data_dict.values():
-            # 如果是通过就不查验
-            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
-                continue
             if pass_permission != None and data_item.id == pass_permission.id:
                 data_item.is_pass = permission_value
+                continue
+            # 如果是通过就不查验
+            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
                 continue
             # 如果是超级管理员直接就通过
             if auth_user.is_superuser:
@@ -840,11 +840,12 @@ class PermissionData(object):
                     data_item.is_pass = 0
         # 权限检查
         for data_item in data_dict.values():
-            # 如果是通过就不查验
-            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
-                continue
+            # 跳过的数据
             if pass_permission != None and data_item.id == pass_permission.id:
                 data_item.is_pass = permission_value
+                continue
+            # 如果是通过就不查验
+            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
                 continue
             # 如果是超级管理员直接就通过
             if auth_user.is_superuser:
@@ -908,7 +909,7 @@ class PermissionData(object):
         else:
             print('不存在租户或者用户无法更新')
     
-    def remove_app_permission_to_user(self, tenant_id, user_id, app_id, permission_id):
+    def remove_app_permission_to_user(self, tenant_id, app_id, user_id, permission_id):
         '''
         给某个用户删除应用权限
         '''

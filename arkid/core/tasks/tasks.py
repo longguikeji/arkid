@@ -72,9 +72,48 @@ def update_single_user_app_permission(tenant_id, user_id, app_id):
     permissiondata.update_single_user_app_permission(tenant_id, user_id, app_id)
 
 @app.task
-def add_system_permission_to_user(self, tenant_id, user_id, permission_id):
+def add_system_permission_to_user(tenant_id, user_id, permission_id):
     '''
     添加系统权限给用户
     '''
     permissiondata = PermissionData()
     permissiondata.add_system_permission_to_user(tenant_id, user_id, permission_id)
+
+@app.task
+def remove_system_permission_to_user(tenant_id, user_id, permission_id):
+    '''
+    移除系统权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.remove_system_permission_to_user(tenant_id, user_id, permission_id)
+
+@app.task
+def add_app_permission_to_user(tenant_id, app_id, user_id, permission_id):
+    '''
+    添加应用权限用户
+    '''
+    permissiondata = PermissionData()
+    permissiondata.add_app_permission_to_user(tenant_id, app_id, user_id, permission_id)
+
+
+@app.task
+def remove_app_permission_to_user(tenant_id, app_id, user_id, permission_id):
+    '''
+    移除应用权限用户
+    '''
+    permissiondata = PermissionData()
+    permissiondata.remove_app_permission_to_user(tenant_id, app_id, user_id, permission_id)
+
+class ReadyCelery(object):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def instance(cls, *args, **kwargs):
+        if not hasattr(ReadyCelery, "_instance"):
+            ReadyCelery._instance = ReadyCelery(*args, **kwargs)
+            update_system_permission.delay()
+        return ReadyCelery._instance
+        
+ReadyCelery.instance()
