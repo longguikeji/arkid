@@ -20,3 +20,16 @@ app.autodiscover_tasks()
 
 
 from arkid.core.tasks import tasks
+
+class ReadyCelery(object):
+
+    def __init__(self):
+        from arkid.core.models import Tenant
+        from arkid.core.event import Event, dispatch_event, APP_START
+        tenant, _ = Tenant.objects.get_or_create(
+            slug='',
+            name="platform tenant",
+        )
+        dispatch_event(Event(tag=APP_START, tenant=tenant))
+
+ReadyCelery()

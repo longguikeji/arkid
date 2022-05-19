@@ -1,41 +1,37 @@
 from typing import List
+from django.shortcuts import get_list_or_404, get_object_or_404
 from ninja import Field, ModelSchema, Query, Schema
 from requests import Response
 from arkid.core.api import api,operation
 from arkid.core.models import AppGroup
 from arkid.core.translation import gettext_default as _
+from api.v1.schema.app_group import *
+from arkid.core.error import ErrorCode
+from arkid.core.pagenation import CustomPagination
+from ninja.pagination import paginate
 
 
-class AppGroupListQueryIn(Schema):
-    pass
-        
-class AppGroupListOut(ModelSchema):
-    class Config:
-        model = AppGroup
-        model_fields = ["name"]
-
-@api.get("/tenant/{tenant_id}/app_groups/", response=List[AppGroupListOut],tags=["应用分组"],auth=None)
-@operation(List[AppGroupListOut])
+@api.get("/tenant/{tenant_id}/app_groups/", response=AppGroupListOut,tags=["应用分组"],auth=None)
+@operation(AppGroupListOut)
 def get_app_groups(request, tenant_id: str, query_data: AppGroupListQueryIn=Query(...)):
-    """ 应用分组列表,TODO
+    """ 应用分组列表
     """
-    groups = AppGroup.expand_objects.filter(tenant__id=tenant_id).all()
-    return groups
+    groups = AppGroup.active_objects.filter(tenant__id=tenant_id)
+    
+    parent_id = query_data.dict().get("parent_id",None)
+    if parent_id:
+        groups = groups.filter(parent__id=parent_id)
+    
+    return {"data":list(groups.all())}
 
-class AppGroupQueryIn(Schema):
-    pass
-        
-class AppGroupOut(ModelSchema):
-    class Config:
-        model = AppGroup
-        model_fields = ["name"]
 
 @api.get("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupOut, tags=["应用分组"],auth=None)
 @operation(AppGroupOut)
-def get_app_group(request, tenant_id: str, id: str, query_data: AppGroupQueryIn=Query(...)):
-    """ 获取应用分组,TODO
+def get_app_group(request, tenant_id: str, id: str):
+    """ 获取应用分组
     """
-    return {}
+    group = get_object_or_404(AppGroup,tenant_id=tenant_id,id=id)
+    return {"data":group}
 
 class AppGroupCreateIn(ModelSchema):
     class Config:
@@ -50,12 +46,12 @@ class AppGroupCreateOut(Schema):
 
 @api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=["应用分组"],auth=None)
 @operation(AppGroupCreateOut)
-def create_app_group(request, tenant_id: str, data: AppGroupCreateIn, query_data: AppGroupCreateQueryIn=Query(...)):
+def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
     """ 创建应用分组,TODO
     """
-    group = AppGroup.expand_objects.create(**data)
+    group = AppGroup.active_objects.create(tenant=request.tenant,**data.dict())
 
-    return {}
+    return {'error': ErrorCode.OK.value}
 
 
 class AppGroupUpdateIn(ModelSchema):
@@ -89,18 +85,14 @@ def delete_app_group(request, tenant_id: str, id: str,query_data: AppGroupDelete
     """
     return {}
 
-class GroupAppsQueryIn(Schema):
-    pass
-        
-class GroupAppsOut(Schema):
-    pass
-
-@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/",response=List[GroupAppsOut],tags=["应用分组"],auth=None)
-@operation(List[GroupAppsOut])
-def get_apps_from_group(request, tenant_id: str, app_group_id: str, query_data: GroupAppsQueryIn=Query(...)):
+@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/",response=List[AppGroupAppItemOut],tags=["应用分组"],auth=None)
+@operation(AppGroupAppsOut)
+@paginate(CustomPagination)
+def get_apps_from_group(request, tenant_id: str, app_group_id: str):
     """ 获取当前分组的应用列表,TODO
     """
-    return []
+    group = get_object_or_404(AppGroup,tenant_id=tenant_id,id=app_group_id)
+    return group.apps.all()
 
 class GroupAppRemoveQueryIn(Schema):
     pass

@@ -45,9 +45,9 @@ class AliyunSMSExtension(Extension):
 
     def send_sms(self, event, **kwargs):
         tenant = event.tenant
-        config_id = event.data.config_id
-        template_params = event.data.template_params
-        phone_number = event.data.phone_number
+        config_id = event.data["config_id"]
+        template_params = event.data["template_params"]
+        phone_number = event.data["phone_number"]
         
         settings = self.get_tenant_settings(tenant)
         settings = SimpleNamespace(**settings.settings)

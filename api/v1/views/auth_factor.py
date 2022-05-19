@@ -1,87 +1,91 @@
-from ninja import ModelSchema, Schema
-from typing import Union, Literal, List, Optional
-from pydantic import Field
-from arkid.core import extension
-from arkid.core.api import api
-from django.db import transaction
-from arkid.core.schema import RootSchema
+from distutils.command.build_ext import extension_name_re
+from distutils.command.config import config
+from typing import List
+from ninja import Field, ModelSchema, Schema
+from ninja.pagination import paginate
+from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
-from arkid.extension.models import TenantExtensionConfig, Extension
-from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.extension.auth_factor import AuthFactorExtension
+from arkid.extension.models import Extension, TenantExtensionConfig
 from arkid.core.error import ErrorCode
+from api.v1.schema.auth_factor import AuthFactorCreateIn, AuthFactorCreateOut, AuthFactorDeleteOut, AuthFactorListItemOut, AuthFactorListOut, AuthFactorOut, AuthFactorUpdateIn, AuthFactorUpdateOut
+from arkid.core.pagenation import CustomPagination
 
-AuthFactorSchemaIn = AuthFactorExtension.create_composite_config_schema(
-    'AuthFactorSchemaIn'
-)
 
-class AuthFactorSchemaOut(Schema):
-    config_id: str
+@api.get("/tenant/{tenant_id}/auth_factors/", response=List[AuthFactorListItemOut], tags=[_("认证因素")], auth=None)
+@operation(AuthFactorListOut)
+@paginate(CustomPagination)
+def get_auth_factors(request, tenant_id: str):
+    """ 认证因素列表
+    """
+    extensions = Extension.active_objects.filter(
+        type=AuthFactorExtension.TYPE).all()
+    configs = TenantExtensionConfig.active_objects.filter(
+        tenant__id=tenant_id, extension__in=extensions).all()
+    return [
+        {
+            "id": config.id.hex,
+            "type": config.type,
+            "name": config.name,
+            "extension_name": config.extension.name,
+            "extension_package": config.extension.package,
+        } for config in configs
+    ]
 
-@transaction.atomic
-@api.post("/tenant/{tenant_id}/auth_factors/", response=AuthFactorSchemaOut, tags=['认证因素'], auth=None)
-def create_auth_factor(request, tenant_id: str, data: AuthFactorSchemaIn):
+
+@api.get("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorOut, tags=["认证因素"], auth=None)
+@operation(AuthFactorOut)
+def get_auth_factor(request, tenant_id: str, id: str):
+    """ 获取认证因素
+    """
+    config = TenantExtensionConfig.active_objects.get(
+        tenant__id=tenant_id,
+        id=id
+    )
+    return {
+        "data": {
+            "id": config.id.hex,
+            "type": config.type,
+            "package": config.extension.package,
+            "name": config.name,
+            "config": config.config
+        }
+    }
+
+
+@api.post("/tenant/{tenant_id}/auth_factors/", response=AuthFactorCreateOut, tags=["认证因素"], auth=None)
+@operation(AuthFactorCreateOut)
+def create_auth_factor(request, tenant_id: str, data: AuthFactorCreateIn):
+    """ 创建认证因素
+    """
     config = TenantExtensionConfig()
     config.tenant = request.tenant
     config.extension = Extension.active_objects.get(package=data.package)
     config.config = data.config.dict()
-    config.name = data.name
+    config.name = data.dict()["name"]
     config.type = data.type
     config.save()
-    return {"config_id": config.id.hex}
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
-class AuthFactorListOutSchema(ModelSchema):
-    
-    class Config:
-        model=TenantExtensionConfig
-        model_fields = ["id","name","type","extension"]
-
-@api.get("/tenant/{tenant_id}/auth_factors/", response=List[AuthFactorListOutSchema], tags=['认证因素'], auth=None)
-def get_auth_factor_list(request, tenant_id: str):
-    """ 获取认证因素列表
+@api.post("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorUpdateOut, tags=["认证因素"], auth=None)
+@operation(AuthFactorUpdateOut)
+def update_auth_factor(request, tenant_id: str, id: str, data: AuthFactorUpdateIn):
+    """ 编辑认证因素
     """
-    extensions = Extension.active_objects.filter(type=AuthFactorExtension.TYPE).all()
-    configs = TenantExtensionConfig.active_objects.filter(extension__in=extensions).all()
-    return configs
-
-AuthFactorOutSchema = AuthFactorExtension.create_composite_config_schema(
-    'AuthFactorOutSchema'
-)
-
-@api.get("/tenant/{tenant_id}/auth_factors/{id}/",response=AuthFactorOutSchema,tags=["认证因素"],auth=None)
-def get_auth_factor(request, tenant_id: str, id: str):
-    """ 获取认证因素
-    """
-    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
-    return config
-
-AuthFactorUpdateInSchema = AuthFactorExtension.create_composite_config_schema(
-    'AuthFactorUpdateInSchema'
-)
-
-class AuthFactorUpdateOutSchema(Schema):
-    error:bool = Field(
-        title=_("状态")
-    )
-
-@api.put("/tenant/{tenant_id}/auth_factors/{id}/",response=AuthFactorUpdateOutSchema, tags=["认证因素"],auth=None)
-def update_auth_factor(request, tenant_id: str, id: str,data:AuthFactorUpdateInSchema):
-    """ 编辑认证因素,TODO
-    """
-    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    config = TenantExtensionConfig.active_objects.get(
+        tenant__id=tenant_id, id=id)
     config.update(**(data.dict()))
-    return {'error': ErrorCode.OK.value}
+    return {"data": {'error': ErrorCode.OK.value}}
 
-class AuthFactorDeleteOutSchema(Schema):
-    error:bool = Field(
-        title=_("状态")
-    )
 
-@api.delete("/tenant/{tenant_id}/auth_factors/{id}/", tags=["认证因素"],auth=None)
+@api.delete("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorDeleteOut, tags=["认证因素"], auth=None)
+@operation(AuthFactorDeleteOut)
 def delete_auth_factor(request, tenant_id: str, id: str):
     """ 删除认证因素
     """
-    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    config = TenantExtensionConfig.active_objects.get(
+        tenant__id=tenant_id, id=id
+    )
     config.delete()
-    return {'error': ErrorCode.OK.value}
+    return {"data": {'error': ErrorCode.OK.value}}

@@ -3,6 +3,7 @@ from ninja import Field, ModelSchema, Query, Schema
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
+from arkid.core.schema import ResponseSchema
 
 class TenantListQueryIn(Schema):
     name:str = Field(
@@ -117,15 +118,18 @@ def update_tenant_config(request, id: str,data:TenantConfigUpdateIn,query_data:T
     """
     return {}
 
-class DefaultTenantOut(ModelSchema):
+class DefaultTenantItemOut(ModelSchema):
     
     class Config:
         model = Tenant
         model_fields = ["id", "name"]
+
+class DefaultTenantOut(ResponseSchema):
+    data: DefaultTenantItemOut
 
 @api.get("/default_tenant/",response=DefaultTenantOut, tags=["租户管理"], auth=None)
 def default_tenant(request):
     """ 获取当前域名下的默认租户(如无slug则为平台租户)
     """
     tenant = Tenant.active_objects.order_by("id").first()
-    return tenant
+    return {"data":tenant}
