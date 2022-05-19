@@ -113,16 +113,15 @@ class ExternalIdpExtension(Extension):
     def create_tenant_settings(self, tenant, settings, type):
         settings_created = super().create_tenant_settings(tenant, settings, type=type)
         server_host = get_app_config().get_host()
-        package = self.package.replace('.', '_')
         login_url = server_host + reverse(
-            f'{package}:{self.name}_login', args=[tenant.id, settings_created.id]
+            f'api:{self.name}_tenant:{self.name}_login', args=[tenant.id, settings_created.id]
         )
         callback_url = server_host + reverse(
-            f'{package}:{self.name}_callback',
+            f'api:{self.name}_tenant:{self.name}_callback',
             args=[tenant.id, settings_created.id],
         )
         bind_url = server_host + reverse(
-            f'{package}:{self.name}_bind', args=[tenant.id, settings_created.id]
+            f'api:{self.name}_tenant:{self.name}_bind', args=[tenant.id, settings_created.id]
         )
         img_url = self.get_img_url()
         settings["login_url"] = login_url

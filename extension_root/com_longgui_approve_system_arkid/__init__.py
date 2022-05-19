@@ -32,6 +32,9 @@ class ApproveSystemArkIDExtension(ApproveSystemExtension):
         self.register_front_pages(page)
         approve_manage_router.children.append(router)
 
+    def create_approve_system_config(self, event, **kwargs):
+        return super().create_approve_system_config(event, **kwargs)
+
 
 extension = ApproveSystemArkIDExtension(
     package=package,

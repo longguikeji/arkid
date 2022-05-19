@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='systempermission',
             name='sort_id',
-            field=models.PositiveIntegerField(default=arkid.core.models.SystemPermission.anto_sort, verbose_name='Sort ID'),
+            field=models.PositiveIntegerField(default=0, verbose_name='Sort ID'),
         ),
     ]

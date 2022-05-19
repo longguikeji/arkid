@@ -10,12 +10,14 @@ from arkid.core.expand import ExpandManager, ExpandModel
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.core.token import generate_token
 
+import uuid
+
 
 class EmptyModel(models.Model):
     pass
 
 
-class Tenant(BaseModel):
+class Tenant(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("tenant", "租户")
         verbose_name_plural = _("tenant", "租户")
@@ -39,44 +41,27 @@ class Tenant(BaseModel):
         return f'tenant_admin_{self.id}'
 
     def has_admin_perm(self, user: 'User'):
-        if user.is_superuser:
-            return True
-        else:
-            systempermission = SystemPermission.valid_objects.filter(tenant=self, code=self.admin_perm_code, is_system=True).first()
-            if systempermission:
-                userpermissionresult = UserPermissionResult.valid_objects.filter(
-                    user=auth_user,
-                    tenant=tenant,
-                    app=None,
-                ).first()
-                if userpermissionresult:
-                    compress = Compress()
-                    permission_result = compress.decrypt(userpermissionresult.result)
-                    permission_result_arr = list(permission_result)
-                    check_result = int(permission_result_arr[systempermission.sort_id])
-                    if check_result == 1:
-                        return True
-        return False
-    
-    def create_tenant_admin_permission(self):
-        systempermission, _ = SystemPermission.objects.get_or_create(
-            tenant=self,
-            code=self.admin_perm_code,
-            is_system=True,
-        )
-        systempermission.name = self.name+' manage'
-        systempermission.category = 'other'
-        systempermission.is_update = True
-        systempermission.save()
-        return systempermission
+        from arkid.core.perm.permission_data import PermissionData
+        permissiondata = PermissionData()
+        result = permissiondata.has_admin_perm(self, user)
+        return result
     
     def create_tenant_user_admin_permission(self, user):
         # 此处无法使用celery和event, event会出现无法回调，celery启动时如果调用，会自己调用自己
         from arkid.core.perm.permission_data import PermissionData
-        systempermission = self.create_tenant_admin_permission()
-        # 给用户添加管理员权限
         permissiondata = PermissionData()
-        permissiondata.add_system_permission_to_user(self.id, user.id, systempermission.id)
+        permissiondata.create_tenant_user_admin_permission(self, user)
+    
+    @property
+    def is_platform_tenant(self):
+        '''
+        是否是平台租户
+        '''
+        tenant = Tenant.valid_objects.order_by('id').first()
+        if tenant.id == self.id:
+            return True
+        else:
+            return False
 
 
 class User(BaseModel, ExpandModel):
@@ -103,7 +88,7 @@ class User(BaseModel, ExpandModel):
 
     @property
     def is_superuser(self):
-        return True if self.id == User.valid_objects.order_by('-created').first().id else False
+        return True if self.id == User.valid_objects.order_by('created').first().id else False
 
 
 class UserGroup(BaseModel, ExpandModel):
@@ -186,7 +171,7 @@ class AppGroup(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("APP Group", "应用分组")
         verbose_name_plural = _("APP Group", "应用分组")
-
+    
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
     name = models.CharField(max_length=128, blank=False)
     parent = models.ForeignKey(
@@ -262,16 +247,13 @@ class PermissionAbstract(BaseModel, ExpandModel):
 
 
 class SystemPermission(PermissionAbstract):
+
     class Meta(object):
         verbose_name = _('SystemPermission', '系统权限')
         verbose_name_plural = _('SystemPermission', '系统权限')
 
-    def anto_sort():
-        # 方法必须放在字段前面
-        count=SystemPermission.objects.count()
-        return 0 if (count == 0) else count
-
-    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=anto_sort)
+    # django 只允许有一个主键，一个自增
+    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=-1)
 
     container = models.ManyToManyField(
         'SystemPermission',
@@ -289,12 +271,18 @@ class SystemPermission(PermissionAbstract):
         verbose_name=_('Parent', '父权限分组'),
     )
 
+    def save(self, *args, **kwargs):
+        if self.sort_id == -1:
+            self.sort_id = SystemPermission.objects.count()
+        super().save(*args, **kwargs)
+
     @property
     def children(self):
         return SystemPermission.valid_objects.filter(parent=self).order_by('id')
 
 
 class Permission(PermissionAbstract):
+
     class Meta(object):
         verbose_name = _("Permission", "权限")
         verbose_name_plural = _("Permission", "权限")
@@ -304,7 +292,7 @@ class Permission(PermissionAbstract):
     #     count=Permission.objects.count()
     #     return 0 if (count == 0) else count
 
-    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=0)
+    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=-1)
 
     app = models.ForeignKey(
         App,
@@ -333,10 +321,18 @@ class Permission(PermissionAbstract):
     def __str__(self) -> str:
         return f'{self.name}'
 
+    def save(self, *args, **kwargs):
+        if self.sort_id == -1:
+            permission = Permission.objects.filter(tenant=self.tenant, app_id = self.app_id).order_by('-sort_id').first()
+            if permission:
+                self.sort_id = permission.sort_id + 1
+            else:
+                self.sort_id = 0
+        super().save(*args, **kwargs)
+
     @property
     def children(self):
         return Permission.valid_objects.filter(parent=self).order_by('id')
-
 
 class UserPermissionResult(BaseModel, ExpandModel):
     class Meta(object):
@@ -356,7 +352,6 @@ class UserPermissionResult(BaseModel, ExpandModel):
     result = models.CharField(
         max_length=1024, blank=True, null=True, verbose_name='权限结果'
     )
-    is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
     def __str__(self) -> str:
         return f'User: {self.user.username}'
