@@ -33,16 +33,18 @@ def get_event_payload(event):
     request = None
     response = None
 
-    if event.request:
+    if event.request and isinstance(event.request, HttpRequest):
         request = {
             "body": str(event.request.body, encoding='utf-8'),
         }
 
-    if event.response:
+    if event.response and isinstance(event.response, HttpResponse):
         response = {
             "body": str(event.response.body, encoding='utf-8'),
             "status_code": event.response.status_code,
         }
+    elif type(event.response) is dict:
+        response = event.response
     payload = {
         "tag": event.tag,
         "tenant": event.tenant.id.hex,
