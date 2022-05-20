@@ -574,14 +574,43 @@ class Extension(ABC):
     def refresh_all_created_settings_schema(cls):
         cls.refresh_all_created_base_schema(cls.created_extension_settings_schema_list, cls.extension_settings_schema_map)
 
-    def get_tenant_settings(self, tenant:Tenant):
+    def get_settings(self, tenant:Tenant):
+        """获取租户配置
+
+        Args:
+            tenant (Tenant): 租户
+
+        Returns:
+            TenantExtension: 租户配置
+        """
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
         settings = TenantExtension.valid_objects.filter(tenant=tenant, extension=ext).first()
         return settings
 
-    def create_tenant_settings(self, tenant, settings, type):
+    def update_or_create_settings(self, tenant, settings, is_active, use_platform_config):
+        """更新或创建租户配置
+
+        Args:
+            tenant (Tenant): 租户
+            settings (dict): 租户配置
+            is_active (bool): 是否启用
+            use_platform_config (bool): 是否使用平台配置
+
+        Returns:
+            TenantExtension: 更新或创建的对象
+        """
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
-        return TenantExtension.objects.create(tenant=tenant, extension=ext, settings=settings, type=type)
+        tx = TenantExtension.valid_objects.filter(tenant=tenant, extension=ext).first()
+        if tx:
+            tx.is_active = is_active
+            tx.use_platform_config = use_platform_config
+            tx.settings = settings
+            return tx.save()
+            
+        return TenantExtension.objects.create(
+            tenant=tenant, extension=ext, settings=settings, 
+            is_active=is_active, use_platform_config=use_platform_config
+        )
     
 ################################################################################
 
@@ -616,14 +645,41 @@ class Extension(ABC):
         cls.refresh_all_created_base_schema(cls.created_extension_config_schema_list, cls.extension_config_schema_map)
         
     def get_tenant_configs(self, tenant):
+        """获取当前租户下所有的运行时配置
+
+        Args:
+            tenant (Tenant): 租户
+
+        Returns:
+            List[TenantExtensionConfig]: tenant下所有的运行时配置
+        """
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
         configs = TenantExtensionConfig.valid_objects.filter(tenant=tenant, extension=ext).all()
         return configs
 
     def get_config_by_id(self, id:UUID):
+        """通过config_id来获取config
+
+        Args:
+            id (UUID): config_id
+
+        Returns:
+            TenantExtensionConfig: config
+        """
         return TenantExtensionConfig.valid_objects.get(id=id)
     
     def update_tenant_config(self, id,  config, name, type):
+        """更新运行时配置
+
+        Args:
+            id (str): config_id
+            config (dict): config
+            name (str): 运行时配置名字
+            type (str): 配置类型
+
+        Returns:
+            bool: 更新成功True，没有找到该配置返回False
+        """
         tenantextensionconfig = TenantExtensionConfig.valid_objects.filter(id=id).first()
         if tenantextensionconfig:
             tenantextensionconfig.name = name
@@ -642,10 +698,29 @@ class Extension(ABC):
             return False 
 
     def create_tenant_config(self, tenant, config, name, type):
+        """创建运行时配置
+
+        Args:
+            tenant (Tenant): 租户
+            config (dict): config
+            name (str): 运行时配置名字
+            type (str): 配置类型
+
+        Returns:
+            TenantExtensionConfig: 创建的对象
+        """
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
         return TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config, name=name, type=type)
     
     def delete_tenant_config(self, id):
+        """删除运行时配置
+
+        Args:
+            id (str): config_id
+
+        Returns:
+            TenantExtensionConfig: 删除的对象
+        """
         return TenantExtensionConfig.objects.delete(id=id)
 
 ################################################################################
