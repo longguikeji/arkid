@@ -9,6 +9,16 @@ default_lang_maps["简体中文"] = {}
 default_lang_maps["English"] = {}
 
 def gettext_default(id,msg=None,lang="简体中文"):
+    """多语言默认方法
+
+    Args:
+        id (str): 标识
+        msg (str, optional): 语言文字. Defaults to None.
+        lang (str, optional): 语言种类. Defaults to "简体中文".
+
+    Returns:
+        str: id 标识
+    """
     if not msg:
         msg = id
     
