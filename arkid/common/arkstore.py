@@ -56,7 +56,7 @@ def get_arkstore_access_token(tenant, token):
     if key in arkstore_access_token_cache:
         return arkstore_access_token_cache[key]
     saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
-    params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'token': saas_token}
+    params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_uuid': saas_tenant_id,'token': saas_token}
     app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
     resp = requests.get(app_login_url, params=params)
     if resp.status_code != 200:
@@ -249,7 +249,7 @@ def create_tenant_app(tenant, saas_app):
     
 def get_arkid_saas_app_detail(tenant, token, extension_id):
     saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
-    arkid_saas_app_url = settings.ARKID_SAAS + f'/api/v1/com_longgui_arkid_saas/tenant/{saas_tenant_id}/arkid/saas/app/{extension_id}/'
+    arkid_saas_app_url = settings.ARKID_SAAS_URL + f'/api/v1/com_longgui_arkid_saas/tenant/{saas_tenant_id}/arkid/saas/app/{extension_id}/'
     headers = {'Authorization': f'Token {saas_token}'}
     params = {}
     resp = requests.get(arkid_saas_app_url, params=params, headers=headers)
