@@ -19,7 +19,7 @@ class CoreConfig(AppConfig):
             tenant.users.add(user)
             tenant.save()
 
-        except:
-            pass
+        except Exception as e:
+            print(e)
         # 监听
         from arkid.core import listener

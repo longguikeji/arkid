@@ -92,7 +92,7 @@ class Event:
     def __init__(
         self,
         tag: str,
-        tenant: Tenant,
+        tenant: Tenant = None,
         request: HttpRequest = None,
         response: HttpResponse = None,
         packages: str = None,
