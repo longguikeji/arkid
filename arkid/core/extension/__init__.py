@@ -320,7 +320,7 @@ class Extension(ABC):
             tenant_urls (bool, optional): 是否要添加 tenant/{tenant_id}/ 前缀. Defaults to False.
         """
         if tenant_urls:
-            urls_ext = [re_path(r'tenant/(?P<tenant_id>[\w-]+)/', include((urls_ext, 'extension'), namespace=f'{self.name}'))]
+            urls_ext = [re_path(r'tenant/(?P<tenant_id>[\w-]+)/', include((urls_ext, 'extension'), namespace=f'{self.name}_tenant'))]
             self.urls.extend(urls_ext)
             core_urls.register(urls_ext)
         else:
