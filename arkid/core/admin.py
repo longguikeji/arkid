@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import(
     User, UserGroup, Tenant,
     App, AppGroup, Permission,
-    Approve, ExpiringToken, TenantConfig,
+    Approve, ExpiringToken,
     UserPermissionResult, SystemPermission,
 )
 
@@ -16,4 +16,3 @@ admin.site.register(Approve)
 admin.site.register(ExpiringToken)
 admin.site.register(SystemPermission)
 admin.site.register(UserPermissionResult)
-admin.site.register(TenantConfig)

@@ -6,9 +6,6 @@
 ## 通用 OpenAPI Schema
 ::: arkid.core.schema
 
-## 事件
-::: arkid.core.event
-
 ## 前端页面
 ::: arkid.core.pages
 

@@ -224,10 +224,23 @@ class Extension(ABC):
         apps.clear_cache()
         apps.populate(settings.INSTALLED_APPS)
 
-        management.call_command('makemigrations', self.name, interactive=False)
-        print(f'Migrate {self.name}')
-        management.call_command('migrate', self.name, interactive=False)
-
+        # try:
+        #     print(f'makemigrations {self.name} start')
+        #     management.call_command('makemigrations', self.name, interactive=False)
+        #     print(f'makemigrations {self.name} end')
+            
+        # except Exception as e:
+        #     print(e)
+        #     print(f'makemigrations {self.name} fail')
+            
+        try:
+            print(f'migrate {self.name} start')
+            management.call_command('migrate', self.name, interactive=False)
+            print(f'migrate {self.name} end')
+        except Exception as e:
+            print(e)
+            print(f'migrate {self.name} fail')
+            
     def register_api(
         self, 
         path: str,
@@ -317,55 +330,33 @@ class Extension(ABC):
 
     def register_extend_field(self, 
                               model_cls:Union[
-                                  core_expand.TenantExpandAbstract,
-                                  core_expand.UserExpandAbstract,
-                                  core_expand.UserGroupExpandAbstract,
-                                  core_expand.AppExpandAbstract,
-                                  core_expand.AppGroupExpandAbstract,
-                                  core_expand.PermissionExpandAbstract,
-                                  core_expand.ApproveExpandAbstract,
-                                  core_expand.TenantConfigExpandAbstract,
+                                  core_models.TenantExpandAbstract,
+                                  core_models.UserExpandAbstract,
+                                  core_models.UserGroupExpandAbstract,
+                                  core_models.AppExpandAbstract,
+                                  core_models.AppGroupExpandAbstract,
                                 ], model_field:str, alias:str=None):
         """注册扩展数据库字段，对原本数据库字段进行扩展
 
         Args:
-            model_cls (Union[ core_expand.TenantExpandAbstract, core_expand.UserExpandAbstract, core_expand.UserGroupExpandAbstract, core_expand.AppExpandAbstract, core_expand.AppGroupExpandAbstract, core_expand.PermissionExpandAbstract, core_expand.ApproveExpandAbstract, core_expand.TenantConfigExpandAbstract, ]): 扩展定义的model
+            model_cls (Union[ core_expand.TenantExpandAbstract, core_expand.UserExpandAbstract, core_expand.UserGroupExpandAbstract, core_expand.AppExpandAbstract, core_expand.AppGroupExpandAbstract, ]): 扩展定义的model
             model_field (str): 扩展的字段
             alias (str, optional): 扩展字段在原model中的别名. None意味着就使用model_field作为其在原model中的别名
 
         Raises:
             Exception: 非法的扩展字段类对应的父类
         """
-        if issubclass(model_cls, core_expand.TenantExpandAbstract):
-            table = core_models.Tenant._meta.db_table
-        elif issubclass(model_cls, core_expand.UserExpandAbstract):
-            table = core_models.User._meta.db_table
-        elif issubclass(model_cls, core_expand.UserGroupExpandAbstract):
-            table = core_models.UserGroup._meta.db_table
-        elif issubclass(model_cls, core_expand.AppExpandAbstract):
-            table = core_models.App._meta.db_table
-        elif issubclass(model_cls, core_expand.AppGroupExpandAbstract):
-            table = core_models.AppGroup._meta.db_table
-        elif issubclass(model_cls, core_expand.PermissionExpandAbstract):
-            table = core_models.Permission._meta.db_table
-        elif issubclass(model_cls, core_expand.ApproveExpandAbstract):
-            table = core_models.Approve._meta.db_table
-        elif issubclass(model_cls, core_expand.TenantConfigExpandAbstract):
-            table = core_models.TenantConfig._meta.db_table
-        else:
-            raise Exception('非法的扩展字段类对应的父类')
-
-        data = SimpleNamespace(
-            table = table,
+        data = core_expand.register_expand_field(
+            table = model_cls.foreign_key._meta.db_table,
             field = alias or model_field,
-            extension = self.name,
+            extension_name = self.name,
             extension_model_cls = model_cls,
             extension_table = model_cls._meta.db_table,
             extension_field = model_field,
         )
 
         self.extend_fields.append(data)
-        core_expand.field_expand_map.append(data)
+        
 
     def listen_event(self, tag:str, func:Function):
         """侦听事件
@@ -404,6 +395,20 @@ class Extension(ABC):
         core_event.register_event(tag, name, data_schema, description)
         self.event_tags.append(tag)
         return tag
+    
+    def register_event_type(self, event_type:EventType):
+        """注册事件类型
+
+        Args:
+            event_type (EventType): 事件类型对象
+
+        Returns:
+            EventType: tag = package+'.'+tag
+        """
+        event_type.tag = self.package + '.' + event_type.tag
+        core_event.register_event_type(event_type)
+        self.event_tags.append(event_type.tag)
+        return event_type
 
     def dispatch_event(self, event):
         """抛出事件
@@ -754,7 +759,7 @@ class Extension(ABC):
         for tag, func in self.events:
             core_event.unlisten_event(tag, func)
         for field in self.extend_fields:
-            core_expand.field_expand_map.remove(field)
+            core_expand.unregister_expand_field(field)
         for api_schema_cls, fields in self.extend_apis:
             core_api.remove_fields(api_schema_cls, fields)
         for old_router, old_primary in self.front_routers:

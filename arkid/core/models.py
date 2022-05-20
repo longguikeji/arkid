@@ -17,7 +17,7 @@ class EmptyModel(models.Model):
     pass
 
 
-class Tenant(BaseModel):
+class Tenant(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("tenant", "租户")
         verbose_name_plural = _("tenant", "租户")
@@ -26,6 +26,12 @@ class Tenant(BaseModel):
     slug = models.SlugField(verbose_name=_('slug', '短链接标识'), unique=True)
     icon = models.URLField(verbose_name=_('icon', '图标'), blank=True)
 
+    token_duration_minutes = models.IntegerField(
+        blank=False,
+        default=24 * 60,
+        verbose_name=_('Token Duration Minutes', 'Token有效时长(分钟)'),
+    )
+    
     users = models.ManyToManyField(
         'User',
         blank=False,
@@ -81,7 +87,6 @@ class Tenant(BaseModel):
             # 给用户添加管理员权限
             permissiondata = PermissionData()
             permissiondata.add_system_permission_to_user(self.id, user.id, systempermission.id)
-
 
 class User(BaseModel, ExpandModel):
     class Meta(object):
@@ -433,54 +438,13 @@ class ExpiringToken(models.Model):
     def expired(self, tenant):
         """Return boolean indicating token expiration."""
         now = timezone.now()
-        config = TenantConfig.active_objects.filter(tenant=tenant).first()
-        if config:
-            token_duration_minutes = config.token_duration_minutes
-        else:
-            token_duration_minutes = 24 * 60
+        token_duration_minutes = tenant.token_duration_minutes
         if self.created < now - datetime.timedelta(minutes=token_duration_minutes):
             return True
         return False
 
     def __str__(self):
         return self.token
-
-
-class TenantConfig(BaseModel, ExpandModel):
-    class Meta(object):
-        verbose_name = _('Tenant Config', "租户配置")
-        verbose_name_plural = _('Tenant Config', "租户配置")
-
-    tenant = models.ForeignKey(
-        'Tenant', blank=False, on_delete=models.PROTECT, verbose_name=_('Tenant', '租户')
-    )
-    token_duration_minutes = models.IntegerField(
-        blank=False,
-        default=24 * 60,
-        verbose_name=_('Token Duration Minutes', 'Token有效时长(分钟)'),
-    )
-
-
-# from .models import User
-# from django.db.models.signals import m2m_changed
-# from django.dispatch import receiver
-# from django.db.utils import IntegrityError
-
-
-# @receiver(m2m_changed, sender=User.tenants.through)
-# def verify_user_tenant_uniqueness(sender, **kwargs):
-#     """
-#     manytomany filed unique together: User and Tenant
-#     """
-#     user = kwargs.get('instance', None)
-#     action = kwargs.get('action', None)
-#     tenants = kwargs.get('pk_set', None)
-
-#     if action == 'pre_add':
-#         for tenant in tenants:
-#             if User.objects.filter(username=user.username).filter(tenants=tenant):
-#                 raise IntegrityError('User with username %s already exists for tenant %s' % (user.username, tenant))
-
 
 class ApproveAction(BaseModel, ExpandModel):
     class Meta(object):
@@ -559,3 +523,40 @@ class ApproveRequest(BaseModel, ExpandModel):
         return (
             f'{self.action.name}:{self.action.method}:{self.action.path}:{self.status}'
         )
+
+
+
+class TenantExpandAbstract(BaseModel):
+    class Meta:
+        abstract = True
+    
+    foreign_key = Tenant
+
+
+class UserExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+    foreign_key = User
+
+
+
+class UserGroupExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+    foreign_key = UserGroup
+
+
+class AppExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+    foreign_key = App
+
+
+class AppGroupExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+    foreign_key = AppGroup
