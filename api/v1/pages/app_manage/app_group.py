@@ -75,7 +75,7 @@ edit_apps_page.create_actions(
     select=True,
     global_actions={
        'confirm': actions.ConfirmAction(
-            path="/tenant/{tenant_id}/app_groups/{app_group_id}/apps/"
+            path="/api/v1/tenant/{tenant_id}/app_groups/{app_group_id}/apps/"
         ),
     }
 )

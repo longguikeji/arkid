@@ -28,7 +28,7 @@ class AppGroupListQueryIn(Schema):
     parent_id: Optional[str]
 
 class AppGroupListItemOut(ModelSchema):
-
+    
     class Config:
         model = AppGroup
         model_fields = ['id', 'name']
@@ -39,38 +39,57 @@ class AppGroupListOut(ResponseSchema):
 
 
 class AppGroupItemOut(ModelSchema):
+    id:UUID = Field(
+        readonly=True
+    )
 
-    parent_id: str
-
+    parent: Optional[UUID] = Field(
+        field="id",
+        page=select_appgroup_parent_page.tag,
+        link="name"
+    )
+    
     class Config:
         model = AppGroup
         model_fields = ['id', 'name', "parent"]
 
 class AppGroupOut(ResponseSchema):
     data: AppGroupItemOut
+    
+class AppGroupCreateOut(ResponseSchema):
+    pass
 
-class AppGroupIn(ModelSchema):
+class AppGroupCreateIn(ModelSchema):
 
-    parent_id: str = Field(
+    parent: str = Field(
         field="id",
         page=select_appgroup_parent_page.tag,
-        link="parent"
+        link="name",
+        default=None
     )
 
     class Config:
         model = AppGroup
         model_fields = ['name']
+        
+class AppGroupUpdateIn(ModelSchema):
+    class Config:
+        model = AppGroup
+        model_fields = ["name","parent"]
+        
+class AppGroupUpdateOut(Schema):
+    pass
 
 class AppGroupDeleteOut(ResponseSchema):
     pass
 
-class AppGroupUserListItemOut(ModelSchema):
+class AppGroupAppListItemOut(ModelSchema):
     class Config:
         model = App
         model_fields = ['id', 'name']
 
-class AppGroupUserListOut(ResponseSchema):
-    data:List[AppGroupUserListItemOut]
+class AppGroupAppListOut(ResponseSchema):
+    data:List[AppGroupAppListItemOut]
 
 
 class AppGroupDetailItemOut(ModelSchema):
@@ -84,17 +103,40 @@ class AppGroupDetailItemOut(ModelSchema):
 class AppGroupDetailOut(ResponseSchema):
     data:AppGroupDetailItemOut
 
-
-class AppGroupAppItemOut(ModelSchema):
-
-    class Config:
-        model = App
-        model_fields = ['id', 'name']
+        
+class AppGroupAppRemoveOut(ResponseSchema):
+    pass
 
 
-class AppGroupAppsOut(ResponseSchema):
-    items: List[AppGroupAppItemOut]
+select_appgroup_excluded_apps_page = pages.TablePage(select=True,name=_("添加应用指分组"))
 
+pages.register_front_pages(select_appgroup_excluded_apps_page)
 
-class AppGroupUserIn(Schema):
-    user_ids: List[str]
+select_appgroup_excluded_apps_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/app_groups/{id}/select_apps/',
+        method=actions.FrontActionMethod.GET
+    )
+)
+
+class AppGroupAppUpdateIn(Schema):
+    
+    apps: List[str] = Field(
+        field="id",
+        page=select_appgroup_parent_page.tag,
+        link="name",
+        select_status = "status",
+        type="array"
+    )
+    
+class AppGroupAppUpdateOut(ResponseSchema):
+    pass
+
+class AppGroupSelectAppsItemOut(Schema):
+    id: str
+    name: str
+    status: bool
+
+class AppGroupSelectAppsOut(ResponseSchema):
+    data: List[AppGroupSelectAppsItemOut]
+
