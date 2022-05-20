@@ -1,178 +1,65 @@
-from webbrowser import get
 from django.db import models
-from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
 from django.db import transaction
+from django.db.models import F
 
+def create_expand_abstract_model(model, package, model_name):
+    class TempModel(model):
+        class Meta:
+            abstract = True
+        
+        target = models.ForeignKey(
+            model.foreign_key,
+            blank=True,
+            default=None,
+            on_delete=models.PROTECT,
+            related_name=package.replace('.','_')+'_'+model_name,
+        )
+    return TempModel
 
-class TenantExpandAbstract(BaseModel):
+field_expand_map = {}
+def register_expand_field(table, field, extension_name, extension_model_cls, extension_table, extension_field):
+    data = (
+            table,
+            field,
+            extension_name,
+            extension_model_cls,
+            extension_table,
+            extension_field,
+        )
+    if table not in field_expand_map:
+        field_expand_map[table] = []
+    field_expand_map[table].append(data)
+    return data
 
-    class Meta:
-        abstract = True
-
-    tenant = models.ForeignKey(
-        'core.Tenant',
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
-
-class UserExpandAbstract(BaseModel):
-
-    class Meta:
-        abstract = True
-
-    user = models.ForeignKey(
-        'core.User',
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
-
-class UserGroupExpandAbstract(BaseModel):
-
-    class Meta:
-        abstract = True
-
-    user_group = models.ForeignKey(
-        'core.UserGroup',
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
-
-class AppExpandAbstract(BaseModel):
-
-    class Meta:
-        abstract = True
-
-    app = models.ForeignKey(
-        'core.App',
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
-
-class AppGroupExpandAbstract(BaseModel):
-
-    class Meta:
-        abstract = True
-
-    app_group = models.ForeignKey(
-        'core.AppGroup',
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
-
-class PermissionExpandAbstract(BaseModel):
-
-    class Meta:
-        abstract = True
-
-    permission = models.ForeignKey(
-        'core.Permission',
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
-
-class ApproveExpandAbstract(BaseModel):
-
-    class Meta:
-        abstract = True
-
-    approve = models.ForeignKey(
-        'core.Approve',
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
-
-class TenantConfigExpandAbstract(BaseModel):
-
-    class Meta:
-        abstract = True
-
-    tenant_config = models.ForeignKey(
-        'core.TenantConfig',
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
-
-def map_field(cls, alias=None):
-    cls.alias = alias
-    return cls
-
-
-field_expand_map = []
-
-
-
-# class FieldExpandMap(BaseModel):
-
-#     class Meta(object):
-#         verbose_name = _("字段扩展表")
-#         verbose_name_plural = _("字段扩展表")
-
-#     table = models.CharField(max_length=128, blank=False)
-#     field = models.CharField(max_length=128, blank=False)
-#     extension = models.CharField(max_length=128, blank=False)
-#     extension_model = models.CharField(max_length=128, blank=False)
-#     extension_table = models.CharField(max_length=128, blank=False)
-#     extension_field = models.CharField(max_length=128, blank=False)
-
-
+def unregister_expand_field(data):
+    field_expand_map[data[0]].remove(data)
 
 class ExpandManager(models.Manager):
     """ Enables changing the default queryset function. """
 
     def get_queryset(self, filters:dict={}):
 
-        model_name = self.model._meta.model_name
         table_name = self.model._meta.db_table
-        # queryset = FieldExpandMap.objects.filter(table=table_name)
-        queryset = field_expand_map
-
-        extension_tables = set()
-        select_sql = f'Select {table_name}.*'
-        join_sql = ""
-
-        for q in queryset:
-            select_sql = select_sql + f", {q.extension_table}.{q.extension_field} as {q.field}"
-            if q.extension_table not in extension_tables:
-                join_sql = join_sql + f" LEFT JOIN {q.extension_table} on {table_name}.id = {q.extension_table}.{model_name}_id "
-                extension_tables.add(q.extension_table)
         
-        where_condition = ""
-        if filters:
-            where_condition = f" WHERE {' AND '.join([f'{k} = {v}' for k,v in filters.items()])}"
-
-        sql = select_sql  + f" FROM {table_name} " + join_sql + f" {where_condition} ORDER BY {table_name}.id"
-        queryset = self.model.objects.raw(sql)
-        return queryset
-
-    def make_filters(self,filters):
-        new_filters = {}
-        for k,v in filters.items():
-            key = f"{self.model._meta.db_table}.{k}"
-            if isinstance(v,str):
-                new_filters[key] = f"'{v}'"
-            else:
-                new_filters[key] = f"{v}"
-        return new_filters
-
-    def get(self, **filters):
-        filters = self.make_filters(filters)
-        queryset = self.get_queryset(filters)
-        return list(queryset)[0] if queryset else None
-
-    def filter(self,**filters):
-        filters = self.make_filters(filters)
-        queryset = self.get_queryset(filters)
-        return queryset
-
+        field_expands = field_expand_map[table_name]
+        queryset = self.model.objects
+        
+        annotate_params = {}
+        related_names = []
+        values = []
+        for field in self.model._meta.fields:
+            if field.name == 'password':
+                continue
+            values.append(field.name)
+            
+        for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
+            related_name = extension_name+'_'+extension_model_cls._meta.object_name
+            related_names.append(related_name)
+            annotate_params[field] = F(related_name+'__'+extension_field)
+            values.append(field)
+        
+        return queryset.annotate(**annotate_params).select_related(*related_names).values(*values)
 
 class ExpandModel(models.Model):
 
@@ -187,19 +74,22 @@ class ExpandModel(models.Model):
 
         table_name = self._meta.db_table
         # queryset = FieldExpandMap.objects.filter(table=table_name)
-        queryset = field_expand_map
+        if table_name not in field_expand_map:
+            return
+        
+        field_expands = field_expand_map[table_name]
 
         extension_tables = {}
-        for q in queryset:
-            if hasattr(self, q.field):
-                if q.extension_table not in extension_tables:
-                    extension_model_obj = q.extension_model_cls()
-                    setattr(extension_model_obj, q.table_field, self)
-                    extension_tables[q.extension_table] = extension_model_obj
+        for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
+            if hasattr(self, field):
+                if extension_table not in extension_tables:
+                    extension_model_obj = extension_model_cls()
+                    extension_model_obj.target = self
+                    extension_tables[extension_table] = extension_model_obj
                 else:
-                    extension_model_obj = extension_tables[q.extension_table]
+                    extension_model_obj = extension_tables[extension_table]
 
-                setattr(extension_model_obj, q.extension_field, getattr(self, q.field))
+                setattr(extension_model_obj, extension_field, getattr(self, field))
 
         for extension_model_obj in extension_tables.values():
             extension_model_obj.save()
@@ -210,18 +100,20 @@ class ExpandModel(models.Model):
 
         table_name = self._meta.db_table
         # queryset = FieldExpandMap.objects.filter(table=table_name)
-        queryset = field_expand_map
+        if table_name not in field_expand_map:
+            return
+        field_expands = field_expand_map[table_name]
 
         extension_tables = {}
-        for q in queryset:
-            if q.extension_table not in extension_tables:
-                extension_model_obj = q.extension_model_cls()
-                extension_tables[q.extension_table] = extension_model_obj
+        for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
+            if extension_table not in extension_tables:
+                extension_model_obj = extension_model_cls()
+                extension_tables[extension_table] = extension_model_obj
             else:
-                extension_model_obj = extension_tables[q.extension_table]
+                extension_model_obj = extension_tables[extension_table]
 
-            if hasattr(self, q.field):
-                setattr(extension_model_obj, q.extension_field, getattr(self, q.field))
+            if hasattr(self, field):
+                setattr(extension_model_obj, extension_field, getattr(self, field))
 
         for obj in extension_tables.values():
             obj.delete()

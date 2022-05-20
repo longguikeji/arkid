@@ -23,12 +23,18 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name_plural = _("tenant", "租户")
 
     name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), unique=True)
+    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), blank=True, null=True, default='' ,unique=True)
     icon = models.URLField(verbose_name=_('icon', '图标'), blank=True)
 
+    token_duration_minutes = models.IntegerField(
+        blank=False,
+        default=24 * 60,
+        verbose_name=_('Token Duration Minutes', 'Token有效时长(分钟)'),
+    )
+    
     users = models.ManyToManyField(
         'User',
-        blank=False,
+        blank=True,
         related_name="tenant_user_set",
         related_query_name="user",
     )
@@ -62,7 +68,6 @@ class Tenant(BaseModel, ExpandModel):
             return True
         else:
             return False
-
 
 class User(BaseModel, ExpandModel):
     class Meta(object):
@@ -357,46 +362,46 @@ class UserPermissionResult(BaseModel, ExpandModel):
         return f'User: {self.user.username}'
 
 
-class Approve(BaseModel, ExpandModel):
-    class Meta(object):
-        verbose_name = _('Approve', "审批动作")
-        verbose_name_plural = _('Approve', "审批动作")
+# class Approve(BaseModel, ExpandModel):
+#     class Meta(object):
+#         verbose_name = _('Approve', "审批动作")
+#         verbose_name_plural = _('Approve', "审批动作")
 
-    STATUS_CHOICES = (
-        ('wait', _('Wait', '待审批')),
-        ('pass', _('Pass', '通过')),
-        ('deny', _('Deny', '拒绝')),
-    )
+#     STATUS_CHOICES = (
+#         ('wait', _('Wait', '待审批')),
+#         ('pass', _('Pass', '通过')),
+#         ('deny', _('Deny', '拒绝')),
+#     )
 
-    name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
-    code = models.CharField(verbose_name=_('Code', '编码'), max_length=100)
-    description = models.TextField(
-        blank=True, null=True, verbose_name=_('Description', '备注')
-    )
-    tenant = models.ForeignKey(
-        'Tenant', default=None, on_delete=models.PROTECT, verbose_name=_('Tenant', '租户')
-    )
-    app = models.ForeignKey(
-        App,
-        models.PROTECT,
-        default=None,
-        null=True,
-        blank=True,
-        verbose_name=_('APP', '应用'),
-    )
-    status = models.CharField(
-        choices=STATUS_CHOICES,
-        default="wait",
-        max_length=100,
-        verbose_name=_('Status', "状态"),
-    )
-    data = models.JSONField(
-        default=dict,
-        verbose_name=_('Data', "数据"),
-    )
+#     name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
+#     code = models.CharField(verbose_name=_('Code', '编码'), max_length=100)
+#     description = models.TextField(
+#         blank=True, null=True, verbose_name=_('Description', '备注')
+#     )
+#     tenant = models.ForeignKey(
+#         'Tenant', default=None, on_delete=models.PROTECT, verbose_name=_('Tenant', '租户')
+#     )
+#     app = models.ForeignKey(
+#         App,
+#         models.PROTECT,
+#         default=None,
+#         null=True,
+#         blank=True,
+#         verbose_name=_('APP', '应用'),
+#     )
+#     status = models.CharField(
+#         choices=STATUS_CHOICES,
+#         default="wait",
+#         max_length=100,
+#         verbose_name=_('Status', "状态"),
+#     )
+#     data = models.JSONField(
+#         default=dict,
+#         verbose_name=_('Data', "数据"),
+#     )
 
-    def __str__(self):
-        return '%s' % (self.name)
+#     def __str__(self):
+#         return '%s' % (self.name)
 
 
 class ExpiringToken(models.Model):
@@ -423,11 +428,7 @@ class ExpiringToken(models.Model):
     def expired(self, tenant):
         """Return boolean indicating token expiration."""
         now = timezone.now()
-        config = TenantConfig.active_objects.filter(tenant=tenant).first()
-        if config:
-            token_duration_minutes = config.token_duration_minutes
-        else:
-            token_duration_minutes = 24 * 60
+        token_duration_minutes = tenant.token_duration_minutes
         if self.created < now - datetime.timedelta(minutes=token_duration_minutes):
             return True
         return False
@@ -435,47 +436,10 @@ class ExpiringToken(models.Model):
     def __str__(self):
         return self.token
 
-
-class TenantConfig(BaseModel, ExpandModel):
-    class Meta(object):
-        verbose_name = _('Tenant Config', "租户配置")
-        verbose_name_plural = _('Tenant Config', "租户配置")
-
-    tenant = models.ForeignKey(
-        'Tenant', blank=False, on_delete=models.PROTECT, verbose_name=_('Tenant', '租户')
-    )
-    token_duration_minutes = models.IntegerField(
-        blank=False,
-        default=24 * 60,
-        verbose_name=_('Token Duration Minutes', 'Token有效时长(分钟)'),
-    )
-
-
-# from .models import User
-# from django.db.models.signals import m2m_changed
-# from django.dispatch import receiver
-# from django.db.utils import IntegrityError
-
-
-# @receiver(m2m_changed, sender=User.tenants.through)
-# def verify_user_tenant_uniqueness(sender, **kwargs):
-#     """
-#     manytomany filed unique together: User and Tenant
-#     """
-#     user = kwargs.get('instance', None)
-#     action = kwargs.get('action', None)
-#     tenants = kwargs.get('pk_set', None)
-
-#     if action == 'pre_add':
-#         for tenant in tenants:
-#             if User.objects.filter(username=user.username).filter(tenants=tenant):
-#                 raise IntegrityError('User with username %s already exists for tenant %s' % (user.username, tenant))
-
-
 class ApproveAction(BaseModel, ExpandModel):
     class Meta(object):
-        verbose_name = _('Approve', "审批动作")
-        verbose_name_plural = _('Approve', "审批动作")
+        verbose_name = _('Approve Action', "审批动作")
+        verbose_name_plural = _('Approve Action', "审批动作")
 
     name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
     path = models.CharField(verbose_name=_('Request Path', '请求路径'), max_length=100)
@@ -514,8 +478,8 @@ class ApproveRequest(BaseModel, ExpandModel):
     )
 
     class Meta(object):
-        verbose_name = _('Approve', "审批请求")
-        verbose_name_plural = _('Approve', "审批请求")
+        verbose_name = _('Approve Request', "审批请求")
+        verbose_name_plural = _('Approve Request', "审批请求")
 
     user = models.ForeignKey(
         'User',
@@ -549,3 +513,40 @@ class ApproveRequest(BaseModel, ExpandModel):
         return (
             f'{self.action.name}:{self.action.method}:{self.action.path}:{self.status}'
         )
+
+
+
+class TenantExpandAbstract(BaseModel):
+    class Meta:
+        abstract = True
+    
+    foreign_key = Tenant
+
+
+class UserExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+    foreign_key = User
+
+
+
+class UserGroupExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+    foreign_key = UserGroup
+
+
+class AppExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+    foreign_key = App
+
+
+class AppGroupExpandAbstract(BaseModel):
+
+    class Meta:
+        abstract = True
+    foreign_key = AppGroup

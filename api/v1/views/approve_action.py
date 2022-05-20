@@ -7,6 +7,7 @@ from enum import Enum
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.core.error import ErrorCode
 from typing import List
+from ninja.pagination import paginate
 
 
 class METHOD_TYPE(str, Enum):
@@ -45,6 +46,7 @@ class ApproveActionSchemaOut(ModelSchema):
     auth=None,
     response=List[ApproveActionSchemaOut],
 )
+@paginate
 def get_approve_actions(request, tenant_id: str):
     """审批动作列表,TODO"""
     tenant = request.tenant

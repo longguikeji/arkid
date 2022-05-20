@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# from django.contrib import admin
+from django.contrib import admin
 from django.urls import path, include
 from arkid.core.api import api as core_api
 from api import v1
@@ -25,7 +25,7 @@ from api.v1.views import bind_saas
 
 
 urlpatterns = [
-    # path("admin/", admin.site.urls),
+    path("admin/", admin.site.urls),
     path("api/v1/", core_api.urls),
     path("api/v1/login", login_view.LoginEnter.as_view()),
     path("api/v1/login_process", login_view.LoginProcess.as_view()),

@@ -10,9 +10,11 @@ ArkID基于Django-ninja框架来开发API，完整继承了其所有能力。
 
 ### Django-ninja 的 API 定义方式
 
-使用 [arkid.core.extension.Extension.register_api](/%20%20开发者指南/%20%20插件指南/%20插件基类/#arkid.core.extension.Extension.register_api)
+使用 [arkid.core.extension.Extension.register_api](../%20插件基类/#arkid.core.extension.Extension.register_api)
 
 ```py title='示例'
+from arkid.core import extension
+
 class CaseExtension(extension.Extension): 
     def load(self): 
         super().load()
@@ -25,9 +27,10 @@ class CaseExtension(extension.Extension):
 
 ### Django 的 API 定义方式
 
-使用 [arkid.core.extension.Extension.register_routers](/%20%20开发者指南/%20%20插件指南/%20插件基类/#arkid.core.extension.Extension.register_routers)
+使用 [arkid.core.extension.Extension.register_routers](../%20插件基类/#arkid.core.extension.Extension.register_routers)
 
 ```py title='示例'
+from arkid.core import extension
 from django.urls import re_path
 from django
 
@@ -65,11 +68,12 @@ class CaseExtension(extension.Extension):
 
 使用 
 
-* [arkid.core.extension.Extension.register_extend_api](/%20%20开发者指南/%20%20插件指南/%20插件基类/#arkid.core.extension.Extension.register_extend_api)
-* [arkid.core.extension.Extension.listen_event](/%20%20开发者指南/%20%20插件指南/%20插件基类/#arkid.core.extension.Extension.listen_event)
+* [arkid.core.extension.Extension.register_extend_api](../%20插件基类/#arkid.core.extension.Extension.register_extend_api)
+* [arkid.core.extension.Extension.listen_event](../%20插件基类/#arkid.core.extension.Extension.listen_event)
 
 
 ```py title='示例'
+from arkid.core import extension
 from api.v1.views.app import AppConfigSchemaIn
 
 class CaseExtension(extension.Extension): 
@@ -92,10 +96,11 @@ class CaseExtension(extension.Extension):
 
 使用 
 
-* [arkid.core.extension.Extension.register_extend_api](/%20%20开发者指南/%20%20插件指南/%20插件基类/#arkid.core.extension.Extension.register_extend_api)
-* [arkid.core.extension.Extension.listen_event](/%20%20开发者指南/%20%20插件指南/%20插件基类/#arkid.core.extension.Extension.listen_event)
+* [arkid.core.extension.Extension.register_extend_api](../%20插件基类/#arkid.core.extension.Extension.register_extend_api)
+* [arkid.core.extension.Extension.listen_event](../%20插件基类/#arkid.core.extension.Extension.listen_event)
 
 ```py title='示例'
+from arkid.core import extension
 from api.v1.views.app import AppConfigSchemaOut
 
 class CaseExtension(extension.Extension): 
