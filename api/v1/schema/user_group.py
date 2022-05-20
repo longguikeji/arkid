@@ -99,20 +99,29 @@ class UserGroupDetailOut(ResponseSchema):
     data:UserGroupDetailItemOut
 
 
-class UsersOut(ModelSchema):
+class UserGroupUserListItemOut(ModelSchema):
 
+    status:bool = Field(
+        title=_("选择状态"),
+        default=False
+    )
+    
     class Config:
         model = User
         model_fields = ['id', 'username', 'avatar']
 
 
-class UserGroupUserOut(ModelSchema):
-    users: List[UsersOut]
-
-    class Config:
-        model = UserGroup
-        model_fields = ['users']
+class UserGroupUserListOut(ResponseSchema):
+    users: List[UserGroupUserListItemOut]
 
 
 class UserGroupUserIn(Schema):
     user_ids: List[str]
+
+class UserGroupSelectUsersItemOut(Schema):
+    id: str
+    username: str
+    status: bool
+
+class UserGroupSelectUsersOut(ResponseSchema):
+    data: List[UserGroupSelectUsersItemOut]
