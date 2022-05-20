@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from ninja import Field, ModelSchema, Schema
 from requests import Response
@@ -34,24 +34,32 @@ class UserGroupListOut(ResponseSchema):
 
     data: List[UserGroupListItemOut]
 
+class UserGroupCreateOut(ResponseSchema):
+    pass
 
-class UserGroupItemOut(ModelSchema):
+class UserGroupCreateIn(ModelSchema):
 
-    parent_id: str
+    parent: Optional[str] = Field(
+        title=_("上级用户分组"),
+        field="id",
+        page=select_usergroup_parent_page.tag,
+        link="name"
+    )
 
     class Config:
         model = UserGroup
-        model_fields = ['id', 'name']
+        model_fields = ['name']
+        
+class UserGroupUpdateOut(ResponseSchema):
+    pass
 
-class UserGroupOut(ResponseSchema):
-    data: UserGroupItemOut
+class UserGroupUpdateIn(ModelSchema):
 
-class UserGroupIn(ModelSchema):
-
-    parent_id: str = Field(
+    parent: Optional[str] = Field(
+        title=_("上级用户分组"),
         field="id",
         page=select_usergroup_parent_page.tag,
-        link="parent_id"
+        link="name"
     )
 
     class Config:
@@ -71,9 +79,18 @@ class UserGroupUserListOut(ResponseSchema):
 
 
 class UserGroupDetailItemOut(ModelSchema):
-
-    parent_id: UUID = None
-
+    id: UUID =Field(
+        readonly=True,
+        hidden=False
+    )
+    
+    parent: Optional[str] = Field(
+        title=_("上级用户分组"),
+        field="id",
+        page=select_usergroup_parent_page.tag,
+        link="name"
+    )
+    
     class Config:
         model = UserGroup
         model_fields = ['id', 'name',"parent"]
