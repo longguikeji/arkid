@@ -49,6 +49,8 @@ class ExpandManager(models.Manager):
         related_names = []
         values = []
         for field in self.model._meta.fields:
+            if field.name == 'password':
+                continue
             values.append(field.name)
             
         for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
@@ -58,27 +60,6 @@ class ExpandManager(models.Manager):
             values.append(field)
         
         return queryset.annotate(**annotate_params).select_related(*related_names).values(*values)
-
-    def make_filters(self,filters):
-        new_filters = {}
-        for k,v in filters.items():
-            key = f"{self.model._meta.db_table}.{k}"
-            if isinstance(v,str):
-                new_filters[key] = f"'{v}'"
-            else:
-                new_filters[key] = f"{v}"
-        return new_filters
-
-    def get(self, **filters):
-        filters = self.make_filters(filters)
-        queryset = self.get_queryset(filters)
-        return list(queryset)[0] if queryset else None
-
-    def filter(self,**filters):
-        filters = self.make_filters(filters)
-        queryset = self.get_queryset(filters)
-        return queryset
-
 
 class ExpandModel(models.Model):
 
