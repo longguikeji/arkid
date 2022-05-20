@@ -317,7 +317,7 @@ def get_arkstore_access_token_with_saas_token(tenant, token):
     key = (tenant.id, token)
     if key in arkstore_access_token_saas_cache:
         return arkstore_access_token_saas_cache[key]
-    params = {'state': 'client', 'tenant_slug': tenant.slug, 'token': token}
+    params = {'state': 'client', 'tenant_slug': tenant.slug, 'tenant_uuid': tenant.id.hex, 'token': token}
     app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
     resp = requests.get(app_login_url, params=params)
     if resp.status_code != 200:
@@ -343,8 +343,30 @@ def check_arkstore_purchased(tenant, token, app):
         if use_end_time <= timezone.now():
             return True
     if resp.get("max_users"):
-        count = len(User.active_objects.filter(tenants=tenant).all())
+        count = len(User.active_objects.filter(tenant=tenant).all())
         if resp.get("max_users") is not None and resp.get("max_users") <= count:
             return True
     return False
 
+
+def check_arkstore_expired(tenant, token, package_idendifer):
+    access_token = get_arkstore_access_token(tenant, token)
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/order/'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {'package_idendifer': package_idendifer}
+    resp = requests.get(order_url, params=params, headers=headers, timeout=10)
+    if resp.status_code != 200:
+        print(f'Error check_arkstore_expired: {resp.status_code}')
+        return True
+    resp = resp.json()
+    if resp.get("use_end_time") == '0':
+        return True
+    if resp.get("use_end_time") is not None:
+        use_end_time = parse_datetime(resp["use_end_time"])
+        if use_end_time <= timezone.now():
+            return True
+    if resp.get("max_users"):
+        count = len(User.active_objects.filter(tenant=tenant).all())
+        if resp.get("max_users") is not None and resp.get("max_users") <= count:
+            return True
+    return False

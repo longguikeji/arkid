@@ -8,7 +8,7 @@ from arkid.core.event import Event, dispatch_event, APP_START
 from arkid.core.perm.permission_data import PermissionData
 from arkid.config import get_app_config
 from arkid.common.logger import logger
-from arkid.core.models import Tenant
+from arkid.core.models import Tenant, User
 from types import SimpleNamespace
 from arkid.core.api import api
 from celery import shared_task
@@ -250,6 +250,33 @@ def send_webhook_request_sync(webhook_uuid, target_url, secret, event_type, data
     else:
         raise ValueError("Unknown webhook scheme: %r" % (parts.scheme,))
     return response_data
+
+
+@app.task
+def check_extensions_expired(self, *args, **kwargs):
+    from arkid.extension.utils import find_available_extensions
+    from arkid.common.arkstore import check_arkstore_expired
+    from arkid.core.token import refresh_token
+    try:
+        logger.info("=== arkid.core.tasks.check_extensions_expired start...===")
+        logger.info(f"args: {args}, kwargs: {kwargs}")
+
+        exts = find_available_extensions()
+        for ext in exts:
+            logger.info(f"=== arkid.core.tasks.check_extensions_expired start: {ext.package}...===")
+            platform_tenant = Tenant.objects.filter(slug='').first()
+            admin_user = User.objects.filter(username='admin', tenant=platform_tenant)
+            token = refresh_token(admin_user)
+            if not check_arkstore_expired(platform_tenant, token, ext.package):
+                ext = Extension.objects.filter(package=ext.package).first()
+                if ext:
+                    ext.is_active = False
+                    ext.save()
+            logger.info(f"=== arkid.core.tasks.check_extensions_expired end: {ext.package}...===")
+
+    except Exception as e:
+        logger.error(f"=== arkid.core.tasks.check_extensions_expired failed: {e}...===")
+        pass
 
 
 class ReadyCelery(object):
