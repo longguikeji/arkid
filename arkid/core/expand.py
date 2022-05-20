@@ -1,10 +1,7 @@
-from types import SimpleNamespace
-from typing import Type, Union
 from django.db import models
-from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
 from django.db import transaction
-from django.db.models import F, Model
+from django.db.models import F
 
 def create_expand_abstract_model(model, package, model_name):
     class TempModel(model):
@@ -41,7 +38,7 @@ def unregister_expand_field(data):
 class ExpandManager(models.Manager):
     """ Enables changing the default queryset function. """
 
-    def get_queryset(self):
+    def get_queryset(self, filters:dict={}):
 
         table_name = self.model._meta.db_table
         
@@ -61,6 +58,26 @@ class ExpandManager(models.Manager):
             values.append(field)
         
         return queryset.annotate(**annotate_params).select_related(*related_names).values(*values)
+
+    def make_filters(self,filters):
+        new_filters = {}
+        for k,v in filters.items():
+            key = f"{self.model._meta.db_table}.{k}"
+            if isinstance(v,str):
+                new_filters[key] = f"'{v}'"
+            else:
+                new_filters[key] = f"{v}"
+        return new_filters
+
+    def get(self, **filters):
+        filters = self.make_filters(filters)
+        queryset = self.get_queryset(filters)
+        return list(queryset)[0] if queryset else None
+
+    def filter(self,**filters):
+        filters = self.make_filters(filters)
+        queryset = self.get_queryset(filters)
+        return queryset
 
 
 class ExpandModel(models.Model):

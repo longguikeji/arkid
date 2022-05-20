@@ -8,7 +8,7 @@ class CoreConfig(AppConfig):
         try:
             from arkid.core.models import Tenant, User
             tenant, _ = Tenant.objects.get_or_create(
-                slug='',
+                # slug='',
                 name="platform tenant",
             )
             user, _ = User.objects.get_or_create(

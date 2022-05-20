@@ -2,7 +2,7 @@ name = "demo arkid"
 # host = 'ngarkid.vaiwan.com'
 host = 'localhost:8000'
 frontend_host = 'localhost:9528'
-https_enabled = 1
+https_enabled = 0
 
 [email]
 host = "smtp.qq.com"
@@ -14,6 +14,7 @@ nickname = "longguikeji"
 
 [extension]
 root = ["./extension_root", "./arkid_extensions"]
+install_dir = "./arkid_extensions"
 
     [extension.demo]
     config1 = 'demo_config1'

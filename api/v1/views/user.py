@@ -8,150 +8,54 @@ from arkid.core.models import Tenant, User
 from arkid.core.translation import gettext_default as _
 from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
 from arkid.common.logger import logger
+from api.v1.schema.user import UserCreateIn, UserCreateOut, UserDeleteOut, UserListItemOut, UserListOut, UserListQueryIn, UserOut, UserUpdateIn, UserUpdateOut
+from arkid.core.error import ErrorCode
+from arkid.core.pagenation import CustomPagination
+from ninja.pagination import paginate
 
-# ------------- 用户列表接口 --------------
-
-class UserListQueryIn(Schema):
-    name:str = Field(
-        default=None
-    )
-
-class UserListOut(ModelSchema):
-     class Config:
-        model = User
-        model_fields = ['id', 'username', 'avatar', 'is_platform_user']
-        
-@api.get("/tenant/{tenant_id}/users/",response=List[UserListOut], tags=['用户'], auth=None)
-@operation(List[UserListOut])
+# ------------- 用户列表接口 --------------        
+@api.get("/tenant/{tenant_id}/users/",response=List[UserListItemOut], tags=['用户'], auth=None)
+@operation(UserListOut)
+@paginate(CustomPagination)
 def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
-    users = User.expand_objects.all()
-    return users
+    users = User.expand_objects.filter(is_del=False,is_active=True)
+    return list(users)
 
 # ------------- 创建用户接口 --------------
+@api.post("/tenant/{tenant_id}/users/",response=UserCreateOut, tags=['用户'], auth=None)
+@operation(UserCreateOut)
+def user_create(request, tenant_id: str,data:UserCreateIn):
 
-class UserCreateInQuerySchema(Schema):
-    pass
+    user = User.expand_objects.create(tenant__id=tenant_id,**data.dict())
 
-class UserCreateInSchema(ModelSchema):
-    class Config:
-        model = User
-        model_fields = ['username', 'avatar', 'is_platform_user']
-        
-class UserCreateOutSchema(Schema):
-    status:bool = Field(
-        title=_("状态")
-    )
-    
-    message:str = Field(
-        title=_("状态说明")
-    )
-        
-@api.post("/tenant/{tenant_id}/users/",response=UserCreateOutSchema, tags=['用户'], auth=None)
-@operation(UserCreateOutSchema)
-def user_create(request, tenant_id: str,data:UserCreateInSchema, query_data: UserCreateInQuerySchema=Query(...)):
-    status = True,
-    message = ""
-    try:
-        users = User.expand_objects.create(tenant__id=tenant_id,**data.dict())
-    except Exception as e:
-        status = False
-        message= f'{_("创建用户失败")}:{str(e)}'
-        logger.error(message)
+    return {"data":{"user":user.id.hex}}
 
-    return {
-        "status": status,
-        "message": message
-    }
-# ------------- 删除用户接口 --------------
-
-class UserDeleteInSchema(Schema):
-    pass
-        
-class UserDeleteOutSchema(Schema):
-    status:bool = Field(
-        title=_("状态")
-    )
-    
-    message:str = Field(
-        title=_("状态说明")
-    )
-        
-@api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOutSchema, tags=['用户'], auth=None)
-@operation(UserDeleteOutSchema)
-def user_delete(request, tenant_id: str,id:str,data: UserDeleteInSchema=Query(...)):
-    status = True,
-    message = ""
-    try:
-        user = User.expand_objects.get(tenant__id=tenant_id,id=id)
-        user.delete()
-    except User.DoesNotExist as uerr:
-        status = False
-        message= _("指定的用户不存在。")
-        logger.error(uerr)
-    except Exception as err:
-        status = False
-        message= f'{_("删除用户失败")}:{str(err)}'
-        logger.error(message)
-    return {
-        "status": status,
-        "message": message
-    }
+# ------------- 删除用户接口 --------------    
+@api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'], auth=None)
+@operation(UserDeleteOut)
+def user_delete(request, tenant_id: str,id:str):
+    user = User.active_objects.get(tenant__id=tenant_id,id=id)
+    user.delete()
+    return {"error":ErrorCode.OK.value}
         
 # ------------- 更新用户接口 --------------
-class UserUpdateInSchema(ModelSchema):
-    class Config:
-        model = User
-        model_fields = ['avatar']
+@api.post("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOut, tags=['用户'], auth=None)
+@operation(UserUpdateOut)
+def user_update(request, tenant_id: str,id:str, data:UserUpdateIn):
 
-class UserUpdateInQuerySchema(Schema):
-    pass
-        
-class UserUpdateOutSchema(Schema):
-    status:bool = Field(
-        title=_("状态")
-    )
-    
-    message:str = Field(
-        title=_("状态说明")
-    )
-        
-@api.put("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOutSchema, tags=['用户'], auth=None)
-@operation(UserUpdateOutSchema)
-def user_update(request, tenant_id: str,id:str,data:UserUpdateInSchema,query_data: UserUpdateInQuerySchema=Query(...)):
-    status = True,
-    message = ""
-    try:
-        user = User.expand_objects.get(tenant__id=tenant_id,id=id)
-        user.avatar = data.avatar
-        user.save()
-    except User.DoesNotExist:
-        status = False
-        message= _("指定的用户不存在。")
-        logger.error(message)
-    except Exception as e:
-        status = False
-        message= f'{_("更新用户失败")}:{str(e)}'
-        logger.error(message)
-    finally:
-        return {
-            "status": status,
-            "message": message
-        }
-        
+    user = User.active_objects.get(tenant__id=tenant_id,id=id)
+    user.avatar = data.avatar or user.avatar
+    user.save()
+
+    return {"error":ErrorCode.OK.value}
 # ------------- 获取用户接口 --------------
-class UserInSchema(Schema):
-    pass
-
-class UserOutSchema(ModelSchema):
-     class Config:
-        model = User
-        model_fields = ['id', 'username', 'avatar', 'is_platform_user']
         
-@api.get("/tenant/{tenant_id}/users/{id}/",response=UserOutSchema, tags=['用户'], auth=None)
-@operation(UserOutSchema)
-def user_list(request, tenant_id: str,id:str,data: UserInSchema=Query(...)):
-    user = User.expand_objects.get(tenant__id=tenant_id,id=id)
-    return user
+@api.get("/tenant/{tenant_id}/users/{id}/",response=UserOut, tags=['用户'], auth=None)
+@operation(UserOut)
+def get_user(request, tenant_id: str,id:str):
+    id = id.replace("-", "")
+    user = User.expand_objects.get(id=id)
+    return {"data":user}
 
 
 @api.get("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=["用户"],auth=None)

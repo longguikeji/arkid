@@ -13,21 +13,9 @@ package = "com.longgui.mobile_auth_factor"
 
 MobileAuthFactorSchema = create_extension_schema('MobileAuthFactorSchema',package, 
         [
-            ('reset_password_enabled', Optional[bool] , Field(deprecated=True)),
-            ('login_enabled_field_names', List[str],
-                Field(
-                    default=[], 
-                    title=_('login_enabled_field_names', '启用电话号码登录的字段'),
-                    url='/api/v1/login_fields?tenant={tenant_id}'
-                )
-            ),
-            ('register_enabled_field_names', List[str],
-                Field(
-                    default=[], 
-                    title=_('register_enabled_field_names', '启用电话号码注册的字段'),
-                    url='/api/v1/register_fields?tenant={tenant_id}'
-                )
-            ),
+            ('template_code', str , Field(title=_('template_code', '短信模板ID'))),
+            ('sign_name', str , Field(title=_('sign_name', 'sign_name'))),
+            ('sms_up_extend_code', str , Field(title=_('sms_up_extend_code', 'sms_up_extend_code'))),
         ],
         BaseAuthFactorSchema,
     )
@@ -53,7 +41,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                     error_code = ErrorCode.USER_NOT_IN_TENANT_ERROR.value
                     message = _('Can not find user in tenant',"该租户下未找到对应用户。")
                 else:
-                    return self.auth_success(user_mobile.user)
+                    return self.auth_success(user_mobile.user,event)
             else:
                 error_code = ErrorCode.SMS_CODE_MISMATCH.value
                 message = _('sms code mismatched',"手机验证码错误")
@@ -102,13 +90,28 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "mobile",
-                "placeholder": "手机号码"
+                "name": "phone_number",
+                "placeholder": "手机号码",
+                "append": {
+                    "title": "发送验证码",
+                    "http": {
+                        "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
+                        "method": "post",
+                        "params": {
+                            "phone_number": "phone_number",
+                            "config_id": "config_id"
+                        },
+                        "payload": {
+                            "auth_code_length": 6
+                        }
+                    },
+                    "delay": 60
+                }
             },
             {
                 "type": "text",
                 "name": "sms_code",
-                "placeholder": "验证码"
+                "placeholder": "验证码",
             },
         ]
         self.add_page_form(config, self.LOGIN, "手机验证码登录", items)
@@ -117,8 +120,23 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "mobile",
-                "placeholder": "手机号码"
+                "name": "phone_number",
+                "placeholder": "手机号码",
+                "append": {
+                    "title": "发送验证码",
+                    "http": {
+                        "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
+                        "method": "post",
+                        "params": {
+                            "phone_number": "phone_number",
+                            "config_id": "config_id"
+                        },
+                        "payload": {
+                            "auth_code_length": 6
+                        }
+                    },
+                    "delay": 60
+                }
             },
             {
                 "type": "text",
@@ -129,7 +147,44 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         self.add_page_form(config, self.REGISTER, "手机验证码注册", items)
 
     def create_password_page(self, event, config):
-        pass
+        items = [
+            {
+                "type": "text",
+                "name": "phone_number",
+                "placeholder": "手机号码",
+                "append": {
+                    "title": "发送验证码",
+                    "http": {
+                        "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
+                        "method": "post",
+                        "params": {
+                            "phone_number": "phone_number",
+                            "config_id": "config_id"
+                        },
+                        "payload": {
+                            "auth_code_length": 6
+                        }
+                    },
+                    "delay": 60
+                }
+            },
+            {
+                "type": "text",
+                "name": "sms_code",
+                "placeholder": "验证码"
+            },
+            {
+                "type": "password",
+                "name": "password",
+                "placeholder": "密码"
+            },
+            {
+                "type": "password",
+                "name": "checkpassword",
+                "placeholder": "密码确认"
+            },
+        ]
+        self.add_page_form(config, self.RESET_PASSWORD, "手机验证码重置密码", items)
 
     def create_other_page(self, event, config):
         pass

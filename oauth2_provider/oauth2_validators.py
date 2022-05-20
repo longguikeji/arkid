@@ -21,7 +21,7 @@ from jwcrypto.common import JWException
 from jwcrypto.jwt import JWTExpired
 from oauthlib.oauth2.rfc6749 import utils
 from oauthlib.openid import RequestValidator
-from tasks.tasks import update_user_apppermission
+# from tasks.tasks import update_user_apppermission
 
 from .exceptions import FatalClientError
 from .models import (
@@ -605,7 +605,7 @@ class OAuth2Validator(RequestValidator):
         client = request.client
         client_id = client.client_id
         # 更新用户权限
-        update_user_apppermission.delay(client_id, request.user.id)
+        # update_user_apppermission.delay(client_id, request.user.id)
         # 颁发access_token
         id_token = token.get("id_token", None)
         if id_token:
@@ -756,7 +756,7 @@ class OAuth2Validator(RequestValidator):
         This function adds in iss, exp and auth_time, plus any claims added from
         calling ``get_oidc_claims()``
         """
-        from config import get_app_config
+        from arkid.config import get_app_config
         claims = self.get_oidc_claims(token, token_handler, request)
         expiration_time = timezone.now() + timedelta(seconds=oauth2_settings.ID_TOKEN_EXPIRE_SECONDS)
         host = get_app_config().get_host()
@@ -766,6 +766,7 @@ class OAuth2Validator(RequestValidator):
             urlinfo = urlinfo.split('/oauth/token/')[0]
         print('issinfo:'+urlinfo)
         # Required ID Token claims
+        request.user.last_login = timezone.now()
         claims.update(
             **{
                 "iss": urlinfo,
@@ -906,13 +907,13 @@ class OAuth2Validator(RequestValidator):
         #     groups.append('tenant_admin')
         return {
             "sub": str(request.user.id),
-            "sub_uuid": str(request.user.uuid),
+            "sub_id": str(request.user.id),
             "preferred_username": request.user.username,
-            'nickname': request.user.nickname,
-            'given_name': request.user.first_name,
-            'family_name': request.user.last_name,
-            'email': request.user.email,
+            # 'nickname': request.user.nickname,
+            # 'given_name': request.user.first_name,
+            # 'family_name': request.user.last_name,
+            # 'email': request.user.email,
             'groups': groups,
-            'tenant_uuid': str(request.user.tenant.uuid),
+            'tenant_id': str(request.user.tenant.id),
             "tenant_slug": request.user.tenant.slug,
         }

@@ -23,7 +23,7 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name_plural = _("tenant", "租户")
 
     name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), unique=True)
+    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), blank=True, null=True, default='' ,unique=True)
     icon = models.URLField(verbose_name=_('icon', '图标'), blank=True)
 
     token_duration_minutes = models.IntegerField(
@@ -34,7 +34,7 @@ class Tenant(BaseModel, ExpandModel):
     
     users = models.ManyToManyField(
         'User',
-        blank=False,
+        blank=True,
         related_name="tenant_user_set",
         related_query_name="user",
     )
@@ -47,46 +47,27 @@ class Tenant(BaseModel, ExpandModel):
         return f'tenant_admin_{self.id}'
 
     def has_admin_perm(self, user: 'User'):
-        from arkid.core.b64_compress import Compress
-        if user.is_superuser:
-            return True
-        else:
-            systempermission = SystemPermission.valid_objects.filter(tenant=self, code=self.admin_perm_code, is_system=True).first()
-            if systempermission:
-                userpermissionresult = UserPermissionResult.valid_objects.filter(
-                    user=user,
-                    tenant=self,
-                    app=None,
-                ).first()
-                if userpermissionresult:
-                    compress = Compress()
-                    permission_result = compress.decrypt(userpermissionresult.result)
-                    permission_result_arr = list(permission_result)
-                    check_result = int(permission_result_arr[systempermission.sort_id])
-                    if check_result == 1:
-                        return True
-        return False
-    
-    def create_tenant_admin_permission(self):
-        systempermission, is_create = SystemPermission.objects.get_or_create(
-            tenant=self,
-            code=self.admin_perm_code,
-            is_system=True,
-        )
-        systempermission.name = self.name+' manage'
-        systempermission.category = 'other'
-        systempermission.is_update = True
-        systempermission.save()
-        return systempermission, is_create
+        from arkid.core.perm.permission_data import PermissionData
+        permissiondata = PermissionData()
+        result = permissiondata.has_admin_perm(self, user)
+        return result
     
     def create_tenant_user_admin_permission(self, user):
         # 此处无法使用celery和event, event会出现无法回调，celery启动时如果调用，会自己调用自己
         from arkid.core.perm.permission_data import PermissionData
-        systempermission, is_create = self.create_tenant_admin_permission()
-        if is_create:
-            # 给用户添加管理员权限
-            permissiondata = PermissionData()
-            permissiondata.add_system_permission_to_user(self.id, user.id, systempermission.id)
+        permissiondata = PermissionData()
+        permissiondata.create_tenant_user_admin_permission(self, user)
+    
+    @property
+    def is_platform_tenant(self):
+        '''
+        是否是平台租户
+        '''
+        tenant = Tenant.valid_objects.order_by('id').first()
+        if tenant.id == self.id:
+            return True
+        else:
+            return False
 
 class User(BaseModel, ExpandModel):
     class Meta(object):
@@ -177,7 +158,7 @@ class App(BaseModel, ExpandModel):
         verbose_name=_('secret', '密钥'),
     )
     config = models.OneToOneField(
-        TenantExtensionConfig, blank=False, default=None, on_delete=models.PROTECT
+        TenantExtensionConfig, blank=True,null=True, default=None, on_delete=models.PROTECT
     )
     package = models.CharField(
         max_length=128,
@@ -271,6 +252,7 @@ class PermissionAbstract(BaseModel, ExpandModel):
 
 
 class SystemPermission(PermissionAbstract):
+
     class Meta(object):
         verbose_name = _('SystemPermission', '系统权限')
         verbose_name_plural = _('SystemPermission', '系统权限')
@@ -305,6 +287,7 @@ class SystemPermission(PermissionAbstract):
 
 
 class Permission(PermissionAbstract):
+
     class Meta(object):
         verbose_name = _("Permission", "权限")
         verbose_name_plural = _("Permission", "权限")
@@ -314,7 +297,7 @@ class Permission(PermissionAbstract):
     #     count=Permission.objects.count()
     #     return 0 if (count == 0) else count
 
-    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=0)
+    sort_id = models.IntegerField(verbose_name=_('Sort ID', '序号'), default=-1)
 
     app = models.ForeignKey(
         App,
@@ -343,10 +326,18 @@ class Permission(PermissionAbstract):
     def __str__(self) -> str:
         return f'{self.name}'
 
+    def save(self, *args, **kwargs):
+        if self.sort_id == -1:
+            permission = Permission.objects.filter(tenant=self.tenant, app_id = self.app_id).order_by('-sort_id').first()
+            if permission:
+                self.sort_id = permission.sort_id + 1
+            else:
+                self.sort_id = 0
+        super().save(*args, **kwargs)
+
     @property
     def children(self):
         return Permission.valid_objects.filter(parent=self).order_by('id')
-
 
 class UserPermissionResult(BaseModel, ExpandModel):
     class Meta(object):
@@ -366,52 +357,51 @@ class UserPermissionResult(BaseModel, ExpandModel):
     result = models.CharField(
         max_length=1024, blank=True, null=True, verbose_name='权限结果'
     )
-    is_update = models.BooleanField(default=False, verbose_name='是否更新')
 
     def __str__(self) -> str:
         return f'User: {self.user.username}'
 
 
-class Approve(BaseModel, ExpandModel):
-    class Meta(object):
-        verbose_name = _('Approve', "审批动作")
-        verbose_name_plural = _('Approve', "审批动作")
+# class Approve(BaseModel, ExpandModel):
+#     class Meta(object):
+#         verbose_name = _('Approve', "审批动作")
+#         verbose_name_plural = _('Approve', "审批动作")
 
-    STATUS_CHOICES = (
-        ('wait', _('Wait', '待审批')),
-        ('pass', _('Pass', '通过')),
-        ('deny', _('Deny', '拒绝')),
-    )
+#     STATUS_CHOICES = (
+#         ('wait', _('Wait', '待审批')),
+#         ('pass', _('Pass', '通过')),
+#         ('deny', _('Deny', '拒绝')),
+#     )
 
-    name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
-    code = models.CharField(verbose_name=_('Code', '编码'), max_length=100)
-    description = models.TextField(
-        blank=True, null=True, verbose_name=_('Description', '备注')
-    )
-    tenant = models.ForeignKey(
-        'Tenant', default=None, on_delete=models.PROTECT, verbose_name=_('Tenant', '租户')
-    )
-    app = models.ForeignKey(
-        App,
-        models.PROTECT,
-        default=None,
-        null=True,
-        blank=True,
-        verbose_name=_('APP', '应用'),
-    )
-    status = models.CharField(
-        choices=STATUS_CHOICES,
-        default="wait",
-        max_length=100,
-        verbose_name=_('Status', "状态"),
-    )
-    data = models.JSONField(
-        default=dict,
-        verbose_name=_('Data', "数据"),
-    )
+#     name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
+#     code = models.CharField(verbose_name=_('Code', '编码'), max_length=100)
+#     description = models.TextField(
+#         blank=True, null=True, verbose_name=_('Description', '备注')
+#     )
+#     tenant = models.ForeignKey(
+#         'Tenant', default=None, on_delete=models.PROTECT, verbose_name=_('Tenant', '租户')
+#     )
+#     app = models.ForeignKey(
+#         App,
+#         models.PROTECT,
+#         default=None,
+#         null=True,
+#         blank=True,
+#         verbose_name=_('APP', '应用'),
+#     )
+#     status = models.CharField(
+#         choices=STATUS_CHOICES,
+#         default="wait",
+#         max_length=100,
+#         verbose_name=_('Status', "状态"),
+#     )
+#     data = models.JSONField(
+#         default=dict,
+#         verbose_name=_('Data', "数据"),
+#     )
 
-    def __str__(self):
-        return '%s' % (self.name)
+#     def __str__(self):
+#         return '%s' % (self.name)
 
 
 class ExpiringToken(models.Model):
@@ -448,8 +438,8 @@ class ExpiringToken(models.Model):
 
 class ApproveAction(BaseModel, ExpandModel):
     class Meta(object):
-        verbose_name = _('Approve', "审批动作")
-        verbose_name_plural = _('Approve', "审批动作")
+        verbose_name = _('Approve Action', "审批动作")
+        verbose_name_plural = _('Approve Action', "审批动作")
 
     name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
     path = models.CharField(verbose_name=_('Request Path', '请求路径'), max_length=100)
@@ -488,8 +478,8 @@ class ApproveRequest(BaseModel, ExpandModel):
     )
 
     class Meta(object):
-        verbose_name = _('Approve', "审批请求")
-        verbose_name_plural = _('Approve', "审批请求")
+        verbose_name = _('Approve Request', "审批请求")
+        verbose_name_plural = _('Approve Request', "审批请求")
 
     user = models.ForeignKey(
         'User',
