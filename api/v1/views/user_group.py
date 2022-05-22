@@ -49,7 +49,13 @@ def create_group(request, tenant_id: str, data: UserGroupCreateIn):
     group.save()
     # 分发事件开始
     result = dispatch_event(
-        Event(tag=CREATE_GROUP, tenant=request.tenant, request=request, data=group))
+        Event(
+            tag=CREATE_GROUP, 
+            tenant=request.tenant, 
+            request=request,
+            data=group
+        )
+    )
     # 分发事件结束
     return {'error': ErrorCode.OK.value}
 

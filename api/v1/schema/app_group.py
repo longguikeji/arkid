@@ -65,7 +65,8 @@ class AppGroupCreateIn(ModelSchema):
         field="id",
         page=select_appgroup_parent_page.tag,
         link="name",
-        default=None
+        default=None,
+        title=_("上级应用分组")
     )
 
     class Config:

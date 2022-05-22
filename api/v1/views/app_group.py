@@ -35,7 +35,7 @@ def get_app_group(request, tenant_id: str, id: str):
     return {"data":group}
 
 
-@api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=["应用分组"],auth=None)
+@api.post("/tenant/{tenant_id}/app_group/", response=AppGroupCreateOut, tags=["应用分组"],auth=None)
 @operation(AppGroupCreateOut)
 def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
     """ 创建应用分组,TODO

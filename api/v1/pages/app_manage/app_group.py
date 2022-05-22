@@ -29,7 +29,7 @@ page.create_actions(
     ),
     global_actions={
         'create':actions.CreateAction(
-            path='/api/v1/tenant/{tenant_id}/app_groups/'
+            path='/api/v1/tenant/{tenant_id}/app_group/'
         )
     },
     local_actions={
