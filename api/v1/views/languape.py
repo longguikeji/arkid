@@ -8,10 +8,10 @@ from arkid.core.models import Extension
 from arkid.core.translation import default_lang_maps
 
 
-@api.get("/languages/",response=List[LanguageListItemOut],tags=["语言包管理"],auth=None)
+@api.get("/tenant/{tenant_id}/languages/",response=List[LanguageListItemOut],tags=["语言包管理"],auth=None)
 @operation(LanguageListOut)
 @paginate(CustomPagination)
-def get_app_protocols(request):
+def get_app_protocols(request,tenant_id:str):
     """ 获取语言包列表
     """
     
