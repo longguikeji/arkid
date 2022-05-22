@@ -15,12 +15,12 @@ router = routers.FrontRouter(
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path="/api/v1/tenant/{tenant_id}/tenant_config/",
+        path="/api/v1/tenants/{tenant_id}/config/",
         method=actions.FrontActionMethod.GET,
     ),
     global_actions = {
         "confirm": actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/tenant_config/"
+            path="/api/v1/tenants/{tenant_id}/config/"
         ),
     }
 )

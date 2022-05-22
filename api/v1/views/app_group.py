@@ -26,6 +26,19 @@ def get_app_groups(request, tenant_id: str, query_data: AppGroupListQueryIn=Quer
     return {"data":list(groups.all())}
 
 
+@api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=["应用分组"],auth=None)
+@operation(AppGroupCreateOut)
+def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
+    """ 创建应用分组,TODO
+    """
+    data = data.dict()
+    if "parent" in data and data["parent"]:
+        data["parent"] = get_object_or_404(AppGroup,id=data["parent"], is_del=False, is_active=True)
+    group = AppGroup.active_objects.create(tenant=request.tenant,**data)
+
+    return {'error': ErrorCode.OK.value}
+
+
 @api.get("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupOut, tags=["应用分组"],auth=None)
 @operation(AppGroupOut)
 def get_app_group(request, tenant_id: str, id: str):
@@ -33,20 +46,6 @@ def get_app_group(request, tenant_id: str, id: str):
     """
     group = get_object_or_404(AppGroup,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
     return {"data":group}
-
-
-@api.post("/tenant/{tenant_id}/app_group/", response=AppGroupCreateOut, tags=["应用分组"],auth=None)
-@operation(AppGroupCreateOut)
-def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
-    """ 创建应用分组,TODO
-    """
-    data = data.dict()
-    if "parent" in data:
-        data["parent"] = get_object_or_404(AppGroup,id=data["parent"], is_del=False, is_active=True)
-    group = AppGroup.active_objects.create(tenant=request.tenant)
-
-    return {'error': ErrorCode.OK.value}
-
 
 @api.post("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupUpdateOut,tags=["应用分组"],auth=None)
 @operation(AppGroupUpdateOut)
