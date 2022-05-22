@@ -5,6 +5,7 @@ from api.v1.schema.app_protocol import AppProtocolListItemOut, AppProtocolListOu
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import Extension
+from arkid.core.extension.app_protocol import AppProtocolExtension
 
 
 @api.get("/tenant/{tenant_id}/app_protocols/",response=List[AppProtocolListItemOut],tags=["应用协议"],auth=None)
@@ -13,13 +14,15 @@ from arkid.core.models import Extension
 def get_app_protocols(request, tenant_id: str):
     """ 应用协议列表
     """
+    rs = []
     
-    extensions = Extension.active_objects.filter(type="app_protocol").all()
+    for k,v in AppProtocolExtension.composite_schema_map.items():
+        for p_k,p_v in v.items():
+            rs.append({
+                "name": k,
+                "description": "",
+                "doc_url": f"/arkid/%20系统插件/{p_k.replace('.','_')}/",
+                "package": p_k
+            })
     
-    return [
-        {
-            "id": item.id.hex,
-            "name": item.name,
-            "package": item.package
-        } for item in extensions
-    ]
+    return rs

@@ -68,7 +68,7 @@ def create_app(request, tenant_id: str, data: AppCreateIn):
     app创建
     '''
     # data.id = uuid.uuid4()
-    setattr(data,"id",uuid.uuid4())
+    setattr(data,"id",uuid.uuid4().hex)
     tenant = request.tenant
     # 事件分发
     results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
