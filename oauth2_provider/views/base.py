@@ -205,6 +205,13 @@ class TokenRequiredMixin(AccessMixin):
             if token:
                 if not token.user.is_active:
                     return False
+                
+                if not request.tenant:
+                    return False
+                
+                request.user  = token.user
+                request.user.tenant = request.tenant
+                
                 if token.expired(tenant=request.tenant):
                     return False
                 user = token.user
