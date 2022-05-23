@@ -52,7 +52,8 @@ class AppGroupItemOut(ModelSchema):
     )
     
     parent_name: Optional[str] = Field(
-        title=_("上级应用分组名称")
+        title=_("上级应用分组名称"),
+        hidden=True
     )
     
     class Config:
