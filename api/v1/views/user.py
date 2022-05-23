@@ -34,7 +34,7 @@ def user_create(request, tenant_id: str,data:UserCreateIn):
 @api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'], auth=None)
 @operation(UserDeleteOut)
 def user_delete(request, tenant_id: str,id:str):
-    user = User.active_objects.get(tenant__id=tenant_id,id=id)
+    user = User.expand_objects.get(tenant__id=tenant_id,id=id)
     user.delete()
     return {"error":ErrorCode.OK.value}
         
@@ -43,7 +43,7 @@ def user_delete(request, tenant_id: str,id:str):
 @operation(UserUpdateOut)
 def user_update(request, tenant_id: str,id:str, data:UserUpdateIn):
 
-    user = User.active_objects.get(tenant__id=tenant_id,id=id)
+    user = User.expand_objects.get(tenant__id=tenant_id,id=id)
     user.avatar = data.avatar or user.avatar
     user.save()
 

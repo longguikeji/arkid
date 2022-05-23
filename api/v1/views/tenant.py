@@ -1,5 +1,6 @@
 from re import T
 from typing import List
+from uuid import UUID
 from ninja import Field, File, ModelSchema, Query, Schema
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant
@@ -52,7 +53,13 @@ def get_tenant(request, id: str):
     """ 获取租户
     """
     tenant = Tenant.active_objects.get(id=id)
-    return {"data": tenant}
+    return {
+        "data": {
+            "name":tenant.name,
+            "slug": tenant.slug,
+            "icon": tenant.icon        
+        }
+    }
 
 class TenantCreateIn(ModelSchema):
     class Config:
@@ -101,6 +108,10 @@ def delete_tenant(request, id: str):
     return {'error': ErrorCode.OK.value}
         
 class TenantConfigItemOut(Schema):
+    id: str = Field(
+        readonly = True
+    )
+    
     name: str = Field(
         title=_("租户名称"),
     )
@@ -125,6 +136,7 @@ def get_tenant_config(request, tenant_id: str):
     
     return {
         "data": {
+            "id": tenant.id.hex,
             "name": tenant.name,
             "slug": tenant.slug,
             "icon": tenant.icon
