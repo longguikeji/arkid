@@ -29,6 +29,8 @@ def get_event_payload(event):
         data = serialize('json', [data])
     elif type(data) is QuerySet:
         data = serialize('json', data)
+    elif isinstance(data, Schema):
+        data = data.json()
 
     request = None
     response = None
