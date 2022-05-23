@@ -19,32 +19,14 @@ from arkid.common.arkstore import (
 from arkid.core.api import api
 from typing import List
 from ninja import Schema
+from pydantic import Field
 from ninja.pagination import paginate
 
 
-class ArkstoreExtensionSchemaOut(Schema):
-    uuid: str
-    name: str
-    package_idendifer: str
-    version: str
-    author: str
-    logo: str = ""
-    description: str
-    categories: str
-    labels: str
-    button: str
-
-
-class BindAgentSchemaIn(Schema):
-    tenant_slug: str
-
-
-@api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['arkstore'], response=List[ArkstoreExtensionSchemaOut])
-@paginate
-def list_arkstore_extensions(request, tenant_id: str):
+def get_arkstore_list(request, purchased, type):
     page = request.GET.get('page')
     page_size = request.GET.get('page_size')
-    purchased = request.GET.get('purchased')
+    purchased = True
     token = request.user.auth_token
     tenant = request.tenant
     access_token = get_arkstore_access_token(tenant, token.token)
@@ -69,60 +51,72 @@ def list_arkstore_extensions(request, tenant_id: str):
     return saas_extensions
 
 
-@api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['arkstore'], response=List[ArkstoreExtensionSchemaOut])
+class ArkstoreItemSchemaOut(Schema):
+    uuid: str = Field(hidden=True)
+    name: str
+    package_idendifer: str
+    version: str
+    author: str
+    logo: str = ""
+    description: str
+    categories: str
+    labels: str
+    button: str
+
+
+class BindAgentSchemaIn(Schema):
+    tenant_slug: str
+
+
+@api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
 @paginate
 def list_arkstore_extensions(request, tenant_id: str):
-    page = request.GET.get('page')
-    page_size = request.GET.get('page_size')
-    purchased = request.GET.get('purchased')
-    token = request.user.auth_token
-    tenant = request.tenant
-    access_token = get_arkstore_access_token(tenant, token.token)
-    # arkstore use offset and limit
-    if page and page_size:
-        limit = int(page_size)
-        offset = (int(page)-1) * int(page_size)
-        saas_apps_data = get_arkstore_apps(access_token, purchased, offset, limit)
-    else:
-        saas_apps_data = get_arkstore_apps(access_token, purchased)
-    saas_apps_data = saas_apps_data['items']
-    saas_apps = []
-    for app in saas_apps_data:
-        if app['purchased']:
-            app['button'] = '安装'
-        else:
-            app['button'] = '购买'
-        saas_apps.append(app)
+    return get_arkstore_list(request, None, 'extension')
 
-    return saas_apps
+@api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@paginate
+def list_arkstore_apps(request, tenant_id: str):
+    return get_arkstore_list(request, None, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/purchase/{extension_id}/", tags=['arkstore'])
-def order_arkstore_extension(request, tenant_id: str, extension_id: str):
+@api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@paginate
+def list_arkstore_purchased_extensions(request, tenant_id: str):
+    return get_arkstore_list(request, True, 'extension')
+
+
+@api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@paginate
+def list_arkstore_purchased_apps(request, tenant_id: str):
+    return get_arkstore_list(request, True, 'app')
+
+
+@api.post("/tenant/{tenant_id}/arkstore/purchase/{uuid}/", tags=['arkstore'])
+def order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
-    resp = purcharse_arkstore_extension(access_token, extension_id)
+    resp = purcharse_arkstore_extension(access_token, uuid)
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/lease/{extension_id}/", tags=['arkstore'])
-def rent_arkstore_extension(request, tenant_id: str, extension_id: str):
+@api.get("/tenant/{tenant_id}/arkstore/lease/{uuid}/", tags=['arkstore'])
+def rent_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     # platform_tenant = Tenant.objects.filter(slug='').first()
     # saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(platform_tenant, token)
     access_token = get_arkstore_access_token(tenant, token)
     # bind_arkstore_agent(access_token, saas_tenant_slug)
-    resp = lease_arkstore_extension(access_token, extension_id)
+    resp = lease_arkstore_extension(access_token, uuid)
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/install/{extension_id}/", tags=['arkstore'])
-def download_arkstore_extension(request, tenant_id: str, extension_id: str):
+@api.get("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['arkstore'])
+def download_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    result = install_arkstore_extension(tenant, token, extension_id)
+    result = install_arkstore_extension(tenant, token, uuid)
     resp = {'error': ErrorCode.OK.value}
     return resp
 
@@ -165,9 +159,9 @@ def update_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchemaIn)
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/auto_fill_form/{app_id}/", tags=['arkstore'])
-def get_arkstore_app(request, tenant_id: str, app_id: str):
+@api.get("/tenant/{tenant_id}/arkstore/auto_fill_form/{uuid}/", tags=['arkstore'])
+def get_arkstore_app(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    resp = get_arkid_saas_app_detail(tenant, token, app_id)
+    resp = get_arkid_saas_app_detail(tenant, token, uuid)
     return resp
