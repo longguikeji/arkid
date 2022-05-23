@@ -49,7 +49,8 @@ def get_app_group(request, tenant_id: str, id: str):
         "data": {
             "id": group.id,
             "name": group.name,
-            "parent": group.parent.id if group.parent else None
+            "parent": group.parent.id if group.parent else None,
+            "parent_name": group.parent.name if group.parent else None
         }
     }
 

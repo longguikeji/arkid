@@ -47,7 +47,12 @@ class AppGroupItemOut(ModelSchema):
         field="id",
         page=select_appgroup_parent_page.tag,
         link="name",
-        title=_("上级应用分组")
+        title=_("上级应用分组"),
+        show="parent_name"
+    )
+    
+    parent_name: Optional[str] = Field(
+        title=_("上级应用分组名称")
     )
     
     class Config:
