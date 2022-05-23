@@ -18,7 +18,7 @@ select_appgroup_parent_page.create_actions(
     ),
     node_actions=[
         actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/app_groups/',
+            path='/api/v1/tenant/{tenant_id}/app_groups/?parent_id={id}',
             method=actions.FrontActionMethod.GET
         )
     ],
