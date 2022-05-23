@@ -41,6 +41,10 @@ page.create_actions(
         )
     },
     node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/app_groups/?parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
         actions.CascadeAction(
             page=group_apps_page
         )
