@@ -33,8 +33,8 @@ class CoreConfig(AppConfig):
         try:
             from arkid.common.bind_saas import bind_saas
             tenants = Tenant.active_objects.all()
-            for tenant in tenants:
-                bind_saas(tenant)
+            # for tenant in tenants:
+            #     bind_saas(tenant)
         except Exception as e:
             print(e)
 
