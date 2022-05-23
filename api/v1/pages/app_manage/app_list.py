@@ -15,6 +15,9 @@ app_purchased_page = pages.TablePage(name=_("Purchased", "已购买"))
 pages.register_front_pages(page)
 pages.register_front_pages(edit_page)
 # pages.register_front_pages(config_page)
+pages.register_front_pages(appstore_page)
+pages.register_front_pages(app_list_page)
+pages.register_front_pages(app_purchased_page)
 
 appstore_page.add_pages([
     app_list_page,
