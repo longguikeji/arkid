@@ -1,4 +1,5 @@
 
+import xxlimited
 from django.http import JsonResponse
 from collections import OrderedDict
 from arkid.core.models import Tenant
@@ -8,8 +9,10 @@ from arkid.common.arkstore import (
     purcharse_arkstore_extension,
     lease_arkstore_extension,
     install_arkstore_extension,
-    get_arkstore_apps,
     get_arkstore_extensions,
+    get_arkstore_extension_detail,
+    get_arkstore_extension_order_status,
+    get_arkstore_extension_rent_status,
     get_arkid_saas_app_detail,
     get_bind_arkstore_agent,
     bind_arkstore_agent,
@@ -21,12 +24,12 @@ from typing import List
 from ninja import Schema
 from pydantic import Field
 from ninja.pagination import paginate
+from arkid.core.pagenation import CustomPagination
 
 
 def get_arkstore_list(request, purchased, type):
-    page = request.GET.get('page')
-    page_size = request.GET.get('page_size')
-    purchased = True
+    page = request.GET.get('page', 1)
+    page_size = request.GET.get('page_size', 10)
     token = request.user.auth_token
     tenant = request.tenant
     access_token = get_arkstore_access_token(tenant, token.token)
@@ -34,15 +37,13 @@ def get_arkstore_list(request, purchased, type):
     if page and page_size:
         limit = int(page_size)
         offset = (int(page)-1) * int(page_size)
-        saas_extensions_data = get_arkstore_extensions(access_token, purchased, offset, limit)
-    else:
-        saas_extensions_data = get_arkstore_extensions(access_token, purchased)
+    saas_extensions_data = get_arkstore_extensions(access_token, purchased, type, offset, limit)
     saas_extensions_data = saas_extensions_data['items']
     saas_extensions = []
     for extension in saas_extensions_data:
-        if extension['upgrade']:
+        if extension.get('upgrade'):
             extension['button'] = '升级'
-        elif extension['purchased']:
+        elif extension.get('purchased'):
             extension['button'] = '安装'
         else:
             extension['button'] = '购买'
@@ -64,34 +65,48 @@ class ArkstoreItemSchemaOut(Schema):
     button: str
 
 
+class OrderStatusSchema(Schema):
+    purchased: bool
+
+
 class BindAgentSchemaIn(Schema):
     tenant_slug: str
 
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
-@paginate
+@paginate(CustomPagination)
 def list_arkstore_extensions(request, tenant_id: str):
     return get_arkstore_list(request, None, 'extension')
 
+
 @api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
-@paginate
+@paginate(CustomPagination)
 def list_arkstore_apps(request, tenant_id: str):
     return get_arkstore_list(request, None, 'app')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
-@paginate
+@paginate(CustomPagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str):
     return get_arkstore_list(request, True, 'extension')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
-@paginate
+@paginate(CustomPagination)
 def list_arkstore_purchased_apps(request, tenant_id: str):
     return get_arkstore_list(request, True, 'app')
 
 
-@api.post("/tenant/{tenant_id}/arkstore/purchase/{uuid}/", tags=['arkstore'])
+@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extension_detail(access_token, uuid)
+    return resp
+
+
+@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['arkstore'])
 def order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -100,7 +115,25 @@ def order_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/lease/{uuid}/", tags=['arkstore'])
+@api.post("/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
+def order_status_arkstore_extension(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extension_order_status(access_token, uuid)
+    return resp
+
+
+@api.get("/tenant/{tenant_id}/arkstore/rent/extensions/{uuid}/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+def get_rent_arkstore_extension(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extension_detail(access_token, uuid)
+    return resp
+
+
+@api.post("/tenant/{tenant_id}/arkstore/rent/extensions/{uuid}/", tags=['arkstore'])
 def rent_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -112,12 +145,21 @@ def rent_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
+@api.post("/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
+def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extension_rent_status(access_token, uuid)
+    return resp
+
+
 @api.get("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['arkstore'])
 def download_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     result = install_arkstore_extension(tenant, token, uuid)
-    resp = {'error': ErrorCode.OK.value}
+    resp = {'error': ErrorCode.OK.value, 'data': {}}
     return resp
 
 
