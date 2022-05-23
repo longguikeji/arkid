@@ -57,7 +57,8 @@ def get_event_payload(event):
         "data": data,
         "uuid": event.uuid,
     }
-    return json.dumps(payload)
+    # return json.dumps(payload)
+    return payload
 
 
 class EventType:
