@@ -43,7 +43,7 @@ class AppGroupItemOut(ModelSchema):
         readonly=True
     )
 
-    parent:str = Field(
+    parent:Optional[UUID] = Field(
         field="id",
         page=select_appgroup_parent_page.tag,
         link="name",
@@ -62,7 +62,7 @@ class AppGroupCreateOut(ResponseSchema):
 
 class AppGroupCreateIn(ModelSchema):
 
-    parent: str = Field(
+    parent: UUID = Field(
         field="id",
         page=select_appgroup_parent_page.tag,
         link="name",

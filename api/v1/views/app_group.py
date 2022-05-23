@@ -47,9 +47,9 @@ def get_app_group(request, tenant_id: str, id: str):
     group = get_object_or_404(AppGroup,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
     return {
         "data": {
-            "id": group.id.hex,
+            "id": group.id,
             "name": group.name,
-            "parent": group.parent.id.hex if group.parent else ""
+            "parent": group.parent.id if group.parent else None
         }
     }
 
