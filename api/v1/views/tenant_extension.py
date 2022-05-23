@@ -1,7 +1,7 @@
 from ninja import Schema, ModelSchema
 from arkid.core import extension
 from arkid.core.api import api
-from typing import Union
+from typing import List
 from typing_extensions import Annotated
 from pydantic import Field
 from arkid.core.extension import Extension
@@ -117,7 +117,7 @@ class TenantExtensionListOut(ModelSchema):
 
 
 
-@api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],auth=None, response=TenantExtensionListOut)
+@api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],auth=None, response=List[TenantExtensionListOut])
 @paginate(CustomPagination)
 def get_platform_extensions(request, tenant_id: str):
     """ 平台插件列表
@@ -125,7 +125,7 @@ def get_platform_extensions(request, tenant_id: str):
     return ExtensionModel.active_objects.all()
 
 
-@api.get("/tenant/{tenant_id}/tenant/extensions/", tags=["租户插件"],auth=None, response=TenantExtensionListOut)
+@api.get("/tenant/{tenant_id}/tenant/extensions/", tags=["租户插件"],auth=None, response=List[TenantExtensionListOut])
 @paginate(CustomPagination)
 def get_tenant_extensions(request, tenant_id: str):
     """ 租户插件列表
