@@ -113,7 +113,7 @@ def get_app(request, tenant_id: str, app_id: str):
     '''
     app = get_object_or_404(App, id=app_id, is_del=False)
     result = {
-        'id': app.id,
+        'id': app.id.hex,
         'name': app.name,
         'url': app.url,
         'logo': app.logo,
