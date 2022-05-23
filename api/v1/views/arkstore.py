@@ -19,7 +19,7 @@ from arkid.common.arkstore import (
     change_arkstore_agent,
     unbind_arkstore_agent
 )
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from typing import List
 from ninja import Schema
 from pydantic import Field
@@ -74,24 +74,28 @@ class BindAgentSchemaIn(Schema):
 
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_extensions(request, tenant_id: str):
     return get_arkstore_list(request, None, 'extension')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_apps(request, tenant_id: str):
     return get_arkstore_list(request, None, 'app')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str):
     return get_arkstore_list(request, True, 'extension')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_purchased_apps(request, tenant_id: str):
     return get_arkstore_list(request, True, 'app')

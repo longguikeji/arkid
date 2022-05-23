@@ -93,6 +93,7 @@ app_list_page.create_actions(
     ),
     local_actions={
         "order": actions.OpenAction(
+            name='购买',
             page=order_page
         )
     },
