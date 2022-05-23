@@ -579,9 +579,9 @@ class Extension(ABC):
         settings = TenantExtension.valid_objects.filter(tenant=tenant, extension=ext).first()
         return settings
 
-    def create_tenant_settings(self, tenant, settings, type):
+    def create_tenant_settings(self, tenant, settings):
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
-        return TenantExtension.objects.create(tenant=tenant, extension=ext, settings=settings, type=type)
+        return TenantExtension.valid_objects.create(tenant=tenant, extension=ext, settings=settings)
     
 ################################################################################
 
@@ -643,7 +643,7 @@ class Extension(ABC):
 
     def create_tenant_config(self, tenant, config, name, type):
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
-        return TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config, name=name, type=type)
+        return TenantExtensionConfig.valid_objects.create(tenant=tenant, extension=ext, config=config, name=name, type=type)
     
     def delete_tenant_config(self, id):
         return TenantExtensionConfig.objects.delete(id=id)
