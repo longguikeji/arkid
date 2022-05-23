@@ -31,9 +31,6 @@ def get_event_payload(event):
         data = serialize('json', data)
     elif isinstance(data,Schema):
         data = data.dict()
-    
-    
-    
     request = None
     response = None
 

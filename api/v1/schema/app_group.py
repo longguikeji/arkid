@@ -43,10 +43,11 @@ class AppGroupItemOut(ModelSchema):
         readonly=True
     )
 
-    parent: Optional[UUID] = Field(
+    parent:str = Field(
         field="id",
         page=select_appgroup_parent_page.tag,
-        link="name"
+        link="name",
+        title=_("上级应用分组")
     )
     
     class Config:

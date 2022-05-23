@@ -45,7 +45,13 @@ def get_app_group(request, tenant_id: str, id: str):
     """ 获取应用分组
     """
     group = get_object_or_404(AppGroup,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
-    return {"data":group}
+    return {
+        "data": {
+            "id": group.id.hex,
+            "name": group.name,
+            "parent": group.parent.id.hex if group.parent else ""
+        }
+    }
 
 @api.post("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupUpdateOut,tags=["应用分组"],auth=None)
 @operation(AppGroupUpdateOut)

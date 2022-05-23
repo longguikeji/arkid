@@ -80,7 +80,13 @@ def get_group(request, tenant_id: str, id: str):
     获取分组
     '''
     group = get_object_or_404(UserGroup, id=id, is_del=False)
-    return {"data": group}
+    return {
+        "data": {
+            "id": group.id.hex,
+            "name": group.id.name,
+            "parent": group.parent.id.hex if group.parent else ""
+        }
+    }
 
 
 @api.post("/tenant/{tenant_id}/user_groups/{id}/", tags=['用户分组'], auth=None)
