@@ -112,10 +112,10 @@ def update_apps_from_group(request, tenant_id: str, app_group_id: str,data: AppG
 @operation(AppGroupExcludeAppsOut)
 @paginate(CustomPagination)
 def get_exclude_apps(request, tenant_id: str, app_group_id: str):
-    """ 获取所有应用并附加是否在当前分组的状态
+    """ 获取所有未添加到分组的应用
     """
     
-    group = get_object_or_404(AppGroup.expand_objects,id=app_group_id, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup.expand_objects,id=app_group_id,tenant=request.tenant, is_del=False, is_active=True)
     selected_apps = group.apps.filter(is_del=False, is_active=True).all()
     apps = App.expand_objects.filter(tenant__id=tenant_id).exclude(id__in=selected_apps).all()
     

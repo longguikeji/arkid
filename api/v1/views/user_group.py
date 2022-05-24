@@ -181,7 +181,7 @@ def group_users_remove(request, tenant_id: str, user_group_id: str, id: str):
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_exclude_users(request, tenant_id: str, user_group_id: str):
-    """ 获取所有用户并附加是否在当前分组的状态
+    """ 获取所有未添加到分组的用户
     """
     tenant = request.tenant
     users = tenant.user_set
