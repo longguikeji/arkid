@@ -22,6 +22,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
+    icon='webhook',
 )
 
 page.create_actions(

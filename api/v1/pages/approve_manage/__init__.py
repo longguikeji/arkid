@@ -5,6 +5,7 @@ from arkid.core import routers
 router = routers.FrontRouter(
     path='approve_manage',
     name='审批管理',
+    icon='approve',
     children=[
         approve_action.router,
         all_approve_requests.router,

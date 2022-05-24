@@ -13,7 +13,8 @@ pages.register_front_pages(detail_page)
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    page=page
+    page=page,
+    icon='list',
 )
 
 page.create_actions(

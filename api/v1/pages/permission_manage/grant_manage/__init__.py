@@ -19,5 +19,6 @@ pages.register_front_pages(page)
 router = routers.FrontRouter(
     path='grant_manage',
     name=_('授权管理'),
-    page=page
+    page=page,
+    icon='grant',
 )

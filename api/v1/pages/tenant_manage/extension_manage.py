@@ -23,6 +23,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
+    icon='list',
 )
 
 platform_extension_page.create_actions(
