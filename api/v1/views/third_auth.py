@@ -18,7 +18,7 @@ ThirdAuthConfigSchemaIn = ExternalIdpExtension.create_composite_config_schema(
 class ThirdAuthConfigSchemaOut(ModelSchema):
     class Config:
         model = TenantExtension
-        model_fields = ['id', 'type', 'settings']
+        model_fields = ['id', 'settings']
 
     package: str
 
