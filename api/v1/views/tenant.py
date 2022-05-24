@@ -88,6 +88,10 @@ def get_tenant_config(request, tenant_id: str):
 def update_tenant_config(request, tenant_id: str,data:TenantConfigUpdateIn):
     """ 编辑租户配置
     """
+    tenant = get_object_or_404(Tenant.expand_objects,id=tenant_id)
+    for attr, value in data.dict().items():
+        setattr(tenant, attr, value)
+    tenant.save()
     return {'error': ErrorCode.OK.value}
 
 @api.get("/default_tenant/",response=DefaultTenantOut, tags=["租户管理"], auth=None)
