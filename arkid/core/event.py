@@ -140,7 +140,6 @@ def register_event(tag, name, data_schema=None, description=''):
     register_event_type(
         EventType(tag=tag, name=name, data_schema=data_schema, description=description)
     )
-    listen_event(tag, webhook_event_handler)
 
 
 def register_event_type(event_type: EventType):
@@ -148,6 +147,7 @@ def register_event_type(event_type: EventType):
     if tag in tag_map_event_type:
         return
     tag_map_event_type[tag] = event_type
+    listen_event(tag, webhook_event_handler)
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
         listen_event(tag, func, listener, **kwargs)
