@@ -65,6 +65,15 @@ class AppProtocolExtension(Extension):
                 else:
                     return HttpResponse('Unauthorized', status=401)
 
+            def post(self, request, **kwargs):
+                from arkid.core.perm.permission_data import PermissionData
+                permissiondata = PermissionData()
+                result = permissiondata.check_app_entry_permission(request, type, kwargs)
+                if result:
+                    return view(request)
+                else:
+                    return HttpResponse('Unauthorized', status=401)
+
         # 获取进入的路由
         entry_url = [re_path(path, EnterView.as_view(), name=url_name)]
         # 注册入口路由
