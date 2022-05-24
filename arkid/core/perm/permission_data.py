@@ -3,6 +3,7 @@ from arkid.core.openapi import get_permissions
 from arkid.core.models import (
     UserPermissionResult, SystemPermission, User,
     Tenant, App, Permission, UserGroup,
+    ExpiringToken,
 )
 from arkid.core.api import api
 from django.db.models import Q
@@ -10,6 +11,7 @@ from django.db.models import Q
 import collections
 import requests
 import uuid
+import re
 
 
 class PermissionData(object):
@@ -1105,3 +1107,79 @@ class PermissionData(object):
             else:
                 systempermission.in_current = False
         return systempermissions
+
+    def check_app_entry_permission(self, request, type, kwargs):
+        '''
+        检查应用入口权限
+        '''
+        token = request.GET.get('token', '')
+        tenant_id = None
+        if 'tenant_id' in kwargs:
+            tenant_id = kwargs.get('tenant_id')
+        else:
+            path = request.path
+            id_re = r"[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}"
+            res = re.search(id_re, path)
+            if res:
+                tenant_id = res.group(0)
+        if tenant_id:
+            app = App.valid_objects.filter(
+                tenant_id=tenant_id,
+                type__in=type
+            ).first()
+            if app:
+                permission = Permission.valid_objects.filter(
+                    app=app,
+                    tenant_id=tenant_id,
+                    category='entry',
+                    is_system=True,
+                ).first()
+                if permission:
+                    user = self.token_check(tenant, token)
+                    result = self.permission_check_by_sortid(permission, user, app, tenant_id)
+                    if result:
+                        return True
+                    else:
+                        return False
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False
+    
+    def permission_check_by_sortid(self, permission, user, app, tenant_id):
+        '''
+        根据权限检查用户身份
+        '''
+        sort_id = permission.sort_id
+        userpermissionresult = UserPermissionResult.valid_objects.filter(
+            user=user,
+            tenant=tenant,
+            app=app,
+        ).first()
+        if userpermissionresult:
+            compress = Compress()
+            permission_result = compress.decrypt(userpermissionresult.result)
+            permission_result_arr = list(permission_result)
+            check_result = int(permission_result_arr[sort_id])
+            if check_result == 1:
+                return True
+        return False
+
+    def token_check(self, tenant, token):
+        '''
+        token检查
+        '''
+        try:
+            token = ExpiringToken.objects.get(token=token)
+            if token:
+                if not token.user.is_active:
+                    return None
+                if token.expired(tenant=tenant):
+                    return None
+                user = token.user
+                return user
+            return None
+        except Exception as e:
+            return None

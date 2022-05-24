@@ -6,7 +6,6 @@ from . import views
 app_name = "oauth2_provider"
 
 base_urlpatterns = [
-    re_path(r"oauth/authorize/$", views.AuthorizationView.as_view(), name="authorize"),
     re_path(r"oauth/token/$", views.TokenView.as_view(), name="token"),
     re_path(r"oauth/revoke_token/$", views.RevokeTokenView.as_view(), name="revoke-token"),
     re_path(r"oauth/introspect/$", views.IntrospectTokenView.as_view(), name="introspect"),
@@ -21,6 +20,10 @@ oidc_urlpatterns = [
 ]
 
 urlpatterns = base_urlpatterns + oidc_urlpatterns
+
+# oauth_urlpatterns = [
+#     re_path(r"oauth/authorize/$", views.AuthorizationView.as_view(), name="authorize"),
+# ]
 
 # base_urlpatterns = [
 #     re_path(r"^authorize/$", views.AuthorizationView.as_view(), name="authorize"),
