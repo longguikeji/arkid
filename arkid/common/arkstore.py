@@ -66,38 +66,20 @@ def get_arkstore_access_token(tenant, token):
     return arkstore_access_token_cache[key] 
 
 
-def get_arkstore_extensions(access_token, purchased=None, offset=0, limit=10):
-    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions?offset={offset}&limit={limit}'
+def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, limit=10):
+    if type == 'extension':
+        url = '/api/v1/arkstore/extensions?'
+    elif type == 'app':
+        url = '/api/v1/arkstore/apps'
+    else:
+        url = '/api/v1/arkstore/apps_and_extensions'
+    arkstore_extensions_url = settings.ARKSTOER_URL + url
     headers = {'Authorization': f'Token {access_token}'}
-    params = {}
-    if purchased is not None:
-        params['purchased'] = purchased
-    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
-    if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_extensions: {resp.status_code}')
-    resp = resp.json()
-    return resp
-
-
-def get_arkstore_apps(access_token, purchased=None, offset=0, limit=10):
-    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/apps?offset={offset}&limit={limit}'
-    headers = {'Authorization': f'Token {access_token}'}
-    params = {}
-    if purchased is not None:
-        params['purchased'] = purchased
-    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
-    if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_apps: {resp.status_code}')
-    resp = resp.json()
-    return resp
-
-
-def get_arkstore_apps_and_extensions(access_token, purchased=None, offset=0, limit=10):
-    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/apps_and_extensions?offset={offset}&limit={limit}'
-    headers = {'Authorization': f'Token {access_token}'}
-    params = {}
-    if purchased is not None:
-        params['purchased'] = purchased
+    params = {'offset': offset, 'limit': limit}
+    if purchased is True:
+        params['purchased'] = 'true'
+    elif purchased is False :
+        params['purchased'] = 'false'
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
@@ -138,6 +120,28 @@ def get_arkstore_extension_detail(access_token, extension_id):
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extension_order_status(access_token, extension_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/order/status/extensions/{extension_id}'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_order_status: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extension_rent_status(access_token, extension_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/lease/status/extensions/{extension_id}'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_rent_status: {resp.status_code}')
     resp = resp.json()
     return resp
 

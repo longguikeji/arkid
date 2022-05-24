@@ -27,12 +27,18 @@ from api.v1.views import bind_saas
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", core_api.urls),
-    path("api/v1/login", login_view.LoginEnter.as_view()),
-    path("api/v1/login_process", login_view.LoginProcess.as_view()),
+    path("api/v1/login", login_view.LoginEnter.as_view(), name="login_enter"),
+    path("api/v1/login_process", login_view.LoginProcess.as_view(), name="login_process"),
     path("api/redoc", redoc_view.Redoc.as_view()),
     path("api/openapi_redoc.json", redoc_view.RedocOpenAPI.as_view()),
     path("api/v1/", include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
 
-urlpatterns += [path('api/v1/', include((core_urls.urlpatterns + bind_saas.urlpatterns, 'api'), namespace='api'))]
+
+extension_root_urls = core_urls.urlpatterns
+
+urlpatterns += [
+    path('api/v1/', include((extension_root_urls + bind_saas.urlpatterns, 'api'), namespace='api'))
+]
+
 urlpatterns += scim_urls.urlpatterns
