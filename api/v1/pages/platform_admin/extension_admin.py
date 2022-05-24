@@ -7,12 +7,16 @@ name = '插件商店'
 
 page = pages.TabsPage(tag=tag, name=name)
 store_page = pages.TablePage(name='插件商店')
+order_page = pages.FormPage(name=_('Order', '购买'))
+purchased_page = pages.TablePage(name='已购买')
 download_page = pages.TablePage(name='已安装')
 edit_page = pages.FormPage(name=_("编辑插件"))
 
 
 pages.register_front_pages(page)
 pages.register_front_pages(store_page)
+pages.register_front_pages(order_page)
+pages.register_front_pages(purchased_page)
 pages.register_front_pages(download_page)
 pages.register_front_pages(edit_page)
 
@@ -25,27 +29,33 @@ router = routers.FrontRouter(
 
 page.add_pages([
     store_page,
+    purchased_page,
     download_page
 ])
 
 store_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/extensions/',
+        path='/tenant/{tenant_id}/arkstore/extensions/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions={
-        'create': actions.CreateAction(
-            path='/api/v1/extensions/',
+    local_actions={
+        "order": actions.OpenAction(
+            name='购买',
+            page=order_page
         )
     },
+)
+
+purchased_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/tenant/{tenant_id}/arkstore/purchased/extensions/',
+        method=actions.FrontActionMethod.GET,
+    ),
     local_actions={
-        # 加载/卸载 插件 TODO
-        "edit": actions.EditAction(
-            page=edit_page,
+        "install": actions.DirectAction(
+            path='/tenant/{tenant_id}/arkstore/install/{uuid}/',
+            method=actions.FrontActionMethod.POST,
         ),
-        "delete": actions.DeleteAction(
-            path="/api/v1/extensions/{id}/",
-        )
     },
 )
 
@@ -54,19 +64,15 @@ download_page.create_actions(
         path='/api/v1/extensions/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions={
-        'create': actions.CreateAction(
-            path='/api/v1/extensions/',
-        )
-    },
     local_actions={
-        # 加载/卸载 插件 TODO
-        "edit": actions.EditAction(
-            page=edit_page,
+        "update": actions.DirectAction(
+            path='/tenant/{tenant_id}/arkstore/install/{uuid}/',
+            method=actions.FrontActionMethod.POST,
         ),
-        "delete": actions.DeleteAction(
-            path="/api/v1/extensions/{id}/",
-        )
+        "active": actions.DirectAction(
+            path='/api/v1/extensions/{uuid}/active/',
+            method=actions.FrontActionMethod.POST,
+        ),
     },
 )
 
@@ -82,4 +88,16 @@ edit_page.create_actions(
     }
 )
 
-
+order_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    global_actions={
+        "payed": actions.DirectAction(
+            name='已支付',
+            path='/api/v1/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/',
+            method=actions.FrontActionMethod.GET
+        ),
+    },
+)

@@ -54,15 +54,15 @@ def get_arkstore_list(request, purchased, type):
 
 class ArkstoreItemSchemaOut(Schema):
     uuid: str = Field(hidden=True)
-    name: str
-    package_idendifer: str
-    version: str
-    author: str
-    logo: str = ""
-    description: str
-    categories: str
-    labels: str
-    button: str
+    name: str = Field(readonly=True)
+    package_idendifer: str = Field(readonly=True)
+    version: str = Field(readonly=True)
+    author: str = Field(readonly=True)
+    logo: str = Field(readonly=True, default="")
+    description: str = Field(readonly=True)
+    categories: str = Field(readonly=True)
+    labels: str = Field(readonly=True)
+    # button: str
 
 
 class OrderStatusSchema(Schema):
@@ -101,7 +101,7 @@ def list_arkstore_purchased_apps(request, tenant_id: str):
     return get_arkstore_list(request, True, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['arkstore'], response=ArkstoreItemSchemaOut)
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -119,7 +119,7 @@ def order_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.post("/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
+@api.get("/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
 def order_status_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)

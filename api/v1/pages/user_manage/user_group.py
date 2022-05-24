@@ -7,7 +7,7 @@ name = '用户分组'
 
 page = pages.TreePage(tag=tag,name=name)
 group_users_page = pages.TablePage(name=_("组内用户"))
-edit_users_page = pages.TablePage(name=_("更新组内用户"))
+edit_users_page = pages.TablePage(select=True, name=_("更新组内用户"))
 
 edit_page = pages.FormPage(name=_("编辑用户分组"))
 
@@ -75,7 +75,7 @@ group_users_page.create_actions(
 
 edit_users_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/select_users/',
+        path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/exclude_users/',
         method=actions.FrontActionMethod.GET,
     ),
     select=True,

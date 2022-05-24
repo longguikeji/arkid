@@ -8,7 +8,7 @@ from django.db import transaction
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
 from arkid.core.models import UserGroup, User
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from arkid.core.event import Event, dispatch_event
 from arkid.core.event import (
     CREATE_GROUP, UPDATE_GROUP, DELETE_GROUP,
@@ -17,16 +17,9 @@ from arkid.core.event import (
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from uuid import UUID
 
-from api.v1.schema.user_group import UserGroupDeleteOut, UserGroupDetailOut, UserGroupIn, UserGroupItemOut, UserGroupListItemOut, UserGroupListOut, UserGroupOut, UserGroupUserIn, UserGroupUserListItemOut, UserGroupUserListOut, UserGroupUserOut
+from api.v1.schema.user_group import *
 from arkid.core.pagenation import CustomPagination
 
-
-class UserGroupListSelectSchemaOut(Schema):
-
-    id: UUID = Field(default=None)
-    in_current: bool
-    username: str
-    avatar: str
 
 class UserGroupPermissionListSelectSchemaOut(Schema):
 
@@ -35,98 +28,109 @@ class UserGroupPermissionListSelectSchemaOut(Schema):
     name: str
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/user_groups/", response=UserGroupOut, tags=['用户分组'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def create_group(request, tenant_id: str, data: UserGroupIn):
+@api.post("/tenant/{tenant_id}/user_groups/", response=UserGroupCreateOut, tags=['用户分组'], auth=None)
+@operation(UserGroupCreateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def create_group(request, tenant_id: str, data: UserGroupCreateIn):
     '''
     分组创建
     '''
     group = UserGroup()
     group.tenant_id = tenant_id
     group.name = data.name
-    if data.parent_id:
-        group.parent_id = data.parent_id
+    parent_id = data.dict().get("parent",None)
+    group.parent = get_object_or_404(UserGroup, id=parent_id) if parent_id else None
     group.save()
     # 分发事件开始
-    result = dispatch_event(Event(tag=CREATE_GROUP, tenant=request.tenant, request=request, data=group))
-    # 分发事件结束
-    return {"data":{"group_id": group.id.hex}}
-
-
-@api.get("/tenant/{tenant_id}/user_groups/", response=UserGroupListOut, tags=['用户分组'], auth=None)
-@operation(UserGroupListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def list_groups(request, tenant_id: str,  parent_id: str = None):
-    '''
-    分组列表
-    '''
-    usergroups = UserGroup.valid_objects.filter(
-        tenant_id=tenant_id
+    result = dispatch_event(
+        Event(
+            tag=CREATE_GROUP, 
+            tenant=request.tenant, 
+            request=request,
+            data=group
+        )
     )
-    if parent_id:
-        usergroups = usergroups.filter(parent_id=parent_id)
-    return {"data": list(usergroups.all())}
-
-
-@api.get("/tenant/{tenant_id}/user_groups/{group_id}/", response=UserGroupDetailOut, tags=['用户分组'], auth=None)
-@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def get_group(request, tenant_id: str, group_id: str):
-    '''
-    获取分组
-    '''
-    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
-    return {"data":group}
-
-
-@api.post("/tenant/{tenant_id}/user_groups/{group_id}/", tags=['用户分组'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_group(request, tenant_id: str, group_id: str, data: UserGroupIn):
-    '''
-    修改分组
-    '''
-    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
-    group.name = data.name
-    if data.parent_id:
-        group.parent_id = data.parent_id
-    group.save()
-    # 分发事件开始
-    dispatch_event(Event(tag=UPDATE_GROUP, tenant=request.tenant, request=request, data=group))
     # 分发事件结束
     return {'error': ErrorCode.OK.value}
 
 
-@api.delete("/tenant/{tenant_id}/user_groups/{group_id}/",response=UserGroupDeleteOut,tags=['用户分组'], auth=None)
+@api.get("/tenant/{tenant_id}/user_groups/", response=UserGroupListOut, tags=['用户分组'], auth=None)
+@operation(UserGroupListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def list_groups(request, tenant_id: str,  parent_id: str = None):
+    '''
+    分组列表
+    '''
+    usergroups = UserGroup.expand_objects.filter(
+        tenant_id=tenant_id,
+        parent__id=parent_id
+    )
+    return {"data": list(usergroups.all())}
+
+
+@api.get("/tenant/{tenant_id}/user_groups/{id}/", response=UserGroupDetailOut, tags=['用户分组'], auth=None)
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_group(request, tenant_id: str, id: str):
+    '''
+    获取分组
+    '''
+    group = get_object_or_404(UserGroup, id=id, is_del=False)
+    return {
+        "data": group
+    }
+
+
+@api.post("/tenant/{tenant_id}/user_groups/{id}/", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def delete_group(request, tenant_id: str, group_id: str):
+def update_group(request, tenant_id: str, id: str, data: UserGroupUpdateIn):
+    '''
+    修改分组
+    '''
+    group = get_object_or_404(UserGroup, id=id, is_del=False)
+    group.name = data.name
+    parent_id = data.dict().get("parent",None)
+    group.parent = get_object_or_404(User, id=parent_id) if parent_id else None
+    group.save()
+    # 分发事件开始
+    dispatch_event(Event(tag=UPDATE_GROUP, tenant=request.tenant,
+                   request=request, data=group))
+    # 分发事件结束
+    return {'error': ErrorCode.OK.value}
+
+
+@api.delete("/tenant/{tenant_id}/user_groups/{id}/", response=UserGroupDeleteOut, tags=['用户分组'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def delete_group(request, tenant_id: str, id: str):
     '''
     删除分组
     '''
-    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
+    group = get_object_or_404(UserGroup, id=id, is_del=False)
     # 分发事件开始
-    dispatch_event(Event(tag=DELETE_GROUP, tenant=request.tenant, request=request, data=group))
+    dispatch_event(Event(tag=DELETE_GROUP, tenant=request.tenant,
+                   request=request, data=group))
     # 分发事件结束
     group.delete()
     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/user_groups/{group_id}/users/", response=List[UserGroupUserListItemOut], tags=['用户分组'], auth=None)
-@operation(UserGroupUserListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", response=List[UserGroupUserListItemOut], tags=['用户分组'], auth=None)
+@operation(UserGroupUserListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_group_users(request, tenant_id: str, group_id: str):
+def get_group_users(request, tenant_id: str, user_group_id: str):
     '''
     获取分组用户
     '''
-    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
-    return group.users.all()
+    group = get_object_or_404(UserGroup, id=user_group_id, is_del=False)
+    users = User.expand_objects.filter(id__in=group.users.all()).all()
+    return users
 
 
-@api.post("/tenant/{tenant_id}/user_groups/{group_id}/users/", tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def group_users_add(request, tenant_id: str, group_id: str, data:UserGroupUserIn):
+def group_users_add(request, tenant_id: str, user_group_id: str, data: UserGroupUserIn):
     '''
     分组添加用户
     '''
     user_ids = data.user_ids
-    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
+    group = get_object_or_404(UserGroup, id=user_group_id, is_del=False)
     if user_ids:
         users = User.active_objects.filter(id__in=user_ids)
         for user in users:
@@ -138,14 +142,14 @@ def group_users_add(request, tenant_id: str, group_id: str, data:UserGroupUserIn
     return {'error': ErrorCode.OK.value}
 
 
-@api.put("/tenant/{tenant_id}/user_groups/{group_id}/users/", tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def group_batch_users_remove(request, tenant_id: str, group_id: str, data:UserGroupUserIn):
+def group_batch_users_remove(request, tenant_id: str, user_group_id: str, data: UserGroupUserIn):
     '''
     分组批量移除用户
     '''
     user_ids = data.user_ids
-    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
+    group = get_object_or_404(UserGroup.active_objects, id=user_group_id)
     if user_ids:
         users = User.active_objects.filter(id__in=user_ids)
         for user in users:
@@ -157,14 +161,14 @@ def group_batch_users_remove(request, tenant_id: str, group_id: str, data:UserGr
     return {'error': ErrorCode.OK.value}
 
 
-@api.delete("/tenant/{tenant_id}/user_groups/{group_id}/users/{user_id}/", tags=['用户分组'], auth=None)
+@api.delete("/tenant/{tenant_id}/user_groups/{user_group_id}/users/{id}/", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def group_users_remove(request, tenant_id: str, group_id: str, user_id: str):
+def group_users_remove(request, tenant_id: str, user_group_id: str, id: str):
     '''
     分组移除用户
     '''
-    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
-    user = User.active_objects.filter(id=user_id).first()
+    group = get_object_or_404(UserGroup.active_objects, id=user_group_id)
+    user = User.active_objects.filter(id=id).first()
     if user:
         group.users.remove(user)
     group.save()
@@ -173,30 +177,24 @@ def group_users_remove(request, tenant_id: str, group_id: str, user_id: str):
     # 分发事件结束
     return {'error': ErrorCode.OK.value}
 
-@api.get("/tenant/{tenant_id}/user_groups/{group_id}/select_users/", response=List[UserGroupListSelectSchemaOut], tags=["用户分组"],auth=None)
+@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/exclude_users/", response=List[UserGroupExcludeUsersItemOut], tags=["用户分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate
-def get_select_users(request, tenant_id: str, group_id: str):
-    """ 获取所有用户并附加是否在当前分组的状态
+@paginate(CustomPagination)
+def get_exclude_users(request, tenant_id: str, user_group_id: str):
+    """ 获取所有未添加到分组的用户
     """
     tenant = request.tenant
-    users = tenant.user_set.all()
-    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
+    users = tenant.user_set
+    group = get_object_or_404(UserGroup.active_objects, id=user_group_id)
     group_users = group.users.all()
-    group_user_ids = []
-    for group_user in group_users:
-        group_user_ids.append(group_user.id.hex)
-    for user in users:
-        user_id_hex = user.id.hex
-        if user_id_hex in group_user_ids:
-            user.in_current = True
-        else:
-            user.in_current = False
+    
+    users = users.exclude(id__in=group_users).all()
+    users = User.expand_objects.filter(id__in=users).all()
     return users
 
 @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/", response=List[UserGroupPermissionListSelectSchemaOut], tags=["用户分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate
+@paginate(CustomPagination)
 def get_user_group_all_permissions(request, tenant_id: str, user_group_id:str):
     """ 获取所有权限并附带是否已授权给用户分组状态
     """

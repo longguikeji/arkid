@@ -77,8 +77,8 @@ def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
         tenant__id=tenant_id,
         id=id
     )
-    config.config = data.config.dict()
-    config.name = data.dict()["name"]
+    for attr, value in data.dict().items():
+        setattr(config, attr, value)
     config.save()
     return {"data": {'error': ErrorCode.OK.value}}
 
