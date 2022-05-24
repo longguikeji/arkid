@@ -7,12 +7,9 @@ from django.db import transaction
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
 from typing import Union, Literal, List
-from arkid.core.schema import RootSchema
 from django.shortcuts import get_object_or_404
 from arkid.core.translation import gettext_default as _
-from arkid.extension.models import TenantExtensionConfig
 from arkid.core.event import Event, register_event, dispatch_event
-from arkid.core.extension.app_protocol import AppProtocolExtension
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
     CREATE_APP, UPDATE_APP, DELETE_APP,
@@ -22,42 +19,7 @@ from arkid.core.event import(
 import uuid
 
 from arkid.core.pagenation import CustomPagination
-from api.v1.schema.app import AppCreateIn, AppCreateOut, AppListItemOut, AppListOut, AppOut, AppUpdateIn, AppUpdateOut
-
-
-AppSchemaOut = AppProtocolExtension.create_composite_config_schema('AppSchemaOut')
-
-class AppConfigSchemaOut(Schema):
-    app_id: str
-
-
-class AppListSchemaOut(ModelSchema):
-
-    class Config:
-        model = App
-        model_fields = ['id', 'name', 'url', 'logo', 'type']
-
-
-class ConfigSchemaOut(ModelSchema):
-
-    class Config:
-        model = TenantExtensionConfig
-        model_fields = ['config']
-
-
-class ConfigOpenApiVersionSchemaOut(Schema):
-
-    version: str = Field(title=_('version','应用版本'), default='')
-    openapi_uris: str = Field(title=_('openapi uris','接口文档地址'), default='')
-
-
-# class AppSchemaOut(ModelSchema):
-
-#     config: AppConfigSchemaIn
-
-#     class Config:
-#         model = App
-#         model_fields = ['id', 'name', 'url', 'logo', 'description', 'type', 'config']
+from api.v1.schema.app import *
 
 
 @transaction.atomic
@@ -68,7 +30,7 @@ def create_app(request, tenant_id: str, data: AppCreateIn):
     app创建
     '''
     # data.id = uuid.uuid4()
-    setattr(data,"id",uuid.uuid4())
+    setattr(data,"id",uuid.uuid4().hex)
     tenant = request.tenant
     # 事件分发
     results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
@@ -111,9 +73,9 @@ def get_app(request, tenant_id: str, app_id: str):
     '''
     获取app
     '''
-    app = get_object_or_404(App, id=app_id, is_del=False)
+    app = get_object_or_404(App.expand_objects, id=app_id, is_del=False,is_active=True)
     result = {
-        'id': app.id,
+        'id': app.id.hex,
         'name': app.name,
         'url': app.url,
         'logo': app.logo,

@@ -24,7 +24,7 @@ class Tenant(BaseModel, ExpandModel):
 
     name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
     slug = models.SlugField(verbose_name=_('slug', '短链接标识'), blank=True, null=True, default='' ,unique=True)
-    icon = models.URLField(verbose_name=_('icon', '图标'), blank=True)
+    icon = models.URLField(verbose_name=_('icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(
         blank=False,

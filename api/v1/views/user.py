@@ -1,5 +1,6 @@
 from email import message
 from typing import Any, Dict, Optional, List
+from django.shortcuts import get_object_or_404
 from pydantic import Field
 from ninja import Schema, Query, ModelSchema
 from arkid.core.event import Event, register_event, dispatch_event
@@ -26,7 +27,7 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
 @operation(UserCreateOut)
 def user_create(request, tenant_id: str,data:UserCreateIn):
 
-    user = User.expand_objects.create(tenant__id=tenant_id,**data.dict())
+    user = User.expand_objects.create(tenant=request.tenant,**data.dict())
 
     return {"data":{"user":user.id.hex}}
 
@@ -34,7 +35,7 @@ def user_create(request, tenant_id: str,data:UserCreateIn):
 @api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'], auth=None)
 @operation(UserDeleteOut)
 def user_delete(request, tenant_id: str,id:str):
-    user = User.active_objects.get(tenant__id=tenant_id,id=id)
+    user = get_object_or_404(User,tenant=request.tenant, id=id)
     user.delete()
     return {"error":ErrorCode.OK.value}
         
@@ -43,7 +44,7 @@ def user_delete(request, tenant_id: str,id:str):
 @operation(UserUpdateOut)
 def user_update(request, tenant_id: str,id:str, data:UserUpdateIn):
 
-    user = User.active_objects.get(tenant__id=tenant_id,id=id)
+    user = User.expand_objects.get(tenant__id=tenant_id,id=id)
     user.avatar = data.avatar or user.avatar
     user.save()
 
