@@ -11,6 +11,7 @@ page = pages.TabsPage(
 profile_page = pages.DescriptionPage(name=_('个人资料'))
 
 pages.register_front_pages(page)
+pages.register_front_pages(profile_page)
 
 router = routers.FrontRouter(
     path=tag,
