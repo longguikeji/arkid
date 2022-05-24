@@ -55,11 +55,12 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        user = User.objects.filter(username=username, tenant=tenant).first()
+        user = User.expand_objects.filter(username=username, tenant=tenant).first()
         if user:
-            user_password = UserPassword.objects.filter(user=user).first()
+            user_password = user.get("password")
             if user_password:
-                if check_password(password, user_password.password):
+                if check_password(password, user_password):
+                    user = User.active_objects.get(id=user.get("id"))
                     return self.auth_success(user, event)
         
         return self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username or password not correct'})
