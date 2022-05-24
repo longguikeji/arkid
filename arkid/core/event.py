@@ -20,7 +20,7 @@ def webhook_event_handler(event, **kwargs):
     tenant = event.tenant
     payload = get_event_payload(event)
     logger.info(f"Webhook is handling event: {payload}")
-    trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
+    # trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
 
 
 def get_event_payload(event):
@@ -55,7 +55,8 @@ def get_event_payload(event):
         "data": data,
         "uuid": event.uuid,
     }
-    return json.dumps(payload)
+    # return json.dumps(payload)
+    return payload
 
 
 class EventType:
