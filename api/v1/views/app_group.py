@@ -29,12 +29,12 @@ def get_app_groups(request, tenant_id: str, query_data: AppGroupListQueryIn=Quer
 @api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=["应用分组"],auth=None)
 @operation(AppGroupCreateOut)
 def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
-    """ 创建应用分组,TODO
+    """ 创建应用分组
     """
     data = data.dict()
     if "parent" in data and data["parent"]:
-        data["parent"] = get_object_or_404(AppGroup,id=data["parent"], is_del=False, is_active=True)
-    group = AppGroup.active_objects.create(tenant=request.tenant,**data)
+        data["parent"] = get_object_or_404(AppGroup.expand_objects,id=data["parent"], is_del=False, is_active=True)
+    group = AppGroup.expand_objects.create(tenant=request.tenant,**data)
 
     return {'error': ErrorCode.OK.value}
 
@@ -44,22 +44,17 @@ def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
 def get_app_group(request, tenant_id: str, id: str):
     """ 获取应用分组
     """
-    group = get_object_or_404(AppGroup,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup.expand_objects,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
     return {
-        "data": {
-            "id": group.id,
-            "name": group.name,
-            "parent": group.parent.id if group.parent else None,
-            "parent_name": group.parent.name if group.parent else None
-        }
+        "data": group
     }
 
 @api.post("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupUpdateOut,tags=["应用分组"],auth=None)
 @operation(AppGroupUpdateOut)
 def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
-    """ 编辑应用分组,TODO
+    """ 编辑应用分组
     """
-    group = get_object_or_404(AppGroup,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup.expand_objects,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
     for attr, value in data.dict().items():
         setattr(group, attr, value)
     group.save()
@@ -68,9 +63,9 @@ def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
 @api.delete("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupDeleteOut, tags=["应用分组"],auth=None)
 @operation(AppGroupDeleteOut)
 def delete_app_group(request, tenant_id: str, id: str):
-    """ 删除应用分组,TODO
+    """ 删除应用分组
     """
-    group = get_object_or_404(AppGroup,id=id, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup.expand_objects,id=id, is_del=False, is_active=True)
     group.delete()
     return {'error': ErrorCode.OK.value}
 
@@ -78,7 +73,7 @@ def delete_app_group(request, tenant_id: str, id: str):
 @operation(AppGroupAppListOut)
 @paginate(CustomPagination)
 def get_apps_from_group(request, tenant_id: str, app_group_id: str):
-    """ 获取当前分组的应用列表,TODO
+    """ 获取当前分组的应用列表
     """
     group = get_object_or_404(AppGroup,tenant_id=tenant_id,id=app_group_id, is_del=False, is_active=True)
     return group.apps.all()
@@ -87,7 +82,7 @@ def get_apps_from_group(request, tenant_id: str, app_group_id: str):
 @api.delete("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/{id}/",response=AppGroupAppRemoveOut, tags=["应用分组"],auth=None)
 @operation(AppGroupAppRemoveOut)
 def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str):
-    """ 将应用移除出应用分组,TODO
+    """ 将应用移除出应用分组
     """
     
     app = get_object_or_404(App,tenant__id=tenant_id, id=id, is_del=False, is_active=True)
@@ -99,7 +94,7 @@ def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str):
 @api.post("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/", response=AppGroupAppUpdateOut,tags=["应用分组"],auth=None)
 @operation(AppGroupAppUpdateOut)
 def update_apps_from_group(request, tenant_id: str, app_group_id: str,data: AppGroupAppUpdateIn):
-    """ 更新当前分组的应用列表,TODO
+    """ 更新当前分组的应用列表
     """
     group = get_object_or_404(AppGroup,tenant__id=tenant_id, id=app_group_id, is_del=False, is_active=True)
     app_ids = data.dict()["apps"]
@@ -117,19 +112,13 @@ def update_apps_from_group(request, tenant_id: str, app_group_id: str,data: AppG
 @operation(AppGroupExcludeAppsOut)
 @paginate(CustomPagination)
 def get_exclude_apps(request, tenant_id: str, app_group_id: str):
-    """ 获取所有应用并附加是否在当前分组的状态,TODO
+    """ 获取所有应用并附加是否在当前分组的状态
     """
     
-    group = get_object_or_404(AppGroup,id=app_group_id, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup.expand_objects,id=app_group_id, is_del=False, is_active=True)
     selected_apps = group.apps.filter(is_del=False, is_active=True).all()
-    apps = App.active_objects.filter(tenant__id=tenant_id).exclude(id__in=selected_apps).all()
+    apps = App.expand_objects.filter(tenant__id=tenant_id).exclude(id__in=selected_apps).all()
     
-    return [
-        {
-            "id": item.id,
-            "name": item.name,
-        }
-        for item in apps
-    ]
+    return apps
 
 

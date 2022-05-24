@@ -8,7 +8,7 @@ from django.db import transaction
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
 from arkid.core.models import UserGroup, User
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from arkid.core.event import Event, dispatch_event
 from arkid.core.event import (
     CREATE_GROUP, UPDATE_GROUP, DELETE_GROUP,
@@ -59,7 +59,7 @@ def list_groups(request, tenant_id: str,  parent_id: str = None):
     '''
     分组列表
     '''
-    usergroups = UserGroup.valid_objects.filter(
+    usergroups = UserGroup.expand_objects.filter(
         tenant_id=tenant_id,
         parent__id=parent_id
     )
@@ -74,11 +74,7 @@ def get_group(request, tenant_id: str, id: str):
     '''
     group = get_object_or_404(UserGroup, id=id, is_del=False)
     return {
-        "data": {
-            "id": group.id.hex,
-            "name": group.name,
-            "parent": group.parent.id.hex if group.parent else None
-        }
+        "data": group
     }
 
 
@@ -123,7 +119,8 @@ def get_group_users(request, tenant_id: str, user_group_id: str):
     获取分组用户
     '''
     group = get_object_or_404(UserGroup, id=user_group_id, is_del=False)
-    return group.users.all()
+    users = User.expand_objects.filter(id__in=group.users.all()).all()
+    return users
 
 
 @api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'], auth=None)
@@ -152,7 +149,7 @@ def group_batch_users_remove(request, tenant_id: str, user_group_id: str, data: 
     分组批量移除用户
     '''
     user_ids = data.user_ids
-    group = get_object_or_404(UserGroup, id=user_group_id, is_del=False)
+    group = get_object_or_404(UserGroup.active_objects, id=user_group_id)
     if user_ids:
         users = User.active_objects.filter(id__in=user_ids)
         for user in users:
@@ -170,7 +167,7 @@ def group_users_remove(request, tenant_id: str, user_group_id: str, id: str):
     '''
     分组移除用户
     '''
-    group = get_object_or_404(UserGroup, id=user_group_id, is_del=False)
+    group = get_object_or_404(UserGroup.active_objects, id=user_group_id)
     user = User.active_objects.filter(id=id).first()
     if user:
         group.users.remove(user)
@@ -188,10 +185,11 @@ def get_exclude_users(request, tenant_id: str, user_group_id: str):
     """
     tenant = request.tenant
     users = tenant.user_set
-    group = get_object_or_404(UserGroup, id=user_group_id, is_del=False)
+    group = get_object_or_404(UserGroup.active_objects, id=user_group_id)
     group_users = group.users.all()
     
     users = users.exclude(id__in=group_users).all()
+    users = User.expand_objects.filter(id__in=users).all()
     return users
 
 @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/", response=List[UserGroupPermissionListSelectSchemaOut], tags=["用户分组"],auth=None)
