@@ -18,6 +18,10 @@ pages.register_front_pages(platform_extension_page)
 pages.register_front_pages(tenant_extension_rented_page)
 pages.register_front_pages(rent_page)
 
+page.add_pages([
+    platform_extension_page,
+    tenant_extension_rented_page
+])
 
 router = routers.FrontRouter(
     path=tag,
@@ -33,6 +37,7 @@ platform_extension_page.create_actions(
     ),
     local_actions={
         "rent": actions.OpenAction(
+            name="租赁",
             page=rent_page
         )
     },

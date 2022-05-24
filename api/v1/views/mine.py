@@ -6,7 +6,9 @@ from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from arkid.core.schema import ResponseSchema
-from arkid.core.models import ApproveAction, ApproveRequest
+from arkid.core.models import ApproveAction, ApproveRequest, User
+from pydantic import Field
+from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 
 
 @api.get("/mine/tenant/{tenant_id}/apps/", tags=["我的"], auth=None)
@@ -15,16 +17,40 @@ def get_mine_apps(request, tenant_id: str):
     return []
 
 
-@api.get("/mine/tenant/{tenant_id}/profile/", tags=["我的"], auth=None)
+class ProfileSchemaOut(ModelSchema):
+    class Config:
+        model = User
+        model_fields = ['id', 'username', 'avatar']
+
+
+class ProfileSchemaIn(Schema):
+    avatar: str = Field(title=_('Name', '头像'), default='')
+
+
+@api.get(
+    "/mine/tenant/{tenant_id}/profile/",
+    tags=["我的"],
+    response=ProfileSchemaOut,
+)
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_profile(request, tenant_id: str):
-    """我的个人资料,TODO"""
-    return {}
+    """我的个人资料"""
+    user = request.user
+    return user
 
 
-@api.post("/mine/tenant/{tenant_id}/profile/", tags=["我的"], auth=None)
-def update_mine_profile(request, tenant_id: str):
-    """更新我的个人资料,TODO"""
-    return {}
+@api.put(
+    "/mine/tenant/{tenant_id}/profile/",
+    tags=["我的"],
+    response=ProfileSchemaOut,
+)
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def update_mine_profile(request, tenant_id: str, data: ProfileSchemaIn):
+    """更新我的个人资料"""
+    user = request.user
+    user.avatar = data.avatar
+    user.save()
+    return user
 
 
 @api.get("/mine/tenant/{tenant_id}/permissions/", tags=["我的"], auth=None)
@@ -43,6 +69,7 @@ def update_mine_permissions(request, tenant_id: str):
 def get_mine_all_permissions(request, tenant_id: str):
     """获取所有权限并附带是否已授权给我的状态,TODO"""
     return []
+
 
 from .approve_request import ApproveRequestOut
 
@@ -77,10 +104,10 @@ def get_mine_switch_tenant(request, id):
 
 @api.get("/mine/logout/", tags=["我的"], auth=None)
 def get_mine_logout(request):
-    """ 退出登录
-    """
+    """退出登录"""
     # request.token.expire()
-    return render(request,template_name='logout.html')
+    return render(request, template_name='logout.html')
+
 
 class MineTenantListItemOut(ModelSchema):
     class Config:
@@ -91,8 +118,9 @@ class MineTenantListItemOut(ModelSchema):
 class MineTenantListOut(ResponseSchema):
     data: List[MineTenantListItemOut]
 
-@api.get("/mine/tenants/",response=MineTenantListOut,tags=["我的"],auth=None)
+
+@api.get("/mine/tenants/", response=MineTenantListOut, tags=["我的"], auth=None)
 def get_mine_tenants(request):
     """获取我的租户,TODO"""
     tenants = Tenant.active_objects.all()
-    return {"data":list(tenants)}
+    return {"data": list(tenants)}
