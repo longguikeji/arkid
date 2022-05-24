@@ -45,6 +45,15 @@ class PermissionData(object):
                 self.update_app_all_permission(tenant, app)
                 # 更新应用所有用户权限
                 self.update_app_all_user_permission(tenant, app)
+    
+    def update_only_user_app_permission(self, tenant_id, app_id):
+        '''
+        仅仅更新用户的应用权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        app = App.valid_objects.filter(id=app_id).first()
+        if tenant and app:
+            self.update_app_all_user_permission(tenant, app)
 
     def update_tenant_permission(self, tenant_id):
         '''
@@ -1123,10 +1132,23 @@ class PermissionData(object):
             if res:
                 tenant_id = res.group(0)
         if tenant_id:
-            app = App.valid_objects.filter(
+            client_id = request.GET.get('client_id', '')
+            apps = App.valid_objects.filter(
                 tenant_id=tenant_id,
                 type__in=type
-            ).first()
+            )
+            app = None
+            if client_id:
+                # oauth有这个参数
+                for app_temp in apps:
+                    config_data = app_temp.config.config
+                    data_client = config_data.get('client_id', '')
+                    if data_client == client_id:
+                        app = app_temp
+                        break
+            if app is None:
+                apps = apps.order_by('-created')  
+                app = apps.first()
             if app:
                 permission = Permission.valid_objects.filter(
                     app=app,
@@ -1135,7 +1157,7 @@ class PermissionData(object):
                     is_system=True,
                 ).first()
                 if permission:
-                    user = self.token_check(tenant, token)
+                    user = self.token_check(tenant_id, token, request)
                     result = self.permission_check_by_sortid(permission, user, app, tenant_id)
                     if result:
                         return True
@@ -1155,7 +1177,7 @@ class PermissionData(object):
         sort_id = permission.sort_id
         userpermissionresult = UserPermissionResult.valid_objects.filter(
             user=user,
-            tenant=tenant,
+            tenant_id=tenant_id,
             app=app,
         ).first()
         if userpermissionresult:
@@ -1167,11 +1189,12 @@ class PermissionData(object):
                 return True
         return False
 
-    def token_check(self, tenant, token):
+    def token_check(self, tenant_id, token, request):
         '''
         token检查
         '''
         try:
+            tenant = Tenant.valid_objects.filter(id=tenant_id).first()
             token = ExpiringToken.objects.get(token=token)
             if token:
                 if not token.user.is_active:
@@ -1179,6 +1202,9 @@ class PermissionData(object):
                 if token.expired(tenant=tenant):
                     return None
                 user = token.user
+                request.user = user
+                request.user.tenant = tenant
+                request.tenant = tenant
                 return user
             return None
         except Exception as e:
