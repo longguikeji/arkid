@@ -29,7 +29,7 @@ appstore_page.add_pages([
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    icon='app',
+    icon='list',
     page=page,
 )
 

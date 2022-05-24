@@ -7,4 +7,5 @@ name = _("认证管理")
 router = routers.FrontRouter(
     path=tag,
     name=name,
+    icon='auth',
 )
