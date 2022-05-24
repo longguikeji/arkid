@@ -7,6 +7,7 @@ from .appscheme import (
 from oauth2_provider.models import Application
 from oauth2_provider.urls import urlpatterns as urls
 from arkid.core.extension import create_extension_schema
+from oauth2_provider.views.base import AuthorizationView
 
 import uuid
 
@@ -19,6 +20,8 @@ class OAuth2ServerExtension(AppProtocolExtension):
     def load(self):
         # 加载url地址
         self.load_urls()
+        # 加载相应的view
+        self.load_auth_view()
         # 加载相应的配置文件
         self.register_app_protocol_schema(OIDCConfigSchema, 'OIDC')
         self.register_app_protocol_schema(Oauth2ConfigSchema, 'OAuth2')
@@ -26,6 +29,14 @@ class OAuth2ServerExtension(AppProtocolExtension):
 
     def load_urls(self):
         self.register_routers(urls, True)
+    
+    def load_auth_view(self):
+        # 加载认证view
+        auth_view = AuthorizationView.as_view()
+        auth_path = r"oauth/authorize/$"
+        url_name = "authorize"
+        type = ['OIDC', 'OAuth2']
+        self.register_enter_view(auth_view, auth_path, url_name, type)
 
     def create_app(self, event, **kwargs):
         config = event.data.config
@@ -77,11 +88,11 @@ class OAuth2ServerExtension(AppProtocolExtension):
         更新配置中的url信息
         '''
         host = get_app_config().get_frontend_host()
-
-        config.userinfo = host+reverse("com_longgui_auth_oauth2_server:oauth-user-info", args=[tenant_id])
-        config.authorize = host+reverse("com_longgui_auth_oauth2_server:authorize", args=[tenant_id])
-        config.token = host+reverse("com_longgui_auth_oauth2_server:token", args=[tenant_id])
-        config.logout = host+reverse("com_longgui_auth_oauth2_server:oauth-user-logout", args=[tenant_id])
+        namespace = f'api:{self.name}_tenant'
+        config.userinfo = host+reverse(namespace+":oauth-user-info", args=[tenant_id])
+        config.authorize = host+reverse(namespace+":authorize", args=[tenant_id])
+        config.token = host+reverse(namespace+":token", args=[tenant_id])
+        config.logout = host+reverse(namespace+":oauth-user-logout", args=[tenant_id])
         config.client_id = obj.client_id
         config.client_secret = obj.client_secret
         config.skip_authorization = obj.skip_authorization

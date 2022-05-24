@@ -34,5 +34,11 @@ urlpatterns = [
     path("api/v1/", include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
 
-urlpatterns += [path('api/v1/', include((core_urls.urlpatterns + bind_saas.urlpatterns, 'api'), namespace='api'))]
+
+extension_root_urls = core_urls.urlpatterns
+
+urlpatterns += [
+    path('api/v1/', include((extension_root_urls + bind_saas.urlpatterns, 'api'), namespace='api'))
+]
+
 urlpatterns += scim_urls.urlpatterns
