@@ -140,11 +140,11 @@ class AppGroupAppUpdateIn(Schema):
 class AppGroupAppUpdateOut(ResponseSchema):
     pass
 
-class AppGroupSelectAppsItemOut(Schema):
+class AppGroupExcludeAppsItemOut(Schema):
     id: str
     name: str
     status: bool
 
-class AppGroupSelectAppsOut(ResponseSchema):
-    data: List[AppGroupSelectAppsItemOut]
+class AppGroupExcludeAppsOut(ResponseSchema):
+    items: List[AppGroupExcludeAppsItemOut]
 

@@ -21,13 +21,6 @@ from api.v1.schema.user_group import *
 from arkid.core.pagenation import CustomPagination
 
 
-class UserGroupListSelectSchemaOut(Schema):
-
-    id: UUID = Field(default=None)
-    in_current: bool
-    username: str
-    avatar: str
-
 class UserGroupPermissionListSelectSchemaOut(Schema):
 
     id: UUID = Field(default=None)
@@ -83,8 +76,8 @@ def get_group(request, tenant_id: str, id: str):
     return {
         "data": {
             "id": group.id.hex,
-            "name": group.id.name,
-            "parent": group.parent.id.hex if group.parent else ""
+            "name": group.name,
+            "parent": group.parent.id.hex if group.parent else None
         }
     }
 
@@ -152,7 +145,7 @@ def group_users_add(request, tenant_id: str, user_group_id: str, data: UserGroup
     return {'error': ErrorCode.OK.value}
 
 
-@api.put("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def group_batch_users_remove(request, tenant_id: str, user_group_id: str, data: UserGroupUserIn):
     '''
@@ -187,25 +180,18 @@ def group_users_remove(request, tenant_id: str, user_group_id: str, id: str):
     # 分发事件结束
     return {'error': ErrorCode.OK.value}
 
-@api.get("/tenant/{tenant_id}/user_groups/{group_id}/select_users/", response=List[UserGroupListSelectSchemaOut], tags=["用户分组"],auth=None)
+@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/exclude_users/", response=List[UserGroupExcludeUsersItemOut], tags=["用户分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_select_users(request, tenant_id: str, group_id: str):
+def get_exclude_users(request, tenant_id: str, user_group_id: str):
     """ 获取所有用户并附加是否在当前分组的状态
     """
     tenant = request.tenant
-    users = tenant.user_set.all()
-    group = get_object_or_404(UserGroup, id=group_id, is_del=False)
+    users = tenant.user_set
+    group = get_object_or_404(UserGroup, id=user_group_id, is_del=False)
     group_users = group.users.all()
-    group_user_ids = []
-    for group_user in group_users:
-        group_user_ids.append(group_user.id.hex)
-    for user in users:
-        user_id_hex = user.id.hex
-        if user_id_hex in group_user_ids:
-            user.in_current = True
-        else:
-            user.in_current = False
+    
+    users = users.exclude(id__in=group_users).all()
     return users
 
 @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/", response=List[UserGroupPermissionListSelectSchemaOut], tags=["用户分组"],auth=None)

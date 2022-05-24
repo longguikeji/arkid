@@ -113,22 +113,21 @@ def update_apps_from_group(request, tenant_id: str, app_group_id: str,data: AppG
     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/select_apps/",response=List[AppGroupSelectAppsItemOut], tags=["应用分组"],auth=None)
-@operation(AppGroupSelectAppsOut)
+@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/exclude_apps/",response=List[AppGroupExcludeAppsItemOut], tags=["应用分组"],auth=None)
+@operation(AppGroupExcludeAppsOut)
 @paginate(CustomPagination)
-def get_select_apps(request, tenant_id: str, app_group_id: str):
+def get_exclude_apps(request, tenant_id: str, app_group_id: str):
     """ 获取所有应用并附加是否在当前分组的状态,TODO
     """
     
     group = get_object_or_404(AppGroup,id=app_group_id, is_del=False, is_active=True)
     selected_apps = group.apps.filter(is_del=False, is_active=True).all()
-    apps = App.active_objects.filter(tenant__id=tenant_id).all()
+    apps = App.active_objects.filter(tenant__id=tenant_id).exclude(id__in=selected_apps).all()
     
     return [
         {
             "id": item.id,
             "name": item.name,
-            "status": True if item in selected_apps else False
         }
         for item in apps
     ]

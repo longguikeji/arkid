@@ -73,7 +73,7 @@ group_apps_page.create_actions(
 
 edit_apps_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/app_groups/{app_group_id}/select_apps/',
+        path='/api/v1/tenant/{tenant_id}/app_groups/{app_group_id}/exclude_apps/',
         method=actions.FrontActionMethod.GET,
     ),
     select=True,

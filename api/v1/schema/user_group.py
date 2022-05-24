@@ -118,10 +118,8 @@ class UserGroupUserListOut(ResponseSchema):
 class UserGroupUserIn(Schema):
     user_ids: List[str]
 
-class UserGroupSelectUsersItemOut(Schema):
-    id: str
-    username: str
-    status: bool
+class UserGroupExcludeUsersItemOut(Schema):
 
-class UserGroupSelectUsersOut(ResponseSchema):
-    data: List[UserGroupSelectUsersItemOut]
+    id: UUID = Field(default=None)
+    username: str
+    avatar: str
