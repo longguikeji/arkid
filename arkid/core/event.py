@@ -14,14 +14,14 @@ import json
 event_id_map = {}
 
 
-def webhook_event_handler(event, **kwargs):
+def send_event_through_webhook(event):
 
     from arkid.core.tasks.tasks import trigger_webhooks_for_event
 
     tenant = event.tenant
     payload = get_event_payload(event)
     logger.info(f"Webhook is handling event: {payload}")
-    # trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
+    trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
 
 
 def get_event_payload(event):
@@ -56,8 +56,7 @@ def get_event_payload(event):
         "data": data,
         "uuid": event.uuid,
     }
-    # return json.dumps(payload)
-    return payload
+    return json.dumps(payload)
 
 
 class EventType:
@@ -181,6 +180,10 @@ def dispatch_event(event, sender=None):
         return
     # if event_type.data_schema:
     #     event.data = event_type.data_schema(**event.data)
+    try:
+        send_event_through_webhook(event)
+    except Exception as e:
+        logger.error(e)
     return event_type.signal.send(sender=sender, event=event)
 
 
