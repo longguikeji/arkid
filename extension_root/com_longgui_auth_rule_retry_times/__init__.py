@@ -40,7 +40,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
 
 extension = AuthRuleRetryTimesExtension(
     package=package,
-    description='认证次数限制规则',
+    name='认证次数限制规则',
     version='1.0',
     labels='auth_rule',
     homepage='https://www.longguikeji.com',

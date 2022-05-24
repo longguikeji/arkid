@@ -175,7 +175,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
 
 extension = PasswordAuthFactorExtension(
     package=package,
-    description="Password 认证因素",
+    name="密码认证因素",
     version='1.0',
     labels='auth_factor',
     homepage='https://www.longguikeji.com',

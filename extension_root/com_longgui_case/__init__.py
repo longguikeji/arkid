@@ -37,7 +37,7 @@ class CaseExtension(extension.Extension):
     
 extension = CaseExtension(
     package=package,
-    description="",
+    name="示例插件",
     version='1.0',
     labels='case',
     homepage='https://www.longguikeji.com',

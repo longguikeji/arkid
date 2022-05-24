@@ -81,7 +81,7 @@ class AliyunSMSExtension(Extension):
 
 extension = AliyunSMSExtension(
     package=package,
-    description='阿里云短信',
+    name='阿里云短信',
     version='1.0',
     labels='sms',
     homepage='https://www.longguikeji.com',

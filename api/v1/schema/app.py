@@ -9,11 +9,15 @@ from arkid.core.extension.app_protocol import AppProtocolExtension
 from arkid.extension.models import TenantExtensionConfig
 
 
-AppCreateIn = AppProtocolExtension.create_composite_config_schema(
-    'AppCreateIn',
-    id=(str,Field(default=uuid.uuid4().hex, hidden=True, readonly=True))
-)
+# AppCreateIn = AppProtocolExtension.create_composite_config_schema(
+#     'AppCreateIn',
+#     id=(str,Field(default=uuid.uuid4().hex, hidden=True, readonly=True))
+# )
 
+class AppCreateIn(ModelSchema):
+    class Config:
+        model = App
+        model_fields = ['name', 'url', 'logo']
 
 class AppCreateOut(ResponseSchema):
     pass

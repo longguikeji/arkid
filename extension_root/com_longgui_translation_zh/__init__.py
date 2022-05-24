@@ -20,9 +20,7 @@ class TranslationZhExtension(extension.Extension):
 
 extension = TranslationZhExtension(
     package="com.longgui.translation_zh",
-    description="""国际化插件：
-    中文（zh_Hans）
-    """,
+    name='中文语言包',
     version='1.0',
     labels='translation',
     homepage='https://www.longguikeji.com',

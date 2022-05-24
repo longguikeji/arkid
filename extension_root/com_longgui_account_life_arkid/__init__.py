@@ -100,7 +100,7 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
 
 extension = AccountLifeArkIDExtension(
     package=package,
-    description='ArkID账号生命周期管理',
+    name='默认账号生命周期管理',
     version='1.0',
     labels='account-life-arkid',
     homepage='https://www.longguikeji.com',

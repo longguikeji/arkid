@@ -203,7 +203,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
 
 extension = MobileAuthFactorExtension(
     package=package,
-    description="Mobile 认证因素",
+    name="手机验证码认证",
     version='1.0',
     labels='auth_factor',
     homepage='https://www.longguikeji.com',
