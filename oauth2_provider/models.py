@@ -94,6 +94,7 @@ class AbstractApplication(models.Model):
         max_length=255, blank=True, default=generate_client_secret, db_index=True
     )
     name = models.CharField(max_length=255, blank=True)
+    uuid = models.CharField(max_length=255, blank=True, null=True, default='')
     skip_authorization = models.BooleanField(default=False)
 
     created = models.DateTimeField(auto_now_add=True)

@@ -63,6 +63,13 @@ def update_app_permission(tenant_id, app_id):
     permissiondata = PermissionData()
     permissiondata.update_app_permission(tenant_id, app_id)
 
+@app.task
+def update_only_user_app_permission(tenant_id, app_id):
+    '''
+    更新应用所有用户权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_only_user_app_permission(tenant_id, app_id)
 
 @app.task
 def update_system_permission():
@@ -71,7 +78,6 @@ def update_system_permission():
     '''
     permissiondata = PermissionData()
     permissiondata.update_system_permission()
-
 
 @app.task
 def update_arkid_all_user_permission():

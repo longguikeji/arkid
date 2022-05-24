@@ -61,7 +61,7 @@ class AppProtocolExtension(Extension):
                 permissiondata = PermissionData()
                 result = permissiondata.check_app_entry_permission(request, type, kwargs)
                 if result:
-                    return view.get(request)
+                    return view(request)
                 else:
                     return HttpResponse('Unauthorized', status=401)
 

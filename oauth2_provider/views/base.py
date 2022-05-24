@@ -188,49 +188,50 @@ log = logging.getLogger("oauth2_provider")
 class TokenRequiredMixin(AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
-        is_authenticated = self.check_token(request, *args, **kwargs)
-        if is_authenticated:
-            # if self.check_permission(request) is False:
-            #     return HttpResponseRedirect(self.get_return_url(self.get_login_url(), '您没有使用oauth应用的权限'))
-            return super().dispatch(request, *args, **kwargs)
-        else:
-            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+        # is_authenticated = self.check_token(request, *args, **kwargs)
+        # if is_authenticated:
+        #     # if self.check_permission(request) is False:
+        #     #     return HttpResponseRedirect(self.get_return_url(self.get_login_url(), '您没有使用oauth应用的权限'))
+        #     return super().dispatch(request, *args, **kwargs)
+        # else:
+        #     return self.handle_no_permission()
 
-    def check_token(self, request, *args, **kwargs):
-        token = request.GET.get('token', '')
-        request.META['HTTP_AUTHORIZATION'] = 'Token ' + token
+    # def check_token(self, request, *args, **kwargs):
+    #     token = request.GET.get('token', '')
+    #     request.META['HTTP_AUTHORIZATION'] = 'Token ' + token
 
-        try:
-            token = ExpiringToken.objects.get(token=token)
-            if token:
-                if not token.user.is_active:
-                    return False
+    #     try:
+    #         token = ExpiringToken.objects.get(token=token)
+    #         if token:
+    #             if not token.user.is_active:
+    #                 return False
                 
-                if not request.tenant:
-                    return False
+    #             if not request.tenant:
+    #                 return False
                 
-                request.user  = token.user
-                request.user.tenant = request.tenant
+    #             request.user  = token.user
+    #             request.user.tenant = request.tenant
                 
-                if token.expired(tenant=request.tenant):
-                    return False
-                user = token.user
-                request.user = user
-                return True
-            return False
-        except Exception as e:
-            return False
+    #             if token.expired(tenant=request.tenant):
+    #                 return False
+    #             user = token.user
+    #             request.user = user
+    #             return True
+    #         return False
+    #     except Exception as e:
+    #         return False
 
-    def handle_no_permission(self):
-        return self._redirect_to_login()
+    # def handle_no_permission(self):
+    #     return self._redirect_to_login()
 
-    def _redirect_to_login(self):
-        return HttpResponseRedirect(self.get_login_url())
+    # def _redirect_to_login(self):
+    #     return HttpResponseRedirect(self.get_login_url())
     
-    def get_login_url(self):
-        host = get_app_config().get_frontend_host()
-        login_url = host + '/login'
-        return login_url
+    # def get_login_url(self):
+    #     host = get_app_config().get_frontend_host()
+    #     login_url = host + '/login'
+    #     return login_url
 
 
 class BaseAuthorizationView(TokenRequiredMixin, OAuthLibMixin, View):

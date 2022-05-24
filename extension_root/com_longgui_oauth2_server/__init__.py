@@ -69,9 +69,10 @@ class OAuth2ServerExtension(AppProtocolExtension):
         obj = Application()
         if is_create is False:
             uuid_id = uuid.UUID(app.id)
-            obj = Application.objects.filter(name=uuid_id).first()
+            obj = Application.objects.filter(uuid=uuid_id).first()
         else:
-            obj.name = app.id
+            obj.uuid = app.id
+        obj.name = app.dict()["name"]
         obj.client_type = client_type
         obj.redirect_uris = redirect_uris
         obj.skip_authorization = skip_authorization
