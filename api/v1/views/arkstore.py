@@ -149,7 +149,7 @@ def rent_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.post("/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
+@api.get("/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
 def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -158,7 +158,7 @@ def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['arkstore'])
+@api.post("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['arkstore'])
 def download_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
