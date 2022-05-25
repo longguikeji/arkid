@@ -3,10 +3,9 @@ from django.views import View
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from arkid.common.bind_saas import (
-    create_oidc_app,
     get_bind_info,
     update_saas_binding,
-    create_saas_binding,
+    set_saas_bind_slug,
     create_arkidstore_login_app,
     create_arkid_saas_login_app,
     bind_saas,
@@ -59,12 +58,12 @@ def get_bind_saas_slug(request, tenant_id: str):
 
 
 @api.post("/tenant/{tenant_id}/bind_saas/slug/", tags=['bind_saas'])
-def set_bind_saas_slug(request, tenant_id: str):
+def set_bind_saas_slug(request, tenant_id: str, data: BindSaasSlugSchemaOut):
     """
     设置 saas slug 绑定信息
     """
     tenant = Tenant.objects.get(id=tenant_id)
-    bind_info = update_saas_binding(tenant, request.POST)
+    bind_info = set_saas_bind_slug(tenant, data.dict())
     create_arkidstore_login_app(tenant, bind_info['saas_tenant_slug'])
     create_arkid_saas_login_app(tenant, bind_info['saas_tenant_slug'])
     return bind_info
@@ -80,12 +79,12 @@ def get_bind_saas_info(request, tenant_id: str):
 
 
 @api.post("/tenant/{tenant_id}/bind_saas/info/", tags=['bind_saas'])
-def update_bind_saas_info(request, tenant_id: str):
+def update_bind_saas_info(request, tenant_id: str, data: BindSaasInfoSchemaOut):
     """
     更新 saas info 绑定信息
     """
     tenant = Tenant.objects.get(id=tenant_id)
-    bind_info = update_saas_binding(tenant, request.POST)
+    bind_info = update_saas_binding(tenant, data.dict())
     create_arkidstore_login_app(tenant, bind_info['saas_tenant_slug'])
     create_arkid_saas_login_app(tenant, bind_info['saas_tenant_slug'])
     return bind_info

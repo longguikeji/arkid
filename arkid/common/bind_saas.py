@@ -83,6 +83,19 @@ def update_saas_binding(tenant, data):
     return resp
 
 
+def set_saas_bind_slug(tenant, data):
+    bind_saas_url = settings.ARKID_SAAS_URL + '/api/v1/arkid/saas/bind/slug'
+    params = {
+        'local_tenant_id': str(tenant.id),
+        'saas_tenant_slug': data['saas_tenant_slug'],
+    }
+    resp = requests.post(bind_saas_url, json=params)
+    if resp.status_code != 200:
+        raise Exception(f'Error update_saas_binding: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
 def create_arkidstore_login_app(tenant, saas_tenant_slug):
     url = f"{settings.ARKSTOER_URL}/api/v1/login?tenant_slug={saas_tenant_slug}"
     create_tenant_oidc_app(tenant, url, 'arkstore_login', 'arkidstore login')
