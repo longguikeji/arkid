@@ -1,14 +1,32 @@
 from arkid.core.api import api
 from arkid.core.translation import gettext_default as _
+from arkid.core.error import ErrorCode
 from .schema import *
 
 @api.get(
     "/tenant/{tenant_id}/mine_mobile/",
-    tags=["账号生命周期"],
+    tags=["手机验证码认证"],
     auth=None,
-    response=AccountLifeSchemaOut,
+    response=MineMobileOut,
 )
-def get_account_life(request, tenant_id: str, id: str):
-    """获取账号生命周期配置,TODO"""
-    config = get_object_or_404(TenantExtensionConfig, id=id, tenant=request.tenant)
-    return config
+def get_mine_mobile(request, tenant_id: str):
+    """获取手机号码,TODO
+    """
+    
+    return {
+        "data": {
+            "mobile": ""
+        }
+    }
+    
+@api.post(
+    "/tenant/{tenant_id}/mine_mobile/",
+    tags=["手机验证码认证"],
+    auth=None,
+    response=UpdateMineMobileOut,
+)
+def update_mine_mobile(request, tenant_id: str,data:UpdateMineMobileIn):
+    """更改手机号码,TODO
+    """
+    
+    return {'error': ErrorCode.OK.value}
