@@ -3,6 +3,7 @@ import re
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.error import ErrorCode
 from arkid.core.models import User
+from arkid.core import pages,actions
 from .models import UserPassword
 from pydantic import Field
 from typing import List, Optional
@@ -169,9 +170,31 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         if field_name in ('username', 'email'):
             user = User.active_objects.filter(**{field_name: field_value}).first()
         else:
-            # 获取港注册的用户
+            # 获取刚注册的用户
             user = User.expand_objects.filter(**{field_name: field_value}).first()
         return user
+    
+    def create_auth_manage_page(self):
+        # 更改密码页面
+        
+        name = '更改密码'
+
+        page = pages.FormPage(name=name)
+        
+        pages.register_front_pages(page)
+
+        page.create_actions(
+            init_action=actions.DirectAction(
+                path='/api/v1/platform_config/',
+                method=actions.FrontActionMethod.GET,
+            ),
+            global_actions={
+                'confirm': actions.ConfirmAction(
+                    path="/api/v1/platform_config/"
+                ),
+            }
+        )
+        return page
 
 
 extension = PasswordAuthFactorExtension(

@@ -18,6 +18,8 @@ def get_app_protocols(request,tenant_id:str):
     return [
         {
             "name": k,
-            "count": len(v)
+            "count": len(v),
+            "extension_name": "",
+            "extension_package": ""
         } for k,v in default_lang_maps.items()
     ]

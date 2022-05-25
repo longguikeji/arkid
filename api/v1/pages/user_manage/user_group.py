@@ -82,7 +82,7 @@ edit_users_page.create_actions(
     select=True,
     global_actions={
        'confirm': actions.ConfirmAction(
-            path="/tenant/{tenant_id}/user_groups/{user_group_id}/users/"
+            path="/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/users/"
         ),
     }
 )

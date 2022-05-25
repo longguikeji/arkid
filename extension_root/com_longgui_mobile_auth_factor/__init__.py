@@ -2,6 +2,7 @@ from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactor
 from arkid.core.error import ErrorCode
 from arkid.core.models import User
 from arkid.common.sms import check_sms_code
+from arkid.core import actions, pages
 from .models import UserMobile
 from pydantic import Field
 from typing import List, Optional
@@ -199,6 +200,26 @@ class MobileAuthFactorExtension(AuthFactorExtension):
 
     def _get_register_user(self, tenant, field_name, field_value):
         pass
+    
+    def create_auth_manage_page(self):
+        name = '更改手机号码'
+
+        page = pages.FormPage(name=name)
+        
+        pages.register_front_pages(page)
+
+        page.create_actions(
+            init_action=actions.DirectAction(
+                path='/api/v1/platform_config/',
+                method=actions.FrontActionMethod.GET,
+            ),
+            global_actions={
+                'confirm': actions.ConfirmAction(
+                    path="/api/v1/platform_config/"
+                ),
+            }
+        )
+        return page
 
 
 extension = MobileAuthFactorExtension(
