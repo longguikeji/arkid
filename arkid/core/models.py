@@ -75,7 +75,7 @@ class User(BaseModel, ExpandModel):
         verbose_name_plural = _("user", "用户")
         unique_together = [['username', 'tenant']]
 
-    username = models.CharField(max_length=128, blank=False)
+    username = models.CharField(max_length=128, blank=False, verbose_name=_("用户名"))
     avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True)
     is_platform_user = models.BooleanField(
         default=False, verbose_name=_('is platform user', '是否是平台用户')
