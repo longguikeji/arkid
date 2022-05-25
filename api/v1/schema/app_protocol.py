@@ -17,9 +17,6 @@ class AppProtocolListItemOut(Schema):
         title=_("来源")
     )
     
-    description: str = Field(
-        title=_("描述")
-    )
     
 class AppProtocolListOut(ResponseSchema):
     data: List[AppProtocolListItemOut]

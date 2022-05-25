@@ -21,7 +21,6 @@ def get_app_protocols(request, tenant_id: str):
         for p_k,p_v in v.items():
             rs.append({
                 "name": k,
-                "description": "",
                 "doc_url": f"{host}/arkid/%20系统插件/{p_k.replace('.','_')}/",
                 "package": p_k
             })
