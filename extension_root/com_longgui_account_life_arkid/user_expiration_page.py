@@ -12,8 +12,8 @@ page = pages.TablePage(tag=tag, name=name)
 edit_page = pages.FormPage(name=_("编辑用户过期设置"))
 
 
-# pages.register_front_pages(page)
-# pages.register_front_pages(edit_page)
+pages.register_front_pages(page)
+pages.register_front_pages(edit_page)
 
 
 router = routers.FrontRouter(

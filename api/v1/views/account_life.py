@@ -1,6 +1,5 @@
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
-from arkid.core.extension.account_life import AccountLifeExtension
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.extension.utils import import_extension
 from django.shortcuts import get_object_or_404
@@ -14,122 +13,134 @@ from arkid.core.event import (
     UPDATE_ACCOUNT_LIFE_CONFIG,
     DELETE_ACCOUNT_LIFE_CONFIG,
 )
-
-AccountLifeSchemaIn = AccountLifeExtension.create_composite_config_schema(
-    'AccountLifeSchemaIn'
+from api.v1.schema.account_life import (
+    AccountLifeCreateIn,
+    AccountLifeCreateOut,
+    AccountLifeDeleteOut,
+    AccountLifeListItemOut,
+    AccountLifeListOut,
+    AccountLifeOut,
+    AccountLifeUpdateIn,
+    AccountLifeUpdateOut,
 )
-
-
-class AccountLifeSchemaOut(ModelSchema):
-    class Config:
-        model = TenantExtensionConfig
-        model_fields = ['id', 'name', 'type', 'config']
-
-    package: str
-
-    @staticmethod
-    def resolve_package(obj):
-        return obj.extension.package
+from arkid.core.pagenation import CustomPagination
+from arkid.core.extension.account_life import AccountLifeExtension
 
 
 @api.get(
     "/tenant/{tenant_id}/account_lifes/",
     tags=["账号生命周期"],
     auth=None,
-    response=List[AccountLifeSchemaOut],
+    response=List[AccountLifeListItemOut],
 )
-@paginate
+@operation(AccountLifeListOut)
+@paginate(CustomPagination)
 def get_account_life_list(request, tenant_id: str):
-    """账号生命周期配置列表,TODO"""
+    """账号生命周期配置列表"""
     configs = TenantExtensionConfig.valid_objects.filter(
-        tenant_id=tenant_id, extension__type="account_life"
+        tenant_id=tenant_id, extension__type=AccountLifeExtension.TYPE
     )
-    return configs
+    return [
+        {
+            "id": config.id.hex,
+            "type": config.type,
+            "name": config.name,
+            "extension_name": config.extension.name,
+            "extension_package": config.extension.package,
+        }
+        for config in configs
+    ]
 
 
 @api.get(
     "/tenant/{tenant_id}/account_lifes/{id}/",
     tags=["账号生命周期"],
     auth=None,
-    response=AccountLifeSchemaOut,
+    response=AccountLifeOut,
 )
+@operation(AccountLifeOut)
 def get_account_life(request, tenant_id: str, id: str):
-    """获取账号生命周期配置,TODO"""
-    config = get_object_or_404(TenantExtensionConfig, id=id, tenant=request.tenant)
-    return config
+    """获取账号生命周期配置"""
+    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    return {
+        "data": {
+            "id": config.id.hex,
+            "type": config.type,
+            "package": config.extension.package,
+            "name": config.name,
+            "config": config.config,
+        }
+    }
 
 
 @api.post(
     "/tenant/{tenant_id}/account_lifes/",
     tags=["账号生命周期"],
     auth=None,
-    response=AccountLifeSchemaOut,
+    response=AccountLifeCreateOut,
 )
-def create_account_life(request, tenant_id: str, data: AccountLifeSchemaIn):
-    """创建账号生命周期配置,TODO"""
-    tenant = request.tenant
-    package = data.package
-    name = data.name
-    type = data.type
-    config = data.config
-    extension = Extension.active_objects.get(package=package)
-    extension = import_extension(extension.ext_dir)
-    extension_config = extension.create_tenant_config(
-        tenant, config.dict(), name=name, type=type
-    )
+@operation(AccountLifeCreateOut)
+def create_account_life(request, tenant_id: str, data: AccountLifeCreateIn):
+    """创建账号生命周期配置"""
+    config = TenantExtensionConfig()
+    config.tenant = request.tenant
+    config.extension = Extension.active_objects.get(package=data.package)
+    config.config = data.config.dict()
+    config.name = data.dict().get("name")
+    config.type = data.type
+    config.save()
     dispatch_event(
         Event(
             tag=CREATE_ACCOUNT_LIFE_CONFIG,
-            tenant=tenant,
+            tenant=request.tenant,
             request=request,
-            data=extension_config,
+            data=config,
         )
     )
-    return extension_config
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
 @api.put(
     "/tenant/{tenant_id}/account_lifes/{id}/",
     tags=["账号生命周期"],
     auth=None,
-    response=AccountLifeSchemaOut,
+    response=AccountLifeUpdateOut,
 )
-def update_account_life(request, tenant_id: str, id: str, data: AccountLifeSchemaIn):
-    """编辑账号生命周期配置,TODO"""
-    extension_config = get_object_or_404(
-        TenantExtensionConfig, id=id, tenant=request.tenant
-    )
-    tenant = request.tenant
-    extension_config.name = data.name
-    extension_config.type = data.type
-    extension_config.config = data.config.dict()
-    extension_config.save()
+@operation(AccountLifeUpdateOut)
+def update_account_life(request, tenant_id: str, id: str, data: AccountLifeUpdateIn):
+    """编辑账号生命周期配置"""
+    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    for attr, value in data.dict().items():
+        setattr(config, attr, value)
+    config.save()
     dispatch_event(
         Event(
             tag=UPDATE_ACCOUNT_LIFE_CONFIG,
-            tenant=tenant,
+            tenant=request.tenant,
             request=request,
-            data=extension_config,
+            data=config,
         )
     )
+    return {"data": {'error': ErrorCode.OK.value}}
 
-    return extension_config
 
-
-@api.delete("/tenant/{tenant_id}/account_lifes/{id}/", tags=["账号生命周期"], auth=None)
+@api.delete(
+    "/tenant/{tenant_id}/account_lifes/{id}/",
+    tags=["账号生命周期"],
+    auth=None,
+    response=AccountLifeDeleteOut,
+)
+@operation(AccountLifeDeleteOut)
 def delete_account_life(request, tenant_id: str, id: str):
     """删除账号生命周期配置,TODO"""
-    tenant = request.tenant
-    extension_config = get_object_or_404(
-        TenantExtensionConfig, id=id, tenant=request.tenant
-    )
+    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
     dispatch_event(
         Event(
             tag=DELETE_ACCOUNT_LIFE_CONFIG,
-            tenant=tenant,
+            tenant=request.tenant,
             request=request,
-            data=extension_config,
+            data=config,
         )
     )
-    extension_config.delete()
-    return {'error': ErrorCode.OK.value}
+    config.delete()
+    return {"data": {'error': ErrorCode.OK.value}}

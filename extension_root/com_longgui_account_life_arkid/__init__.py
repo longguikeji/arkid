@@ -12,8 +12,9 @@ import json
 from .tasks import deactive_expired_user
 from .models import UserExpiration
 from . import views
-from .user_expiration_page import page, edit_page, router
+from .user_expiration_page import page, router
 from api.v1.pages.user_manage import router as user_manage_router
+from arkid.core import routers
 
 package = 'com.longgui.account.life.arkid'
 
@@ -29,8 +30,6 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         super().load()
         self.register_extend_field(UserExpiration, "expiration_time")
         self.register_account_life_schema(CronJobSchema, "deactive_expired_user_cron")
-        self.register_front_pages(page)
-        self.register_front_pages(edit_page)
         user_manage_router.children.append(router)
 
     def create_tenant_config(self, tenant, config, name, type):

@@ -23,16 +23,10 @@ class UserExpirationInSchema(Schema):
     expiration_time: datetime
 
 
-class UserExpirationOutSchema(ModelSchema):
-    class Config:
-        model = UserExpiration
-        model_fields = ['id', 'expiration_time']
-
+class UserExpirationOutSchema(Schema):
+    id: str
     username: str
-
-    @staticmethod
-    def resolve_username(obj):
-        return obj.user.username
+    expiration_time: datetime
 
 
 @api.post(
@@ -103,7 +97,9 @@ def user_expiration_list(
     tenant_id: str,
 ):
     tenant = request.tenant
-    user_expirations = UserExpiration.valid_objects.filter(user__tenant=tenant)
+    user_expirations = User.valid_objects.filter(tenant=tenant).exclude(
+        expiration_time__isnull=True
+    )
     return user_expirations
 
 
