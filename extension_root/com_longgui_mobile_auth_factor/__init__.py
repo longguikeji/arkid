@@ -9,6 +9,7 @@ from typing import List, Optional
 from arkid.core.translation import gettext_default as _
 from django.db import transaction
 from arkid.core.extension import create_extension_schema
+from . import views
 
 package = "com.longgui.mobile_auth_factor"
 

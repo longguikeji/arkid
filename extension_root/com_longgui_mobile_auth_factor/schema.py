@@ -9,7 +9,7 @@ class MineMobileItemOut(ModelSchema):
 
 class MineMobileOut(ResponseSchema):
     
-    data = MineMobileItemOut
+    data:MineMobileItemOut
     
 class UpdateMineMobileIn(ModelSchema):
     class Config:

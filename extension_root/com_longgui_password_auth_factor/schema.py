@@ -1,4 +1,4 @@
-from ninja import Field, ModelSchema
+from ninja import Field, ModelSchema, Schema
 from arkid.core.schema import ResponseSchema
 from .models import UserPassword
 
@@ -17,9 +17,9 @@ class MinePasswordItemOut(Schema):
 
 class MinePasswordOut(ResponseSchema):
     
-    data = MinePasswordItemOut
+    data:MinePasswordItemOut
     
-class UpdateMinePasswordIn(ModelSchema):
+class UpdateMinePasswordIn(Schema):
     password:str = Field(
         type="password",
         title="确认密码",
