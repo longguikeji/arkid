@@ -85,7 +85,7 @@ class GlobalAuth(HttpBearer):
                 permissiondata = PermissionData()
                 if token.user and request.tenant:
                     result =permissiondata.api_system_permission_check(request.tenant, token.user, operation_id)
-                    if result == True:
+                    if result == False:
                         raise Exception(_('You do not have api permission','你没有这个接口的权限'))
         except ExpiringToken.DoesNotExist:
             logger.error(_("Invalid token","无效的秘钥"))

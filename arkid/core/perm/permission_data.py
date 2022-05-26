@@ -3,6 +3,7 @@ from arkid.core.openapi import get_permissions
 from arkid.core.models import (
     UserPermissionResult, SystemPermission, User,
     Tenant, App, Permission, UserGroup,
+    ExpiringToken,
 )
 from arkid.core.api import api
 from django.db.models import Q
@@ -10,6 +11,8 @@ from django.db.models import Q
 import collections
 import requests
 import uuid
+import re
+from oauth2_provider.models import Application
 
 
 class PermissionData(object):
@@ -43,6 +46,15 @@ class PermissionData(object):
                 self.update_app_all_permission(tenant, app)
                 # 更新应用所有用户权限
                 self.update_app_all_user_permission(tenant, app)
+    
+    def update_only_user_app_permission(self, tenant_id, app_id):
+        '''
+        仅仅更新用户的应用权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        app = App.valid_objects.filter(id=app_id).first()
+        if tenant and app:
+            self.update_app_all_user_permission(tenant, app)
 
     def update_tenant_permission(self, tenant_id):
         '''
@@ -654,7 +666,7 @@ class PermissionData(object):
                 else:
                     auth_user.is_tenant_admin = False
         # 权限数据
-        permissions = Permission.objects.filter(app=app, tenant=tenant).order_by('sort_id')
+        permissions = Permission.objects.filter(app=app).order_by('sort_id')
         data_dict = {}
         data_group_parent_child = {}
         for permission in permissions:
@@ -780,7 +792,7 @@ class PermissionData(object):
         更新指定用户应用权限
         '''
         is_tenant_admin = tenant.has_admin_perm(auth_user)
-        permissions = Permission.objects.filter(app=app, tenant=tenant).order_by('sort_id')
+        permissions = Permission.objects.filter(app=app).order_by('sort_id')
         data_dict = {}
         data_group_parent_child = {}
         for permission in permissions:
@@ -956,7 +968,7 @@ class PermissionData(object):
         根据应用，用户，分组查权限
         '''
         permissions = Permission.valid_objects.filter(
-            tenant_id=tenant_id
+            Q(tenant_id=tenant_id)|Q(is_open=True)
         )
         systempermissions = SystemPermission.valid_objects.all()
 
@@ -1105,3 +1117,106 @@ class PermissionData(object):
             else:
                 systempermission.in_current = False
         return systempermissions
+
+    def check_app_entry_permission(self, request, type, kwargs):
+        '''
+        检查应用入口权限
+        '''
+        token = request.GET.get('token', '')
+        app_id = None
+        if 'app_id' in kwargs:
+            app_id = kwargs.get('app_id', None)
+        tenant = request.tenant
+        if not tenant:
+            return False
+        tenant_id = tenant.id.hex
+        client_id = request.GET.get('client_id', '')
+
+        # 特殊处理 arkid_saas
+        app = Application.objects.filter(name='arkid_saas', client_id=client_id).first()
+        if app:
+            user = self.token_check(tenant_id, token, request)
+            return True
+
+        app = App.valid_objects.filter(
+            id=app_id,
+            type__in=type
+        ).first()
+        if not app:
+            return False
+
+        user = self.token_check(tenant_id, token, request)
+        if not user:
+            return False
+        
+        # 特殊处理 OIDC-Platform
+        if app.type == 'OIDC-Platform':
+            return True
+
+        permission = Permission.valid_objects.filter(
+            app=app,
+            category='entry',
+            is_system=True,
+        ).first()
+        if not permission:
+            return False
+
+        result = self.permission_check_by_sortid(permission, user, app, tenant_id)
+        if not result:
+            return False
+
+        return True
+    
+    def permission_check_by_sortid(self, permission, user, app, tenant_id):
+        '''
+        根据权限检查用户身份
+        '''
+        sort_id = permission.sort_id
+        userpermissionresult = UserPermissionResult.valid_objects.filter(
+            user=user,
+            tenant_id=tenant_id,
+            app=app,
+        ).first()
+        if userpermissionresult:
+            compress = Compress()
+            permission_result = compress.decrypt(userpermissionresult.result)
+            permission_result_arr = list(permission_result)
+            check_result = int(permission_result_arr[sort_id])
+            if check_result == 1:
+                return True
+        return False
+
+    def token_check(self, tenant_id, token, request):
+        '''
+        token检查
+        '''
+        try:
+            tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+            token = ExpiringToken.objects.get(token=token)
+            if token:
+                if not token.user.is_active:
+                    return None
+                if token.expired(tenant=tenant):
+                    return None
+                user = token.user
+                request.user = user
+                request.user.tenant = tenant
+                request.tenant = tenant
+                return user
+            return None
+        except Exception as e:
+            return None
+    
+    def get_open_appids(self):
+        '''
+        获取开放的应用id
+        '''
+        permissions = Permission.valid_objects.filter(
+            is_open=True
+        )
+        app_ids = []
+        for permission in permissions:
+            app_id = permission.app_id
+            if app_id not in app_ids:
+                app_ids.append(app_id)
+        return app_ids

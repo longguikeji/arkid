@@ -5,13 +5,15 @@ from arkid.core.translation import gettext_default as _
 tag = 'platform_config'
 name = '平台配置'
 
-page = pages.TabsPage(name=name,tag=tag)
+page = pages.FormPage(name=name,tag=tag)
 
 router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
 )
+
+pages.register_front_pages(page)
 
 page.create_actions(
     init_action=actions.DirectAction(

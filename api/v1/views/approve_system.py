@@ -10,7 +10,13 @@ from arkid.core.error import ErrorCode
 from ninja import ModelSchema
 from typing import List
 from ninja.pagination import paginate
-from arkid.core.event import CREATE_APPROVE_SYSTEM_CONFIG, DELETE_APPROVE_SYSTEM_CONFIG, UPDATE_APPROVE_SYSTEM_CONFIG, dispatch_event, Event
+from arkid.core.event import (
+    CREATE_APPROVE_SYSTEM_CONFIG,
+    DELETE_APPROVE_SYSTEM_CONFIG,
+    UPDATE_APPROVE_SYSTEM_CONFIG,
+    dispatch_event,
+    Event,
+)
 from arkid.core.event import (
     CREATE_ACCOUNT_LIFE_CONFIG,
     UPDATE_ACCOUNT_LIFE_CONFIG,
@@ -78,7 +84,9 @@ def create_approve_system(request, tenant_id: str, data: ApproveSystemSchemaIn):
     config = data.config
     extension = Extension.active_objects.get(package=package)
     extension = import_extension(extension.ext_dir)
-    extension_settings = extension.create_tenant_settings(tenant, config.dict(), type="approve_system")
+    extension_settings = extension.create_tenant_settings(
+        tenant, config.dict(), type="approve_system"
+    )
     dispatch_event(
         Event(
             tag=CREATE_APPROVE_SYSTEM_CONFIG,
@@ -103,7 +111,6 @@ def update_approve_system(
         TenantExtension, id=id, tenant=request.tenant
     )
     tenant = request.tenant
-    extension_settings.type = data.type
     extension_settings.settings = data.config.dict()
     extension_settings.save()
     dispatch_event(
@@ -132,5 +139,5 @@ def delete_approve_system(request, tenant_id: str, id: str):
             data=extension_settings,
         )
     )
-    extension_settings.delete()
+    extension_settings.kill()
     return {'error': ErrorCode.OK.value}

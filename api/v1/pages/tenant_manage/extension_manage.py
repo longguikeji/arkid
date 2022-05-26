@@ -1,4 +1,5 @@
 # 租户下的 extension的settings  config 
+from platform import platform
 from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
@@ -6,13 +7,21 @@ tag = 'tenant_extension_manage'
 name = '插件管理'
 
 
-page = pages.TablePage(tag=tag, name=name)
-edit_page = pages.FormPage(name=_("编辑插件"))
+page = pages.TabsPage(tag=tag, name=name)
+platform_extension_page = pages.TablePage(name=_('Platform Extensions', '平台插件'))
+tenant_extension_rented_page = pages.TablePage(name=_('Rented Extensions', '已租赁'))
+rent_page = pages.FormPage(name=_('Rent', '租赁'))
 
 
 pages.register_front_pages(page)
-pages.register_front_pages(edit_page)
+pages.register_front_pages(platform_extension_page)
+pages.register_front_pages(tenant_extension_rented_page)
+pages.register_front_pages(rent_page)
 
+page.add_pages([
+    platform_extension_page,
+    tenant_extension_rented_page
+])
 
 router = routers.FrontRouter(
     path=tag,
@@ -20,36 +29,42 @@ router = routers.FrontRouter(
     page=page,
 )
 
-page.create_actions(
+platform_extension_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/extensions/',
+        path='/api/v1/tenant/{tenant_id}/platform/extensions/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    local_actions={
+        "rent": actions.OpenAction(
+            name="租赁",
+            page=rent_page
+        )
+    },
+)
+
+rent_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/rent/extensions/{uuid}/',
         method=actions.FrontActionMethod.GET,
     ),
     global_actions={
-        'create': actions.CreateAction(
-            path='/api/v1/tenant/{tenant_id}/extensions/',
-        )
-    },
-    local_actions={
-        "edit": actions.EditAction(
-            page=edit_page,
+        "payed": actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}/',
+            method=actions.FrontActionMethod.GET,
         ),
-        "delete":actions.DeleteAction(
-            path="/api/v1/tenant/{tenant_id}/extensions/{id}/",
-        )
     },
 )
 
-edit_page.create_actions(
+tenant_extension_rented_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/extensions/{id}/',
-        method=actions.FrontActionMethod.GET
+        path='/api/v1/tenant/{tenant_id}/tenant/extensions/',
+        method=actions.FrontActionMethod.GET,
     ),
-    global_actions={
-       'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/extensions/{id}/"
+    local_actions={
+        "active": actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/tenant/extensions/{id}/active/',
+            method=actions.FrontActionMethod.POST,
         ),
-    }
+    },
 )
-
 

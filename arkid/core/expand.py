@@ -42,7 +42,7 @@ class ExpandManager(models.Manager):
 
         table_name = self.model._meta.db_table
         
-        field_expands = field_expand_map[table_name]
+        field_expands = field_expand_map.get(table_name,{})
         queryset = self.model.objects
         
         annotate_params = {}

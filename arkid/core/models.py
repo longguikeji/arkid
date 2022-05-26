@@ -24,7 +24,7 @@ class Tenant(BaseModel, ExpandModel):
 
     name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
     slug = models.SlugField(verbose_name=_('slug', '短链接标识'), blank=True, null=True, default='' ,unique=True)
-    icon = models.URLField(verbose_name=_('icon', '图标'), blank=True)
+    icon = models.URLField(verbose_name=_('icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(
         blank=False,
@@ -321,6 +321,9 @@ class Permission(PermissionAbstract):
         related_name="permission_set",
         related_query_name="permission",
         verbose_name=_('Permission List', '权限列表'),
+    )
+    is_open = models.BooleanField(
+        default=False, verbose_name=_('is open', '是否开放给其它租户访问'),
     )
 
     def __str__(self) -> str:

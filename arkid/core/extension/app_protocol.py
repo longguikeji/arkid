@@ -1,9 +1,11 @@
+from django.views import View
 from abc import abstractmethod
+from arkid.core.models import App
+from django.urls import re_path
+from django.http import HttpResponse
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
-from arkid.core.models import App
 from arkid.core import api as core_api, event as core_event
-
 
 class AppProtocolExtension(Extension):
     
@@ -42,14 +44,37 @@ class AppProtocolExtension(Extension):
     def delete_app(self, event, **kwargs):
         pass
     
-    # def register_enter_view(self, view, path, type):
-    #     class EnterView(View):
-    #         def get(request):
-    #             # 权限判断
-    #             view.get(request)
-    #             pass
-    #     re_path(
-    #             path,
-    #             EnterView.as_view(),
-    #             name=f'{self.name}_{type}_enter',
-    #         )
+    def register_enter_view(self, view:View, path:str, url_name:str, type:list):
+        '''
+        注册统一的入口函数，方便检测
+        :param view:目标View的as_view()，例如:AuthorizationView.as_view()
+        :param path:需要跳转的路径，例如:r"app/(?P<app_id>[\w-]+)/oauth/authorize/$"
+        :param url_name:注册的路径名称, 例如:authorize
+        :param type:list:一个当前插件的类型list, 例如:['OIDC', 'OAuth2']
+        :return: 函数执行结果
+        '''
+        # 入口函数
+        class EnterView(View):
+
+            def get(self, request, **kwargs):
+                from arkid.core.perm.permission_data import PermissionData
+                permissiondata = PermissionData()
+                result = permissiondata.check_app_entry_permission(request, type, kwargs)
+                if result:
+                    return view(request)
+                else:
+                    return HttpResponse('Unauthorized', status=401)
+
+            def post(self, request, **kwargs):
+                from arkid.core.perm.permission_data import PermissionData
+                permissiondata = PermissionData()
+                result = permissiondata.check_app_entry_permission(request, type, kwargs)
+                if result:
+                    return view(request)
+                else:
+                    return HttpResponse('Unauthorized', status=401)
+
+        # 获取进入的路由
+        entry_url = [re_path(path, EnterView.as_view(), name=url_name)]
+        # 注册入口路由
+        self.register_routers(entry_url, True)

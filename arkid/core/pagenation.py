@@ -8,7 +8,7 @@ from arkid.core.schema import ResponseSchema
 class CustomPagination(PaginationBase):
     class Input(Schema):
         page: int = Field(
-            default=0
+            default=1
         )
 
         page_size: int = Field(
