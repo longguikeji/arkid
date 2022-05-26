@@ -16,23 +16,24 @@ from .models import UserExpiration
 from typing import List
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
+from pydantic import UUID4
 
 
 class UserExpirationInSchema(Schema):
-    user_id: str
-    expiration_time: datetime
+    user_id: str = Field(title=_("用户ID"))
+    expiration_time: datetime = Field(title=_("过期时间"))
 
 
 class UserExpirationOutSchema(Schema):
-    id: str
-    username: str
-    expiration_time: datetime
+    id: UUID4
+    username: str = Field(title=_("用户名"))
+    expiration_time: datetime = Field(title=_("过期时间"))
 
 
 @api.post(
     "/tenant/{tenant_id}/account_life_arkid/user_expiration/",
     response=UserExpirationOutSchema,
-    tags=['用户'],
+    tags=['账号生命周期'],
     auth=None,
 )
 def user_expiration_create(
@@ -40,30 +41,26 @@ def user_expiration_create(
     tenant_id: str,
     data: UserExpirationInSchema,
 ):
-    tenant = request.tenant
-    user_expiration = UserExpiration.valid_objects.filter(
-        user__id=data.user_id, user__tenant=tenant
-    ).first()
+    user = User.valid_objects.get(id=data.user_id)
+    user_expiration = UserExpiration.valid_objects.filter(target_id=user.id).first()
     if not user_expiration:
-        user = User.valid_objects.get(id=data.user_id)
-        user_expiration = UserExpiration.valid_objects.create(
-            user=user, expiration_time=data.expiration_time
-        )
+        user_expiration = UserExpiration()
+        user_expiration.expiration_time = data.expiration_time
+        user_expiration.target_id = user.id
     else:
         user_expiration.expiration_time = data.expiration_time
-        user_expiration.is_del = False
-        user_expiration.save()
+    user_expiration.save()
     return {
         "id": user_expiration.id.hex,
-        "username": user_expiration.user.username,
+        "username": user.username,
         "expiration_time": user_expiration.expiration_time,
     }
 
 
 @api.put(
-    "/tenant/{tenant_id}/account_life_arkid/user_expiration/{id}",
+    "/tenant/{tenant_id}/account_life_arkid/user_expiration/{id}/",
     response=UserExpirationOutSchema,
-    tags=['用户'],
+    tags=['账号生命周期'],
     auth=None,
 )
 def user_expiration_update(
@@ -74,13 +71,14 @@ def user_expiration_update(
 ):
     tenant = request.tenant
     user_expiration = UserExpiration.valid_objects.filter(
-        id=id, user__tenant=tenant
+        id=id, target_id__tenant=tenant
     ).first()
     user_expiration.expiration_time = data.expiration_time
     user_expiration.save()
+    user = User.valid_objects.get(id=user_expiration.target_id)
     return {
         "id": user_expiration.id.hex,
-        "username": user_expiration.user.username,
+        "username": user.username,
         "expiration_time": user_expiration.expiration_time,
     }
 
@@ -88,7 +86,7 @@ def user_expiration_update(
 @api.get(
     "/tenant/{tenant_id}/account_life_arkid/user_expiration/",
     response=List[UserExpirationOutSchema],
-    tags=['用户'],
+    tags=['账号生命周期'],
     auth=None,
 )
 @paginate
@@ -97,36 +95,52 @@ def user_expiration_list(
     tenant_id: str,
 ):
     tenant = request.tenant
-    user_expirations = User.valid_objects.filter(tenant=tenant).exclude(
+    users = User.expand_objects.filter(tenant=tenant).exclude(
         expiration_time__isnull=True
     )
-    return user_expirations
+    result = []
+    for user in users:
+        user_expiration = UserExpiration.valid_objects.filter(
+            target_id=user["id"]
+        ).first()
+        result.append(
+            {
+                'id': user_expiration.id.hex,
+                'username': user["username"],
+                'expiration_time': user_expiration.expiration_time,
+            }
+        )
+    return result
 
 
 @api.get(
-    "/tenant/{tenant_id}/account_life_arkid/user_expiration/{id}",
+    "/tenant/{tenant_id}/account_life_arkid/user_expiration/{id}/",
     response=UserExpirationOutSchema,
-    tags=['用户'],
+    tags=['账号生命周期'],
     auth=None,
 )
 def get_user_expiration(request, tenant_id: str, id: str):
     tenant = request.tenant
     user_expiration = UserExpiration.valid_objects.filter(
-        id=id, user__tenant=tenant
+        id=id, target_id__tenant=tenant
     ).first()
-    return user_expiration
+    user = User.valid_objects.get(id=user_expiration.target_id)
+    return {
+        "id": user_expiration.id.hex,
+        "username": user.username,
+        "expiration_time": user_expiration.expiration_time,
+    }
 
 
 @api.delete(
     "/tenant/{tenant_id}/account_life_arkid/user_expiration/{id}",
-    tags=['用户'],
+    tags=['账号生命周期'],
     auth=None,
 )
 def delete_user_expiration(request, tenant_id: str, id: str):
     tenant = request.tenant
-    user_expiration = UserExpiration.valid_objects.filter(
-        id=id, user__tenant=tenant
-    ).first()
+    user_expiration = User.valid_objects.filter(id=id, tenant=tenant).first()
     if user_expiration:
-        user_expiration.delete()
+        user_expiration.expiration_time = None
+        user_expiration.save()
     return {'error': ErrorCode.OK.value}

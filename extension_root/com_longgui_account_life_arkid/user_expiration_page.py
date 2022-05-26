@@ -50,7 +50,8 @@ edit_page.create_actions(
     ),
     global_actions={
         'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/account_life_arkid/user_expiration/{id}/"
+            path="/api/v1/tenant/{tenant_id}/account_life_arkid/user_expiration/{id}/",
+            method=actions.FrontActionMethod.PUT,
         ),
     },
 )
