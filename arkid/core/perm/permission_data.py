@@ -1122,53 +1122,47 @@ class PermissionData(object):
         检查应用入口权限
         '''
         token = request.GET.get('token', '')
-        tenant_id = None
-        if 'tenant_id' in kwargs:
-            tenant_id = kwargs.get('tenant_id')
-        else:
-            path = request.path
-            id_re = r"[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}"
-            res = re.search(id_re, path)
-            if res:
-                tenant_id = res.group(0)
-        if tenant_id:
-            client_id = request.GET.get('client_id', '')
-            apps = App.valid_objects.filter(
+        tenant = request.tenant
+        if not tenant:
+            return False
+        tenant_id = tenant.id.hex
+        
+        client_id = request.GET.get('client_id', '')
+        apps = App.valid_objects.filter(
+            tenant_id=tenant_id,
+            type__in=type
+        )
+        app = None
+        if client_id:
+            # oauth有这个参数
+            for app_temp in apps:
+                config_data = app_temp.config.config
+                data_client = config_data.get('client_id', '')
+                if data_client == client_id:
+                    app = app_temp
+                    break
+        if app is None:
+            apps = apps.order_by('-created')  
+            app = apps.first()
+        if app:
+            permission = Permission.valid_objects.filter(
+                app=app,
                 tenant_id=tenant_id,
-                type__in=type
-            )
-            app = None
-            if client_id:
-                # oauth有这个参数
-                for app_temp in apps:
-                    config_data = app_temp.config.config
-                    data_client = config_data.get('client_id', '')
-                    if data_client == client_id:
-                        app = app_temp
-                        break
-            if app is None:
-                apps = apps.order_by('-created')  
-                app = apps.first()
-            if app:
-                permission = Permission.valid_objects.filter(
-                    app=app,
-                    tenant_id=tenant_id,
-                    category='entry',
-                    is_system=True,
-                ).first()
-                if permission:
-                    user = self.token_check(tenant_id, token, request)
-                    result = self.permission_check_by_sortid(permission, user, app, tenant_id)
-                    if result:
-                        return True
-                    else:
-                        return False
+                category='entry',
+                is_system=True,
+            ).first()
+            if permission:
+                user = self.token_check(tenant_id, token, request)
+                result = self.permission_check_by_sortid(permission, user, app, tenant_id)
+                if result:
+                    return True
                 else:
                     return False
             else:
                 return False
         else:
             return False
+            
     
     def permission_check_by_sortid(self, permission, user, app, tenant_id):
         '''

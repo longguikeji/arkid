@@ -32,11 +32,11 @@ class BindSaasSlugSchemaOut(Schema):
     saas_tenant_slug: Optional[str]
 
 
-class BindSaasInfoSchemaOut(Schema):
-    company_name: str
-    contact_person: str
+class BindSaasInfoSchema(Schema):
+    company_name: Optional[str]
+    contact_person: Optional[str]
     email: Optional[str]
-    mobile: str
+    mobile: Optional[str]
 
 
 @api.get("/tenant/{tenant_id}/bind_saas/", tags=['bind_saas'], response=BindSaasSchemaOut)
@@ -69,7 +69,7 @@ def set_bind_saas_slug(request, tenant_id: str, data: BindSaasSlugSchemaOut):
     return bind_info
 
 
-@api.get("/tenant/{tenant_id}/bind_saas/info/", tags=['bind_saas'], response=BindSaasInfoSchemaOut)
+@api.get("/tenant/{tenant_id}/bind_saas/info/", tags=['bind_saas'], response=BindSaasInfoSchema)
 def get_bind_saas_info(request, tenant_id: str):
     """
     查询 saas info 绑定信息
@@ -79,7 +79,7 @@ def get_bind_saas_info(request, tenant_id: str):
 
 
 @api.post("/tenant/{tenant_id}/bind_saas/info/", tags=['bind_saas'])
-def update_bind_saas_info(request, tenant_id: str, data: BindSaasInfoSchemaOut):
+def update_bind_saas_info(request, tenant_id: str, data: BindSaasInfoSchema):
     """
     更新 saas info 绑定信息
     """
