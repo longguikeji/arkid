@@ -322,6 +322,9 @@ class Permission(PermissionAbstract):
         related_query_name="permission",
         verbose_name=_('Permission List', '权限列表'),
     )
+    is_open = models.BooleanField(
+        default=False, verbose_name=_('is open', '是否开放给其它租户访问'),
+    )
 
     def __str__(self) -> str:
         return f'{self.name}'

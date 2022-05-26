@@ -666,7 +666,7 @@ class PermissionData(object):
                 else:
                     auth_user.is_tenant_admin = False
         # 权限数据
-        permissions = Permission.objects.filter(app=app, tenant=tenant).order_by('sort_id')
+        permissions = Permission.objects.filter(app=app).order_by('sort_id')
         data_dict = {}
         data_group_parent_child = {}
         for permission in permissions:
@@ -792,7 +792,7 @@ class PermissionData(object):
         更新指定用户应用权限
         '''
         is_tenant_admin = tenant.has_admin_perm(auth_user)
-        permissions = Permission.objects.filter(app=app, tenant=tenant).order_by('sort_id')
+        permissions = Permission.objects.filter(app=app).order_by('sort_id')
         data_dict = {}
         data_group_parent_child = {}
         for permission in permissions:
@@ -968,7 +968,7 @@ class PermissionData(object):
         根据应用，用户，分组查权限
         '''
         permissions = Permission.valid_objects.filter(
-            tenant_id=tenant_id
+            Q(tenant_id=tenant_id)|Q(is_open=True)
         )
         systempermissions = SystemPermission.valid_objects.all()
 
@@ -1123,6 +1123,9 @@ class PermissionData(object):
         检查应用入口权限
         '''
         token = request.GET.get('token', '')
+        app_id = None
+        if 'app_id' in kwargs:
+            app_id = kwargs.get('app_id', None)
         tenant = request.tenant
         if not tenant:
             return False
@@ -1136,7 +1139,7 @@ class PermissionData(object):
             return True
 
         apps = App.valid_objects.filter(
-            tenant_id=tenant_id,
+            id=app_id,
             type__in=type
         )
         app = None
@@ -1161,7 +1164,6 @@ class PermissionData(object):
 
         permission = Permission.valid_objects.filter(
             app=app,
-            tenant_id=tenant_id,
             category='entry',
             is_system=True,
         ).first()
@@ -1214,3 +1216,17 @@ class PermissionData(object):
             return None
         except Exception as e:
             return None
+    
+    def get_open_appids(self):
+        '''
+        获取开放的应用id
+        '''
+        permissions = Permission.valid_objects.filter(
+            is_open=True
+        )
+        app_ids = []
+        for permission in permissions:
+            app_id = permission.app_id
+            if app_id not in app_ids:
+                app_ids.append(app_id)
+        return app_ids

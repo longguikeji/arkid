@@ -33,7 +33,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
     def load_auth_view(self):
         # 加载认证view
         auth_view = AuthorizationView.as_view()
-        auth_path = r"oauth/authorize/$"
+        auth_path = r"app/(?P<app_id>[\w-]+)/oauth/authorize/$"
         url_name = "authorize"
         type = ['OIDC', 'OAuth2', 'OIDC-Platform']
         self.register_enter_view(auth_view, auth_path, url_name, type)
@@ -48,7 +48,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
 
     def delete_app(self, event, **kwargs):
         # 删除应用
-        Application.objects.filter(name=event.data.id).delete()
+        Application.objects.filter(uuid=event.data.id).delete()
         return True
 
     def update_app_data(self, event, config, is_create):
