@@ -12,6 +12,7 @@ import collections
 import requests
 import uuid
 import re
+from oauth2_provider.models import Application
 
 
 class PermissionData(object):
@@ -1126,8 +1127,14 @@ class PermissionData(object):
         if not tenant:
             return False
         tenant_id = tenant.id.hex
-        
         client_id = request.GET.get('client_id', '')
+
+        # 特殊处理 arkid_saas
+        app = Application.objects.filter(name='arkid_saas', client_id=client_id).first()
+        if app:
+            user = self.token_check(tenant_id, token, request)
+            return True
+
         apps = App.valid_objects.filter(
             tenant_id=tenant_id,
             type__in=type
@@ -1144,25 +1151,29 @@ class PermissionData(object):
         if app is None:
             apps = apps.order_by('-created')  
             app = apps.first()
-        if app:
-            permission = Permission.valid_objects.filter(
-                app=app,
-                tenant_id=tenant_id,
-                category='entry',
-                is_system=True,
-            ).first()
-            if permission:
-                user = self.token_check(tenant_id, token, request)
-                result = self.permission_check_by_sortid(permission, user, app, tenant_id)
-                if result:
-                    return True
-                else:
-                    return False
-            else:
-                return False
-        else:
+        if not app:
             return False
-            
+
+        # 特殊处理 OIDC-Platform
+        if app.type == 'OIDC-Platform':
+            user = self.token_check(tenant_id, token, request)
+            return True
+
+        permission = Permission.valid_objects.filter(
+            app=app,
+            tenant_id=tenant_id,
+            category='entry',
+            is_system=True,
+        ).first()
+        if not permission:
+            return False
+
+        user = self.token_check(tenant_id, token, request)
+        result = self.permission_check_by_sortid(permission, user, app, tenant_id)
+        if not result:
+            return False
+
+        return True
     
     def permission_check_by_sortid(self, permission, user, app, tenant_id):
         '''

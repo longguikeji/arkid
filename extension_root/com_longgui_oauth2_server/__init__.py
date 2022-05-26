@@ -35,7 +35,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
         auth_view = AuthorizationView.as_view()
         auth_path = r"oauth/authorize/$"
         url_name = "authorize"
-        type = ['OIDC', 'OAuth2']
+        type = ['OIDC', 'OAuth2', 'OIDC-Platform']
         self.register_enter_view(auth_view, auth_path, url_name, type)
 
     def create_app(self, event, **kwargs):
