@@ -19,7 +19,7 @@ from arkid.common.arkstore import (
     change_arkstore_agent,
     unbind_arkstore_agent
 )
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from typing import List
 from ninja import Schema
 from pydantic import Field
@@ -54,15 +54,15 @@ def get_arkstore_list(request, purchased, type):
 
 class ArkstoreItemSchemaOut(Schema):
     uuid: str = Field(hidden=True)
-    name: str
-    package_idendifer: str
-    version: str
-    author: str
-    logo: str = ""
-    description: str
-    categories: str
-    labels: str
-    button: str
+    name: str = Field(readonly=True)
+    package_idendifer: str = Field(readonly=True)
+    version: str = Field(readonly=True)
+    author: str = Field(readonly=True)
+    logo: str = Field(readonly=True, default="")
+    description: str = Field(readonly=True)
+    categories: str = Field(readonly=True)
+    labels: str = Field(readonly=True)
+    # button: str
 
 
 class OrderStatusSchema(Schema):
@@ -74,30 +74,34 @@ class BindAgentSchemaIn(Schema):
 
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_extensions(request, tenant_id: str):
     return get_arkstore_list(request, None, 'extension')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_apps(request, tenant_id: str):
     return get_arkstore_list(request, None, 'app')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str):
     return get_arkstore_list(request, True, 'extension')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_purchased_apps(request, tenant_id: str):
     return get_arkstore_list(request, True, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['arkstore'], response=List[ArkstoreItemSchemaOut])
+@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['arkstore'], response=ArkstoreItemSchemaOut)
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -115,7 +119,7 @@ def order_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.post("/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
+@api.get("/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
 def order_status_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -145,7 +149,7 @@ def rent_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.post("/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
+@api.get("/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}/", tags=['arkstore'], response=OrderStatusSchema)
 def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -154,7 +158,7 @@ def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['arkstore'])
+@api.post("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['arkstore'])
 def download_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)

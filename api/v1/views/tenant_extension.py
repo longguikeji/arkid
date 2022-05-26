@@ -1,6 +1,6 @@
 from ninja import Schema, ModelSchema
 from arkid.core import extension
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from typing import List
 from typing_extensions import Annotated
 from pydantic import Field
@@ -118,6 +118,7 @@ class TenantExtensionListOut(ModelSchema):
 
 
 @api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],auth=None, response=List[TenantExtensionListOut])
+@operation(List[TenantExtensionListOut])
 @paginate(CustomPagination)
 def get_platform_extensions(request, tenant_id: str):
     """ 平台插件列表
@@ -126,6 +127,7 @@ def get_platform_extensions(request, tenant_id: str):
 
 
 @api.get("/tenant/{tenant_id}/tenant/extensions/", tags=["租户插件"],auth=None, response=List[TenantExtensionListOut])
+@operation(List[TenantExtensionListOut])
 @paginate(CustomPagination)
 def get_tenant_extensions(request, tenant_id: str):
     """ 租户插件列表
@@ -134,8 +136,8 @@ def get_tenant_extensions(request, tenant_id: str):
     return TenantExtension.valid_objects.filter(extension__in = extensions)
 
 
-@api.get("/tenant/{tenant_id}/tenant/extensions/{id}/active/", tags=["租户插件"],auth=None)
-def get_tenant_extensions(request, tenant_id: str, id: str):
+@api.post("/tenant/{tenant_id}/tenant/extensions/{id}/active/", tags=["租户插件"],auth=None)
+def toggle_tenant_extension_status(request, tenant_id: str, id: str):
     """ 租户插件列表
     """
     extension= TenantExtension.objects.get(id=id)

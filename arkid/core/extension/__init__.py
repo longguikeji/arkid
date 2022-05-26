@@ -710,7 +710,7 @@ class Extension(ABC):
             TenantExtensionConfig: 创建的对象
         """
         ext = ExtensionModel.valid_objects.filter(package=self.package).first()
-        return TenantExtensionConfig.objects.create(tenant=tenant, extension=ext, config=config, name=name, type=type)
+        return TenantExtensionConfig.valid_objects.create(tenant=tenant, extension=ext, config=config, name=name, type=type)
     
     def delete_tenant_config(self, id):
         """删除运行时配置

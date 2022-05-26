@@ -18,7 +18,7 @@ def get_saas_token(tenant, token):
     获取saas平台token
     """
     # 缓存 saas_token
-    key = (tenant.id, token)
+    key = (str(tenant.id), token)
     if key in arkid_saas_token_cache:
         return arkid_saas_token_cache[key]
     app = Application.objects.filter(name='arkid_saas').first()
@@ -45,25 +45,33 @@ def get_saas_token(tenant, token):
     return arkid_saas_token_cache[key]
 
 
-arkstore_access_token_cache = {}
-
 def get_arkstore_access_token(tenant, token):
     """
     获取插件商店access_token
     """
-    # 缓存 idtoken
-    key = (tenant.id, token)
-    if key in arkstore_access_token_cache:
-        return arkstore_access_token_cache[key]
     saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
-    params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_uuid': saas_tenant_id,'token': saas_token}
+    return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token)
+
+
+arkstore_access_token_saas_cache = {}
+
+def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, token):
+    """
+    获取插件商店access_token
+    """
+    # 缓存 idtoken
+    key = (str(saas_tenant_id), token)
+    if key in arkstore_access_token_saas_cache:
+        return arkstore_access_token_saas_cache[key]
+    params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_uuid': str(saas_tenant_id), 'token': token}
     app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
     resp = requests.get(app_login_url, params=params)
     if resp.status_code != 200:
+        arkstore_access_token_saas_cache.pop(key, None)
         raise Exception(f'Error get_arkstore_access_token: {resp.status_code}')
     resp = resp.json()
-    arkstore_access_token_cache[key] = resp['access_token']
-    return arkstore_access_token_cache[key] 
+    arkstore_access_token_saas_cache[key] = resp['access_token']
+    return arkstore_access_token_saas_cache[key] 
 
 
 def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, limit=10):
@@ -311,28 +319,8 @@ def get_arkid_saas_app_detail(tenant, token, extension_id):
     return resp
 
 
-arkstore_access_token_saas_cache = {}
-
-def get_arkstore_access_token_with_saas_token(tenant, token):
-    """
-    获取插件商店access_token
-    """
-    # 缓存 idtoken
-    key = (tenant.id, token)
-    if key in arkstore_access_token_saas_cache:
-        return arkstore_access_token_saas_cache[key]
-    params = {'state': 'client', 'tenant_slug': tenant.slug, 'tenant_uuid': tenant.id.hex, 'token': token}
-    app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
-    resp = requests.get(app_login_url, params=params)
-    if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_access_token: {resp.status_code}')
-    resp = resp.json()
-    arkstore_access_token_saas_cache[key] = resp['access_token']
-    return arkstore_access_token_saas_cache[key] 
-
-
 def check_arkstore_purchased(tenant, token, app):
-    access_token = get_arkstore_access_token_with_saas_token(tenant, token)
+    access_token = get_arkstore_access_token_with_saas_token(tenant.slug, tenant.id, token)
     order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/apps/saas_app_order/{app.id.hex}'
     headers = {'Authorization': f'Token {access_token}'}
     params = {}

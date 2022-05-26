@@ -93,6 +93,7 @@ app_list_page.create_actions(
     ),
     local_actions={
         "order": actions.OpenAction(
+            name='购买',
             page=order_page
         )
     },
@@ -113,12 +114,13 @@ app_purchased_page.create_actions(
 
 order_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}',
+        path='/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/',
         method=actions.FrontActionMethod.GET,
     ),
     global_actions={
         "payed": actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}',
+            name='已支付',
+            path='/api/v1/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/',
             method=actions.FrontActionMethod.GET
         ),
     },

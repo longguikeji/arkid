@@ -32,7 +32,6 @@ class TenantExtension(BaseModel):
     is_active = models.BooleanField(default=False, verbose_name=_('是否使用'))
     # 如果启用平台配置，运行时，平台租户的配置将会被允许该租户使用，而本身的配置变得无效
     use_platform_config = models.BooleanField(default=False, verbose_name=_('是否使用平台配置'))
-    type = models.CharField(max_length=128, default='', verbose_name=_('类型'))
 
 
 class TenantExtensionConfig(BaseModel):

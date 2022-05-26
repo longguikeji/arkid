@@ -7,6 +7,7 @@ from pydantic import Field
 from arkid.core.extension import Extension
 from arkid.extension.utils import import_extension
 from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
+from arkid.core.error import ErrorCode
 
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
@@ -121,3 +122,19 @@ def get_extension(request, id: str):
     """ 获取平台插件信息 TODO
     """
     return {"success": True}
+
+@api.post("/extensions/{id}/active/", tags=["租户插件"],auth=None)
+def toggle_extension_status(request, id: str):
+    """ 租户插件列表
+    """
+    extension= ExtensionModel.objects.get(id=id)
+    ext = import_extension(extension.ext_dir)
+    if extension.is_active:
+        ext.unload()
+        extension.is_active = False
+    else:
+        ext.load()
+        extension.is_active = True
+
+    extension.save()
+    return {'error': ErrorCode.OK.value}

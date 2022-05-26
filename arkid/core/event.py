@@ -14,13 +14,14 @@ import json
 event_id_map = {}
 
 
-def webhook_event_handler(event, **kwargs):
+def send_event_through_webhook(event):
 
     from arkid.core.tasks.tasks import trigger_webhooks_for_event
+
     tenant = event.tenant
     payload = get_event_payload(event)
     logger.info(f"Webhook is handling event: {payload}")
-    # trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
+    trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
 
 
 def get_event_payload(event):
@@ -29,8 +30,8 @@ def get_event_payload(event):
         data = serialize('json', [data])
     elif type(data) is QuerySet:
         data = serialize('json', data)
-    elif isinstance(data, Schema):
-        data = data.json()
+    elif isinstance(data,Schema):
+        data = data.dict()
 
     request = None
     response = None
@@ -55,8 +56,7 @@ def get_event_payload(event):
         "data": data,
         "uuid": event.uuid,
     }
-    # return json.dumps(payload)
-    return payload
+    return json.dumps(payload)
 
 
 class EventType:
@@ -147,7 +147,6 @@ def register_event_type(event_type: EventType):
     if tag in tag_map_event_type:
         return
     tag_map_event_type[tag] = event_type
-    listen_event(tag, webhook_event_handler)
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
         listen_event(tag, func, listener, **kwargs)
@@ -180,6 +179,10 @@ def dispatch_event(event, sender=None):
         return
     # if event_type.data_schema:
     #     event.data = event_type.data_schema(**event.data)
+    try:
+        send_event_through_webhook(event)
+    except Exception as e:
+        logger.error(e)
     return event_type.signal.send(sender=sender, event=event)
 
 
@@ -311,44 +314,66 @@ CREATE_APPROVE_SYSTEM_CONFIG = 'CREATE_APPROVE_SYSTEM_CONFIG'
 UPDATE_APPROVE_SYSTEM_CONFIG = 'UPDATE_APPROVE_SYSTEM_CONFIG'
 DELETE_APPROVE_SYSTEM_CONFIG = 'DELETE_APPROVE_SYSTEM_CONFIG'
 
+CREATE_AUTO_AUTH_CONFIG = 'CREATE_AUTO_AUTH_CONFIG'
+UPDATE_AUTO_AUTH_CONFIG = 'UPDATE_AUTO_AUTH_CONFIG'
+DELETE_AUTO_AUTH_CONFIG = 'DELETE_AUTO_AUTH_CONFIG'
+
 APP_START = 'APP_START'
+AUTO_LOGIN = 'AUTO_LOGIN'
 
 
 # register events
-register_event(CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor','认证因素生成登录页面'))
-register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules','登录页面生成规则'))
-register_event(CREATE_APP, _('create app','创建应用'))
-register_event(CREATE_APP_DONE, _('create app done','创建应用完成'))
-register_event(UPDATE_APP, _('update app','修改应用'))
-register_event(DELETE_APP, _('delete app','删除应用'))
-register_event(CREATE_GROUP, _('create group','创建分组'))
-register_event(UPDATE_GROUP, _('update group','修改分组'))
-register_event(DELETE_GROUP, _('delete group','删除分组'))
-register_event(GROUP_ADD_USER, _('add user group','添加分组用户'))
-register_event(GROUP_REMOVE_USER, _('remove user group','移除分组用户'))
-register_event(APP_START, _('app start','应用启动'))
-register_event(SEND_SMS, _('send sms','发送短信'))
-register_event(CREATE_PERMISSION, _('create permission','创建权限'))
-register_event(UPDATE_PERMISSION, _('update permission','修改权限'))
-register_event(DELETE_PERMISSION, _('delete permission','删除权限'))
-register_event(USER_REGISTER, _('user register','用户注册'))
-register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version','设置应用接口和版本'))
-register_event(UPDATE_APP_USER_API_PERMISSION, _('update app user api permission','更新应用的用户接口权限'))
-register_event(BEFORE_AUTH, _('before_auth','认证前'))
-register_event(AUTH_SUCCESS, _('auth success','认证成功'))
-register_event(AUTH_FAIL, _('auth fail','认证失败'))
-register_event(CREATE_GROUP_PERMISSION, _('create group permission','创建权限分组'))
-register_event(UPDATE_GROUP_PERMISSION, _('update group permission','修改权限分组'))
-register_event(DELETE_GROUP_PERMISSION, _('delete group permission','删除权限分组'))
-register_event(REMOVE_GROUP_PERMISSION_PERMISSION, _('update group permission permission','移除权限分组的权限'))
-register_event(UPDATE_GROUP_PERMISSION_PERMISSION, _('delete group permission permission','更改权限分组的权限'))
+register_event(
+    CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
+)
+register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules', '登录页面生成规则'))
+register_event(CREATE_APP, _('create app', '创建应用'))
+register_event(CREATE_APP_DONE, _('create app done', '创建应用完成'))
+register_event(UPDATE_APP, _('update app', '修改应用'))
+register_event(DELETE_APP, _('delete app', '删除应用'))
+register_event(CREATE_GROUP, _('create group', '创建分组'))
+register_event(UPDATE_GROUP, _('update group', '修改分组'))
+register_event(DELETE_GROUP, _('delete group', '删除分组'))
+register_event(GROUP_ADD_USER, _('add user group', '添加分组用户'))
+register_event(GROUP_REMOVE_USER, _('remove user group', '移除分组用户'))
+register_event(APP_START, _('app start', '应用启动'))
+register_event(SEND_SMS, _('send sms', '发送短信'))
+register_event(CREATE_PERMISSION, _('create permission', '创建权限'))
+register_event(UPDATE_PERMISSION, _('update permission', '修改权限'))
+register_event(DELETE_PERMISSION, _('delete permission', '删除权限'))
+register_event(USER_REGISTER, _('user register', '用户注册'))
+register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version', '设置应用接口和版本'))
+register_event(
+    UPDATE_APP_USER_API_PERMISSION, _('update app user api permission', '更新应用的用户接口权限')
+)
+register_event(BEFORE_AUTH, _('before_auth', '认证前'))
+register_event(AUTH_SUCCESS, _('auth success', '认证成功'))
+register_event(AUTH_FAIL, _('auth fail', '认证失败'))
+register_event(CREATE_GROUP_PERMISSION, _('create group permission', '创建权限分组'))
+register_event(UPDATE_GROUP_PERMISSION, _('update group permission', '修改权限分组'))
+register_event(DELETE_GROUP_PERMISSION, _('delete group permission', '删除权限分组'))
+register_event(
+    REMOVE_GROUP_PERMISSION_PERMISSION,
+    _('update group permission permission', '移除权限分组的权限'),
+)
+register_event(
+    UPDATE_GROUP_PERMISSION_PERMISSION,
+    _('delete group permission permission', '更改权限分组的权限'),
+)
 register_event(CREATE_ACCOUNT_LIFE_CONFIG, _('Create Account Life', '添加生命周期'))
 register_event(UPDATE_ACCOUNT_LIFE_CONFIG, _('Update Account Life', '更新生命周期'))
 register_event(DELETE_ACCOUNT_LIFE_CONFIG, _('Delete Account Life', '删除生命周期'))
 register_event(CREATE_APPROVE_SYSTEM_CONFIG, _('Create Approve System', '添加审批系统'))
 register_event(UPDATE_APPROVE_SYSTEM_CONFIG, _('Update Approve System', '更新审批系统'))
 register_event(DELETE_APPROVE_SYSTEM_CONFIG, _('Delete Approve System', '删除审批系统'))
-register_event(ADD_USER_SYSTEM_PERMISSION, _('add user system permission','添加用户系统权限'))
-register_event(ADD_USER_APP_PERMISSION, _('add user app permission','添加用户应用权限'))
-register_event(REMOVE_USER_SYSTEM_PERMISSION, _('remove user system permission','移除用户系统权限'))
-register_event(REMOVE_USER_APP_PERMISSION, _('remove user app permission','移除用户应用权限'))
+register_event(ADD_USER_SYSTEM_PERMISSION, _('add user system permission', '添加用户系统权限'))
+register_event(ADD_USER_APP_PERMISSION, _('add user app permission', '添加用户应用权限'))
+register_event(
+    REMOVE_USER_SYSTEM_PERMISSION, _('remove user system permission', '移除用户系统权限')
+)
+register_event(REMOVE_USER_APP_PERMISSION, _('remove user app permission', '移除用户应用权限'))
+register_event(AUTO_LOGIN, _('Auto Login', '开始自动登录'))
+
+register_event(CREATE_AUTO_AUTH_CONFIG, _('Create Auto Auth', '添加自动登录'))
+register_event(UPDATE_AUTO_AUTH_CONFIG, _('Update Auto Auth', '更新自动登录'))
+register_event(DELETE_AUTO_AUTH_CONFIG, _('Delete Auto Auth', '删除自动登录'))

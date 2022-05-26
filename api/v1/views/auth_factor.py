@@ -75,7 +75,9 @@ def update_auth_factor(request, tenant_id: str, id: str, data: AuthFactorUpdateI
     """
     config = TenantExtensionConfig.active_objects.get(
         tenant__id=tenant_id, id=id)
-    config.update(**(data.dict()))
+    for attr, value in data.dict().items():
+        setattr(config, attr, value)
+    config.save()
     return {"data": {'error': ErrorCode.OK.value}}
 
 
