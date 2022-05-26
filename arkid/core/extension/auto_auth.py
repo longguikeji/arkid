@@ -14,7 +14,7 @@ class AutoAuthExtension(Extension):
 
     composite_schema_map = {}
     created_composite_schema_list = []
-    composite_key = 'auth_type'
+    composite_key = 'type'
     composite_model = TenantExtension
 
     @property

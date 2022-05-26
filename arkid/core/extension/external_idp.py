@@ -110,18 +110,24 @@ class ExternalIdpExtension(Extension):
             schema, idp_type, exclude=['extension', 'settings']
         )
 
-    def create_tenant_settings(self, tenant, settings, type):
-        settings_created = super().create_tenant_settings(tenant, settings, type=type)
+    def update_or_create_settings(
+        self, tenant, settings, is_active, use_platform_config
+    ):
+        settings_created = super().update_or_create_settings(
+            tenant, settings, is_active, use_platform_config
+        )
         server_host = get_app_config().get_host()
         login_url = server_host + reverse(
-            f'api:{self.name}_tenant:{self.name}_login', args=[tenant.id, settings_created.id]
+            f'api:{self.name}_tenant:{self.name}_login',
+            args=[tenant.id, settings_created.id],
         )
         callback_url = server_host + reverse(
             f'api:{self.name}_tenant:{self.name}_callback',
             args=[tenant.id, settings_created.id],
         )
         bind_url = server_host + reverse(
-            f'api:{self.name}_tenant:{self.name}_bind', args=[tenant.id, settings_created.id]
+            f'api:{self.name}_tenant:{self.name}_bind',
+            args=[tenant.id, settings_created.id],
         )
         img_url = self.get_img_url()
         settings["login_url"] = login_url
