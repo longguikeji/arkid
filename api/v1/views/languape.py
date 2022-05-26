@@ -7,7 +7,7 @@ from api.v1.schema.languages import *
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import LanguageData
-from arkid.core.translation import default_lang_maps
+from arkid.core.translation import lang_maps
 from arkid.core.error import ErrorCode
 
 
@@ -65,7 +65,7 @@ def delete_language(request, tenant_id: str,id:str):
     return {'error': ErrorCode.OK.value}
 
 @api.get(
-    "/tenant/{tenant_id}/languages/{id}/",
+    "/tenant/{tenant_id}/languages/{id}/translates/",
     tags=["语言包管理"],
     auth=None,
     response=List[LanguageDataItemOut],
@@ -73,7 +73,7 @@ def delete_language(request, tenant_id: str,id:str):
 @operation(LanguageDataOut)
 @paginate(CustomPagination)
 def get_language_data(request, tenant_id: str,id:str):
-    """ 创建自定义语言包
+    """ 获取自定义语言包
     """
     language_data = get_object_or_404(
         LanguageData.active_objects,
@@ -81,3 +81,39 @@ def get_language_data(request, tenant_id: str,id:str):
     )
     
     return [{"source":k,"translated":v} for k,v in language_data.data.items()]
+
+@api.post(
+    "/tenant/{tenant_id}/languages/{id}/translates/",
+    tags=["语言包管理"],
+    auth=None,
+    response=LanguageDataItemCreateOut,
+)
+@operation(LanguageDataItemCreateOut)
+def create_language_data(request, tenant_id: str, id:str, data:LanguageDataItemCreateIn):
+    """ 创建自定义语言包翻译
+    """
+    language_data = get_object_or_404(
+        LanguageData.active_objects,
+        id=id
+    )
+    
+    custom_translate_data = {data.source:data.translated}
+    if language_data.custom_data:
+        language_data.custom_data.update(custom_translate_data)
+    else:
+        language_data.custom_data = custom_translate_data
+    language_data.save()
+    
+    return {'error': ErrorCode.OK.value}
+
+@api.get(
+    "/tenant/{tenant_id}/translate_word/",
+    tags=["语言包管理"],
+    auth=None,
+    response=LanguageTranslateWordOut,
+)
+@operation(LanguageTranslateWordOut)
+def get_language_data(request, tenant_id: str):
+    """ 获取自定义语言包
+    """
+    return lang_maps.keys()

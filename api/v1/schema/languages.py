@@ -50,3 +50,20 @@ class LanguageDataItemOut(Schema):
     
 class LanguageDataOut(ResponseSchema):
     data: List[LanguageDataItemOut]
+
+class LanguageDataItemCreateIn(Schema):
+    source:str = Field(
+        name=_("原词句"),
+        path="/api/v1/tenant/{tenant_id}/translate_word/",
+        method="get"
+    )
+    
+    translated:str = Field(
+        name=_("译词句")
+    )
+
+class LanguageDataItemCreateOut(ResponseSchema):
+    pass
+
+class LanguageTranslateWordOut(ResponseSchema):
+    data:List[str]

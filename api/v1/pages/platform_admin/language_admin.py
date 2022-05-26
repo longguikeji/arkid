@@ -8,6 +8,7 @@ page = pages.TablePage(tag = tag, name = name)
 edit_page = pages.TablePage(name=_("编辑语言包"))
 
 pages.register_front_pages(page)
+pages.register_front_pages(edit_page)
 
 router = routers.FrontRouter(
     path=tag,
@@ -38,12 +39,15 @@ page.create_actions(
 
 edit_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/languages/{id}/',
+        path='/api/v1/tenant/{tenant_id}/languages/{id}/translates/',
         method=actions.FrontActionMethod.GET
     ),
     global_actions={
-       'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/languages/{id}/"
+       'add': actions.OpenAction(
+            name = "新增",
+            icon = "icon-create",
+            method = actions.FrontActionMethod.POST,
+            path='/api/v1/tenant/{tenant_id}/languages/{id}/translates/',
         ),
     }
 )
