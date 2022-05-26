@@ -33,22 +33,21 @@ page.create_actions(
         "edit": actions.EditAction(
             page=edit_page,
         ),
-        "delete":actions.DeleteAction(
+        "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/approve_actions/{id}/",
-        )
+        ),
     },
 )
 
 edit_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/approve_actions/{id}/',
-        method=actions.FrontActionMethod.GET
+        method=actions.FrontActionMethod.GET,
     ),
     global_actions={
-       'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/approve_actions/{id}/"
+        'confirm': actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/approve_actions/{id}/",
+            method=actions.FrontActionMethod.PUT,
         ),
-    }
+    },
 )
-
-

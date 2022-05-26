@@ -69,6 +69,7 @@ def get_auto_auth(request, tenant_id: str, id: str):
             "id": setting.id.hex,
             "type": setting.extension.type,
             "package": setting.extension.package,
+            "use_platform_config": setting.use_platform_config,
             # "name": setting.name,
             "config": setting.settings,
         }
@@ -84,18 +85,11 @@ def get_auto_auth(request, tenant_id: str, id: str):
 @operation(AutoAuthCreateOut)
 def create_auto_auth(request, tenant_id: str, data: AutoAuthCreateIn):
     """创建自动认证"""
-    # tenant = request.tenant
-    # package = data.package
-    # config = data.config
-    # extension = Extension.active_objects.get(package=package)
-    # extension = import_extension(extension.ext_dir)
-    # extension_settings = extension.create_tenant_settings(tenant, config.dict())
     setting = TenantExtension()
     setting.tenant = request.tenant
     setting.extension = Extension.valid_objects.get(package=data.package)
+    setting.use_platform_config = data.use_platform_config
     setting.settings = data.config.dict()
-    # config.name = data.dict()["name"]
-    # config.type = data.type
     setting.save()
     dispatch_event(
         Event(
@@ -120,6 +114,7 @@ def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
 
     setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
     setting.settings = data.config.dict()
+    setting.use_platform_config = data.use_platform_config
     setting.save()
     dispatch_event(
         Event(

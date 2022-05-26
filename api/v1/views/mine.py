@@ -9,6 +9,7 @@ from arkid.core.schema import ResponseSchema
 from arkid.core.models import ApproveAction, ApproveRequest, User
 from pydantic import Field
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
+from ninja.pagination import paginate
 
 
 @api.get("/mine/tenant/{tenant_id}/apps/", tags=["我的"], auth=None)
@@ -71,17 +72,22 @@ def get_mine_all_permissions(request, tenant_id: str):
     return []
 
 
-from .approve_request import ApproveRequestOut
+from api.v1.schema.approve_request import (
+    ApproveRequestListItemOut,
+    ApproveRequestListOut,
+)
 
 
 @api.get(
     "/mine/tenant/{tenant_id}/approve_requests/",
     tags=["我的"],
-    response=List[ApproveRequestOut],
+    response=List[ApproveRequestListItemOut],
     auth=None,
 )
+@operation(ApproveRequestListOut)
+@paginate(CustomPagination)
 def get_mine_approve_requests(request, tenant_id: str, package: str):
-    """我的审批列表，TODO"""
+    """我的审批列表"""
     tenant = request.tenant
     requests = ApproveRequest.valid_objects.filter(
         user=request.user, action__tenant=tenant

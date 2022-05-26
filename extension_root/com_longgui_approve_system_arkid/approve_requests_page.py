@@ -8,7 +8,7 @@ name = '默认请求处理'
 
 
 page = pages.TablePage(tag=tag, name=name)
-
+pages.register_front_pages(page)
 
 router = routers.FrontRouter(
     path=tag,
@@ -18,16 +18,18 @@ router = routers.FrontRouter(
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/approve_system_arkid/approve_requests/?package=com.longgui.approve.system.arkid',
+        path='/api/v1/tenant/{tenant_id}/approve_requests/arkid/',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
         "pass": actions.DirectAction(
-            path="/api/v1/tenant/{tenant_id}/approve_system_arkid/approve_requests/{id}/?action=pass",
+            name="通过",
+            path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=pass",
             method=actions.FrontActionMethod.PUT,
         ),
         "deny": actions.DirectAction(
-            path="/api/v1/tenant/{tenant_id}/approve_system_arkid/approve_requests/{id}/?action=pass",
+            name="拒绝",
+            path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=deny",
             method=actions.FrontActionMethod.PUT,
         ),
     },
