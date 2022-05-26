@@ -48,7 +48,7 @@ class AppProtocolExtension(Extension):
         '''
         注册统一的入口函数，方便检测
         :param view:目标View的as_view()，例如:AuthorizationView.as_view()
-        :param path:需要跳转的路径，例如:r"oauth/authorize/$"
+        :param path:需要跳转的路径，例如:r"oauth/authorize/(?P<app_id>[\w-]+)/$"
         :param url_name:注册的路径名称, 例如:authorize
         :param type:list:一个当前插件的类型list, 例如:['OIDC', 'OAuth2']
         :return: 函数执行结果

@@ -172,18 +172,38 @@ def user_add_permission(request, tenant_id: str, permission_id: str, user_id: st
         # permissiondata.add_app_permission_to_user(request.tenant.id, permission.app_id, permission.user_id, permission.id)
     return {'error': ErrorCode.OK.value}
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/remove_permission", tags=['权限'], auth=None)
+
+@api.get("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def user_remove_permission(request, tenant_id: str, permission_id: str, user_id: str):
+def permission_set_open(request, tenant_id: str, permission_id: str):
     '''
-    移除用户权限
+    权限外部访问打开
     '''
-    permission = SystemPermission.valid_objects.filter(id=permission_id).first()
-    if permission is None:
-        permission = Permission.valid_objects.filter(id=permission_id).first()
-    permission.user_id = user_id
-    if isinstance(permission, SystemPermission):
-        dispatch_event(Event(tag=REMOVE_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    permission = Permission.valid_objects.filter(
+        tenant_id=tenant_id,
+        id=permission_id
+    ).first()
+    if permission:
+        permission.is_open = True
+        permission.save()
+        return {'error': ErrorCode.OK.value}
     else:
-        dispatch_event(Event(tag=REMOVE_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
-    return {'error': ErrorCode.OK.value}
+        return {'error': ErrorCode.PERMISSION_EXISTS_ERROR.value}
+
+
+@api.get("/tenant/{tenant_id}/permission/{permission_id}/set_close", tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def permission_set_close(request, tenant_id: str, permission_id: str):
+    '''
+    权限外部访问关闭
+    '''
+    permission = Permission.valid_objects.filter(
+        tenant_id=tenant_id,
+        id=permission_id
+    ).first()
+    if permission:
+        permission.is_open = False
+        permission.save()
+        return {'error': ErrorCode.OK.value}
+    else:
+        return {'error': ErrorCode.PERMISSION_EXISTS_ERROR.value}
