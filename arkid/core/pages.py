@@ -244,7 +244,7 @@ class TabsPage(FrontPage):
             return
             
         if not isinstance(pages, tuple) or not isinstance(pages, list):
-            pages = list(pages)
+            pages = [pages.tag] if isinstance(pages,FrontPage) else list(pages)
         if not hasattr(self, "pages"):
             self.pages = []
         

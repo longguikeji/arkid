@@ -142,10 +142,10 @@ class AuthFactorExtension(Extension):
         pass
     
     def register_auth_manage_page(self):
-        from api.v1.pages.mine.auth_manage import router
+        from api.v1.pages.mine.auth_manage import page as auth_manage_page
         page = self.create_auth_manage_page()
         if page:
-            router.add_page(page)
+            auth_manage_page.add_pages(page)
     
     @abstractmethod
     def create_auth_manage_page(self):

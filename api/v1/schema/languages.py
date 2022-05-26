@@ -1,11 +1,16 @@
+from uuid import UUID
 from arkid.core.schema import ResponseSchema
 from typing import List
-from ninja import Field, Schema
+from ninja import Field, ModelSchema, Schema
 from arkid.core.translation import gettext_default as _
+from arkid.core.models import LanguageData
 
 class LanguageListItemOut(Schema):
+    id:UUID
     
-    name:str
+    name:str = Field(
+        title=_("语言名称")
+    )
     
     count:int = Field(
         title=_("词句数量")
@@ -21,3 +26,27 @@ class LanguageListItemOut(Schema):
 
 class LanguageListOut(ResponseSchema):
     data: List[LanguageListItemOut]
+    
+class LanguageCreateIn(ModelSchema):
+    
+    class Config:
+        model=LanguageData
+        model_fields = ["name"]
+        
+class LanguageCreateOut(ResponseSchema):
+    pass
+
+class LanguageDeleteOut(ResponseSchema):
+    pass
+
+class LanguageDataItemOut(Schema):
+    source:str = Field(
+        name=_("原词句")
+    )
+    
+    translated:str = Field(
+        name=_("译词句")
+    )
+    
+class LanguageDataOut(ResponseSchema):
+    data: List[LanguageDataItemOut]
