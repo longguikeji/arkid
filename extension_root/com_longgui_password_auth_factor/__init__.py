@@ -185,12 +185,12 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
 
         page.create_actions(
             init_action=actions.DirectAction(
-                path='/api/v1/platform_config/',
+                path='/api/v1/tenant/{tenant_id}/mine_password/',
                 method=actions.FrontActionMethod.GET,
             ),
             global_actions={
                 'confirm': actions.ConfirmAction(
-                    path="/api/v1/platform_config/"
+                    path="/api/v1/tenant/{tenant_id}/mine_password/"
                 ),
             }
         )
