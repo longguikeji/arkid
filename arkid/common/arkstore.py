@@ -50,7 +50,7 @@ def get_arkstore_access_token(tenant, token):
     获取插件商店access_token
     """
     saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
-    get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token)
+    return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token)
 
 
 arkstore_access_token_saas_cache = {}
