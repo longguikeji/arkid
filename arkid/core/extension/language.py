@@ -31,7 +31,7 @@ class LanguageExtension(Extension):
         
         language_data.save()
         
-        self.register_languge(language_type, language_data.data)
+        self.refresh_lang_maps()
         
          
     

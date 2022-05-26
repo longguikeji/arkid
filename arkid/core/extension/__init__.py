@@ -443,19 +443,9 @@ class Extension(ABC):
         core_api.add_fields(api_schema_cls, **field_definitions)
         self.extend_apis.append((api_schema_cls, list(field_definitions.keys())))
         
-    def register_languge(self, lang_code:str = 'en', lang_maps={}):
-        """注册语言包
-
-        Args:
-            lang_code (str, optional): 语言代码. Defaults to 'en'.
-            lang_maps (dict, optional): 语言键值对. Defaults to {}.
+    def refresh_lang_maps(self):
+        """刷新语言包
         """
-        self.lang_code = lang_code
-        if lang_code in core_translation.extension_lang_maps.keys():
-            core_translation.extension_lang_maps[lang_code][self.pname] = lang_maps
-        else:
-            core_translation.extension_lang_maps[lang_code] = {}
-            core_translation.extension_lang_maps[lang_code][self.pname] = lang_maps
         core_translation.lang_maps = core_translation.reset_lang_maps()
 
     def register_front_routers(self, router, primary:core_routers.FrontRouter=None):

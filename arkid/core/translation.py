@@ -1,6 +1,5 @@
 from typing import Optional
 
-
 lang_maps = {}
 
 default_lang_maps = {}
@@ -49,12 +48,14 @@ extension_lang_maps = {}
 
 def reset_lang_maps():
     lang_maps = {}
-    lang_code_list = list(set(list(default_lang_maps.keys())+list(extension_lang_maps.keys())))
-    for lang_code in lang_code_list:
-        lang_maps[lang_code] = default_lang_maps[lang_code] if lang_code in default_lang_maps.keys() else {}
-        
-        if lang_code in extension_lang_maps.keys():
-            for k in extension_lang_maps[lang_code].keys():
-                lang_maps[lang_code].update(extension_lang_maps[lang_code][k])
+    from arkid.core.models import LanguageData
+    lang_datas = LanguageData.active_objects.all()
+    for item in lang_datas:
+        if not lang_maps.get(item.name,None):
+            lang_maps[item.name] = default_lang_maps[item.name]
+        if item.extension_data and isinstance(item.extension_data,dict):
+            lang_maps[item.name].update(item.extension_data)
+        if item.custom_data and isinstance(item.custom_data,dict):
+            lang_maps[item.name].update(item.custom_data)
     return lang_maps
 
