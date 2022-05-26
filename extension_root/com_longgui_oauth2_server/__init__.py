@@ -91,7 +91,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
         host = get_app_config().get_frontend_host()
         namespace = f'api:{self.name}_tenant'
         config.userinfo = host+reverse(namespace+":oauth-user-info", args=[tenant_id])
-        config.authorize = host+reverse(namespace+":authorize", args=[tenant_id])
+        config.authorize = host+reverse(namespace+":authorize", args=[tenant_id, obj.uuid])
         config.token = host+reverse(namespace+":token", args=[tenant_id])
         config.logout = host+reverse(namespace+":oauth-user-logout", args=[tenant_id])
         config.client_id = obj.client_id
