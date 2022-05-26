@@ -39,17 +39,20 @@ class OAuth2ServerExtension(AppProtocolExtension):
         self.register_enter_view(auth_view, auth_path, url_name, type)
 
     def create_app(self, event, **kwargs):
-        config = event.data.config
-        return self.update_app_data(event, config, True)
+        if event.data.package == package:
+            config = event.data.config
+            return self.update_app_data(event, config, True)
 
     def update_app(self, event, **kwargs):
-        config = event.data.config
-        return self.update_app_data(event, config, False)
+        if event.data.package == package:
+            config = event.data.config
+            return self.update_app_data(event, config, False)
 
     def delete_app(self, event, **kwargs):
-        # 删除应用
-        Application.objects.filter(uuid=event.data.id).delete()
-        return True
+        if event.data.package == package:
+            # 删除应用
+            Application.objects.filter(uuid=event.data.id).delete()
+            return True
 
     def update_app_data(self, event, config, is_create):
         '''
