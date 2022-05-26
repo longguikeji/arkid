@@ -1138,28 +1138,19 @@ class PermissionData(object):
             user = self.token_check(tenant_id, token, request)
             return True
 
-        apps = App.valid_objects.filter(
+        app = App.valid_objects.filter(
             id=app_id,
             type__in=type
-        )
-        app = None
-        if client_id:
-            # oauth有这个参数
-            for app_temp in apps:
-                config_data = app_temp.config.config
-                data_client = config_data.get('client_id', '')
-                if data_client == client_id:
-                    app = app_temp
-                    break
-        if app is None:
-            apps = apps.order_by('-created')  
-            app = apps.first()
+        ).first()
         if not app:
             return False
 
+        user = self.token_check(tenant_id, token, request)
+        if not user:
+            return False
+        
         # 特殊处理 OIDC-Platform
         if app.type == 'OIDC-Platform':
-            user = self.token_check(tenant_id, token, request)
             return True
 
         permission = Permission.valid_objects.filter(
@@ -1170,7 +1161,6 @@ class PermissionData(object):
         if not permission:
             return False
 
-        user = self.token_check(tenant_id, token, request)
         result = self.permission_check_by_sortid(permission, user, app, tenant_id)
         if not result:
             return False
