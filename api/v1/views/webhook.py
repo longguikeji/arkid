@@ -1,4 +1,4 @@
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
 from webhook.models import Webhook, WebhookEvent, WebhookTriggerHistory
 from arkid.core.error import ErrorCode
@@ -8,37 +8,32 @@ from ninja import ModelSchema, Schema
 from pydantic import Field
 import json
 import requests
-
-
-class WebhookSchemaOut(ModelSchema):
-    class Config:
-        model = Webhook
-        model_fields = ['id', 'name', 'url', 'secret']
-
-    events: List[str]
-
-    @staticmethod
-    def resolve_events(obj):
-        events = []
-        for e in obj.events_set.all():
-            events.append(e.event_type)
-        return events
-
-
-class WebhookSchemaIn(Schema):
-    name: str = Field(title=_('Name', '名称'), default='')
-    url: str = Field(title=_('URL', '应用URL'))
-    secret: str = Field(title=_('Secret', '签名密钥'), defaut='')
-    events: List[str] = Field(title=_('Events', '监听事件'))
+from api.v1.schema.webhook import (
+    WebhookCreateIn,
+    WebhookCreateOut,
+    WebhookDeleteOut,
+    WebhookListItemOut,
+    WebhookListOut,
+    WebhookOut,
+    WebhookUpdateIn,
+    WebhookUpdateOut,
+    WebhookHistoryListItemOut,
+    WebhookHistoryListOut,
+    WebhookHistoryOut,
+    WebhookHistoryRetryOut,
+    WebhookHistoryDeleteOut,
+)
+from arkid.core.pagenation import CustomPagination
 
 
 @api.get(
     "/tenant/{tenant_id}/webhooks/",
     tags=["Webhook"],
     auth=None,
-    response=List[WebhookSchemaOut],
+    response=List[WebhookListItemOut],
 )
-@paginate
+@operation(WebhookListOut)
+@paginate(CustomPagination)
 def get_webhooks(request, tenant_id: str):
     tenant = request.tenant
     webhooks = Webhook.valid_objects.filter(tenant=tenant)
@@ -49,24 +44,31 @@ def get_webhooks(request, tenant_id: str):
     "/tenant/{tenant_id}/webhooks/{id}/",
     tags=["Webhook"],
     auth=None,
-    response=WebhookSchemaOut,
+    response=WebhookOut,
 )
+@operation(WebhookOut)
 def get_webhook(request, tenant_id: str, id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=id).first()
-    if not webhook:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
-    else:
-        return webhook
+    events = [event.event_type for event in webhook.events_set.all()]
+    return {
+        "data": {
+            "name": webhook.name,
+            "url": webhook.url,
+            "secret": webhook.secret,
+            "events": events,
+        }
+    }
 
 
 @api.post(
     "/tenant/{tenant_id}/webhooks/",
     tags=["Webhook"],
     auth=None,
-    response=WebhookSchemaOut,
+    response=WebhookCreateOut,
 )
-def create_webhook(request, tenant_id: str, data: WebhookSchemaIn):
+@operation(WebhookCreateOut)
+def create_webhook(request, tenant_id: str, data: WebhookCreateIn):
     tenant = request.tenant
     name = data.name
     url = data.url
@@ -85,9 +87,10 @@ def create_webhook(request, tenant_id: str, data: WebhookSchemaIn):
     "/tenant/{tenant_id}/webhooks/{id}/",
     tags=["Webhook"],
     auth=None,
-    response=WebhookSchemaOut,
+    response=WebhookUpdateOut,
 )
-def update_webhook(request, tenant_id: str, id: str, data: WebhookSchemaIn):
+@operation(WebhookUpdateOut)
+def update_webhook(request, tenant_id: str, id: str, data: WebhookUpdateIn):
     tenant = request.tenant
     name = data.name
     url = data.url
@@ -107,7 +110,13 @@ def update_webhook(request, tenant_id: str, id: str, data: WebhookSchemaIn):
     return webhook
 
 
-@api.delete("/tenant/{tenant_id}/webhooks/{id}/", tags=["Webhook"], auth=None)
+@api.delete(
+    "/tenant/{tenant_id}/webhooks/{id}/",
+    tags=["Webhook"],
+    auth=None,
+    response=WebhookDeleteOut,
+)
+@operation(WebhookDeleteOut)
 def delete_webhook(request, tenant_id: str, id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=id).first()
@@ -118,26 +127,21 @@ def delete_webhook(request, tenant_id: str, id: str):
         return {'error': ErrorCode.OK.value}
 
 
-class WebhookHistorySchemaOut(ModelSchema):
-    class Config:
-        model = WebhookTriggerHistory
-        model_fields = ['id', 'status', 'request', 'response']
-
-
 @api.get(
     "/tenant/{tenant_id}/webhooks/{webhook_id}/histories/",
     tags=["Webhook"],
     auth=None,
-    response=List[WebhookHistorySchemaOut],
+    response=List[WebhookHistoryListItemOut],
 )
-@paginate
+@operation(WebhookHistoryListOut)
+@paginate(CustomPagination)
 def get_webhook_histories(request, tenant_id: str, webhook_id: str):
     """获取Webhook历史记录列表"""
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
         return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
-    histories = webhook.history_set.all()
+    histories = webhook.history_set.all().filter(is_del=False)
     return histories
 
 
@@ -145,34 +149,54 @@ def get_webhook_histories(request, tenant_id: str, webhook_id: str):
     "/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/",
     tags=["Webhook"],
     auth=None,
-    response=WebhookHistorySchemaOut,
+    response=WebhookHistoryOut,
 )
 def get_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
-    """获取Webhook历史记录,TODO"""
+    """获取Webhook历史记录"""
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
+        return {"data": {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}}
     history = WebhookTriggerHistory.valid_objects.filter(webhook=webhook, id=id).first()
     if not history:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
-    return history
+        return {"data": {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}}
+    return {"data": history}
+
+
+@api.delete(
+    "/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/",
+    tags=["Webhook"],
+    auth=None,
+    response=WebhookHistoryDeleteOut,
+)
+def delete_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
+    """删除Webhook历史记录"""
+    tenant = request.tenant
+    webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
+    if not webhook:
+        return {"data": {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}}
+    history = WebhookTriggerHistory.valid_objects.filter(webhook=webhook, id=id).first()
+    if not history:
+        return {"data": {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}}
+    history.delete()
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
 @api.get(
     "/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/retry/",
     tags=["Webhook"],
     auth=None,
+    response=WebhookHistoryRetryOut,
 )
 def retry_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
-    """重试webhook历史记录,TODO"""
+    """重试webhook历史记录"""
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
+        return {"data": {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}}
     history = WebhookTriggerHistory.valid_objects.filter(webhook=webhook, id=id).first()
     if not history:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
+        return {"data": {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}}
 
     webhook = history.webhook
     url = webhook.url
@@ -201,4 +225,4 @@ def retry_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
             }
         )
         history.save()
-    return {'error': ErrorCode.OK.value}
+    return {"data": {'error': ErrorCode.OK.value}}

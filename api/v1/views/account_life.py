@@ -132,7 +132,7 @@ def update_account_life(request, tenant_id: str, id: str, data: AccountLifeUpdat
 )
 @operation(AccountLifeDeleteOut)
 def delete_account_life(request, tenant_id: str, id: str):
-    """删除账号生命周期配置,TODO"""
+    """删除账号生命周期配置"""
     config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
     dispatch_event(
         Event(
