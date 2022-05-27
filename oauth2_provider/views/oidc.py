@@ -98,29 +98,52 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
 
     def get(self, request, *args, **kwargs):
         tenant = request.tenant
-        tenant_id = tenant.id
         app_id = kwargs.get('app_id', '')
-        namespace = f'api:com_longgui_auth_oauth2_server_tenant'
+        if tenant:
+            tenant_id = tenant.id
+            namespace = f'api:com_longgui_auth_oauth2_server_tenant'
 
-        issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
+            issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
 
-        if not issuer_url:
-            issuer_url = oauth2_settings.oidc_issuer(request)
-            authorization_endpoint = request.build_absolute_uri(reverse(namespace+":authorize", args=[tenant_id, app_id]))
-            token_endpoint = request.build_absolute_uri(reverse(namespace+":token", args=[tenant_id]))
-            userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(
-                reverse(namespace+":oauth-user-info", args=[tenant_id])
-            )
-            jwks_uri = request.build_absolute_uri(namespace+":jwks-info")
+            if not issuer_url:
+                issuer_url = oauth2_settings.oidc_issuer(request)
+                authorization_endpoint = request.build_absolute_uri(reverse(namespace+":authorize", args=[tenant_id, app_id]))
+                token_endpoint = request.build_absolute_uri(reverse(namespace+":token", args=[tenant_id]))
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(
+                    reverse(namespace+":oauth-user-info", args=[tenant_id])
+                )
+                jwks_uri = request.build_absolute_uri(reverse(namespace+":jwks-info"))
+            else:
+                parsed_url = urlparse(oauth2_settings.OIDC_ISS_ENDPOINT)
+                host = parsed_url.scheme + "://" + parsed_url.netloc
+                authorization_endpoint = "{}{}".format(host, reverse(namespace+":authorize", args=[tenant_id]))
+                token_endpoint = "{}{}".format(host, reverse(namespace+":token", args=[tenant_id]))
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
+                    host, reverse(namespace+":oauth-user-info", args=[tenant_id])
+                )
+                jwks_uri = "{}{}".format(host, reverse(namespace+":jwks-info"))
         else:
-            parsed_url = urlparse(oauth2_settings.OIDC_ISS_ENDPOINT)
-            host = parsed_url.scheme + "://" + parsed_url.netloc
-            authorization_endpoint = "{}{}".format(host, reverse(namespace+":authorize", args=[tenant_id]))
-            token_endpoint = "{}{}".format(host, reverse(namespace+":token", args=[tenant_id]))
-            userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
-                host, reverse(namespace+":oauth-user-info", args=[tenant_id])
-            )
-            jwks_uri = "{}{}".format(host, reverse(namespace+":jwks-info"))
+            namespace = f'api:com_longgui_arkid_saas'
+
+            issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
+
+            if not issuer_url:
+                issuer_url = oauth2_settings.oidc_issuer(request)
+                authorization_endpoint = request.build_absolute_uri(reverse(namespace+":authorize-platform", args=[app_id]))
+                token_endpoint = request.build_absolute_uri(reverse(namespace+":token-platform"))
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(
+                    reverse(namespace+":oauth-user-info-platform")
+                )
+                jwks_uri = request.build_absolute_uri(reverse(namespace+":jwks-info-platform"))
+            else:
+                parsed_url = urlparse(oauth2_settings.OIDC_ISS_ENDPOINT)
+                host = parsed_url.scheme + "://" + parsed_url.netloc
+                authorization_endpoint = "{}{}".format(host, reverse(namespace+":authorize-platform"))
+                token_endpoint = "{}{}".format(host, reverse(namespace+":token-platform"))
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
+                    host, reverse(namespace+":oauth-user-info-platform")
+                )
+                jwks_uri = "{}{}".format(host, reverse(namespace+":jwks-info-platform"))
 
         signing_algorithms = [Application.HS256_ALGORITHM]
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
