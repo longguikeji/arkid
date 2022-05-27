@@ -40,20 +40,19 @@ page.create_actions(
         ),
         "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/scim_syncs/{id}/",
-        )
+        ),
     },
 )
 
 edit_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/scim_syncs/{id}/',
-        method=actions.FrontActionMethod.GET
+        method=actions.FrontActionMethod.GET,
     ),
     global_actions={
-       'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/scim_syncs/{id}/"
+        'confirm': actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/scim_syncs/{id}/",
+            method=actions.FrontActionMethod.PUT,
         ),
-    }
+    },
 )
-
-
