@@ -7,7 +7,7 @@ from api.v1.schema.languages import *
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import LanguageData
-from arkid.core.translation import lang_maps,reset_lang_maps
+from arkid.core.translation import lang_maps,reset_lang_maps,default_lang_maps
 from arkid.core.error import ErrorCode
 
 
@@ -116,4 +116,7 @@ def create_language_data(request, tenant_id: str, id:str, data:LanguageDataItemC
 def get_language_data(request, tenant_id: str):
     """ 获取自定义语言包
     """
-    return {"data":lang_maps.keys()}
+    data = []
+    for k,v in default_lang_maps.items():
+        data.extend(list(v.keys()))
+    return {"data":data}

@@ -55,7 +55,8 @@ class LanguageDataItemCreateIn(Schema):
     source:str = Field(
         title=_("原词句"),
         path="/api/v1/tenant/{tenant_id}/translate_word/",
-        method="get"
+        method="get",
+        format="autocomplete"
     )
     
     translated:str = Field(
