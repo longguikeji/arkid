@@ -31,11 +31,15 @@ from arkid.core.pagenation import CustomPagination
 )
 @operation(ApproveRequestListOut)
 @paginate(CustomPagination)
-def arkid_approve_request_list(request, tenant_id: str):
+def arkid_approve_request_list(request, tenant_id: str, is_approved: str = ""):
     package = 'com.longgui.approve.system.arkid'
     requests = ApproveRequest.valid_objects.filter(
         action__tenant=request.tenant, action__extension__package=package
     )
+    if is_approved == "true":
+        requests = requests.exclude(status="wait")
+    elif is_approved == "false":
+        requests = requests.filter(status="wait")
     return requests
 
 

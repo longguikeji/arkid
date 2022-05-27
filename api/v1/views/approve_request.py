@@ -27,9 +27,15 @@ from api.v1.schema.approve_request import (
 )
 @operation(ApproveRequestListOut)
 @paginate(CustomPagination)
-def approve_request_list(request, tenant_id: str, package: str = ""):
+def approve_request_list(
+    request, tenant_id: str, package: str = "", is_approved: str = ""
+):
     tenant = request.tenant
     requests = ApproveRequest.valid_objects.filter(action__tenant=tenant)
     if package:
         requests = requests.filter(action__extension__package=package)
+    if is_approved == "true":
+        requests = requests.exclude(status="wait")
+    elif is_approved == "false":
+        requests = requests.filter(status="wait")
     return requests
