@@ -140,7 +140,7 @@ def get_app_openapi_version(request, tenant_id: str, app_id: str):
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpenApiVersionSchemaOut):
     '''
-    获取app的openapi地址和版本
+    设置app的openapi地址和版本
     '''
     app = get_object_or_404(App, id=app_id, is_del=False)
     config = app.config

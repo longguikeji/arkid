@@ -137,8 +137,8 @@ def delete_permission(request, tenant_id: str, permission_id: str):
     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/permissionstr", tags=['权限'], response=PermissionStrSchemaOut, auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/permissionstr", tags=['权限'], response=PermissionStrSchemaOut)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
 def get_permission_str(request, tenant_id: str,  app_id: str = None):
     '''
     权限结果字符串
