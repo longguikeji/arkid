@@ -1040,13 +1040,14 @@ class PermissionData(object):
             userpermissionresult = userpermissionresults.filter(
                 app_id=app_id,
             ).first()
-
         else:
             userpermissionresult = userpermissionresults.filter(   
                 app__isnull=True,
             ).first()
         if userpermissionresult:
             permission_result = compress.decrypt(userpermissionresult.result)
+            if app_id and permission_result:
+                permission_result = permission_result[1:]
             return {'result': permission_result}
         else:
             return {'result': ''}
