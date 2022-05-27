@@ -24,10 +24,8 @@ RUN set -eux; \
     groupadd -r arkid && useradd -r -g arkid arkid; \
     setcap 'cap_net_bind_service=+ep' /usr/local/bin/python3.8
 
-# ADD requirements.txt ./
-RUN pip install pipenv; \
-    pipenv lock -r > requirements.txt; \
-    pip install --no-cache-dir -r requirements.txt
+ADD requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 ADD . .
 RUN chmod +x docker-entrypoint.sh
