@@ -23,12 +23,12 @@ page.create_actions(
     ),
     local_actions={
         "pass": actions.DirectAction(
-            name="通过",
+            name=_("Pass", "通过"),
             path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=pass",
             method=actions.FrontActionMethod.PUT,
         ),
         "deny": actions.DirectAction(
-            name="拒绝",
+            name=_("Deny", "拒绝"),
             path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=deny",
             method=actions.FrontActionMethod.PUT,
         ),
