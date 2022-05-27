@@ -65,13 +65,6 @@ def delete_periodic_task(extension_config):
         logger.exception('delete celery task failed %s' % e)
 
 
-class ScimSyncConfigSchemaOut(Schema):
-    id: UUID
-    type: str
-    name: str
-    config: dict
-
-
 @api.get(
     "/tenant/{tenant_id}/scim_syncs/",
     response=List[ScimSyncListItemOut],
@@ -128,22 +121,20 @@ def get_scim_sync(request, tenant_id: str, id: str):
 def create_scim_sync(request, tenant_id: str, data: ScimSyncCreateIn):
     """创建用户数据同步配置"""
 
-    config = TenantExtensionConfig()
-    config.tenant = request.tenant
-    config.extension = Extension.active_objects.get(package=data.package)
-    config.config = data.config.dict()
-    config.name = data.dict().get("name")
-    config.type = data.type
-    config.save()
+    extension = Extension.valid_objects.get(package=data.package)
+    extension = import_extension(extension.ext_dir)
+    config = extension.create_tenant_config(
+        request.tenant, data.config.dict(), name=data.dict().get("name"), type=data.type
+    )
     if data.config.mode == "client":
         update_or_create_periodic_task(config)
-    return config
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
 @api.put(
     "/tenant/{tenant_id}/scim_syncs/{id}/",
     tags=[_("用户数据同步配置")],
-    response=ScimSyncConfigSchemaOut,
+    response=ScimSyncUpdateOut,
     auth=None,
 )
 @operation(ScimSyncUpdateOut)

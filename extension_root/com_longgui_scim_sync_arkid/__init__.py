@@ -28,7 +28,7 @@ from scim_server.schemas.member import Member
 from scim_server.schemas.user_groups import UserGroup as ScimUserGroup
 from django.db.utils import IntegrityError
 
-package = 'com.longgui.scim_sync.arkid'
+package = 'com.longgui.scim.sync.arkid'
 
 
 ClientConfig = create_extension_schema(

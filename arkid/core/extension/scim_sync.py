@@ -125,12 +125,12 @@ class ScimSyncExtension(Extension, ProviderBase):
         )
         if config["mode"] == "server":
             server_host = get_app_config().get_host()
-            package = self.package.replace('.', '_')
             user_url = server_host + reverse(
-                f'{package}:{self.name}_scim_users', args=[tenant.id, config_created.id]
+                f'api:{self.name}_tenant:{self.name}_scim_users',
+                args=[tenant.id, config_created.id],
             )
             group_url = server_host + reverse(
-                f'{package}:{self.name}_scim_groups',
+                f'api:{self.name}_tenant:{self.name}_scim_groups',
                 args=[tenant.id, config_created.id],
             )
             config["group_url"] = group_url
@@ -185,12 +185,12 @@ class BaseScimSyncClientSchema(Schema):
     sync_server_id: str = Field(
         default="", title=_('Sync Server ID', '同步服务的ID'), hidden=True
     )
-    attr_map: dict = Field(default={}, title=_('Attribute Map', '同步映射关系'))
+    # attr_map: dict = Field(default={}, title=_('Attribute Map', '同步映射关系'))
     mode: Literal["client"]
 
 
 class BaseScimSyncServerSchema(Schema):
     # name: str = Field(title=_('配置名称'))
     mode: Literal["server"]
-    user_url: str = Field(default="", title=_('User Url', '获取用户URL'))
-    group_url: str = Field(default="", title=_('Group Url', '获取组URL'))
+    user_url: str = Field(default="", title=_('User Url', '获取用户URL'), readonly=True)
+    group_url: str = Field(default="", title=_('Group Url', '获取组URL'), readonly=True)
