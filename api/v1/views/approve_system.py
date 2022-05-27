@@ -68,8 +68,6 @@ def get_approve_system(request, tenant_id: str, id: str):
             "id": setting.id.hex,
             "type": setting.extension.type,
             "package": setting.extension.package,
-            "use_platform_config": setting.use_platform_config,
-            # "name": setting.name,
             "config": setting.settings,
         }
     }
@@ -85,7 +83,6 @@ def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
     setting = TenantExtension()
     setting.tenant = request.tenant
     setting.extension = Extension.valid_objects.get(package=data.package)
-    setting.use_platform_config = data.use_platform_config
     setting.settings = data.config.dict()
     setting.save()
     dispatch_event(
@@ -110,7 +107,6 @@ def update_approve_system(
 ):
     setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
     setting.settings = data.config.dict()
-    setting.use_platform_config = data.use_platform_config
     setting.save()
     dispatch_event(
         Event(

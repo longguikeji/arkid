@@ -23,11 +23,13 @@ class ApproveSystemListOut(ResponseSchema):
 
 
 class ApproveSystemOut(ResponseSchema):
-    data: ApproveSystemExtension.create_composite_config_schema('ApproveSystemDataOut')
+    data: ApproveSystemExtension.create_composite_config_schema(
+        'ApproveSystemDataOut', exclude=['id', 'use_platform_config']
+    )
 
 
 ApproveSystemCreateIn = ApproveSystemExtension.create_composite_config_schema(
-    'ApproveSystemCreateIn', exclude=['id']
+    'ApproveSystemCreateIn', exclude=['id', 'use_platform_config']
 )
 
 
@@ -36,7 +38,7 @@ class ApproveSystemCreateOut(ResponseSchema):
 
 
 ApproveSystemUpdateIn = ApproveSystemExtension.create_composite_config_schema(
-    'ApproveSystemUpdateIn', exclude=['id']
+    'ApproveSystemUpdateIn', exclude=['id', 'use_platform_config']
 )
 
 
