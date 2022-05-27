@@ -116,4 +116,4 @@ def create_language_data(request, tenant_id: str, id:str, data:LanguageDataItemC
 def get_language_data(request, tenant_id: str):
     """ 获取自定义语言包
     """
-    return lang_maps.keys()
+    return {"data":lang_maps.keys()}

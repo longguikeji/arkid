@@ -41,11 +41,11 @@ class LanguageDeleteOut(ResponseSchema):
 
 class LanguageDataItemOut(Schema):
     source:str = Field(
-        name=_("原词句")
+        title=_("原词句")
     )
     
     translated:str = Field(
-        name=_("译词句")
+        title=_("译词句")
     )
     
 class LanguageDataOut(ResponseSchema):
@@ -53,13 +53,13 @@ class LanguageDataOut(ResponseSchema):
 
 class LanguageDataItemCreateIn(Schema):
     source:str = Field(
-        name=_("原词句"),
+        title=_("原词句"),
         path="/api/v1/tenant/{tenant_id}/translate_word/",
         method="get"
     )
     
     translated:str = Field(
-        name=_("译词句")
+        title=_("译词句")
     )
 
 class LanguageDataItemCreateOut(ResponseSchema):

@@ -151,8 +151,6 @@ class Extension(ABC):
     
     extension_config_schema_map = {}
     created_extension_config_schema_list = []
-    
-    
 
     @property
     def type(self):
