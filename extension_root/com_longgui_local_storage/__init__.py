@@ -2,15 +2,11 @@ from pathlib import Path
 import uuid
 from django.urls import reverse
 from ninja import Field
-from typing import Optional
-from types import SimpleNamespace
-from arkid.core import event
 from arkid.core.extension import Extension, create_extension_schema
 from arkid.core.event import SAVE_FILE
 from arkid.core.translation import gettext_default as _
-from alibabacloud_dysmsapi20170525.client import Client
-from alibabacloud_tea_openapi import models
-from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
+from arkid.config import get_app_config
+from . import views
 
 package = 'com.longgui.local_storage'
 
@@ -34,11 +30,8 @@ class LocalStorageExtension(Extension):
         tenant = event.tenant
         file = event.data["file"]
 
-        settings = self.get_tenant_settings(tenant)
-        settings = SimpleNamespace(**settings.settings)
-        
-        key = self.generate_key(key)
-        p = Path(settings.data_path) / key
+        f_key = self.generate_key(file.name)
+        p = Path('./storage/') / f_key
 
         if not p.parent.exists():
             p.parent.mkdir(parents=True)
@@ -47,10 +40,11 @@ class LocalStorageExtension(Extension):
             for chunk in file.chunks():
                 fp.write(chunk)
 
-        return self.resolve(key)
+        return self.resolve(f_key,tenant)
     
-    def resolve(self, key):
-        return reverse("api:local_storage:render", args=[key, ])
+    def resolve(self, f_key,tenant):
+        host = get_app_config().get_frontend_host()
+        return f'{host}/api/v1/tenant/{tenant.id}/localstorage/{f_key}'
     
     def generate_key(self, file_name:str):
         key = '{}.{}'.format(

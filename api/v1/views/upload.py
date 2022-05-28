@@ -7,7 +7,7 @@ from ninja import NinjaAPI, File
 from ninja.files import UploadedFile
 from api.v1.schema.upload import *
 
-@api.post("/tenant/{tenant_id}/upload/", tags=['文件上传'], auth=None)
+@api.post("/tenant/{tenant_id}/upload/",response=UploadOut, tags=['文件上传'], auth=None)
 @operation(UploadOut, use_id=True)
 def upload(request, tenant_id:str, file: UploadedFile = File(...)):
     tenant = request.tenant
@@ -18,4 +18,8 @@ def upload(request, tenant_id:str, file: UploadedFile = File(...)):
     if not responses:
         return {'error': 'error_code', 'message': '认证插件未启用'}
     useless, (data, extension) = responses[0]
-    return data
+    return {
+        "data":{
+            "url":data
+        }
+    }
