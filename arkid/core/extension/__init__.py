@@ -151,33 +151,43 @@ class Extension(ABC):
     
     extension_config_schema_map = {}
     created_extension_config_schema_list = []
-    
-    
 
     @property
     def type(self):
         return 'base'
 
-    def __init__(self, package:str, version:str, description:str, labels:List[str], homepage:str, logo:str, author:str):
+    def __init__(
+        self, 
+        package:str, 
+        version:str, 
+        name:str,  
+        logo:str, 
+        description:str = None, 
+        labels:List[str] = None, 
+        homepage:str = None, 
+        author:str = None
+    ):
         """_summary_
 
         Args:
             package (str): 插件包名，唯一标识
             version (str): 版本号
+            name (str): 名称
+            logo (str): 插件的图标
             description (str): 描述
             labels (List[str]): 标签
             homepage (str): 主页，URL
-            logo (str): 插件的图标
             author (str): 作者
         """
         self.package = package
         self.version = version
+        self.name = name
         self.description = description
         self.labels = labels
         self.homepage = homepage
         self.logo = logo
         self.author = author
-        self.name = self.package.replace('.', '_')
+        self.pname = self.package.replace('.', '_')
         self.apis = []
         self.urls = []
         self.extend_fields = []
@@ -234,12 +244,12 @@ class Extension(ABC):
         #     print(f'makemigrations {self.name} fail')
             
         try:
-            print(f'migrate {self.name} start')
-            management.call_command('migrate', self.name, interactive=False)
-            print(f'migrate {self.name} end')
+            print(f'migrate {self.pname} start')
+            management.call_command('migrate', self.pname, interactive=False)
+            print(f'migrate {self.pname} end')
         except Exception as e:
             print(e)
-            print(f'migrate {self.name} fail')
+            print(f'migrate {self.pname} fail')
             
     def register_api(
         self, 
@@ -285,7 +295,7 @@ class Extension(ABC):
         Returns:
             str: 真实的地址path
         """
-        path = '/' + self.name + path
+        path = '/' + self.pname + path
         
         if tenant_path:
             path = '/tenant/{tenant_id}' + path
@@ -320,11 +330,11 @@ class Extension(ABC):
             tenant_urls (bool, optional): 是否要添加 tenant/{tenant_id}/ 前缀. Defaults to False.
         """
         if tenant_urls:
-            urls_ext = [re_path(r'tenant/(?P<tenant_id>[\w-]+)/', include((urls_ext, 'extension'), namespace=f'{self.name}_tenant'))]
+            urls_ext = [re_path(r'tenant/(?P<tenant_id>[\w-]+)/', include((urls_ext, 'extension'), namespace=f'{self.pname}_tenant'))]
             self.urls.extend(urls_ext)
             core_urls.register(urls_ext)
         else:
-            urls_ext = [re_path('', include((urls_ext, 'extension'), namespace=f'{self.name}'))]
+            urls_ext = [re_path('', include((urls_ext, 'extension'), namespace=f'{self.pname}'))]
             self.urls.extend(urls_ext)
             core_urls.register(urls_ext)
 
@@ -349,7 +359,7 @@ class Extension(ABC):
         data = core_expand.register_expand_field(
             table = model_cls.foreign_key._meta.db_table,
             field = alias or model_field,
-            extension_name = self.name,
+            extension_name = self.pname,
             extension_model_cls = model_cls,
             extension_table = model_cls._meta.db_table,
             extension_field = model_field,
@@ -431,19 +441,9 @@ class Extension(ABC):
         core_api.add_fields(api_schema_cls, **field_definitions)
         self.extend_apis.append((api_schema_cls, list(field_definitions.keys())))
         
-    def register_languge(self, lang_code:str = 'en', lang_maps={}):
-        """注册语言包
-
-        Args:
-            lang_code (str, optional): 语言代码. Defaults to 'en'.
-            lang_maps (dict, optional): 语言键值对. Defaults to {}.
+    def refresh_lang_maps(self):
+        """刷新语言包
         """
-        self.lang_code = lang_code
-        if lang_code in core_translation.extension_lang_maps.keys():
-            core_translation.extension_lang_maps[lang_code][self.name] = lang_maps
-        else:
-            core_translation.extension_lang_maps[lang_code] = {}
-            core_translation.extension_lang_maps[lang_code][self.name] = lang_maps
         core_translation.lang_maps = core_translation.reset_lang_maps()
 
     def register_front_routers(self, router, primary:core_routers.FrontRouter=None):
@@ -864,7 +864,7 @@ class Extension(ABC):
             self.__class__.refresh_all_created_composite_schema()
 
         if self.lang_code:
-            core_translation.extension_lang_maps[self.lang_code].pop(self.name)
+            core_translation.extension_lang_maps[self.lang_code].pop(self.pname)
             if not core_translation.extension_lang_maps[self.lang_code]:
                 core_translation.extension_lang_maps.pop(self.lang_code)
             core_translation.lang_maps = core_translation.reset_lang_maps()

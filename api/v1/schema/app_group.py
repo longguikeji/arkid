@@ -141,9 +141,8 @@ class AppGroupAppUpdateOut(ResponseSchema):
     pass
 
 class AppGroupExcludeAppsItemOut(Schema):
-    id: str
+    id: UUID
     name: str
-    status: bool
 
 class AppGroupExcludeAppsOut(ResponseSchema):
     items: List[AppGroupExcludeAppsItemOut]

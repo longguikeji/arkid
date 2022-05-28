@@ -2,6 +2,7 @@ import datetime
 from os import environ
 from django.db import models
 from django.utils import timezone
+from sqlalchemy import null
 from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
 
@@ -75,7 +76,7 @@ class User(BaseModel, ExpandModel):
         verbose_name_plural = _("user", "用户")
         unique_together = [['username', 'tenant']]
 
-    username = models.CharField(max_length=128, blank=False)
+    username = models.CharField(max_length=128, blank=False, verbose_name=_("用户名"))
     avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True)
     is_platform_user = models.BooleanField(
         default=False, verbose_name=_('is platform user', '是否是平台用户')
@@ -516,8 +517,48 @@ class ApproveRequest(BaseModel, ExpandModel):
         return (
             f'{self.action.name}:{self.action.method}:{self.action.path}:{self.status}'
         )
+        
+class LanguageData(BaseModel):
+    class Meta(object):
+        verbose_name = _('Language Data', "语言包数据")
+        verbose_name_plural = _('Language Data', "语言包数据")
 
+    name = models.CharField(verbose_name=_('Name', '名称'), max_length=255)
 
+    extension = models.OneToOneField(
+        Extension,
+        default=None,
+        null=True,
+        on_delete=models.PROTECT,
+        verbose_name=_('Extension', '插件'),
+        related_name="language_data",
+        related_query_name="language_data",
+    )
+    
+    extension_data = models.JSONField(
+        verbose_name=_("插件自带数据"),
+        blank=True,
+        null= True
+    )
+    
+    custom_data = models.JSONField(
+        verbose_name=_(""),
+        blank=True,
+        null=True
+    )
+    
+    @property
+    def count(self):
+        extension_data_count = len(self.extension_data) if self.extension_data else 0 
+        custom_data_count = len(self.custom_data) if self.custom_data else 0
+        return extension_data_count + custom_data_count
+    
+    @property
+    def data(self):
+        data = self.extension_data or {}
+        if self.custom_data:
+            data.update(self.custom_data)
+        return data
 
 class TenantExpandAbstract(BaseModel):
     class Meta:

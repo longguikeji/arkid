@@ -16,7 +16,7 @@ class ThemeBootswatch(FrontThemeExtension):
 
 extension = ThemeBootswatch(
     package=package,
-    description="Bootswatch主题",
+    name='Bootswatch主题',
     version='1.0',
     labels=['theme','bootswatch'],
     homepage='https://bootswatch.com/',

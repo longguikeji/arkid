@@ -210,7 +210,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
 
 extension = ScimSyncArkIDExtension(
     package=package,
-    description='ArkID 同步',
+    name='ArkID用户数据同步',
     version='1.0',
     labels='scim-sync-arkid',
     homepage='https://www.longguikeji.com',

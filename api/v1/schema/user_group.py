@@ -100,11 +100,6 @@ class UserGroupDetailOut(ResponseSchema):
 
 
 class UserGroupUserListItemOut(ModelSchema):
-
-    status:bool = Field(
-        title=_("选择状态"),
-        default=False
-    )
     
     class Config:
         model = User

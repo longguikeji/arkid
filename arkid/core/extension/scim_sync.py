@@ -47,15 +47,15 @@ class ScimSyncExtension(Extension, ProviderBase):
 
         scim_server_urls = [
             re_path(
-                rf'^scim/{self.name}/(?P<config_id>[\w-]+)/Users(?:/(?P<uuid>[^/]+))?$',
+                rf'^scim/{self.pname}/(?P<config_id>[\w-]+)/Users(?:/(?P<uuid>[^/]+))?$',
                 UsersView.as_view(),
-                name=f'{self.name}_scim_users',
+                name=f'{self.pname}_scim_users',
             ),
             # re_path(r'^Groups/.search$', views.GroupSearchView.as_view(), name='groups-search'),
             re_path(
-                rf'^scim/{self.name}/(?P<config_id>[\w-]+)/Groups(?:/(?P<uuid>[^/]+))?$',
+                rf'^scim/{self.pname}/(?P<config_id>[\w-]+)/Groups(?:/(?P<uuid>[^/]+))?$',
                 GroupsView.as_view(),
-                name=f'{self.name}_scim_groups',
+                name=f'{self.pname}_scim_groups',
             ),
         ]
         self.register_routers(scim_server_urls, True)
@@ -127,10 +127,10 @@ class ScimSyncExtension(Extension, ProviderBase):
             server_host = get_app_config().get_host()
             package = self.package.replace('.', '_')
             user_url = server_host + reverse(
-                f'{package}:{self.name}_scim_users', args=[tenant.id, config_created.id]
+                f'{package}:{self.pname}_scim_users', args=[tenant.id, config_created.id]
             )
             group_url = server_host + reverse(
-                f'{package}:{self.name}_scim_groups',
+                f'{package}:{self.pname}_scim_groups',
                 args=[tenant.id, config_created.id],
             )
             config["group_url"] = group_url

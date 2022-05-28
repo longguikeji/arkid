@@ -56,6 +56,17 @@ class FrontRouter(DeepSN):
         if url:
             self.url = url
         super().__init__(*args, **kwargs)
+        
+    def add_page(self, page):
+        if not hasattr(self,"page"):
+            self.page = []
+        if isinstance(page,list):
+            for p in page:
+                self.page.append(
+                    p.tag if isinstance(p,FrontPage) else p
+                )
+        else:
+            self.page.append(page.tag if isinstance(page,FrontPage) else page)
 
     def add_children(self, child):
         """添加子路由

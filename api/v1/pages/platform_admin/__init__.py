@@ -5,6 +5,7 @@ from . import extension_admin,language_admin,tenant_admin, platform_config
 router = routers.FrontRouter(
     path='platform_admin',
     name=_('平台管理'),
+    icon='platform',
     children=[
         extension_admin.router,
         language_admin.router,

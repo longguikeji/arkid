@@ -19,7 +19,7 @@ edit_page = pages.FormPage(name=_("编辑用户过期设置"))
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    icon='user',
+    icon='settings',
     page=page,
 )
 

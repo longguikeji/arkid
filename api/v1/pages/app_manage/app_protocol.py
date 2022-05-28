@@ -13,6 +13,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
+    icon='protocal',
 )
 
 page.create_actions(

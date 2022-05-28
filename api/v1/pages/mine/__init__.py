@@ -5,6 +5,7 @@ from . import profile, approve_manage,auth_manage,grant_manage,switch_tenant,log
 router = routers.FrontRouter(
     path='mine',
     name=_('我的'),
+    icon='mine',
     children=[
         profile.router,
         auth_manage.router,

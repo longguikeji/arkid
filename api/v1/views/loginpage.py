@@ -95,6 +95,10 @@ def login_page(request, tenant_id: str):
     
     data = {}
     for login_page, ext in login_pages:
+        
+        if not login_page:
+            continue
+        
         for k,v in login_page.items():
             if not data.get(k):
                 data[k] = v

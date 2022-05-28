@@ -39,7 +39,7 @@ class FrontThemeExtension(Extension):
                 
         css_urls = [
             re_path(
-                rf'^front_theme/{self.name}/{type}/css/',
+                rf'^front_theme/{self.pname}/{type}/css/',
                 CSSView.as_view(),
                 name=f'{type}',
             ),

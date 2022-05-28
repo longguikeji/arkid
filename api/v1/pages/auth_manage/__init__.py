@@ -4,6 +4,7 @@ from arkid.core import routers
 router = routers.FrontRouter(
     path='auth',
     name='认证管理',
+    icon='auth',
     children=[
         auth_factor.router,
         third_auth.router,

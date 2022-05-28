@@ -92,7 +92,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
         更新配置中的url信息
         '''
         host = get_app_config().get_frontend_host()
-        namespace = f'api:{self.name}_tenant'
+        namespace = f'api:{self.pname}_tenant'
         config.userinfo = host+reverse(namespace+":oauth-user-info", args=[tenant_id])
         config.authorize = host+reverse(namespace+":authorize", args=[tenant_id, obj.uuid])
         config.token = host+reverse(namespace+":token", args=[tenant_id])
@@ -104,7 +104,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
 
 extension = OAuth2ServerExtension(
     package=package,
-    description='OAuth2认证服务',
+    name='OIDC&OAuth2认证协议',
     version='1.0',
     labels='oauth',
     homepage='https://www.longguikeji.com',
