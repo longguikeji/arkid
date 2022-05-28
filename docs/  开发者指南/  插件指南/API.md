@@ -12,6 +12,10 @@ ArkID基于Django-ninja框架来开发API，完整继承了其所有能力。
 
 使用 [arkid.core.extension.Extension.register_api](../%20插件基类/#arkid.core.extension.Extension.register_api)
 
+#### 权限与分页
+
+ {todo}
+
 ```py title='示例'
 from arkid.core import extension
 

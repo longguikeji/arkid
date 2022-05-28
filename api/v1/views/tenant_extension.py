@@ -136,8 +136,8 @@ def get_tenant_extensions(request, tenant_id: str):
     return TenantExtension.valid_objects.filter(extension__in = extensions)
 
 
-@api.get("/tenant/{tenant_id}/tenant/extensions/{id}/active/", tags=["租户插件"],auth=None)
-def get_tenant_extensions(request, tenant_id: str, id: str):
+@api.post("/tenant/{tenant_id}/tenant/extensions/{id}/active/", tags=["租户插件"],auth=None)
+def toggle_tenant_extension_status(request, tenant_id: str, id: str):
     """ 租户插件列表
     """
     extension= TenantExtension.objects.get(id=id)

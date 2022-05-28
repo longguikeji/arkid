@@ -106,7 +106,7 @@ class ArkidApi(NinjaAPI):
             return response
 
 
-api = ArkidApi(auth=GlobalAuth())
+api = ArkidApi(auth=GlobalAuth(),title='ArkID',version='2.5.0')
 
 api.get_openapi_schema = functools.partial(get_openapi_schema, api)
 

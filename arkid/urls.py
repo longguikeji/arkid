@@ -21,7 +21,6 @@ from arkid.login import view as login_view
 from arkid.core import urls as core_urls
 from arkid.redoc import view as redoc_view
 from scim_server import urls as scim_urls
-from api.v1.views import bind_saas
 
 
 urlpatterns = [
@@ -38,7 +37,7 @@ urlpatterns = [
 extension_root_urls = core_urls.urlpatterns
 
 urlpatterns += [
-    path('api/v1/', include((extension_root_urls + bind_saas.urlpatterns, 'api'), namespace='api'))
+    path('api/v1/', include((extension_root_urls, 'api'), namespace='api'))
 ]
 
 urlpatterns += scim_urls.urlpatterns

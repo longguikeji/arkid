@@ -45,12 +45,12 @@ platform_extension_page.create_actions(
 
 rent_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/rent/extensions/{uuid}',
+        path='/api/v1/tenant/{tenant_id}/arkstore/rent/extensions/{uuid}/',
         method=actions.FrontActionMethod.GET,
     ),
     global_actions={
         "payed": actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}',
+            path='/api/v1/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}/',
             method=actions.FrontActionMethod.GET,
         ),
     },
