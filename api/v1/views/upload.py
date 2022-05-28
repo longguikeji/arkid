@@ -14,4 +14,8 @@ def upload(request, tenant_id:str, file: UploadedFile = File(...)):
     data = {
         "file": file,
     }
-    return dispatch_event(Event(tag=SAVE_FILE, tenant=tenant, request=request, data=data))
+    responses = dispatch_event(Event(tag=SAVE_FILE, tenant=tenant, request=request, data=data))
+    if not responses:
+        return {'error': 'error_code', 'message': '认证插件未启用'}
+    useless, (data, extension) = responses[0]
+    return data
