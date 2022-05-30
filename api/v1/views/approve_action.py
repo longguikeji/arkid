@@ -114,3 +114,30 @@ def delete_approve_action(request, tenant_id: str, id: str):
     else:
         action.delete()
         return {'error': ErrorCode.OK.value}
+
+
+class ApproveSystemExtensionListOut(ModelSchema):
+    class Config:
+        model = Extension
+        model_fields = [
+            "id",
+            "name",
+            "type",
+            "package",
+            "labels",
+            "version",
+            "is_active",
+            "is_allow_use_platform_config",
+        ]
+
+
+@api.get(
+    "/tenant/{tenant_id}/approve_system_extensions/",
+    response=List[ApproveSystemExtensionListOut],
+    tags=['审批动作'],
+    auth=None,
+)
+def list_approve_system_extensions(request, status: str = None):
+    """获取审批系统插件列表"""
+    qs = Extension.active_objects.filter(type='approve_system').all()
+    return qs
