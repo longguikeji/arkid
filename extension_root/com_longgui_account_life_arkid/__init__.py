@@ -29,13 +29,12 @@ package = 'com.longgui.account.life.arkid'
 
 
 class UserExpirationSchema(Schema):
-    user_id: str = Field(title=_("用户ID"))
+    username: str = Field(title=_("用户名"))
     expiration_time: datetime = Field(title=_("过期时间"))
-    username: str = Field(title=_('用户名'), readonly=True, default='')
 
 
 class UserExpirationListSchema(Schema):
-    __root__: List[UserExpirationSchema]
+    __root__: List[UserExpirationSchema] = Field(title=_("用户过期设置"), format="dynamic")
 
 
 class AccountLifeArkIDExtension(AccountLifeExtension):
