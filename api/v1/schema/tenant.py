@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Optional
+from uuid import UUID
 from ninja import Field, ModelSchema, Schema
 from arkid.core.translation import gettext_default as _
 from arkid.core.models import Tenant
@@ -49,7 +50,7 @@ class TenantDeleteOut(ResponseSchema):
     pass
 
 class TenantConfigItemOut(Schema):
-    id: str = Field(
+    id: UUID = Field(
         readonly = True
     )
     
@@ -61,8 +62,12 @@ class TenantConfigItemOut(Schema):
         title=_("slug")
     )
     
-    icon: str = Field(
+    icon: Optional[str] = Field(
         title=_("图标")
+    )
+    
+    token_duration_minutes: int = Field(
+        title=_('Token有效时长(分钟)')
     )
 
 class TenantConfigOut(ResponseSchema):

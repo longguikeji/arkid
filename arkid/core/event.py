@@ -321,6 +321,8 @@ DELETE_AUTO_AUTH_CONFIG = 'DELETE_AUTO_AUTH_CONFIG'
 APP_START = 'APP_START'
 AUTO_LOGIN = 'AUTO_LOGIN'
 
+SAVE_FILE = 'SAVE_FILE'
+
 
 # register events
 register_event(
@@ -377,3 +379,5 @@ register_event(AUTO_LOGIN, _('Auto Login', '开始自动登录'))
 register_event(CREATE_AUTO_AUTH_CONFIG, _('Create Auto Auth', '添加自动登录'))
 register_event(UPDATE_AUTO_AUTH_CONFIG, _('Update Auto Auth', '更新自动登录'))
 register_event(DELETE_AUTO_AUTH_CONFIG, _('Delete Auto Auth', '删除自动登录'))
+
+register_event(SAVE_FILE, _('SAVE FILE', '保存文件'))

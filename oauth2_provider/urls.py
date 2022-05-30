@@ -12,7 +12,7 @@ base_urlpatterns = [
 ]
 
 oidc_urlpatterns = [
-    re_path(r".well-known/openid-configuration/$", views.ConnectDiscoveryInfoView.as_view(), name="oidc-connect-discovery-info",),
+    re_path(r"app/(?P<app_id>[\w-]+)/.well-known/openid-configuration/$", views.ConnectDiscoveryInfoView.as_view(), name="oidc-connect-discovery-info",),
     re_path(r"oauth/userinfo/$", views.UserInfoExtendView.as_view(), name="oauth-user-info"),
     re_path(r"oidc/logout/$", views.OIDCLogoutView.as_view(), name="oauth-user-logout"),
     re_path(r".well-known/jwks.json$", views.JwksInfoView.as_view(), name="jwks-info"),

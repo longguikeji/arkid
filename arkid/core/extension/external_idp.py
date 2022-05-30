@@ -61,20 +61,20 @@ class ExternalIdpExtension(Extension):
         # self.register_routers(scim_server_urls, True)
         github_urls = [
             re_path(
-                rf'^idp/{self.name}/(?P<settings_id>[\w-]+)/login$',
+                rf'^idp/{self.pname}/(?P<settings_id>[\w-]+)/login$',
                 self.login,
-                name=f'{self.name}_login',
+                name=f'{self.pname}_login',
             ),
             # re_path(r'^Groups/.search$', views.GroupSearchView.as_view(), name='groups-search'),
             re_path(
-                rf'^idp/{self.name}/(?P<settings_id>[\w-]+)/callback$',
+                rf'^idp/{self.pname}/(?P<settings_id>[\w-]+)/callback$',
                 self.callback,
-                name=f'{self.name}_callback',
+                name=f'{self.pname}_callback',
             ),
             re_path(
-                rf'^idp/{self.name}/(?P<settings_id>[\w-]+)/bind$',
+                rf'^idp/{self.pname}/(?P<settings_id>[\w-]+)/bind$',
                 self.bind,
-                name=f'{self.name}_bind',
+                name=f'{self.pname}_bind',
             ),
         ]
         self.register_routers(github_urls, True)
@@ -118,16 +118,14 @@ class ExternalIdpExtension(Extension):
         )
         server_host = get_app_config().get_host()
         login_url = server_host + reverse(
-            f'api:{self.name}_tenant:{self.name}_login',
-            args=[tenant.id, settings_created.id],
+            f'api:{self.pname}_tenant:{self.pname}_login', args=[tenant.id, settings_created.id]
         )
         callback_url = server_host + reverse(
-            f'api:{self.name}_tenant:{self.name}_callback',
+            f'api:{self.pname}_tenant:{self.pname}_callback',
             args=[tenant.id, settings_created.id],
         )
         bind_url = server_host + reverse(
-            f'api:{self.name}_tenant:{self.name}_bind',
-            args=[tenant.id, settings_created.id],
+            f'api:{self.pname}_tenant:{self.pname}_bind', args=[tenant.id, settings_created.id]
         )
         img_url = self.get_img_url()
         settings["login_url"] = login_url

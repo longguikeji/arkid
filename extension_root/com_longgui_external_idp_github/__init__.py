@@ -132,7 +132,7 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
 
 extension = ExternalIdpGithubExtension(
     package=package,
-    description='Github第三方登录服务',
+    name='Github第三方登录服务',
     version='1.0',
     labels='external-idp-github',
     homepage='https://www.longguikeji.com',

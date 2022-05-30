@@ -5,7 +5,7 @@ from arkid.core import routers, pages, actions
 tag = 'center_arkid'
 name = '中心平台'
 
-page = pages.FormPage(tag = tag, name = name)
+page = pages.DescriptionPage(tag = tag, name = name)
 edit_page = pages.FormPage(name="编辑")
 edit_slug_page = pages.FormPage(name="设置标识")
 
@@ -16,7 +16,8 @@ pages.register_front_pages(edit_slug_page)
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    page=page
+    page=page,
+    icon='center',
 )
 
 page.create_actions(
@@ -42,6 +43,7 @@ edit_slug_page.create_actions(
     ),
     global_actions = {
         "confirm": actions.DirectAction(
+            name='确定',
             path="/api/v1/tenant/{tenant_id}/bind_saas/slug/",
             method=actions.FrontActionMethod.POST,
         ),
@@ -55,6 +57,7 @@ edit_page.create_actions(
     ),
     global_actions = {
         "confirm": actions.DirectAction(
+            name='确定',
             path="/api/v1/tenant/{tenant_id}/bind_saas/info/",
             method=actions.FrontActionMethod.POST,
         ),

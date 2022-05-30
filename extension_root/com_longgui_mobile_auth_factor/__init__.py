@@ -2,12 +2,14 @@ from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactor
 from arkid.core.error import ErrorCode
 from arkid.core.models import User
 from arkid.common.sms import check_sms_code
+from arkid.core import actions, pages
 from .models import UserMobile
 from pydantic import Field
 from typing import List, Optional
 from arkid.core.translation import gettext_default as _
 from django.db import transaction
 from arkid.core.extension import create_extension_schema
+from . import views
 
 package = "com.longgui.mobile_auth_factor"
 
@@ -199,11 +201,31 @@ class MobileAuthFactorExtension(AuthFactorExtension):
 
     def _get_register_user(self, tenant, field_name, field_value):
         pass
+    
+    def create_auth_manage_page(self):
+        name = '更改手机号码'
+
+        page = pages.FormPage(name=name)
+        
+        pages.register_front_pages(page)
+
+        page.create_actions(
+            init_action=actions.DirectAction(
+                path='/api/v1/tenant/{tenant_id}/mine_mobile/',
+                method=actions.FrontActionMethod.GET,
+            ),
+            global_actions={
+                'confirm': actions.ConfirmAction(
+                    path="/api/v1/tenant/{tenant_id}/mine_mobile/"
+                ),
+            }
+        )
+        return page
 
 
 extension = MobileAuthFactorExtension(
     package=package,
-    description="Mobile 认证因素",
+    name="手机验证码认证",
     version='1.0',
     labels='auth_factor',
     homepage='https://www.longguikeji.com',

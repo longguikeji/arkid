@@ -72,15 +72,10 @@ def delete_tenant(request, id: str):
 def get_tenant_config(request, tenant_id: str):
     """ 获取租户配置
     """
-    tenant = request.tenant
+    tenant = get_object_or_404(Tenant.expand_objects,id=tenant_id)
     
     return {
-        "data": {
-            "id": tenant.id.hex,
-            "name": tenant.name,
-            "slug": tenant.slug,
-            "icon": tenant.icon
-        }
+        "data": tenant
     }
 
 @api.post("/tenants/{tenant_id}/config/", response=TenantConfigUpdateOut,tags=["租户管理"],auth=None)

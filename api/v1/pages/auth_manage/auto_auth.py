@@ -17,6 +17,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
+    icon='auto',
 )
 
 page.create_actions(

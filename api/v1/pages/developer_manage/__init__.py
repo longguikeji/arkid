@@ -5,6 +5,7 @@ from . import api_docs,webhook,event_list
 router = routers.FrontRouter(
     path='developer',
     name='扩展能力',
+    icon='developer',
     children=[
         webhook.router,
         event_list.router,

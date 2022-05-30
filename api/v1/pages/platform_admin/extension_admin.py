@@ -25,6 +25,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
+    icon='extension',
 )
 
 page.add_pages([
@@ -35,7 +36,7 @@ page.add_pages([
 
 store_page.create_actions(
     init_action=actions.DirectAction(
-        path='/tenant/{tenant_id}/arkstore/extensions/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/extensions/',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
@@ -48,12 +49,12 @@ store_page.create_actions(
 
 purchased_page.create_actions(
     init_action=actions.DirectAction(
-        path='/tenant/{tenant_id}/arkstore/purchased/extensions/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/purchased/extensions/',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
         "install": actions.DirectAction(
-            path='/tenant/{tenant_id}/arkstore/install/{uuid}/',
+            path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
             method=actions.FrontActionMethod.POST,
         ),
     },
@@ -66,11 +67,13 @@ download_page.create_actions(
     ),
     local_actions={
         "update": actions.DirectAction(
-            path='/tenant/{tenant_id}/arkstore/install/{uuid}/',
+            name='更新',
+            path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
             method=actions.FrontActionMethod.POST,
         ),
         "active": actions.DirectAction(
-            path='/api/v1/extensions/{uuid}/active/',
+            name='切换启用状态',
+            path='/api/v1/extensions/{id}/active/',
             method=actions.FrontActionMethod.POST,
         ),
     },

@@ -1,16 +1,21 @@
 # 通过ArkOS部署
 
-ArkOS是以K8s及其生态为基础，使用ArkID作为其核心来构建的一套类PaaS系统。
+ArkOS是用来安装K8s和ArkID的命令行工具。
 
-系统预装了下列系统并默认使用OIDC协议联通：
+可以在部署时选装一些应用：
 
-* ArkID
-* kuboards
+* ArkID `--arkid true(默认是true）`
+* kuboard `--kuboard true(默认是false）`
+* kubeapps `--kubeapps true（默认是false）`
+* prometheus `--prometheus true （默认是false）`
+* grafana LOKI `--loki true（默认是false）`
+* 
 
 ## 环境准备
 
-需要准备一台机器来运行docker，用容器来部署arkid
-一台centos7+或者ubuntu18+，安装有docker
+### 准备运维操作机器：
+> 需要准备一台机器来运行docker，用容器来部署arkid
+> 一台centos7+或者ubuntu18+，安装有docker
 
 以下docker环境也可以：
 
@@ -25,11 +30,10 @@ curl -sSL https://get.daocloud.io/docker | sh
 
 ```
 
-## 单台机器部署
+### 准备部署arkid的机器
+#### 一、单台机器部署
 需要准备的文件
-
 - hosts
-
 
 ```shell
 ## hosts 文件格式
@@ -53,7 +57,7 @@ docker run --rm --mount type=bind,source="$(pwd)"/hosts,target=/etc/ansible/host
 ```
 
 
-## 多台机器部署
+#### 二、多台机器部署
 
 需要准备的文件
 

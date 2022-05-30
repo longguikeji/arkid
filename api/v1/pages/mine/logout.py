@@ -7,5 +7,6 @@ name = _("退出登录")
 router = routers.FrontRouter(
     path=tag,
     name=name,
+    icon='logout',
     url='/api/v1/mine/logout/'
 )

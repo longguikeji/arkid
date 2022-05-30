@@ -19,7 +19,7 @@ pages.register_front_pages(edit_page)
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    icon='user',
+    icon='settings',
     page=page,
 )
 

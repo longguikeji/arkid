@@ -39,7 +39,7 @@ class ApproveSystemArkIDExtension(ApproveSystemExtension):
 
 extension = ApproveSystemArkIDExtension(
     package=package,
-    description='ArkID自带审批系统',
+    name='默认审批系统',
     version='1.0',
     labels='approve-system-arkid',
     homepage='https://www.longguikeji.com',

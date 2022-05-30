@@ -33,23 +33,26 @@ class OAuth2ServerExtension(AppProtocolExtension):
     def load_auth_view(self):
         # 加载认证view
         auth_view = AuthorizationView.as_view()
-        auth_path = r"oauth/authorize/$"
+        auth_path = r"app/(?P<app_id>[\w-]+)/oauth/authorize/$"
         url_name = "authorize"
         type = ['OIDC', 'OAuth2']
         self.register_enter_view(auth_view, auth_path, url_name, type)
 
     def create_app(self, event, **kwargs):
-        config = event.data.config
-        return self.update_app_data(event, config, True)
+        if event.data.package == package:
+            config = event.data.config
+            return self.update_app_data(event, config, True)
 
     def update_app(self, event, **kwargs):
-        config = event.data.config
-        return self.update_app_data(event, config, False)
+        if event.data.package == package:
+            config = event.data.config
+            return self.update_app_data(event, config, False)
 
     def delete_app(self, event, **kwargs):
-        # 删除应用
-        Application.objects.filter(name=event.data.id).delete()
-        return True
+        if event.data.package == package:
+            # 删除应用
+            Application.objects.filter(uuid=event.data.id).delete()
+            return True
 
     def update_app_data(self, event, config, is_create):
         '''
@@ -89,9 +92,9 @@ class OAuth2ServerExtension(AppProtocolExtension):
         更新配置中的url信息
         '''
         host = get_app_config().get_frontend_host()
-        namespace = f'api:{self.name}_tenant'
+        namespace = f'api:{self.pname}_tenant'
         config.userinfo = host+reverse(namespace+":oauth-user-info", args=[tenant_id])
-        config.authorize = host+reverse(namespace+":authorize", args=[tenant_id])
+        config.authorize = host+reverse(namespace+":authorize", args=[tenant_id, obj.uuid])
         config.token = host+reverse(namespace+":token", args=[tenant_id])
         config.logout = host+reverse(namespace+":oauth-user-logout", args=[tenant_id])
         config.client_id = obj.client_id
@@ -101,7 +104,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
 
 extension = OAuth2ServerExtension(
     package=package,
-    description='OAuth2认证服务',
+    name='OIDC&OAuth2认证协议',
     version='1.0',
     labels='oauth',
     homepage='https://www.longguikeji.com',

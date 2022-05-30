@@ -12,6 +12,7 @@ import collections
 import requests
 import uuid
 import re
+from oauth2_provider.models import Application
 
 
 class PermissionData(object):
@@ -665,7 +666,7 @@ class PermissionData(object):
                 else:
                     auth_user.is_tenant_admin = False
         # 权限数据
-        permissions = Permission.objects.filter(app=app, tenant=tenant).order_by('sort_id')
+        permissions = Permission.objects.filter(app=app).order_by('sort_id')
         data_dict = {}
         data_group_parent_child = {}
         for permission in permissions:
@@ -791,7 +792,7 @@ class PermissionData(object):
         更新指定用户应用权限
         '''
         is_tenant_admin = tenant.has_admin_perm(auth_user)
-        permissions = Permission.objects.filter(app=app, tenant=tenant).order_by('sort_id')
+        permissions = Permission.objects.filter(app=app).order_by('sort_id')
         data_dict = {}
         data_group_parent_child = {}
         for permission in permissions:
@@ -967,7 +968,7 @@ class PermissionData(object):
         根据应用，用户，分组查权限
         '''
         permissions = Permission.valid_objects.filter(
-            tenant_id=tenant_id
+            Q(tenant_id=tenant_id)|Q(is_open=True)
         )
         systempermissions = SystemPermission.valid_objects.all()
 
@@ -1039,13 +1040,14 @@ class PermissionData(object):
             userpermissionresult = userpermissionresults.filter(
                 app_id=app_id,
             ).first()
-
         else:
             userpermissionresult = userpermissionresults.filter(   
                 app__isnull=True,
             ).first()
         if userpermissionresult:
             permission_result = compress.decrypt(userpermissionresult.result)
+            if app_id and permission_result:
+                permission_result = permission_result[1:]
             return {'result': permission_result}
         else:
             return {'result': ''}
@@ -1122,53 +1124,49 @@ class PermissionData(object):
         检查应用入口权限
         '''
         token = request.GET.get('token', '')
-        tenant_id = None
-        if 'tenant_id' in kwargs:
-            tenant_id = kwargs.get('tenant_id')
-        else:
-            path = request.path
-            id_re = r"[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}"
-            res = re.search(id_re, path)
-            if res:
-                tenant_id = res.group(0)
-        if tenant_id:
-            client_id = request.GET.get('client_id', '')
-            apps = App.valid_objects.filter(
-                tenant_id=tenant_id,
-                type__in=type
-            )
-            app = None
-            if client_id:
-                # oauth有这个参数
-                for app_temp in apps:
-                    config_data = app_temp.config.config
-                    data_client = config_data.get('client_id', '')
-                    if data_client == client_id:
-                        app = app_temp
-                        break
-            if app is None:
-                apps = apps.order_by('-created')  
-                app = apps.first()
-            if app:
-                permission = Permission.valid_objects.filter(
-                    app=app,
-                    tenant_id=tenant_id,
-                    category='entry',
-                    is_system=True,
-                ).first()
-                if permission:
-                    user = self.token_check(tenant_id, token, request)
-                    result = self.permission_check_by_sortid(permission, user, app, tenant_id)
-                    if result:
-                        return True
-                    else:
-                        return False
-                else:
-                    return False
-            else:
-                return False
-        else:
+        app_id = None
+        if 'app_id' in kwargs:
+            app_id = kwargs.get('app_id', None)
+        tenant = request.tenant
+        if not tenant:
             return False
+        tenant_id = tenant.id.hex
+        client_id = request.GET.get('client_id', '')
+
+        # 特殊处理 arkid_saas
+        app = Application.objects.filter(name='arkid_saas', client_id=client_id).first()
+        if app:
+            user = self.token_check(tenant_id, token, request)
+            return True
+
+        app = App.valid_objects.filter(
+            id=app_id,
+            type__in=type
+        ).first()
+        if not app:
+            return False
+
+        user = self.token_check(tenant_id, token, request)
+        if not user:
+            return False
+        
+        # 特殊处理 OIDC-Platform
+        if app.type == 'OIDC-Platform':
+            return True
+
+        permission = Permission.valid_objects.filter(
+            app=app,
+            category='entry',
+            is_system=True,
+        ).first()
+        if not permission:
+            return False
+
+        result = self.permission_check_by_sortid(permission, user, app, tenant_id)
+        if not result:
+            return False
+
+        return True
     
     def permission_check_by_sortid(self, permission, user, app, tenant_id):
         '''
@@ -1209,3 +1207,17 @@ class PermissionData(object):
             return None
         except Exception as e:
             return None
+    
+    def get_open_appids(self):
+        '''
+        获取开放的应用id
+        '''
+        permissions = Permission.valid_objects.filter(
+            is_open=True
+        )
+        app_ids = []
+        for permission in permissions:
+            app_id = permission.app_id
+            if app_id not in app_ids:
+                app_ids.append(app_id)
+        return app_ids

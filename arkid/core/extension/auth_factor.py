@@ -35,6 +35,8 @@ class AuthFactorExtension(Extension):
         self.password_event_tag = self.register_event('password', '重置密码')
         self.listen_event(self.password_event_tag, self.reset_password)
         self.listen_event(core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.create_response)
+        
+        self.register_auth_manage_page()
 
     def register_auth_factor_schema(self, schema, auth_factor_type):
         self.register_config_schema(schema, self.package + '_' + auth_factor_type)
@@ -137,6 +139,16 @@ class AuthFactorExtension(Extension):
 
     @abstractmethod
     def create_other_page(self, event, config):
+        pass
+    
+    def register_auth_manage_page(self):
+        from api.v1.pages.mine.auth_manage import page as auth_manage_page
+        page = self.create_auth_manage_page()
+        if page:
+            auth_manage_page.add_pages(page)
+    
+    @abstractmethod
+    def create_auth_manage_page(self):
         pass
     
     def get_current_config(self, event):
