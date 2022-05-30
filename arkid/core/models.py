@@ -1,17 +1,11 @@
 import datetime
-from os import environ
 from django.db import models
 from django.utils import timezone
-from sqlalchemy import null
 from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
-
-# from oauth2_provider.generators import generate_client_secret
 from arkid.core.expand import ExpandManager, ExpandModel
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.core.token import generate_token
-
-import uuid
 
 
 class EmptyModel(models.Model):
