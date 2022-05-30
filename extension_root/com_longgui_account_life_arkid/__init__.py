@@ -11,26 +11,39 @@ from arkid.common.logger import logger
 import json
 from .tasks import deactive_expired_user
 from .models import UserExpiration
-from . import views
+
+# from . import views
 from .user_expiration_page import page, router
 from api.v1.pages.user_manage import router as user_manage_router
 from arkid.core import routers
+from datetime import datetime
+from typing import List
 
 package = 'com.longgui.account.life.arkid'
 
 
-class CronJobSchema(Schema):
-    crontab: str = Field(default='0 1 * * *', title=_('Crontab', '定时运行时间'))
-    max_retries: int = Field(default=3, title=_('Max Retries', '重试次数'))
-    retry_delay: int = Field(default=60, title=_('Retry Delay', '重试间隔(单位秒)'))
+# class CronJobSchema(Schema):
+#     crontab: str = Field(default='0 1 * * *', title=_('Crontab', '定时运行时间'))
+#     max_retries: int = Field(default=3, title=_('Max Retries', '重试次数'))
+#     retry_delay: int = Field(default=60, title=_('Retry Delay', '重试间隔(单位秒)'))
+
+
+class UserExpirationSchema(Schema):
+    user_id: str = Field(title=_("用户ID"))
+    expiration_time: datetime = Field(title=_("过期时间"))
+    username: str = Field(title=_('用户名'), readonly=True, default='')
+
+
+class UserExpirationListSchema(Schema):
+    __root__: List[UserExpirationSchema]
 
 
 class AccountLifeArkIDExtension(AccountLifeExtension):
     def load(self):
         super().load()
         self.register_extend_field(UserExpiration, "expiration_time")
-        self.register_account_life_schema(CronJobSchema, "deactive_expired_user_cron")
-        user_manage_router.children.append(router)
+        self.register_account_life_schema(UserExpirationListSchema, "user_expiration")
+        # user_manage_router.children.append(router)
 
     def create_tenant_config(self, tenant, config, name, type):
         config_created = super().create_tenant_config(
@@ -76,25 +89,28 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
             logger.exception('delete celery task failed %s' % e)
 
     def create_account_life_config(self, event, **kwargs):
-        extension_config = event.data
-        if extension_config.type != "deactive_expired_user_cron":
-            return
-        else:
-            self.update_or_create_periodic_task(extension_config)
+        # extension_config = event.data
+        # if extension_config.type != "deactive_expired_user_cron":
+        #     return
+        # else:
+        #     self.update_or_create_periodic_task(extension_config)
+        pass
 
     def update_account_life_config(self, event, **kwargs):
-        extension_config = event.data
-        if extension_config.type != "deactive_expired_user_cron":
-            return
-        else:
-            self.update_or_create_periodic_task(extension_config)
+        # extension_config = event.data
+        # if extension_config.type != "deactive_expired_user_cron":
+        #     return
+        # else:
+        #     self.update_or_create_periodic_task(extension_config)
+        pass
 
     def delete_account_life_config(self, event, **kwargs):
-        extension_config = event.data
-        if extension_config.type != "deactive_expired_user_cron":
-            return
-        else:
-            self.delete_periodic_task(extension_config)
+        # extension_config = event.data
+        # if extension_config.type != "deactive_expired_user_cron":
+        #     return
+        # else:
+        #     self.delete_periodic_task(extension_config)
+        pass
 
 
 extension = AccountLifeArkIDExtension(
