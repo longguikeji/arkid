@@ -6,6 +6,7 @@ from ninja import Schema
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.scim_sync import ScimSyncExtension
 from arkid.core.schema import ResponseSchema
+from arkid.extension.models import TenantExtensionConfig
 
 
 class ScimSyncListItemOut(Schema):

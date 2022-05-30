@@ -30,11 +30,11 @@ page.create_actions(
         )
     },
     local_actions={
-        "direct": actions.DirectAction(
-            name=_("同步"),
-            method=actions.FrontActionMethod.GET,
-            path="/api/v1/tenant/{tenant_id}/scim_syncs/{id}/sync/",
-        ),
+        # "direct": actions.DirectAction(
+        #     name=_("同步"),
+        #     method=actions.FrontActionMethod.GET,
+        #     path="/api/v1/tenant/{tenant_id}/scim_syncs/{id}/sync/",
+        # ),
         "edit": actions.EditAction(
             page=edit_page,
         ),

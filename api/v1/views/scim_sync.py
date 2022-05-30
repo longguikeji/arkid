@@ -160,3 +160,23 @@ def delete_scim_sync(request, tenant_id: str, id: str):
         delete_periodic_task(config)
     config.delete()
     return {"data": {'error': ErrorCode.OK.value}}
+
+
+class ScimServerOut(ModelSchema):
+    class Config:
+        model = TenantExtensionConfig
+        model_fields = ['id', 'name', 'type']
+
+
+@api.get(
+    "/tenant/{tenant_id}/scim_server_list/",
+    response=List[ScimServerOut],
+    tags=['用户数据同步配置'],
+    auth=None,
+)
+def list_scim_servers(request, status: str = None):
+    """获取Scim同步server列表"""
+    qs = TenantExtensionConfig.active_objects.filter(
+        extension__type='scim_sync', config__mode='server'
+    ).all()
+    return qs
