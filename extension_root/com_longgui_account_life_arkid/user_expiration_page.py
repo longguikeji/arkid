@@ -12,8 +12,8 @@ page = pages.TablePage(tag=tag, name=name)
 edit_page = pages.FormPage(name=_("编辑用户过期设置"))
 
 
-# pages.register_front_pages(page)
-# pages.register_front_pages(edit_page)
+pages.register_front_pages(page)
+pages.register_front_pages(edit_page)
 
 
 router = routers.FrontRouter(
@@ -50,7 +50,8 @@ edit_page.create_actions(
     ),
     global_actions={
         'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/account_life_arkid/user_expiration/{id}/"
+            path="/api/v1/tenant/{tenant_id}/account_life_arkid/user_expiration/{id}/",
+            method=actions.FrontActionMethod.PUT,
         ),
     },
 )

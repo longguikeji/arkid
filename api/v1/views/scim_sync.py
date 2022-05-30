@@ -1,4 +1,4 @@
-from arkid.core.api import api
+from arkid.core.api import api, operation
 import json
 from ninja import Schema
 from ninja import ModelSchema
@@ -13,18 +13,18 @@ from ninja.pagination import paginate
 from django.shortcuts import get_object_or_404
 from uuid import UUID
 from arkid.core.error import ErrorCode
+from arkid.core.pagenation import CustomPagination
 
-
-class ScimSyncListSchemaOut(ModelSchema):
-    class Config:
-        model = TenantExtensionConfig
-        model_fields = ['id', 'name', 'type', 'config']
-
-    mode: str
-
-    @staticmethod
-    def resolve_mode(obj):
-        return obj.config.get("mode")
+from api.v1.schema.scim_sync import (
+    ScimSyncCreateIn,
+    ScimSyncCreateOut,
+    ScimSyncDeleteOut,
+    ScimSyncListItemOut,
+    ScimSyncListOut,
+    ScimSyncOut,
+    ScimSyncUpdateIn,
+    ScimSyncUpdateOut,
+)
 
 
 def update_or_create_periodic_task(extension_config):
@@ -65,98 +65,118 @@ def delete_periodic_task(extension_config):
         logger.exception('delete celery task failed %s' % e)
 
 
-ScimSyncConfigSchemaIn = ScimSyncExtension.create_composite_config_schema(
-    'ScimSyncConfigSchemaIn'
-)
-
-
-class ScimSyncConfigSchemaOut(Schema):
-    id: UUID
-    type: str
-    name: str
-    config: dict
-
-
 @api.get(
     "/tenant/{tenant_id}/scim_syncs/",
-    response=List[ScimSyncListSchemaOut],
+    response=List[ScimSyncListItemOut],
     tags=[_("用户数据同步配置")],
     auth=None,
 )
-@paginate
+@operation(ScimSyncListOut)
+@paginate(CustomPagination)
 def get_scim_syncs(request, tenant_id: str):
-    """用户数据同步配置列表,TODO"""
+    """用户数据同步配置列表"""
     configs = TenantExtensionConfig.valid_objects.filter(
         tenant_id=tenant_id, extension__type="scim_sync"
     )
-    return configs
+    return [
+        {
+            "id": config.id.hex,
+            "type": config.type,
+            "name": config.name,
+            "extension_name": config.extension.name,
+            "extension_package": config.extension.package,
+        }
+        for config in configs
+    ]
 
 
 @api.get(
     "/tenant/{tenant_id}/scim_syncs/{id}/",
-    response=ScimSyncConfigSchemaOut,
+    response=ScimSyncOut,
     tags=[_("用户数据同步配置")],
     auth=None,
 )
+@operation(ScimSyncOut)
 def get_scim_sync(request, tenant_id: str, id: str):
-    """获取用户数据同步配置,TODO"""
-    config = get_object_or_404(TenantExtensionConfig, id=id, tenant=request.tenant)
-    return config
+    """获取用户数据同步配置"""
+    config = TenantExtensionConfig.valid_objects.get(tenant__id=tenant_id, id=id)
+    return {
+        "data": {
+            "id": config.id.hex,
+            "type": config.type,
+            "package": config.extension.package,
+            "name": config.name,
+            "config": config.config,
+        }
+    }
 
 
 @api.post(
     "/tenant/{tenant_id}/scim_syncs/",
     tags=[_("用户数据同步配置")],
-    response=ScimSyncConfigSchemaOut,
+    response=ScimSyncCreateOut,
     auth=None,
 )
-def create_scim_sync(request, tenant_id: str, data: ScimSyncConfigSchemaIn):
-    """创建用户数据同步配置,TODO"""
+@operation(ScimSyncCreateOut)
+def create_scim_sync(request, tenant_id: str, data: ScimSyncCreateIn):
+    """创建用户数据同步配置"""
 
-    tenant = request.tenant
-    package = data.package
-    name = data.name
-    type = data.type
-    config = data.config
-    extension = Extension.active_objects.get(package=package)
+    extension = Extension.valid_objects.get(package=data.package)
     extension = import_extension(extension.ext_dir)
-    extension_config = extension.create_tenant_config(
-        tenant, config.dict(), name=name, type=type
+    config = extension.create_tenant_config(
+        request.tenant, data.config.dict(), name=data.dict().get("name"), type=data.type
     )
-    if config.mode == "client":
-        update_or_create_periodic_task(extension_config)
-    return extension_config
+    if data.config.mode == "client":
+        update_or_create_periodic_task(config)
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
 @api.put(
     "/tenant/{tenant_id}/scim_syncs/{id}/",
     tags=[_("用户数据同步配置")],
-    response=ScimSyncConfigSchemaOut,
+    response=ScimSyncUpdateOut,
     auth=None,
 )
-def update_scim_sync(request, tenant_id: str, id: str, data: ScimSyncConfigSchemaIn):
-    """编辑用户数据同步配置,TODO"""
-    extension_config = get_object_or_404(
-        TenantExtensionConfig, id=id, tenant=request.tenant
-    )
-    extension_config.package = data.package
-    extension_config.name = data.name
-    extension_config.type = data.type
-    extension_config.config = data.config
+@operation(ScimSyncUpdateOut)
+def update_scim_sync(request, tenant_id: str, id: str, data: ScimSyncUpdateIn):
+    """编辑用户数据同步配置"""
 
+    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    for attr, value in data.dict().items():
+        setattr(config, attr, value)
+    config.save()
     if data.config.mode == "client":
-        update_or_create_periodic_task(extension_config)
+        update_or_create_periodic_task(config)
 
-    return extension_config
+    return {"data": {'error': ErrorCode.OK.value}}
 
 
 @api.delete("/tenant/{tenant_id}/scim_syncs/{id}/", tags=[_("用户数据同步配置")], auth=None)
+@operation(ScimSyncDeleteOut)
 def delete_scim_sync(request, tenant_id: str, id: str):
-    """删除用户数据同步配置,TODO"""
-    extension_config = get_object_or_404(
-        TenantExtensionConfig, id=id, tenant=request.tenant
-    )
-    extension_config.delete()
-    if extension_config.config["mode"] == "client":
-        delete_periodic_task(extension_config)
-    return {'error': ErrorCode.OK.value}
+    """删除用户数据同步配置"""
+    config = TenantExtensionConfig.valid_objects.get(tenant__id=tenant_id, id=id)
+    if config.config["mode"] == "client":
+        delete_periodic_task(config)
+    config.delete()
+    return {"data": {'error': ErrorCode.OK.value}}
+
+
+class ScimServerOut(ModelSchema):
+    class Config:
+        model = TenantExtensionConfig
+        model_fields = ['id', 'name', 'type']
+
+
+@api.get(
+    "/tenant/{tenant_id}/scim_server_list/",
+    response=List[ScimServerOut],
+    tags=['用户数据同步配置'],
+    auth=None,
+)
+def list_scim_servers(request, status: str = None):
+    """获取Scim同步server列表"""
+    qs = TenantExtensionConfig.active_objects.filter(
+        extension__type='scim_sync', config__mode='server'
+    ).all()
+    return qs

@@ -3,6 +3,8 @@ from copy import deepcopy
 from functools import reduce
 from typing import Dict, List
 from uuid import uuid4
+from arkid.core.models import ExpiringToken
+from arkid.common.logger import logger
 
 
 def deep_merge(*dicts: List[Dict], update=False) -> Dict:
@@ -180,13 +182,16 @@ def get_request_tenant(request):
         tenant = Tenant.active_objects.filter(id=1).first()
     return tenant
 
+
 global_tags = []
+
+
 def gen_tag(tag: str = None, tag_pre: str = None) -> str:
-    """ 生成tag
+    """生成tag
 
     Args:
-        tag (str, optional): tag字符串，可指定亦可动态生成. 
-        tag_pre (str, optional): tag前缀，一般可为插件名称或者其他. 
+        tag (str, optional): tag字符串，可指定亦可动态生成.
+        tag_pre (str, optional): tag前缀，一般可为插件名称或者其他.
 
     Returns:
         str: tag字符串
@@ -196,3 +201,33 @@ def gen_tag(tag: str = None, tag_pre: str = None) -> str:
     assert tag not in global_tags
     global_tags.append(tag)
     return tag
+
+
+def verify_token(request):
+    headers = request.headers
+    auth_value = headers.get("Authorization")
+
+    if not auth_value:
+        return None
+    parts = auth_value.split(" ")
+
+    if parts[0].lower() != "token":
+        return None
+    token = " ".join(parts[1:])
+    try:
+        token = ExpiringToken.objects.get(token=token)
+
+        if not token.user.is_active:
+            raise Exception(_('User inactive or deleted', '用户无效或被删除'))
+
+        if token.expired(request.tenant):
+            raise Exception(_('Token has expired', '秘钥已经过期'))
+
+    except ExpiringToken.DoesNotExist:
+        logger.error(_("Invalid token", "无效的秘钥"))
+        return None
+    except Exception as err:
+        logger.error(err)
+        return None
+
+    return token.user

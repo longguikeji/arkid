@@ -523,7 +523,7 @@ class Extension(ABC):
         """
         self.register_base_schema(
             schema, 'profile', ExtensionModel, 
-            ['id','is_active','use_platform_config'],
+            ['id','is_active', 'is_allow_use_platform_config'],
             self.__class__.extension_profile_schema_map,
             self.profile_schema_list, schema_tag
         )
