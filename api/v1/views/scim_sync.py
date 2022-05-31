@@ -128,7 +128,7 @@ def create_scim_sync(request, tenant_id: str, data: ScimSyncCreateIn):
     )
     if data.config.mode == "client":
         update_or_create_periodic_task(config)
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.put(
@@ -148,7 +148,7 @@ def update_scim_sync(request, tenant_id: str, id: str, data: ScimSyncUpdateIn):
     if data.config.mode == "client":
         update_or_create_periodic_task(config)
 
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.delete("/tenant/{tenant_id}/scim_syncs/{id}/", tags=[_("用户数据同步配置")], auth=None)
@@ -159,7 +159,7 @@ def delete_scim_sync(request, tenant_id: str, id: str):
     if config.config["mode"] == "client":
         delete_periodic_task(config)
     config.delete()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 class ScimServerOut(ModelSchema):
