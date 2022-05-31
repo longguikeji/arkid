@@ -55,7 +55,7 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
         ).json()
         return response["id"], response["login"], response["avatar_url"], response
 
-    def get_ext_user(self, ext_id):
+    def get_arkid_user(self, ext_id):
         return GithubUser.valid_objects.filter(github_user_id=ext_id).first()
 
     def bind_arkid_user(self, ext_id, user):

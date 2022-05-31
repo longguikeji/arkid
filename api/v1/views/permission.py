@@ -153,6 +153,16 @@ def get_permission_str(request, tenant_id: str,  app_id: str = None):
     return permissiondata.get_permission_str(user, tenant_id, app_id)
 
 
+@api.get("/app/permission_result", tags=['权限'], response=PermissionStrSchemaOut, auth=None)
+def get_arkstore_permission_str(request):
+    '''
+    获取应用权限字符串
+    '''
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.id_token_to_permission_str(request)
+
+
 @api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/add_permission", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def user_add_permission(request, tenant_id: str, permission_id: str, user_id: str):
