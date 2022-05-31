@@ -65,7 +65,7 @@ def create_auth_factor(request, tenant_id: str, data: AuthFactorCreateIn):
     config.name = data.dict()["name"]
     config.type = data.type
     config.save()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.post("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorUpdateOut, tags=["认证因素"], auth=None)
@@ -78,7 +78,7 @@ def update_auth_factor(request, tenant_id: str, id: str, data: AuthFactorUpdateI
     for attr, value in data.dict().items():
         setattr(config, attr, value)
     config.save()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.delete("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorDeleteOut, tags=["认证因素"], auth=None)
@@ -90,4 +90,4 @@ def delete_auth_factor(request, tenant_id: str, id: str):
         tenant__id=tenant_id, id=id
     )
     config.delete()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}

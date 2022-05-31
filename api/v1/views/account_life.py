@@ -97,7 +97,7 @@ def create_account_life(request, tenant_id: str, data: AccountLifeCreateIn):
             data=config,
         )
     )
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.put(
@@ -121,7 +121,7 @@ def update_account_life(request, tenant_id: str, id: str, data: AccountLifeUpdat
             data=config,
         )
     )
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.delete(
@@ -143,4 +143,4 @@ def delete_account_life(request, tenant_id: str, id: str):
         )
     )
     config.delete()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}

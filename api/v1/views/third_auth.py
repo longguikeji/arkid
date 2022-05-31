@@ -83,7 +83,7 @@ def create_third_auth(request, tenant_id: str, data: ThirdAuthCreateIn):
     extension_setting = extension.update_or_create_settings(
         request.tenant, data.config.dict(), True, False
     )
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.put(
@@ -97,7 +97,7 @@ def update_third_auth(request, tenant_id: str, id: str, data: ThirdAuthUpdateIn)
     setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
     setting.settings = data.config.dict()
     setting.save()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.delete(
@@ -112,4 +112,4 @@ def delete_third_auth(request, tenant_id: str, id: str):
 
     setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
     setting.kill()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
