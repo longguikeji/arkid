@@ -21,6 +21,12 @@ class LanguageExtension(Extension):
         super().load()
     
     def load_language_data(self, data, language_type=_("简体中文")):
+        """加载语言包
+
+        Args:
+            data (dict): 翻译数据
+            language_type (str, optional): 语言名称. Defaults to _("简体中文").
+        """
         
         self.language_type = language_type
         self.extension_data = data

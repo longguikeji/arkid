@@ -33,15 +33,22 @@ class StorageExtension(Extension):
 
     @abstractmethod
     def save_file(self, file, f_key: str, **kwargs):
-        """_summary_
+        """保存文件
 
         Args:
-            event (_type_): _description_
+            file (File): 文件对象
+            f_key (str): 存储文件名称
         """
         pass
 
     @abstractmethod
     def resolve(self, f_key: str, tenant, **kwargs):
+        """生成文件链接
+
+        Args:
+            f_key (str): 存储文件名称
+            tenant (Tenant): 租户
+        """
         pass
 
     def generate_key(self, file_name: str):

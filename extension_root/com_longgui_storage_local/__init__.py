@@ -10,8 +10,8 @@ from . import views
 
 package = 'com.longgui.storage.local'
 
-SettingsSchema = create_extension_schema(
-    "LocalStorageSettingsSchema",
+ProfileSchema = create_extension_schema(
+    "LocalStorageProfileSchema",
     package,
     fields = [
         ('storage_path', str, Field(title=_("Storage Path", "存储路径"))),
@@ -23,11 +23,14 @@ class LocalStorageExtension(Extension):
 
     def load(self):
         self.listen_event(SAVE_FILE, self.save_file)
-        self.register_settings_schema(SettingsSchema)
+        self.register_profile_schema(ProfileSchema)
         super().load()
 
     def save_file(self, file, f_key):
-        p = Path('./storage/') / f_key
+        extension = self.model()
+        storage_path = extension.profile.get('storage_path','./storage/')
+        
+        p = Path(storage_path) / f_key
 
         if not p.parent.exists():
             p.parent.mkdir(parents=True)
