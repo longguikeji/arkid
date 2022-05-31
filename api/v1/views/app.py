@@ -30,31 +30,31 @@ def create_app(request, tenant_id: str, data: AppCreateIn):
     '''
     app创建
     '''
-    # data.id = uuid.uuid4()
-    # setattr(data,"id",uuid.uuid4().hex)
-    # tenant = request.tenant
-    # # 事件分发
-    # results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
-    # for func, (result, extension) in results:
-    #     if result:
-    #         # 创建config
-    #         config = extension.create_tenant_config(tenant, data.config.dict(), data.name, data.app_type)
-    #         # 创建app
-    #         app = App()
-    #         app.id = data.id
-    #         app.name = data.dict()["name"]
-    #         app.url = data.url
-    #         app.logo = data.logo
-    #         app.type = data.app_type
-    #         app.package = data.package
-    #         app.description = data.description
-    #         app.config = config
-    #         app.tenant_id = tenant_id
-    #         app.save()
-    #         # 创建app完成进行事件分发
-    #         dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
-    #         break
-    app = App.expand_objects.get_or_create(tenant=request.tenant,**data.dict())
+    data.id = uuid.uuid4()
+    setattr(data,"id",uuid.uuid4().hex)
+    tenant = request.tenant
+    # 事件分发
+    results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
+    for func, (result, extension) in results:
+        if result:
+            # 创建config
+            config = extension.create_tenant_config(tenant, data.config.dict(), data.name, data.app_type)
+            # 创建app
+            app = App()
+            app.id = data.id
+            app.name = data.dict()["name"]
+            app.url = data.url
+            app.logo = data.logo
+            app.type = data.app_type
+            app.package = data.package
+            app.description = data.description
+            app.config = config
+            app.tenant_id = tenant_id
+            app.save()
+            # 创建app完成进行事件分发
+            dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
+            break
+    # app = App.expand_objects.get_or_create(tenant=request.tenant,**data.dict())
     
     return {'error': ErrorCode.OK.value}
 
@@ -244,7 +244,4 @@ def get_app_config(request, tenant_id: str, app_id: str):
     '''
     app = get_object_or_404(App, id=app_id, is_del=False)
     config = app.config
-    
-    
-    
     return {'error': ErrorCode.OK.value}
