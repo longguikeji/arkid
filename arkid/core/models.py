@@ -17,9 +17,9 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name = _("tenant", "租户")
         verbose_name_plural = _("tenant", "租户")
 
-    name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), unique=True, blank=True, null=True)
-    icon = models.URLField(verbose_name=_('icon', '图标'), blank=True, null=True)
+    name = models.CharField(verbose_name=_('Name', '名字'), max_length=128)
+    slug = models.SlugField(verbose_name=_('Slug', '短链接标识'), unique=True, blank=True, null=True)
+    icon = models.URLField(verbose_name=_('Icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(
         blank=False,
@@ -74,10 +74,10 @@ class User(BaseModel, ExpandModel):
         verbose_name_plural = _("user", "用户")
         unique_together = [['username', 'tenant']]
 
-    username = models.CharField(max_length=128, blank=False, verbose_name=_("用户名"))
+    username = models.CharField(max_length=128, blank=False, verbose_name=_("Username","用户名"))
     avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True, null=True)
     is_platform_user = models.BooleanField(
-        default=False, verbose_name=_('is platform user', '是否是平台用户')
+        default=False, verbose_name=_('Is Platform User', '是否是平台用户')
     )
 
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)

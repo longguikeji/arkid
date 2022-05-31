@@ -12,7 +12,7 @@ UserSchema = extension.create_extension_schema(
     package,
     fields=[
         ('username', str, Field()),
-        ('nickname', Optional[str], Field()),
+        ('nickname', Optional[str], Field(title=_('nickname','昵称'))),
     ]
 )
 

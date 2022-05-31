@@ -13,4 +13,4 @@ class CaseUser(UserExpandAbstract):
     class Meta:
         app_label = app_label
     
-    nickname = models.CharField(verbose_name=_('nickname', '昵称'), max_length=128)
+    nickname = models.CharField(verbose_name=_('Nickname', '昵称'), max_length=128)
