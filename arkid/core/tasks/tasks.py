@@ -285,16 +285,16 @@ def check_extensions_expired(self, *args, **kwargs):
         pass
 
 
-class ReadyCelery(object):
+# class ReadyCelery(object):
 
-    def __init__(self, *args, **kwargs):
-        pass
+#     def __init__(self, *args, **kwargs):
+#         pass
 
-    @classmethod
-    def instance(cls, *args, **kwargs):
-        if not hasattr(ReadyCelery, "_instance"):
-            ReadyCelery._instance = ReadyCelery(*args, **kwargs)
-            update_system_permission.delay()
-        return ReadyCelery._instance
+#     @classmethod
+#     def instance(cls, *args, **kwargs):
+#         if not hasattr(ReadyCelery, "_instance"):
+#             ReadyCelery._instance = ReadyCelery(*args, **kwargs)
+#             update_system_permission.delay()
+#         return ReadyCelery._instance
         
-ReadyCelery.instance()
+# ReadyCelery.instance()
