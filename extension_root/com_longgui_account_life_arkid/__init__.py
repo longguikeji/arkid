@@ -13,28 +13,46 @@ from .tasks import deactive_expired_user
 from .models import UserExpiration
 
 # from . import views
-from .user_expiration_page import page, router
 from api.v1.pages.user_manage import router as user_manage_router
 from arkid.core import routers
 from datetime import datetime
 from typing import List
+from arkid.core import pages, actions
 
 package = 'com.longgui.account.life.arkid'
 
 
-# class CronJobSchema(Schema):
-#     crontab: str = Field(default='0 1 * * *', title=_('Crontab', '定时运行时间'))
-#     max_retries: int = Field(default=3, title=_('Max Retries', '重试次数'))
-#     retry_delay: int = Field(default=60, title=_('Retry Delay', '重试间隔(单位秒)'))
+select_user_page = pages.TablePage(select=True, name=_("Select User", "选择用户"))
+
+pages.register_front_pages(select_user_page)
+
+select_user_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/users/',
+        method=actions.FrontActionMethod.GET,
+    ),
+)
 
 
 class UserExpirationSchema(Schema):
-    username: str = Field(title=_("用户名"))
-    expiration_time: datetime = Field(title=_("过期时间"))
+    username: str = Field(
+        title=_("Username", "用户名"),
+        field="id",
+        page=select_user_page.tag,
+        link="username",
+        type="string",
+    )
+    expiration_time: datetime = Field(title=_("Expiration Time", "过期时间"))
+    class Config:
+        title = _("User Expiration Setting", "用户过期设置")
 
 
 class UserExpirationListSchema(Schema):
-    __root__: List[UserExpirationSchema] = Field(title=_("用户过期设置"), format="dynamic")
+    __root__: List[UserExpirationSchema] = Field(
+        title=_("User Expiration Setting", "用户过期设置"), format="dynamic"
+    )
+    class Config:
+        title = _("User Expiration Setting", "用户过期设置")
 
 
 class AccountLifeArkIDExtension(AccountLifeExtension):
