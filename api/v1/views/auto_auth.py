@@ -100,7 +100,7 @@ def create_auto_auth(request, tenant_id: str, data: AutoAuthCreateIn):
         )
     )
 
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.put(
@@ -124,7 +124,7 @@ def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
             data=setting,
         )
     )
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.delete(
@@ -146,4 +146,4 @@ def delete_auto_auth(request, tenant_id: str, id: str):
         )
     )
     setting.kill()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}

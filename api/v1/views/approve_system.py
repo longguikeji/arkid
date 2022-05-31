@@ -93,7 +93,7 @@ def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
             data=setting,
         )
     )
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.put(
@@ -116,7 +116,7 @@ def update_approve_system(
             data=setting,
         )
     )
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.delete(

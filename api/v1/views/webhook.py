@@ -179,7 +179,7 @@ def delete_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
     if not history:
         return {"data": {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}}
     history.delete()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.get(
@@ -225,4 +225,4 @@ def retry_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
             }
         )
         history.save()
-    return {"data": {'error': ErrorCode.OK.value}}
+    return {'error': ErrorCode.OK.value}
