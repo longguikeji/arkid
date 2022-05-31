@@ -1028,7 +1028,7 @@ class PermissionData(object):
                 permissions = permissions.filter(id__isnull=True)
         return list(permissions)+list(systempermissions)
 
-    def get_permission_str(self, user, tenant_id, app_id):
+    def get_permission_str(self, user, tenant_id, app_id, is_64=False):
         '''
         获取权限字符串
         '''
@@ -1180,7 +1180,7 @@ class PermissionData(object):
         except Exception:
             raise Exception("unable to parse id_token")
     
-    def id_token_to_permission_str(self, request):
+    def id_token_to_permission_str(self, request, is_64=False):
         id_token = request.META.get('HTTP_ID_TOKEN', '')
         payload = self.id_token_reverse(id_token)
         client_id = payload.get('aud', None)
@@ -1200,7 +1200,7 @@ class PermissionData(object):
                 break
         user = User.valid_objects.filter(id=user_id).first()
         if user and app_temp and tenant_id:
-            return self.get_permission_str(user, tenant_id, app_temp.id)
+            return self.get_permission_str(user, tenant_id, app_temp.id, is_64)
         else:
             print('不存在用户或者应用或者租户')
             return {'result': ''}
