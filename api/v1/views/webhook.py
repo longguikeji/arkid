@@ -156,10 +156,10 @@ def get_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
-        return {"data": {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}}
+        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
     history = WebhookTriggerHistory.valid_objects.filter(webhook=webhook, id=id).first()
     if not history:
-        return {"data": {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}}
+        return {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}
     return {"data": history}
 
 
@@ -174,10 +174,10 @@ def delete_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
-        return {"data": {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}}
+        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
     history = WebhookTriggerHistory.valid_objects.filter(webhook=webhook, id=id).first()
     if not history:
-        return {"data": {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}}
+        return {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}
     history.delete()
     return {'error': ErrorCode.OK.value}
 
@@ -193,10 +193,10 @@ def retry_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
-        return {"data": {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}}
+        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
     history = WebhookTriggerHistory.valid_objects.filter(webhook=webhook, id=id).first()
     if not history:
-        return {"data": {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}}
+        return {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}
 
     webhook = history.webhook
     url = webhook.url
