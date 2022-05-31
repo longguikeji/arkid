@@ -64,11 +64,19 @@ class ExternalIdpExtension(Extension):
 
     @abstractmethod
     def get_authorize_url(self, client_id, redirect_uri):
+        """
+        抽象方法
+        Params:
+            client_id: str, 第三方认证提供的Client_ID,
+            redirect_uri: str, 由ArkID提供的回调地址
+        Return:
+            str: 第三方登录提供的认证URL
+        """
         pass
 
     def login(self, request, tenant_id, config_id):
         """
-        处理前端登录页面，点击第三方登录按钮的逻辑
+        重定向到第三方登录的入口地址, 该入口地址由get_authorize_url提供
         """
         config = self.get_config_by_id(config_id)
         if not config:
@@ -88,21 +96,41 @@ class ExternalIdpExtension(Extension):
 
     @abstractmethod
     def get_ext_token_by_code(self, code):
+        """
+        抽象方法
+        Params:
+            code: str 第三方认证返回的code
+        Return:
+            str: 返回第三方认证提供的token
+        """
         pass
 
     @abstractmethod
     def get_user_info_by_ext_token(self, token):
+        """
+        抽象方法
+        Params:
+            token: str 第三方认证返回的token
+        Return:
+            dict: 返回第三方认证提供的用户信息
+        """
         pass
 
     @abstractmethod
-    def get_ext_user(self, ext_id):
+    def get_arkid_user(self, ext_id):
+        """
+        抽象方法
+        Params: 
+            ext_id: str 第三方认证返回的用户标识
+        Return:
+            arkid.core.models.User: ArkID用户
+        """
         pass
 
     def get_token(self, ext_id, tenant, configs):
-        ext_user = self.get_ext_user(ext_id)
-        if ext_user:
-            user = ext_user.user
-            token = refresh_token(user)
+        arkid_user = self.get_arkid_user(ext_id)
+        if arkid_user:
+            token = refresh_token(arkid_user)
             context = {"token": token}
         else:
             context = {
@@ -116,7 +144,10 @@ class ExternalIdpExtension(Extension):
 
     def callback(self, request, tenant_id, config_id):
         """
-        处理第三方身份源的回调逻辑
+        拿到请求中携带的code，调用get_ext_token_by_code获取第三方认证的token，
+        调用get_user_info_by_ext_token获取第三方认证提供的用户信息，
+        拿到ext_id后，判断该ext_id是否已经和ArkID中的用户绑定，如果绑定直接返回绑定用户的Token，
+        如果没有，返回重定向到前端绑定页面
         """
         code = request.GET["code"]
         next_url = request.GET.get("next", None)
@@ -152,6 +183,13 @@ class ExternalIdpExtension(Extension):
 
     @abstractmethod
     def bind_arkid_user(self, ext_id, user):
+        """
+        Params:
+            ext_id:str 第三方登录返回的用户标识
+            user: arkid.core.models.User ArkID的用户
+        Return:
+            {"token":xxx} 返回token
+        """
         pass
 
     @csrf_exempt
@@ -169,10 +207,14 @@ class ExternalIdpExtension(Extension):
         data = {"token": token}
         return JsonResponse(data)
 
+    @abstractmethod
     def get_img_url(self):
         """
-        返回第三方登录按钮的图片
-        """
+        抽象方法
+        
+        Return:
+            url str: 返回第三方登录按钮的图标    
+        """ 
         pass
 
     def register_external_idp_schema(self, idp_type, schema):
