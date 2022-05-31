@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import List
-from pydantic import Field
+from pydantic import Field, UUID4
 from ninja import Schema
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.external_idp import ExternalIdpExtension
@@ -10,9 +10,9 @@ from arkid.core.schema import ResponseSchema
 
 class ThirdAuthListItemOut(Schema):
 
-    id: str
+    id: UUID4
+    name: str = Field(title=_("名称"))
     type: str = Field(title=_("类型"))
-    # name: str = Field(title=_("名称"))
     extension_name: str = Field(title=_("插件名称"))
     extension_package: str = Field(title=_("插件包"))
 
