@@ -21,7 +21,7 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name_plural = _("tenant", "租户")
 
     name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), blank=True, null=True, default='' ,unique=True)
+    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), default='', unique=True)
     icon = models.URLField(verbose_name=_('icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(
@@ -61,7 +61,7 @@ class Tenant(BaseModel, ExpandModel):
         '''
         是否是平台租户
         '''
-        tenant = Tenant.valid_objects.order_by('id').first()
+        tenant = Tenant.valid_objects.order_by('created').first()
         if tenant.id == self.id:
             return True
         else:
