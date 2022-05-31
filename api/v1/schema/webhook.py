@@ -17,12 +17,6 @@ select_events_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/event_list/',
         method=actions.FrontActionMethod.GET,
     ),
-    # node_actions=[
-    #     actions.DirectAction(
-    #         path='/api/v1/tenant/{tenant_id}/app_groups/?parent_id={id}',
-    #         method=actions.FrontActionMethod.GET,
-    #     )
-    # ],
 )
 
 
