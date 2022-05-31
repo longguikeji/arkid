@@ -67,6 +67,10 @@ class Tenant(BaseModel, ExpandModel):
         else:
             return False
 
+    @staticmethod
+    def platform_tenant():
+        return Tenant.valid_objects.order_by('created').first()
+
 class User(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("user", "用户")
