@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from arkid.core.error import ErrorCode
 from ninja import ModelSchema
 from typing import List
+import json
 from ninja.pagination import paginate
 from arkid.core.event import dispatch_event, Event
 from arkid.core.event import (
@@ -61,7 +62,7 @@ def get_account_life_list(request, tenant_id: str):
 @operation(AccountLifeOut)
 def get_account_life(request, tenant_id: str, id: str):
     """获取账号生命周期配置"""
-    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    config = TenantExtensionConfig.active_objects.get(id=id)
     return {
         "data": {
             "id": config.id.hex,
@@ -85,7 +86,8 @@ def create_account_life(request, tenant_id: str, data: AccountLifeCreateIn):
     config = TenantExtensionConfig()
     config.tenant = request.tenant
     config.extension = Extension.active_objects.get(package=data.package)
-    config.config = data.config.dict()
+    user_expirations = json.loads(data.config.json())
+    config.config = user_expirations
     config.name = data.dict().get("name")
     config.type = data.type
     config.save()
