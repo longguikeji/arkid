@@ -87,7 +87,7 @@ from api.v1.schema.approve_request import (
 @operation(ApproveRequestListOut)
 @paginate(CustomPagination)
 def get_mine_approve_requests(
-    request, tenant_id: str, package: str, is_approved: str = ""
+    request, tenant_id: str, package: str = "", is_approved: str = ""
 ):
     """我的审批列表"""
     tenant = request.tenant

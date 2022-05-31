@@ -6,13 +6,9 @@ tag = "mine_approve_request"
 name = _("审批请求")
 
 
-page = pages.TabsPage(name=name, tag=tag)
-waiting_page = pages.TablePage(name='未审核')
-approved_page = pages.TablePage(name='已审核')
+page = pages.TablePage(name=name, tag=tag)
 
 pages.register_front_pages(page)
-pages.register_front_pages(waiting_page)
-pages.register_front_pages(approved_page)
 
 router = routers.FrontRouter(
     path=tag,
@@ -21,23 +17,9 @@ router = routers.FrontRouter(
     page=page,
 )
 
-page.add_pages(
-    [
-        waiting_page,
-        approved_page,
-    ]
-)
-
-waiting_page.create_actions(
+page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/mine/tenant/{tenant_id}/approve_requests/?is_approved=false',
-        method=actions.FrontActionMethod.GET,
-    ),
-)
-
-approved_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/mine/tenant/{tenant_id}/approve_requests/?is_approved=true',
+        path='/api/v1/mine/tenant/{tenant_id}/approve_requests/',
         method=actions.FrontActionMethod.GET,
     ),
 )
