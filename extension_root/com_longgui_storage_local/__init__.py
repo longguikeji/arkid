@@ -8,10 +8,10 @@ from arkid.core.translation import gettext_default as _
 from arkid.config import get_app_config
 from . import views
 
-package = 'com.longgui.local_storage'
+package = 'com.longgui.storage.local'
 
-SettingsSchema = create_extension_schema(
-    "LocalStorageSettingsSchema",
+ProfileSchema = create_extension_schema(
+    "LocalStorageProfileSchema",
     package,
     fields = [
         ('storage_path', str, Field(title=_("Storage Path", "存储路径"))),
@@ -23,15 +23,14 @@ class LocalStorageExtension(Extension):
 
     def load(self):
         self.listen_event(SAVE_FILE, self.save_file)
-        self.register_settings_schema(SettingsSchema)
+        self.register_profile_schema(ProfileSchema)
         super().load()
 
-    def save_file(self, event, **kwargs):
-        tenant = event.tenant
-        file = event.data["file"]
-
-        f_key = self.generate_key(file.name)
-        p = Path('./storage/') / f_key
+    def save_file(self, file, f_key):
+        extension = self.model()
+        storage_path = extension.profile.get('storage_path','./storage/')
+        
+        p = Path(storage_path) / f_key
 
         if not p.parent.exists():
             p.parent.mkdir(parents=True)
@@ -39,19 +38,12 @@ class LocalStorageExtension(Extension):
         with open(p, 'wb') as fp:
             for chunk in file.chunks():
                 fp.write(chunk)
-
-        return self.resolve(f_key,tenant)
-    
-    def resolve(self, f_key,tenant):
+                
+    def resolve(self, f_key, tenant):
         host = get_app_config().get_frontend_host()
         return f'{host}/api/v1/tenant/{tenant.id}/localstorage/{f_key}'
     
-    def generate_key(self, file_name:str):
-        key = '{}.{}'.format(
-            uuid.uuid4().hex,
-            file_name.split('.')[-1],
-        )
-        return key
+    
 
 
 extension = LocalStorageExtension(

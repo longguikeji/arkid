@@ -11,7 +11,7 @@ from django.db import transaction
 from arkid.core.extension import create_extension_schema
 from . import views
 
-package = "com.longgui.mobile_auth_factor"
+package = "com.longgui.authfactor.mobile"
 
 MobileAuthFactorSchema = create_extension_schema('MobileAuthFactorSchema',package, 
         [
