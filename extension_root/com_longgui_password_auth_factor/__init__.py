@@ -61,12 +61,15 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 'title': '密码登录',
             }
             self.create_tenant_config(tenant, config, "default", "password")
-            
-        admin_user = User.active_objects.filter(username='admin').first()
-        admin_password = UserPassword.active_objects.filter(target=admin_user)
-        if not admin_password:
-            admin_user.password = make_password('admin')
-            admin_user.save()
+        try:
+            admin_user = User.active_objects.filter(username='admin').first()
+            if admin_user:
+                admin_password = UserPassword.active_objects.filter(target=admin_user)
+                if not admin_password:
+                    admin_user.password = make_password('admin')
+                    admin_user.save()
+        except Exception as e:
+            print(e)
         
     def authenticate(self, event, **kwargs):
         tenant = event.tenant

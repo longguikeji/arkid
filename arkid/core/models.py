@@ -75,7 +75,7 @@ class User(BaseModel, ExpandModel):
         unique_together = [['username', 'tenant']]
 
     username = models.CharField(max_length=128, blank=False, verbose_name=_("用户名"))
-    avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True)
+    avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True, null=True)
     is_platform_user = models.BooleanField(
         default=False, verbose_name=_('is platform user', '是否是平台用户')
     )
@@ -558,11 +558,19 @@ class LanguageData(BaseModel):
             data.update(self.custom_data)
         return data
 
+
 class TenantExpandAbstract(BaseModel):
     class Meta:
         abstract = True
-    
     foreign_key = Tenant
+    
+    target = models.ForeignKey(
+        Tenant,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class UserExpandAbstract(BaseModel):
@@ -570,6 +578,14 @@ class UserExpandAbstract(BaseModel):
     class Meta:
         abstract = True
     foreign_key = User
+        
+    target = models.ForeignKey(
+        User,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 
@@ -578,6 +594,14 @@ class UserGroupExpandAbstract(BaseModel):
     class Meta:
         abstract = True
     foreign_key = UserGroup
+    
+    target = models.ForeignKey(
+        UserGroup,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class AppExpandAbstract(BaseModel):
@@ -585,10 +609,25 @@ class AppExpandAbstract(BaseModel):
     class Meta:
         abstract = True
     foreign_key = App
+    target = models.ForeignKey(
+        App,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class AppGroupExpandAbstract(BaseModel):
 
     class Meta:
         abstract = True
+        
     foreign_key = AppGroup
+    target = models.ForeignKey(
+        AppGroup,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
