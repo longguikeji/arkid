@@ -165,6 +165,13 @@ class App(BaseModel, ExpandModel):
         default='',
         verbose_name=_('package', '包名'),
     )
+    entry_permission = models.ForeignKey(
+        'SystemPermission',
+        blank=True,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT
+    )
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'
