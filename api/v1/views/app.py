@@ -31,29 +31,31 @@ def create_app(request, tenant_id: str, data: AppCreateIn):
     app创建
     '''
     # data.id = uuid.uuid4()
-    setattr(data,"id",uuid.uuid4().hex)
-    tenant = request.tenant
-    # 事件分发
-    results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
-    for func, (result, extension) in results:
-        if result:
-            # 创建config
-            config = extension.create_tenant_config(tenant, data.config.dict(), data.name, data.app_type)
-            # 创建app
-            app = App()
-            app.id = data.id
-            app.name = data.dict()["name"]
-            app.url = data.url
-            app.logo = data.logo
-            app.type = data.app_type
-            app.package = data.package
-            app.description = data.description
-            app.config = config
-            app.tenant_id = tenant_id
-            app.save()
-            # 创建app完成进行事件分发
-            dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
-            break
+    # setattr(data,"id",uuid.uuid4().hex)
+    # tenant = request.tenant
+    # # 事件分发
+    # results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
+    # for func, (result, extension) in results:
+    #     if result:
+    #         # 创建config
+    #         config = extension.create_tenant_config(tenant, data.config.dict(), data.name, data.app_type)
+    #         # 创建app
+    #         app = App()
+    #         app.id = data.id
+    #         app.name = data.dict()["name"]
+    #         app.url = data.url
+    #         app.logo = data.logo
+    #         app.type = data.app_type
+    #         app.package = data.package
+    #         app.description = data.description
+    #         app.config = config
+    #         app.tenant_id = tenant_id
+    #         app.save()
+    #         # 创建app完成进行事件分发
+    #         dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
+    #         break
+    app = App.expand_objects.get_or_create(tenant=request.tenant,**data.dict())
+    
     return {'error': ErrorCode.OK.value}
 
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
@@ -136,7 +138,7 @@ def get_app_openapi_version(request, tenant_id: str, app_id: str):
     return result
 
 
-@api.put("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", tags=['应用'], auth=None)
+@api.post("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpenApiVersionSchemaOut):
     '''
@@ -177,7 +179,7 @@ def delete_app(request, tenant_id: str, app_id: str):
     app.delete()
     return {'error': ErrorCode.OK.value}
 
-@api.put("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)
+@api.post("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)
 @operation(AppUpdateOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_app(request, tenant_id: str, app_id: str, data: AppUpdateIn):
     '''
@@ -213,9 +215,36 @@ def update_app(request, tenant_id: str, app_id: str, data: AppUpdateIn):
         break
     return {'error': ErrorCode.OK.value}
 
-# @api.get("/tenant/{tenant_id}/apps/{app_id}/permissions/", tags=["应用"], auth=None)
-# @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-# def get_app_permissions(request, tenant_id: str,app_id:str):
-#     """ 应用权限列表,TODO
-#     """
-#     return []
+@api.post("/tenant/{tenant_id}/apps/{app_id}/config/", tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def set_app_config(request, tenant_id: str, app_id: str, data:AppProtocolConfigIn):
+    '''
+    配置应用协议
+    '''
+    app = get_object_or_404(App, id=app_id, is_del=False)
+    config = app.config
+    app_config = config.config
+    if data.version and data.openapi_uris:
+        if app_config.get('version') is None:
+            # 只有版本或接口发生变化时才调用事件
+            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
+        elif data.version != app_config['version'] or data.openapi_uris != app_config['openapi_uris']:
+            # 只有版本或接口发生变化时才调用事件
+            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
+        app_config['version'] = data.version
+        app_config['openapi_uris'] = data.openapi_uris
+    config.save()
+    return {'error': ErrorCode.OK.value}
+
+@api.get("/tenant/{tenant_id}/apps/{app_id}/config/", tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_app_config(request, tenant_id: str, app_id: str):
+    '''
+    获取应用协议数据
+    '''
+    app = get_object_or_404(App, id=app_id, is_del=False)
+    config = app.config
+    
+    
+    
+    return {'error': ErrorCode.OK.value}

@@ -440,11 +440,6 @@ class Extension(ABC):
         """
         core_api.add_fields(api_schema_cls, **field_definitions)
         self.extend_apis.append((api_schema_cls, list(field_definitions.keys())))
-        
-    def refresh_lang_maps(self):
-        """刷新语言包
-        """
-        core_translation.lang_maps = core_translation.reset_lang_maps()
 
     def register_front_routers(self, router, primary:core_routers.FrontRouter=None):
         """注册前端路由

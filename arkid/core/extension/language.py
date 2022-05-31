@@ -6,6 +6,7 @@ from pydantic import Field
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core.models import LanguageData
+from arkid.core import translation as core_translation
 
 class LanguageExtension(Extension):
     
@@ -32,6 +33,11 @@ class LanguageExtension(Extension):
         language_data.save()
         
         self.refresh_lang_maps()
+        
+    def refresh_lang_maps(self):
+        """刷新语言包
+        """
+        core_translation.lang_maps = core_translation.reset_lang_maps()
         
          
     

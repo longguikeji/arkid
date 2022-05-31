@@ -72,3 +72,6 @@ class ConfigOpenApiVersionSchemaOut(Schema):
 
     version: str = Field(title=_('version','应用版本'), default='')
     openapi_uris: str = Field(title=_('openapi uris','接口文档地址'), default='')
+    
+class AppProtocolConfigIn(Schema):
+    pass
