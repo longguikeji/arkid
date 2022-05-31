@@ -74,7 +74,12 @@ def get_group(request, tenant_id: str, id: str):
     '''
     group = get_object_or_404(UserGroup, id=id, is_del=False)
     return {
-        "data": group
+        "data": {
+            "id": group["id"],
+            "parent":group["parent"] if group["parent"] else None,
+            "parent_name": UserGroup.active_objects.get(id=group["parent"]).name if group["parent"] else None,
+            "name": group["name"]
+        }
     }
 
 

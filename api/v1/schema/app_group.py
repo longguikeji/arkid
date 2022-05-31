@@ -38,11 +38,15 @@ class AppGroupListOut(ResponseSchema):
     data: List[AppGroupListItemOut]
 
 
-class AppGroupItemOut(ModelSchema):
+class AppGroupItemOut(Schema):
     id:UUID = Field(
         readonly=True
     )
-
+    
+    name: str = Field(
+        title=_("分组名称")
+    )
+    
     parent:Optional[UUID] = Field(
         field="id",
         page=select_appgroup_parent_page.tag,
@@ -53,12 +57,9 @@ class AppGroupItemOut(ModelSchema):
     
     parent_name: Optional[str] = Field(
         title=_("上级应用分组名称"),
-        hidden=True
+        hidden=True,
+        read_only=True
     )
-    
-    class Config:
-        model = AppGroup
-        model_fields = ['id', 'name', "parent"]
 
 class AppGroupOut(ResponseSchema):
     data: AppGroupItemOut
