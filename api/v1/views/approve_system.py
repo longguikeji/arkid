@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.account_life import AccountLifeExtension
 from arkid.core.extension.approve_system import ApproveSystemExtension
@@ -10,6 +10,7 @@ from arkid.core.error import ErrorCode
 from ninja import ModelSchema
 from typing import List
 from ninja.pagination import paginate
+from arkid.core.pagenation import CustomPagination
 from arkid.core.event import (
     CREATE_APPROVE_SYSTEM_CONFIG,
     DELETE_APPROVE_SYSTEM_CONFIG,
@@ -17,127 +18,123 @@ from arkid.core.event import (
     dispatch_event,
     Event,
 )
-from arkid.core.event import (
-    CREATE_ACCOUNT_LIFE_CONFIG,
-    UPDATE_ACCOUNT_LIFE_CONFIG,
-    DELETE_ACCOUNT_LIFE_CONFIG,
+from api.v1.schema.approve_system import (
+    ApproveSystemCreateIn,
+    ApproveSystemCreateOut,
+    ApproveSystemListItemOut,
+    ApproveSystemListOut,
+    ApproveSystemOut,
+    ApproveSystemUpdateIn,
+    ApproveSystemUpdateOut,
+    ApproveSystemDeleteOut,
 )
-
-ApproveSystemSchemaIn = ApproveSystemExtension.create_composite_config_schema(
-    'ApproveSystemSchemaIn'
-)
-
-
-class ApproveSystemSchemaOut(ModelSchema):
-    class Config:
-        model = TenantExtension
-        model_fields = ['id', 'settings']
-
-    package: str
-    type: str
-
-    @staticmethod
-    def resolve_package(obj):
-        return obj.extension.package
-
-    @staticmethod
-    def resolve_type(obj):
-        return obj.extension.type
 
 
 @api.get(
     "/tenant/{tenant_id}/approve_systems/",
     tags=["审批系统"],
     auth=None,
-    response=List[ApproveSystemSchemaOut],
+    response=List[ApproveSystemListItemOut],
 )
-@paginate
+@operation(ApproveSystemListOut)
+@paginate(CustomPagination)
 def get_approve_system_list(request, tenant_id: str):
     settings = TenantExtension.valid_objects.filter(
-        tenant_id=tenant_id, extension__type="approve_system"
+        tenant_id=tenant_id, extension__type=ApproveSystemExtension.TYPE
     )
-    return settings
+    return [
+        {
+            "id": setting.id.hex,
+            "type": setting.extension.type,
+            # "name": setting.name,
+            "extension_name": setting.extension.name,
+            "extension_package": setting.extension.package,
+        }
+        for setting in settings
+    ]
 
 
 @api.get(
     "/tenant/{tenant_id}/approve_systems/{id}/",
     tags=["审批系统"],
     auth=None,
-    response=ApproveSystemSchemaOut,
+    response=ApproveSystemOut,
 )
+@operation(ApproveSystemOut)
 def get_approve_system(request, tenant_id: str, id: str):
-    settings = get_object_or_404(TenantExtension, id=id, tenant=request.tenant)
-    return settings
+    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
+    return {
+        "data": {
+            "id": setting.id.hex,
+            "type": setting.extension.type,
+            "package": setting.extension.package,
+            "config": setting.settings,
+        }
+    }
 
 
 @api.post(
     "/tenant/{tenant_id}/approve_systems/",
     tags=["审批系统"],
     auth=None,
-    response=ApproveSystemSchemaOut,
+    response=ApproveSystemCreateOut,
 )
-def create_approve_system(request, tenant_id: str, data: ApproveSystemSchemaIn):
-    tenant = request.tenant
-    package = data.package
-    name = data.name
-    type = data.type
-    config = data.config
-    extension = Extension.active_objects.get(package=package)
-    extension = import_extension(extension.ext_dir)
-    extension_settings = extension.create_tenant_settings(
-        tenant, config.dict(), type="approve_system"
-    )
+def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
+    setting = TenantExtension()
+    setting.tenant = request.tenant
+    setting.extension = Extension.valid_objects.get(package=data.package)
+    setting.settings = data.config.dict()
+    setting.save()
     dispatch_event(
         Event(
             tag=CREATE_APPROVE_SYSTEM_CONFIG,
-            tenant=tenant,
+            tenant=request.tenant,
             request=request,
-            data=extension_settings,
+            data=setting,
         )
     )
-    return extension_settings
+    return {'error': ErrorCode.OK.value}
 
 
 @api.put(
     "/tenant/{tenant_id}/approve_systems/{id}/",
     tags=["审批系统"],
     auth=None,
-    response=ApproveSystemSchemaOut,
+    response=ApproveSystemUpdateOut,
 )
 def update_approve_system(
-    request, tenant_id: str, id: str, data: ApproveSystemSchemaIn
+    request, tenant_id: str, id: str, data: ApproveSystemUpdateIn
 ):
-    extension_settings = get_object_or_404(
-        TenantExtension, id=id, tenant=request.tenant
-    )
-    tenant = request.tenant
-    extension_settings.settings = data.config.dict()
-    extension_settings.save()
+    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
+    setting.settings = data.config.dict()
+    setting.save()
     dispatch_event(
         Event(
             tag=UPDATE_APPROVE_SYSTEM_CONFIG,
-            tenant=tenant,
+            tenant=request.tenant,
             request=request,
-            data=extension_settings,
+            data=setting,
         )
     )
+    return {'error': ErrorCode.OK.value}
 
-    return extension_settings
 
-
-@api.delete("/tenant/{tenant_id}/approve_systems/{id}/", tags=["审批系统"], auth=None)
+@api.delete(
+    "/tenant/{tenant_id}/approve_systems/{id}/",
+    tags=["审批系统"],
+    auth=None,
+    response=ApproveSystemDeleteOut,
+)
+@operation(ApproveSystemDeleteOut)
 def delete_approve_system(request, tenant_id: str, id: str):
-    tenant = request.tenant
-    extension_settings = get_object_or_404(
-        TenantExtension, id=id, tenant=request.tenant
-    )
+    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
     dispatch_event(
         Event(
             tag=DELETE_APPROVE_SYSTEM_CONFIG,
-            tenant=tenant,
+            tenant=request.tenant,
             request=request,
-            data=extension_settings,
+            data=setting,
         )
     )
-    extension_settings.kill()
+    setting.kill()
     return {'error': ErrorCode.OK.value}

@@ -1,4 +1,3 @@
-from arkid.core.api import api
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auto_auth import AutoAuthExtension
 from arkid.extension.models import TenantExtensionConfig, Extension, TenantExtension
@@ -9,6 +8,8 @@ from django.shortcuts import get_object_or_404
 from arkid.core.error import ErrorCode
 from ninja import ModelSchema
 from ninja.pagination import paginate
+from arkid.core.api import api, operation
+from arkid.core.pagenation import CustomPagination
 from arkid.core.event import (
     CREATE_AUTO_AUTH_CONFIG,
     DELETE_AUTO_AUTH_CONFIG,
@@ -16,120 +17,133 @@ from arkid.core.event import (
     dispatch_event,
     Event,
 )
-
-AutoAuthSchemaIn = AutoAuthExtension.create_composite_config_schema('AutoAuthSchemaIn')
-
-
-class AutoAuthSchemaOut(ModelSchema):
-    class Config:
-        model = TenantExtension
-        model_fields = ['id', 'settings']
-
-    package: str
-    type: str
-
-    @staticmethod
-    def resolve_package(obj):
-        return obj.extension.package
-
-    @staticmethod
-    def resolve_type(obj):
-        return obj.extension.type
+from api.v1.schema.auto_auth import (
+    AutoAuthCreateIn,
+    AutoAuthCreateOut,
+    AutoAuthListItemOut,
+    AutoAuthListOut,
+    AutoAuthOut,
+    AutoAuthUpdateIn,
+    AutoAuthUpdateOut,
+    AutoAuthDeleteOut,
+)
 
 
 @api.get(
     "/tenant/{tenant_id}/auto_auths/",
     tags=["自动认证"],
     auth=None,
-    response=List[AutoAuthSchemaOut],
+    response=List[AutoAuthListItemOut],
 )
-@paginate
+@operation(AutoAuthListOut)
+@paginate(CustomPagination)
 def get_auto_auths(request, tenant_id: str):
     """自动认证列表"""
     settings = TenantExtension.valid_objects.filter(
-        tenant_id=tenant_id, extension__type="auto_auth"
+        tenant_id=tenant_id, extension__type=AutoAuthExtension.TYPE
     )
-    return settings
+    return [
+        {
+            "id": setting.id.hex,
+            "type": setting.extension.type,
+            # "name": setting.name,
+            "extension_name": setting.extension.name,
+            "extension_package": setting.extension.package,
+        }
+        for setting in settings
+    ]
 
 
 @api.get(
     "/tenant/{tenant_id}/auto_auths/{id}/",
     tags=["自动认证"],
     auth=None,
-    response=AutoAuthSchemaOut,
+    response=AutoAuthOut,
 )
+@operation(AutoAuthOut)
 def get_auto_auth(request, tenant_id: str, id: str):
     """获取自动认证"""
-    settings = get_object_or_404(TenantExtension, id=id, tenant=request.tenant)
-    return settings
+    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
+    return {
+        "data": {
+            "id": setting.id.hex,
+            "type": setting.extension.type,
+            "package": setting.extension.package,
+            "use_platform_config": setting.use_platform_config,
+            # "name": setting.name,
+            "config": setting.settings,
+        }
+    }
 
 
 @api.post(
     "/tenant/{tenant_id}/auto_auths/",
     tags=["自动认证"],
     auth=None,
-    response=AutoAuthSchemaOut,
+    response=AutoAuthCreateOut,
 )
-def create_auto_auth(request, tenant_id: str, data: AutoAuthSchemaIn):
+@operation(AutoAuthCreateOut)
+def create_auto_auth(request, tenant_id: str, data: AutoAuthCreateIn):
     """创建自动认证"""
-    tenant = request.tenant
-    package = data.package
-    config = data.config
-    extension = Extension.active_objects.get(package=package)
-    extension = import_extension(extension.ext_dir)
-    extension_settings = extension.create_tenant_settings(tenant, config.dict())
+    setting = TenantExtension()
+    setting.tenant = request.tenant
+    setting.extension = Extension.valid_objects.get(package=data.package)
+    setting.use_platform_config = data.use_platform_config
+    setting.settings = data.config.dict()
+    setting.save()
     dispatch_event(
         Event(
             tag=CREATE_AUTO_AUTH_CONFIG,
-            tenant=tenant,
+            tenant=request.tenant,
             request=request,
-            data=extension_settings,
+            data=setting,
         )
     )
 
-    return extension_settings
+    return {'error': ErrorCode.OK.value}
 
 
 @api.put(
     "/tenant/{tenant_id}/auto_auths/{id}/",
     tags=["自动认证"],
     auth=None,
-    response=AutoAuthSchemaOut,
+    response=AutoAuthUpdateOut,
 )
-def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthSchemaIn):
+def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
     """编辑自动认证"""
-    extension_settings = get_object_or_404(
-        TenantExtension, id=id, tenant=request.tenant
-    )
-    tenant = request.tenant
-    extension_settings.settings = data.config.dict()
-    extension_settings.save()
+
+    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
+    setting.settings = data.config.dict()
+    setting.use_platform_config = data.use_platform_config
+    setting.save()
     dispatch_event(
         Event(
             tag=UPDATE_AUTO_AUTH_CONFIG,
-            tenant=tenant,
+            tenant=request.tenant,
             request=request,
-            data=extension_settings,
+            data=setting,
         )
     )
+    return {'error': ErrorCode.OK.value}
 
-    return extension_settings
 
-
-@api.delete("/tenant/{tenant_id}/auto_auths/{id}/", tags=["自动认证"], auth=None)
+@api.delete(
+    "/tenant/{tenant_id}/auto_auths/{id}/",
+    tags=["自动认证"],
+    auth=None,
+    response=AutoAuthDeleteOut,
+)
+@operation(AutoAuthDeleteOut)
 def delete_auto_auth(request, tenant_id: str, id: str):
     """删除自动认证"""
-    tenant = request.tenant
-    extension_settings = get_object_or_404(
-        TenantExtension, id=id, tenant=request.tenant
-    )
+    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
     dispatch_event(
         Event(
             tag=DELETE_AUTO_AUTH_CONFIG,
-            tenant=tenant,
+            tenant=request.tenant,
             request=request,
-            data=extension_settings,
+            data=setting,
         )
     )
-    extension_settings.kill()
+    setting.kill()
     return {'error': ErrorCode.OK.value}

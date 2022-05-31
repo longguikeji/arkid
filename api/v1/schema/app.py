@@ -15,6 +15,10 @@ AppCreateIn = AppProtocolExtension.create_composite_config_schema(
     id=(str,Field(default=uuid.uuid4().hex, hidden=True, readonly=True))
 )
 
+# class AppCreateIn(ModelSchema):
+#     class Config:
+#         model = App
+#         model_fields = ['name', 'url', 'logo']
 
 class AppCreateOut(ResponseSchema):
     pass
@@ -68,3 +72,6 @@ class ConfigOpenApiVersionSchemaOut(Schema):
 
     version: str = Field(title=_('version','应用版本'), default='')
     openapi_uris: str = Field(title=_('openapi uris','接口文档地址'), default='')
+    
+class AppProtocolConfigIn(Schema):
+    pass

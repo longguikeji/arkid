@@ -12,7 +12,7 @@ class UserListQueryIn(Schema):
 class UserListItemOut(ModelSchema):
     class Config:
         model = User
-        model_fields = ['id', 'username', 'avatar', 'is_platform_user']
+        model_fields = ['id', 'username', 'avatar']
 
 class UserListOut(ResponseSchema):
     data: List[UserListItemOut]

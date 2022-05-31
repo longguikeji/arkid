@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from arkid.core.api import api
+from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
 from ninja import ModelSchema, Schema
 from arkid.core.models import ApproveAction, ApproveRequest
@@ -12,64 +12,30 @@ from typing import List
 from django.shortcuts import get_object_or_404
 from arkid.core.extension.approve_system import ApproveSystemExtension
 from ninja.pagination import paginate
-
-
-class ApproveRequestOut(ModelSchema):
-    class Config:
-        model = ApproveRequest
-        model_fields = ['id', 'status']
-
-    username: str
-    path: str
-    method: str
-
-    @staticmethod
-    def resolve_username(obj):
-        return obj.user.username
-
-    @staticmethod
-    def resolve_path(obj):
-        return obj.action.path
-
-    @staticmethod
-    def resolve_method(obj):
-        return obj.action.method
+from arkid.core.pagenation import CustomPagination
+from api.v1.schema.approve_request import (
+    ApproveRequestListItemOut,
+    ApproveRequestListOut,
+)
 
 
 @api.get(
-    "/tenant/{tenant_id}/approve_system/system_approve_requests/",
-    response=List[ApproveRequestOut],
+    "/tenant/{tenant_id}/approve_requests/",
+    response=List[ApproveRequestListItemOut],
     tags=['审批请求'],
     auth=None,
 )
-@paginate
-def system_approve_request_list(request, tenant_id: str, package: str=""):
+@operation(ApproveRequestListOut)
+@paginate(CustomPagination)
+def approve_request_list(
+    request, tenant_id: str, package: str = "", is_approved: str = ""
+):
     tenant = request.tenant
-    requests = ApproveRequest.valid_objects.filter(
-        action__extension__type="approve_system", action__tenant=tenant
-    )
+    requests = ApproveRequest.valid_objects.filter(action__tenant=tenant)
     if package:
         requests = requests.filter(action__extension__package=package)
+    if is_approved == "true":
+        requests = requests.exclude(status="wait")
+    elif is_approved == "false":
+        requests = requests.filter(status="wait")
     return requests
-
-
-@api.put(
-    "/tenant/{tenant_id}/approve_system/approve_requests/{request_id}/",
-    # response=ApproveRequestOut,
-    tags=['审批请求'],
-    auth=None,
-)
-def approve_request_process(request, tenant_id: str, request_id: str, action: str = ''):
-    tenant = request.tenant
-    approve_request = get_object_or_404(
-        ApproveRequest, id=request_id, action__tenant=tenant
-    )
-    if action == "pass":
-        approve_request.status = "pass"
-        approve_request.save()
-        response = ApproveSystemExtension.restore_request(approve_request)
-        return response
-    elif action == "deny":
-        approve_request.status = "deny"
-        approve_request.save()
-        return {'error': ErrorCode.OK.value}

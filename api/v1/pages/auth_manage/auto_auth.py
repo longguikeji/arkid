@@ -17,6 +17,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
+    icon='auto',
 )
 
 page.create_actions(
@@ -46,7 +47,8 @@ edit_page.create_actions(
     ),
     global_actions={
        'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/auto_auths/{id}/"
+            path="/api/v1/tenant/{tenant_id}/auto_auths/{id}/",
+            method=actions.FrontActionMethod.PUT
         ),
     }
 )

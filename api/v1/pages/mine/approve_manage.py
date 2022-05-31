@@ -21,5 +21,5 @@ page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/mine/tenant/{tenant_id}/approve_requests/',
         method=actions.FrontActionMethod.GET,
-    )
+    ),
 )

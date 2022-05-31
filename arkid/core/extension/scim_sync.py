@@ -20,6 +20,7 @@ from scim_server.views.users_view import UsersViewTemplate
 from scim_server.views.groups_view import GroupsViewTemplate
 from scim_server.service.provider_base import ProviderBase
 from scim_server.exceptions import NotImplementedException
+from arkid.core import pages, actions
 
 
 class ScimSyncExtension(Extension, ProviderBase):
@@ -47,15 +48,15 @@ class ScimSyncExtension(Extension, ProviderBase):
 
         scim_server_urls = [
             re_path(
-                rf'^scim/{self.name}/(?P<config_id>[\w-]+)/Users(?:/(?P<uuid>[^/]+))?$',
+                rf'^scim/{self.pname}/(?P<config_id>[\w-]+)/Users(?:/(?P<uuid>[^/]+))?$',
                 UsersView.as_view(),
-                name=f'{self.name}_scim_users',
+                name=f'{self.pname}_scim_users',
             ),
             # re_path(r'^Groups/.search$', views.GroupSearchView.as_view(), name='groups-search'),
             re_path(
-                rf'^scim/{self.name}/(?P<config_id>[\w-]+)/Groups(?:/(?P<uuid>[^/]+))?$',
+                rf'^scim/{self.pname}/(?P<config_id>[\w-]+)/Groups(?:/(?P<uuid>[^/]+))?$',
                 GroupsView.as_view(),
-                name=f'{self.name}_scim_groups',
+                name=f'{self.pname}_scim_groups',
             ),
         ]
         self.register_routers(scim_server_urls, True)
@@ -125,12 +126,12 @@ class ScimSyncExtension(Extension, ProviderBase):
         )
         if config["mode"] == "server":
             server_host = get_app_config().get_host()
-            package = self.package.replace('.', '_')
             user_url = server_host + reverse(
-                f'{package}:{self.name}_scim_users', args=[tenant.id, config_created.id]
+                f'api:{self.name}_tenant:{self.name}_scim_users',
+                args=[tenant.id, config_created.id],
             )
             group_url = server_host + reverse(
-                f'{package}:{self.name}_scim_groups',
+                f'api:{self.name}_tenant:{self.name}_scim_groups',
                 args=[tenant.id, config_created.id],
             )
             config["group_url"] = group_url
@@ -176,21 +177,44 @@ class ScimSyncExtension(Extension, ProviderBase):
         pass
 
 
+select_scim_server_page = pages.TablePage(select=True, name=_("Select Events", "选择事件"))
+
+pages.register_front_pages(select_scim_server_page)
+
+select_scim_server_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/scim_server_list/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    # node_actions=[
+    #     actions.DirectAction(
+    #         path='/api/v1/tenant/{tenant_id}/app_groups/?parent_id={id}',
+    #         method=actions.FrontActionMethod.GET,
+    #     )
+    # ],
+)
+
+
 class BaseScimSyncClientSchema(Schema):
     # name: str = Field(default='', title=_('Name', '配置名称'))
     crontab: str = Field(default='0 1 * * *', title=_('Crontab', '定时运行时间'))
     max_retries: int = Field(default=3, title=_('Max Retries', '重试次数'))
     retry_delay: int = Field(default=60, title=_('Retry Delay', '重试间隔(单位秒)'))
-    sync_server_name: str = Field(default="", title=_('Sync Server Name', '同步服务的名字'))
+    # sync_server_name: str = Field(default="", title=_('Sync Server Name', '同步服务的名字'))
     sync_server_id: str = Field(
-        default="", title=_('Sync Server ID', '同步服务的ID'), hidden=True
+        default="",
+        title=_('Sync Server ID', 'SCIM同步服务'),
+        field="id",
+        page=select_scim_server_page.tag,
+        link="name",
+        type="string",
     )
-    attr_map: dict = Field(default={}, title=_('Attribute Map', '同步映射关系'))
+    # attr_map: dict = Field(default={}, title=_('Attribute Map', '同步映射关系'))
     mode: Literal["client"]
 
 
 class BaseScimSyncServerSchema(Schema):
     # name: str = Field(title=_('配置名称'))
     mode: Literal["server"]
-    user_url: str = Field(default="", title=_('User Url', '获取用户URL'))
-    group_url: str = Field(default="", title=_('Group Url', '获取组URL'))
+    user_url: str = Field(default="", title=_('User Url', '获取用户URL'), readonly=True)
+    group_url: str = Field(default="", title=_('Group Url', '获取组URL'), readonly=True)

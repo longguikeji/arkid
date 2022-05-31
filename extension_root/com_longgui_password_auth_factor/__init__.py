@@ -3,6 +3,7 @@ import re
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.error import ErrorCode
 from arkid.core.models import User
+from arkid.core import pages,actions
 from .models import UserPassword
 from pydantic import Field
 from typing import List, Optional
@@ -14,6 +15,7 @@ from django.contrib.auth.hashers import (
 )
 from django.db import transaction
 from arkid.core.extension import create_extension_schema
+from . import views
 
 package = "com.longgui.password_auth_factor"
 
@@ -55,11 +57,12 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        user = User.objects.filter(username=username, tenant=tenant).first()
+        user = User.expand_objects.filter(username=username, tenant=tenant).first()
         if user:
-            user_password = UserPassword.objects.filter(user=user).first()
+            user_password = user.get("password")
             if user_password:
-                if check_password(password, user_password.password):
+                if check_password(password, user_password):
+                    user = User.active_objects.get(id=user.get("id"))
                     return self.auth_success(user, event)
         
         return self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username or password not correct'})
@@ -168,14 +171,36 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         if field_name in ('username', 'email'):
             user = User.active_objects.filter(**{field_name: field_value}).first()
         else:
-            # 获取港注册的用户
+            # 获取刚注册的用户
             user = User.expand_objects.filter(**{field_name: field_value}).first()
         return user
+    
+    def create_auth_manage_page(self):
+        # 更改密码页面
+        
+        name = '更改密码'
+
+        page = pages.FormPage(name=name)
+        
+        pages.register_front_pages(page)
+
+        page.create_actions(
+            init_action=actions.DirectAction(
+                path='/api/v1/tenant/{tenant_id}/mine_password/',
+                method=actions.FrontActionMethod.GET,
+            ),
+            global_actions={
+                'confirm': actions.ConfirmAction(
+                    path="/api/v1/tenant/{tenant_id}/mine_password/"
+                ),
+            }
+        )
+        return page
 
 
 extension = PasswordAuthFactorExtension(
     package=package,
-    description="Password 认证因素",
+    name="密码认证因素",
     version='1.0',
     labels='auth_factor',
     homepage='https://www.longguikeji.com',

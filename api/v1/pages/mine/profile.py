@@ -16,6 +16,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
+    icon='profile',
 )
 
 page.add_pages([profile_page])

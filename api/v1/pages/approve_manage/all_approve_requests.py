@@ -9,11 +9,13 @@ name = '审批请求'
 
 page = pages.TablePage(tag=tag, name=name)
 
+pages.register_front_pages(page)
 
 router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
+    icon='request',
 )
 
 page.create_actions(

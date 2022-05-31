@@ -72,6 +72,6 @@ class ApproveSystemExtension(Extension):
         operation, _ = klass._find_operation(request)
         response = operation.run(request, **kwargs)
         logger.info(
-            f'{approve_request.action.method}:{approve_request.action.path}', response
+            f'Restore Request: {approve_request.user.username}:{approve_request.action.method}:{approve_request.action.path}'
         )
         return response

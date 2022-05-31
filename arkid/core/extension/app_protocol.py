@@ -44,13 +44,14 @@ class AppProtocolExtension(Extension):
     def delete_app(self, event, **kwargs):
         pass
     
-    def register_enter_view(self, view:View, path:str, url_name:str, type:list):
+    def register_enter_view(self, view:View, path:str, url_name:str, type:list, tenant_urls: bool=True):
         '''
         注册统一的入口函数，方便检测
         :param view:目标View的as_view()，例如:AuthorizationView.as_view()
         :param path:需要跳转的路径，例如:r"app/(?P<app_id>[\w-]+)/oauth/authorize/$"
         :param url_name:注册的路径名称, 例如:authorize
         :param type:list:一个当前插件的类型list, 例如:['OIDC', 'OAuth2']
+        :param tenant_urls: bool=True, 是否注册为租户url
         :return: 函数执行结果
         '''
         # 入口函数
@@ -77,4 +78,4 @@ class AppProtocolExtension(Extension):
         # 获取进入的路由
         entry_url = [re_path(path, EnterView.as_view(), name=url_name)]
         # 注册入口路由
-        self.register_routers(entry_url, True)
+        self.register_routers(entry_url, tenant_urls)

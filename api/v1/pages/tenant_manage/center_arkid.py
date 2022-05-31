@@ -16,7 +16,8 @@ pages.register_front_pages(edit_slug_page)
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    page=page
+    page=page,
+    icon='center',
 )
 
 page.create_actions(

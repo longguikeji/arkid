@@ -9,10 +9,10 @@ from arkid.core.schema import ResponseSchema
 class AuthRuleListItemOut(Schema):
 
     id: str
-    type: str = Field(title=_("类型"))
-    name: str = Field(title=_("名称"))
-    extension_name: str = Field(title=_("插件名称"))
-    extension_package: str = Field(title=_("插件包"))
+    name: str = Field(title=_("配置名称"))
+    type: str = Field(title=_("规则类型"))
+    extension_name: str = Field(title=_("所属插件"))
+    extension_package: str = Field(title=_("所属插件标识"))
 
 class AuthRuleListOut(ResponseSchema):
     data: List[AuthRuleListItemOut]

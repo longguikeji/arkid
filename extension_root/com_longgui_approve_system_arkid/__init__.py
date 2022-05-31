@@ -7,6 +7,7 @@ from arkid.core.translation import gettext_default as _
 from ninja import Schema
 from .approve_requests_page import page, router
 from api.v1.pages.approve_manage import router as approve_manage_router
+from . import views
 
 package = 'com.longgui.approve.system.arkid'
 
@@ -29,7 +30,7 @@ class ApproveSystemArkIDExtension(ApproveSystemExtension):
         # 加载相应的配置文件
         super().load()
         self.register_approve_system_schema(ApproveSystemArkIDConfigSchema, self.type)
-        self.register_front_pages(page)
+        # self.register_front_pages(page)
         approve_manage_router.children.append(router)
 
     def create_approve_system_config(self, event, **kwargs):
@@ -38,7 +39,7 @@ class ApproveSystemArkIDExtension(ApproveSystemExtension):
 
 extension = ApproveSystemArkIDExtension(
     package=package,
-    description='ArkID自带审批系统',
+    name='默认审批系统',
     version='1.0',
     labels='approve-system-arkid',
     homepage='https://www.longguikeji.com',

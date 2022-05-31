@@ -197,3 +197,4 @@ djangosaml2idp/saml2_config/*.xml
 arkid_extensions
 
 .devcontainer/
+./storage

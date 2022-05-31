@@ -11,6 +11,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
+    icon='settings',
 )
 
 pages.register_front_pages(page)

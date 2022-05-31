@@ -11,27 +11,56 @@ from arkid.common.logger import logger
 import json
 from .tasks import deactive_expired_user
 from .models import UserExpiration
-from . import views
-from .user_expiration_page import page, edit_page, router
+
+# from . import views
 from api.v1.pages.user_manage import router as user_manage_router
+from arkid.core import routers
+from datetime import datetime
+from typing import List
+from arkid.core import pages, actions
 
 package = 'com.longgui.account.life.arkid'
 
 
-class CronJobSchema(Schema):
-    crontab: str = Field(default='0 1 * * *', title=_('Crontab', '定时运行时间'))
-    max_retries: int = Field(default=3, title=_('Max Retries', '重试次数'))
-    retry_delay: int = Field(default=60, title=_('Retry Delay', '重试间隔(单位秒)'))
+select_user_page = pages.TablePage(select=True, name=_("Select User", "选择用户"))
+
+pages.register_front_pages(select_user_page)
+
+select_user_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/users/',
+        method=actions.FrontActionMethod.GET,
+    ),
+)
+
+
+class UserExpirationSchema(Schema):
+    username: str = Field(
+        title=_("Username", "用户名"),
+        field="id",
+        page=select_user_page.tag,
+        link="username",
+        type="string",
+    )
+    expiration_time: datetime = Field(title=_("Expiration Time", "过期时间"))
+    class Config:
+        title = _("User Expiration Setting", "用户过期设置")
+
+
+class UserExpirationListSchema(Schema):
+    __root__: List[UserExpirationSchema] = Field(
+        title=_("User Expiration Setting", "用户过期设置"), format="dynamic"
+    )
+    class Config:
+        title = _("User Expiration Setting", "用户过期设置")
 
 
 class AccountLifeArkIDExtension(AccountLifeExtension):
     def load(self):
         super().load()
         self.register_extend_field(UserExpiration, "expiration_time")
-        self.register_account_life_schema(CronJobSchema, "deactive_expired_user_cron")
-        self.register_front_pages(page)
-        self.register_front_pages(edit_page)
-        user_manage_router.children.append(router)
+        self.register_account_life_schema(UserExpirationListSchema, "user_expiration")
+        # user_manage_router.children.append(router)
 
     def create_tenant_config(self, tenant, config, name, type):
         config_created = super().create_tenant_config(
@@ -77,30 +106,33 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
             logger.exception('delete celery task failed %s' % e)
 
     def create_account_life_config(self, event, **kwargs):
-        extension_config = event.data
-        if extension_config.type != "deactive_expired_user_cron":
-            return
-        else:
-            self.update_or_create_periodic_task(extension_config)
+        # extension_config = event.data
+        # if extension_config.type != "deactive_expired_user_cron":
+        #     return
+        # else:
+        #     self.update_or_create_periodic_task(extension_config)
+        pass
 
     def update_account_life_config(self, event, **kwargs):
-        extension_config = event.data
-        if extension_config.type != "deactive_expired_user_cron":
-            return
-        else:
-            self.update_or_create_periodic_task(extension_config)
+        # extension_config = event.data
+        # if extension_config.type != "deactive_expired_user_cron":
+        #     return
+        # else:
+        #     self.update_or_create_periodic_task(extension_config)
+        pass
 
     def delete_account_life_config(self, event, **kwargs):
-        extension_config = event.data
-        if extension_config.type != "deactive_expired_user_cron":
-            return
-        else:
-            self.delete_periodic_task(extension_config)
+        # extension_config = event.data
+        # if extension_config.type != "deactive_expired_user_cron":
+        #     return
+        # else:
+        #     self.delete_periodic_task(extension_config)
+        pass
 
 
 extension = AccountLifeArkIDExtension(
     package=package,
-    description='ArkID账号生命周期管理',
+    name='默认账号生命周期管理',
     version='1.0',
     labels='account-life-arkid',
     homepage='https://www.longguikeji.com',

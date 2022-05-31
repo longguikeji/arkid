@@ -1,25 +1,31 @@
 #!/usr/bin/env python3
-import requests
-from types import SimpleNamespace
-from typing import Literal, Union
 from ninja import Schema
 from pydantic import Field
 from abc import abstractmethod
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
-from arkid.core import event as core_event
-from arkid.extension.models import TenantExtensionConfig, TenantExtension
+from arkid.extension.models import TenantExtension, TenantExtensionConfig
 from arkid.core.extension import RootSchema, create_extension_schema
-from pydantic import UUID4
-from celery import shared_task
 from arkid.common.logger import logger
 from django.urls import reverse
 from arkid.config import get_app_config
-from scim_server.urls import urlpatterns as scim_server_urls
 from django.urls import re_path
-from scim_server.views.users_view import UsersViewTemplate
-from scim_server.views.groups_view import GroupsViewTemplate
-from scim_server.exceptions import NotImplementedException
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from arkid.core.token import refresh_token
+from django.views.decorators.csrf import csrf_exempt
+from urllib.parse import urlencode, unquote
+from arkid.common.utils import verify_token
+
+
+class ExternalIdpBaseSchema(Schema):
+    client_id: str = Field(title=_('Client ID', '客户端ID'))
+    client_secret: str = Field(title=_('Client Secret', '客户端密钥'))
+    img_url: str = Field(title=_('Img URL', '图标URL'), readonly=True, default='')
+    login_url: str = Field(title=_('Login URL', '登录URL'), readonly=True, default='')
+    callback_url: str = Field(
+        title=_('Callback URL', '回调URL'), readonly=True, default=''
+    )
+    bind_url: str = Field(title=_('Bind URL', '绑定URL'), readonly=True, default='')
 
 
 class ExternalIdpExtension(Extension):
@@ -28,106 +34,219 @@ class ExternalIdpExtension(Extension):
     composite_schema_map = {}
     created_composite_schema_list = []
     composite_key = 'type'
-    composite_model = TenantExtension
+    composite_model = TenantExtensionConfig
 
     @property
     def type(self):
         return ExternalIdpExtension.TYPE
 
     def load(self):
-        # class UsersView(UsersViewTemplate):
-        #     @property
-        #     def provider(this):
-        #         return self
 
-        # class GroupsView(GroupsViewTemplate):
-        #     @property
-        #     def provider(this):
-        #         return self
-
-        # scim_server_urls = [
-        #     re_path(
-        #         rf'^scim/{self.name}/(?P<config_id>[\w-]+)/Users(?:/(?P<uuid>[^/]+))?$',
-        #         UsersView.as_view(),
-        #         name=f'{self.name}_scim_users',
-        #     ),
-        #     # re_path(r'^Groups/.search$', views.GroupSearchView.as_view(), name='groups-search'),
-        #     re_path(
-        #         rf'^scim/{self.name}/(?P<config_id>[\w-]+)/Groups(?:/(?P<uuid>[^/]+))?$',
-        #         GroupsView.as_view(),
-        #         name=f'{self.name}_scim_groups',
-        #     ),
-        # ]
-        # self.register_routers(scim_server_urls, True)
-        github_urls = [
+        urls = [
             re_path(
-                rf'^idp/{self.name}/(?P<settings_id>[\w-]+)/login$',
+                rf'^idp/{self.pname}/(?P<config_id>[\w-]+)/login$',
                 self.login,
-                name=f'{self.name}_login',
+                name=f'{self.pname}_login',
             ),
-            # re_path(r'^Groups/.search$', views.GroupSearchView.as_view(), name='groups-search'),
             re_path(
-                rf'^idp/{self.name}/(?P<settings_id>[\w-]+)/callback$',
+                rf'^idp/{self.pname}/(?P<config_id>[\w-]+)/callback$',
                 self.callback,
-                name=f'{self.name}_callback',
+                name=f'{self.pname}_callback',
             ),
             re_path(
-                rf'^idp/{self.name}/(?P<settings_id>[\w-]+)/bind$',
+                rf'^idp/{self.pname}/(?P<config_id>[\w-]+)/bind$',
                 self.bind,
-                name=f'{self.name}_bind',
+                name=f'{self.pname}_bind',
             ),
         ]
-        self.register_routers(github_urls, True)
+        self.register_routers(urls, True)
         super().load()
 
-    def login(self, request, settings_id):
+    @abstractmethod
+    def get_authorize_url(self, client_id, redirect_uri):
         """
-        处理前端登录页面，点击第三方登录按钮的逻辑
+        抽象方法
+        Params:
+            client_id: str, 第三方认证提供的Client_ID,
+            redirect_uri: str, 由ArkID提供的回调地址
+        Return:
+            str: 第三方登录提供的认证URL
         """
         pass
 
-    def callback(self, request, settings_id):
+    def login(self, request, tenant_id, config_id):
         """
-        处理第三方身份源的回调逻辑
+        重定向到第三方登录的入口地址, 该入口地址由get_authorize_url提供
+        """
+        config = self.get_config_by_id(config_id)
+        if not config:
+            return JsonResponse({"error_msg": "没有找到登录配置"})
+        config = config.config
+        callback_url = config.get("callback_url")
+        client_id = config.get("client_id")
+        next_url = request.GET.get("next", None)
+        if next_url is not None:
+            next_url = "?next=" + next_url
+        else:
+            next_url = ""
+        redirect_uri = "{}{}".format(callback_url, next_url)
+        url = self.get_authorize_url(client_id, redirect_uri)
+
+        return HttpResponseRedirect(url)
+
+    @abstractmethod
+    def get_ext_token_by_code(self, code):
+        """
+        抽象方法
+        Params:
+            code: str 第三方认证返回的code
+        Return:
+            str: 返回第三方认证提供的token
         """
         pass
 
-    def bind(self, request, settings_id):
+    @abstractmethod
+    def get_user_info_by_ext_token(self, token):
+        """
+        抽象方法
+        Params:
+            token: str 第三方认证返回的token
+        Return:
+            dict: 返回第三方认证提供的用户信息
+        """
+        pass
+
+    @abstractmethod
+    def get_arkid_user(self, ext_id):
+        """
+        抽象方法
+        Params: 
+            ext_id: str 第三方认证返回的用户标识
+        Return:
+            arkid.core.models.User: ArkID用户
+        """
+        pass
+
+    def get_token(self, ext_id, tenant, configs):
+        arkid_user = self.get_arkid_user(ext_id)
+        if arkid_user:
+            token = refresh_token(arkid_user)
+            context = {"token": token}
+        else:
+            context = {
+                "token": "",
+                "ext_id": ext_id,
+                "tenant_id": tenant.id,
+                "bind": configs.get('callback_url'),
+            }
+
+        return context
+
+    def callback(self, request, tenant_id, config_id):
+        """
+        拿到请求中携带的code，调用get_ext_token_by_code获取第三方认证的token，
+        调用get_user_info_by_ext_token获取第三方认证提供的用户信息，
+        拿到ext_id后，判断该ext_id是否已经和ArkID中的用户绑定，如果绑定直接返回绑定用户的Token，
+        如果没有，返回重定向到前端绑定页面
+        """
+        code = request.GET["code"]
+        next_url = request.GET.get("next", None)
+        frontend_host = (
+            get_app_config()
+            .get_frontend_host()
+            .replace('http://', '')
+            .replace('https://', '')
+        )
+        if "third_part_callback" not in next_url or frontend_host not in next_url:
+            return JsonResponse({'error_msg': '错误的跳转页面'})
+        if code:
+            try:
+                config = self.get_config_by_id(config_id)
+                config = config.config
+                ext_token = self.get_ext_token_by_code(code, config)
+                ext_id, ext_name, ext_icon, ext_info = self.get_user_info_by_ext_token(
+                    ext_token
+                )
+            except Exception as e:
+                logger.error(e)
+                return JsonResponse({"error_msg": "授权码失效", "code": ["invalid"]})
+        else:
+            return JsonResponse({"error_msg": "授权码丢失", "code": ["required"]})
+
+        context = self.get_token(ext_id, request.tenant, config)
+        if next_url:
+            query_string = urlencode(context)
+            url = f"{next_url}?{query_string}"
+            url = unquote(url)
+            return HttpResponseRedirect(url)
+        return JsonResponse(context)
+
+    @abstractmethod
+    def bind_arkid_user(self, ext_id, user):
+        """
+        Params:
+            ext_id:str 第三方登录返回的用户标识
+            user: arkid.core.models.User ArkID的用户
+        Return:
+            {"token":xxx} 返回token
+        """
+        pass
+
+    @csrf_exempt
+    def bind(self, request, tenant_id, config_id):
         """
         处理第三方身份源返回的user_id和ArkID的user之间的绑定
         """
         pass
+        ext_id = request.POST.get("ext_id")
+        user = verify_token(request)
+        if not user:
+            return JsonResponse({"error_msg": "Token验证失败", "code": ["token invalid"]})
+        self.bind_arkid_user(ext_id, user)
+        token = refresh_token(user)
+        data = {"token": token}
+        return JsonResponse(data)
 
+    @abstractmethod
     def get_img_url(self):
         """
-        返回第三方登录按钮的图片
-        """
+        抽象方法
+        
+        Return:
+            url str: 返回第三方登录按钮的图标    
+        """ 
         pass
 
     def register_external_idp_schema(self, idp_type, schema):
         self.register_config_schema(schema, self.package + '_' + idp_type)
         self.register_composite_config_schema(
-            schema, idp_type, exclude=['extension', 'settings']
+            schema, idp_type, exclude=['extension']
         )
 
-    def create_tenant_settings(self, tenant, settings, type):
-        settings_created = super().create_tenant_settings(tenant, settings, type=type)
+    def create_tenant_config(
+        self, tenant, config, name, type 
+    ):
+        config_created = super().create_tenant_config(
+            tenant, config, name, type
+        )
         server_host = get_app_config().get_host()
         login_url = server_host + reverse(
-            f'api:{self.name}_tenant:{self.name}_login', args=[tenant.id, settings_created.id]
+            f'api:{self.pname}_tenant:{self.pname}_login',
+            args=[tenant.id, config_created.id],
         )
         callback_url = server_host + reverse(
-            f'api:{self.name}_tenant:{self.name}_callback',
-            args=[tenant.id, settings_created.id],
+            f'api:{self.pname}_tenant:{self.pname}_callback',
+            args=[tenant.id, config_created.id],
         )
         bind_url = server_host + reverse(
-            f'api:{self.name}_tenant:{self.name}_bind', args=[tenant.id, settings_created.id]
+            f'api:{self.pname}_tenant:{self.pname}_bind',
+            args=[tenant.id, config_created.id],
         )
         img_url = self.get_img_url()
-        settings["login_url"] = login_url
-        settings["callback_url"] = callback_url
-        settings["bind_url"] = bind_url
-        settings["img_url"] = img_url
-        settings_created.settings = settings
-        settings_created.save()
-        return settings_created
+        config["login_url"] = login_url
+        config["callback_url"] = callback_url
+        config["bind_url"] = bind_url
+        config["img_url"] = img_url
+        config_created.config = config
+        config_created.save()
+        return config_created

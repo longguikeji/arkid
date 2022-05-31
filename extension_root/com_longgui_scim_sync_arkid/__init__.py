@@ -28,7 +28,7 @@ from scim_server.schemas.member import Member
 from scim_server.schemas.user_groups import UserGroup as ScimUserGroup
 from django.db.utils import IntegrityError
 
-package = 'com.longgui.scim_sync.arkid'
+package = 'com.longgui.scim.sync.arkid'
 
 
 ClientConfig = create_extension_schema(
@@ -210,7 +210,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
 
 extension = ScimSyncArkIDExtension(
     package=package,
-    description='ArkID 同步',
+    name='ArkID用户数据同步',
     version='1.0',
     labels='scim-sync-arkid',
     homepage='https://www.longguikeji.com',

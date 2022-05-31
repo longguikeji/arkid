@@ -9,89 +9,92 @@ from arkid.core.error import ErrorCode
 from ninja import Schema, ModelSchema
 from typing import List
 from ninja.pagination import paginate
-
-ThirdAuthConfigSchemaIn = ExternalIdpExtension.create_composite_config_schema(
-    'ThirdAuthConfigSchemaIn'
+from arkid.core.api import api, operation
+from arkid.core.pagenation import CustomPagination
+from api.v1.schema.third_auth import (
+    ThirdAuthCreateIn,
+    ThirdAuthCreateOut,
+    ThirdAuthListItemOut,
+    ThirdAuthListOut,
+    ThirdAuthOut,
+    ThirdAuthUpdateIn,
+    ThirdAuthUpdateOut,
+    ThirdAuthDeleteOut,
 )
-
-
-class ThirdAuthConfigSchemaOut(ModelSchema):
-    class Config:
-        model = TenantExtension
-        model_fields = ['id', 'settings']
-
-    package: str
-
-    @staticmethod
-    def resolve_package(obj):
-        return obj.extension.package
-
+from django.db.models import F
 
 @api.get(
     "/tenant/{tenant_id}/third_auths/",
     tags=["第三方认证"],
     auth=None,
-    response=List[ThirdAuthConfigSchemaOut],
+    response=List[ThirdAuthListItemOut],
 )
-@paginate
+@operation(ThirdAuthListOut)
+@paginate(CustomPagination)
 def get_third_auths(request, tenant_id: str):
     """第三方认证列表,TODO"""
-    settings = TenantExtension.valid_objects.filter(
-        tenant_id=tenant_id, type="external_idp"
+    configs = TenantExtensionConfig.valid_objects.annotate(extension_package=F('extension__package'),extension_name=F('extension__name')).select_related("extension").filter(
+        tenant_id=tenant_id, extension__type=ExternalIdpExtension.TYPE
     )
-    return settings
 
+    return configs
 
 @api.get(
     "/tenant/{tenant_id}/third_auths/{id}/",
     tags=["第三方认证"],
     auth=None,
-    response=ThirdAuthConfigSchemaOut,
+    response=ThirdAuthOut,
 )
+@operation(ThirdAuthOut)
 def get_third_auth(request, tenant_id: str, id: str):
-    """获取第三方认证,TODO"""
-    config = get_object_or_404(TenantExtension, id=id, tenant=request.tenant)
-    return config
+    """获取第三方认证"""
+    config = TenantExtensionConfig.valid_objects.annotate(package=F('extension__package')).select_related("extension").get(id=id)
+    return {
+        "data": config
+    }
 
 
 @api.post(
     "/tenant/{tenant_id}/third_auths/",
     tags=["第三方认证"],
     auth=None,
-    response=ThirdAuthConfigSchemaOut,
+    response=ThirdAuthCreateOut,
 )
-def create_third_auth(request, tenant_id: str, data: ThirdAuthConfigSchemaIn):
-    """创建第三方认证,TODO"""
-    tenant = request.tenant
-    package = data.package
-    type = data.type
-    config = data.config
-    extension = Extension.active_objects.get(package=package)
+@operation(ThirdAuthCreateOut)
+def create_third_auth(request, tenant_id: str, data: ThirdAuthCreateIn):
+    """创建第三方认证"""
+    extension = Extension.valid_objects.get(package=data.package)
     extension = import_extension(extension.ext_dir)
-    extension_settings = extension.create_tenant_settings(
-        tenant, config.dict(), type=type
+    extension_config = extension.create_tenant_config(
+        request.tenant, data.config.dict(), data.dict()["name"], data.type
     )
-    return extension_settings
+    return {'error': ErrorCode.OK.value}
 
 
-@api.put("/tenant/{tenant_id}/third_auths/{id}/", tags=["第三方认证"], auth=None)
-def update_third_auth(request, tenant_id: str, id: str, data: ThirdAuthConfigSchemaIn):
-    """编辑第三方认证,TODO"""
-    extension_settings = get_object_or_404(
-        TenantExtension, id=id, tenant=request.tenant
-    )
-    extension_settings.package = data.package
-    # extension_settings.name = data.name
-    extension_settings.type = data.type
-    extension_settings.settings = data.config
-    extension_settings.save()
+@api.put(
+    "/tenant/{tenant_id}/third_auths/{id}/",
+    tags=["第三方认证"],
+    auth=None,
+    response=ThirdAuthUpdateOut,
+)
+def update_third_auth(request, tenant_id: str, id: str, data: ThirdAuthUpdateIn):
+    """编辑第三方认证"""
+    config = TenantExtensionConfig.valid_objects.get(id=id)
+    config.config = data.config.dict()
+    config.save()
+    return {'error': ErrorCode.OK.value}
 
-    return extension_settings
 
-
-@api.delete("/tenant/{tenant_id}/third_auths/{id}/", tags=["第三方认证"], auth=None)
+@api.delete(
+    "/tenant/{tenant_id}/third_auths/{id}/",
+    tags=["第三方认证"],
+    auth=None,
+    response=ThirdAuthDeleteOut,
+)
+@operation(ThirdAuthDeleteOut)
 def delete_third_auth(request, tenant_id: str, id: str):
-    """删除第三方认证,TODO"""
-    extension_config = get_object_or_404(TenantExtension, id=id, tenant=request.tenant)
-    extension_config.delete()
+    """删除第三方认证"""
+
+    config = TenantExtensionConfig.valid_objects.get(id=id)
+    config.delete()
     return {'error': ErrorCode.OK.value}
