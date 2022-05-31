@@ -13,7 +13,6 @@ from .tasks import deactive_expired_user
 from .models import UserExpiration
 
 # from . import views
-from .user_expiration_page import page, router
 from api.v1.pages.user_manage import router as user_manage_router
 from arkid.core import routers
 from datetime import datetime
@@ -44,12 +43,16 @@ class UserExpirationSchema(Schema):
         type="string",
     )
     expiration_time: datetime = Field(title=_("Expiration Time", "过期时间"))
+    class Config:
+        title = _("User Expiration Setting", "用户过期设置")
 
 
 class UserExpirationListSchema(Schema):
     __root__: List[UserExpirationSchema] = Field(
         title=_("User Expiration Setting", "用户过期设置"), format="dynamic"
     )
+    class Config:
+        title = _("User Expiration Setting", "用户过期设置")
 
 
 class AccountLifeArkIDExtension(AccountLifeExtension):
