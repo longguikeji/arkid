@@ -1,5 +1,6 @@
 
 from abc import abstractmethod
+from arkid.common.logger import logger
 from ninja import Schema
 from typing import List, Optional, Literal
 from pydantic import Field
@@ -24,13 +25,15 @@ class LanguageExtension(Extension):
         self.extension_data = data
         
         extension = self.model
-        
-        language_data,_ = LanguageData.active_objects.get_or_create(extension=extension)
-        language_data.extension_data = self.extension_data
-        language_data.name = self.language_type
-        
-        language_data.save()
-        
+        try:
+            language_data,_ = LanguageData.active_objects.get_or_create(extension=extension)
+            language_data.extension_data = self.extension_data
+            language_data.name = self.language_type
+            
+            language_data.save()
+        except Exception as err:
+            logger.error(err)
+            
         self.refresh_lang_maps()
         
          
