@@ -4,7 +4,7 @@ from arkid.core.translation import gettext_default as _
 from ninja import Schema
 from pydantic import Field
 
-package = 'com.longgui.auth_rule.retry_times'
+package = 'com.longgui.authrule.retrytimes'
 
 AuthRuleRetryTimesConfigSchema = create_extension_schema(
     'AuthRuleRetryTimesConfigSchema',

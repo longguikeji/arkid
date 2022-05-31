@@ -17,7 +17,7 @@ from django.db import transaction
 from arkid.core.extension import create_extension_schema
 from . import views
 
-package = "com.longgui.password_auth_factor"
+package = "com.longgui.authfactor.password"
 
 PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',package, 
         [
