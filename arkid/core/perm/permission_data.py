@@ -1200,7 +1200,7 @@ class PermissionData(object):
                 break
         user = User.valid_objects.filter(id=user_id).first()
         if user and app_temp and tenant_id:
-            self.get_permission_str(user, tenant_id, app_temp.id)
+            return self.get_permission_str(user, tenant_id, app_temp.id)
         else:
             print('不存在用户或者应用或者租户')
             return {'result': ''}

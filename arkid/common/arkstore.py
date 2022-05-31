@@ -309,7 +309,7 @@ def create_tenant_app(tenant, saas_app):
     
 def get_arkid_saas_app_detail(tenant, token, extension_id):
     saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
-    arkid_saas_app_url = settings.ARKID_SAAS_URL + f'/api/v1/com_longgui_arkid_saas/tenant/{saas_tenant_id}/arkid/saas/app/{extension_id}/'
+    arkid_saas_app_url = settings.ARKID_SAAS_URL + f'/api/v1/com_longgui_arkidsaas/tenant/{saas_tenant_id}/arkid/saas/app/{extension_id}/'
     headers = {'Authorization': f'Token {saas_token}'}
     params = {}
     resp = requests.get(arkid_saas_app_url, params=params, headers=headers)
