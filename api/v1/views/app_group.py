@@ -60,9 +60,8 @@ def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
     """ 编辑应用分组
     """
     group = get_object_or_404(AppGroup.active_objects, id=id)
-    for attr, value in data.dict().items():
-        setattr(group, attr, value)
-    
+    parent_id = data.dict().get("parent",None)
+    group.parent = get_object_or_404(AppGroup.active_objects, id=parent_id) if parent_id else None
     if group.parent == group:
         return{'error': ErrorCode.APP_GROUP_PARENT_CANT_BE_ITSELF.value,"message":_("应用分组上级分组不能设置为其自身")}
         
