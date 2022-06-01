@@ -40,7 +40,7 @@ page.create_actions(
     ),
     global_actions={
         'create':actions.CreateAction(
-            path='/api/v1/tenant/{tenant_id}/apps/'
+            path='/api/v1/tenant/{tenant_id}/app_profile/'
         ),
         'appstore':actions.OpenAction(
             name='应用商店',
