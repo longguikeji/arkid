@@ -30,6 +30,8 @@ from api.v1.schema.account_life import (
 from arkid.core.pagenation import CustomPagination
 from arkid.core.extension.account_life import AccountLifeExtension
 from arkid.core.models import AccountLifeCrontab
+from django_celery_beat.models import PeriodicTask, CrontabSchedule
+from arkid.common.logger import logger
 
 
 @api.get(
@@ -184,4 +186,37 @@ def update_account_life_crontab(
     else:
         crontab.config = data.dict()
         crontab.save()
+    update_or_create_periodic_task(crontab)
     return {"data": crontab.config}
+
+
+def update_or_create_periodic_task(account_life_crontab):
+    crontab = account_life_crontab.config.get('crontab')
+    if crontab:
+        try:
+            crontab = crontab.split(' ')
+            crontab.extend(['*'] * (5 - len(crontab)))
+
+            # create CrontabSchedule
+            schedule, _ = CrontabSchedule.objects.get_or_create(
+                minute=crontab[0],
+                hour=crontab[1],
+                day_of_week=crontab[2],
+                day_of_month=crontab[3],
+                month_of_year=crontab[4],
+            )
+
+            # create PeriodicTask
+            PeriodicTask.objects.update_or_create(
+                name=account_life_crontab.id,
+                defaults={
+                    'crontab': schedule,
+                    'task': 'arkid.core.tasks.account_life_periodic_task',
+                    'args': json.dumps([account_life_crontab.id.hex]),
+                    'kwargs': json.dumps(account_life_crontab.config),
+                },
+            )
+        except Exception as e:
+            logger.exception('Add account life celery task failed %s' % e)
+        else:
+            logger.info('Add account life celery task success!')

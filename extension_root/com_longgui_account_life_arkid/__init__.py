@@ -32,7 +32,7 @@ select_user_page.create_actions(
 
 
 class UserExpirationSchema(Schema):
-    user_id: str = Field(
+    user: str = Field(
         title=_("Username", "用户名"),
         field="id",
         page=select_user_page.tag,
@@ -40,7 +40,7 @@ class UserExpirationSchema(Schema):
         type="string",
         show="username",
     )
-    username: str = Field(title=_("Username", "用户名"), readonly=True)
+    username: str = Field(default="", title=_("Username", "用户名"), readonly=True, hidden=True)
     expiration_time: datetime = Field(title=_("Expiration Time", "过期时间"))
 
     class Config:
@@ -67,7 +67,7 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         config_created.extension = Extension.active_objects.get(package=self.package)
         for item in config.get('__root__'):  # 解决datetime不能json序列化
             item["expiration_time"] = item["expiration_time"].strftime('%Y-%m-%d %H:%M:%S')
-            item["username"] = User.valid_objects.get(id=item["user_id"]).username
+            item["username"] = User.valid_objects.get(id=item["user"]).username
         config_created.config = config.get('__root__')
         config_created.name = name
         config_created.type = type
