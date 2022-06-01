@@ -8,8 +8,9 @@ from ninja import ModelSchema
 from typing import List
 import json
 from ninja.pagination import paginate
-from arkid.core.event import dispatch_event, Event
 from arkid.core.event import (
+    dispatch_event,
+    Event,
     CREATE_ACCOUNT_LIFE_CONFIG,
     UPDATE_ACCOUNT_LIFE_CONFIG,
     DELETE_ACCOUNT_LIFE_CONFIG,
@@ -23,9 +24,12 @@ from api.v1.schema.account_life import (
     AccountLifeOut,
     AccountLifeUpdateIn,
     AccountLifeUpdateOut,
+    AccountLifeCrontabOut,
+    AccountLifeCrontabSchema,
 )
 from arkid.core.pagenation import CustomPagination
 from arkid.core.extension.account_life import AccountLifeExtension
+from arkid.core.models import AccountLifeCrontab
 
 
 @api.get(
@@ -143,3 +147,41 @@ def delete_account_life(request, tenant_id: str, id: str):
     )
     config.delete()
     return {'error': ErrorCode.OK.value}
+
+
+@api.get(
+    "/tenant/{tenant_id}/account_life_crontab/",
+    tags=["账号生命周期"],
+    auth=None,
+    response=AccountLifeCrontabOut,
+)
+@operation(AccountLifeCrontabOut)
+def get_account_life_crontab(request, tenant_id: str):
+    """获取账号生命周期定时任务配置"""
+    crontab = AccountLifeCrontab.valid_objects.filter(tenant=request.tenant).first()
+    if not crontab:
+        return {"data": {"crontab": '', 'max_retries': 0, 'retry_delay': 0}}
+    else:
+        return {"data": crontab.config}
+
+
+@api.put(
+    "/tenant/{tenant_id}/account_life_crontab/",
+    tags=["账号生命周期"],
+    auth=None,
+    response=AccountLifeCrontabOut,
+)
+@operation(AccountLifeCrontabOut)
+def update_account_life_crontab(
+    request, tenant_id: str, data: AccountLifeCrontabSchema
+):
+    """更新账号生命周期定时任务配置"""
+    crontab = AccountLifeCrontab.valid_objects.filter(tenant=request.tenant).first()
+    if not crontab:
+        crontab = AccountLifeCrontab.valid_objects.create(
+            tenant=request.tenant, config=data.dict()
+        )
+    else:
+        crontab.config = data.dict()
+        crontab.save()
+    return {"data": crontab.config}

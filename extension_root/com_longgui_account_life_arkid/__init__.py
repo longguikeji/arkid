@@ -64,16 +64,18 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
     def create_tenant_config(self, tenant, config, name, type):
         config_created = TenantExtensionConfig()
         config_created.tenant = tenant
-        config.extension = Extension.active_objects.get(package=self.package)
-
-        for item in config:  # 解决datetime不能json序列化
-            item["expiration_time"] = item.expiration_time.strftime('%Y-%m-%d %H:%M:%S')
+        config_created.extension = Extension.active_objects.get(package=self.package)
+        for item in config.get('__root__'):  # 解决datetime不能json序列化
+            item["expiration_time"] = item["expiration_time"].strftime('%Y-%m-%d %H:%M:%S')
             item["username"] = User.valid_objects.get(id=item["user_id"]).username
-        config_created.config = config
+        config_created.config = config.get('__root__')
         config_created.name = name
         config_created.type = type
         config_created.save()
         return config_created
+
+    def periodic_task(self, event, **kwargs):
+        logger.info("Doing priodic task...")
 
 
 extension = AccountLifeArkIDExtension(

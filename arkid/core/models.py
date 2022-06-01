@@ -21,7 +21,9 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name_plural = _("tenant", "租户")
 
     name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), blank=True, null=True, default='' ,unique=True)
+    slug = models.SlugField(
+        verbose_name=_('slug', '短链接标识'), blank=True, null=True, default='', unique=True
+    )
     icon = models.URLField(verbose_name=_('icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(
@@ -29,7 +31,7 @@ class Tenant(BaseModel, ExpandModel):
         default=24 * 60,
         verbose_name=_('Token Duration Minutes', 'Token有效时长(分钟)'),
     )
-    
+
     users = models.ManyToManyField(
         'User',
         blank=True,
@@ -46,16 +48,18 @@ class Tenant(BaseModel, ExpandModel):
 
     def has_admin_perm(self, user: 'User'):
         from arkid.core.perm.permission_data import PermissionData
+
         permissiondata = PermissionData()
         result = permissiondata.has_admin_perm(self, user)
         return result
-    
+
     def create_tenant_user_admin_permission(self, user):
         # 此处无法使用celery和event, event会出现无法回调，celery启动时如果调用，会自己调用自己
         from arkid.core.perm.permission_data import PermissionData
+
         permissiondata = PermissionData()
         permissiondata.create_tenant_user_admin_permission(self, user)
-    
+
     @property
     def is_platform_tenant(self):
         '''
@@ -66,6 +70,7 @@ class Tenant(BaseModel, ExpandModel):
             return True
         else:
             return False
+
 
 class User(BaseModel, ExpandModel):
     class Meta(object):
@@ -91,7 +96,11 @@ class User(BaseModel, ExpandModel):
 
     @property
     def is_superuser(self):
-        return True if self.id == User.valid_objects.order_by('created').first().id else False
+        return (
+            True
+            if self.id == User.valid_objects.order_by('created').first().id
+            else False
+        )
 
 
 class UserGroup(BaseModel, ExpandModel):
@@ -156,7 +165,11 @@ class App(BaseModel, ExpandModel):
         verbose_name=_('secret', '密钥'),
     )
     config = models.OneToOneField(
-        TenantExtensionConfig, blank=True,null=True, default=None, on_delete=models.PROTECT
+        TenantExtensionConfig,
+        blank=True,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT,
     )
     package = models.CharField(
         max_length=128,
@@ -174,7 +187,7 @@ class AppGroup(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("APP Group", "应用分组")
         verbose_name_plural = _("APP Group", "应用分组")
-    
+
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
     name = models.CharField(max_length=128, blank=False)
     parent = models.ForeignKey(
@@ -250,7 +263,6 @@ class PermissionAbstract(BaseModel, ExpandModel):
 
 
 class SystemPermission(PermissionAbstract):
-
     class Meta(object):
         verbose_name = _('SystemPermission', '系统权限')
         verbose_name_plural = _('SystemPermission', '系统权限')
@@ -285,7 +297,6 @@ class SystemPermission(PermissionAbstract):
 
 
 class Permission(PermissionAbstract):
-
     class Meta(object):
         verbose_name = _("Permission", "权限")
         verbose_name_plural = _("Permission", "权限")
@@ -321,7 +332,8 @@ class Permission(PermissionAbstract):
         verbose_name=_('Permission List', '权限列表'),
     )
     is_open = models.BooleanField(
-        default=False, verbose_name=_('is open', '是否开放给其它租户访问'),
+        default=False,
+        verbose_name=_('is open', '是否开放给其它租户访问'),
     )
 
     def __str__(self) -> str:
@@ -329,7 +341,11 @@ class Permission(PermissionAbstract):
 
     def save(self, *args, **kwargs):
         if self.sort_id == -1:
-            permission = Permission.objects.filter(tenant=self.tenant, app_id = self.app_id).order_by('-sort_id').first()
+            permission = (
+                Permission.objects.filter(tenant=self.tenant, app_id=self.app_id)
+                .order_by('-sort_id')
+                .first()
+            )
             if permission:
                 self.sort_id = permission.sort_id + 1
             else:
@@ -339,6 +355,7 @@ class Permission(PermissionAbstract):
     @property
     def children(self):
         return Permission.valid_objects.filter(parent=self).order_by('id')
+
 
 class UserPermissionResult(BaseModel, ExpandModel):
     class Meta(object):
@@ -437,6 +454,7 @@ class ExpiringToken(models.Model):
     def __str__(self):
         return self.token
 
+
 class ApproveAction(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _('Approve Action', "审批动作")
@@ -514,7 +532,8 @@ class ApproveRequest(BaseModel, ExpandModel):
         return (
             f'{self.action.name}:{self.action.method}:{self.action.path}:{self.status}'
         )
-        
+
+
 class LanguageData(BaseModel):
     class Meta(object):
         verbose_name = _('Language Data', "语言包数据")
@@ -531,25 +550,17 @@ class LanguageData(BaseModel):
         related_name="language_data",
         related_query_name="language_data",
     )
-    
-    extension_data = models.JSONField(
-        verbose_name=_("插件自带数据"),
-        blank=True,
-        null= True
-    )
-    
-    custom_data = models.JSONField(
-        verbose_name=_(""),
-        blank=True,
-        null=True
-    )
-    
+
+    extension_data = models.JSONField(verbose_name=_("插件自带数据"), blank=True, null=True)
+
+    custom_data = models.JSONField(verbose_name=_(""), blank=True, null=True)
+
     @property
     def count(self):
-        extension_data_count = len(self.extension_data) if self.extension_data else 0 
+        extension_data_count = len(self.extension_data) if self.extension_data else 0
         custom_data_count = len(self.custom_data) if self.custom_data else 0
         return extension_data_count + custom_data_count
-    
+
     @property
     def data(self):
         data = self.extension_data or {}
@@ -557,37 +568,60 @@ class LanguageData(BaseModel):
             data.update(self.custom_data)
         return data
 
+
+class AccountLifeCrontab(BaseModel):
+    class Meta(object):
+        verbose_name = _("Account Life Crontab", "生命周期定时任务配置")
+        verbose_name_plural = _("Account Life Crontab", "生命周期定时任务配置")
+
+    name = models.CharField(
+        blank=True,
+        null=True,
+        default='',
+        verbose_name=_('name', '名字'),
+        max_length=128,
+    )
+    tenant = models.ForeignKey(
+        'Tenant',
+        default=None,
+        on_delete=models.CASCADE,
+        verbose_name=_('Tenant', '租户'),
+    )
+    config = models.JSONField(
+        null=True, blank=True, default=dict, verbose_name=_('Config', '定时任务配置')
+    )
+
+
 class TenantExpandAbstract(BaseModel):
     class Meta:
         abstract = True
-    
+
     foreign_key = Tenant
 
 
 class UserExpandAbstract(BaseModel):
-
     class Meta:
         abstract = True
+
     foreign_key = User
 
 
-
 class UserGroupExpandAbstract(BaseModel):
-
     class Meta:
         abstract = True
+
     foreign_key = UserGroup
 
 
 class AppExpandAbstract(BaseModel):
-
     class Meta:
         abstract = True
+
     foreign_key = App
 
 
 class AppGroupExpandAbstract(BaseModel):
-
     class Meta:
         abstract = True
+
     foreign_key = AppGroup

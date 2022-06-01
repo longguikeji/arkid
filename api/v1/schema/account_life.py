@@ -23,7 +23,9 @@ class AccountLifeListOut(ResponseSchema):
 
 
 class AccountLifeOut(ResponseSchema):
-    data: AccountLifeExtension.create_composite_config_schema('AccountLifeDataOut')
+    data: AccountLifeExtension.create_composite_config_schema(
+        'AccountLifeDataOut', exclude=['id']
+    )
 
 
 AccountLifeCreateIn = AccountLifeExtension.create_composite_config_schema(
@@ -46,3 +48,13 @@ class AccountLifeUpdateOut(ResponseSchema):
 
 class AccountLifeDeleteOut(ResponseSchema):
     pass
+
+
+class AccountLifeCrontabSchema(Schema):
+    crontab: str = Field(default='0 1 * * *', title=_('Crontab', '定时运行时间'))
+    max_retries: int = Field(default=3, title=_('Max Retries', '重试次数'))
+    retry_delay: int = Field(default=60, title=_('Retry Delay', '重试间隔(单位秒)'))
+
+
+class AccountLifeCrontabOut(ResponseSchema):
+    data: AccountLifeCrontabSchema

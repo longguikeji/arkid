@@ -33,6 +33,16 @@ class AccountLifeExtension(Extension):
 
     def load(self):
         super().load()
+        self.listen_event(
+            core_event.ACCOUNT_LIFE_PERIODIC_TASK, self.periodic_task_event_handler
+        )
+
+    @abstractmethod
+    def periodic_task(self, event, **kwargs):
+        pass
+
+    def periodic_task_event_handler(self, event, **kwargs):
+        self.periodic_task(self, event, **kwargs)
 
     def register_account_life_schema(self, schema, config_type):
         self.register_config_schema(schema, self.package + '_' + config_type)
