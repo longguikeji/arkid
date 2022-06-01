@@ -17,9 +17,9 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name = _("tenant", "租户")
         verbose_name_plural = _("tenant", "租户")
 
-    name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), unique=True, blank=True, null=True)
-    icon = models.URLField(verbose_name=_('icon', '图标'), blank=True, null=True)
+    name = models.CharField(verbose_name=_('Name', '名字'), max_length=128)
+    slug = models.SlugField(verbose_name=_('Slug', '短链接标识'), unique=True, blank=True, null=True)
+    icon = models.URLField(verbose_name=_('Icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(
         blank=False,
@@ -74,10 +74,10 @@ class User(BaseModel, ExpandModel):
         verbose_name_plural = _("user", "用户")
         unique_together = [['username', 'tenant']]
 
-    username = models.CharField(max_length=128, blank=False, verbose_name=_("用户名"))
-    avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True)
+    username = models.CharField(max_length=128, blank=False, verbose_name=_("Username","用户名"))
+    avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True, null=True)
     is_platform_user = models.BooleanField(
-        default=False, verbose_name=_('is platform user', '是否是平台用户')
+        default=False, verbose_name=_('Is Platform User', '是否是平台用户')
     )
 
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
@@ -565,11 +565,19 @@ class LanguageData(BaseModel):
             data.update(self.custom_data)
         return data
 
+
 class TenantExpandAbstract(BaseModel):
     class Meta:
         abstract = True
-    
     foreign_key = Tenant
+    
+    target = models.ForeignKey(
+        Tenant,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class UserExpandAbstract(BaseModel):
@@ -577,6 +585,14 @@ class UserExpandAbstract(BaseModel):
     class Meta:
         abstract = True
     foreign_key = User
+        
+    target = models.ForeignKey(
+        User,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 
@@ -585,6 +601,14 @@ class UserGroupExpandAbstract(BaseModel):
     class Meta:
         abstract = True
     foreign_key = UserGroup
+    
+    target = models.ForeignKey(
+        UserGroup,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class AppExpandAbstract(BaseModel):
@@ -592,10 +616,25 @@ class AppExpandAbstract(BaseModel):
     class Meta:
         abstract = True
     foreign_key = App
+    target = models.ForeignKey(
+        App,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class AppGroupExpandAbstract(BaseModel):
 
     class Meta:
         abstract = True
+        
     foreign_key = AppGroup
+    target = models.ForeignKey(
+        AppGroup,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
