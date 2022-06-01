@@ -137,7 +137,7 @@ class ApproveSystemExtensionListOut(ModelSchema):
     tags=['审批动作'],
     auth=None,
 )
-def list_approve_system_extensions(request, status: str = None):
+def list_approve_system_extensions(request, tenant_id: str):
     """获取审批系统插件列表"""
     qs = Extension.active_objects.filter(type='approve_system').all()
     return qs
