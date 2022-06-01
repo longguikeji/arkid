@@ -67,7 +67,8 @@ class AppProtocolExtension(Extension):
                 if result:
                     return view(request)
                 else:
-                    return HttpResponseRedirect(self.get_login_url(request, alert))
+                    url = self.get_login_url(request, alert)
+                    return HttpResponseRedirect(url)
 
             def get_login_url(self, request, alert):
                 from arkid.config import get_app_config
@@ -79,6 +80,7 @@ class AppProtocolExtension(Extension):
                     redirect_url = '{}{}?alert={}&next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, alert, next_uri)
                 else:
                     redirect_url = '{}{}?tenant={}&alert={}&next={}'.format(host, LOGIN_URL, tenant.id, alert, next_uri)
+                return redirect_url
 
             def post(self, request, **kwargs):
                 from arkid.core.perm.permission_data import PermissionData
@@ -87,7 +89,8 @@ class AppProtocolExtension(Extension):
                 if result:
                     return view(request)
                 else:
-                    return HttpResponseRedirect(self.get_login_url(request, alert))
+                    url = self.get_login_url(request, alert)
+                    return HttpResponseRedirect(url)
 
         # 获取进入的路由
         entry_url = [re_path(path, EnterView.as_view(), name=url_name)]
