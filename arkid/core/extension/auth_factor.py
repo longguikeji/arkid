@@ -7,6 +7,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core import event as core_event
 from arkid.core.event import Event, dispatch_event
 from arkid.extension.models import TenantExtensionConfig
+from arkid.common.logger import logger
 
 class AuthFactorExtension(Extension):
     
@@ -69,6 +70,7 @@ class AuthFactorExtension(Extension):
         pass
     
     def create_response(self, event, **kwargs):
+        logger.info(f'{self.package} create_response start')
         self.data = {
             self.LOGIN: {
                 'forms':[],
@@ -95,6 +97,8 @@ class AuthFactorExtension(Extension):
             if config.config.get("reset_password_enabled", True):
                 self.create_password_page(event, config)
             self.create_other_page(event, config)
+        logger.info(self.data)
+        logger.info(f'{self.package} create_response end')
         return self.data
         
     def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):
