@@ -78,7 +78,7 @@ class AppProtocolExtension(Extension):
                 if tenant and tenant.slug:
                     redirect_url = '{}{}?alert={}&next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, alert, next_uri)
                 else:
-                    redirect_url = '{}{}?tenant={}&alert={}&next={}'.format(alert, get_app_config().get_frontend_host(), LOGIN_URL, tenant.id, alert, next_uri)
+                    redirect_url = '{}{}?tenant={}&alert={}&next={}'.format(get_app_config().get_frontend_host(), LOGIN_URL, tenant.id, alert, next_uri)
 
             def post(self, request, **kwargs):
                 from arkid.core.perm.permission_data import PermissionData
