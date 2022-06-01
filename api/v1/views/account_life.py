@@ -83,14 +83,11 @@ def get_account_life(request, tenant_id: str, id: str):
 @operation(AccountLifeCreateOut)
 def create_account_life(request, tenant_id: str, data: AccountLifeCreateIn):
     """创建账号生命周期配置"""
-    config = TenantExtensionConfig()
-    config.tenant = request.tenant
-    config.extension = Extension.active_objects.get(package=data.package)
-    user_expirations = json.loads(data.config.json())
-    config.config = user_expirations
-    config.name = data.dict().get("name")
-    config.type = data.type
-    config.save()
+    extension = Extension.valid_objects.get(package=data.package)
+    extension = import_extension(extension.ext_dir)
+    config = extension.create_tenant_config(
+        request.tenant, data.config.dict(), data.dict()["name"], data.type
+    )
     dispatch_event(
         Event(
             tag=CREATE_ACCOUNT_LIFE_CONFIG,
