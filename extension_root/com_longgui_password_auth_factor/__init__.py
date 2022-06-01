@@ -2,7 +2,7 @@ from distutils import core
 import re
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.error import ErrorCode
-from arkid.core.models import User
+from arkid.core.models import Tenant, User
 from arkid.core import pages,actions
 from .models import UserPassword
 from pydantic import Field
@@ -50,6 +50,26 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         self.register_auth_factor_schema(PasswordAuthFactorSchema, 'password')
         from api.v1.schema.auth import AuthIn
         self.register_extend_api(AuthIn, password=str)
+        tenant = Tenant.platform_tenant()
+        if not self.get_tenant_configs(tenant):
+            config = {
+                'reset_password_enabled': True,
+                'login_enabled_field_names': ['username'],
+                'register_enabled_field_names': ['username'],
+                'is_apply': False,
+                'regular': '',
+                'title': '密码登录',
+            }
+            self.create_tenant_config(tenant, config, "default", "password")
+        try:
+            admin_user = User.active_objects.filter(username='admin').first()
+            if admin_user:
+                admin_password = UserPassword.active_objects.filter(target=admin_user)
+                if not admin_password:
+                    admin_user.password = make_password('admin')
+                    admin_user.save()
+        except Exception as e:
+            print(e)
         
     def authenticate(self, event, **kwargs):
         tenant = event.tenant

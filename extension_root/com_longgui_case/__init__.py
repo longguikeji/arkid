@@ -12,7 +12,7 @@ UserSchema = extension.create_extension_schema(
     package,
     fields=[
         ('username', str, Field()),
-        ('nickname', Optional[str], Field()),
+        ('nickname', Optional[str], Field(title=_('nickname','昵称'))),
     ]
 )
 
@@ -20,8 +20,13 @@ class CaseExtension(extension.Extension):
     def load(self):
         super().load()
         self.register_extend_field(CaseUser, 'nickname')
-        self.register_api('/test/', 'POST', self.post_handler, auth=None, tenant_path=True)
-        self.register_api('/test/', 'GET', self.get_handler, response=List[UserSchema], auth=None, tenant_path=True)
+        from api.v1.schema.user import UserCreateIn,UserItemOut,UserUpdateIn,UserListItemOut
+        self.register_extend_api(UserCreateIn, nickname=str)
+        self.register_extend_api(UserItemOut, nickname=str)
+        self.register_extend_api(UserUpdateIn, nickname=str)
+        self.register_extend_api(UserListItemOut, nickname=str)
+        # self.register_api('/test/', 'POST', self.post_handler, auth=None, tenant_path=True)
+        # self.register_api('/test/', 'GET', self.get_handler, response=List[UserSchema], auth=None, tenant_path=True)
 
     def post_handler(self, request, tenant_id:str, data:UserSchema):
         tenant = request.tenant

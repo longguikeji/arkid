@@ -13,7 +13,8 @@ def create_expand_abstract_model(model, package, model_name):
             blank=True,
             default=None,
             on_delete=models.PROTECT,
-            related_name=package.replace('.','_')+'_'+model_name,
+            # related_name=package.replace('.','_')+'_'+model_name,
+            related_name="%(app_label)s_%(class)s",
         )
     return TempModel
 
@@ -47,19 +48,20 @@ class ExpandManager(models.Manager):
         
         annotate_params = {}
         related_names = []
-        values = []
-        for field in self.model._meta.fields:
-            if field.name == 'password':
-                continue
-            values.append(field.name)
+        # values = []
+        # for field in self.model._meta.fields:
+        #     if field.name == 'password':
+        #         continue
+        #     values.append(field.name)
             
         for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
             related_name = extension_name+'_'+extension_model_cls._meta.object_name
-            related_names.append(related_name)
-            annotate_params[field] = F(related_name+'__'+extension_field)
-            values.append(field)
+            related_names.append(extension_table)
+            annotate_params[field] = F(extension_table+'__'+extension_field)
+            # values.append(field)
         
-        return queryset.annotate(**annotate_params).select_related(*related_names).values(*values)
+        # return queryset.annotate(**annotate_params).select_related(*related_names).values(*values)
+        return queryset.annotate(**annotate_params).select_related(*related_names).values()
 
 class ExpandModel(models.Model):
 

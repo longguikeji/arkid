@@ -11,7 +11,7 @@ class LongguiGithubAppConfig(AppConfig):
     name = app_label
 
 
-class GithubUser(create_expand_abstract_model(UserExpandAbstract,app_label, 'GithubUser')):
+class GithubUser(UserExpandAbstract):
     class Meta:
         app_label = app_label
 

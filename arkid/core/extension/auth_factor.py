@@ -88,11 +88,11 @@ class AuthFactorExtension(Extension):
         }
         configs = self.get_tenant_configs(event.tenant)
         for config in configs:
-            if config.config.get("login_enabled"):
+            if config.config.get("login_enabled", True):
                 self.create_login_page(event, config)
-            if config.config.get("register_enabled"):
+            if config.config.get("register_enabled", True):
                 self.create_register_page(event, config)
-            if config.config.get("reset_password_enabled"):
+            if config.config.get("reset_password_enabled", True):
                 self.create_password_page(event, config)
             self.create_other_page(event, config)
         return self.data

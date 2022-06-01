@@ -11,7 +11,7 @@ class LongguiAccountLifeArkidAppConfig(AppConfig):
     name = app_label
 
 
-class UserExpiration(create_expand_abstract_model(UserExpandAbstract,app_label,'UserExpiration')):
+class UserExpiration(UserExpandAbstract):
     class Meta:
         app_label = app_label
 

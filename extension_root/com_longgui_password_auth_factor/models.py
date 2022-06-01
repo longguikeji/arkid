@@ -11,9 +11,8 @@ class LongguiPasswordAppConfig(AppConfig):
     name = app_label
 
 
-class UserPassword(create_expand_abstract_model(UserExpandAbstract,app_label,'UserPassword')):
+class UserPassword(UserExpandAbstract):
     class Meta:
-
         app_label = app_label
 
     password = models.CharField(_("Password", "密码"), max_length=256)

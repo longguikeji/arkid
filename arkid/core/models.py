@@ -1,11 +1,8 @@
 import datetime
-from os import environ
 from django.db import models
 from django.utils import timezone
 from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
-
-# from oauth2_provider.generators import generate_client_secret
 from arkid.core.expand import ExpandManager, ExpandModel
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.core.token import generate_token
@@ -20,9 +17,9 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name = _("tenant", "租户")
         verbose_name_plural = _("tenant", "租户")
 
-    name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('slug', '短链接标识'), unique=True, blank=True, null=True)
-    icon = models.URLField(verbose_name=_('icon', '图标'), blank=True, null=True)
+    name = models.CharField(verbose_name=_('Name', '名字'), max_length=128)
+    slug = models.SlugField(verbose_name=_('Slug', '短链接标识'), unique=True, blank=True, null=True)
+    icon = models.URLField(verbose_name=_('Icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(
         blank=False,
@@ -61,11 +58,15 @@ class Tenant(BaseModel, ExpandModel):
         '''
         是否是平台租户
         '''
-        tenant = Tenant.valid_objects.order_by('created').first()
+        tenant = Tenant.valid_objects.filter(slug='').first()
         if tenant.id == self.id:
             return True
         else:
             return False
+
+    @staticmethod
+    def platform_tenant():
+        return Tenant.valid_objects.filter(slug='').first()
 
 class User(BaseModel, ExpandModel):
     class Meta(object):
@@ -73,10 +74,10 @@ class User(BaseModel, ExpandModel):
         verbose_name_plural = _("user", "用户")
         unique_together = [['username', 'tenant']]
 
-    username = models.CharField(max_length=128, blank=False, verbose_name=_("用户名"))
-    avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True)
+    username = models.CharField(max_length=128, blank=False, verbose_name=_("Username","用户名"))
+    avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True, null=True)
     is_platform_user = models.BooleanField(
-        default=False, verbose_name=_('is platform user', '是否是平台用户')
+        default=False, verbose_name=_('Is Platform User', '是否是平台用户')
     )
 
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
@@ -564,11 +565,19 @@ class LanguageData(BaseModel):
             data.update(self.custom_data)
         return data
 
+
 class TenantExpandAbstract(BaseModel):
     class Meta:
         abstract = True
-    
     foreign_key = Tenant
+    
+    target = models.ForeignKey(
+        Tenant,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class UserExpandAbstract(BaseModel):
@@ -576,6 +585,14 @@ class UserExpandAbstract(BaseModel):
     class Meta:
         abstract = True
     foreign_key = User
+        
+    target = models.ForeignKey(
+        User,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 
@@ -584,6 +601,14 @@ class UserGroupExpandAbstract(BaseModel):
     class Meta:
         abstract = True
     foreign_key = UserGroup
+    
+    target = models.ForeignKey(
+        UserGroup,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class AppExpandAbstract(BaseModel):
@@ -591,10 +616,25 @@ class AppExpandAbstract(BaseModel):
     class Meta:
         abstract = True
     foreign_key = App
+    target = models.ForeignKey(
+        App,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class AppGroupExpandAbstract(BaseModel):
 
     class Meta:
         abstract = True
+        
     foreign_key = AppGroup
+    target = models.ForeignKey(
+        AppGroup,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
