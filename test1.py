@@ -324,9 +324,10 @@ if __name__ == "__main__":
   # # permissiondata = PermissionData()
   # # permissiondata.update_app_permission(tenant.id, app.id)
   compress = Compress()
-  permission_result = compress.decrypt('900cw000')
+  permission_result = compress.decrypt('1g41Iw1100')
   print(permission_result)
-
+  permission_result = compress.encrypt('010000000100000001111100100000000001000001000000000000')
+  print(permission_result)
   # # permissiondata = PermissionData()
   # # permissiondata.update_single_user_system_permission(tenant.id, auth_user.id)
   # # 更新系统权限
