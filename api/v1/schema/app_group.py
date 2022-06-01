@@ -64,6 +64,7 @@ class AppGroupItemOut(Schema):
 class AppGroupOut(ResponseSchema):
     data: AppGroupItemOut
     
+    
 class AppGroupCreateOut(ResponseSchema):
     pass
 
