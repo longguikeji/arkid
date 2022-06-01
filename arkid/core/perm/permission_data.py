@@ -236,12 +236,15 @@ class PermissionData(object):
             is_update=False
         ).update(is_del=0)
 
-    def update_arkid_all_user_permission(self):
+    def update_arkid_all_user_permission(self, tenant_id=None):
         '''
         更新所有用户权限
         '''
         # 当前的租户
-        tenant = self.get_platfrom_tenant()
+        if tenant_id is None:
+            tenant = self.get_platfrom_tenant()
+        else:
+            tenant = Tenant.valid_objects.filter(tenant_id)
         # 取得当前租户的所有用户
         auth_users = User.valid_objects.filter(tenant__id=tenant.id)
         # 区分出那些人是管理员
@@ -1256,7 +1259,7 @@ class PermissionData(object):
                 app_ids.append(app_id)
         return app_ids
 
-    def get_default_system_permission(self):
+    def get_default_system_permission(self, is_include_self=True):
         '''
         获取默认的系统权限
         '''
@@ -1267,6 +1270,9 @@ class PermissionData(object):
         if systempermission:
             describe = systempermission.describe
             sort_ids = describe.get('sort_ids', [])
+            if is_include_self:
+                sort_ids.append(systempermission.sort_id)
+            sort_ids.sort()
             return sort_ids
         else:
             return []     
@@ -1300,14 +1306,14 @@ class PermissionData(object):
         '''
         sort_ids = self.get_default_system_permission()
         list_user = self.get_user_system_permission_arr(auth_users, tenant)
-        exclude_id = []
+        include_id = []
         for item_user in list_user:
             user_arr = item_user.arr
             for index, user_arr_item in enumerate(user_arr):
-                if index not in sort_ids and user_arr_item == 1:
-                    exclude_id.append(item_user.id)
+                if index not in sort_ids and user_arr_item == '1':
+                    include_id.append(item_user.id)
                     break
-        auth_users = auth_users.exclude(id__in=exclude_id)
+        auth_users = auth_users.filter(id__in=include_id)
         # 区分出那些人是管理员
         systempermission = SystemPermission.valid_objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
         # 管理权限在arkidpermission表里
@@ -1346,3 +1352,31 @@ class PermissionData(object):
             return User.valid_objects.filter(id__in=ids)
         else:
             return []
+
+    
+    def delete_child_man(self, user, tenant):
+        '''
+        删除子管理员
+        '''
+        sort_ids = self.get_default_system_permission()
+        # 取得结果字符串
+        max_sort_id = SystemPermission.valid_objects.order_by('-sort_id').first().sort_id
+        permission_result = ''
+        for index in range(0,max_sort_id+1):
+            item = 0
+            if index in sort_ids:
+                item = 1
+            permission_result = permission_result + str(item)
+        compress = Compress()
+        compress_str_result = compress.encrypt(permission_result)
+        # 将结果字符串写回去
+        userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
+            is_del=False,
+            user=user,
+            tenant=tenant,
+            app=None,
+        )
+        userpermissionresult.is_update = True
+        userpermissionresult.result = compress_str_result
+        userpermissionresult.save()
+        return True
