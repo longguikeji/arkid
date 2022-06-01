@@ -1036,7 +1036,7 @@ class PermissionData(object):
         userpermissionresults = UserPermissionResult.valid_objects.filter(
             user=user,
             tenant_id=tenant_id,
-            app_id=app_id,
+            app=app_id,
         )
         if app_id:
             userpermissionresult = userpermissionresults.filter(
@@ -1047,9 +1047,10 @@ class PermissionData(object):
                 app__isnull=True,
             ).first()
         if userpermissionresult:
-            permission_result = compress.decrypt(userpermissionresult.result)
-            if app_id and permission_result:
-                permission_result = permission_result[1:]
+            if is_64:
+                permission_result = userpermissionresult.result
+            else:
+                permission_result = compress.decrypt(userpermissionresult.result)
             return {'result': permission_result}
         else:
             return {'result': ''}
@@ -1131,7 +1132,7 @@ class PermissionData(object):
             app_id = kwargs.get('app_id', None)
         tenant = request.tenant
         if not tenant:
-            return False
+            return False, '没有找到租户'
         tenant_id = tenant.id.hex
         client_id = request.GET.get('client_id', '')
 
@@ -1139,36 +1140,32 @@ class PermissionData(object):
         app = Application.objects.filter(name='arkid_saas', client_id=client_id).first()
         if app:
             user = self.token_check(tenant_id, token, request)
-            return True
+            return True, ''
 
         app = App.valid_objects.filter(
             id=app_id,
             type__in=type
         ).first()
         if not app:
-            return False
+            return False, '没有找到应用'
 
         user = self.token_check(tenant_id, token, request)
         if not user:
-            return False
+            return False, '没有找到用户'
         
         # 特殊处理 OIDC-Platform
         if app.type == 'OIDC-Platform':
-            return True
+            return True, ''
 
-        permission = Permission.valid_objects.filter(
-            app=app,
-            category='entry',
-            is_system=True,
-        ).first()
+        permission = app.entry_permission
         if not permission:
-            return False
+            return False, '没有找到入口权限'
 
         result = self.permission_check_by_sortid(permission, user, app, tenant_id)
         if not result:
-            return False
+            return False, '没有获得授权使用'
 
-        return True
+        return True, ''
     
     def id_token_reverse(self, id_token):
         '''
@@ -1213,7 +1210,7 @@ class PermissionData(object):
         userpermissionresult = UserPermissionResult.valid_objects.filter(
             user=user,
             tenant_id=tenant_id,
-            app=app,
+            app=None,
         ).first()
         if userpermissionresult:
             compress = Compress()

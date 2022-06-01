@@ -168,7 +168,7 @@ def get_arkstore_permission_str(request):
 @api.get("/app/permission_result/bin", tags=['权限'], response=PermissionStrSchemaOut, auth=None)
 def get_arkstore_permission_str(request):
     '''
-    获取应用权限字符串(base64)
+    获取应用权限字符串(base64结果中的0b1不做计算)
     '''
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
@@ -189,11 +189,24 @@ def user_add_permission(request, tenant_id: str, permission_id: str, user_id: st
         dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
         dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
-        # from arkid.core.perm.permission_data import PermissionData
-        # permissiondata = PermissionData()
-        # permissiondata.add_app_permission_to_user(request.tenant.id, permission.app_id, permission.user_id, permission.id)
     return {'error': ErrorCode.OK.value}
 
+
+@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/remove_permission", tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def user_remove_permission(request, tenant_id: str, permission_id: str, user_id: str):
+    '''
+    移除用户权限
+    '''
+    permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+    if permission is None:
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+    permission.user_id = user_id
+    if isinstance(permission, SystemPermission):
+        dispatch_event(Event(tag=REMOVE_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    else:
+        dispatch_event(Event(tag=REMOVE_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    return {'error': ErrorCode.OK.value}
 
 @api.get("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
