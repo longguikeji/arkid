@@ -84,13 +84,15 @@ class ConfigOpenApiVersionSchemaOut(Schema):
     openapi_uris: str = Field(title=_('openapi uris', '接口文档地址'), default='')
 
 
-class AppProtocolConfigIn(Schema):
-    pass
-
+AppProtocolConfigIn = AppProtocolExtension.create_composite_config_schema(
+    'AppProtocolConfigIn',
+    exclude=["name", "logo", "url", 'description'],
+)
 
 AppProtocolConfigItemOut = AppProtocolExtension.create_composite_config_schema(
     'AppProtocolConfigItemOut',
-    exclude=["id", "name", "logo", "url"],
+    id=(UUID,Field(hidden=True)),
+    exclude=["name", "logo", "url", 'description'],
 )
 
 

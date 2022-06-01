@@ -10,7 +10,7 @@ from arkid.core.error import ErrorCode
 from typing import Union, Literal, List
 from django.shortcuts import get_object_or_404
 from arkid.core.translation import gettext_default as _
-from arkid.core.event import Event, register_event, dispatch_event
+from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP_CONFIG_DONE, UPDATE_APP_CONFIG, Event, register_event, dispatch_event
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
     CREATE_APP, UPDATE_APP, DELETE_APP,
@@ -53,9 +53,7 @@ def create_app(request, tenant_id: str, data: AppCreateIn):
             app.save()
             # 创建app完成进行事件分发
             dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
-            break
-    # app = App.expand_objects.get_or_create(tenant=request.tenant,**data.dict())
-    
+            break    
     return {'error': ErrorCode.OK.value}
 
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
@@ -215,34 +213,51 @@ def update_app(request, tenant_id: str, app_id: str, data: AppUpdateIn):
         break
     return {'error': ErrorCode.OK.value}
 
-@api.post("/tenant/{tenant_id}/apps/{app_id}/config/", tags=['应用'], auth=None)
+@api.post("/tenant/{tenant_id}/apps/{id}/config/", tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def set_app_config(request, tenant_id: str, app_id: str, data:AppProtocolConfigIn):
+def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
     '''
     配置应用协议
     '''
-    app = get_object_or_404(App, id=app_id, is_del=False)
+    app = get_object_or_404(App.active_objects, id=id)
+    tenant = request.tenant
     config = app.config
-    app_config = config.config
-    if data.version and data.openapi_uris:
-        if app_config.get('version') is None:
-            # 只有版本或接口发生变化时才调用事件
-            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
-        elif data.version != app_config['version'] or data.openapi_uris != app_config['openapi_uris']:
-            # 只有版本或接口发生变化时才调用事件
-            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
-        app_config['version'] = data.version
-        app_config['openapi_uris'] = data.openapi_uris
-    config.save()
+    if config:
+        # 更新应用协议配置
+        results = dispatch_event(Event(tag=UPDATE_APP_CONFIG, tenant=tenant, request=request, data=data))
+        for func, (result, extension) in results:
+            # 修改app信息
+            app.type = data.app_type
+            app.package = data.package
+            app.save()
+            # 修改config
+            extension.update_tenant_config(app.config.id, data.config.dict(), app.name, data.app_type)
+            break
+    else:
+        # 创建应用协议配置
+        results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data))
+        for func, (result, extension) in results:
+            if result:
+                # 创建config
+                config = extension.create_tenant_config(tenant, data.config.dict(), app.name, data.app_type)
+                # 创建app
+                app.type = data.app_type
+                app.package = data.package
+                app.config = config
+                app.save()
+                # 创建app完成进行事件分发
+                dispatch_event(Event(tag=CREATE_APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
+                break
+        pass
     return {'error': ErrorCode.OK.value}
 
-@api.get("/tenant/{tenant_id}/apps/{app_id}/config/", response=AppProtocolConfigOut,tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/apps/{id}/config/", response=AppProtocolConfigOut,tags=['应用'], auth=None)
 @operation(AppProtocolConfigOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_app_config(request, tenant_id: str, app_id: str):
+def get_app_config(request, tenant_id: str, id: str):
     '''
     获取应用协议数据
     '''
-    app = get_object_or_404(App.active_objects, id=app_id)
+    app = get_object_or_404(App.active_objects, id=id)
     result = {
         'id': app.id.hex,
         'name': app.name,
