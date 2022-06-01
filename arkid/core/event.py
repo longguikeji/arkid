@@ -176,6 +176,7 @@ def dispatch_event(event, sender=None):
     #     raise Warning("None Tenant!")
     event_type = tag_map_event_type.get(event.tag)
     if not event_type:
+        print('没有找到{event.tag}对应的事件类型')
         return
     # if event_type.data_schema:
     #     event.data = event_type.data_schema(**event.data)
@@ -183,6 +184,7 @@ def dispatch_event(event, sender=None):
         send_event_through_webhook(event)
     except Exception as e:
         logger.error(e)
+    print('dispatch event: {event.tag}')
     return event_type.signal.send(sender=sender, event=event)
 
 
