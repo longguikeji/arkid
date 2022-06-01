@@ -236,44 +236,65 @@ def set_app_config(request, tenant_id: str, app_id: str, data:AppProtocolConfigI
     config.save()
     return {'error': ErrorCode.OK.value}
 
-@api.get("/tenant/{tenant_id}/apps/{app_id}/config/", tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/apps/{app_id}/config/", response=AppProtocolConfigOut,tags=['应用'], auth=None)
+@operation(AppProtocolConfigOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app_config(request, tenant_id: str, app_id: str):
     '''
     获取应用协议数据
     '''
-    app = get_object_or_404(App, id=app_id, is_del=False)
-    config = app.config
+    app = get_object_or_404(App.active_objects, id=app_id)
+    result = {
+        'id': app.id.hex,
+        'name': app.name,
+        'url': app.url,
+        'logo': app.logo,
+        'description': app.description,
+        'type': app.type or 'OIDC',
+        'app_type': app.type or 'OIDC',
+        'package': app.package or "com.longgui.auth.oauth2server",
+        'config': app.config.config if app.config else {
+            "skip_authorization":False,
+            "redirect_uris":"",
+            "client_type":"confidential",
+            "grant_type":"authorization-code",
+            "algorithm":"RS256",
+            "client_id":"",
+            "client_secret":"",
+            "authorize":"",
+            "token":"",
+            "userinfo":"",
+            "logout":""
+        }
+    }
+    return {"data":result}
+
+@api.post("/tenant/{tenant_id}/app_profile/", tags=['应用'],response=CreateAppProfileOut, auth=None)
+@operation(CreateAppProfileOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def create_app_profile(request, tenant_id: str, data:CreateAppProfileIn):
+    '''
+    创建应用
+    '''
+    app = App.expand_objects.get_or_create(tenant=request.tenant,**data.dict())
     return {'error': ErrorCode.OK.value}
 
-@api.post("/tenant/{tenant_id}/app_profile/", tags=['应用'],response=AppProfileOut, auth=None)
-@operation(AppProfileOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def create_app_profile(request, tenant_id: str, app_id: str, data:AppProfileIn):
-    '''
-    配置应用协议
-    '''
-    app = get_object_or_404(App, id=app_id, is_del=False)
-    config = app.config
-    app_config = config.config
-    if data.version and data.openapi_uris:
-        if app_config.get('version') is None:
-            # 只有版本或接口发生变化时才调用事件
-            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
-        elif data.version != app_config['version'] or data.openapi_uris != app_config['openapi_uris']:
-            # 只有版本或接口发生变化时才调用事件
-            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
-        app_config['version'] = data.version
-        app_config['openapi_uris'] = data.openapi_uris
-    config.save()
-    return {'error': ErrorCode.OK.value}
-
-@api.post("/tenant/{tenant_id}/apps/{id}/profile/", tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/apps/{id}/profile/", response=AppProfileOut,tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_app_profile(request, tenant_id: str, app_id: str):
+def get_app_profile(request, tenant_id: str, id: str):
     '''
-    获取应用协议数据
+    获取应用
     '''
-    app = get_object_or_404(App, id=app_id, is_del=False)
-    config = app.config
+    app = get_object_or_404(App.expand_objects, id=id, is_del=False)
+    return {'data': app}
+
+@api.post("/tenant/{tenant_id}/apps/{id}/profile/", response=UpdateAppProfileOut, tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def update_app_profile(request, tenant_id: str, id: str,data:UpdateAppProfileIn):
+    '''
+    更新应用
+    '''
+    app = get_object_or_404(App.active_objects, id=id)
+    for attr, value in data.dict().items():
+        setattr(app, attr, value)
+    app.save()
     return {'error': ErrorCode.OK.value}
 

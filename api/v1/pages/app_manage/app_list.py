@@ -64,12 +64,12 @@ page.create_actions(
 
 edit_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/apps/{id}/',
+        path='/api/v1/tenant/{tenant_id}/apps/{id}/profile/',
         method=actions.FrontActionMethod.GET
     ),
     global_actions={
        'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/apps/{id}/"
+            path="/api/v1/tenant/{tenant_id}/apps/{id}/profile/"
         ),
     }
 )
