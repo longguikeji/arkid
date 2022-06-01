@@ -92,7 +92,7 @@ def update_group(request, tenant_id: str, id: str, data: UserGroupUpdateIn):
     group = get_object_or_404(UserGroup, id=id, is_del=False)
     group.name = data.name
     parent_id = data.dict().get("parent",None)
-    group.parent = get_object_or_404(User, id=parent_id) if parent_id else None
+    group.parent = get_object_or_404(UserGroup, id=parent_id) if parent_id else None
     
     if group.parent == group:
         return{'error': ErrorCode.USER_GROUP_PARENT_CANT_BE_ITSELF.value,"message":_("用户分组上级分组不能设置为其自身")}
