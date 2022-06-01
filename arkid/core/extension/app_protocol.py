@@ -79,7 +79,7 @@ class AppProtocolExtension(Extension):
                 if tenant and tenant.slug:
                     redirect_url = '{}{}?alert={}&next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, alert, next_uri)
                 else:
-                    redirect_url = '{}{}?tenant={}&alert={}&next={}'.format(host, LOGIN_URL, tenant.id, alert, next_uri)
+                    redirect_url = '{}{}?tenant_id={}&alert={}&next={}'.format(host, LOGIN_URL, tenant.id, alert, next_uri)
                 return redirect_url
 
             def post(self, request, **kwargs):
