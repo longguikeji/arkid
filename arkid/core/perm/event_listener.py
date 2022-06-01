@@ -83,7 +83,7 @@ class EventListener(object):
         group.save()
         # 需要更新系统的全部用户权限
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
     
     def delete_group(self, event, **kwargs):
@@ -97,17 +97,17 @@ class EventListener(object):
         group.save()
         # 需要更新系统的全部用户权限
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
     
     def group_add_user(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
 
     def group_remove_user(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
 
     def create_app(self, event, **kwargs):
@@ -124,7 +124,7 @@ class EventListener(object):
         app.entry_permission = permission
         app.save()
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
     
     def delete_app(self, event, **kwargs):
