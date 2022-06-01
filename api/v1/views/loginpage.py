@@ -89,6 +89,7 @@ def login_page(request, tenant_id: str):
     login_pages = []
     responses = dispatch_event(Event(tag=CREATE_LOGIN_PAGE_AUTH_FACTOR, tenant=tenant, request=request))
     for useless, response in responses:
+        print(response)
         login_pages.append(response)
 
     dispatch_event(Event(tag=CREATE_LOGIN_PAGE_RULES, tenant=tenant, request=request, data=login_pages))

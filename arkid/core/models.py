@@ -58,7 +58,7 @@ class Tenant(BaseModel, ExpandModel):
         '''
         是否是平台租户
         '''
-        tenant = Tenant.valid_objects.order_by('created').first()
+        tenant = Tenant.valid_objects.filter(slug='').first()
         if tenant.id == self.id:
             return True
         else:
@@ -66,7 +66,7 @@ class Tenant(BaseModel, ExpandModel):
 
     @staticmethod
     def platform_tenant():
-        return Tenant.valid_objects.order_by('created').first()
+        return Tenant.valid_objects.filter(slug='').first()
 
 class User(BaseModel, ExpandModel):
     class Meta(object):
