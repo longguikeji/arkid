@@ -1,11 +1,14 @@
 from django.views import View
 from abc import abstractmethod
-from arkid.core.models import App
 from django.urls import re_path
-from django.http import HttpResponse
+from arkid.core.models import App
+from arkid.settings import LOGIN_URL
+from django.http import HttpResponseRedirect
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core import api as core_api, event as core_event
+
+import urllib.parse
 
 class AppProtocolExtension(Extension):
     
@@ -60,20 +63,31 @@ class AppProtocolExtension(Extension):
             def get(self, request, **kwargs):
                 from arkid.core.perm.permission_data import PermissionData
                 permissiondata = PermissionData()
-                result = permissiondata.check_app_entry_permission(request, type, kwargs)
+                result, alert = permissiondata.check_app_entry_permission(request, type, kwargs)
                 if result:
                     return view(request)
                 else:
-                    return HttpResponse('Unauthorized', status=401)
+                    return HttpResponseRedirect(self.get_login_url(request, alert))
+
+            def get_login_url(self, request, alert):
+                from arkid.config import get_app_config
+                full_path = request.get_full_path()
+                next_uri = urllib.parse.quote(full_path)
+                host = get_app_config().get_frontend_host()
+                tenant = request.tenant
+                if tenant and tenant.slug:
+                    redirect_url = '{}{}?alert={}&next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, alert, next_uri)
+                else:
+                    redirect_url = '{}{}?tenant={}&alert={}&next={}'.format(host, LOGIN_URL, tenant.id, alert, next_uri)
 
             def post(self, request, **kwargs):
                 from arkid.core.perm.permission_data import PermissionData
                 permissiondata = PermissionData()
-                result = permissiondata.check_app_entry_permission(request, type, kwargs)
+                result, alert = permissiondata.check_app_entry_permission(request, type, kwargs)
                 if result:
                     return view(request)
                 else:
-                    return HttpResponse('Unauthorized', status=401)
+                    return HttpResponseRedirect(self.get_login_url(request, alert))
 
         # 获取进入的路由
         entry_url = [re_path(path, EnterView.as_view(), name=url_name)]

@@ -143,6 +143,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CONFIG_FILE = 'arkid.toml'
 CONFIG_LOCAL_FILE = 'arkid.local.toml'
 
+LOGIN_URL = '/login'
+
 # 默认分页条数
 NINJA_PAGINATION_PER_PAGE = 20
 
