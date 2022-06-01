@@ -6,7 +6,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.expand import ExpandManager, ExpandModel
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.core.token import generate_token
-
+from typing import List
 
 class EmptyModel(models.Model):
     pass
@@ -69,6 +69,9 @@ class Tenant(BaseModel, ExpandModel):
         return Tenant.valid_objects.filter(slug='').first()
 
 class User(BaseModel, ExpandModel):
+    
+    key_fields = {'username':'用户名'}
+    
     class Meta(object):
         verbose_name = _("user", "用户")
         verbose_name_plural = _("user", "用户")
@@ -89,6 +92,10 @@ class User(BaseModel, ExpandModel):
     #     related_name="user_tenant_set",
     #     related_query_name="tenant",
     # )
+    @classmethod
+    def register_key_field(cls, **fields):
+        for key, value in fields:
+            User.key_fields[key] = value
 
     @property
     def is_superuser(self):

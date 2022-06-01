@@ -8,6 +8,8 @@ from arkid.core import event as core_event
 from arkid.core.event import Event, dispatch_event
 from arkid.extension.models import TenantExtensionConfig
 from arkid.common.logger import logger
+from arkid.core.models import User
+
 
 class AuthFactorExtension(Extension):
     
@@ -27,6 +29,9 @@ class AuthFactorExtension(Extension):
     REGISTER = 'register'
     RESET_PASSWORD = 'password'
 
+    def register_user_key_fields(self, **fields):
+        User.register_key_field(**fields)
+    
     def load(self):
         super().load()
         self.auth_event_tag = self.register_event('auth', '认证')

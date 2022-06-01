@@ -151,7 +151,7 @@ def register_event(tag, name, data_schema=None, description=''):
 def register_event_type(event_type: EventType):
     tag = event_type.tag
     if tag in tag_map_event_type:
-        return
+        logger.warning(f'重复注册事件：{tag}')
     tag_map_event_type[tag] = event_type
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
