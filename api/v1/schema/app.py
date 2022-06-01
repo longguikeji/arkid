@@ -75,3 +75,13 @@ class ConfigOpenApiVersionSchemaOut(Schema):
     
 class AppProtocolConfigIn(Schema):
     pass
+
+
+class AppProfileIn(ModelSchema):
+    
+    class Config:
+        model = App
+        model_fields = ['name', 'url', 'logo']
+        
+class AppProfileOut(ResponseSchema):
+    pass

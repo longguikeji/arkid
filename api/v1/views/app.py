@@ -245,3 +245,35 @@ def get_app_config(request, tenant_id: str, app_id: str):
     app = get_object_or_404(App, id=app_id, is_del=False)
     config = app.config
     return {'error': ErrorCode.OK.value}
+
+@api.post("/tenant/{tenant_id}/app_profile/", tags=['应用'],response=AppProfileOut, auth=None)
+@operation(AppProfileOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def create_app_profile(request, tenant_id: str, app_id: str, data:AppProfileIn):
+    '''
+    配置应用协议
+    '''
+    app = get_object_or_404(App, id=app_id, is_del=False)
+    config = app.config
+    app_config = config.config
+    if data.version and data.openapi_uris:
+        if app_config.get('version') is None:
+            # 只有版本或接口发生变化时才调用事件
+            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
+        elif data.version != app_config['version'] or data.openapi_uris != app_config['openapi_uris']:
+            # 只有版本或接口发生变化时才调用事件
+            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
+        app_config['version'] = data.version
+        app_config['openapi_uris'] = data.openapi_uris
+    config.save()
+    return {'error': ErrorCode.OK.value}
+
+@api.post("/tenant/{tenant_id}/apps/{id}/profile/", tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def update_app_profile(request, tenant_id: str, app_id: str):
+    '''
+    获取应用协议数据
+    '''
+    app = get_object_or_404(App, id=app_id, is_del=False)
+    config = app.config
+    return {'error': ErrorCode.OK.value}
+

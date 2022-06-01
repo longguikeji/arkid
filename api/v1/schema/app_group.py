@@ -83,9 +83,17 @@ class AppGroupCreateIn(ModelSchema):
         model_fields = ['name']
         
 class AppGroupUpdateIn(ModelSchema):
+    
+    parent: Optional[str] = Field(
+        title=_("上级用户分组"),
+        field="id",
+        page=select_appgroup_parent_page.tag,
+        link="name"
+    )
+    
     class Config:
         model = AppGroup
-        model_fields = ["name","parent"]
+        model_fields = ["name"]
         
 class AppGroupUpdateOut(Schema):
     pass
