@@ -58,6 +58,7 @@ def get_event_payload(event):
     }
     return json.dumps(payload)
 
+signal_maps = {}
 
 class EventType:
     def __init__(
@@ -83,7 +84,8 @@ class EventType:
             response_schema (Schema, optional): django http response Schema
             description (str, optional): 事件类型描述
         """
-        self.signal = Signal()
+        if tag not in signal_maps:
+            signal_maps[tag] = Signal()
         self.tag = tag
         self.name = name
         self.data_schema = data_schema
@@ -91,6 +93,10 @@ class EventType:
         self.request_schema = request_schema
         self.response_schema = response_schema
         self.description = description
+        
+    @property
+    def signal(self):
+        return signal_maps[self.tag]
 
 
 class Event:
