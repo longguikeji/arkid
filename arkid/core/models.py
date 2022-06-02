@@ -252,6 +252,9 @@ class PermissionAbstract(BaseModel, ExpandModel):
         blank=True, default=dict, verbose_name=_('describe', '描述')
     )
     is_update = models.BooleanField(default=False, verbose_name='是否更新')
+    is_open = models.BooleanField(
+        default=False, verbose_name=_('is open', '是否开放给其它租户访问'),
+    )
 
     def __str__(self):
         return '%s' % (self.name)
@@ -327,9 +330,6 @@ class Permission(PermissionAbstract):
         related_name="permission_set",
         related_query_name="permission",
         verbose_name=_('Permission List', '权限列表'),
-    )
-    is_open = models.BooleanField(
-        default=False, verbose_name=_('is open', '是否开放给其它租户访问'),
     )
 
     def __str__(self) -> str:

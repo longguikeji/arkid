@@ -212,9 +212,9 @@ def user_remove_permission(request, tenant_id: str, permission_id: str, user_id:
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_set_open(request, tenant_id: str, permission_id: str):
     '''
-    权限外部访问打开
+    权限外部访问打开(只能开放入口权限)
     '''
-    permission = Permission.valid_objects.filter(
+    permission = SystemPermission.valid_objects.filter(
         tenant_id=tenant_id,
         id=permission_id
     ).first()
@@ -230,9 +230,9 @@ def permission_set_open(request, tenant_id: str, permission_id: str):
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_set_close(request, tenant_id: str, permission_id: str):
     '''
-    权限外部访问关闭
+    权限外部访问关闭(只能开放入口权限)
     '''
-    permission = Permission.valid_objects.filter(
+    permission = SystemPermission.valid_objects.filter(
         tenant_id=tenant_id,
         id=permission_id
     ).first()

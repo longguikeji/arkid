@@ -1249,15 +1249,16 @@ class PermissionData(object):
         '''
         获取开放的应用id
         '''
-        permissions = Permission.valid_objects.filter(
-            is_open=True
-        )
-        app_ids = []
-        for permission in permissions:
-            app_id = permission.app_id
-            if app_id not in app_ids:
-                app_ids.append(app_id)
-        return app_ids
+        pass
+        # permissions = SystemPermission.valid_objects.filter(
+        #     is_open=True
+        # )
+        # app_ids = []
+        # for permission in permissions:
+        #     app_id = permission.app_id
+        #     if app_id not in app_ids:
+        #         app_ids.append(app_id)
+        # return app_ids
 
     def get_default_system_permission(self, is_include_self=True):
         '''
