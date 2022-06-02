@@ -206,17 +206,11 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         self.add_page_form(config, self.LOGIN, "密码登录", items)
 
     def create_register_page(self, event, config):
-        items = [
-            {
-                "type": "text",
-                "name": "username",
-                "placeholder": "用户名"
-            }
-        ]
+        items = []
         register_fields = config.config.get('register_enabled_field_names')
         for rf in register_fields:
             items.append({
-                "type": "str",
+                "type": "text",
                 "name": rf,
                 "placeholder": User.key_fields[rf]
             })

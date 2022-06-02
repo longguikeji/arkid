@@ -121,8 +121,10 @@ def login_page(request, tenant_id: str):
                 data[k]['name'] = k
 
     if data.get(AuthFactorExtension.RESET_PASSWORD):
-        bottom = {"label": _("Forget Password", "忘记密码"), "gopage": AuthFactorExtension.RESET_PASSWORD}
-        data[AuthFactorExtension.LOGIN]['bottoms'].insert(0, bottom)
+        if len(data.get(AuthFactorExtension.RESET_PASSWORD)['forms']) > 0:
+            bottom = {"label": _("Forget Password", "忘记密码"), "gopage": AuthFactorExtension.RESET_PASSWORD}
+            data[AuthFactorExtension.LOGIN]['bottoms'].insert(0, bottom)
+        
         bottom = {"prepend": _("Existing Account,", "已有账号，"), "label": _("Login Now","立即登录"), "gopage": AuthFactorExtension.LOGIN}
         data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)
     
