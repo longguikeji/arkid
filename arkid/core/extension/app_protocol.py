@@ -24,8 +24,8 @@ class AppProtocolExtension(Extension):
     
     def load(self):
         super().load()
-        self.listen_event(core_event.CREATE_APP, self.create_app)
-        self.listen_event(core_event.UPDATE_APP, self.update_app)
+        self.listen_event(core_event.CREATE_APP_CONFIG, self.create_app)
+        self.listen_event(core_event.UPDATE_APP_CONFIG, self.update_app)
         self.listen_event(core_event.DELETE_APP, self.delete_app)
 
     def register_app_protocol_schema(self, schema, app_type):

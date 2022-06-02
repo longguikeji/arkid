@@ -13,8 +13,8 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
-    CREATE_APP, UPDATE_APP, DELETE_APP,
-    CREATE_APP_DONE, SET_APP_OPENAPI_VERSION,
+    CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP,
+    CREATE_APP_CONFIG_DONE, SET_APP_OPENAPI_VERSION,
 )
 
 import uuid
@@ -34,7 +34,7 @@ def create_app(request, tenant_id: str, data: AppCreateIn):
     setattr(data,"id",uuid.uuid4().hex)
     tenant = request.tenant
     # 事件分发
-    results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
+    results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data))
     for func, (result, extension) in results:
         if result:
             # 创建config
@@ -52,7 +52,7 @@ def create_app(request, tenant_id: str, data: AppCreateIn):
             app.tenant_id = tenant_id
             app.save()
             # 创建app完成进行事件分发
-            dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
+            dispatch_event(Event(tag=CREATE_APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
             break    
     return {'error': ErrorCode.OK.value}
 
@@ -196,7 +196,7 @@ def update_app(request, tenant_id: str, app_id: str, data: AppUpdateIn):
         return {'error': ErrorCode.APP_EXISTS_ERROR.value}
 
     # 分发事件开始
-    results = dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=data))
+    results = dispatch_event(Event(tag=UPDATE_APP_CONFIG, tenant=tenant, request=request, data=data))
     for func, (result, extension) in results:
         # 修改app信息
         app.name = data.name
@@ -226,7 +226,7 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
     data["app"] = app
     if config:
         # 更新应用协议配置
-        results = dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=data))
+        results = dispatch_event(Event(tag=UPDATE_APP_CONFIG, tenant=tenant, request=request, data=data))
         for func, (result, extension) in results:
             # 修改app信息
             app.type = data["app_type"]
@@ -237,7 +237,7 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
             break
     else:
         # 创建应用协议配置
-        results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
+        results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data))
         for func, (result, extension) in results:
             if result:
                 # 创建config
@@ -248,7 +248,7 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
                 app.config = config
                 app.save()
                 # 创建app完成进行事件分发
-                dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
+                dispatch_event(Event(tag=CREATE_APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
                 break
         pass
     return {'error': ErrorCode.OK.value}

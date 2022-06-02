@@ -3,7 +3,7 @@ from arkid.core.models import(
     Permission, SystemPermission,
 )
 from arkid.core.event import (
-    CREATE_GROUP, DELETE_GROUP, CREATE_APP_DONE,
+    CREATE_GROUP, DELETE_GROUP, CREATE_APP_CONFIG_DONE,
     DELETE_APP, APP_START, USER_REGISTER,
     SET_APP_OPENAPI_VERSION, UPDATE_APP_USER_API_PERMISSION,
     CREATE_GROUP_PERMISSION, DELETE_GROUP_PERMISSION, GROUP_REMOVE_USER,
@@ -26,7 +26,7 @@ class EventListener(object):
         core_event.listen_event(DELETE_GROUP, self.delete_group)
         core_event.listen_event(GROUP_ADD_USER, self.group_add_user)
         core_event.listen_event(GROUP_REMOVE_USER, self.group_remove_user)
-        core_event.listen_event(CREATE_APP_DONE, self.create_app)
+        core_event.listen_event(CREATE_APP_CONFIG_DONE, self.create_app)
         core_event.listen_event(DELETE_APP, self.delete_app)
         core_event.listen_event(SET_APP_OPENAPI_VERSION, self.set_app_openapi_version)
         core_event.listen_event(UPDATE_APP_USER_API_PERMISSION, self.update_app_user_api_permission)
