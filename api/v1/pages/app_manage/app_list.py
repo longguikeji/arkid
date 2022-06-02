@@ -40,7 +40,7 @@ page.create_actions(
     ),
     global_actions={
         'create':actions.CreateAction(
-            path='/api/v1/tenant/{tenant_id}/app_profile/'
+            path='/api/v1/tenant/{tenant_id}/apps/'
         ),
         'appstore':actions.OpenAction(
             name='应用商店',
@@ -64,12 +64,12 @@ page.create_actions(
 
 edit_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/apps/{id}/profile/',
+        path='/api/v1/tenant/{tenant_id}/apps/{id}/',
         method=actions.FrontActionMethod.GET
     ),
     global_actions={
        'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/apps/{id}/profile/"
+            path="/api/v1/tenant/{tenant_id}/apps/{id}/"
         ),
     }
 )

@@ -23,39 +23,6 @@ from arkid.core.pagenation import CustomPagination
 from api.v1.schema.app import *
 
 
-@transaction.atomic
-@api.post("/tenant/{tenant_id}/apps/", response=AppCreateOut, tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def create_app(request, tenant_id: str, data: AppCreateIn):
-    '''
-    app创建
-    '''
-    # data.id = uuid.uuid4()
-    setattr(data,"id",uuid.uuid4().hex)
-    tenant = request.tenant
-    # 事件分发
-    results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data))
-    for func, (result, extension) in results:
-        if result:
-            # 创建config
-            config = extension.create_tenant_config(tenant, data.config.dict(), data.name, data.app_type)
-            # 创建app
-            app = App()
-            app.id = data.id
-            app.name = data.dict()["name"]
-            app.url = data.url
-            app.logo = data.logo
-            app.type = data.app_type
-            app.package = data.package
-            app.description = data.description
-            app.config = config
-            app.tenant_id = tenant_id
-            app.save()
-            # 创建app完成进行事件分发
-            dispatch_event(Event(tag=CREATE_APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
-            break    
-    return {'error': ErrorCode.OK.value}
-
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
 @operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
@@ -63,10 +30,12 @@ def list_apps(request, tenant_id: str):
     '''
     app列表
     '''
-    apps = App.valid_objects.filter(
-        tenant_id=tenant_id
+    apps = App.expand_objects.filter(
+        tenant_id=tenant_id,
+        is_active=True,
+        is_del=False
     )
-    return apps
+    return apps.all()
 
 
 @api.get("/tenant/{tenant_id}/open_apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
@@ -81,25 +50,14 @@ def list_open_apps(request, tenant_id: str):
     )
     return apps
 
-@api.get("/tenant/{tenant_id}/apps/{app_id}/", response=AppOut, tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/apps/{id}/", response=AppOut, tags=['应用'], auth=None)
 @operation(AppOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_app(request, tenant_id: str, app_id: str):
+def get_app(request, tenant_id: str, id: str):
     '''
     获取app
     '''
-    app = get_object_or_404(App.expand_objects, id=app_id, is_del=False,is_active=True)
-    result = {
-        'id': app.id.hex,
-        'name': app.name,
-        'url': app.url,
-        'logo': app.logo,
-        'description': app.description,
-        'type': app.type,
-        'app_type': app.type,
-        'package': app.package,
-        'config': app.config.config
-    }
-    return {"data":result}
+    app = get_object_or_404(App.expand_objects, id=id, is_del=False,is_active=True)
+    return {"data":app}
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionSchemaOut, tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -151,60 +109,39 @@ def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpe
     config.save()
     return {'error': ErrorCode.OK.value}
 
-@api.delete("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)
+@api.delete("/tenant/{tenant_id}/apps/{id}/", tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def delete_app(request, tenant_id: str, app_id: str):
+def delete_app(request, tenant_id: str, id: str):
     '''
     删除app
     '''
     tenant = request.tenant
-    app = App.valid_objects.filter(
+    app_dict = App.expand_objects.get(
         tenant_id=tenant_id,
-        id=app_id
-    ).first()
-    if app is None:
+        id=id
+    )
+    if app_dict is None:
         return {'error': ErrorCode.APP_EXISTS_ERROR.value}
     # 分发事件开始
-    app.app_type = app.type
-    dispatch_event(Event(tag=DELETE_APP, tenant=tenant, request=request, data=app))
+    app_dict["app_type"] = app_dict["type"]
+    dispatch_event(Event(tag=DELETE_APP, tenant=tenant, request=request, data=app_dict))
     # 分发事件结束
+    app = get_object_or_404(App.active_objects,tenant_id=tenant_id,id=id)
     app.delete()
     return {'error': ErrorCode.OK.value}
 
-@api.post("/tenant/{tenant_id}/apps/{app_id}/", tags=['应用'], auth=None)
+@api.post("/tenant/{tenant_id}/apps/{id}/", tags=['应用'], auth=None)
 @operation(AppUpdateOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_app(request, tenant_id: str, app_id: str, data: AppUpdateIn):
+def update_app(request, tenant_id: str, id: str, data: AppUpdateIn):
     '''
     修改app
     '''
-    # data = data_1.__root__
-
-    tenant = request.tenant
-    data.id = app_id
-
-    app = App.valid_objects.filter(
-        tenant_id=tenant_id,
-        id=app_id
-    ).first()
-    if app is None:
-        return {'error': ErrorCode.APP_EXISTS_ERROR.value}
-
-    # 分发事件开始
-    results = dispatch_event(Event(tag=UPDATE_APP_CONFIG, tenant=tenant, request=request, data=data))
-    for func, (result, extension) in results:
-        # 修改app信息
-        app.name = data.name
-        app.url = data.url
-        app.logo = data.logo
-        app.type = data.app_type
-        app.package = data.package
-        app.description = data.description
-        # app.config = config
-        # app.tenant_id = tenant_id
-        app.save()
-        # 修改config
-        extension.update_tenant_config(app.config.id, data.config.dict(), app.name, data.app_type)
-        break
+    app = get_object_or_404(App.active_objects,id=id)
+    for attr, value in data.dict().items():
+        setattr(app, attr, value)
+        
+    app.save()
+    
     return {'error': ErrorCode.OK.value}
 
 @api.post("/tenant/{tenant_id}/apps/{id}/config/", tags=['应用'], auth=None)
@@ -279,33 +216,11 @@ def get_app_config(request, tenant_id: str, id: str):
     }
     return {"data":result}
 
-@api.post("/tenant/{tenant_id}/app_profile/", tags=['应用'],response=CreateAppProfileOut, auth=None)
-@operation(CreateAppProfileOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def create_app_profile(request, tenant_id: str, data:CreateAppProfileIn):
+@api.post("/tenant/{tenant_id}/apps/", tags=['应用'],response=CreateAppOut, auth=None)
+@operation(CreateAppOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def create_app(request, tenant_id: str, data:CreateAppIn):
     '''
     创建应用
     '''
-    app = App.expand_objects.get_or_create(tenant=request.tenant,**data.dict())
+    app = App.expand_objects.create(tenant=request.tenant,**data.dict())
     return {'error': ErrorCode.OK.value}
-
-@api.get("/tenant/{tenant_id}/apps/{id}/profile/", response=AppProfileOut,tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_app_profile(request, tenant_id: str, id: str):
-    '''
-    获取应用
-    '''
-    app = get_object_or_404(App.expand_objects, id=id, is_del=False)
-    return {'data': app}
-
-@api.post("/tenant/{tenant_id}/apps/{id}/profile/", response=UpdateAppProfileOut, tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_app_profile(request, tenant_id: str, id: str,data:UpdateAppProfileIn):
-    '''
-    更新应用
-    '''
-    app = get_object_or_404(App.active_objects, id=id)
-    for attr, value in data.dict().items():
-        setattr(app, attr, value)
-    app.save()
-    return {'error': ErrorCode.OK.value}
-

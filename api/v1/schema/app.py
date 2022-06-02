@@ -8,23 +8,6 @@ from arkid.core.extension.app_protocol import AppProtocolExtension
 from arkid.extension.models import TenantExtensionConfig
 from uuid import UUID
 
-import uuid
-
-AppCreateIn = AppProtocolExtension.create_composite_config_schema(
-    'AppCreateIn',
-    id=(str, Field(default=uuid.uuid4().hex, hidden=True, readonly=True))
-)
-
-# class AppCreateIn(ModelSchema):
-#     class Config:
-#         model = App
-#         model_fields = ['name', 'url', 'logo']
-
-
-class AppCreateOut(ResponseSchema):
-    pass
-
-
 class AppListItemOut(ModelSchema):
 
     class Config:
@@ -36,28 +19,25 @@ class AppListOut(ResponseSchema):
     data: List[AppListItemOut]
 
 
-AppItemOut = AppProtocolExtension.create_composite_config_schema(
-    'AppItemOut',
-    id=(Any, Field(readonly=True))
-)
+class AppItemOut(ModelSchema):
+
+    class Config:
+        model = App
+        model_fields = ['id', 'name', 'url', 'logo','description']
 
 
 class AppOut(ResponseSchema):
     data: AppItemOut
 
 
-AppUpdateIn = AppProtocolExtension.create_composite_config_schema(
-    'AppUpdateIn',
-    exclude=["id"]
-)
+class AppUpdateIn(ModelSchema):
 
+    class Config:
+        model = App
+        model_fields = ['name', 'url', 'logo','description']
 
 class AppUpdateOut(ResponseSchema):
     pass
-
-
-AppSchemaOut = AppProtocolExtension.create_composite_config_schema(
-    'AppSchemaOut')
 
 
 class AppConfigSchemaOut(Schema):
@@ -100,34 +80,12 @@ class AppProtocolConfigOut(ResponseSchema):
     data: AppProtocolConfigItemOut
 
 
-class CreateAppProfileIn(ModelSchema):
+class CreateAppIn(ModelSchema):
 
     class Config:
         model = App
         model_fields = ['name', 'url', 'logo', 'description']
 
 
-class CreateAppProfileOut(ResponseSchema):
-    pass
-
-
-class AppProfileItemOut(ModelSchema):
-
-    class Config:
-        model = App
-        model_fields = ['name', 'url', 'logo', 'description']
-
-
-class AppProfileOut(ResponseSchema):
-    data: AppProfileItemOut
-
-
-class UpdateAppProfileIn(ModelSchema):
-
-    class Config:
-        model = App
-        model_fields = ['name', 'url', 'logo', 'description']
-
-
-class UpdateAppProfileOut(ResponseSchema):
+class CreateAppOut(ResponseSchema):
     pass
