@@ -78,16 +78,10 @@ def list_open_apps(request, tenant_id: str):
     '''
     公开app列表
     '''
-    from arkid.core.perm.permission_data import PermissionData
-    permissiondata = PermissionData()
-    app_ids = permissiondata.get_open_appids()
-    if app_ids:
-        apps = App.valid_objects.filter(
-            id__in=app_ids
-        )
-        return apps
-    else:
-        return []
+    apps = App.valid_objects.filter(
+        entry_permission__is_open=True
+    )
+    return apps
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/", response=AppOut, tags=['应用'], auth=None)
 @operation(AppOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
