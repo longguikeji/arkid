@@ -95,11 +95,12 @@ class ExternalIdpExtension(Extension):
         return HttpResponseRedirect(url)
 
     @abstractmethod
-    def get_ext_token_by_code(self, code):
+    def get_ext_token_by_code(self, code, config):
         """
         抽象方法
         Params:
             code: str 第三方认证返回的code
+            config: dict 第三方登录的插件运行时配置
         Return:
             str: 返回第三方认证提供的token
         """
