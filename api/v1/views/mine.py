@@ -1,31 +1,22 @@
 from typing import List
 from django.shortcuts import render
-from ninja import ModelSchema, Schema
 from arkid.core.api import api, operation
-from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
-from arkid.core.schema import ResponseSchema
-from arkid.core.models import ApproveAction, ApproveRequest, User
-from pydantic import Field
+from arkid.core.models import App, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from ninja.pagination import paginate
+from django.db.models import Q
+from ..schema.mine import MineAppsOut, ProfileSchemaOut, ProfileSchemaIn, MineTenantListOut
 
 
-@api.get("/mine/tenant/{tenant_id}/apps/", tags=["我的"], auth=None)
+
+@api.get("/mine/tenant/{tenant_id}/apps/", tags=["我的"], response=MineAppsOut)
 def get_mine_apps(request, tenant_id: str):
-    """我的应用列表,TODO"""
-    return []
+    """我的应用列表"""
+    apps = App.active_objects.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True))
+    return {'data':list(apps)}
 
-
-class ProfileSchemaOut(ModelSchema):
-    class Config:
-        model = User
-        model_fields = ['id', 'username', 'avatar']
-
-
-class ProfileSchemaIn(Schema):
-    avatar: str = Field(title=_('Name', '头像'), default='')
 
 
 @api.get(
@@ -37,10 +28,11 @@ class ProfileSchemaIn(Schema):
 def get_mine_profile(request, tenant_id: str):
     """我的个人资料"""
     user = request.user
+    user = User.expand_objects.filter(id=user.id).first()
     return user
 
 
-@api.put(
+@api.post(
     "/mine/tenant/{tenant_id}/profile/",
     tags=["我的"],
     response=ProfileSchemaOut,
@@ -49,7 +41,8 @@ def get_mine_profile(request, tenant_id: str):
 def update_mine_profile(request, tenant_id: str, data: ProfileSchemaIn):
     """更新我的个人资料"""
     user = request.user
-    user.avatar = data.avatar
+    for key,value in data.dict().items():
+        setattr(user,key,value)
     user.save()
     return user
 
@@ -121,14 +114,6 @@ def get_mine_logout(request):
     return render(request, template_name='logout.html')
 
 
-class MineTenantListItemOut(ModelSchema):
-    class Config:
-        model = Tenant
-        model_fields = ["id", "name", "slug", "icon"]
-
-
-class MineTenantListOut(ResponseSchema):
-    data: List[MineTenantListItemOut]
 
 
 @api.get("/mine/tenants/", response=MineTenantListOut, tags=["我的"], auth=None)

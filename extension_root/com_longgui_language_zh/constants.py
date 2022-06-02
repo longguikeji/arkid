@@ -1,1 +1,1 @@
-KEY = "international_en_us"
+KEY = "language.zh"

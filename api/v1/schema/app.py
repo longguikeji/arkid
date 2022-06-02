@@ -8,47 +8,37 @@ from arkid.core.extension.app_protocol import AppProtocolExtension
 from arkid.extension.models import TenantExtensionConfig
 from uuid import UUID
 
-import uuid
-
-AppCreateIn = AppProtocolExtension.create_composite_config_schema(
-    'AppCreateIn',
-    id=(str,Field(default=uuid.uuid4().hex, hidden=True, readonly=True))
-)
-
-# class AppCreateIn(ModelSchema):
-#     class Config:
-#         model = App
-#         model_fields = ['name', 'url', 'logo']
-
-class AppCreateOut(ResponseSchema):
-    pass
-
 class AppListItemOut(ModelSchema):
 
     class Config:
         model = App
         model_fields = ['id', 'name', 'url', 'logo', 'type']
 
+
 class AppListOut(ResponseSchema):
     data: List[AppListItemOut]
-    
-AppItemOut = AppProtocolExtension.create_composite_config_schema(
-    'AppItemOut',
-    id=(Any,Field(readonly=True))
-)
-    
+
+
+class AppItemOut(ModelSchema):
+
+    class Config:
+        model = App
+        model_fields = ['id', 'name', 'url', 'logo','description']
+
+
 class AppOut(ResponseSchema):
     data: AppItemOut
-    
-AppUpdateIn = AppProtocolExtension.create_composite_config_schema(
-    'AppUpdateIn',
-    exclude=["id"]
-)
+
+
+class AppUpdateIn(ModelSchema):
+
+    class Config:
+        model = App
+        model_fields = ['name', 'url', 'logo','description']
 
 class AppUpdateOut(ResponseSchema):
     pass
 
-AppSchemaOut = AppProtocolExtension.create_composite_config_schema('AppSchemaOut')
 
 class AppConfigSchemaOut(Schema):
     app_id: str
@@ -70,8 +60,32 @@ class ConfigSchemaOut(ModelSchema):
 
 class ConfigOpenApiVersionSchemaOut(Schema):
 
-    version: str = Field(title=_('version','应用版本'), default='')
-    openapi_uris: str = Field(title=_('openapi uris','接口文档地址'), default='')
-    
-class AppProtocolConfigIn(Schema):
+    version: str = Field(title=_('version', '应用版本'), default='')
+    openapi_uris: str = Field(title=_('openapi uris', '接口文档地址'), default='')
+
+
+AppProtocolConfigIn = AppProtocolExtension.create_composite_config_schema(
+    'AppProtocolConfigIn',
+    exclude=["name", "type", "logo", "url", 'description'],
+)
+
+AppProtocolConfigItemOut = AppProtocolExtension.create_composite_config_schema(
+    'AppProtocolConfigItemOut',
+    id=(UUID, Field(hidden=True)),
+    exclude=["name", "type", "logo", "url", 'description'],
+)
+
+
+class AppProtocolConfigOut(ResponseSchema):
+    data: AppProtocolConfigItemOut
+
+
+class CreateAppIn(ModelSchema):
+
+    class Config:
+        model = App
+        model_fields = ['name', 'url', 'logo', 'description']
+
+
+class CreateAppOut(ResponseSchema):
     pass

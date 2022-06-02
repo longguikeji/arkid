@@ -78,23 +78,30 @@ class UserGroupUserListOut(ResponseSchema):
     data:List[UserGroupUserListItemOut]
 
 
-class UserGroupDetailItemOut(ModelSchema):
+class UserGroupDetailItemOut(Schema):
     id: UUID =Field(
         readonly=True,
         hidden=False
     )
     
-    parent: Optional[str] = Field(
-        title=_("上级用户分组"),
-        field="id",
-        page=select_usergroup_parent_page.tag,
-        link="name"
+    name:str = Field(
+        title=_("分组名称")
     )
     
-    class Config:
-        model = UserGroup
-        model_fields = ['id', 'name',"parent"]
-
+    parent:Optional[UUID] = Field(
+        field="id",
+        page=select_usergroup_parent_page.tag,
+        link="name",
+        title=_("上级应用分组"),
+        show="parent_name"
+    )
+    
+    parent_name: Optional[str] = Field(
+        title=_("上级应用分组名称"),
+        hidden=True,
+        readonly=True
+    )
+    
 class UserGroupDetailOut(ResponseSchema):
     data:UserGroupDetailItemOut
 

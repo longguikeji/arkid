@@ -32,25 +32,17 @@ class AccountLifeExtension(Extension):
         return AccountLifeExtension.TYPE
 
     def load(self):
-        self.listen_event(
-            core_event.CREATE_ACCOUNT_LIFE_CONFIG, self.create_account_life_config
-        )
-        self.listen_event(
-            core_event.UPDATE_ACCOUNT_LIFE_CONFIG, self.update_account_life_config
-        )
-        self.listen_event(
-            core_event.DELETE_ACCOUNT_LIFE_CONFIG, self.delete_account_life_config
-        )
         super().load()
+        self.listen_event(
+            core_event.ACCOUNT_LIFE_PERIODIC_TASK, self.periodic_task_event_handler
+        )
 
-    def create_account_life_config(self, event, **kwargs):
+    @abstractmethod
+    def periodic_task(self, event, **kwargs):
         pass
 
-    def update_account_life_config(self, event, **kwargs):
-        pass
-
-    def delete_account_life_config(self, event, **kwargs):
-        pass
+    def periodic_task_event_handler(self, event, **kwargs):
+        self.periodic_task(event, **kwargs)
 
     def register_account_life_schema(self, schema, config_type):
         self.register_config_schema(schema, self.package + '_' + config_type)

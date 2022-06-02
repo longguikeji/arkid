@@ -21,10 +21,13 @@ class CaseExtension(extension.Extension):
         super().load()
         self.register_extend_field(CaseUser, 'nickname')
         from api.v1.schema.user import UserCreateIn,UserItemOut,UserUpdateIn,UserListItemOut
-        self.register_extend_api(UserCreateIn, nickname=str)
-        self.register_extend_api(UserItemOut, nickname=str)
-        self.register_extend_api(UserUpdateIn, nickname=str)
-        self.register_extend_api(UserListItemOut, nickname=str)
+        from api.v1.schema.mine import ProfileSchemaOut, ProfileSchemaIn
+        self.register_extend_api(
+            UserCreateIn, UserItemOut, UserUpdateIn,
+            UserListItemOut, ProfileSchemaOut, ProfileSchemaIn,
+            nickname=str
+        )
+        
         # self.register_api('/test/', 'POST', self.post_handler, auth=None, tenant_path=True)
         # self.register_api('/test/', 'GET', self.get_handler, response=List[UserSchema], auth=None, tenant_path=True)
 
