@@ -1,3 +1,4 @@
+from arkid.common.logger import logger
 from typing import Optional
 
 lang_maps = {}
@@ -51,11 +52,14 @@ def reset_lang_maps():
     from arkid.core.models import LanguageData
     lang_datas = LanguageData.active_objects.all()
     for item in lang_datas:
-        if not lang_maps.get(item.name,None):
-            lang_maps[item.name] = default_lang_maps[item.name]
-        if item.extension_data and isinstance(item.extension_data,dict):
-            lang_maps[item.name].update(item.extension_data)
-        if item.custom_data and isinstance(item.custom_data,dict):
-            lang_maps[item.name].update(item.custom_data)
+        try:
+            if not lang_maps.get(item.name,None):
+                lang_maps[item.name] = default_lang_maps[item.name]
+            if item.extension_data and isinstance(item.extension_data,dict):
+                lang_maps[item.name].update(item.extension_data)
+            if item.custom_data and isinstance(item.custom_data,dict):
+                lang_maps[item.name].update(item.custom_data)
+        except Exception as err:
+            logger.error(err)
     return lang_maps
 
