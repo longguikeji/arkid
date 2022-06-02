@@ -30,7 +30,7 @@ def get_event_payload(event):
         data = serialize('json', [data])
     elif type(data) is QuerySet:
         data = serialize('json', data)
-    elif isinstance(data,Schema):
+    elif isinstance(data, Schema):
         data = data.dict()
 
     request = None
@@ -331,6 +331,8 @@ AUTO_LOGIN = 'AUTO_LOGIN'
 
 SAVE_FILE = 'SAVE_FILE'
 
+ACCOUNT_LIFE_PERIODIC_TASK = 'ACCOUNT_LIFE_PERIODIC_TASK'
+CREATE_APPROVE_REQUEST = 'CREATE_APPROVE_REQUEST'
 
 # register events
 register_event(
@@ -389,3 +391,5 @@ register_event(UPDATE_AUTO_AUTH_CONFIG, _('Update Auto Auth', '更新自动登�
 register_event(DELETE_AUTO_AUTH_CONFIG, _('Delete Auto Auth', '删除自动登录'))
 
 register_event(SAVE_FILE, _('SAVE FILE', '保存文件'))
+register_event(ACCOUNT_LIFE_PERIODIC_TASK, _('ACCOUNT_LIFE_PERIODIC_TASK', '生命周期定时任务'))
+register_event(CREATE_APPROVE_REQUEST, _('CREATE_APPROVE_REQUEST', '创建审批请求'))
