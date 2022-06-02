@@ -3,7 +3,7 @@ from arkid.core.models import(
     Permission, SystemPermission,
 )
 from arkid.core.event import (
-    CREATE_GROUP, DELETE_GROUP, CREATE_APP_DONE,
+    CREATE_GROUP, DELETE_GROUP, CREATE_APP_CONFIG_DONE,
     DELETE_APP, APP_START, USER_REGISTER,
     SET_APP_OPENAPI_VERSION, UPDATE_APP_USER_API_PERMISSION,
     CREATE_GROUP_PERMISSION, DELETE_GROUP_PERMISSION, GROUP_REMOVE_USER,
@@ -26,7 +26,7 @@ class EventListener(object):
         core_event.listen_event(DELETE_GROUP, self.delete_group)
         core_event.listen_event(GROUP_ADD_USER, self.group_add_user)
         core_event.listen_event(GROUP_REMOVE_USER, self.group_remove_user)
-        core_event.listen_event(CREATE_APP_DONE, self.create_app)
+        core_event.listen_event(CREATE_APP_CONFIG_DONE, self.create_app)
         core_event.listen_event(DELETE_APP, self.delete_app)
         core_event.listen_event(SET_APP_OPENAPI_VERSION, self.set_app_openapi_version)
         core_event.listen_event(UPDATE_APP_USER_API_PERMISSION, self.update_app_user_api_permission)
@@ -83,7 +83,7 @@ class EventListener(object):
         group.save()
         # 需要更新系统的全部用户权限
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
     
     def delete_group(self, event, **kwargs):
@@ -97,32 +97,34 @@ class EventListener(object):
         group.save()
         # 需要更新系统的全部用户权限
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
     
     def group_add_user(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
 
     def group_remove_user(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
 
     def create_app(self, event, **kwargs):
         app = event.data
         tenant = event.tenant
-        permission = Permission()
+        permission = SystemPermission()
         permission.name = app.name
         permission.code = 'entry_{}'.format(uuid.uuid4())
         permission.tenant = tenant
-        permission.app = app
         permission.category = 'entry'
         permission.is_system = True
         permission.save()
-        from arkid.core.tasks.tasks import update_only_user_app_permission
-        update_only_user_app_permission.delay(tenant.id, permission.app.id)
+        # 把应用增加一个权限
+        app.entry_permission = permission
+        app.save()
+        from arkid.core.tasks.tasks import update_arkid_all_user_permission
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
     
     def delete_app(self, event, **kwargs):

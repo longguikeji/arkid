@@ -174,7 +174,7 @@ class ScimServerOut(ModelSchema):
     tags=['用户数据同步配置'],
     auth=None,
 )
-def list_scim_servers(request, status: str = None):
+def list_scim_servers(request, tenant_id: str):
     """获取Scim同步server列表"""
     qs = TenantExtensionConfig.active_objects.filter(
         extension__type='scim_sync', config__mode='server'

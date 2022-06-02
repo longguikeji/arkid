@@ -1,7 +1,7 @@
 from ninja import Schema, ModelSchema
 from arkid.core import extension
 from arkid.core.api import api, operation
-from typing import List
+from typing import List,Optional
 from typing_extensions import Annotated
 from pydantic import Field
 from arkid.core.extension import Extension
@@ -114,6 +114,8 @@ class TenantExtensionListOut(ModelSchema):
     class Config:
         model= ExtensionModel
         model_fields=["id","name","type","package","labels","version"]
+        
+    labels:Optional[List[str]]
 
 
 

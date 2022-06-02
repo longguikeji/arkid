@@ -27,7 +27,13 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
 @operation(UserCreateOut)
 def user_create(request, tenant_id: str,data:UserCreateIn):
 
-    user = User.expand_objects.create(tenant=request.tenant,**data.dict())
+    # user = User.expand_objects.create(tenant=request.tenant,**data.dict())
+    user = User.objects.create(tenant=request.tenant, username=data.username)
+    for key,value in data.dict().items():
+        if key=='username':
+            continue
+        setattr(user,key,value)
+    user.save()
 
     return {"data":{"user":user.id.hex}}
 
@@ -44,10 +50,10 @@ def user_delete(request, tenant_id: str,id:str):
 @operation(UserUpdateOut)
 def user_update(request, tenant_id: str,id:str, data:UserUpdateIn):
 
-    user = User.expand_objects.get(tenant__id=tenant_id,id=id)
-    user.avatar = data.avatar or user.avatar
+    user = User.objects.get(id=id)
+    for key,value in data.dict().items():
+        setattr(user,key,value)
     user.save()
-
     return {"error":ErrorCode.OK.value}
 # ------------- 获取用户接口 --------------
         

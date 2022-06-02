@@ -1,15 +1,12 @@
 import datetime
-from os import environ
 from django.db import models
 from django.utils import timezone
 from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
-
-# from oauth2_provider.generators import generate_client_secret
 from arkid.core.expand import ExpandManager, ExpandModel
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.core.token import generate_token
-
+from typing import List
 
 class EmptyModel(models.Model):
     pass
@@ -20,11 +17,9 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name = _("tenant", "租户")
         verbose_name_plural = _("tenant", "租户")
 
-    name = models.CharField(verbose_name=_('name', '名字'), max_length=128)
-    slug = models.SlugField(
-        verbose_name=_('slug', '短链接标识'), blank=True, null=True, default='', unique=True
-    )
-    icon = models.URLField(verbose_name=_('icon', '图标'), blank=True, null=True)
+    name = models.CharField(verbose_name=_('Name', '名字'), max_length=128)
+    slug = models.SlugField(verbose_name=_('Slug', '短链接标识'), unique=True, blank=True, null=True)
+    icon = models.URLField(verbose_name=_('Icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(
         blank=False,
@@ -65,23 +60,29 @@ class Tenant(BaseModel, ExpandModel):
         '''
         是否是平台租户
         '''
-        tenant = Tenant.valid_objects.order_by('id').first()
+        tenant = Tenant.valid_objects.filter(slug='').first()
         if tenant.id == self.id:
             return True
         else:
             return False
 
+    @staticmethod
+    def platform_tenant():
+        return Tenant.valid_objects.filter(slug='').first()
 
 class User(BaseModel, ExpandModel):
+    
+    key_fields = {'username':'用户名'}
+    
     class Meta(object):
         verbose_name = _("user", "用户")
         verbose_name_plural = _("user", "用户")
         unique_together = [['username', 'tenant']]
 
-    username = models.CharField(max_length=128, blank=False, verbose_name=_("用户名"))
-    avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True)
+    username = models.CharField(max_length=128, blank=False, verbose_name=_("Username","用户名"))
+    avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True, null=True)
     is_platform_user = models.BooleanField(
-        default=False, verbose_name=_('is platform user', '是否是平台用户')
+        default=False, verbose_name=_('Is Platform User', '是否是平台用户')
     )
 
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
@@ -93,6 +94,10 @@ class User(BaseModel, ExpandModel):
     #     related_name="user_tenant_set",
     #     related_query_name="tenant",
     # )
+    @classmethod
+    def register_key_field(cls, **fields):
+        for key, value in fields:
+            User.key_fields[key] = value
 
     @property
     def is_superuser(self):
@@ -178,6 +183,13 @@ class App(BaseModel, ExpandModel):
         default='',
         verbose_name=_('package', '包名'),
     )
+    entry_permission = models.ForeignKey(
+        'SystemPermission',
+        blank=True,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT
+    )
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'
@@ -257,6 +269,9 @@ class PermissionAbstract(BaseModel, ExpandModel):
         blank=True, default=dict, verbose_name=_('describe', '描述')
     )
     is_update = models.BooleanField(default=False, verbose_name='是否更新')
+    is_open = models.BooleanField(
+        default=False, verbose_name=_('is open', '是否开放给其它租户访问'),
+    )
 
     def __str__(self):
         return '%s' % (self.name)
@@ -330,10 +345,6 @@ class Permission(PermissionAbstract):
         related_name="permission_set",
         related_query_name="permission",
         verbose_name=_('Permission List', '权限列表'),
-    )
-    is_open = models.BooleanField(
-        default=False,
-        verbose_name=_('is open', '是否开放给其它租户访问'),
     )
 
     def __str__(self) -> str:
@@ -597,13 +608,28 @@ class TenantExpandAbstract(BaseModel):
         abstract = True
 
     foreign_key = Tenant
+    
+    target = models.ForeignKey(
+        Tenant,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class UserExpandAbstract(BaseModel):
     class Meta:
         abstract = True
-
     foreign_key = User
+        
+    target = models.ForeignKey(
+        User,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class UserGroupExpandAbstract(BaseModel):
@@ -611,6 +637,14 @@ class UserGroupExpandAbstract(BaseModel):
         abstract = True
 
     foreign_key = UserGroup
+    
+    target = models.ForeignKey(
+        UserGroup,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class AppExpandAbstract(BaseModel):
@@ -618,10 +652,24 @@ class AppExpandAbstract(BaseModel):
         abstract = True
 
     foreign_key = App
+    target = models.ForeignKey(
+        App,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
 
 
 class AppGroupExpandAbstract(BaseModel):
     class Meta:
         abstract = True
-
+        
     foreign_key = AppGroup
+    target = models.ForeignKey(
+        AppGroup,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )

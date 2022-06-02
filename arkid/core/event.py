@@ -58,6 +58,7 @@ def get_event_payload(event):
     }
     return json.dumps(payload)
 
+signal_maps = {}
 
 class EventType:
     def __init__(
@@ -83,7 +84,8 @@ class EventType:
             response_schema (Schema, optional): django http response Schema
             description (str, optional): 事件类型描述
         """
-        self.signal = Signal()
+        if tag not in signal_maps:
+            signal_maps[tag] = Signal()
         self.tag = tag
         self.name = name
         self.data_schema = data_schema
@@ -91,6 +93,10 @@ class EventType:
         self.request_schema = request_schema
         self.response_schema = response_schema
         self.description = description
+        
+    @property
+    def signal(self):
+        return signal_maps[self.tag]
 
 
 class Event:
@@ -145,7 +151,7 @@ def register_event(tag, name, data_schema=None, description=''):
 def register_event_type(event_type: EventType):
     tag = event_type.tag
     if tag in tag_map_event_type:
-        return
+        logger.warning(f'重复注册事件：{tag}')
     tag_map_event_type[tag] = event_type
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
@@ -176,6 +182,7 @@ def dispatch_event(event, sender=None):
     #     raise Warning("None Tenant!")
     event_type = tag_map_event_type.get(event.tag)
     if not event_type:
+        logger.info(f'没有找到{event.tag}对应的事件类型')
         return
     # if event_type.data_schema:
     #     event.data = event_type.data_schema(**event.data)
@@ -183,6 +190,7 @@ def dispatch_event(event, sender=None):
         send_event_through_webhook(event)
     except Exception as e:
         logger.error(e)
+    logger.info(f'dispatch event: {event.tag}')
     return event_type.signal.send(sender=sender, event=event)
 
 
@@ -271,9 +279,9 @@ def unlisten_event(tag, func, **kwargs):
 # events
 CREATE_LOGIN_PAGE_AUTH_FACTOR = 'CREATE_LOGIN_PAGE_AUTH_FACTOR'
 CREATE_LOGIN_PAGE_RULES = 'CREATE_LOGIN_PAGE_RULES'
-CREATE_APP = 'CREATE_APP'
-CREATE_APP_DONE = 'CREATE_APP_DONE'
-UPDATE_APP = 'UPDATE_APP'
+CREATE_APP_CONFIG = 'CREATE_APP_CONFIG'
+CREATE_APP_CONFIG_DONE = 'CREATE_APP_CONFIG_DONE'
+UPDATE_APP_CONFIG = 'UPDATE_APP_CONFIG'
 DELETE_APP = 'DELETE_APP'
 SEND_SMS = 'SEND_SMS'
 CREATE_GROUP = 'CREATE_GROUP'
@@ -331,9 +339,9 @@ register_event(
     CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
 )
 register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules', '登录页面生成规则'))
-register_event(CREATE_APP, _('create app', '创建应用'))
-register_event(CREATE_APP_DONE, _('create app done', '创建应用完成'))
-register_event(UPDATE_APP, _('update app', '修改应用'))
+register_event(CREATE_APP_CONFIG, _('create app config', '创建应用协议配置'))
+register_event(CREATE_APP_CONFIG_DONE, _('create app config done', '创建应用协议配置完成'))
+register_event(UPDATE_APP_CONFIG, _('update app config', '修改应用协议配置'))
 register_event(DELETE_APP, _('delete app', '删除应用'))
 register_event(CREATE_GROUP, _('create group', '创建分组'))
 register_event(UPDATE_GROUP, _('update group', '修改分组'))

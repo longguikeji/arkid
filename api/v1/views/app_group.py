@@ -33,7 +33,7 @@ def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
     """
     data = data.dict()
     if "parent" in data and data["parent"]:
-        data["parent"] = get_object_or_404(AppGroup.expand_objects,id=data["parent"], is_del=False, is_active=True)
+        data["parent"] = get_object_or_404(AppGroup.active_objects,id=data["parent"], is_del=False, is_active=True)
     group = AppGroup.expand_objects.create(tenant=request.tenant,**data)
 
     return {'error': ErrorCode.OK.value}
@@ -46,7 +46,12 @@ def get_app_group(request, tenant_id: str, id: str):
     """
     group = get_object_or_404(AppGroup.expand_objects,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
     return {
-        "data": group
+        "data": {
+            "id": group["id"],
+            "parent_id":group["parent"] if group["parent"] else None,
+            "parent_name": AppGroup.active_objects.get(id=group["parent"]).name if group["parent"] else None,
+            "name": group["name"]
+        }
     }
 
 @api.post("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupUpdateOut,tags=["应用分组"],auth=None)
@@ -54,9 +59,12 @@ def get_app_group(request, tenant_id: str, id: str):
 def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
     """ 编辑应用分组
     """
-    group = get_object_or_404(AppGroup.expand_objects,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
-    for attr, value in data.dict().items():
-        setattr(group, attr, value)
+    group = get_object_or_404(AppGroup.active_objects, id=id)
+    parent_id = data.dict().get("parent",None)
+    group.parent = get_object_or_404(AppGroup.active_objects, id=parent_id) if parent_id else None
+    if group.parent == group:
+        return{'error': ErrorCode.APP_GROUP_PARENT_CANT_BE_ITSELF.value,"message":_("应用分组上级分组不能设置为其自身")}
+        
     group.save()
     return {'error': ErrorCode.OK.value}
 

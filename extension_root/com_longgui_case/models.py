@@ -9,8 +9,8 @@ app_label = "com_longgui_case"
 class LongguiCaseAppConfig(AppConfig):
     name = app_label
     
-class CaseUser(create_expand_abstract_model(UserExpandAbstract, app_label, 'CaseUser')):
+class CaseUser(UserExpandAbstract):
     class Meta:
         app_label = app_label
     
-    nickname = models.CharField(verbose_name=_('nickname', '昵称'), max_length=128)
+    nickname = models.CharField(verbose_name=_('Nickname', '昵称'), max_length=128)

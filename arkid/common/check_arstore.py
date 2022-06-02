@@ -1,6 +1,7 @@
 from django_celery_beat.models import PeriodicTask, CrontabSchedule
 from arkid.common.logger import logger
 import json
+from django.db.utils import OperationalError
 
 
 def check_extensions_expired():
@@ -24,5 +25,7 @@ def check_extensions_expired():
                 'kwargs': json.dumps({}),
             },
         )
+    except OperationalError:
+        pass
     except Exception as e:
-        logger.exception('add celery task failed %s' % e)
+        logger.error('add celery task failed %s' % e)

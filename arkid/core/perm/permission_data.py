@@ -11,6 +11,7 @@ from django.db.models import Q
 import collections
 import requests
 import uuid
+import jwt
 import re
 from oauth2_provider.models import Application
 
@@ -70,6 +71,7 @@ class PermissionData(object):
         获取平台租户
         '''
         tenant, _ = Tenant.objects.get_or_create(
+            slug='',
             name="platform tenant",
         )
         return tenant
@@ -109,7 +111,7 @@ class PermissionData(object):
         tenant = Tenant.valid_objects.filter(id=tenant_id).first()
         user = User.valid_objects.filter(id=user_id).first()
         permission = SystemPermission.valid_objects.filter(id=permission_id).first()
-        if tenant and user:
+        if tenant:
             self.update_arkid_single_user_permission(tenant, user, permission, 1)
         else:
             print('不存在租户或者用户无法更新')
@@ -234,12 +236,15 @@ class PermissionData(object):
             is_update=False
         ).update(is_del=0)
 
-    def update_arkid_all_user_permission(self):
+    def update_arkid_all_user_permission(self, tenant_id=None):
         '''
         更新所有用户权限
         '''
         # 当前的租户
-        tenant = self.get_platfrom_tenant()
+        if tenant_id is None:
+            tenant = self.get_platfrom_tenant()
+        else:
+            tenant = Tenant.valid_objects.filter(tenant_id)
         # 取得当前租户的所有用户
         auth_users = User.valid_objects.filter(tenant__id=tenant.id)
         # 区分出那些人是管理员
@@ -1026,7 +1031,7 @@ class PermissionData(object):
                 permissions = permissions.filter(id__isnull=True)
         return list(permissions)+list(systempermissions)
 
-    def get_permission_str(self, user, tenant_id, app_id):
+    def get_permission_str(self, user, tenant_id, app_id, is_64=False):
         '''
         获取权限字符串
         '''
@@ -1034,7 +1039,7 @@ class PermissionData(object):
         userpermissionresults = UserPermissionResult.valid_objects.filter(
             user=user,
             tenant_id=tenant_id,
-            app_id=app_id,
+            app=app_id,
         )
         if app_id:
             userpermissionresult = userpermissionresults.filter(
@@ -1045,9 +1050,10 @@ class PermissionData(object):
                 app__isnull=True,
             ).first()
         if userpermissionresult:
-            permission_result = compress.decrypt(userpermissionresult.result)
-            if app_id and permission_result:
-                permission_result = permission_result[1:]
+            if is_64:
+                permission_result = userpermissionresult.result
+            else:
+                permission_result = compress.decrypt(userpermissionresult.result)
             return {'result': permission_result}
         else:
             return {'result': ''}
@@ -1129,7 +1135,7 @@ class PermissionData(object):
             app_id = kwargs.get('app_id', None)
         tenant = request.tenant
         if not tenant:
-            return False
+            return False, '没有找到租户'
         tenant_id = tenant.id.hex
         client_id = request.GET.get('client_id', '')
 
@@ -1137,36 +1143,67 @@ class PermissionData(object):
         app = Application.objects.filter(name='arkid_saas', client_id=client_id).first()
         if app:
             user = self.token_check(tenant_id, token, request)
-            return True
+            return True, ''
 
         app = App.valid_objects.filter(
             id=app_id,
             type__in=type
         ).first()
         if not app:
-            return False
+            return False, '没有找到应用'
 
         user = self.token_check(tenant_id, token, request)
         if not user:
-            return False
+            return False, '没有找到用户'
         
         # 特殊处理 OIDC-Platform
         if app.type == 'OIDC-Platform':
-            return True
+            return True, ''
 
-        permission = Permission.valid_objects.filter(
-            app=app,
-            category='entry',
-            is_system=True,
-        ).first()
+        permission = app.entry_permission
         if not permission:
-            return False
+            return False, '没有找到入口权限'
 
         result = self.permission_check_by_sortid(permission, user, app, tenant_id)
         if not result:
-            return False
+            return False, '没有获得授权使用'
 
-        return True
+        return True, ''
+    
+    def id_token_reverse(self, id_token):
+        '''
+        id token转换
+        '''
+        try:
+            payload = jwt.decode(id_token, options={"verify_signature": False})
+            return payload
+        except Exception:
+            raise Exception("unable to parse id_token")
+    
+    def id_token_to_permission_str(self, request, is_64=False):
+        id_token = request.META.get('HTTP_ID_TOKEN', '')
+        payload = self.id_token_reverse(id_token)
+        client_id = payload.get('aud', None)
+        user_id = payload.get('sub_id', '')
+        tenant_id = payload.get('tenant_id', '')
+    
+        apps = App.valid_objects.filter(
+            type__in=['OIDC-Platform'],
+            tenant_id=tenant_id,
+        )
+        app_temp = None
+        for app in apps:
+            data = app.config.config
+            app_client_id = data.get('client_id', '')
+            if app_client_id == client_id:
+                app_temp = app
+                break
+        user = User.valid_objects.filter(id=user_id).first()
+        if user and app_temp and tenant_id:
+            return self.get_permission_str(user, tenant_id, app_temp.id, is_64)
+        else:
+            print('不存在用户或者应用或者租户')
+            return {'result': ''}
     
     def permission_check_by_sortid(self, permission, user, app, tenant_id):
         '''
@@ -1176,7 +1213,7 @@ class PermissionData(object):
         userpermissionresult = UserPermissionResult.valid_objects.filter(
             user=user,
             tenant_id=tenant_id,
-            app=app,
+            app=None,
         ).first()
         if userpermissionresult:
             compress = Compress()
@@ -1212,12 +1249,135 @@ class PermissionData(object):
         '''
         获取开放的应用id
         '''
-        permissions = Permission.valid_objects.filter(
-            is_open=True
+        pass
+        # permissions = SystemPermission.valid_objects.filter(
+        #     is_open=True
+        # )
+        # app_ids = []
+        # for permission in permissions:
+        #     app_id = permission.app_id
+        #     if app_id not in app_ids:
+        #         app_ids.append(app_id)
+        # return app_ids
+
+    def get_default_system_permission(self, is_include_self=True):
+        '''
+        获取默认的系统权限
+        '''
+        systempermission = SystemPermission.valid_objects.filter(
+            name='normal-user',
+            category='group',
+        ).first()
+        if systempermission:
+            describe = systempermission.describe
+            sort_ids = describe.get('sort_ids', [])
+            if is_include_self:
+                sort_ids.append(systempermission.sort_id)
+            sort_ids.sort()
+            return sort_ids
+        else:
+            return []     
+
+    def get_user_system_permission_arr(self, auth_users, tenant):
+        '''
+        获取用户的系统权限
+        '''
+        # 取得当前用户权限数据
+        userpermissionresults = UserPermissionResult.valid_objects.filter(
+            user__in=auth_users,
+            tenant=tenant,
+            app=None,
         )
-        app_ids = []
-        for permission in permissions:
-            app_id = permission.app_id
-            if app_id not in app_ids:
-                app_ids.append(app_id)
-        return app_ids
+        compress = Compress()
+        list_user = []
+        for userpermissionresult in userpermissionresults:
+            temp_user = userpermissionresult.user
+            if userpermissionresult:
+                permission_result = compress.decrypt(userpermissionresult.result)
+                permission_result_arr = list(permission_result)
+                temp_user.arr = permission_result_arr
+            else:
+                temp_user.arr = []
+            list_user.append(temp_user)
+        return list_user
+    
+    def get_child_mans(self, auth_users, tenant):
+        '''
+        获取子管理员
+        '''
+        sort_ids = self.get_default_system_permission()
+        list_user = self.get_user_system_permission_arr(auth_users, tenant)
+        include_id = []
+        for item_user in list_user:
+            user_arr = item_user.arr
+            for index, user_arr_item in enumerate(user_arr):
+                if index not in sort_ids and user_arr_item == '1':
+                    include_id.append(item_user.id)
+                    break
+        auth_users = auth_users.filter(id__in=include_id)
+        # 区分出那些人是管理员
+        systempermission = SystemPermission.valid_objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
+        # 管理权限在arkidpermission表里
+        system_userpermissionresults = UserPermissionResult.valid_objects.filter(
+            user__in=auth_users,
+            tenant=tenant,
+            app=None,
+        )
+        system_userpermissionresults_dict = {}
+        for system_userpermissionresult in system_userpermissionresults:
+            system_userpermissionresults_dict[system_userpermissionresult.user.id.hex] = system_userpermissionresult
+        ids = []
+        compress = Compress()
+        for auth_user in auth_users:
+            # 权限鉴定
+            if auth_user.is_superuser:
+                auth_user.is_tenant_admin = True
+            else:
+                if auth_user.id.hex in system_userpermissionresults_dict:
+                    system_userpermissionresults_obj = system_userpermissionresults_dict.get(auth_user.id.hex)
+                    auth_user_permission_result = compress.decrypt(system_userpermissionresults_obj.result)
+
+                    auth_user_permission_result_arr = list(auth_user_permission_result)
+                    check_result = int(auth_user_permission_result_arr[systempermission.sort_id])
+
+                    if check_result == 1:
+                        auth_user.is_tenant_admin = True
+                    else:
+                        ids.append(auth_user.id)
+                        auth_user.is_tenant_admin = False
+                else:
+                    ids.append(auth_user.id)
+                    auth_user.is_tenant_admin = False
+
+        if ids:
+            return User.valid_objects.filter(id__in=ids)
+        else:
+            return []
+
+    
+    def delete_child_man(self, user, tenant):
+        '''
+        删除子管理员
+        '''
+        sort_ids = self.get_default_system_permission()
+        # 取得结果字符串
+        max_sort_id = SystemPermission.valid_objects.order_by('-sort_id').first().sort_id
+        permission_result = ''
+        for index in range(0,max_sort_id+1):
+            item = 0
+            if index in sort_ids:
+                item = 1
+            permission_result = permission_result + str(item)
+        compress = Compress()
+        compress_str_result = compress.encrypt(permission_result)
+        # 将结果字符串写回去
+        userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
+            is_del=False,
+            user=user,
+            tenant=tenant,
+            app=None,
+        )
+        userpermissionresult.is_update = True
+        userpermissionresult.result = compress_str_result
+        userpermissionresult.save()
+        return True

@@ -1,7 +1,7 @@
 from ninja import Schema, ModelSchema
 from arkid.core import extension
 from arkid.core.api import api
-from typing import List, Union
+from typing import List, Union,Optional
 from typing_extensions import Annotated
 from pydantic import Field
 from arkid.core.extension import Extension
@@ -58,11 +58,12 @@ class ExtensionListOut(ModelSchema):
     class Config:
         model= ExtensionModel
         model_fields=["id","name","type","package","labels","version","is_active","is_allow_use_platform_config"]
+        
+    labels:Optional[List[str]]
 
 @api.get("/extensions/", response=List[ExtensionListOut], tags=['平台插件'], auth=None)
 def list_extensions(request, status: str = None):
-    """ 获取平台插件列表 TODO
-    """
+    """ 获取平台插件列表"""
     if not status:
         qs = ExtensionModel.active_objects.all()
     else:

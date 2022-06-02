@@ -12,13 +12,13 @@ import os
 package = "com.longgui.language.zh"
     
 class TranslationZhExtension(LanguageExtension):
-    def load(self):
-        super().load()
-        
-        self.load_language_data(
-            {"data":"数据"},
-            _('简体中文')
-        )
+    def language_type(self) -> str:
+        return _("简体中文")
+    
+    def language_data(self) -> dict:
+        return {
+            "data":"数据"
+        }
     
 
 extension = TranslationZhExtension(

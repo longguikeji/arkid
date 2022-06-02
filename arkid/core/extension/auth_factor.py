@@ -7,6 +7,9 @@ from arkid.core.translation import gettext_default as _
 from arkid.core import event as core_event
 from arkid.core.event import Event, dispatch_event
 from arkid.extension.models import TenantExtensionConfig
+from arkid.common.logger import logger
+from arkid.core.models import User
+
 
 class AuthFactorExtension(Extension):
     
@@ -26,6 +29,9 @@ class AuthFactorExtension(Extension):
     REGISTER = 'register'
     RESET_PASSWORD = 'password'
 
+    def register_user_key_fields(self, **fields):
+        User.register_key_field(**fields)
+    
     def load(self):
         super().load()
         self.auth_event_tag = self.register_event('auth', '认证')
@@ -69,6 +75,7 @@ class AuthFactorExtension(Extension):
         pass
     
     def create_response(self, event, **kwargs):
+        logger.info(f'{self.package} create_response start')
         self.data = {
             self.LOGIN: {
                 'forms':[],
@@ -88,13 +95,15 @@ class AuthFactorExtension(Extension):
         }
         configs = self.get_tenant_configs(event.tenant)
         for config in configs:
-            if config.config.get("login_enabled"):
+            if config.config.get("login_enabled", True):
                 self.create_login_page(event, config)
-            if config.config.get("register_enabled"):
+            if config.config.get("register_enabled", True):
                 self.create_register_page(event, config)
-            if config.config.get("reset_password_enabled"):
+            if config.config.get("reset_password_enabled", True):
                 self.create_password_page(event, config)
             self.create_other_page(event, config)
+        logger.info(self.data)
+        logger.info(f'{self.package} create_response end')
         return self.data
         
     def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):

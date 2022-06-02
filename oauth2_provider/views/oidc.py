@@ -123,7 +123,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
                 )
                 jwks_uri = "{}{}".format(host, reverse(namespace+":jwks-info"))
         else:
-            namespace = f'api:com_longgui_arkid_saas'
+            namespace = f'api:com_longgui_arkidsaas'
 
             issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
 

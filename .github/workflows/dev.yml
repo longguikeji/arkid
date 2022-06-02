@@ -51,12 +51,12 @@ jobs:
           PIP="https://pypi.python.org/simple"
         push: true
         tags: |
-          ${{ secrets.ARK_DEV }}/arkid:v25dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
-          ${{ secrets.ARK_DEV }}/arkid:v25dev-${{ github.run_number }}
-          ${{ secrets.ARK_DEV }}/arkid:v25dev
           longguikeji/arkid:v25dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
           longguikeji/arkid:v25dev-${{ github.run_number }}
           longguikeji/arkid:v25dev
+          ${{ secrets.ARK_DEV }}/arkid:v25dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
+          ${{ secrets.ARK_DEV }}/arkid:v25dev-${{ github.run_number }}
+          ${{ secrets.ARK_DEV }}/arkid:v25dev
     - name: deploy to cluster
       uses: steebchen/kubectl@v2.0.0
       with: # defaults to latest kubectl binary version
