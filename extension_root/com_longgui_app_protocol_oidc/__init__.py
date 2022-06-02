@@ -11,7 +11,7 @@ from oauth2_provider.views.base import AuthorizationView
 
 import uuid
 
-package='com.longgui.auth.oauth2server'
+package='com.longgui.app.protocol.oidc'
 
 OIDCConfigSchema = create_extension_schema('OIDCConfigSchema',package, base_schema=OIDCConfigSchema)
 Oauth2ConfigSchema = create_extension_schema('Oauth2ConfigSchema',package, base_schema=Oauth2ConfigSchema)

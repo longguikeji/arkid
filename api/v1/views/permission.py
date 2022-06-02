@@ -163,8 +163,6 @@ def get_arkstore_permission_str(request):
     return permissiondata.id_token_to_permission_str(request)
 
 
-
-
 @api.get("/app/permission_result/bin", tags=['权限'], response=PermissionStrSchemaOut, auth=None)
 def get_arkstore_permission_str(request):
     '''
