@@ -13,7 +13,7 @@ from arkid.core.event import (
 from arkid.core.perm.permission_data import PermissionData
 from arkid.config import get_app_config
 from arkid.common.logger import logger
-from arkid.core.models import Tenant, User
+from arkid.core.models import Tenant, User, AccountLifeCrontab
 from types import SimpleNamespace
 from arkid.core.api import api
 from celery import shared_task
@@ -62,7 +62,14 @@ def sync(self, config_id, *args, **kwargs):
 
 @app.task(bind=True)
 def account_life_periodic_task(self, config_id, *args, **kwargs):
-    dispatch_event(ACCOUNT_LIFE_PERIODIC_TASK)
+    account_life_crontab = AccountLifeCrontab.valid_objects.get(id=config_id)
+    dispatch_event(
+        Event(
+            tag=ACCOUNT_LIFE_PERIODIC_TASK,
+            tenant=account_life_crontab.tenant,
+            data=account_life_crontab,
+        )
+    )
 
 
 @app.task

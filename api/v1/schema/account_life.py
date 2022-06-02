@@ -7,11 +7,12 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auth_factor import AuthFactorExtension
 from arkid.core.extension.account_life import AccountLifeExtension
 from arkid.core.schema import ResponseSchema
+from pydantic import UUID4
 
 
 class AccountLifeListItemOut(Schema):
 
-    id: str
+    id: UUID4
     type: str = Field(title=_("类型"))
     name: str = Field(title=_("名称"))
     extension_name: str = Field(title=_("插件名称"))

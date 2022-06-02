@@ -15,6 +15,8 @@ from arkid.core import routers
 from datetime import datetime
 from typing import List
 from arkid.core import pages, actions
+from django.utils import dateformat, timezone
+
 
 package = 'com.longgui.account.life.arkid'
 
@@ -40,7 +42,9 @@ class UserExpirationSchema(Schema):
         type="string",
         show="username",
     )
-    username: str = Field(default="", title=_("Username", "用户名"), readonly=True, hidden=True)
+    username: str = Field(
+        default="", title=_("Username", "用户名"), readonly=True, hidden=True
+    )
     expiration_time: datetime = Field(title=_("Expiration Time", "过期时间"))
 
     class Config:
@@ -66,7 +70,9 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         config_created.tenant = tenant
         config_created.extension = Extension.active_objects.get(package=self.package)
         for item in config.get('__root__'):  # 解决datetime不能json序列化
-            item["expiration_time"] = item["expiration_time"].strftime('%Y-%m-%d %H:%M:%S')
+            item["expiration_time"] = item["expiration_time"].strftime(
+                '%Y-%m-%d %H:%M:%S'
+            )
             item["username"] = User.valid_objects.get(id=item["user"]).username
         config_created.config = config.get('__root__')
         config_created.name = name
@@ -74,8 +80,34 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         config_created.save()
         return config_created
 
+    def update_tenant_config(self, id, config, name, type):
+        tenantextensionconfig = TenantExtensionConfig.valid_objects.filter(
+            id=id
+        ).first()
+        for item in config.get('__root__'):  # 解决datetime不能json序列化
+            item["expiration_time"] = item["expiration_time"].strftime(
+                '%Y-%m-%d %H:%M:%S'
+            )
+            item["username"] = User.valid_objects.get(id=item["user"]).username
+        tenantextensionconfig.config = config.get('__root__')
+        tenantextensionconfig.name = name
+        tenantextensionconfig.type = type
+        tenantextensionconfig.save()
+        return tenantextensionconfig
+
     def periodic_task(self, event, **kwargs):
-        logger.info("Doing priodic task...")
+        logger.info("Doing account life arkid priodic task...")
+        configs = self.get_tenant_configs(event.tenant)
+        for cfg in configs:
+            for item in cfg.config:
+                user_id = item.get('user')
+                user = User.objects.get(id=user_id)
+                expiration_time = timezone.datetime.strptime(
+                    item.get('expiration_time'), '%Y-%m-%d %H:%M:%S'
+                )
+                logger.info(f"expiration_time: {expiration_time}/now: {datetime.now()}")
+                if expiration_time <= datetime.now():
+                    user.offline()
 
 
 extension = AccountLifeArkIDExtension(

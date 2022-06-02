@@ -42,7 +42,7 @@ class AccountLifeExtension(Extension):
         pass
 
     def periodic_task_event_handler(self, event, **kwargs):
-        self.periodic_task(self, event, **kwargs)
+        self.periodic_task(event, **kwargs)
 
     def register_account_life_schema(self, schema, config_type):
         self.register_config_schema(schema, self.package + '_' + config_type)
