@@ -10,7 +10,7 @@ from arkid.core.error import ErrorCode
 from typing import Union, Literal, List
 from django.shortcuts import get_object_or_404
 from arkid.core.translation import gettext_default as _
-from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP_CONFIG_DONE, UPDATE_APP_CONFIG, Event, register_event, dispatch_event
+from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
     CREATE_APP, UPDATE_APP, DELETE_APP,
@@ -222,31 +222,33 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
     app = get_object_or_404(App.active_objects, id=id)
     tenant = request.tenant
     config = app.config
+    data = data.dict()
+    data["app"] = app
     if config:
         # 更新应用协议配置
-        results = dispatch_event(Event(tag=UPDATE_APP_CONFIG, tenant=tenant, request=request, data=data))
+        results = dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=data))
         for func, (result, extension) in results:
             # 修改app信息
-            app.type = data.app_type
-            app.package = data.package
+            app.type = data["app_type"]
+            app.package = data["package"]
             app.save()
             # 修改config
-            extension.update_tenant_config(app.config.id, data.config.dict(), app.name, data.app_type)
+            extension.update_tenant_config(app.config.id, data["config"], app.name, data["app_type"])
             break
     else:
         # 创建应用协议配置
-        results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data))
+        results = dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=data))
         for func, (result, extension) in results:
             if result:
                 # 创建config
-                config = extension.create_tenant_config(tenant, data.config.dict(), app.name, data.app_type)
+                config = extension.create_tenant_config(tenant, data["config"], app.name, data["app_type"])
                 # 创建app
-                app.type = data.app_type
-                app.package = data.package
+                app.type = data["app_type"]
+                app.package = data["package"]
                 app.config = config
                 app.save()
                 # 创建app完成进行事件分发
-                dispatch_event(Event(tag=CREATE_APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
+                dispatch_event(Event(tag=CREATE_APP_DONE, tenant=tenant, request=request, data=app))
                 break
         pass
     return {'error': ErrorCode.OK.value}

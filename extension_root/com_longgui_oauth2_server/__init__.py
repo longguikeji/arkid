@@ -39,17 +39,17 @@ class OAuth2ServerExtension(AppProtocolExtension):
         self.register_enter_view(auth_view, auth_path, url_name, type)
 
     def create_app(self, event, **kwargs):
-        if event.data.package == package:
-            config = event.data.config
+        if event.data["package"] == package:
+            config = event.data["config"]
             return self.update_app_data(event, config, True)
 
     def update_app(self, event, **kwargs):
-        if event.data.package == package:
-            config = event.data.config
+        if event.data["package"] == package:
+            config = event.data["config"]
             return self.update_app_data(event, config, False)
 
     def delete_app(self, event, **kwargs):
-        if event.data.package == package:
+        if event.data["package"] == package:
             # 删除应用
             Application.objects.filter(uuid=event.data.id).delete()
             return True
@@ -58,24 +58,18 @@ class OAuth2ServerExtension(AppProtocolExtension):
         '''
         修改应用程序
         '''
-        app = event.data
+        app = event.data["app"]
         tenant = event.tenant
-        host = get_app_config().get_frontend_host()
 
-        client_type = config.client_type.value
-        redirect_uris = config.redirect_uris
-        grant_type = config.grant_type.value
-        skip_authorization = config.skip_authorization
-        app_type = app.app_type
-        algorithm = config.algorithm.value
+        client_type = config["client_type"]
+        redirect_uris = config["redirect_uris"]
+        grant_type = config["grant_type"]
+        skip_authorization = config["skip_authorization"]
+        app_type = event.data.get("app_type")
+        algorithm = config.get("algorithm",None)
 
-        obj = Application()
-        if is_create is False:
-            uuid_id = uuid.UUID(app.id)
-            obj = Application.objects.filter(uuid=uuid_id).first()
-        else:
-            obj.uuid = app.id
-        obj.name = app.dict()["name"]
+        obj,iscreated = Application.objects.get_or_create(uuid=app.id)                                                                                
+        obj.name = app.name
         obj.client_type = client_type
         obj.redirect_uris = redirect_uris
         obj.skip_authorization = skip_authorization
@@ -93,13 +87,13 @@ class OAuth2ServerExtension(AppProtocolExtension):
         '''
         host = get_app_config().get_frontend_host()
         namespace = f'api:{self.pname}_tenant'
-        config.userinfo = host+reverse(namespace+":oauth-user-info", args=[tenant_id])
-        config.authorize = host+reverse(namespace+":authorize", args=[tenant_id, obj.uuid])
-        config.token = host+reverse(namespace+":token", args=[tenant_id])
-        config.logout = host+reverse(namespace+":oauth-user-logout", args=[tenant_id])
-        config.client_id = obj.client_id
-        config.client_secret = obj.client_secret
-        config.skip_authorization = obj.skip_authorization
+        config["userinfo"] = host+reverse(namespace+":oauth-user-info", args=[tenant_id])
+        config["authorize"] = host+reverse(namespace+":authorize", args=[tenant_id, obj.uuid])
+        config["token"] = host+reverse(namespace+":token", args=[tenant_id])
+        config["logout"] = host+reverse(namespace+":oauth-user-logout", args=[tenant_id])
+        config["client_id"] = obj.client_id
+        config["client_secret"] = obj.client_secret
+        config["skip_authorization"] = obj.skip_authorization
 
 
 extension = OAuth2ServerExtension(
