@@ -21,16 +21,17 @@ from arkid.login import view as login_view
 from arkid.core import urls as core_urls
 from arkid.redoc import view as redoc_view
 from scim_server import urls as scim_urls
+from arkid.core.path import API_PATH_HEAD
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/", core_api.urls),
-    path("api/v1/login", login_view.LoginEnter.as_view(), name="login_enter"),
-    path("api/v1/login_process", login_view.LoginProcess.as_view(), name="login_process"),
-    path("api/redoc", redoc_view.Redoc.as_view()),
-    path("api/openapi_redoc.json", redoc_view.RedocOpenAPI.as_view()),
-    path("api/v1/", include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path(f"{API_PATH_HEAD}/", core_api.urls),
+    path(f"{API_PATH_HEAD}/login", login_view.LoginEnter.as_view(), name="login_enter"),
+    path(f"{API_PATH_HEAD}/login_process", login_view.LoginProcess.as_view(), name="login_process"),
+    path(f"{API_PATH_HEAD}/redoc", redoc_view.Redoc.as_view()),
+    path(f"{API_PATH_HEAD}/openapi_redoc.json", redoc_view.RedocOpenAPI.as_view()),
+    path(f"{API_PATH_HEAD}/", include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
 
 
