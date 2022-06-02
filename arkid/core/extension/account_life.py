@@ -1,21 +1,10 @@
 #!/usr/bin/env python3
 
-import io
 from abc import abstractmethod
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
-from arkid.core.models import App, ApproveRequest
-from arkid.core import api as core_api, event as core_event
-from arkid.extension.models import TenantExtensionConfig, TenantExtension
-from django.urls import re_path
-from django.urls import resolve
-from django.core.handlers.wsgi import WSGIRequest
-from arkid.core.api import api
-from ninja import ModelSchema
-from typing import List
-from ninja.pagination import paginate
-from django.shortcuts import get_object_or_404
-from arkid.core.error import ErrorCode
+from arkid.core import event as core_event
+from arkid.extension.models import TenantExtensionConfig
 
 
 class AccountLifeExtension(Extension):
@@ -39,6 +28,11 @@ class AccountLifeExtension(Extension):
 
     @abstractmethod
     def periodic_task(self, event, **kwargs):
+        """
+        抽象方法
+        Params:
+            event arkid.core.event.Event:  生命周期定时任务事件
+        """
         pass
 
     def periodic_task_event_handler(self, event, **kwargs):
