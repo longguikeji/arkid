@@ -108,7 +108,8 @@ def create_arkid_saas_login_app(tenant, saas_tenant_slug):
     create_tenant_oidc_app(tenant, url, 'arkdi_saas_login', 'arkid_saas login')
 
 
-def bind_saas(tenant, data=None):
+def bind_saas(tenant_id, data=None):
+    tenant = Tenant.objects.get(id=tenant_id)
     if not data:
         data = {
             'company_name': '',
@@ -128,11 +129,11 @@ def bind_saas(tenant, data=None):
         resp = create_saas_binding(tenant, data, app)
         if 'error' in resp:
             app.delete()
-            return JsonResponse(resp)
+            return resp
     except Exception as e:
         app.delete()
         data = {'error': str(e)}
-        return JsonResponse(data)
+        return data
 
     app.redirect_uris = resp['callback_url']
     app.save()

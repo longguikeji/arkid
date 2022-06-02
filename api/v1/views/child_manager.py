@@ -1,9 +1,11 @@
 
-from api.v1.schema.child_manager import *
+
 from arkid.core.models import User
-from arkid.core.api import api, operation
 from ninja.pagination import paginate
+from arkid.core.error import ErrorCode
 from typing import Union, Literal, List
+from arkid.core.api import api, operation
+from api.v1.schema.child_manager import *
 from arkid.core.pagenation import CustomPagination
 from arkid.core.translation import gettext_default as _
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
@@ -47,6 +49,11 @@ def get_child_manager(request, tenant_id: str, id: str):
 def delete_child_manager(request, tenant_id: str, id: str):
     """ 删除子管理员,TODO
     """
-    return {}
+    from arkid.core.perm.permission_data import PermissionData
+    tenant = request.tenant
+    user = User.valid_objects.filter(tenant=tenant, id=id).first()
+    permissiondata = PermissionData()
+    permissiondata.delete_child_man(user, tenant)
+    return {'error': ErrorCode.OK.value}
 
 

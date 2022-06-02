@@ -80,12 +80,12 @@ def update_system_permission():
     permissiondata.update_system_permission()
 
 @app.task
-def update_arkid_all_user_permission():
+def update_arkid_all_user_permission(tenant_id=None):
     '''
     更新系统的全部用户权限
     '''
     permissiondata = PermissionData()
-    permissiondata.update_arkid_all_user_permission()
+    permissiondata.update_arkid_all_user_permission(tenant_id)
 
 @app.task
 def update_single_user_system_permission(tenant_id, user_id):
@@ -259,7 +259,7 @@ def send_webhook_request_sync(webhook_uuid, target_url, secret, event_type, data
 
 
 @app.task
-def check_extensions_expired(self, *args, **kwargs):
+def check_extensions_expired(*args, **kwargs):
     from arkid.extension.utils import find_available_extensions
     from arkid.common.arkstore import check_arkstore_expired
     from arkid.core.token import refresh_token
@@ -283,6 +283,12 @@ def check_extensions_expired(self, *args, **kwargs):
     except Exception as e:
         logger.error(f"=== arkid.core.tasks.check_extensions_expired failed: {e}...===")
         pass
+
+
+@app.task
+def bind_arkid_saas(tenant_id, data=None):
+    from arkid.common.bind_saas import bind_saas
+    bind_saas(tenant_id, data)
 
 
 # class ReadyCelery(object):

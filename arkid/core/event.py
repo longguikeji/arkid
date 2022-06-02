@@ -58,6 +58,7 @@ def get_event_payload(event):
     }
     return json.dumps(payload)
 
+signal_maps = {}
 
 class EventType:
     def __init__(
@@ -83,7 +84,8 @@ class EventType:
             response_schema (Schema, optional): django http response Schema
             description (str, optional): 事件类型描述
         """
-        self.signal = Signal()
+        if tag not in signal_maps:
+            signal_maps[tag] = Signal()
         self.tag = tag
         self.name = name
         self.data_schema = data_schema
@@ -91,6 +93,10 @@ class EventType:
         self.request_schema = request_schema
         self.response_schema = response_schema
         self.description = description
+        
+    @property
+    def signal(self):
+        return signal_maps[self.tag]
 
 
 class Event:
@@ -145,7 +151,7 @@ def register_event(tag, name, data_schema=None, description=''):
 def register_event_type(event_type: EventType):
     tag = event_type.tag
     if tag in tag_map_event_type:
-        return
+        logger.warning(f'重复注册事件：{tag}')
     tag_map_event_type[tag] = event_type
     if tag in temp_listens.keys():
         func, listener, kwargs = temp_listens[tag]
@@ -176,6 +182,7 @@ def dispatch_event(event, sender=None):
     #     raise Warning("None Tenant!")
     event_type = tag_map_event_type.get(event.tag)
     if not event_type:
+        logger.info(f'没有找到{event.tag}对应的事件类型')
         return
     # if event_type.data_schema:
     #     event.data = event_type.data_schema(**event.data)
@@ -183,6 +190,7 @@ def dispatch_event(event, sender=None):
         send_event_through_webhook(event)
     except Exception as e:
         logger.error(e)
+    logger.info(f'dispatch event: {event.tag}')
     return event_type.signal.send(sender=sender, event=event)
 
 

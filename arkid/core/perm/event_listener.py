@@ -83,7 +83,7 @@ class EventListener(object):
         group.save()
         # 需要更新系统的全部用户权限
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
     
     def delete_group(self, event, **kwargs):
@@ -97,32 +97,34 @@ class EventListener(object):
         group.save()
         # 需要更新系统的全部用户权限
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
     
     def group_add_user(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
 
     def group_remove_user(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay()
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
 
     def create_app(self, event, **kwargs):
         app = event.data
         tenant = event.tenant
-        permission = Permission()
+        permission = SystemPermission()
         permission.name = app.name
         permission.code = 'entry_{}'.format(uuid.uuid4())
         permission.tenant = tenant
-        permission.app = app
         permission.category = 'entry'
         permission.is_system = True
         permission.save()
-        from arkid.core.tasks.tasks import update_only_user_app_permission
-        update_only_user_app_permission.delay(tenant.id, permission.app.id)
+        # 把应用增加一个权限
+        app.entry_permission = permission
+        app.save()
+        from arkid.core.tasks.tasks import update_arkid_all_user_permission
+        update_arkid_all_user_permission.delay(tenant.id)
         return True
     
     def delete_app(self, event, **kwargs):

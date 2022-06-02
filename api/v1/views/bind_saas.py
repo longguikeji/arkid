@@ -17,10 +17,10 @@ from arkid.core.api import api
 
 
 class BindSaasSchemaOut(Schema):
-    company_name: str = Field(readonly=True)
-    contact_person: str = Field(readonly=True)
+    company_name: Optional[str] = Field(readonly=True)
+    contact_person: Optional[str] = Field(readonly=True)
     email: Optional[str] = Field(readonly=True, default='')
-    mobile: str = Field(readonly=True)
+    mobile: Optional[str] = Field(readonly=True)
     # local_tenant_id: str = Field(hidden=True)
     # local_tenant_slug: str = Field(hidden=True)
     saas_tenant_id: str = Field(readonly=True)
@@ -45,6 +45,8 @@ def get_bind_saas(request, tenant_id: str):
     查询 saas 绑定信息
     """
     bind_info = get_bind_info(tenant_id)
+    if not bind_info.get('saas_tenant_id'):
+        bind_info = bind_saas(tenant_id)
     return bind_info
 
 
@@ -97,7 +99,6 @@ def create_bind_saas(request, tenant_id: str):
     发送 公司名,联系人,邮箱,手机号,Saas ArkID 租户slug
     本地租户绑定Saas租户
     """
-    tenant = Tenant.objects.get(id=tenant_id)
-    data = bind_saas(request.POST)
+    data = bind_saas(tenant_id, request.POST)
     return data
 

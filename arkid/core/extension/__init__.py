@@ -311,7 +311,7 @@ class Extension(ABC):
             operation_id=operation_id,
             summary=summary,
             description=description,
-            tags=tags,
+            tags=tags or [self.name],
             deprecated=deprecated,
             by_alias=by_alias,
             exclude_unset=exclude_unset,

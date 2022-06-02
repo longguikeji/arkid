@@ -12,7 +12,7 @@ class LongguiMobileAppConfig(AppConfig):
     name = app_label
 
 
-class UserMobile(create_expand_abstract_model(UserExpandAbstract,app_label,'UserMobile')):
+class UserMobile(UserExpandAbstract):
     class Meta:
         app_label = app_label
 
