@@ -19,10 +19,20 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
         self.register_external_idp_schema(self.type, GithubConfigSchema)
 
     def get_img_url(self):
+        """
+        返回Github的图标URL
+        """
         return IMG_URL
 
 
     def get_authorize_url(self, client_id, redirect_uri):
+        """
+        Params:
+            client_id:str 注册Github应用返回的客户端标识
+            redirect_uri:str 在ArkID中创建Github登录配置后返回的回调地址
+        Return:
+            str: 返回用于向Github发起认证的URL
+        """
         url = "{}?client_id={}&redirect_uri={}".format(
             AUTHORIZE_URL,
             client_id,
@@ -30,13 +40,20 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
         )
         return url
 
-    def get_ext_token_by_code(self, code, settings):
+    def get_ext_token_by_code(self, code, config):
+        """
+        Params:
+            code: str Github返回的授权码
+            config: Github第三方登录的插件配置
+        Return:
+            str: 返回Github返回的access_token
+        """
         response = requests.post(
                 GET_TOKEN_URL,
                 params={
                     "code": code,
-                    "client_id": settings.get("client_id"),
-                    "client_secret": settings.get("client_secret"),
+                    "client_id": config.get("client_id"),
+                    "client_secret": config.get("client_secret"),
                     "grant_type": "authorization_code",
                 },
             ).__getattribute__("_content")
@@ -46,7 +63,12 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
         return result["access_token"]
 
     def get_user_info_by_ext_token(self, token):
-        # 获取user info
+        """
+        Params:
+            token: str Github返回的access_token
+        Return:
+            tuple: 返回Github中用户信息中的id， login，avatar_url和所有用户信息
+        """
         headers = {"Authorization": "token " + token}
         response = requests.get(
             GET_USERINFO_URL,
@@ -56,9 +78,20 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
         return response["id"], response["login"], response["avatar_url"], response
 
     def get_arkid_user(self, ext_id):
+        """
+        Params:
+            ext_id: str 从Github用户信息接口获取的用户标识
+        Return:
+            arkid.core.models.User 返回ext_id绑定的ArkID用户
+        """
         return GithubUser.valid_objects.filter(github_user_id=ext_id).first().user
 
     def bind_arkid_user(self, ext_id, user):
+        """
+        Params:
+            ext_id: str 从Github用户信息接口获取的用户标识
+            user: arkid.core.models.User 用于绑定的ArkID用户
+        """
         user.github_user_id = ext_id
         user.save()
 
