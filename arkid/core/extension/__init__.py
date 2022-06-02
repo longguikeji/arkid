@@ -183,7 +183,11 @@ class Extension(ABC):
         self.version = version
         self.name = name
         self.description = description
-        self.labels = labels
+        self.labels = []
+        if type(labels) is list:
+            self.labels.extend(labels)
+        else:
+            self.labels.append(labels)
         self.homepage = homepage
         self.logo = logo
         self.author = author
@@ -431,15 +435,16 @@ class Extension(ABC):
         """
         return core_event.dispatch_event(event=event, sender=self)
 
-    def register_extend_api(self, api_schema_cls, **field_definitions):
+    def register_extend_api(self, *api_schema_cls, **field_definitions):
         """注册扩展内核API
 
         Args:
             api_schema_cls (class): API Schema Class
             field_definitions (name=tuple(Type,Field())): 需要增加的字段，example：name=(str, Field(title='名字'))
         """
-        core_api.add_fields(api_schema_cls, **field_definitions)
-        self.extend_apis.append((api_schema_cls, list(field_definitions.keys())))
+        for schema_cls in api_schema_cls:
+            core_api.add_fields(schema_cls, **field_definitions)
+            self.extend_apis.append((schema_cls, list(field_definitions.keys())))
 
     def register_front_routers(self, router, primary:core_routers.FrontRouter=None):
         """注册前端路由

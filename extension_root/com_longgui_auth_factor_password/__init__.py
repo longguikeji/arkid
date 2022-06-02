@@ -266,9 +266,8 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         pages.register_front_pages(page)
 
         page.create_actions(
-            init_action=actions.DirectAction(
+            init_action=actions.ConfirmAction(
                 path='/api/v1/tenant/{tenant_id}/mine_password/',
-                method=actions.FrontActionMethod.GET,
             ),
             global_actions={
                 'confirm': actions.ConfirmAction(

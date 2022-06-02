@@ -1,3 +1,4 @@
+from posixpath import split
 from django.db import models
 from arkid.common.model import BaseModel
 from arkid.core.translation import gettext_default as _
@@ -10,15 +11,15 @@ class Extension(BaseModel):
         verbose_name_plural = _("插件")
 
     type = models.CharField(max_length=64, default="base", verbose_name=_('类型'))
-    labels = models.CharField(max_length=128, verbose_name=_('标签'))
+    labels = models.JSONField(blank=True, default=[], verbose_name=_('Labels','标签'))
     package = models.CharField(max_length=128, verbose_name=_('标识'), unique=True, db_index=True)
     ext_dir = models.CharField(max_length=1024, verbose_name=_('完整路径名'))
     name = models.CharField(max_length=128, verbose_name=_('名称'))
     version = models.CharField(max_length=128, verbose_name=_('版本'))
     is_active = models.BooleanField(default=False, verbose_name=_('是否启动'))
-    profile = models.JSONField(blank=True, default=dict, verbose_name=_('Setup Profile','启动设置'))
+    profile = models.JSONField(blank=True, default={}, verbose_name=_('Setup Profile','启动设置'))
     is_allow_use_platform_config = models.BooleanField(default=False, verbose_name=_('是否允许租户使用平台配置'))
-
+    
 
 class TenantExtension(BaseModel):
     class Meta(object):
