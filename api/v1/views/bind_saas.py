@@ -39,7 +39,7 @@ class BindSaasInfoSchema(Schema):
     mobile: Optional[str]
 
 
-@api.get("/tenant/{tenant_id}/bind_saas/", tags=['bind_saas'], response=BindSaasSchemaOut)
+@api.get("/tenant/{tenant_id}/bind_saas/", tags=['中心平台'], response=BindSaasSchemaOut)
 def get_bind_saas(request, tenant_id: str):
     """
     查询 saas 绑定信息
@@ -50,7 +50,7 @@ def get_bind_saas(request, tenant_id: str):
     return bind_info
 
 
-@api.get("/tenant/{tenant_id}/bind_saas/slug/", tags=['bind_saas'], response=BindSaasSlugSchemaOut)
+@api.get("/tenant/{tenant_id}/bind_saas/slug/", tags=['中心平台'], response=BindSaasSlugSchemaOut)
 def get_bind_saas_slug(request, tenant_id: str):
     """
     查询 saas slug 绑定信息
@@ -59,7 +59,7 @@ def get_bind_saas_slug(request, tenant_id: str):
     return bind_info
 
 
-@api.post("/tenant/{tenant_id}/bind_saas/slug/", tags=['bind_saas'])
+@api.post("/tenant/{tenant_id}/bind_saas/slug/", tags=['中心平台'])
 def set_bind_saas_slug(request, tenant_id: str, data: BindSaasSlugSchemaOut):
     """
     设置 saas slug 绑定信息
@@ -71,7 +71,7 @@ def set_bind_saas_slug(request, tenant_id: str, data: BindSaasSlugSchemaOut):
     return bind_info
 
 
-@api.get("/tenant/{tenant_id}/bind_saas/info/", tags=['bind_saas'], response=BindSaasInfoSchema)
+@api.get("/tenant/{tenant_id}/bind_saas/info/", tags=['中心平台'], response=BindSaasInfoSchema)
 def get_bind_saas_info(request, tenant_id: str):
     """
     查询 saas info 绑定信息
@@ -80,7 +80,7 @@ def get_bind_saas_info(request, tenant_id: str):
     return bind_info
 
 
-@api.post("/tenant/{tenant_id}/bind_saas/info/", tags=['bind_saas'])
+@api.post("/tenant/{tenant_id}/bind_saas/info/", tags=['中心平台'])
 def update_bind_saas_info(request, tenant_id: str, data: BindSaasInfoSchema):
     """
     更新 saas info 绑定信息
@@ -92,7 +92,7 @@ def update_bind_saas_info(request, tenant_id: str, data: BindSaasInfoSchema):
     return bind_info
 
 
-@api.post("/tenant/{tenant_id}/bind_saas/", tags=['bind_saas'])
+@api.post("/tenant/{tenant_id}/bind_saas/", tags=['中心平台'])
 def create_bind_saas(request, tenant_id: str):
     """
     检查slug是否存在的api

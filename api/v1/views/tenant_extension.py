@@ -12,6 +12,8 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
+from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
+from django.db.models import F
 
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
@@ -23,7 +25,8 @@ class ExtensionConfigCreateSchemaOut(Schema):
     config_id: str
 
 
-@api.post("/{tenant_id}/extension/{extension_id}/config/", response=ExtensionConfigCreateSchemaOut,  tags=['租户插件'], auth=None)
+@api.post("/{tenant_id}/extension/{extension_id}/config/", response=ExtensionConfigCreateSchemaOut,  tags=['租户插件'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_extension_config(request, tenant_id: str, extension_id: str, data: ExtensionConfigSchemaIn):
     '''租户下，创建插件运行时配置'''
     config = TenantExtensionConfig.objects.create(
@@ -42,7 +45,8 @@ class ExtensionSettingsCreateOut(Schema):
     settings_id: str
 
 
-@api.post("/{tenant_id}/extension/{extension_id}/settings/", response=ExtensionSettingsCreateOut,  tags=['租户插件'], auth=None)
+@api.post("/{tenant_id}/extension/{extension_id}/settings/", response=ExtensionSettingsCreateOut,  tags=['租户插件'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_extension_settings(request, tenant_id: str, extension_id: str, data: ExtensionSettingsCreateIn):
     '''租户下，创建插件配置'''
     settings = TenantExtension.objects.create(
@@ -119,26 +123,34 @@ class TenantExtensionListOut(ModelSchema):
 
 
 
-@api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],auth=None, response=List[TenantExtensionListOut])
-@operation(List[TenantExtensionListOut])
+@api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],response=List[TenantExtensionListOut])
+@operation(List[TenantExtensionListOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_platform_extensions(request, tenant_id: str):
     """ 平台插件列表
     """
-    return ExtensionModel.active_objects.all()
+    txs = TenantExtension.active_objects.filter(tenant_id=tenant_id).values('extension')
+    return ExtensionModel.active_objects.exclude(id__in=txs)
 
 
-@api.get("/tenant/{tenant_id}/tenant/extensions/", tags=["租户插件"],auth=None, response=List[TenantExtensionListOut])
-@operation(List[TenantExtensionListOut])
+@api.get("/tenant/{tenant_id}/tenant/extensions/", tags=["租户插件"],response=List[TenantExtensionListOut])
+@operation(List[TenantExtensionListOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_tenant_extensions(request, tenant_id: str):
     """ 租户插件列表
     """
     extensions = ExtensionModel.active_objects.all()
-    return TenantExtension.valid_objects.filter(extension__in = extensions)
+    return TenantExtension.valid_objects.filter(extension__in = extensions).annotate(
+        name=F('extension__name'),
+        type=F('extension__type'),
+        package=F('extension__package'),
+        labels=F('extension__labels'),
+        version=F('extension__version'),
+    ).values()
 
 
-@api.post("/tenant/{tenant_id}/tenant/extensions/{id}/active/", tags=["租户插件"],auth=None)
+@api.post("/tenant/{tenant_id}/tenant/extensions/{id}/active/", tags=["租户插件"])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def toggle_tenant_extension_status(request, tenant_id: str, id: str):
     """ 租户插件列表
     """
@@ -148,13 +160,15 @@ def toggle_tenant_extension_status(request, tenant_id: str, id: str):
     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/extensions/{id}/", tags=["租户插件"],auth=None)
+@api.get("/tenant/{tenant_id}/extensions/{id}/", tags=["租户插件"])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_extension(request, tenant_id: str, id: str):
     """ 获取租户插件,TODO
     """
     return {}
 
-@api.delete("/tenant/{tenant_id}/extensions/{id}/", tags=["租户插件"],auth=None)
+@api.delete("/tenant/{tenant_id}/extensions/{id}/", tags=["租户插件"])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_extension(request, tenant_id: str, id: str):
     """ 删除租户插件,TODO
     """

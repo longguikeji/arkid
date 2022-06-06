@@ -11,6 +11,7 @@ order_page = pages.FormPage(name=_('Order', '购买'))
 purchased_page = pages.TablePage(name='已购买')
 download_page = pages.TablePage(name='已安装')
 edit_page = pages.FormPage(name=_("编辑插件"))
+profile_page = pages.FormPage(name='插件配置')
 
 
 pages.register_front_pages(page)
@@ -19,6 +20,7 @@ pages.register_front_pages(order_page)
 pages.register_front_pages(purchased_page)
 pages.register_front_pages(download_page)
 pages.register_front_pages(edit_page)
+pages.register_front_pages(profile_page)
 
 
 router = routers.FrontRouter(
@@ -76,6 +78,10 @@ download_page.create_actions(
             path='/api/v1/extensions/{id}/active/',
             method=actions.FrontActionMethod.POST,
         ),
+        "profile": actions.OpenAction(
+            name='插件配置',
+            page=profile_page
+        ),
     },
 )
 
@@ -103,4 +109,16 @@ order_page.create_actions(
             method=actions.FrontActionMethod.GET
         ),
     },
+)
+
+profile_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/extensions/{id}/profile/',
+        method=actions.FrontActionMethod.GET
+    ),
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/extensions/{id}/profile/"
+        ),
+    }
 )

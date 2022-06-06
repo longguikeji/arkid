@@ -11,6 +11,16 @@ from typing import List
 class EmptyModel(models.Model):
     pass
 
+class Platform(BaseModel, ExpandModel):
+    is_saas = models.BooleanField(default=False, verbose_name=_('SaaS Switch', '多租户开关'))
+    is_need_rent = models.BooleanField(default=False, verbose_name=_('Is Tenant Need Rent Extension', '租户是否需要租赁插件'))
+    
+    @classmethod
+    def get_config(cls):
+        config = Platform.objects.first()
+        if not config:
+            config = Platform.objects.create()
+        return config
 
 class Tenant(BaseModel, ExpandModel):
     class Meta(object):

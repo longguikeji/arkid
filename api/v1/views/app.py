@@ -24,7 +24,7 @@ from api.v1.schema.app import *
 
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/apps/", response=AppCreateOut, tags=['应用'], auth=None)
+@api.post("/tenant/{tenant_id}/apps/", response=AppCreateOut, tags=['应用'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_app(request, tenant_id: str, data: AppCreateIn):
     '''
@@ -58,7 +58,7 @@ def create_app(request, tenant_id: str, data: AppCreateIn):
     
     return {'error': ErrorCode.OK.value}
 
-@api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'])
 @operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_apps(request, tenant_id: str):

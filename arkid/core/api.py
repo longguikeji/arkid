@@ -9,7 +9,7 @@ from ninja.openapi.schema import OpenAPISchema
 from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
 from arkid.core.event import register_event, dispatch_event, Event, EventDisruptionData
-from arkid.core.models import ExpiringToken
+from arkid.core.models import ExpiringToken, Tenant
 
 
 def add_fields(cls, **field_definitions: Any):
@@ -76,14 +76,15 @@ class GlobalAuth(HttpBearer):
             if not token.user.is_active:
                 raise Exception(_('User inactive or deleted','用户无效或被删除'))
 
-            if token.expired(request.tenant):
+            tenant = request.tenant or Tenant.platform_tenant()
+            if token.expired(tenant):
                 raise Exception(_('Token has expired','秘钥已经过期'))
 
             operation_id = request.operation_id
             if operation_id:
                 from arkid.core.perm.permission_data import PermissionData
                 permissiondata = PermissionData()
-                if token.user and request.tenant:
+                if token.user and tenant:
                     result =permissiondata.api_system_permission_check(request.tenant, token.user, operation_id)
                     if result == False:
                         raise Exception(_('You do not have api permission','你没有这个接口的权限'))
