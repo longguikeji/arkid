@@ -3,12 +3,8 @@
 from abc import abstractmethod
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
-from arkid.core import api as core_api, event as core_event
-from arkid.extension.models import TenantExtensionConfig, TenantExtension
-from arkid.core.api import api
-from typing import List
-from arkid.core.error import ErrorCode
-from arkid.common.logger import logger
+from arkid.core import event as core_event
+from arkid.extension.models import TenantExtensionConfig
 from pydantic import Field
 from ninja import Schema
 
@@ -45,10 +41,21 @@ class ApproveSystemExtension(Extension):
 
     @abstractmethod
     def create_approve_request(self, event, **kwargs):
+        """
+        抽象方法
+        Args:
+            event (arkid.core.event.Event): 创建审批请求事件
+        """
         pass
 
     @abstractmethod
     def change_approve_request_status(self, request, approve_request_id):
+        """
+        抽象方法
+        Args:
+            request (django.http.HttpRequest): 创建审批请求事件
+            approve_request_id (str): 需要改变审批状态的审批请求ID
+        """
         pass
 
     def create_tenant_config(self, tenant, config, name, type):

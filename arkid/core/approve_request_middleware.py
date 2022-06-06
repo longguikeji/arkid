@@ -10,6 +10,12 @@ from arkid.core.models import ApproveAction, ApproveRequest
 from arkid.core.approve import create_approve_request
 from arkid.common.utils import verify_token
 from pydantic import Field
+from arkid.core.event import (
+    Event,
+    register_event,
+    dispatch_event,
+    CREATE_APPROVE_REQUEST,
+)
 
 
 class ApproveRequestMiddleware:
@@ -45,6 +51,13 @@ class ApproveRequestMiddleware:
         ).first()
         if not approve_request:
             approve_request = create_approve_request(request, user, approve_action)
+            dispatch_event(
+                Event(
+                    tag=CREATE_APPROVE_REQUEST,
+                    tenant=request.tenant,
+                    data=approve_request,
+                )
+            )
             response = HttpResponse(status=401)
             return response
         else:
