@@ -15,7 +15,7 @@ class AutoAuthExtension(Extension):
     composite_schema_map = {}
     created_composite_schema_list = []
     composite_key = 'type'
-    composite_model = TenantExtension
+    composite_model = TenantExtensionConfig
 
     @property
     def type(self):
@@ -23,27 +23,18 @@ class AutoAuthExtension(Extension):
 
     def load(self):
         self.listen_event(core_event.AUTO_LOGIN, self.authenticate)
-        self.listen_event(
-            core_event.CREATE_AUTO_AUTH_CONFIG, self.create_auto_auth_config
-        )
-        self.listen_event(
-            core_event.UPDATE_AUTO_AUTH_CONFIG, self.update_auto_auth_config
-        )
-        self.listen_event(
-            core_event.DELETE_AUTO_AUTH_CONFIG, self.delete_auto_auth_config
-        )
+
         super().load()
 
+    @abstractmethod
     def authenticate(self, event, **kwargs):
-        pass
-
-    def create_auto_auth_config(self, event, **kwargs):
-        pass
-
-    def update_auto_auth_config(self, event, **kwargs):
-        pass
-
-    def delete_auto_auth_config(self, event, **kwargs):
+        """
+        抽象方法
+        Args:
+            event (arkid.core.event.Event): 自动认证事件
+        Returns:
+            Union[arkid.core.models.User, django.http.HttpResponse]: 自动认证返回结果
+        """
         pass
 
     def register_auto_auth_schema(self, schema, auto_auth_type):
