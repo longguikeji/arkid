@@ -96,15 +96,13 @@ def set_saas_bind_slug(tenant, data):
     return resp
 
 
-def create_arkidstore_login_app(tenant, saas_tenant_slug):
-    url = f"{settings.ARKSTOER_URL}/api/v1/login?tenant_slug={saas_tenant_slug}"
+def create_arkidstore_login_app(tenant, saas_tenant_id):
+    url = f"{settings.ARKSTOER_URL}/api/v1/login?tenant_id={saas_tenant_id}"
     create_tenant_oidc_app(tenant, url, 'arkstore_login', 'arkidstore login')
 
 
-def create_arkid_saas_login_app(tenant, saas_tenant_slug):
-    arkid_saas_url = settings.ARKID_SAAS_URL
-    http, host = arkid_saas_url.split('://', 1)
-    url = f"{http}://{saas_tenant_slug}.{host}"
+def create_arkid_saas_login_app(tenant, saas_tenant_id):
+    url = f"{settings.ARKID_SAAS_URL}/login?tenant_id={saas_tenant_id}"
     create_tenant_oidc_app(tenant, url, 'arkdi_saas_login', 'arkid_saas login')
 
 
@@ -142,6 +140,6 @@ def bind_saas(tenant_id, data=None):
         'saas_tenant_id': resp['saas_tenant_id'],
         'saas_tenant_slug': resp['saas_tenant_slug'],
     }
-    create_arkidstore_login_app(tenant, resp['saas_tenant_slug'])
-    create_arkid_saas_login_app(tenant, resp['saas_tenant_slug'])
+    create_arkidstore_login_app(tenant, resp['saas_tenant_id'])
+    create_arkid_saas_login_app(tenant, resp['saas_tenant_id'])
     return data
