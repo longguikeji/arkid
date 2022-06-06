@@ -30,8 +30,8 @@ class AccountLifeExtension(Extension):
     def periodic_task(self, event, **kwargs):
         """
         抽象方法
-        Params:
-            event arkid.core.event.Event:  生命周期定时任务事件
+        Args:
+            event (arkid.core.event.Event):  生命周期定时任务事件
         """
         pass
 
