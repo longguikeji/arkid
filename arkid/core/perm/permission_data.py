@@ -1139,10 +1139,13 @@ class PermissionData(object):
         tenant_id = tenant.id.hex
         client_id = request.GET.get('client_id', '')
 
+        user = self.token_check(tenant_id, token, request)
+        if not user:
+            return False, '没有找到用户'
+
         # 特殊处理 arkid_saas
         app = Application.objects.filter(name='arkid_saas', client_id=client_id).first()
         if app:
-            user = self.token_check(tenant_id, token, request)
             return True, ''
 
         app = App.valid_objects.filter(
@@ -1151,10 +1154,6 @@ class PermissionData(object):
         ).first()
         if not app:
             return False, '没有找到应用'
-
-        user = self.token_check(tenant_id, token, request)
-        if not user:
-            return False, '没有找到用户'
         
         # 特殊处理 OIDC-Platform
         if app.type == 'OIDC-Platform':
