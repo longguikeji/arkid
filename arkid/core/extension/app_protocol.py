@@ -108,11 +108,22 @@ class AppProtocolExtension(Extension):
                 next_uri = urllib.parse.quote(full_path)
                 host = get_app_config().get_frontend_host()
                 tenant = request.tenant
-                if tenant and tenant.slug:
-                    redirect_url = '{}{}?alert={}&next={}'.format(get_app_config().get_slug_frontend_host(tenant.slug), LOGIN_URL, alert, next_uri)
+                if not tenant:
+                    return f'{host}{LOGIN_URL}?tenant_id=&next={next_uri}'
+
+                token = request.GET.get('token', '')
+                if not token:
+                    if tenant.slug:
+                        host =get_app_config().get_slug_frontend_host(tenant.slug)
+                        return f'{host}{LOGIN_URL}?&next={next_uri}'
+                    else:
+                        return f'{host}{LOGIN_URL}?tenant_id={tenant.id}&next={next_uri}'
+                
+                if tenant.slug:
+                    host =get_app_config().get_slug_frontend_host(tenant.slug)
+                    return f'{host}{LOGIN_URL}?alert={alert}&next={next_uri}'
                 else:
-                    redirect_url = '{}{}?tenant_id={}&alert={}&next={}'.format(host, LOGIN_URL, tenant.id, alert, next_uri)
-                return redirect_url
+                    return f'{host}{LOGIN_URL}?tenant_id={tenant.id}&alert={alert}&next={next_uri}'
 
             def post(self, request, **kwargs):
                 from arkid.core.perm.permission_data import PermissionData
