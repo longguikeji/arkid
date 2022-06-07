@@ -105,6 +105,14 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         arkid_group.save()
 
     def sync_groups(self, groups, config):
+        """
+        遍历groups中的SCIM 组织，逐一和ArkID中的组织匹配，如果不存在就创建，存在则更新，在此过程中
+        同时遍历每个SCIM 组织中的members，同样的方式在ArkID中创建或更新组织，并且维护组织之间的父子关系，
+        最后删除以前同步到ArkID但不在本次同步数据中的组织
+        Args:
+            groups (List): SCIM Server返回的组织列表
+            config (arkid.extension.models.TenantExtensionConfig): Client模式创建的配置
+        """
         logger.info("###### update&create groups ######")
         tenant = config.tenant
         self.scim_arkid_group_map = {}
@@ -129,6 +137,13 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         groups_need_delete.delete()
 
     def sync_users(self, users, config):
+        """
+        遍历users中的SCIM 用户记录，逐一和ArkID中的用户匹配，如果不存在匹配的就创建，存在则更新，
+        最后删除以前同步到ArkID但不在本次同步数据中的用户
+        Args:
+            users (List): SCIM Server返回的用户列表
+            config (arkid.extension.models.TenantExtensionConfig): Client模式创建的配置
+        """
         logger.info("###### update&create users ######")
         tenant = config.tenant
         scim_user_ids = []
@@ -199,11 +214,29 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         return scim_groups
 
     def query_users(self, request, parameters, correlation_identifier):
+        """
+        将ArkID中的用户转换成scim_server中的符合SCIM标准的Core2EnterpriseUser对象
+        Args:
+            request (HttpRequest): Django 请求
+            parameters (scim_server.protocol.query_parameters.QueryParameters): Query请求对象
+            correlation_identifier (str): 请求唯一标识
+        Returns:
+            List[Core2EnterpriseUser]: 返回scim_server模块中的标准用户对象列表
+        """
         if not parameters.alternate_filters:
             all_users = self._get_all_scim_users(request.tenant)
             return all_users
 
     def query_groups(self, request, parameters, correlation_identifier):
+        """
+        将ArkID中的组织转换成scim_server中的符合SCIM标准的Core2Group对象
+        Args:
+            request (HttpRequest): Django 请求
+            parameters (scim_server.protocol.query_parameters.QueryParameters): Query请求对象
+            correlation_identifier (str): 请求唯一标识
+        Returns:
+            List[Core2Group]: 返回scim_server模块中的标准组织对象列表
+        """
         if not parameters.alternate_filters:
             groups = self._get_all_scim_groups(request.tenant)
             return groups

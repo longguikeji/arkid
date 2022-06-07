@@ -278,6 +278,8 @@ class ScimSyncExtension(Extension, ProviderBase):
             request (HttpRequest): Django 请求
             parameters (scim_server.protocol.query_parameters.QueryParameters): Query请求对象
             correlation_identifier (str): 请求唯一标识
+        Returns:
+            List[Core2EnterpriseUser]: 返回scim_server模块中的标准用户对象列表
         """
         pass
 
@@ -289,6 +291,8 @@ class ScimSyncExtension(Extension, ProviderBase):
             request (HttpRequest): Django 请求
             parameters (scim_server.protocol.query_parameters.QueryParameters): Query请求对象
             correlation_identifier (str): 请求唯一标识
+        Returns:
+            List[Core2Group]: 返回scim_server模块中的标准组织对象列表
         """
         pass
 
