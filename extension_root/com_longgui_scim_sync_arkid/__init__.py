@@ -27,6 +27,7 @@ from scim_server.schemas.schema_identifiers import SchemaIdentifiers
 from scim_server.schemas.member import Member
 from scim_server.schemas.user_groups import UserGroup as ScimUserGroup
 from django.db.utils import IntegrityError
+from scim_server.exceptions import NotImplementedException
 
 package = 'com.longgui.scim.sync.arkid'
 
@@ -207,6 +208,35 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
             groups = self._get_all_scim_groups(request.tenant)
             return groups
 
+    def create_user(self, request, resource, correlation_identifier):
+        raise NotImplementedException()
+
+    def create_group(self, request, resource, correlation_identifier):
+        raise NotImplementedException()
+
+    def delete_user(self, request, resource_identifier, correlation_identifier):
+        raise NotImplementedException()
+
+    def delete_group(self, request, resource_identifier, correlation_identifier):
+        raise NotImplementedException()
+
+    def replace_user(self, request, resource, correlation_identifier):
+        raise NotImplementedException()
+
+    def replace_group(self, request, resource, correlation_identifier):
+        raise NotImplementedException()
+
+    def retrieve_user(self, request, parameters, correlation_identifier):
+        raise NotImplementedException()
+
+    def retrieve_group(self, request, parameters, correlation_identifier):
+        raise NotImplementedException()
+
+    def update_user(self, request, patch, correlation_identifier):
+        raise NotImplementedException()
+
+    def update_group(self, request, patch, correlation_identifier):
+        raise NotImplementedException()
 
 extension = ScimSyncArkIDExtension(
     package=package,
