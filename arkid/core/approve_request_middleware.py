@@ -37,13 +37,15 @@ class ApproveRequestMiddleware:
         path = ('/' + request.resolver_match.route).replace("<", "{").replace(">", "}")
         method = request.method
 
-        user = verify_token(request)
+  
         approve_action = ApproveAction.valid_objects.filter(
             tenant=tenant, path=path, method=method
         ).first()
-        if not user or not approve_action:
+        if not approve_action or not approve_action.extension:
             return None
-        if not approve_action.extension:
+
+        user = verify_token(request)
+        if not user:
             return None
 
         approve_request = ApproveRequest.valid_objects.filter(
