@@ -156,6 +156,8 @@ class PermissionData(object):
             old_permission.save()
         for permissions_item in permissions_data:
             name = permissions_item.get('name', '')
+            method = permissions_item.get('method', '')
+            url = permissions_item.get('url', '')
             sort_id = permissions_item.get('sort_id', 0)
             type = permissions_item.get('type', '')
             container = permissions_item.get('container', [])
@@ -193,6 +195,8 @@ class PermissionData(object):
                     systempermission.code = 'api_{}'.format(uuid.uuid4())
                 systempermission.name = name
                 systempermission.describe = {
+                    'method': method,
+                    'url': url,
                 }
                 systempermission.is_update = True
                 systempermission.save()
@@ -978,7 +982,11 @@ class PermissionData(object):
         systempermissions = SystemPermission.valid_objects.all()
 
         if app_id:
-            systempermissions = systempermissions.filter(id__isnull=True)
+            app = App.valid_objects.filter(
+                id=app_id
+            ).first()
+            if app and app.entry_permission:
+                systempermissions = systempermissions.filter(id=app.entry_permission.id)
             permissions = permissions.filter(app_id=app_id)
         if user_id:
             compress = Compress()
@@ -1039,7 +1047,6 @@ class PermissionData(object):
         userpermissionresults = UserPermissionResult.valid_objects.filter(
             user=user,
             tenant_id=tenant_id,
-            app=app_id,
         )
         if app_id:
             userpermissionresult = userpermissionresults.filter(
@@ -1188,7 +1195,6 @@ class PermissionData(object):
     
         apps = App.valid_objects.filter(
             type__in=['OIDC-Platform'],
-            tenant_id=tenant_id,
         )
         app_temp = None
         for app in apps:
