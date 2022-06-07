@@ -33,7 +33,7 @@ class AutoAuthExtension(Extension):
         Args:
             event (arkid.core.event.Event): 自动认证事件
         Returns:
-            Union[arkid.core.models.User, django.http.HttpResponse]: 自动认证返回结果
+            Union[arkid.core.models.User, django.http.HttpResponse, None]: 自动认证返回结果
         """
         pass
 
