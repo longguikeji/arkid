@@ -35,6 +35,14 @@ def list_apps(request, tenant_id: str):
         is_active=True,
         is_del=False
     )
+    # 取得请求地址和方式
+    method = request.method
+    url = request.resolver_match.route
+    print('request url:{},method:{}'.format(url,method))
+
+    from arkid.core.perm.permission_data import PermissionData
+    pd = PermissionData()
+    pd.update_arkid_system_permission()
     return apps.all()
 
 

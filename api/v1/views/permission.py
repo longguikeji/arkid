@@ -184,8 +184,10 @@ def user_add_permission(request, tenant_id: str, permission_id: str, user_id: st
         permission = Permission.valid_objects.filter(id=permission_id).first()
     permission.user_id = user_id
     if isinstance(permission, SystemPermission):
+        # 添加系统权限
         dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
+        # 添加应用权限
         dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
     return {'error': ErrorCode.OK.value}
 

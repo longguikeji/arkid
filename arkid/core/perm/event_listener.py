@@ -1,6 +1,6 @@
 from arkid.core import event as core_event
 from arkid.core.models import(
-    Permission, SystemPermission,
+    Permission, SystemPermission, App,
 )
 from arkid.core.event import (
     CREATE_GROUP, DELETE_GROUP, CREATE_APP_CONFIG_DONE,
@@ -189,8 +189,18 @@ class EventListener(object):
     def add_user_system_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import add_system_permission_to_user
+        from arkid.core.tasks.tasks import add_system_permission_to_user, update_single_user_app_permission
         add_system_permission_to_user.delay(tenant.id, permission.user_id, permission.id)
+        if permission.category == 'entry' and permission.is_open and permission.tenant != tenant:
+            app = App.valid_objects.filter(
+                entry_permission=permission
+            ).first()
+            if app:
+                config = app.config
+                app_config = config.config
+                if app_config.get('version') and app_config.get('openapi_uris'):
+                    # 如果给了入口权限，需要同步更新app权限
+                    update_single_user_app_permission.delay(tenant.id, permission.user_id, app.id)
         return True
 
     def add_user_app_permission(self, event, **kwargs):
