@@ -63,7 +63,7 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     key = (str(saas_tenant_id), token)
     if key in arkstore_access_token_saas_cache:
         return arkstore_access_token_saas_cache[key]
-    params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_uuid': str(saas_tenant_id), 'token': token}
+    params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_id': str(saas_tenant_id), 'token': token}
     app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
     resp = requests.get(app_login_url, params=params)
     if resp.status_code != 200:
