@@ -3,7 +3,8 @@ import requests
 from arkid.config import get_app_config
 from oauth2_provider.models import Application
 from django.conf import settings
-import datetime
+from datetime import datetime
+import jwt
 import uuid
 from arkid.core.models import User, App
 from django.utils.dateparse import parse_datetime
@@ -62,7 +63,18 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     # 缓存 idtoken
     key = (str(saas_tenant_id), token)
     if key in arkstore_access_token_saas_cache:
-        return arkstore_access_token_saas_cache[key]
+        try:
+            payload = jwt.decode(arkstore_access_token_saas_cache[key], options={"verify_signature": False})
+        except Exception:
+            arkstore_access_token_saas_cache.pop(key, None)
+            raise Exception("Unable to parse id_token")
+        exp_dt = datetime.fromtimestamp(payload["exp"])
+        expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
+        now = timezone.localtime()
+        if now <= expire_time:
+            return arkstore_access_token_saas_cache[key]
+        else:
+            arkstore_access_token_saas_cache.pop(key, None)
     params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_id': str(saas_tenant_id), 'token': token}
     app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
     resp = requests.get(app_login_url, params=params)
@@ -354,8 +366,10 @@ def check_arkstore_expired(tenant, token, package_idendifer):
     if resp.get("use_end_time") == '0':
         return True
     if resp.get("use_end_time") is not None:
-        use_end_time = parse_datetime(resp["use_end_time"])
-        if use_end_time <= timezone.now():
+        exp_dt = parse_datetime(resp["use_end_time"])
+        expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
+        now = timezone.localtime()
+        if now <= expire_time:
             return True
     if resp.get("max_users"):
         count = len(User.active_objects.filter(tenant=tenant).all())
