@@ -71,7 +71,7 @@ class SAML2Extension(InMemExtension):
             provider=Saml2IdpAliyunRoleProvider,
             serializer=Saml2IdpAliyunRoleSerializer
         )
-        runtime.registelogout_app_typer_app_type(
+        runtime.logout_app_type(
             key='saml2_idp_aliyun_ram',
             name='SAML2 IDP 阿里云用户SSO',
             provider=Saml2IdpAliyunRamProvider,
