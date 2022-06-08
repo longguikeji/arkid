@@ -164,7 +164,6 @@ key
 
 # demo
 pysaml2/
-djangosaml2config/saml2_config/*.xml
 
 # sql
 test/data/test_*.sql
@@ -194,7 +193,6 @@ package-lock.json
 
 db.sqlite3-journal
 results.sqlite
-djangosaml2idp/saml2_config/*.xml
 
 certificates/
 metadatas/
