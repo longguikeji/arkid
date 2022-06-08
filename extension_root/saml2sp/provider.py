@@ -3,7 +3,6 @@ SAML2协议 SP注册
 """
 import base64
 import time
-from djangosaml2idp.idpsettings import BASE_DIR
 import logging
 from django.urls.base import reverse
 from common.provider import ExternalIdpProvider

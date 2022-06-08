@@ -83,7 +83,7 @@ class SSOInit(LoginRequiredMixin, IdPHandlerViewMixin, View):
                 NAMEID_FORMAT_UNSPECIFIED
             ]
             
-            if app.type=="saml2idp_aliyun_ram":
+            if app.type=="saml2_idp_aliyun_ram":
                 user_id = f"{user_id}@{app.data.get('name_id')}"
             
             name_id = NameID(format=name_id_formats[0], text=user_id)

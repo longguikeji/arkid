@@ -2,10 +2,10 @@
 SAML 2.0  插件处理
 """
 from common.extension import InMemExtension
-from .providers.idp import Saml2IdpProvider,Saml2IdpFileProvider,Saml2IdpAliyunRoleProvider
+from .providers.idp import Saml2IdpProvider,Saml2IdpFileProvider,Saml2IdpAliyunRoleProvider,Saml2IdpAliyunRamProvider
 from runtime import Runtime
 from .constants import KEY
-from .serializers.idp import SAML2IdpBaseSerializer,Saml2IdpFileSerializer,Saml2IdpAliyunRoleSerializer
+from .serializers.idp import SAML2IdpBaseSerializer,Saml2IdpFileSerializer,Saml2IdpAliyunRoleSerializer,Saml2IdpAliyunRamSerializer
 
 
 class SAML2Extension(InMemExtension):
@@ -39,6 +39,12 @@ class SAML2Extension(InMemExtension):
             provider=Saml2IdpAliyunRoleProvider,
             serializer=Saml2IdpAliyunRoleSerializer
         )
+        runtime.register_app_type(
+            key='saml2_idp_aliyun_ram',
+            name='SAML2 IDP 阿里云用户SSO',
+            provider=Saml2IdpAliyunRamProvider,
+            serializer=Saml2IdpAliyunRamSerializer
+        )
         super().start(runtime=runtime, *args, **kwargs)
 
     def teardown(self, runtime: Runtime, *args, **kwargs):
@@ -64,6 +70,12 @@ class SAML2Extension(InMemExtension):
             name='SAML2 IDP 阿里云角色SSO',
             provider=Saml2IdpAliyunRoleProvider,
             serializer=Saml2IdpAliyunRoleSerializer
+        )
+        runtime.registelogout_app_typer_app_type(
+            key='saml2_idp_aliyun_ram',
+            name='SAML2 IDP 阿里云用户SSO',
+            provider=Saml2IdpAliyunRamProvider,
+            serializer=Saml2IdpAliyunRamSerializer
         )
 
 extension = SAML2Extension(
