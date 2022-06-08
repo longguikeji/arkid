@@ -35,6 +35,7 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+.devcontainer
 
 # Installer logs
 pip-log.txt
@@ -195,3 +196,5 @@ db.sqlite3-journal
 results.sqlite
 djangosaml2idp/saml2_config/*.xml
 
+certificates/
+metadatas/
