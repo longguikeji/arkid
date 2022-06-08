@@ -179,7 +179,7 @@ class ProviderBase:
                 request.request, parameters, correlation_identifier
             )
 
-        if parameters.path == 'Users':
+        if parameters.path == 'Groups':
             return self.retrieve_group(
                 request.request, parameters, correlation_identifier
             )
@@ -200,8 +200,8 @@ class ProviderBase:
 
         resource = request.payload
         correlation_identifier = request.correlation_identifier
-        if isinstance(resource, Core2EnterpriseUser):
+        if 'Users' in request.request.path:
             return self.update_user(request.request, resource, correlation_identifier)
 
-        if isinstance(resource, Core2Group):
+        if 'Groups' in request.request.path:
             return self.update_group(request.request, resource, correlation_identifier)
