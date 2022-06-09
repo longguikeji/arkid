@@ -224,11 +224,11 @@ def decorator_listen_event(tag, **kwargs):
             for t in tag:
                 event_type = tag_map_event_type.get(t)
                 if event_type:
-                    event_type.signal.connect(signal_func, **kwargs)
+                    event_type.signal.connect(signal_func, weak=False, **kwargs)
         else:
             event_type = tag_map_event_type.get(tag)
             if event_type:
-                event_type.signal.connect(signal_func, **kwargs)
+                event_type.signal.connect(signal_func, weak=False, **kwargs)
         return func
 
     return _decorator
@@ -253,13 +253,13 @@ def listen_event(tag, func, listener=None, **kwargs):
         for t in tag:
             event_type = tag_map_event_type.get(t)
             if event_type:
-                event_type.signal.connect(signal_func, **kwargs)
+                event_type.signal.connect(signal_func, weak=False, **kwargs)
             else:
                 temp_listens[t] = (func, listener, kwargs)
     else:
         event_type = tag_map_event_type.get(tag)
         if event_type:
-            event_type.signal.connect(signal_func, **kwargs)
+            event_type.signal.connect(signal_func, weak=False, **kwargs)
         else:
             temp_listens[tag] = (func, listener, kwargs)
 
