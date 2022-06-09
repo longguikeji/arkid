@@ -48,7 +48,7 @@ class Saml2IdpProvider(BaseIdpProvider):
         写入sp验证文件
         """
         if cert not in ["", None]:
-            cert = cert.replace("data:application/pkix-crt;base64,", "")
+            cert = cert.replace("data:application/pkix-cert;base64,", "")
             cert = base64.b64decode(cert)
             cert = cert.decode()
             with open(os.path.join(CERT_BASEDIR, f'{filename}.crt'), "w") as f:
