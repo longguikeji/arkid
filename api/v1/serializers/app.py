@@ -96,12 +96,12 @@ class AppSerializer(BaseDynamicFieldModelSerializer):
         provider_cls: AppTypeProvider = r.app_type_providers.get(protocol_type, None)
         assert provider_cls is not None
         provider = provider_cls()
+        instance.__dict__.update(validated_data)
+        instance.save()
         data = provider.update(app=app, data=protocol_data)
         if data is not None:
             app.data = data
             app.save()
-        instance.__dict__.update(validated_data)
-        instance.save()
         transaction.on_commit(
             lambda: WebhookManager.app_updated(self.context['tenant'].uuid, instance)
         )

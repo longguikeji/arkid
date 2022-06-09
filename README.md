@@ -8,7 +8,7 @@
 
 # QuickStart
 
-## docker-compose启动
+## docker-compose 启动
 
 ## arkid v2.0
 

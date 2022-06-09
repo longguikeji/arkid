@@ -40,7 +40,26 @@ jobs:
       run: |
         sed -i "s@https://mirrors.aliyun.com/pypi/simple@https://pypi.python.org/simple@g" requirements.txt;
         sed -i "s@https://mirrors.aliyun.com/pypi/simple@https://pypi.python.org/simple@g" requirements-dev.txt;
-    - name: Build and push
+    - name: Build and push dockerhub
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        platforms: linux/amd64
+        build-args: |
+          DEBIAN=http://deb.debian.org/debian
+          DEBIANSRT=http://security.debian.org/debian-security
+          PIP="-i https://pypi.python.org/simple"
+        push: true
+        tags: |
+          longguikeji/arkid:v2dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
+          longguikeji/arkid:v2dev-${{ github.run_number }}
+          longguikeji/arkid:v2dev
+    - name: deploy to cluster dockerhub
+      uses: steebchen/kubectl@v2.0.0
+      with: # defaults to latest kubectl binary version
+        config: ${{ secrets.KUBE_CONFIG_HW }}
+        command: -n demo-arkidv2 --insecure-skip-tls-verify=true set image --record deployment/demo-arkidv2-be cpextensionroot=longguikeji/arkid:v2dev-${{ github.run_number }} arkid-be=longguikeji/arkid:v2dev-${{ github.run_number }}
+    - name: Build and push harbor
       uses: docker/build-push-action@v2
       with:
         context: .
@@ -54,14 +73,12 @@ jobs:
           ${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
           ${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }}
           ${{ secrets.ARK_DEV }}/arkid:v2dev
-          longguikeji/arkid:v2dev-${{ github.run_number }}-${{steps.get-short-id.outputs.id}}
-          longguikeji/arkid:v2dev-${{ github.run_number }}
-          longguikeji/arkid:v2dev
-    - name: deploy to cluster
+          longguikeji/arkid
+    - name: deploy to cluster harbor
       uses: steebchen/kubectl@v2.0.0
       with: # defaults to latest kubectl binary version
         config: ${{ secrets.KUBE_CONFIG_HW }}
-        command: -n dev-arkidv2 --insecure-skip-tls-verify=true set image --record deployment/dev-arkidv2-be cpextensionroot=${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }} arkid-be=${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }}
+        command: -n demo-arkidv2 --insecure-skip-tls-verify=true set image --record deployment/demo-arkidv2-be cpextensionroot=${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }} arkid-be=${{ secrets.ARK_DEV }}/arkid:v2dev-${{ github.run_number }}
     - name: Feishu 报忧
       if: ${{ failure() }}
       uses: wangsijie/feishu-bot@v1

@@ -3,6 +3,8 @@ import typing
 from .celery import app
 from django.db.models import QuerySet
 from provisioning.models import Config
+from django.http.request import HttpRequest
+from drf_spectacular.views import SpectacularAPIView
 from provisioning.constants import ProvisioningStatus
 from provisioning.utils import (
     create_user,
@@ -226,10 +228,10 @@ def update_permission():
     '''
     定时更新权限
     '''
-    c = get_app_config()
-    api_info = "{}/api/schema/?format=json".format(c.get_host())
+    # c = get_app_config()
+    # api_info = "{}/api/schema/?format=json".format(c.get_host())
     # 处理任务
-    permission_task(None, api_info)
+    permission_task()
 
 
 @app.task
@@ -1013,12 +1015,18 @@ def find_group_parent(json_objs, sort_id):
             return json_obj
 
 
-def permission_task(app_temp, api_info):
+def permission_task(app_temp=None):
     '''
     执行更改权限任务
     '''
-    response = requests.get(api_info)
-    response = response.json()
+    http_request = HttpRequest()
+    http_request.GET['format'] = 'json'
+    http_request.path = '/api/schema/'
+    http_request.method = 'GET'
+    api_view = SpectacularAPIView.as_view()
+
+    response = api_view(http_request)
+    response = response.data
     # 权限分组更新
     info = response.get('info')
     roles_describe = info.get('roles_describe')
