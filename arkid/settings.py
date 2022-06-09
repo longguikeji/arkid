@@ -222,6 +222,7 @@ OAUTH2_PROVIDER = {
     "SCOPES": {
         "openid": "OpenID Connect scope",
         "userinfo": "UserInfo",
+        "snsapi_userinfo": "UserInfo",
         "email": "Email user"
         # ... any other scopes that you use
     },
