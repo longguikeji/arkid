@@ -88,7 +88,6 @@ INSTALLED_APPS = [
     # 'extension_root.app_market_manage',
     'django_scim',
     # 'extension_root.miniprogram',
-    'djangosaml2idp',
     'login_register_config',
     'config',
     'log',
@@ -126,7 +125,9 @@ ROOT_URLCONF = 'arkid.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR,'templates')
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
