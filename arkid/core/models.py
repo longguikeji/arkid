@@ -609,7 +609,7 @@ class TenantExpandAbstract(BaseModel):
 
     foreign_key = Tenant
     
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         Tenant,
         blank=True,
         default=None,
@@ -623,7 +623,7 @@ class UserExpandAbstract(BaseModel):
         abstract = True
     foreign_key = User
         
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         User,
         blank=True,
         default=None,
@@ -638,7 +638,7 @@ class UserGroupExpandAbstract(BaseModel):
 
     foreign_key = UserGroup
     
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         UserGroup,
         blank=True,
         default=None,
@@ -652,7 +652,7 @@ class AppExpandAbstract(BaseModel):
         abstract = True
 
     foreign_key = App
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         App,
         blank=True,
         default=None,
@@ -666,7 +666,7 @@ class AppGroupExpandAbstract(BaseModel):
         abstract = True
         
     foreign_key = AppGroup
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         AppGroup,
         blank=True,
         default=None,

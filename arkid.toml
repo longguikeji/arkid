@@ -13,7 +13,7 @@ nickname = "longguikeji"
 
 
 [extension]
-root = ["./extension_root", "./arkid_extensions"]
+root = ["./arkid_extensions", "./extension_root"]
 install_dir = "./arkid_extensions"
 
     [extension.demo]
