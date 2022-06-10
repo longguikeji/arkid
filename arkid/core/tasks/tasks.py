@@ -100,6 +100,24 @@ def update_system_permission():
 
 
 @app.task
+def update_open_system_permission_admin():
+    '''
+    给所有admin更新已经开放的系统权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_open_system_permission_admin()
+
+
+@app.task
+def update_open_app_permission_admin():
+    '''
+    给所有admin更新已经开放的应用权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_open_app_permission_admin()
+
+
+@app.task
 def update_arkid_all_user_permission(tenant_id=None):
     '''
     更新系统的全部用户权限
@@ -116,6 +134,15 @@ def update_single_user_system_permission(tenant_id, user_id):
     permissiondata = PermissionData()
     permissiondata.update_single_user_system_permission(tenant_id, user_id)
 
+
+@app.task
+def update_single_user_system_permission_and_app_permisssion(tenant_id, user_id):
+    '''
+    用户注册时更新系统权限和应用权限(租户自己的应用和取得的中心应用)
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_single_user_system_permission(tenant_id, user_id)
+    permissiondata.update_tenant_use_app_by_user(tenant_id, user_id)
 
 @app.task
 def update_single_user_app_permission(tenant_id, user_id, app_id):
