@@ -136,6 +136,15 @@ def update_single_user_system_permission(tenant_id, user_id):
 
 
 @app.task
+def update_single_user_system_permission_and_app_permisssion(tenant_id, user_id):
+    '''
+    用户注册时更新系统权限和应用权限(租户自己的应用和取得的中心应用)
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_single_user_system_permission(tenant_id, user_id)
+    permissiondata.update_tenant_use_app_by_user(tenant_id, user_id)
+
+@app.task
 def update_single_user_app_permission(tenant_id, user_id, app_id):
     '''
     更新单个用户的应用权限

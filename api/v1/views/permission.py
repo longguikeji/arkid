@@ -261,6 +261,19 @@ def permission_batch_open(request, tenant_id: str, data: PermissionBatchOpenSche
     if permissions:
         permissions.update(is_open=True)
         dispatch_event(Event(tag=OPEN_APP_PERMISSION, tenant=request.tenant, request=request, data=None))
+    # from arkid.core.models import Tenant, User
+    # from arkid.core.perm.permission_data import PermissionData
+    # permissiondata = PermissionData()
+    # tenant, _ = Tenant.objects.get_or_create(
+    #     name="tenant1",
+    # )
+    # user, _ = User.objects.get_or_create(
+    #     username="tenant1.1",
+    #     tenant=tenant,
+    # )
+    # tenant.users.add(user)
+    # tenant.save()
+    # permissiondata.update_tenant_use_app_by_user(tenant.id.hex, user.id)
     return {'error': ErrorCode.OK.value}
 
 

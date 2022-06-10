@@ -1553,6 +1553,37 @@ class PermissionData(object):
                 userpermissionresult.save()
 
 
+    def update_tenant_use_app_by_user(self, tenant_id, user_id):
+        '''
+        给某个租户指定用户更新正在使用的应用
+        '''
+        tenant_uid = uuid.UUID(tenant_id)
+        app_infos = self.get_all_user_app(tenant_id)
+        user = User.valid_objects.filter(id=user_id).first()
+        for app_info in app_infos:
+            app_id = app_info.get('app_id')
+            app_tenant_id = app_info.get('app_tenant_id')
+            if app_tenant_id == tenant_uid:
+                # 同一个租户
+                update_single_user_app_permission(tenant_uid, user_id, app_id)
+            else:
+                # 不同租户
+                max_permission = Permission.objects.filter(app=app_id).order_by('-sort_id').first()
+                compress = Compress()
+                user_str = ''
+                for i in range(max_permission.sort_id+1):
+                    user_str = user_str+'0'
+                userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
+                    is_del=False,
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    app_id=app_id,
+                )
+                userpermissionresult.is_update = True
+                userpermissionresult.result = user_str
+                userpermissionresult.save()
+
+
     def get_all_tenant_manager(self):
         '''
         取得所有租户管理员(可能会有重复，因为同一个用户会有多个租户)
@@ -1580,3 +1611,21 @@ class PermissionData(object):
         return userinfos
         
         
+    def get_all_user_app(self, tenant_id):
+        '''
+        取得某个租户所有使用的应用
+        '''
+        uprs = UserPermissionResult.valid_objects.filter(
+            tenant_id=tenant_id,
+            app__isnull=False
+        )
+        items = []
+        for upr in uprs:
+            app_id = upr.app.id
+            obj = {
+                'app_id': app_id,
+                'app_tenant_id': upr.app.tenant.id
+            }
+            if obj not in items:
+                items.append(obj)
+        return items

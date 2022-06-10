@@ -46,10 +46,10 @@ class EventListener(object):
         core_event.listen_event(OPEN_SYSTEM_PERMISSION, self.update_open_system_permission_admin)
 
     def register(self, event, **kwargs):
-        from arkid.core.tasks.tasks import update_single_user_system_permission
+        from arkid.core.tasks.tasks import update_single_user_system_permission_and_app_permisssion
         user = event.data
         tenant = event.tenant
-        update_single_user_system_permission().delay(tenant.id, user.id)
+        update_single_user_system_permission_and_app_permisssion().delay(tenant.id, user.id)
 
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission
@@ -204,16 +204,16 @@ class EventListener(object):
         tenant = event.tenant
         from arkid.core.tasks.tasks import add_system_permission_to_user, update_single_user_app_permission
         add_system_permission_to_user.delay(tenant.id, permission.user_id, permission.id)
-        if permission.category == 'entry' and permission.is_open and permission.tenant != tenant:
-            app = App.valid_objects.filter(
-                entry_permission=permission
-            ).first()
-            if app:
-                config = app.config
-                app_config = config.config
-                if app_config.get('version') and app_config.get('openapi_uris'):
-                    # 如果给了入口权限，需要同步更新app权限
-                    update_single_user_app_permission.delay(tenant.id, permission.user_id, app.id)
+        # if permission.category == 'entry' and permission.is_open and permission.tenant != tenant:
+        #     app = App.valid_objects.filter(
+        #         entry_permission=permission
+        #     ).first()
+        #     if app:
+        #         config = app.config
+        #         app_config = config.config
+        #         if app_config.get('version') and app_config.get('openapi_uris'):
+        #             # 如果给了入口权限，需要同步更新app权限
+        #             update_single_user_app_permission.delay(tenant.id, permission.user_id, app.id)
         return True
 
     def add_user_app_permission(self, event, **kwargs):
