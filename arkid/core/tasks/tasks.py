@@ -100,6 +100,24 @@ def update_system_permission():
 
 
 @app.task
+def update_open_system_permission_admin():
+    '''
+    给所有admin更新已经开放的系统权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_open_system_permission_admin()
+
+
+@app.task
+def update_open_app_permission_admin():
+    '''
+    给所有admin更新已经开放的应用权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_open_app_permission_admin()
+
+
+@app.task
 def update_arkid_all_user_permission(tenant_id=None):
     '''
     更新系统的全部用户权限

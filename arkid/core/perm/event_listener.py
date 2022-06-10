@@ -10,7 +10,8 @@ from arkid.core.event import (
     REMOVE_GROUP_PERMISSION_PERMISSION, UPDATE_GROUP_PERMISSION_PERMISSION,
     CREATE_PERMISSION, UPDATE_PERMISSION, DELETE_PERMISSION,
     ADD_USER_SYSTEM_PERMISSION, ADD_USER_APP_PERMISSION, GROUP_ADD_USER,
-    REMOVE_USER_SYSTEM_PERMISSION, REMOVE_USER_APP_PERMISSION,
+    REMOVE_USER_SYSTEM_PERMISSION, REMOVE_USER_APP_PERMISSION, OPEN_APP_PERMISSION,
+    OPEN_SYSTEM_PERMISSION,
 )
 
 import uuid
@@ -41,6 +42,8 @@ class EventListener(object):
         core_event.listen_event(ADD_USER_APP_PERMISSION, self.add_user_app_permission)
         core_event.listen_event(REMOVE_USER_SYSTEM_PERMISSION, self.remove_user_system_permission)
         core_event.listen_event(REMOVE_USER_APP_PERMISSION, self.remove_user_app_permission)
+        core_event.listen_event(OPEN_APP_PERMISSION, self.update_open_app_permission_admin)
+        core_event.listen_event(OPEN_SYSTEM_PERMISSION, self.update_open_system_permission_admin)
 
     def register(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_single_user_system_permission
@@ -156,6 +159,16 @@ class EventListener(object):
         tenant = event.tenant
         from arkid.core.tasks.tasks import update_only_user_app_permission
         update_only_user_app_permission.delay(tenant.id, permission.app.id)
+        return True
+
+    def update_open_system_permission_admin(self, event, **kwargs):
+        from arkid.core.tasks.tasks import update_open_system_permission_admin
+        update_open_system_permission_admin.delay()
+        return True
+
+    def update_open_app_permission_admin(self, event, **kwargs):
+        from arkid.core.tasks.tasks import update_open_app_permission_admin
+        update_open_app_permission_admin.delay()
         return True
 
     def update_group_permission_permission(self, event, **kwargs):

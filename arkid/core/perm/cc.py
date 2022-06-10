@@ -972,15 +972,15 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
     
-    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user):
+    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id):
         '''
-        根据应用，用户，分组查权限(要根据用户身份显示正确的列表)
+        根据应用，用户，分组查权限
         '''
         permissions = Permission.valid_objects.filter(
             Q(tenant_id=tenant_id)|Q(is_open=True)
         )
         systempermissions = SystemPermission.valid_objects.all()
-        compress = Compress()
+
         if app_id:
             app = App.valid_objects.filter(
                 id=app_id
@@ -988,43 +988,14 @@ class PermissionData(object):
             tenant_uid = uuid.UUID(tenant_id)
             if app and app.entry_permission:
                 systempermissions = systempermissions.filter(id=app.entry_permission.id)
-                permissions = permissions.filter(app_id=app_id)
-                if app.tenant.id != tenant_uid:
-                    # 只展示为1的系统权限
-                    userpermissionresult = UserPermissionResult.valid_objects.filter(
-                        app=None,
-                        user=login_user,
-                        tenant_id=tenant_id
-                    ).first()
-                    permission_sort_ids = []
-                    if userpermissionresult:
-                        permission_result = compress.decrypt(userpermissionresult.result)
-                        permission_result_arr = list(permission_result)
-                        for index, item in enumerate(permission_result_arr):
-                            if int(item) == 1:
-                                permission_sort_ids.append(index)
-                    if len(permission_sort_ids) == 0:
-                        systempermissions = systempermissions.filter(id__isnull=True)
-                    else:
-                        systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
-                    # 只展示为1的应用权限
-                    userpermissionresult = UserPermissionResult.valid_objects.filter(
-                        app=app,
-                        user=login_user,
-                        tenant_id=tenant_id
-                    ).first()
-                    permission_sort_ids = []
-                    if userpermissionresult:
-                        permission_result = compress.decrypt(userpermissionresult.result)
-                        permission_result_arr = list(permission_result)
-                        for index, item in enumerate(permission_result_arr):
-                            if int(item) == 1:
-                                permission_sort_ids.append(index)
-                    if len(permission_sort_ids) == 0:
-                        permissions = permissions.filter(id__isnull=True)
-                    else:
-                        permissions = permissions.filter(sort_id__in=permission_sort_ids)
+                if app.tenant.id == tenant_uid:
+                    # 正确匹配应用权限(权限可以逐级分配，要根据字符串结果再次筛选)
+                    permissions = permissions.filter(app_id=app_id)
+                else:
+                    # 只展示有权限的字符串
+                    pass
         if user_id:
+            compress = Compress()
             # 系统权限
             userpermissionresult = UserPermissionResult.valid_objects.filter(
                 user_id=user_id,
@@ -1423,46 +1394,15 @@ class PermissionData(object):
         userpermissionresult.save()
         return True
 
-
-    def update_open_system_permission_admin(self):
+    def update_entry_permission_admin(self):
         '''
-        给所有admin更新已经开放的系统权限
+        给所有admin更新已经开放的入口权限
         '''
+        open_permission = {
+        }
         permissions = SystemPermission.valid_objects.filter(is_open=True)
-        userinfos = self.get_all_tenant_manager()
-        sort_ids = []
-        max_sort_id = 0
-        for permission in permissions:
-            sort_id = permission.sort_id
-            sort_ids.append(sort_id)
-            if sort_id > max_sort_id:
-                max_sort_id = sort_id
-        for userinfo in userinfos:
-            info_user = userinfo.get('user')
-            tenant = userinfo.get('tenant')
-            userpermissionresult = UserPermissionResult.valid_objects.filter(
-                user=info_user,
-                tenant=tenant,
-                app=None
-            ).first()
-            compress = Compress()
-            if userpermissionresult:
-                user_result_str = compress.decrypt(userpermissionresult.result)
-                permission_result_arr = list(user_result_str)
-                last_len = max_sort_id+1
-                if len(permission_result_arr) < last_len:
-                    diff = last_len - len(permission_result_arr)
-                    for i in range(diff):
-                        permission_result_arr.append(0)
-                for sort_id in sort_ids:
-                    permission_result_arr[sort_id] = 1
-                permission_result = "".join(map(str, permission_result_arr))
-                compress_str_result = compress.encrypt(permission_result)
-                userpermissionresult.result = compress_str_result
-                userpermissionresult.save()
 
-
-    def update_open_app_permission_admin(self):
+    def update_open_permission_admin(self):
         '''
         给所有admin更新已经开放的应用权限
         '''
@@ -1494,7 +1434,6 @@ class PermissionData(object):
             item = open_permission.get(key)
             self.update_app_open_permission(item, userinfos)
 
-
     def update_app_open_permission(self, item, userinfos):
         '''
         更新某一个应用权限公开权限
@@ -1510,7 +1449,6 @@ class PermissionData(object):
             is_super_user = userinfo.get('is_super_user')
             info_tenant = userinfo.get('tenant')
             info_user = userinfo.get('user')
-            info_user.tenant = info_tenant
             if is_super_user:
                 if info_user not in super_users:
                     super_users.append(info_user)
@@ -1535,7 +1473,7 @@ class PermissionData(object):
                 userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
                     is_del=False,
                     user=admin_user,
-                    tenant=admin_user.tenant,
+                    tenant=app_tenant,
                     app=app,
                 )
                 userpermissionresult.is_update = True
@@ -1545,13 +1483,12 @@ class PermissionData(object):
                 userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
                     is_del=False,
                     user=super_user,
-                    tenant=super_user.tenant,
+                    tenant=app_tenant,
                     app=app,
                 )
                 userpermissionresult.is_update = True
                 userpermissionresult.result = super_user_compress_str
                 userpermissionresult.save()
-
 
     def get_all_tenant_manager(self):
         '''
