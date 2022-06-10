@@ -14,13 +14,13 @@ from django.db import transaction
 
 arkid_saas_token_cache = {}
 
-def get_saas_token(tenant, token):
+def get_saas_token(tenant, token, use_cache=True):
     """
     获取saas平台token
     """
     # 缓存 saas_token
     key = (str(tenant.id), token)
-    if key in arkid_saas_token_cache:
+    if use_cache and key in arkid_saas_token_cache:
         return arkid_saas_token_cache[key]
     app = Application.objects.filter(name='arkid_saas').first()
     host = get_app_config().get_host()
@@ -46,23 +46,23 @@ def get_saas_token(tenant, token):
     return arkid_saas_token_cache[key]
 
 
-def get_arkstore_access_token(tenant, token):
+def get_arkstore_access_token(tenant, token, use_cache=True):
     """
     获取插件商店access_token
     """
-    saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
-    return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token)
+    saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token, use_cache=use_cache)
+    return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token, use_cache=use_cache)
 
 
 arkstore_access_token_saas_cache = {}
 
-def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, token):
+def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, token, use_cache=True):
     """
     获取插件商店access_token
     """
     # 缓存 idtoken
     key = (str(saas_tenant_id), token)
-    if key in arkstore_access_token_saas_cache:
+    if use_cache and key in arkstore_access_token_saas_cache:
         try:
             payload = jwt.decode(arkstore_access_token_saas_cache[key], options={"verify_signature": False})
         except Exception:
@@ -225,6 +225,8 @@ def get_bind_arkstore_agent(access_token):
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(order_url, json=params, headers=headers)
+    if resp.status_code == 204:
+        return {}
     if resp.status_code != 200:
         raise Exception(f'Error bind_arkstore_agent: {resp.status_code}')
     resp = resp.json()
