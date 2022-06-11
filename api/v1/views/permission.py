@@ -195,10 +195,7 @@ def user_add_permission(request, tenant_id: str, permission_id: str, user_id: st
         dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
         # 添加应用权限
-        # dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
-        from arkid.core.perm.permission_data import PermissionData
-        permissiondata = PermissionData()
-        permissiondata.add_app_permission_to_user(request.tenant.id, permission.app_id, permission.user_id, permission_id)
+        dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
     return {'error': ErrorCode.OK.value}
 
 
