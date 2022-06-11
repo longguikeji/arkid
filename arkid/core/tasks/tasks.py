@@ -91,6 +91,24 @@ def update_only_user_app_permission(tenant_id, app_id):
 
 
 @app.task
+def update_close_system_permission_user(items):
+    '''
+    关闭系统权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_close_system_permission_user(items)
+
+
+@app.task
+def update_close_app_permission_user(items):
+    '''
+    关闭应用权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_close_app_permission_user(items)
+
+
+@app.task
 def update_system_permission():
     '''
     更新系统权限

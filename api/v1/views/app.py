@@ -138,7 +138,6 @@ def update_app(request, tenant_id: str, id: str, data: AppUpdateIn):
     app = App.valid_objects.get(id=id)
     for attr, value in data.dict().items():
         setattr(app, attr, value)
-        
     app.save()
     dispatch_event(Event(tag=UPDATE_APP, tenant=request.tenant, request=request, data=app))
     return {'error': ErrorCode.OK.value}
