@@ -147,9 +147,7 @@ def update_app(request, tenant_id: str, id: str, data: AppUpdateIn):
     app = get_object_or_404(App.active_objects,id=id)
     for attr, value in data.dict().items():
         setattr(app, attr, value)
-        
     app.save()
-    
     return {'error': ErrorCode.OK.value}
 
 @api.post("/tenant/{tenant_id}/apps/{id}/config/", tags=['应用'], auth=None)

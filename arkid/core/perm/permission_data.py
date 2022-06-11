@@ -739,30 +739,34 @@ class PermissionData(object):
                 if auth_user.is_superuser:
                     data_item.is_pass = 1
                 else:
-                    if data_item.name == 'normal-user':
-                        data_item.is_pass = 1
-                        describe = data_item.describe
-                        container = describe.get('sort_ids')
-                        if container:
-                            for item in container:
-                                data_dict.get(item).is_pass = 1
+                    if tenant == data_item.tenant:
+                        if data_item.name == 'normal-user':
+                            data_item.is_pass = 1
+                            describe = data_item.describe
+                            container = describe.get('sort_ids')
+                            if container:
+                                for item in container:
+                                    data_dict.get(item).is_pass = 1
+                            else:
+                                data_item.is_pass = 0
+                        elif data_item.name == 'tenant-admin' and auth_user.is_tenant_admin:
+                            data_item.is_pass = 1
+                            describe = data_item.describe
+                            container = describe.get('sort_ids')
+                            if container:
+                                for item in container:
+                                    data_dict.get(item).is_pass = 1
+                            else:
+                                data_item.is_pass = 0
+                        elif data_item.name == 'platform-admin':
+                            # 平台管理员默认有所有权限所有这里没必要做处理
+                            data_item.is_pass = 0
+                        elif hasattr(data_item, 'is_pass') == False:
+                            data_item.is_pass = 0
                         else:
                             data_item.is_pass = 0
-                    elif data_item.name == 'tenant-admin' and auth_user.is_tenant_admin:
-                        data_item.is_pass = 1
-                        describe = data_item.describe
-                        container = describe.get('sort_ids')
-                        if container:
-                            for item in container:
-                                data_dict.get(item).is_pass = 1
-                        else:
-                            data_item.is_pass = 0
-                    elif data_item.name == 'platform-admin':
-                        # 平台管理员默认有所有权限所有这里没必要做处理
-                        data_item.is_pass = 0
-                    elif hasattr(data_item, 'is_pass') == False:
-                        data_item.is_pass = 0
                     else:
+                        # 如果是开放权限，不同租户就只放0
                         data_item.is_pass = 0
             # 产生结果字符串
             if permission_result:
@@ -871,30 +875,34 @@ class PermissionData(object):
             if auth_user.is_superuser:
                 data_item.is_pass = 1
             else:
-                if data_item.name == 'normal-user':
-                    data_item.is_pass = 1
-                    describe = data_item.describe
-                    container = describe.get('sort_ids')
-                    if container:
-                        for item in container:
-                            data_dict.get(item).is_pass = 1
+                if tenant == data_item.tenant:
+                    if data_item.name == 'normal-user':
+                        data_item.is_pass = 1
+                        describe = data_item.describe
+                        container = describe.get('sort_ids')
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
+                        else:
+                            data_item.is_pass = 0
+                    elif data_item.name == 'tenant-admin' and is_tenant_admin:
+                        data_item.is_pass = 1
+                        describe = data_item.describe
+                        container = describe.get('sort_ids')
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
+                        else:
+                            data_item.is_pass = 0
+                    elif data_item.name == 'platform-admin':
+                        # 平台管理员默认有所有权限所有这里没必要做处理
+                        data_item.is_pass = 0
+                    elif hasattr(data_item, 'is_pass') == False:
+                        data_item.is_pass = 0
                     else:
                         data_item.is_pass = 0
-                elif data_item.name == 'tenant-admin' and is_tenant_admin:
-                    data_item.is_pass = 1
-                    describe = data_item.describe
-                    container = describe.get('sort_ids')
-                    if container:
-                        for item in container:
-                            data_dict.get(item).is_pass = 1
-                    else:
-                        data_item.is_pass = 0
-                elif data_item.name == 'platform-admin':
-                    # 平台管理员默认有所有权限所有这里没必要做处理
-                    data_item.is_pass = 0
-                elif hasattr(data_item, 'is_pass') == False:
-                    data_item.is_pass = 0
                 else:
+                    # 如果是开放权限，不同租户就只放0
                     data_item.is_pass = 0
         # 产生结果字符串
         if permission_result:
@@ -1424,6 +1432,92 @@ class PermissionData(object):
         return True
 
 
+    def update_close_system_permission_user(self, system_permissions_info):
+        '''
+        关闭系统权限时会关闭所有授权的租户的用户系统权限
+        '''
+        tenant_obj = {
+        }
+        upr = UserPermissionResult.valid_objects.filter(app=None)
+        max_sort_id = 0
+        for system_permissions_item in system_permissions_info:
+            sort_id = system_permissions_item.get('sort_id')
+            tenant_id = system_permissions_item.get('tenant_id')
+            tenant_items = tenant_obj.get(tenant_id, [])
+            tenant_items.append(sort_id)
+            tenant_obj[tenant_id] = tenant_items
+            if sort_id > max_sort_id:
+                max_sort_id = sort_id
+        compress = Compress()
+        for tenant_id in tenant_obj.keys():
+            tenant_sort_ids = tenant_obj.get(tenant_id)
+            temp_uprs = upr.exclude(tenant_id=tenant_id)
+            for temp_upr in temp_uprs:
+                permission_result = compress.decrypt(temp_upr.result)
+                permission_result_arr = list(permission_result)
+                last_len = max_sort_id+1
+                # 补0
+                if len(permission_result_arr) < last_len:
+                    diff = last_len - len(permission_result_arr)
+                    for i in range(diff):
+                        permission_result_arr.append(0)
+                for sort_id in tenant_sort_ids:
+                    permission_result_arr[sort_id] = 0
+                permission_result = "".join(map(str, permission_result_arr))
+                compress_str_result = compress.encrypt(permission_result)
+                temp_upr.result = compress_str_result
+                temp_upr.save()
+
+
+    def update_close_app_permission_user(self, app_permissions_info):
+        '''
+        关闭应用权限时会关闭所有授权的租户的用户应用权限
+        '''
+        app_obj = {
+        }
+        upr = UserPermissionResult.valid_objects.filter(app__isnull=False)
+        for app_permissions_item in app_permissions_info:
+            app_id = app_permissions_item.get('app_id')
+            sort_id = app_permissions_item.get('sort_id')
+            tenant_id = app_permissions_item.get('tenant_id')
+            if app_id not in app_obj:
+                app_obj[app_id] = {
+                    'tenant_id': tenant_id,
+                    'sort_ids': [sort_id]
+                }
+            else:
+                item = app_obj.get(app_id)
+                sort_ids = item.get('sort_ids')
+                sort_ids.append(sort_id)
+                app_obj[app_id] = item
+        # 处理数据
+        compress = Compress()
+        for app_id in app_obj:
+            app_item = app_obj.get(app_id)
+            tenant_id = app_item.get('tenant_id')
+            sort_ids = app_item.get('sort_ids')
+            max_sort_id = 0
+            for sort_id in sort_ids:
+                if sort_id > max_sort_id:
+                    max_sort_id = sort_id
+            temp_uprs = upr.exclude(tenant_id=tenant_id).filter(app_id=app_id)
+            for temp_upr in temp_uprs:
+                permission_result = compress.decrypt(temp_upr.result)
+                permission_result_arr = list(permission_result)
+                last_len = max_sort_id+1
+                # 补0
+                if len(permission_result_arr) < last_len:
+                    diff = last_len - len(permission_result_arr)
+                    for i in range(diff):
+                        permission_result_arr.append(0)
+                for sort_id in sort_ids:
+                    permission_result_arr[sort_id] = 0
+                permission_result = "".join(map(str, permission_result_arr))
+                compress_str_result = compress.encrypt(permission_result)
+                temp_upr.result = compress_str_result
+                temp_upr.save()
+
+
     def update_open_system_permission_admin(self):
         '''
         给所有admin更新已经开放的系统权限
@@ -1580,7 +1674,7 @@ class PermissionData(object):
                     app_id=app_id,
                 )
                 userpermissionresult.is_update = True
-                userpermissionresult.result = user_str
+                userpermissionresult.result = compress.encrypt(user_str)
                 userpermissionresult.save()
 
 

@@ -14,7 +14,7 @@ from arkid.core.event import(
     CREATE_PERMISSION, UPDATE_PERMISSION, DELETE_PERMISSION,
     ADD_USER_SYSTEM_PERMISSION, ADD_USER_APP_PERMISSION,
     REMOVE_USER_SYSTEM_PERMISSION, REMOVE_USER_APP_PERMISSION, OPEN_APP_PERMISSION,
-    OPEN_SYSTEM_PERMISSION,
+    OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
 )
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from uuid import UUID
@@ -65,7 +65,7 @@ class PermissionStrSchemaOut(Schema):
     result: str
 
 
-class PermissionBatchOpenSchemaIn(Schema):
+class PermissionBatchSchemaIn(Schema):
     data: List[str]
 
 
@@ -195,7 +195,10 @@ def user_add_permission(request, tenant_id: str, permission_id: str, user_id: st
         dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
         # 添加应用权限
-        dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+        # dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+        from arkid.core.perm.permission_data import PermissionData
+        permissiondata = PermissionData()
+        permissiondata.add_app_permission_to_user(request.tenant.id, permission.app_id, permission.user_id, permission_id)
     return {'error': ErrorCode.OK.value}
 
 
@@ -242,7 +245,7 @@ def permission_set_open(request, tenant_id: str, permission_id: str):
 
 @api.post("/tenant/{tenant_id}/permissions/batch_open", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def permission_batch_open(request, tenant_id: str, data: PermissionBatchOpenSchemaIn):
+def permission_batch_open(request, tenant_id: str, data: PermissionBatchSchemaIn):
     '''
     权限外部访问批量打开
     '''
@@ -261,19 +264,45 @@ def permission_batch_open(request, tenant_id: str, data: PermissionBatchOpenSche
     if permissions:
         permissions.update(is_open=True)
         dispatch_event(Event(tag=OPEN_APP_PERMISSION, tenant=request.tenant, request=request, data=None))
-    # from arkid.core.models import Tenant, User
-    # from arkid.core.perm.permission_data import PermissionData
-    # permissiondata = PermissionData()
-    # tenant, _ = Tenant.objects.get_or_create(
-    #     name="tenant1",
-    # )
-    # user, _ = User.objects.get_or_create(
-    #     username="tenant1.1",
-    #     tenant=tenant,
-    # )
-    # tenant.users.add(user)
-    # tenant.save()
-    # permissiondata.update_tenant_use_app_by_user(tenant.id.hex, user.id)
+    return {'error': ErrorCode.OK.value}
+
+
+@api.post("/tenant/{tenant_id}/permissions/batch_close", tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def permission_batch_close(request, tenant_id: str, data: PermissionBatchSchemaIn):
+    '''
+    权限外部访问批量关闭
+    '''
+    from arkid.core.perm.permission_data import PermissionData
+    permission_data = PermissionData()
+    data_arr = data.data
+    system_permissions = SystemPermission.valid_objects.filter(
+        tenant_id=tenant_id,
+        id__in=data_arr
+    )
+    permissions = Permission.valid_objects.filter(
+        tenant_id=tenant_id,
+        id__in=data_arr
+    )
+    if system_permissions:
+        system_permissions.update(is_open=False)
+        system_permissions_info = []
+        for system_permission in system_permissions:
+            system_permissions_info.append({
+                'sort_id': system_permission.sort_id,
+                'tenant_id': system_permission.tenant_id,
+            })
+        dispatch_event(Event(tag=CLOSE_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=system_permissions_info))
+    if permissions:
+        permissions.update(is_open=False)
+        app_permissions_info = []
+        for permission in permissions:
+            app_permissions_info.append({
+                'app_id': permission.app_id,
+                'sort_id': permission.sort_id,
+                'tenant_id': permission.tenant_id,
+            })
+        dispatch_event(Event(tag=CLOSE_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
     return {'error': ErrorCode.OK.value}
 
 
@@ -281,15 +310,34 @@ def permission_batch_open(request, tenant_id: str, data: PermissionBatchOpenSche
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_set_close(request, tenant_id: str, permission_id: str):
     '''
-    权限外部访问关闭(只能开放入口权限)
+    权限外部访问关闭
     '''
     permission = SystemPermission.valid_objects.filter(
         tenant_id=tenant_id,
         id=permission_id
     ).first()
+    items = {
+    }
+    if permission is None:
+        permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
     if permission:
         permission.is_open = False
         permission.save()
+        if isinstance(permission, SystemPermission):
+            system_permissions_info = []
+            system_permissions_info.append({
+                'sort_id': permission.sort_id,
+                'tenant_id': permission.tenant_id,
+            })
+            dispatch_event(Event(tag=CLOSE_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=system_permissions_info))
+        else:
+            app_permissions_info = []
+            app_permissions_info.append({
+                'app_id': permission.app_id,
+                'sort_id': permission.sort_id,
+                'tenant_id': permission.tenant_id,
+            })
+            dispatch_event(Event(tag=CLOSE_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
         return {'error': ErrorCode.OK.value}
     else:
         return {'error': ErrorCode.PERMISSION_EXISTS_ERROR.value}
