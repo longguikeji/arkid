@@ -27,8 +27,8 @@ from arkid.core.path import API_PATH_HEAD
 urlpatterns = [
     path("admin/", admin.site.urls),
     path(f"{API_PATH_HEAD}/", core_api.urls),
-    path(f"{API_PATH_HEAD}/login", login_view.LoginEnter.as_view(), name="login_enter"),
-    path(f"{API_PATH_HEAD}/login_process", login_view.LoginProcess.as_view(), name="login_process"),
+    path(f"{API_PATH_HEAD}/login/", login_view.LoginEnter.as_view(), name="login_enter"),
+    path(f"{API_PATH_HEAD}/login_process/", login_view.LoginProcess.as_view(), name="login_process"),
     path(f"{API_PATH_HEAD}/redoc", redoc_view.Redoc.as_view()),
     path(f"{API_PATH_HEAD}/openapi_redoc.json", redoc_view.RedocOpenAPI.as_view()),
     path(f"{API_PATH_HEAD}/", include('oauth2_provider.urls', namespace='oauth2_provider')),

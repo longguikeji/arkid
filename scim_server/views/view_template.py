@@ -91,7 +91,7 @@ class ViewTemplate(View):
             resource = self.model_cls.from_dict(d)
         except Exception as e:
             raise BadRequestException()
-        result = self.provider.replace(request, resource, correlation_identifier)
+        result = self.adapter_provider.replace(request, resource, correlation_identifier)
         return HttpResponse(result)
 
     def patch(self, request, *args, **kwargs):
@@ -105,7 +105,7 @@ class ViewTemplate(View):
             patch_request = PatchRequest2.from_dict(d)
         except Exception as e:
             raise BadRequestException()
-        self.provider.replace(
+        self.adapter_provider.update(
             request, identifier, patch_request, correlation_identifier
         )
         if (

@@ -85,7 +85,9 @@ class ExpandModel(models.Model):
         for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
             if hasattr(self, field):
                 if extension_table not in extension_tables:
-                    extension_model_obj = extension_model_cls()
+                    extension_model_obj = getattr(self, extension_table, None) # 判断是否已经关联OneToOne对象
+                    if not extension_model_obj:
+                        extension_model_obj = extension_model_cls()
                     extension_model_obj.target = self
                     extension_tables[extension_table] = extension_model_obj
                 else:

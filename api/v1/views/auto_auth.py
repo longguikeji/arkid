@@ -27,6 +27,7 @@ from api.v1.schema.auto_auth import (
     AutoAuthUpdateOut,
     AutoAuthDeleteOut,
 )
+from django.db.models import F
 
 
 @api.get(
@@ -39,19 +40,16 @@ from api.v1.schema.auto_auth import (
 @paginate(CustomPagination)
 def get_auto_auths(request, tenant_id: str):
     """自动认证列表"""
-    settings = TenantExtension.valid_objects.filter(
-        tenant_id=tenant_id, extension__type=AutoAuthExtension.TYPE
+    configs = (
+        TenantExtensionConfig.valid_objects.annotate(
+            extension_package=F('extension__package'),
+            extension_name=F('extension__name'),
+        )
+        .select_related("extension")
+        .filter(tenant_id=tenant_id, extension__type=AutoAuthExtension.TYPE)
     )
-    return [
-        {
-            "id": setting.id.hex,
-            "type": setting.extension.type,
-            # "name": setting.name,
-            "extension_name": setting.extension.name,
-            "extension_package": setting.extension.package,
-        }
-        for setting in settings
-    ]
+
+    return configs
 
 
 @api.get(
@@ -63,17 +61,12 @@ def get_auto_auths(request, tenant_id: str):
 @operation(AutoAuthOut)
 def get_auto_auth(request, tenant_id: str, id: str):
     """获取自动认证"""
-    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
-    return {
-        "data": {
-            "id": setting.id.hex,
-            "type": setting.extension.type,
-            "package": setting.extension.package,
-            "use_platform_config": setting.use_platform_config,
-            # "name": setting.name,
-            "config": setting.settings,
-        }
-    }
+    config = (
+        TenantExtensionConfig.valid_objects.annotate(package=F('extension__package'))
+        .select_related("extension")
+        .get(id=id)
+    )
+    return {"data": config}
 
 
 @api.post(
@@ -85,18 +78,17 @@ def get_auto_auth(request, tenant_id: str, id: str):
 @operation(AutoAuthCreateOut)
 def create_auto_auth(request, tenant_id: str, data: AutoAuthCreateIn):
     """创建自动认证"""
-    setting = TenantExtension()
-    setting.tenant = request.tenant
-    setting.extension = Extension.valid_objects.get(package=data.package)
-    setting.use_platform_config = data.use_platform_config
-    setting.settings = data.config.dict()
-    setting.save()
+    extension = Extension.valid_objects.get(package=data.package)
+    extension = import_extension(extension.ext_dir)
+    extension_config = extension.create_tenant_config(
+        request.tenant, data.config.dict(), data.dict()["name"], data.type
+    )
     dispatch_event(
         Event(
             tag=CREATE_AUTO_AUTH_CONFIG,
             tenant=request.tenant,
             request=request,
-            data=setting,
+            data=extension_config,
         )
     )
 
@@ -112,16 +104,15 @@ def create_auto_auth(request, tenant_id: str, data: AutoAuthCreateIn):
 def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
     """编辑自动认证"""
 
-    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
-    setting.settings = data.config.dict()
-    setting.use_platform_config = data.use_platform_config
-    setting.save()
+    config = TenantExtensionConfig.valid_objects.get(id=id)
+    config.config = data.config.dict()
+    config.save()
     dispatch_event(
         Event(
             tag=UPDATE_AUTO_AUTH_CONFIG,
             tenant=request.tenant,
             request=request,
-            data=setting,
+            data=config,
         )
     )
     return {'error': ErrorCode.OK.value}
@@ -136,14 +127,6 @@ def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
 @operation(AutoAuthDeleteOut)
 def delete_auto_auth(request, tenant_id: str, id: str):
     """删除自动认证"""
-    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
-    dispatch_event(
-        Event(
-            tag=DELETE_AUTO_AUTH_CONFIG,
-            tenant=request.tenant,
-            request=request,
-            data=setting,
-        )
-    )
-    setting.kill()
+    config = TenantExtensionConfig.valid_objects.get(id=id)
+    config.delete()
     return {'error': ErrorCode.OK.value}
