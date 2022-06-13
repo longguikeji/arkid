@@ -5,7 +5,6 @@ from arkid.core.translation import gettext_default as _
 from typing import Optional
 from pydantic import Field
 
-
 class CLIENT_TYPE(str, Enum):
     confidential = _('confidential', '私密')
     public = _('public','公开')

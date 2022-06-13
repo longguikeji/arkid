@@ -128,7 +128,8 @@ class Event:
         self._request = request
         self._response = response
         self.packages = packages
-        self.data = data_to_simplenamespace(data)
+        # self.data = data_to_simplenamespace(data)
+        self.data = data
         self.uuid = uuid
 
     @property
