@@ -12,6 +12,7 @@ from arkid.core.event import (
     ADD_USER_SYSTEM_PERMISSION, ADD_USER_APP_PERMISSION, GROUP_ADD_USER,
     REMOVE_USER_SYSTEM_PERMISSION, REMOVE_USER_APP_PERMISSION, OPEN_APP_PERMISSION,
     OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
+    UPDATE_ADMIN_ALL_PERMISSION,
 )
 
 import uuid
@@ -39,6 +40,7 @@ class EventListener(object):
         core_event.listen_event(UPDATE_PERMISSION, self.update_permission)
         core_event.listen_event(DELETE_PERMISSION, self.delete_permission)
         core_event.listen_event(ADD_USER_SYSTEM_PERMISSION, self.add_user_system_permission)
+        core_event.listen_event(UPDATE_ADMIN_ALL_PERMISSION, self.update_open_system_app_permission_admin)
         core_event.listen_event(ADD_USER_APP_PERMISSION, self.add_user_app_permission)
         core_event.listen_event(REMOVE_USER_SYSTEM_PERMISSION, self.remove_user_system_permission)
         core_event.listen_event(REMOVE_USER_APP_PERMISSION, self.remove_user_app_permission)
@@ -183,6 +185,11 @@ class EventListener(object):
     def update_open_app_permission_admin(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_open_app_permission_admin
         update_open_app_permission_admin.delay()
+        return True
+
+    def update_open_system_app_permission_admin(self, event, **kwargs):
+        from arkid.core.tasks.tasks import update_open_system_app_permission_admin
+        update_open_system_app_permission_admin.delay()
         return True
 
     def update_group_permission_permission(self, event, **kwargs):

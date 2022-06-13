@@ -127,6 +127,12 @@ def update_open_system_permission_admin():
 
 
 @app.task
+def update_open_system_app_permission_admin():
+    permissiondata = PermissionData()
+    permissiondata.update_open_system_permission_admin()
+    permissiondata.update_open_app_permission_admin()
+
+@app.task
 def update_open_app_permission_admin():
     '''
     给所有admin更新已经开放的应用权限
