@@ -216,7 +216,7 @@ def user_remove_permission(request, tenant_id: str, permission_id: str, user_id:
     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_set_open(request, tenant_id: str, permission_id: str):
     '''
