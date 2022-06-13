@@ -245,4 +245,6 @@ def data_to_simplenamespace(data):
     elif isinstance(data,dict):
         for k,v in data.items():
             data[k] = data_to_simplenamespace(v)
-    return SimpleNamespace(data)
+    else:
+        return data
+    return SimpleNamespace(**data) if data else None
