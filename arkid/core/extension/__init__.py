@@ -230,23 +230,9 @@ class Extension(ABC):
         return str(self.ext_dir).replace('/','.')
 
     def migrate_extension(self) -> None:
-        extension_models = Path(self.ext_dir) / 'models.py'
+        extension_models = Path(self.ext_dir) / 'migrations'
         if not extension_models.exists():
             return
-        settings.INSTALLED_APPS += (self.full_name, )
-        apps.app_configs = OrderedDict()
-        apps.apps_ready = apps.models_ready = apps.loading = apps.ready = False
-        apps.clear_cache()
-        apps.populate(settings.INSTALLED_APPS)
-
-        # try:
-        #     print(f'makemigrations {self.name} start')
-        #     management.call_command('makemigrations', self.name, interactive=False)
-        #     print(f'makemigrations {self.name} end')
-            
-        # except Exception as e:
-        #     print(e)
-        #     print(f'makemigrations {self.name} fail')
             
         try:
             print(f'migrate {self.pname} start')

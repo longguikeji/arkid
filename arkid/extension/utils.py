@@ -5,6 +5,10 @@ import importlib
 import shutil
 import string
 import sys
+
+from attr import has
+from django.apps import apps
+from django.conf import settings
 from arkid import core
 from arkid.common.logger import logger
 from arkid.extension.models import Extension
@@ -58,6 +62,8 @@ def load_active_extensions():
     except Exception:
         return []
 
+    load_extension_apps(extensions)
+
     loaded_extensions = []
 
     extension: Extension
@@ -73,6 +79,22 @@ def load_active_extensions():
             loaded_extensions.append(ext)
 
     return loaded_extensions
+
+def load_extension_apps(extensions):
+
+    for extension in extensions:
+        name = extension.package.replace('.', '_')
+        extension_models= Path(extension.ext_dir) / 'models.py'
+        if not extension_models.exists():
+            continue
+
+        app_name = str(extension.ext_dir).replace('/','.')
+        settings.INSTALLED_APPS += (app_name,)
+
+    apps.app_configs = typing.OrderedDict()
+    apps.apps_ready = apps.models_ready = apps.loading = apps.ready = False
+    apps.clear_cache()
+    apps.populate(settings.INSTALLED_APPS)
 
 
 def delete_extension_folder(extension) -> None:
@@ -111,6 +133,8 @@ def import_extension(ext_dir: str) -> any:
 def load_extension(ext_dir: str) -> any:
     ext_name = str(ext_dir).replace('/','.')
     ext = importlib.import_module(ext_name)
+    if not hasattr(ext, 'extension'):
+        ext = importlib.import_module(ext_name+'.main')
     if ext and hasattr(ext, 'extension'):
         ext.extension.ext_dir = ext_dir
         ext.extension.start()
