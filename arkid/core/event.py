@@ -10,7 +10,7 @@ from django.db import models
 from django.db.models.query import QuerySet
 from arkid.common.logger import logger
 import json
-
+from types import SimpleNamespace
 event_id_map = {}
 
 
@@ -107,7 +107,7 @@ class Event:
         request: HttpRequest = None,
         response: HttpResponse = None,
         packages: str = None,
-        data=None,
+        data = None,
         uuid: str = None,
     ):
         """事件
@@ -126,6 +126,8 @@ class Event:
         self._request = request
         self._response = response
         self.packages = packages
+        if isinstance(data,Schema):
+            data = SimpleNamespace(data.dict())
         self.data = data
         self.uuid = uuid
 
