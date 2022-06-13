@@ -6,11 +6,11 @@ class BaseConfigSchema(Schema):
     idp_cert:str = Field(
         title=_("IDP 证书"),
         format="download",
-        read_only=True
+        readonly=True
     )
     
     idp_metadata:str = Field(
         title=_("IDP Entity ID"),
         format="download",
-        read_only=True
+        readonly=True
     )

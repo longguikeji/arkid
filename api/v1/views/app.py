@@ -197,7 +197,7 @@ def get_app_config(request, tenant_id: str, id: str):
         'description': app.description,
         'type': app.type or 'OIDC',
         'app_type': app.type or 'OIDC',
-        'package': app.package or "com.longgui.auth.oauth2server",
+        'package': app.package or "com.longgui.app.protocol.oidc",
         'config': app.config.config if app.config else {
             "skip_authorization":False,
             "redirect_uris":"",

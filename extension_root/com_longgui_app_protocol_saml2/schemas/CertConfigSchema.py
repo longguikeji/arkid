@@ -1,5 +1,6 @@
 from django.forms import FileField
 from ninja import Field,UploadedFile
+from pkg_resources import require
 from .BaseConfigSchema import BaseConfigSchema
 from arkid.core.translation import gettext_default as _
 
@@ -18,9 +19,11 @@ class CertConfigSchema(BaseConfigSchema):
         title=_("SP SLS")
     )
 
-    sp_cert:UploadedFile = Field(
+    sp_cert:str = Field(
+        format="binary",
         hint=_("请选择上传SP 加密公钥"),
         title=_("SP CERT"),
+        require=True
     )
     
     encrypt_saml_responses:bool = Field(
