@@ -1,5 +1,6 @@
 from typing import Dict
 from django.dispatch import Signal
+from django.forms import model_to_dict
 from arkid.core.translation import gettext_default as _
 from ninja import Schema
 from arkid.core.models import Tenant
@@ -9,6 +10,7 @@ from django.core.serializers import serialize
 from django.db import models
 from django.db.models.query import QuerySet
 from arkid.common.logger import logger
+from arkid.common.utils import data_to_simplenamespace
 import json
 from types import SimpleNamespace
 event_id_map = {}
@@ -126,9 +128,7 @@ class Event:
         self._request = request
         self._response = response
         self.packages = packages
-        if isinstance(data,Schema):
-            data = SimpleNamespace(data.dict())
-        self.data = data
+        self.data = data_to_simplenamespace(data)
         self.uuid = uuid
 
     @property
