@@ -89,6 +89,8 @@ def load_extension_apps(extensions):
             continue
 
         app_name = str(extension.ext_dir).replace('/','.')
+        if app_name in settings.INSTALLED_APPS:
+            continue
         settings.INSTALLED_APPS += (app_name,)
 
     apps.app_configs = typing.OrderedDict()
