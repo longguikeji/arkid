@@ -13,7 +13,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.event import Event, register_event, dispatch_event
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
-    CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP,
+    CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP, CREATE_APP, UPDATE_APP,
     CREATE_APP_CONFIG_DONE, SET_APP_OPENAPI_VERSION,
 )
 
@@ -64,7 +64,8 @@ def get_app(request, tenant_id: str, id: str):
     '''
     获取app
     '''
-    app = get_object_or_404(App.expand_objects, id=id, is_del=False,is_active=True)
+    # app = get_object_or_404(App.expand_objects, id=id, is_del=False,is_active=True)
+    app = App.expand_objects.get(id=id)
     return {"data":app}
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionSchemaOut, tags=['应用'], auth=None)
@@ -123,18 +124,8 @@ def delete_app(request, tenant_id: str, id: str):
     '''
     删除app
     '''
-    tenant = request.tenant
-    app_dict = App.expand_objects.get(
-        tenant_id=tenant_id,
-        id=id
-    )
-    if app_dict is None:
-        return {'error': ErrorCode.APP_EXISTS_ERROR.value}
-    # 分发事件开始
-    app_dict["app_type"] = app_dict["type"]
-    dispatch_event(Event(tag=DELETE_APP, tenant=tenant, request=request, data=app_dict))
-    # 分发事件结束
-    app = get_object_or_404(App.active_objects,tenant_id=tenant_id,id=id)
+    app = App.valid_objects.get(id=id)
+    dispatch_event(Event(tag=DELETE_APP, tenant=request.tenant, request=request, data=app))
     app.delete()
     return {'error': ErrorCode.OK.value}
 
@@ -144,12 +135,11 @@ def update_app(request, tenant_id: str, id: str, data: AppUpdateIn):
     '''
     修改app
     '''
-    app = get_object_or_404(App.active_objects,id=id)
+    app = App.valid_objects.get(id=id)
     for attr, value in data.dict().items():
         setattr(app, attr, value)
-        
     app.save()
-    
+    dispatch_event(Event(tag=UPDATE_APP, tenant=request.tenant, request=request, data=app))
     return {'error': ErrorCode.OK.value}
 
 @api.post("/tenant/{tenant_id}/apps/{id}/config/", tags=['应用'], auth=None)
@@ -230,5 +220,10 @@ def create_app(request, tenant_id: str, data:CreateAppIn):
     '''
     创建应用
     '''
-    app = App.expand_objects.create(tenant=request.tenant,**data.dict())
+    app = App.objects.create(tenant=request.tenant)
+    for key,value in data.dict().items():
+        setattr(app,key,value)
+    app.save()
+    dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
+
     return {'error': ErrorCode.OK.value}

@@ -49,9 +49,9 @@ class OAuth2ServerExtension(AppProtocolExtension):
             return self.update_app_data(event, config, False)
 
     def delete_app(self, event, **kwargs):
-        if event.data["package"] == package:
+        if event.data.package == package:
             # 删除应用
-            Application.objects.filter(uuid=event.data["id"]).delete()
+            Application.objects.filter(uuid=event.data.id).delete()
             return True
 
     def update_app_data(self, event, config, is_create):

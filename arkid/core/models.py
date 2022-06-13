@@ -609,7 +609,7 @@ class TenantExpandAbstract(BaseModel):
 
     foreign_key = Tenant
     
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         Tenant,
         blank=True,
         default=None,
@@ -623,7 +623,7 @@ class UserExpandAbstract(BaseModel):
         abstract = True
     foreign_key = User
         
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         User,
         blank=True,
         default=None,
@@ -638,7 +638,7 @@ class UserGroupExpandAbstract(BaseModel):
 
     foreign_key = UserGroup
     
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         UserGroup,
         blank=True,
         default=None,
@@ -652,7 +652,7 @@ class AppExpandAbstract(BaseModel):
         abstract = True
 
     foreign_key = App
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         App,
         blank=True,
         default=None,
@@ -666,10 +666,33 @@ class AppGroupExpandAbstract(BaseModel):
         abstract = True
         
     foreign_key = AppGroup
-    target = models.ForeignKey(
+    target = models.OneToOneField(
         AppGroup,
         blank=True,
         default=None,
         on_delete=models.PROTECT,
         related_name="%(app_label)s_%(class)s",
     )
+
+
+class CasBinRule(BaseModel):
+    class Meta(object):
+        verbose_name = _("CasBinRule", "授权规则")
+        verbose_name_plural = _("CasBinRule", "授权规则")
+
+    ptype = models.CharField(max_length=255, null=True)  
+    v0 = models.CharField(max_length=255, null=True)  
+    v1 = models.CharField(max_length=255, null=True)  
+    v2 = models.CharField(max_length=255, null=True)  
+    v3 = models.CharField(max_length=255, null=True)  
+    v4 = models.CharField(max_length=255, null=True)
+    v5 = models.CharField(max_length=255, null=True)
+
+    def __str__(self):
+        return reduce(lambda x, y: str(x) + ', ' + str(y) if y else x,
+                      [self.ptype, self.v0, self.v1, self.v2, self.v3, self.v4, self.v5])
+
+    def __repr__(self):
+        if not self.id:
+            return "<{cls}: {desc}>".format(cls=self.__class__.__name__, desc=self)
+        return "<{cls} {pk}: {desc}>".format(cls=self.__class__.__name__, pk=self.id, desc=self)

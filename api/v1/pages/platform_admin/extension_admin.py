@@ -8,6 +8,7 @@ name = '插件商店'
 page = pages.TabsPage(tag=tag, name=name)
 store_page = pages.TablePage(name='插件商店')
 order_page = pages.FormPage(name=_('Order', '购买'))
+bind_agent_page = pages.FormPage(name=_('Bind Agent', '绑定代理商'))
 purchased_page = pages.TablePage(name='已购买')
 download_page = pages.TablePage(name='已安装')
 edit_page = pages.FormPage(name=_("编辑插件"))
@@ -16,6 +17,7 @@ edit_page = pages.FormPage(name=_("编辑插件"))
 pages.register_front_pages(page)
 pages.register_front_pages(store_page)
 pages.register_front_pages(order_page)
+pages.register_front_pages(bind_agent_page)
 pages.register_front_pages(purchased_page)
 pages.register_front_pages(download_page)
 pages.register_front_pages(edit_page)
@@ -39,6 +41,12 @@ store_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/arkstore/extensions/',
         method=actions.FrontActionMethod.GET,
     ),
+    global_actions={
+       'bind_agent': actions.OpenAction(
+            name='绑定代理商',
+            page=bind_agent_page
+        ),
+    },
     local_actions={
         "order": actions.OpenAction(
             name='购买',
@@ -101,6 +109,26 @@ order_page.create_actions(
             name='已支付',
             path='/api/v1/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/',
             method=actions.FrontActionMethod.GET
+        ),
+    },
+)
+
+
+bind_agent_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    global_actions={
+        "confirm": actions.DirectAction(
+            name='修改',
+            path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
+            method=actions.FrontActionMethod.PUT
+        ),
+        "delete": actions.DirectAction(
+            name='删除',
+            path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
+            method=actions.FrontActionMethod.DELETE
         ),
     },
 )

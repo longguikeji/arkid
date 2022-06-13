@@ -226,11 +226,11 @@ def decorator_listen_event(tag, **kwargs):
             for t in tag:
                 event_type = tag_map_event_type.get(t)
                 if event_type:
-                    event_type.signal.connect(signal_func, **kwargs)
+                    event_type.signal.connect(signal_func, weak=False, **kwargs)
         else:
             event_type = tag_map_event_type.get(tag)
             if event_type:
-                event_type.signal.connect(signal_func, **kwargs)
+                event_type.signal.connect(signal_func, weak=False, **kwargs)
         return func
 
     return _decorator
@@ -255,13 +255,13 @@ def listen_event(tag, func, listener=None, **kwargs):
         for t in tag:
             event_type = tag_map_event_type.get(t)
             if event_type:
-                event_type.signal.connect(signal_func, **kwargs)
+                event_type.signal.connect(signal_func, weak=False, **kwargs)
             else:
                 temp_listens[t] = (func, listener, kwargs)
     else:
         event_type = tag_map_event_type.get(tag)
         if event_type:
-            event_type.signal.connect(signal_func, **kwargs)
+            event_type.signal.connect(signal_func, weak=False, **kwargs)
         else:
             temp_listens[tag] = (func, listener, kwargs)
 
@@ -285,6 +285,8 @@ CREATE_APP_CONFIG = 'CREATE_APP_CONFIG'
 CREATE_APP_CONFIG_DONE = 'CREATE_APP_CONFIG_DONE'
 UPDATE_APP_CONFIG = 'UPDATE_APP_CONFIG'
 DELETE_APP = 'DELETE_APP'
+CREATE_APP = 'CREATE_APP'
+UPDATE_APP = 'UPDATE_APP'
 SEND_SMS = 'SEND_SMS'
 CREATE_GROUP = 'CREATE_GROUP'
 UPDATE_GROUP = 'UPDATE_GROUP'
@@ -307,6 +309,10 @@ ADD_USER_SYSTEM_PERMISSION = 'ADD_USER_SYSTEM_PERMISSION'
 ADD_USER_APP_PERMISSION = 'ADD_USER_APP_PERMISSION'
 REMOVE_USER_SYSTEM_PERMISSION = 'REMOVE_USER_SYSTEM_PERMISSION'
 REMOVE_USER_APP_PERMISSION = 'REMOVE_USER_APP_PERMISSION'
+OPEN_APP_PERMISSION = 'OPEN_APP_PERMISSION'
+OPEN_SYSTEM_PERMISSION = 'OPEN_SYSTEM_PERMISSION'
+CLOSE_SYSTEM_PERMISSION = 'CLOSE_SYSTEM_PERMISSION'
+CLOSE_APP_PERMISSION = 'CLOSE_APP_PERMISSION'
 
 CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
@@ -345,6 +351,8 @@ register_event(CREATE_APP_CONFIG, _('create app config', '创建应用协议配�
 register_event(CREATE_APP_CONFIG_DONE, _('create app config done', '创建应用协议配置完成'))
 register_event(UPDATE_APP_CONFIG, _('update app config', '修改应用协议配置'))
 register_event(DELETE_APP, _('delete app', '删除应用'))
+register_event(CREATE_APP, _('create app', '创建应用'))
+register_event(UPDATE_APP, _('update app', '更新应用'))
 register_event(CREATE_GROUP, _('create group', '创建分组'))
 register_event(UPDATE_GROUP, _('update group', '修改分组'))
 register_event(DELETE_GROUP, _('delete group', '删除分组'))
@@ -391,6 +399,10 @@ register_event(AUTO_LOGIN, _('Auto Login', '开始自动登录'))
 register_event(CREATE_AUTO_AUTH_CONFIG, _('Create Auto Auth', '添加自动登录'))
 register_event(UPDATE_AUTO_AUTH_CONFIG, _('Update Auto Auth', '更新自动登录'))
 register_event(DELETE_AUTO_AUTH_CONFIG, _('Delete Auto Auth', '删除自动登录'))
+register_event(OPEN_APP_PERMISSION, _('OPEN APP PERMISSION', '开放应用权限'))
+register_event(OPEN_SYSTEM_PERMISSION, _('OPEN SYSTEM PERMISSION', '开放系统权限'))
+register_event(CLOSE_SYSTEM_PERMISSION, _('CLOSE SYSTEM PERMISSION', '关闭系统权限'))
+register_event(CLOSE_APP_PERMISSION, _('CLOSE APP PERMISSION', '关闭应用权限'))
 
 register_event(SAVE_FILE, _('SAVE FILE', '保存文件'))
 register_event(ACCOUNT_LIFE_PERIODIC_TASK, _('ACCOUNT_LIFE_PERIODIC_TASK', '生命周期定时任务'))
