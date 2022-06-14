@@ -137,8 +137,6 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
         )
         extension_schema_map[schema_cls_name] = schema
     return schema
-
-
 class Extension(ABC):
     """
     Args:
@@ -466,7 +464,7 @@ class Extension(ABC):
 #### Base 
     
     def register_base_schema(self, schema, type, model, fields, schema_map, schema_list, schema_tag=None):
-        schema_tag = schema_tag or self.package
+        schema_tag = self.package
         name = schema_tag.replace('.','_')+'_'+type
         new_schema = create_schema(model,
             name = name, 
@@ -803,6 +801,14 @@ class Extension(ABC):
             print(e)
             logger.error(e)
         self.load()
+        
+        if len(self.profile_schema_list) == 0:
+            self.register_profile_schema(Optional[dict])
+        if len(self.settings_schema_list) == 0:
+            self.register_settings_schema(Optional[dict])
+        if len(self.config_schema_list) == 0:
+            self.register_config_schema(Optional[dict])
+
         self.__class__.refresh_all_created_profile_schema()
         self.__class__.refresh_all_created_settings_schema()
         self.__class__.refresh_all_created_config_schema()

@@ -11,7 +11,7 @@ from django.db import transaction
 from arkid.core.extension import create_extension_schema
 from . import views
 
-package = "com.longgui.mobile_auth_factor"
+package = "com.longgui.auth.factor.mobile"
 
 MobileAuthFactorSchema = create_extension_schema('MobileAuthFactorSchema',package, 
         [
@@ -28,7 +28,17 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         self.register_extend_field(UserMobile, "mobile")
         self.register_auth_factor_schema(MobileAuthFactorSchema, 'mobile')
         from api.v1.schema.auth import AuthIn
-        self.register_extend_api(AuthIn, mobile=str)
+        from api.v1.schema.user import UserCreateIn,UserItemOut,UserUpdateIn,UserListItemOut
+        from api.v1.schema.mine import ProfileSchemaOut
+        self.register_extend_api(
+            AuthIn,
+            UserCreateIn, UserItemOut, UserUpdateIn, UserListItemOut,
+            mobile=str
+        )
+        self.register_extend_api(
+            ProfileSchemaOut, 
+            mobile=(Optional[str],Field(readonly=True))
+        )
         
     def authenticate(self, event, **kwargs):
         tenant = event.tenant
@@ -210,9 +220,8 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         pages.register_front_pages(page)
 
         page.create_actions(
-            init_action=actions.DirectAction(
-                path='/api/v1/tenant/{tenant_id}/mine_mobile/',
-                method=actions.FrontActionMethod.GET,
+            init_action=actions.ConfirmAction(
+                path="/api/v1/tenant/{tenant_id}/mine_mobile/"
             ),
             global_actions={
                 'confirm': actions.ConfirmAction(

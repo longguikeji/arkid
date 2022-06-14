@@ -24,7 +24,6 @@ from . import (
     tenant,
     account_life,
     app_protocol,
-    center_arkid,
     bi_system,
     child_manager,
     permission_group,

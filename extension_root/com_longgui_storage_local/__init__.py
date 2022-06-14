@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 import uuid
 from django.urls import reverse
 from ninja import Field
@@ -15,7 +16,7 @@ ProfileSchema = create_extension_schema(
     "LocalStorageProfileSchema",
     package,
     fields = [
-        ('storage_path', str, Field(title=_("Storage Path", "存储路径"))),
+        ('storage_path', Optional[str], Field(title=_("Storage Path", "存储路径"))),
     ]
 )
 
