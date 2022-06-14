@@ -29,6 +29,8 @@ from api.v1.schema.approve_system import (
     ApproveSystemDeleteOut,
 )
 
+from django.db.models import F
+
 
 @api.get(
     "/tenant/{tenant_id}/approve_systems/",
@@ -39,19 +41,16 @@ from api.v1.schema.approve_system import (
 @operation(ApproveSystemListOut)
 @paginate(CustomPagination)
 def get_approve_system_list(request, tenant_id: str):
-    settings = TenantExtension.valid_objects.filter(
-        tenant_id=tenant_id, extension__type=ApproveSystemExtension.TYPE
+    configs = (
+        TenantExtensionConfig.valid_objects.annotate(
+            extension_package=F('extension__package'),
+            extension_name=F('extension__name'),
+        )
+        .select_related("extension")
+        .filter(tenant_id=tenant_id, extension__type=ApproveSystemExtension.TYPE)
     )
-    return [
-        {
-            "id": setting.id.hex,
-            "type": setting.extension.type,
-            # "name": setting.name,
-            "extension_name": setting.extension.name,
-            "extension_package": setting.extension.package,
-        }
-        for setting in settings
-    ]
+
+    return configs
 
 
 @api.get(
@@ -62,15 +61,12 @@ def get_approve_system_list(request, tenant_id: str):
 )
 @operation(ApproveSystemOut)
 def get_approve_system(request, tenant_id: str, id: str):
-    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
-    return {
-        "data": {
-            "id": setting.id.hex,
-            "type": setting.extension.type,
-            "package": setting.extension.package,
-            "config": setting.settings,
-        }
-    }
+    config = (
+        TenantExtensionConfig.valid_objects.annotate(package=F('extension__package'))
+        .select_related("extension")
+        .get(id=id)
+    )
+    return {"data": config}
 
 
 @api.post(
@@ -80,17 +76,18 @@ def get_approve_system(request, tenant_id: str, id: str):
     response=ApproveSystemCreateOut,
 )
 def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
-    setting = TenantExtension()
-    setting.tenant = request.tenant
-    setting.extension = Extension.valid_objects.get(package=data.package)
-    setting.settings = data.config.dict()
-    setting.save()
+
+    extension = Extension.valid_objects.get(package=data.package)
+    extension = import_extension(extension.ext_dir)
+    extension_config = extension.create_tenant_config(
+        request.tenant, data.config.dict(), data.dict()["name"], data.type
+    )
     dispatch_event(
         Event(
             tag=CREATE_APPROVE_SYSTEM_CONFIG,
             tenant=request.tenant,
             request=request,
-            data=setting,
+            data=extension_config,
         )
     )
     return {'error': ErrorCode.OK.value}
@@ -105,15 +102,17 @@ def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
 def update_approve_system(
     request, tenant_id: str, id: str, data: ApproveSystemUpdateIn
 ):
-    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
-    setting.settings = data.config.dict()
-    setting.save()
+    extension = Extension.valid_objects.get(package=data.package)
+    extension = import_extension(extension.ext_dir)
+    config = extension.update_tenant_config(
+        id, data.config.dict(), data.dict()["name"], data.type
+    )
     dispatch_event(
         Event(
             tag=UPDATE_APPROVE_SYSTEM_CONFIG,
             tenant=request.tenant,
             request=request,
-            data=setting,
+            data=config,
         )
     )
     return {'error': ErrorCode.OK.value}
@@ -127,14 +126,14 @@ def update_approve_system(
 )
 @operation(ApproveSystemDeleteOut)
 def delete_approve_system(request, tenant_id: str, id: str):
-    setting = TenantExtension.valid_objects.get(tenant__id=tenant_id, id=id)
+    config = TenantExtensionConfig.active_objects.get(id=id)
     dispatch_event(
         Event(
             tag=DELETE_APPROVE_SYSTEM_CONFIG,
             tenant=request.tenant,
             request=request,
-            data=setting,
+            data=config,
         )
     )
-    setting.kill()
+    config.delete()
     return {'error': ErrorCode.OK.value}

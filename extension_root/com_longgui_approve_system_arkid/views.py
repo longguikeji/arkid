@@ -21,7 +21,7 @@ from api.v1.schema.approve_request import (
 from arkid.core.models import ApproveAction, ApproveRequest
 from arkid.core.extension.approve_system import ApproveSystemExtension
 from arkid.core.pagenation import CustomPagination
-
+from arkid.core.approve import restore_approve_request
 
 @api.get(
     "/tenant/{tenant_id}/approve_requests/arkid/",
@@ -55,7 +55,7 @@ def arkid_approve_request_process(request, tenant_id: str, id: str, action: str 
     if action == "pass":
         approve_request.status = "pass"
         approve_request.save()
-        response = ApproveSystemExtension.restore_request(approve_request)
+        response = restore_approve_request(approve_request)
         logger.info(f'Restore approve request with result: {response}')
         return response
     elif action == "deny":

@@ -66,10 +66,10 @@ class ExternalIdpExtension(Extension):
     def get_authorize_url(self, client_id, redirect_uri):
         """
         抽象方法
-        Params:
-            client_id: str, 第三方认证提供的Client_ID,
-            redirect_uri: str, 由ArkID提供的回调地址
-        Return:
+        Args:
+            client_id (str): 第三方认证提供的Client_ID,
+            redirect_uri (str): 由ArkID提供的回调地址
+        Returns:
             str: 第三方登录提供的认证URL
         """
         pass
@@ -95,12 +95,13 @@ class ExternalIdpExtension(Extension):
         return HttpResponseRedirect(url)
 
     @abstractmethod
-    def get_ext_token_by_code(self, code):
+    def get_ext_token_by_code(self, code, config):
         """
         抽象方法
-        Params:
-            code: str 第三方认证返回的code
-        Return:
+        Args:
+            code (str): 第三方认证返回的code
+            config (dict): 第三方登录的插件运行时配置
+        Returns:
             str: 返回第三方认证提供的token
         """
         pass
@@ -109,9 +110,9 @@ class ExternalIdpExtension(Extension):
     def get_user_info_by_ext_token(self, token):
         """
         抽象方法
-        Params:
-            token: str 第三方认证返回的token
-        Return:
+        Args:
+            token (str): 第三方认证返回的token
+        Returns:
             dict: 返回第三方认证提供的用户信息
         """
         pass
@@ -120,9 +121,9 @@ class ExternalIdpExtension(Extension):
     def get_arkid_user(self, ext_id):
         """
         抽象方法
-        Params: 
-            ext_id: str 第三方认证返回的用户标识
-        Return:
+        Args:
+            ext_id (str): 第三方认证返回的用户标识
+        Returns:
             arkid.core.models.User: ArkID用户
         """
         pass
@@ -184,11 +185,11 @@ class ExternalIdpExtension(Extension):
     @abstractmethod
     def bind_arkid_user(self, ext_id, user):
         """
-        Params:
-            ext_id:str 第三方登录返回的用户标识
-            user: arkid.core.models.User ArkID的用户
-        Return:
-            {"token":xxx} 返回token
+        Args:
+            ext_id (str): 第三方登录返回的用户标识
+            user (arkid.core.models.User): ArkID的用户
+        Returns:
+            {"token":xxx}: 返回token
         """
         pass
 
@@ -211,24 +212,18 @@ class ExternalIdpExtension(Extension):
     def get_img_url(self):
         """
         抽象方法
-        
-        Return:
-            url str: 返回第三方登录按钮的图标    
-        """ 
+
+        Returns:
+            url str: 返回第三方登录按钮的图标
+        """
         pass
 
     def register_external_idp_schema(self, idp_type, schema):
         self.register_config_schema(schema, self.package + '_' + idp_type)
-        self.register_composite_config_schema(
-            schema, idp_type, exclude=['extension']
-        )
+        self.register_composite_config_schema(schema, idp_type, exclude=['extension'])
 
-    def create_tenant_config(
-        self, tenant, config, name, type 
-    ):
-        config_created = super().create_tenant_config(
-            tenant, config, name, type
-        )
+    def create_tenant_config(self, tenant, config, name, type):
+        config_created = super().create_tenant_config(tenant, config, name, type)
         server_host = get_app_config().get_host()
         login_url = server_host + reverse(
             f'api:{self.pname}_tenant:{self.pname}_login',

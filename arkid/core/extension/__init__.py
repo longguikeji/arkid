@@ -28,6 +28,7 @@ from django.db.models import Model
 from arkid.common.logger import logger
 from arkid.core.models import EmptyModel, Tenant
 from functools import partial
+from arkid.core.path import API_PATH_HEAD
 
 app_config = config.get_app_config()
 
@@ -322,7 +323,8 @@ class Extension(ABC):
             url_name=url_name,
             include_in_schema=include_in_schema,
         )
-        return path
+
+        return "/" + API_PATH_HEAD + path
     
     def register_routers(self, urls_ext:List[partial], tenant_urls=False):
         """注册路由

@@ -5,6 +5,7 @@ from typing import Dict, List
 from uuid import uuid4
 from arkid.core.models import ExpiringToken
 from arkid.common.logger import logger
+from django.utils.translation import gettext_lazy as _
 
 
 def deep_merge(*dicts: List[Dict], update=False) -> Dict:

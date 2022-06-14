@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 
-import io
 from abc import abstractmethod
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
-from arkid.core.models import App, ApproveRequest
-from arkid.core import api as core_api, event as core_event
-from arkid.extension.models import TenantExtensionConfig, TenantExtension
-from django.urls import re_path
-from django.urls import resolve
-from django.core.handlers.wsgi import WSGIRequest
-from arkid.core.api import api
-from ninja import ModelSchema
-from typing import List
-from ninja.pagination import paginate
-from django.shortcuts import get_object_or_404
-from arkid.core.error import ErrorCode
-from arkid.common.logger import logger
+from arkid.core import event as core_event
+from arkid.extension.models import TenantExtensionConfig
+from pydantic import Field
+from ninja import Schema
+
+
+class ApproveSystemBaseSchema(Schema):
+    change_status_url: str = Field(
+        title=_('Change Approve Request Status Url', '改变审批请求URL'), readonly=True
+    )
 
 
 class ApproveSystemExtension(Extension):
@@ -26,7 +22,7 @@ class ApproveSystemExtension(Extension):
     composite_schema_map = {}
     created_composite_schema_list = []
     composite_key = 'type'
-    composite_model = TenantExtension
+    composite_model = TenantExtensionConfig
 
     @property
     def type(self):
@@ -34,44 +30,42 @@ class ApproveSystemExtension(Extension):
 
     def load(self):
         self.listen_event(
-            core_event.CREATE_APPROVE_SYSTEM_CONFIG, self.create_approve_system_config
+            core_event.CREATE_APPROVE_REQUEST, self.create_approve_request
         )
-        self.listen_event(
-            core_event.UPDATE_APPROVE_SYSTEM_CONFIG, self.update_approve_system_config
-        )
-        self.listen_event(
-            core_event.DELETE_APPROVE_SYSTEM_CONFIG, self.delete_approve_system_config
+        self.path = self.register_api(
+            f'/change_approve_request_status/{{approve_request_id}}/',
+            'POST',
+            self.change_approve_request_status, auth=None
         )
         super().load()
 
-    def create_approve_system_config(self, event, **kwargs):
+    @abstractmethod
+    def create_approve_request(self, event, **kwargs):
+        """
+        抽象方法
+        Args:
+            event (arkid.core.event.Event): 创建审批请求事件
+        """
         pass
 
-    def update_approve_system_config(self, event, **kwargs):
+    @abstractmethod
+    def change_approve_request_status(self, request, approve_request_id):
+        """
+        抽象方法
+        Args:
+            request (django.http.HttpRequest): 创建审批请求事件
+            approve_request_id (str): 需要改变审批状态的审批请求ID
+        """
         pass
 
-    def delete_approve_system_config(self, event, **kwargs):
-        pass
+    def create_tenant_config(self, tenant, config, name, type):
+        tenant_config = super().create_tenant_config(tenant, config, name, type)
+        tenant_config.config["change_status_url"] = self.path
+        tenant_config.save()
+        return tenant_config
 
     def register_approve_system_schema(self, schema, system_type):
         self.register_config_schema(schema, self.package + '_' + system_type)
         self.register_composite_config_schema(
             schema, system_type, exclude=['extension']
         )
-
-    @classmethod
-    def restore_request(cls, approve_request):
-        environ = approve_request.environ
-        body = approve_request.body
-        environ["wsgi.input"] = io.BytesIO(body)
-        request = WSGIRequest(environ)
-        request.tenant = approve_request.action.tenant
-        request.user = approve_request.user
-        view_func, args, kwargs = resolve(request.path)
-        klass = view_func.__self__
-        operation, _ = klass._find_operation(request)
-        response = operation.run(request, **kwargs)
-        logger.info(
-            f'Restore Request: {approve_request.user.username}:{approve_request.action.method}:{approve_request.action.path}'
-        )
-        return response

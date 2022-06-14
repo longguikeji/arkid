@@ -30,7 +30,7 @@ def get_event_payload(event):
         data = serialize('json', [data])
     elif type(data) is QuerySet:
         data = serialize('json', data)
-    elif isinstance(data,Schema):
+    elif isinstance(data, Schema):
         data = data.dict()
 
     request = None
@@ -279,9 +279,9 @@ def unlisten_event(tag, func, **kwargs):
 # events
 CREATE_LOGIN_PAGE_AUTH_FACTOR = 'CREATE_LOGIN_PAGE_AUTH_FACTOR'
 CREATE_LOGIN_PAGE_RULES = 'CREATE_LOGIN_PAGE_RULES'
-CREATE_APP = 'CREATE_APP'
-CREATE_APP_DONE = 'CREATE_APP_DONE'
-UPDATE_APP = 'UPDATE_APP'
+CREATE_APP_CONFIG = 'CREATE_APP_CONFIG'
+CREATE_APP_CONFIG_DONE = 'CREATE_APP_CONFIG_DONE'
+UPDATE_APP_CONFIG = 'UPDATE_APP_CONFIG'
 DELETE_APP = 'DELETE_APP'
 SEND_SMS = 'SEND_SMS'
 CREATE_GROUP = 'CREATE_GROUP'
@@ -331,15 +331,17 @@ AUTO_LOGIN = 'AUTO_LOGIN'
 
 SAVE_FILE = 'SAVE_FILE'
 
+ACCOUNT_LIFE_PERIODIC_TASK = 'ACCOUNT_LIFE_PERIODIC_TASK'
+CREATE_APPROVE_REQUEST = 'CREATE_APPROVE_REQUEST'
 
 # register events
 register_event(
     CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
 )
 register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules', '登录页面生成规则'))
-register_event(CREATE_APP, _('create app', '创建应用'))
-register_event(CREATE_APP_DONE, _('create app done', '创建应用完成'))
-register_event(UPDATE_APP, _('update app', '修改应用'))
+register_event(CREATE_APP_CONFIG, _('create app config', '创建应用协议配置'))
+register_event(CREATE_APP_CONFIG_DONE, _('create app config done', '创建应用协议配置完成'))
+register_event(UPDATE_APP_CONFIG, _('update app config', '修改应用协议配置'))
 register_event(DELETE_APP, _('delete app', '删除应用'))
 register_event(CREATE_GROUP, _('create group', '创建分组'))
 register_event(UPDATE_GROUP, _('update group', '修改分组'))
@@ -389,3 +391,5 @@ register_event(UPDATE_AUTO_AUTH_CONFIG, _('Update Auto Auth', '更新自动登�
 register_event(DELETE_AUTO_AUTH_CONFIG, _('Delete Auto Auth', '删除自动登录'))
 
 register_event(SAVE_FILE, _('SAVE FILE', '保存文件'))
+register_event(ACCOUNT_LIFE_PERIODIC_TASK, _('ACCOUNT_LIFE_PERIODIC_TASK', '生命周期定时任务'))
+register_event(CREATE_APPROVE_REQUEST, _('CREATE_APPROVE_REQUEST', '创建审批请求'))

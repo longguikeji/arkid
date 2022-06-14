@@ -27,35 +27,67 @@ class AppProtocolExtension(Extension):
     
     def load(self):
         super().load()
-        self.listen_event(core_event.CREATE_APP, self.create_app)
-        self.listen_event(core_event.UPDATE_APP, self.update_app)
+        self.listen_event(core_event.CREATE_APP_CONFIG, self.create_app)
+        self.listen_event(core_event.UPDATE_APP_CONFIG, self.update_app)
         self.listen_event(core_event.DELETE_APP, self.delete_app)
 
     def register_app_protocol_schema(self, schema, app_type):
+        """
+        注册应用的schema
+        Params:
+            schema: schema
+            app_type: 应用类型
+        """
         self.register_config_schema(schema, self.package + '_' + app_type)
         self.register_composite_config_schema(schema, app_type, exclude=['secret'])
 
     @abstractmethod
     def create_app(self, event, **kwargs):
+        """
+        抽象方法，创建应用
+        Params:
+            event: 事件参数
+            kwargs: 其它方法参数
+        Return:
+            bool: 是否成功执行
+        """
         pass
 
     @abstractmethod
     def update_app(self, event, **kwargs):
+        """
+        抽象方法，修改应用
+        Params:
+            event: 事件参数
+            kwargs: 其它方法参数
+        Return:
+            bool: 是否成功执行
+        """
         pass
 
     @abstractmethod
     def delete_app(self, event, **kwargs):
+        """
+        抽象方法，删除应用
+        Params:
+            event: 事件参数
+            kwargs: 其它方法参数
+        Return:
+            bool: 是否成功执行
+        """
         pass
     
     def register_enter_view(self, view:View, path:str, url_name:str, type:list, tenant_urls: bool=True):
         '''
         注册统一的入口函数，方便检测
-        :param view:目标View的as_view()，例如:AuthorizationView.as_view()
-        :param path:需要跳转的路径，例如:r"app/(?P<app_id>[\w-]+)/oauth/authorize/$"
-        :param url_name:注册的路径名称, 例如:authorize
-        :param type:list:一个当前插件的类型list, 例如:['OIDC', 'OAuth2']
-        :param tenant_urls: bool=True, 是否注册为租户url
-        :return: 函数执行结果
+        Params:
+            view: str 目标View的as_view()，例如:AuthorizationView.as_view()
+            path: str 需要跳转的路径，例如:r"app/(?P<app_id>[\w-]+)/oauth/authorize/$
+            url_name: str 注册的路径名称, 例如:authorize
+            type: list 一个当前插件的类型list, 例如:['OIDC', 'OAuth2']
+            tenant_urls: bool 是否注册为租户url
+        Return:
+            response: 函数执行结果
         '''
         # 入口函数
         class EnterView(View):

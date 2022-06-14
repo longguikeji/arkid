@@ -7,11 +7,12 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auth_factor import AuthFactorExtension
 from arkid.core.extension.account_life import AccountLifeExtension
 from arkid.core.schema import ResponseSchema
+from pydantic import UUID4
 
 
 class AccountLifeListItemOut(Schema):
 
-    id: str
+    id: UUID4
     type: str = Field(title=_("类型"))
     name: str = Field(title=_("名称"))
     extension_name: str = Field(title=_("插件名称"))
@@ -23,7 +24,9 @@ class AccountLifeListOut(ResponseSchema):
 
 
 class AccountLifeOut(ResponseSchema):
-    data: AccountLifeExtension.create_composite_config_schema('AccountLifeDataOut')
+    data: AccountLifeExtension.create_composite_config_schema(
+        'AccountLifeDataOut', exclude=['id']
+    )
 
 
 AccountLifeCreateIn = AccountLifeExtension.create_composite_config_schema(
@@ -46,3 +49,13 @@ class AccountLifeUpdateOut(ResponseSchema):
 
 class AccountLifeDeleteOut(ResponseSchema):
     pass
+
+
+class AccountLifeCrontabSchema(Schema):
+    crontab: str = Field(default='0 1 * * *', title=_('Crontab', '定时运行时间'))
+    max_retries: int = Field(default=3, title=_('Max Retries', '重试次数'))
+    retry_delay: int = Field(default=60, title=_('Retry Delay', '重试间隔(单位秒)'))
+
+
+class AccountLifeCrontabOut(ResponseSchema):
+    data: AccountLifeCrontabSchema

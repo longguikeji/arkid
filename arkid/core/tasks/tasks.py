@@ -4,11 +4,16 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
 django.setup()
 
 from arkid.extension.models import TenantExtensionConfig, Extension
-from arkid.core.event import Event, dispatch_event, APP_START
+from arkid.core.event import (
+    Event,
+    dispatch_event,
+    APP_START,
+    ACCOUNT_LIFE_PERIODIC_TASK,
+)
 from arkid.core.perm.permission_data import PermissionData
 from arkid.config import get_app_config
 from arkid.common.logger import logger
-from arkid.core.models import Tenant, User
+from arkid.core.models import Tenant, User, AccountLifeCrontab
 from types import SimpleNamespace
 from arkid.core.api import api
 from celery import shared_task
@@ -55,6 +60,18 @@ def sync(self, config_id, *args, **kwargs):
         raise self.retry(exc=exc, max_retries=max_retries, countdown=countdown)
 
 
+@app.task(bind=True)
+def account_life_periodic_task(self, config_id, *args, **kwargs):
+    account_life_crontab = AccountLifeCrontab.valid_objects.get(id=config_id)
+    dispatch_event(
+        Event(
+            tag=ACCOUNT_LIFE_PERIODIC_TASK,
+            tenant=account_life_crontab.tenant,
+            data=account_life_crontab,
+        )
+    )
+
+
 @app.task
 def update_app_permission(tenant_id, app_id):
     '''
@@ -62,6 +79,7 @@ def update_app_permission(tenant_id, app_id):
     '''
     permissiondata = PermissionData()
     permissiondata.update_app_permission(tenant_id, app_id)
+
 
 @app.task
 def update_only_user_app_permission(tenant_id, app_id):
@@ -71,6 +89,7 @@ def update_only_user_app_permission(tenant_id, app_id):
     permissiondata = PermissionData()
     permissiondata.update_only_user_app_permission(tenant_id, app_id)
 
+
 @app.task
 def update_system_permission():
     '''
@@ -79,6 +98,7 @@ def update_system_permission():
     permissiondata = PermissionData()
     permissiondata.update_system_permission()
 
+
 @app.task
 def update_arkid_all_user_permission(tenant_id=None):
     '''
@@ -86,6 +106,7 @@ def update_arkid_all_user_permission(tenant_id=None):
     '''
     permissiondata = PermissionData()
     permissiondata.update_arkid_all_user_permission(tenant_id)
+
 
 @app.task
 def update_single_user_system_permission(tenant_id, user_id):
@@ -113,6 +134,7 @@ def add_system_permission_to_user(tenant_id, user_id, permission_id):
     permissiondata = PermissionData()
     permissiondata.add_system_permission_to_user(tenant_id, user_id, permission_id)
 
+
 @app.task
 def remove_system_permission_to_user(tenant_id, user_id, permission_id):
     '''
@@ -120,6 +142,7 @@ def remove_system_permission_to_user(tenant_id, user_id, permission_id):
     '''
     permissiondata = PermissionData()
     permissiondata.remove_system_permission_to_user(tenant_id, user_id, permission_id)
+
 
 @app.task
 def add_app_permission_to_user(tenant_id, app_id, user_id, permission_id):
@@ -136,7 +159,9 @@ def remove_app_permission_to_user(tenant_id, app_id, user_id, permission_id):
     移除应用权限用户
     '''
     permissiondata = PermissionData()
-    permissiondata.remove_app_permission_to_user(tenant_id, app_id, user_id, permission_id)
+    permissiondata.remove_app_permission_to_user(
+        tenant_id, app_id, user_id, permission_id
+    )
 
 
 class WebhookSchemes(str, Enum):
@@ -263,13 +288,16 @@ def check_extensions_expired(*args, **kwargs):
     from arkid.extension.utils import find_available_extensions
     from arkid.common.arkstore import check_arkstore_expired
     from arkid.core.token import refresh_token
+
     try:
         logger.info("=== arkid.core.tasks.check_extensions_expired start...===")
         logger.info(f"args: {args}, kwargs: {kwargs}")
 
         exts = find_available_extensions()
         for ext in exts:
-            logger.info(f"=== arkid.core.tasks.check_extensions_expired start: {ext.package}...===")
+            logger.info(
+                f"=== arkid.core.tasks.check_extensions_expired start: {ext.package}...==="
+            )
             platform_tenant = Tenant.objects.filter(slug='').first()
             admin_user = User.objects.filter(username='admin', tenant=platform_tenant)
             token = refresh_token(admin_user)
@@ -278,7 +306,9 @@ def check_extensions_expired(*args, **kwargs):
                 if ext:
                     ext.is_active = False
                     ext.save()
-            logger.info(f"=== arkid.core.tasks.check_extensions_expired end: {ext.package}...===")
+            logger.info(
+                f"=== arkid.core.tasks.check_extensions_expired end: {ext.package}...==="
+            )
 
     except Exception as e:
         logger.error(f"=== arkid.core.tasks.check_extensions_expired failed: {e}...===")

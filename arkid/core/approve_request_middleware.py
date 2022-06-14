@@ -7,8 +7,15 @@ from django.urls import resolve
 from arkid.core.models import Tenant
 from django.http import HttpResponse
 from arkid.core.models import ApproveAction, ApproveRequest
-from arkid.core.models import ExpiringToken
-from django.core.handlers.wsgi import WSGIRequest
+from arkid.core.approve import create_approve_request
+from arkid.common.utils import verify_token
+from pydantic import Field
+from arkid.core.event import (
+    Event,
+    register_event,
+    dispatch_event,
+    CREATE_APPROVE_REQUEST,
+)
 
 
 class ApproveRequestMiddleware:
@@ -30,7 +37,7 @@ class ApproveRequestMiddleware:
         path = ('/' + request.resolver_match.route).replace("<", "{").replace(">", "}")
         method = request.method
 
-        user = self.get_user(request)
+        user = verify_token(request)
         approve_action = ApproveAction.valid_objects.filter(
             tenant=tenant, path=path, method=method
         ).first()
@@ -43,15 +50,13 @@ class ApproveRequestMiddleware:
             action=approve_action, user=user
         ).first()
         if not approve_request:
-            environ = request.environ
-            environ.pop("wsgi.input")
-            environ.pop("wsgi.errors")
-            environ.pop("wsgi.file_wrapper")
-            approve_request = ApproveRequest.valid_objects.create(
-                action=approve_action,
-                user=user,
-                environ=environ,
-                body=request.body,
+            approve_request = create_approve_request(request, user, approve_action)
+            dispatch_event(
+                Event(
+                    tag=CREATE_APPROVE_REQUEST,
+                    tenant=request.tenant,
+                    data=approve_request,
+                )
             )
             response = HttpResponse(status=401)
             return response
@@ -61,37 +66,3 @@ class ApproveRequestMiddleware:
                 return response
             else:
                 return None
-
-    def get_user(self, request):
-        auth_header = request.headers.get("Authorization")
-        if not auth_header:
-            return None
-        token = auth_header.split(" ")[1]
-        try:
-            token = ExpiringToken.objects.get(token=token)
-
-            if not token.user.is_active:
-                return None
-
-            if token.expired(request.tenant):
-                return None
-
-        except ExpiringToken.DoesNotExist:
-            return None
-        except Exception as err:
-            return None
-
-        return token.user
-
-    def restore_request(self, approve_request):
-        environ = approve_request.environ
-        body = approve_request.body
-        environ["wsgi.input"] = io.BytesIO(body)
-        request = WSGIRequest(environ)
-        request.tenant = approve_request.action.tenant
-        request.user = approve_request.user
-        view_func, args, kwargs = resolve(request.path)
-        klass = view_func.__self__
-        operation, _ = klass._find_operation(request)
-        response = operation.run(request, **kwargs)
-        print(response)
