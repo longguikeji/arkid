@@ -5,10 +5,11 @@ from ninja import Schema
 from ninja import ModelSchema
 from typing import List, Optional
 from arkid.core import pages,actions
+from arkid.core.schema import ResponseSchema
 from arkid.core.translation import gettext_default as _
 from arkid.core.models import Permission, SystemPermission
 
-select_app_page = pages.TreePage(select=True,name=_("选择应用"))
+select_app_page = pages.TablePage(select=True,name=_("选择应用"))
 
 pages.register_front_pages(select_app_page)
 
@@ -72,6 +73,10 @@ class PermissionDetailSchemaOut(ModelSchema):
     class Config:
         model = Permission
         model_fields = ['id', 'name', 'category']
+
+
+class PermissionDetailOut(ResponseSchema):
+    data: Optional[PermissionDetailSchemaOut]
 
 
 class PermissionStrSchemaOut(Schema):

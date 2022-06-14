@@ -4,7 +4,8 @@ from arkid.core.api import api, operation
 from typing import List, Optional
 from django.db import transaction
 from ninja.pagination import paginate
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
+from arkid.core.pagenation import CustomPagination
 from arkid.core.models import Permission, SystemPermission
 from django.shortcuts import get_object_or_404
 from arkid.core.event import Event, dispatch_event
@@ -22,7 +23,7 @@ import uuid
 
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/permissions", response=PermissionSchemaOut, tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permissions", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
     '''
@@ -40,12 +41,12 @@ def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
     # 分发事件开始
     result = dispatch_event(Event(tag=CREATE_PERMISSION, tenant=request.tenant, request=request, data=permission))
     # 分发事件结束
-    return {"permission_id": permission.id.hex}
+    return {'error': ErrorCode.OK.value}
 
 
 @api.get("/tenant/{tenant_id}/permissions", response=List[PermissionListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate
+@paginate(CustomPagination)
 def list_permissions(request, tenant_id: str,  app_id: str = None, user_id: str = None, group_id: str = None):
     '''
     权限列表
@@ -55,15 +56,16 @@ def list_permissions(request, tenant_id: str,  app_id: str = None, user_id: str 
     permissiondata = PermissionData()
     return permissiondata.get_permissions_by_search(tenant_id, app_id, user_id, group_id, login_user)
 
-
-@api.get("/tenant/{tenant_id}/permission/{permission_id}", response=PermissionDetailSchemaOut, tags=['权限'], auth=None)
+@api.get("/tenant/{tenant_id}/permission/{permission_id}", response=PermissionDetailOut, tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_permission(request, tenant_id: str, permission_id: str):
     '''
     获取权限
     '''
-    permission = get_object_or_404(Permission, id=permission_id, is_del=False)
-    return permission
+    permission = Permission.valid_objects.filter(id=permission_id).first()
+    if permission is None:
+        return ErrorDict(ErrorCode.PERMISSION_NOT_EDIT)
+    return {'data': permission}
 
 
 @api.put("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
@@ -189,7 +191,7 @@ def permission_set_open(request, tenant_id: str, permission_id: str):
             dispatch_event(Event(tag=OPEN_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
         return {'error': ErrorCode.OK.value}
     else:
-        return {'error': ErrorCode.PERMISSION_EXISTS_ERROR.value}
+        return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
 
 
 @api.post("/tenant/{tenant_id}/permissions/batch_open", tags=['权限'], auth=None)
@@ -289,4 +291,4 @@ def permission_set_close(request, tenant_id: str, permission_id: str):
             dispatch_event(Event(tag=CLOSE_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
         return {'error': ErrorCode.OK.value}
     else:
-        return {'error': ErrorCode.PERMISSION_EXISTS_ERROR.value}
+        return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
