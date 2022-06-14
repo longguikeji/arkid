@@ -66,6 +66,9 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         self.register_account_life_schema(UserExpirationListSchema, "user_expiration")
 
     def create_tenant_config(self, tenant, config, name, type):
+        """
+        创建生命周期配置，手工解决expiration_time类型为datetime不能json序列化的问题
+        """
         config_created = TenantExtensionConfig()
         config_created.tenant = tenant
         config_created.extension = Extension.active_objects.get(package=self.package)
@@ -81,6 +84,9 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         return config_created
 
     def update_tenant_config(self, id, config, name, type):
+        """
+        更新生命周期配置，手工解决expiration_time类型为datetime不能json序列化的问题
+        """
         tenantextensionconfig = TenantExtensionConfig.valid_objects.filter(
             id=id
         ).first()
@@ -96,6 +102,11 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         return tenantextensionconfig
 
     def periodic_task(self, event, **kwargs):
+        """
+        遍历所有插件配置，如果配置中用户对应的过期时间小于当前时间，则禁用用户
+        Args:
+            event (arkid.core.event.Event):  生命周期定时任务事件
+        """
         logger.info("Doing account life arkid priodic task...")
         configs = self.get_tenant_configs(event.tenant)
         for cfg in configs:

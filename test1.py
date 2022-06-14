@@ -324,10 +324,10 @@ if __name__ == "__main__":
   # # permissiondata = PermissionData()
   # # permissiondata.update_app_permission(tenant.id, app.id)
   compress = Compress()
-  permission_result = compress.decrypt('1g41Iw1100')
+  permission_result = compress.decrypt('b3_______')
   print(permission_result)
-  permission_result = compress.encrypt('010000000100000001111100100000000001000001000000000000')
-  print(permission_result)
+  # permission_result = compress.encrypt('000000000000000010000000000000001000000000000000000')
+  # print(permission_result)
   # # permissiondata = PermissionData()
   # # permissiondata.update_single_user_system_permission(tenant.id, auth_user.id)
   # # 更新系统权限
@@ -337,3 +337,13 @@ if __name__ == "__main__":
   # # 更新所有用户的权限
   # # update_arkid_all_user_permission(tenant)
   # 根据一个uuid查到它所有的子集
+  # import casbin
+  # e = casbin.Enforcer("arkid/core/perm/restful_model.conf", "arkid/core/perm/policy.csv")
+  # sub = "alice" # the user that wants to access a resource.
+  # obj = "api/v1/mine/tenant/{tenant_id}/profile/"  # the resource that is going to be accessed.
+  # act = "GET"  # the operation that the user performs on the resource.
+
+  # if e.enforce(sub, obj, act):
+  #   print('权限验证通过')
+  # else:
+  #   print('权限验证拒绝')

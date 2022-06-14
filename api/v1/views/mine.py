@@ -10,8 +10,8 @@ from django.db.models import Q
 from ..schema.mine import MineAppsOut, ProfileSchemaOut, ProfileSchemaIn, MineTenantListOut
 
 
-
 @api.get("/mine/tenant/{tenant_id}/apps/", tags=["我的"], response=MineAppsOut)
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_apps(request, tenant_id: str):
     """我的应用列表"""
     apps = App.active_objects.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True))

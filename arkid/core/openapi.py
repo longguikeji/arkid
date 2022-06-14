@@ -107,13 +107,27 @@ def get_permission(api, operation, group_container, sort_id):
         group_container[role].append(sort_id)
 
     op_id = operation.operation_id or api.get_openapi_operation_id(operation)
+    # 取得请求地址和方式
+    method = operation.methods[0]
+    url = get_path(api, operation)
     name = operation.view_func.arkid_extension.get("name")
     if not name:
         description = operation.description
         name = description.replace("\n", "").strip()
     permission["name"] = name
+    permission["method"] = method
+    permission["url"] = url
     permission["sort_id"] = sort_id
     permission["type"] = operation.view_func.arkid_extension.get("type", "api")
     permission["operation_id"] = op_id
 
     return permission
+
+def get_path(api, operation):
+    '''
+    获取一个解析后的路径
+    '''
+    root_path = api.root_path
+    root_path = root_path[1:len(root_path)-1]
+    url = root_path+operation.path
+    return url

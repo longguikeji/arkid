@@ -71,7 +71,11 @@ class OrderStatusSchema(Schema):
 
 
 class BindAgentSchemaIn(Schema):
-    tenant_slug: str
+    tenant_slug: str = None
+
+
+class BindAgentSchemaOut(Schema):
+    tenant_slug: str = None
 
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
@@ -182,7 +186,7 @@ def download_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
+@api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchemaOut)
 def get_arkstore_bind_agent(request, tenant_id: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)

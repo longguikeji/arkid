@@ -225,7 +225,7 @@ def verify_token(request):
             raise Exception(_('Token has expired', '秘钥已经过期'))
 
     except ExpiringToken.DoesNotExist:
-        logger.error(_("Invalid token", "无效的秘钥"))
+        logger.error('Invalid token')
         return None
     except Exception as err:
         logger.error(err)

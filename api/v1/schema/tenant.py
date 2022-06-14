@@ -24,7 +24,7 @@ class TenantItemOut(ModelSchema):
 
     class Config:
         model = Tenant
-        model_fields = ["name","slug","icon"]
+        model_fields = ["id","name","slug","icon"]
         
 class TenantOut(ResponseSchema):
     

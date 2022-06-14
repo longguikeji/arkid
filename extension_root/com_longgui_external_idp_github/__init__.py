@@ -91,7 +91,7 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
     def bind_arkid_user(self, ext_id, user):
         """
         Args:
-            ext_id(str): 从Github用户信息接口获取的用户标识
+            ext_id (str): 从Github用户信息接口获取的用户标识
             user (arkid.core.models.User): 用于绑定的ArkID用户
         """
         user.github_user_id = ext_id

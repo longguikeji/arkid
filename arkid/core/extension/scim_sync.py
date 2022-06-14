@@ -78,6 +78,10 @@ class ScimSyncExtension(Extension, ProviderBase):
         self.register_composite_config_schema(schema, sync_type, exclude=['extension'])
 
     def sync(self, config):
+        """
+        Args:
+            config (arkid.extension.models.TenantExtensionConfig): Client模式创建的配置
+        """
         logger.info(
             f"============= Sync Start With Config: {config}/{config.config} ================"
         )
@@ -95,6 +99,10 @@ class ScimSyncExtension(Extension, ProviderBase):
         return {}
 
     def get_groups_users(self, config):
+        """
+        Args:
+            config (arkid.extension.models.TenantExtensionConfig): Client模式创建的配置
+        """
         sync_server_id = config.config["sync_server_id"]
         server_config = TenantExtensionConfig.active_objects.filter(
             id=sync_server_id
@@ -110,10 +118,22 @@ class ScimSyncExtension(Extension, ProviderBase):
 
     @abstractmethod
     def sync_groups(self, groups, config):
+        """
+        抽象方法
+        Args:
+            groups (List): SCIM Server返回的组织列表
+            config (arkid.extension.models.TenantExtensionConfig): Client模式创建的配置
+        """
         pass
 
     @abstractmethod
     def sync_users(self, users, config):
+        """
+        抽象方法
+        Args:
+            users (List): SCIM Server返回的用户列表
+            config (arkid.extension.models.TenantExtensionConfig): Client模式创建的配置
+        """
         pass
 
     def get_current_config(self, event):
@@ -140,40 +160,140 @@ class ScimSyncExtension(Extension, ProviderBase):
             config_created.save()
         return config_created
 
+    @abstractmethod
     def create_user(self, request, resource, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            resource (scim_server.schemas.core2_enterprise_user.Core2EnterpriseUser): SCIM用户对象
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def create_group(self, request, resource, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            resource (scim_server.schemas.core2_group.Core2Group): SCIM组织对象
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def delete_user(self, request, resource_identifier, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            resource_identifier (str): 用户ID
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def delete_group(self, request, resource_identifier, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            resource_identifier (str): 组织ID
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def replace_user(self, request, resource, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            resource (scim_server.schemas.core2_enterprise_user.Core2EnterpriseUser): SCIM用户对象
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def replace_group(self, request, resource, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            resource (scim_server.schemas.core2_group.Core2Group): SCIM组织对象
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def retrieve_user(self, request, parameters, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            parameters (scim_server.protocol.resource_retrieval_parameters.ResourceRetrievalParamters): Retrieve请求对象
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def retrieve_group(self, request, parameters, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            parameters (scim_server.protocol.resource_retrieval_parameters.ResourceRetrievalParamters): Retrieve请求对象
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def update_user(self, request, patch, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            patch (scim_server.service.patch.Patch): Patch参数对象
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def update_group(self, request, patch, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            patch (scim_server.service.patch.Patch): Patch参数对象
+            correlation_identifier (str): 请求唯一标识
+        """
         raise NotImplementedException()
 
+    @abstractmethod
     def query_users(self, request, parameters, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            parameters (scim_server.protocol.query_parameters.QueryParameters): Query请求对象
+            correlation_identifier (str): 请求唯一标识
+        Returns:
+            List[Core2EnterpriseUser]: 返回scim_server模块中的标准用户对象列表
+        """
         pass
 
+    @abstractmethod
     def query_groups(self, request, parameters, correlation_identifier):
+        """
+        抽象方法
+        Args:
+            request (HttpRequest): Django 请求
+            parameters (scim_server.protocol.query_parameters.QueryParameters): Query请求对象
+            correlation_identifier (str): 请求唯一标识
+        Returns:
+            List[Core2Group]: 返回scim_server模块中的标准组织对象列表
+        """
         pass
 
 

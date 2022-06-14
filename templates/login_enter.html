@@ -111,6 +111,20 @@
   </body>
 </html>
 <script type="text/javascript">
-    token = localStorage.getItem("token");
+  function getQueryVariable(variable){
+       let query = window.location.search.substring(1);
+       let vars = query.split("&");
+       for (let i=0;i<vars.length;i++) {
+               let pair = vars[i].split("=");
+               if(pair[0] == variable){return pair[1];}
+       }
+       return(false);
+  }
+    token = getQueryVariable('token')
+    if(token){
+      localStorage.setItem("token", token)
+    }else{
+      token = localStorage.getItem("token");
+    }
     location.href= "{{login_process_url}}?token="+token+"&{{params|safe}}"
 </script>

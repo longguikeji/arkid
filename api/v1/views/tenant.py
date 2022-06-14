@@ -30,13 +30,9 @@ def get_tenant_list(request, query_data:TenantListQueryIn=Query(...)):
 def get_tenant(request, id: str):
     """ 获取租户
     """
-    tenant = Tenant.active_objects.get(id=id)
+    tenant = Tenant.expand_objects.get(id=id)
     return {
-        "data": {
-            "name":tenant.name,
-            "slug": tenant.slug,
-            "icon": tenant.icon        
-        }
+        "data": tenant
     }
 
 @api.post("/tenants/",response=TenantCreateOut,tags=["租户管理"],auth=None)
