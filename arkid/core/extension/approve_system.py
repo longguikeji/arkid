@@ -11,7 +11,7 @@ from ninja import Schema
 
 class ApproveSystemBaseSchema(Schema):
     change_status_url: str = Field(
-        title=_('Change Approve Request Status Url', '改变审批请求URL'), readonly=True
+        default='', title=_('Change Approve Request Status Url', '改变审批请求URL'), readonly=True
     )
 
 
