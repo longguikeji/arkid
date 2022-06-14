@@ -40,6 +40,10 @@ class ResponseSchema(Schema):
         default="0",
         hidden=True,
     )
+    package: Optional[str] = Field(
+        default="core",
+        hidden=True,
+    )
     message: Optional[str] = Field(
         default="",
         hidden=True

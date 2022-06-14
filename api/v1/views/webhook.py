@@ -1,7 +1,7 @@
 from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
 from webhook.models import Webhook, WebhookEvent, WebhookTriggerHistory
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from typing import List
 from ninja.pagination import paginate
 from ninja import ModelSchema, Schema
@@ -98,7 +98,7 @@ def update_webhook(request, tenant_id: str, id: str, data: WebhookUpdateIn):
     events = data.events
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=id).first()
     if not webhook:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.WEBHOOK_NOT_EXISTS)
     webhook.events_set.clear()
     webhook.name = name
     webhook.url = url
@@ -121,7 +121,7 @@ def delete_webhook(request, tenant_id: str, id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=id).first()
     if not webhook:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.WEBHOOK_NOT_EXISTS)
     else:
         webhook.delete()
         return {'error': ErrorCode.OK.value}
@@ -140,7 +140,7 @@ def get_webhook_histories(request, tenant_id: str, webhook_id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.WEBHOOK_NOT_EXISTS)
     histories = webhook.history_set.all().filter(is_del=False)
     return histories
 
@@ -156,10 +156,10 @@ def get_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.WEBHOOK_NOT_EXISTS)
     history = WebhookTriggerHistory.valid_objects.filter(webhook=webhook, id=id).first()
     if not history:
-        return {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS)
     return {"data": history}
 
 
@@ -174,10 +174,10 @@ def delete_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.WEBHOOK_NOT_EXISTS)
     history = WebhookTriggerHistory.valid_objects.filter(webhook=webhook, id=id).first()
     if not history:
-        return {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS)
     history.delete()
     return {'error': ErrorCode.OK.value}
 
@@ -193,10 +193,10 @@ def retry_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
     tenant = request.tenant
     webhook = Webhook.valid_objects.filter(tenant=tenant, id=webhook_id).first()
     if not webhook:
-        return {'error': ErrorCode.WEBHOOK_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.WEBHOOK_NOT_EXISTS)
     history = WebhookTriggerHistory.valid_objects.filter(webhook=webhook, id=id).first()
     if not history:
-        return {'error': ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS)
 
     webhook = history.webhook
     url = webhook.url
