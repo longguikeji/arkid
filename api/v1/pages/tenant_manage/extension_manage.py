@@ -50,8 +50,9 @@ rent_page.create_actions(
     ),
     global_actions={
         "payed": actions.DirectAction(
+            name='确定',
             path='/api/v1/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}/',
-            method=actions.FrontActionMethod.GET,
+            method=actions.FrontActionMethod.POST,
         ),
     },
 )

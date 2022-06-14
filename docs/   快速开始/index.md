@@ -10,6 +10,6 @@
 
 ## 私有化部署
 
-[通过ArkOS部署(推荐)](%20私有化部署/通过ArkOS部署/){.md-button}
-[通过docker部署](%20私有化部署/通过docker部署/){.md-button}
-[通过k8s部署](%20私有化部署/通过k8s部署/){.md-button}
+[通过ArkOS部署(推荐)](./%20私有化部署/通过ArkOS部署/){.md-button}
+[通过docker部署](./%20私有化部署/通过docker部署/){.md-button}
+[通过k8s部署](./%20私有化部署/通过k8s部署/){.md-button}
