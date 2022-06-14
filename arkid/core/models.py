@@ -683,26 +683,3 @@ class AppGroupExpandAbstract(BaseModel):
         on_delete=models.PROTECT,
         related_name="%(app_label)s_%(class)s",
     )
-
-
-class CasBinRule(BaseModel):
-    class Meta(object):
-        verbose_name = _("CasBinRule", "授权规则")
-        verbose_name_plural = _("CasBinRule", "授权规则")
-
-    ptype = models.CharField(max_length=255, null=True)  
-    v0 = models.CharField(max_length=255, null=True)  
-    v1 = models.CharField(max_length=255, null=True)  
-    v2 = models.CharField(max_length=255, null=True)  
-    v3 = models.CharField(max_length=255, null=True)  
-    v4 = models.CharField(max_length=255, null=True)
-    v5 = models.CharField(max_length=255, null=True)
-
-    def __str__(self):
-        return reduce(lambda x, y: str(x) + ', ' + str(y) if y else x,
-                      [self.ptype, self.v0, self.v1, self.v2, self.v3, self.v4, self.v5])
-
-    def __repr__(self):
-        if not self.id:
-            return "<{cls}: {desc}>".format(cls=self.__class__.__name__, desc=self)
-        return "<{cls} {pk}: {desc}>".format(cls=self.__class__.__name__, pk=self.id, desc=self)
