@@ -4,7 +4,7 @@ from ninja import ModelSchema, Schema
 from arkid.core.models import ApproveAction, ApproveRequest
 from pydantic import Field
 from arkid.extension.models import TenantExtensionConfig, Extension
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from typing import List
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
@@ -62,7 +62,7 @@ def create_approve_action(request, tenant_id: str, data: ApproveActionCreateIn):
         path=data.path, method=data.method, extension=extension, tenant=request.tenant
     ).first()
     if action:
-        return {'error': ErrorCode.APPROVE_ACTION_DUPLICATED.value}
+        return ErrorDict(ErrorCode.APPROVE_ACTION_DUPLICATED)
     else:
         action = ApproveAction.valid_objects.create(
             name=data.name,
@@ -88,7 +88,7 @@ def update_approve_action(
     extension = Extension.valid_objects.get(id=data.extension_id)
     action = ApproveAction.valid_objects.filter(tenant=request.tenant, id=id).first()
     if not action:
-        return {'error': ErrorCode.APPROVE_ACTION_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.APPROVE_ACTION_NOT_EXISTS)
     else:
         action.name = data.name
         action.description = data.description
@@ -110,7 +110,7 @@ def delete_approve_action(request, tenant_id: str, id: str):
     """删除审批动作"""
     action = ApproveAction.valid_objects.filter(tenant=request.tenant, id=id).first()
     if not action:
-        return {'error': ErrorCode.APPROVE_ACTION_NOT_EXISTS.value}
+        return ErrorDict(ErrorCode.APPROVE_ACTION_NOT_EXISTS)
     else:
         action.delete()
         return {'error': ErrorCode.OK.value}

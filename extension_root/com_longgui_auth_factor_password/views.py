@@ -1,7 +1,8 @@
+from .schema import *
 from arkid.core.api import api
 from arkid.core.translation import gettext_default as _
-from arkid.core.error import ErrorCode
-from .schema import *
+from .error import ErrorCode
+from arkid.core.error import ErrorDict
 from django.contrib.auth.hashers import check_password, make_password
 from .models import UserPassword
 
@@ -21,6 +22,6 @@ def update_mine_password(request, tenant_id: str,data:UpdateMinePasswordIn):
             user.save()
             return {'error': ErrorCode.OK.value}
         else:
-            return {'error': ErrorCode.PASSWORD_CONFIRM_ERROR.value, 'message':'两次输入的密码不同'}
+            return ErrorDict(ErrorCode.TWO_TIME_PASSWORD_MISMATCH)
     
-    return {'error': ErrorCode.OLD_PASSWORD_ERROR.value, 'message':'旧密码不匹配'}
+    return ErrorDict(ErrorCode.OLD_PASSWORD_ERROR)

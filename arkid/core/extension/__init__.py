@@ -5,6 +5,7 @@ from typing_extensions import Annotated
 from uuid import UUID
 from attr import field
 from pydantic import Field
+from arkid.core.error import ErrorDict
 from django.urls import include, re_path
 from pathlib import Path
 from ninja.constants import NOT_SET
@@ -786,7 +787,8 @@ class Extension(ABC):
             
 ################################################################################
 
-
+    def error(self, enum, **kwargs):
+        return ErrorDict(enum, self.package, **kwargs)
     
 
     @abstractmethod

@@ -5,6 +5,7 @@ from ninja import Field, ModelSchema, Query, Schema
 from requests import Response
 from arkid.core.api import api,operation
 from arkid.core.models import AppGroup
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.translation import gettext_default as _
 from api.v1.schema.app_group import *
 from arkid.core.error import ErrorCode
@@ -63,7 +64,7 @@ def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
     parent_id = data.dict().get("parent",None)
     group.parent = get_object_or_404(AppGroup.active_objects, id=parent_id) if parent_id else None
     if group.parent == group:
-        return{'error': ErrorCode.APP_GROUP_PARENT_CANT_BE_ITSELF.value,"message":_("应用分组上级分组不能设置为其自身")}
+        return ErrorDict(ErrorCode.APP_GROUP_PARENT_CANT_BE_ITSELF)
         
     group.save()
     return {'error': ErrorCode.OK.value}
