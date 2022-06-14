@@ -1,7 +1,5 @@
 
-from ninja import Schema
-from ninja import Field
-from ninja import ModelSchema
+
 from arkid.core.api import api, operation
 from typing import List, Optional
 from django.db import transaction
@@ -17,62 +15,16 @@ from arkid.core.event import(
     OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
 )
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
-from uuid import UUID
+from api.v1.schema.permission import *
 
 import uuid
 
-
-class PermissionListSchemaOut(ModelSchema):
-
-    app_id: UUID = Field(default=None)
-
-    class Config:
-        model = Permission
-        model_fields = ['id', 'name', 'category', 'is_system']
-
-
-class PermissionSchemaOut(Schema):
-    permission_id: str
-
-
-class PermissionSchemaIn(ModelSchema):
-
-    app_id: str
-
-    class Config:
-        model = Permission
-        model_fields = ['name', 'category']
-
-
-class PermissionEditSchemaIn(ModelSchema):
-
-    class Config:
-        model = Permission
-        model_fields = ['name', 'category']
-
-
-class PermissionDetailSchemaOut(ModelSchema):
-
-    app_id: UUID = Field(default=None)
-    parent_id: UUID = Field(default=None)
-
-    class Config:
-        model = Permission
-        model_fields = ['id', 'name', 'category']
-
-
-class PermissionStrSchemaOut(Schema):
-    result: str
-
-
-class PermissionBatchSchemaIn(Schema):
-    data: List[str]
 
 
 @transaction.atomic
 @api.post("/tenant/{tenant_id}/permissions", response=PermissionSchemaOut, tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def create_permission(request, tenant_id: str, data: PermissionSchemaIn):
+def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
     '''
     权限创建
     '''
