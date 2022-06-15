@@ -1,5 +1,5 @@
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
-from arkid.core.error import ErrorCode
+from .error import ErrorCode
 from arkid.core.models import User
 from arkid.common.sms import check_sms_code
 from arkid.core import actions, pages
@@ -11,7 +11,7 @@ from django.db import transaction
 from arkid.core.extension import create_extension_schema
 from . import views
 
-package = "com.longgui.mobile_auth_factor"
+package = "com.longgui.auth.factor.mobile"
 
 MobileAuthFactorSchema = create_extension_schema('MobileAuthFactorSchema',package, 
         [
@@ -28,7 +28,17 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         self.register_extend_field(UserMobile, "mobile")
         self.register_auth_factor_schema(MobileAuthFactorSchema, 'mobile')
         from api.v1.schema.auth import AuthIn
-        self.register_extend_api(AuthIn, mobile=str)
+        from api.v1.schema.user import UserCreateIn,UserItemOut,UserUpdateIn,UserListItemOut
+        from api.v1.schema.mine import ProfileSchemaOut
+        self.register_extend_api(
+            AuthIn,
+            UserCreateIn, UserItemOut, UserUpdateIn, UserListItemOut,
+            mobile=str
+        )
+        self.register_extend_api(
+            ProfileSchemaOut, 
+            mobile=(Optional[str],Field(readonly=True))
+        )
         
     def authenticate(self, event, **kwargs):
         tenant = event.tenant
@@ -40,17 +50,14 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if user_mobile:
             if check_sms_code(mobile, sms_code):
                 if user_mobile.user not in tenant.users.all():
-                    error_code = ErrorCode.USER_NOT_IN_TENANT_ERROR.value
-                    message = _('Can not find user in tenant',"该租户下未找到对应用户。")
+                    msg = ErrorCode.USER_NOT_IN_TENANT_ERROR
                 else:
                     return self.auth_success(user_mobile.user,event)
             else:
-                error_code = ErrorCode.SMS_CODE_MISMATCH.value
-                message = _('sms code mismatched',"手机验证码错误")
+                msg = ErrorCode.SMS_CODE_MISMATCH
         else:
-            error_code = ErrorCode.MOBILE_NOT_EXISTS_ERROR.value
-            message = _('mobile is not exists',"电话号码不存在")
-        return self.auth_failed(event, data={'error': error_code, 'message': message})
+            msg = ErrorCode.MOBILE_NOT_EXISTS_ERROR
+        return self.auth_failed(event, data=self.error(msg))
 
     @transaction.atomic()
     def register(self, event, **kwargs):
@@ -62,18 +69,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         config = self.get_current_config(event)
         ret, message = self.check_mobile_exists(mobile, config)
         if not ret:
-            data = {
-                'error': ErrorCode.MOBILE_ERROR.value,
-                'message': message,
-            }
-            return data
+            return self.error(message)
         
         if not check_sms_code(mobile, sms_code):
-            data = {
-                'error': ErrorCode.SMS_CODE_MISMATCH.value,
-                'message': _("sms code mismatched","手机验证码错误")
-            }
-            return data
+            return self.error(ErrorCode.SMS_CODE_MISMATCH)
 
         # user = User.objects.create(tenant=tenant)
         user = User(tenant=tenant)
@@ -193,10 +192,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     
     def check_mobile_exists(self, mobile, config):
         if not mobile:
-            return False, _('No mobile provide',"手机号码不能为空")
+            return False, ErrorCode.MOBILE_EMPTY
 
         if UserMobile.active_objects.filter(mobile=mobile).count():
-            return False, _('Mobile is already exists',"手机号码已存在")
+            return False, ErrorCode.MOBILE_EXISTS_ERROR
         return True, None
 
     def _get_register_user(self, tenant, field_name, field_value):
@@ -210,9 +209,8 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         pages.register_front_pages(page)
 
         page.create_actions(
-            init_action=actions.DirectAction(
-                path='/api/v1/tenant/{tenant_id}/mine_mobile/',
-                method=actions.FrontActionMethod.GET,
+            init_action=actions.ConfirmAction(
+                path="/api/v1/tenant/{tenant_id}/mine_mobile/"
             ),
             global_actions={
                 'confirm': actions.ConfirmAction(

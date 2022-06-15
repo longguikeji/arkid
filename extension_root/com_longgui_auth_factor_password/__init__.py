@@ -2,7 +2,8 @@ from asyncio.log import logger
 from distutils import core
 import re
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
-from arkid.core.error import ErrorCode
+
+from .error import ErrorCode
 from arkid.core.models import Tenant, User
 from arkid.core import pages,actions
 from arkid.extension.models import TenantExtensionConfig
@@ -128,7 +129,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         users = User.expand_objects.filter(tenant=tenant).filter(filter_params)
         if len(users) > 1:
             logger.error(f'{username}在{login_enabled_field_names}中匹配到多个用户')
-            return self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': '发生了意外，请联系管理人员'})
+            return self.auth_failed(event, data=self.error(ErrorCode.CONTACT_MANAGER))
         user = users[0]
         if user:
             user_password = user.get("password")
@@ -137,7 +138,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                     user = User.active_objects.get(id=user.get("id"))
                     return self.auth_success(user, event)
         
-        return self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username or password not correct'})
+        return self.auth_failed(event, data=self.error(ErrorCode.USERNAME_PASSWORD_MISMATCH))
 
     @transaction.atomic()
     def register(self, event, **kwargs):
@@ -148,26 +149,22 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         config = self.get_current_config(event)
         ret, message = self.check_password_complexity(password, config)
         if not ret:
-            data = {
-                'error': ErrorCode.PASSWORD_STRENGTH_ERROR.value,
-                'message': message,
-            }
-            return data
+            return self.error(ErrorCode.PASSWORD_STRENGTH_LACK)
         
         register_fields = config.config.get('register_enabled_field_names')
         if not register_fields:
             fields = ['username']
             if request.POST.get('username') is None:
-                self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': 'username不能为空'})
+                self.auth_failed(event, data=self.error(ErrorCode.USERNAME_EMPTY))
         else:
             fields = [k for k in register_fields if request.POST.get(k) is not None]
             if not fields:
-                self.auth_failed(event, data={'error': ErrorCode.USERNAME_PASSWORD_MISMATCH.value, 'message': '所有用户标识至少填一个'})
+                self.auth_failed(event, data=self.error(ErrorCode.ALL_USER_FLAG_LACK_FIELD))
 
         for field in fields:
             user = self._get_register_user(tenant, field, request.POST.get(field))
             if user:
-                self.auth_failed(event, data={'error': ErrorCode.USERNAME_EXISTS_ERROR.value, 'message': f'{field}字段用户已存在'})
+                self.auth_failed(event, data=self.error(ErrorCode.FIELD_USER_EXISTS, field=field))
 
         # user = User.objects.create(tenant=tenant)
         user = User(tenant=tenant)

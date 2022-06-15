@@ -6,7 +6,7 @@ from arkid.core.api import api, operation
 from typing import List, Optional
 from django.db import transaction
 from ninja.pagination import paginate
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.models import UserGroup, User
 from django.shortcuts import get_list_or_404, get_object_or_404
 from arkid.core.event import Event, dispatch_event
@@ -95,7 +95,7 @@ def update_group(request, tenant_id: str, id: str, data: UserGroupUpdateIn):
     group.parent = get_object_or_404(UserGroup.active_objects, id=parent_id) if parent_id else None
     
     if group.parent == group:
-        return{'error': ErrorCode.USER_GROUP_PARENT_CANT_BE_ITSELF.value,"message":_("用户分组上级分组不能设置为其自身")}
+        return ErrorDict(ErrorCode.USER_GROUP_PARENT_CANT_BE_ITSELF)
     group.save()
     # 分发事件开始
     dispatch_event(Event(tag=UPDATE_GROUP, tenant=request.tenant,

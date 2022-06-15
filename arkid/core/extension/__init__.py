@@ -5,6 +5,7 @@ from typing_extensions import Annotated
 from uuid import UUID
 from attr import field
 from pydantic import Field
+from arkid.core.error import ErrorDict
 from django.urls import include, re_path
 from pathlib import Path
 from ninja.constants import NOT_SET
@@ -137,8 +138,6 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
         )
         extension_schema_map[schema_cls_name] = schema
     return schema
-
-
 class Extension(ABC):
     """
     Args:
@@ -230,23 +229,9 @@ class Extension(ABC):
         return str(self.ext_dir).replace('/','.')
 
     def migrate_extension(self) -> None:
-        extension_models = Path(self.ext_dir) / 'models.py'
+        extension_models = Path(self.ext_dir) / 'migrations'
         if not extension_models.exists():
             return
-        settings.INSTALLED_APPS += (self.full_name, )
-        apps.app_configs = OrderedDict()
-        apps.apps_ready = apps.models_ready = apps.loading = apps.ready = False
-        apps.clear_cache()
-        apps.populate(settings.INSTALLED_APPS)
-
-        # try:
-        #     print(f'makemigrations {self.name} start')
-        #     management.call_command('makemigrations', self.name, interactive=False)
-        #     print(f'makemigrations {self.name} end')
-            
-        # except Exception as e:
-        #     print(e)
-        #     print(f'makemigrations {self.name} fail')
             
         try:
             print(f'migrate {self.pname} start')
@@ -480,7 +465,7 @@ class Extension(ABC):
 #### Base 
     
     def register_base_schema(self, schema, type, model, fields, schema_map, schema_list, schema_tag=None):
-        schema_tag = schema_tag or self.package
+        schema_tag = self.package
         name = schema_tag.replace('.','_')+'_'+type
         new_schema = create_schema(model,
             name = name, 
@@ -802,7 +787,8 @@ class Extension(ABC):
             
 ################################################################################
 
-
+    def error(self, enum, **kwargs):
+        return ErrorDict(enum, self.package, **kwargs)
     
 
     @abstractmethod
@@ -817,6 +803,14 @@ class Extension(ABC):
             print(e)
             logger.error(e)
         self.load()
+        
+        if len(self.profile_schema_list) == 0:
+            self.register_profile_schema(Optional[dict])
+        if len(self.settings_schema_list) == 0:
+            self.register_settings_schema(Optional[dict])
+        if len(self.config_schema_list) == 0:
+            self.register_config_schema(Optional[dict])
+
         self.__class__.refresh_all_created_profile_schema()
         self.__class__.refresh_all_created_settings_schema()
         self.__class__.refresh_all_created_config_schema()
