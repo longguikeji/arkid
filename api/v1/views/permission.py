@@ -90,7 +90,9 @@ def delete_permission(request, tenant_id: str, permission_id: str):
     '''
     删除权限
     '''
-    permission = get_object_or_404(Permission, id=permission_id, is_del=False)
+    permission = Permission.valid_objects.filter(id=permission_id).first()
+    if permission is None:
+        return ErrorDict(ErrorCode.PERMISSION_NOT_EDIT)
     permission.delete()
     # 分发事件开始
     dispatch_event(Event(tag=DELETE_PERMISSION, tenant=request.tenant, request=request, data=permission))

@@ -36,7 +36,12 @@ page.create_actions(
         ),
         "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/permissions/{id}/",
-        )
+        ),
+        "set_open":actions.DirectAction(
+            path="/api/v1/tenant/{tenant_id}/permission/{id}/set_open",
+            method=actions.FrontActionMethod.POST,
+            name=_("open permission", "开放权限")
+        ),
     },
 )
 
