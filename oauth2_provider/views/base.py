@@ -504,12 +504,12 @@ class TokenView(OAuthLibMixin, View):
 
     @method_decorator(sensitive_post_parameters("password"))
     def post(self, request, *args, **kwargs):
-        tenant_uuid = kwargs.get('tenant_uuid')
-        if tenant_uuid:
-            tenant = Tenant.objects.get(uuid=tenant_uuid)
-        else:
-            tenant = None
-
+        # tenant_uuid = kwargs.get('tenant_uuid')
+        # if tenant_uuid:
+        #     tenant = Tenant.objects.get(uuid=tenant_uuid)
+        # else:
+        #     tenant = None
+        tenant = request.tenant
         url, headers, body, status = self.create_token_response(request, tenant)
         if status == 200:
             access_token = json.loads(body).get("access_token")
