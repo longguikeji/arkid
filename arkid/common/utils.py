@@ -1,8 +1,12 @@
 import re
 from copy import deepcopy
 from functools import reduce
+from types import SimpleNamespace
 from typing import Dict, List
 from uuid import uuid4
+from django.forms import model_to_dict
+from django.db.models import Model
+from ninja import Schema
 from arkid.core.models import ExpiringToken
 from arkid.common.logger import logger
 from django.utils.translation import gettext_lazy as _
@@ -232,3 +236,15 @@ def verify_token(request):
         return None
 
     return token.user
+
+def data_to_simplenamespace(data):
+    if isinstance(data, Schema):
+        data = data.dict()
+    elif isinstance(data, Model):
+        data = model_to_dict(data)
+    elif isinstance(data,dict):
+        for k,v in data.items():
+            data[k] = data_to_simplenamespace(v)
+    else:
+        return data
+    return SimpleNamespace(**data) if data else None
