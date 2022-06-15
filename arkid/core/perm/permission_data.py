@@ -248,9 +248,9 @@ class PermissionData(object):
         if tenant_id is None:
             tenant = self.get_platfrom_tenant()
         else:
-            tenant = Tenant.valid_objects.filter(tenant_id)
+            tenant = Tenant.valid_objects.filter(id=tenant_id).first()
         # 取得当前租户的所有用户
-        auth_users = User.valid_objects.filter(tenant__id=tenant.id)
+        auth_users = User.valid_objects.filter(tenant_id=tenant.id)
         # 区分出那些人是管理员
         systempermission = SystemPermission.objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
         userpermissionresults = UserPermissionResult.valid_objects.filter(
@@ -636,7 +636,7 @@ class PermissionData(object):
         更新应用所有用户权限
         '''
         # 取得当前租户的所有用户
-        auth_users = User.valid_objects.filter(tenant__id=tenant.id)
+        auth_users = User.valid_objects.filter(tenant_id=tenant.id)
         # 区分出那些人是管理员
         systempermission = SystemPermission.valid_objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
         # app的
@@ -955,7 +955,7 @@ class PermissionData(object):
         更新租户的所有用户权限
         '''
         # 取得当前租户的所有用户
-        auth_users = User.valid_objects.filter(tenant__id=tenant.id)
+        auth_users = User.valid_objects.filter(tenant_id=tenant.id)
         userpermissionresults = UserPermissionResult.valid_objects.filter(
             tenant=tenant,
             is_self_create=True,

@@ -233,7 +233,7 @@ class UserInfoExtendView(UserInfoView):
             access_token = AccessToken.objects.filter(token=access_token).first()
             if access_token:
                 user = access_token.user
-                data = {"id":user.id,"name":user.username,"email":user.email}
+                data = {"id":user.id,"name":user.username}
                 try:
                     response = self._create_userinfo_response(request)
                     resp_data = json.loads(response.content)
