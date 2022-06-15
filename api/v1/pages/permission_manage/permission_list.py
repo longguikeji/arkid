@@ -42,6 +42,11 @@ page.create_actions(
             method=actions.FrontActionMethod.POST,
             name=_("open permission", "开放权限")
         ),
+        "set_close":actions.DirectAction(
+            path="/api/v1/tenant/{tenant_id}/permission/{id}/set_close",
+            method=actions.FrontActionMethod.POST,
+            name=_("colse permission", "关闭权限")
+        ),
     },
 )
 

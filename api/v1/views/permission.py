@@ -259,7 +259,7 @@ def permission_batch_close(request, tenant_id: str, data: PermissionBatchSchemaI
     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/set_close", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/{permission_id}/set_close", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_set_close(request, tenant_id: str, permission_id: str):
     '''
@@ -269,8 +269,6 @@ def permission_set_close(request, tenant_id: str, permission_id: str):
         tenant_id=tenant_id,
         id=permission_id
     ).first()
-    items = {
-    }
     if permission is None:
         permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
     if permission:

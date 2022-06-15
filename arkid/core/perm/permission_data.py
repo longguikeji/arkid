@@ -989,97 +989,100 @@ class PermissionData(object):
         )
         systempermissions = SystemPermission.valid_objects.all()
         compress = Compress()
-        if app_id:
-            app = App.valid_objects.filter(
-                id=app_id
-            ).first()
-            tenant_uid = uuid.UUID(tenant_id)
-            if app and app.entry_permission:
-                systempermissions = systempermissions.filter(id=app.entry_permission.id)
-                permissions = permissions.filter(app_id=app_id)
-                if app.tenant.id != tenant_uid:
-                    # 只展示为1的系统权限
-                    userpermissionresult = UserPermissionResult.valid_objects.filter(
-                        app=None,
-                        user=login_user,
-                        tenant_id=tenant_id
-                    ).first()
-                    permission_sort_ids = []
-                    if userpermissionresult:
-                        permission_result = compress.decrypt(userpermissionresult.result)
-                        permission_result_arr = list(permission_result)
-                        for index, item in enumerate(permission_result_arr):
-                            if int(item) == 1:
-                                permission_sort_ids.append(index)
-                    if len(permission_sort_ids) == 0:
-                        systempermissions = systempermissions.filter(id__isnull=True)
-                    else:
-                        systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
-                    # 只展示为1的应用权限
-                    userpermissionresult = UserPermissionResult.valid_objects.filter(
-                        app=app,
-                        user=login_user,
-                        tenant_id=tenant_id
-                    ).first()
-                    permission_sort_ids = []
-                    if userpermissionresult:
-                        permission_result = compress.decrypt(userpermissionresult.result)
-                        permission_result_arr = list(permission_result)
-                        for index, item in enumerate(permission_result_arr):
-                            if int(item) == 1:
-                                permission_sort_ids.append(index)
-                    if len(permission_sort_ids) == 0:
-                        permissions = permissions.filter(id__isnull=True)
-                    else:
-                        permissions = permissions.filter(sort_id__in=permission_sort_ids)
-        if user_id:
-            # 系统权限
-            userpermissionresult = UserPermissionResult.valid_objects.filter(
-                user_id=user_id,
-                tenant_id=tenant_id,
-                app=None
-            ).first()
-            permission_sort_ids = []
-            if userpermissionresult:
-                permission_result = compress.decrypt(userpermissionresult.result)
-                permission_result_arr = list(permission_result)
-                for index, item in enumerate(permission_result_arr):
-                    if int(item) == 1:
-                        permission_sort_ids.append(index)
-            if len(permission_sort_ids) == 0:
-                systempermissions = systempermissions.filter(id__isnull=True)
-            else:
-                systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
-            # 应用权限
-            userpermissionresult = UserPermissionResult.valid_objects.filter(
-                user_id=user_id,
-                tenant_id=tenant_id,
-                app__isnull=False
-            ).first()
-            permission_sort_ids = []
-            if userpermissionresult:
-                permission_result = compress.decrypt(userpermissionresult.result)
-                permission_result_arr = list(permission_result)
-                for index, item in enumerate(permission_result_arr):
-                    if int(item) == 1:
-                        permission_sort_ids.append(index)
-            if len(permission_sort_ids) == 0:
-                permissions = permissions.filter(id__isnull=True)
-            else:
-                permissions = permissions.filter(sort_id__in=permission_sort_ids)
-        if group_id:
-            usergroup = UserGroup.valid_objects.filter(id=group_id).first()
-            if usergroup:
-                permission_ids = []
-                group_permissions = usergroup.permission.all()
-                for group_permission in group_permissions:
-                    permission_ids.append(group_permission.id)
-                if len(permission_ids) == 0:
+        if app_id or user_id or group_id:
+            if app_id:
+                app = App.valid_objects.filter(
+                    id=app_id
+                ).first()
+                tenant_uid = uuid.UUID(tenant_id)
+                if app and app.entry_permission:
+                    systempermissions = systempermissions.filter(id=app.entry_permission.id)
+                    permissions = permissions.filter(app_id=app_id)
+                    if app.tenant.id != tenant_uid:
+                        # 只展示为1的系统权限
+                        userpermissionresult = UserPermissionResult.valid_objects.filter(
+                            app=None,
+                            user=login_user,
+                            tenant_id=tenant_id
+                        ).first()
+                        permission_sort_ids = []
+                        if userpermissionresult:
+                            permission_result = compress.decrypt(userpermissionresult.result)
+                            permission_result_arr = list(permission_result)
+                            for index, item in enumerate(permission_result_arr):
+                                if int(item) == 1:
+                                    permission_sort_ids.append(index)
+                        if len(permission_sort_ids) == 0:
+                            systempermissions = systempermissions.filter(id__isnull=True)
+                        else:
+                            systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+                        # 只展示为1的应用权限
+                        userpermissionresult = UserPermissionResult.valid_objects.filter(
+                            app=app,
+                            user=login_user,
+                            tenant_id=tenant_id
+                        ).first()
+                        permission_sort_ids = []
+                        if userpermissionresult:
+                            permission_result = compress.decrypt(userpermissionresult.result)
+                            permission_result_arr = list(permission_result)
+                            for index, item in enumerate(permission_result_arr):
+                                if int(item) == 1:
+                                    permission_sort_ids.append(index)
+                        if len(permission_sort_ids) == 0:
+                            permissions = permissions.filter(id__isnull=True)
+                        else:
+                            permissions = permissions.filter(sort_id__in=permission_sort_ids)
+            if user_id:
+                # 系统权限
+                userpermissionresult = UserPermissionResult.valid_objects.filter(
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    app=None
+                ).first()
+                permission_sort_ids = []
+                if userpermissionresult:
+                    permission_result = compress.decrypt(userpermissionresult.result)
+                    permission_result_arr = list(permission_result)
+                    for index, item in enumerate(permission_result_arr):
+                        if int(item) == 1:
+                            permission_sort_ids.append(index)
+                if len(permission_sort_ids) == 0:
                     systempermissions = systempermissions.filter(id__isnull=True)
                 else:
-                    systempermissions = systempermissions.filter(id__in=permission_ids)
-                # 没有应用分组，只有系统分组
-                permissions = permissions.filter(id__isnull=True)
+                    systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+                # 应用权限
+                userpermissionresult = UserPermissionResult.valid_objects.filter(
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    app__isnull=False
+                ).first()
+                permission_sort_ids = []
+                if userpermissionresult:
+                    permission_result = compress.decrypt(userpermissionresult.result)
+                    permission_result_arr = list(permission_result)
+                    for index, item in enumerate(permission_result_arr):
+                        if int(item) == 1:
+                            permission_sort_ids.append(index)
+                if len(permission_sort_ids) == 0:
+                    permissions = permissions.filter(id__isnull=True)
+                else:
+                    permissions = permissions.filter(sort_id__in=permission_sort_ids)
+            if group_id:
+                usergroup = UserGroup.valid_objects.filter(id=group_id).first()
+                if usergroup:
+                    permission_ids = []
+                    group_permissions = usergroup.permission.all()
+                    for group_permission in group_permissions:
+                        permission_ids.append(group_permission.id)
+                    if len(permission_ids) == 0:
+                        systempermissions = systempermissions.filter(id__isnull=True)
+                    else:
+                        systempermissions = systempermissions.filter(id__in=permission_ids)
+                    # 没有应用分组，只有系统分组
+                    permissions = permissions.filter(id__isnull=True)
+        else:
+            systempermissions = systempermissions.filter(Q(tenant__isnull=True)|Q(tenant_id=tenant_id))
         return list(systempermissions)+list(permissions)
 
     def get_permission_str(self, user, tenant_id, app_id, is_64=False):
