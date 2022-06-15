@@ -283,8 +283,8 @@ def unlisten_event(tag, func, **kwargs):
 CREATE_LOGIN_PAGE_AUTH_FACTOR = 'CREATE_LOGIN_PAGE_AUTH_FACTOR'
 CREATE_LOGIN_PAGE_RULES = 'CREATE_LOGIN_PAGE_RULES'
 CREATE_APP_CONFIG = 'CREATE_APP_CONFIG'
-CREATE_APP_CONFIG_DONE = 'CREATE_APP_CONFIG_DONE'
 UPDATE_APP_CONFIG = 'UPDATE_APP_CONFIG'
+APP_CONFIG_DONE = 'APP_CONFIG_DONE'
 DELETE_APP = 'DELETE_APP'
 CREATE_APP = 'CREATE_APP'
 UPDATE_APP = 'UPDATE_APP'
@@ -350,7 +350,7 @@ register_event(
 )
 register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules', '登录页面生成规则'))
 register_event(CREATE_APP_CONFIG, _('create app config', '创建应用协议配置'))
-register_event(CREATE_APP_CONFIG_DONE, _('create app config done', '创建应用协议配置完成'))
+register_event(APP_CONFIG_DONE, _('app config done', '应用协议配置完成'))
 register_event(UPDATE_APP_CONFIG, _('update app config', '修改应用协议配置'))
 register_event(DELETE_APP, _('delete app', '删除应用'))
 register_event(CREATE_APP, _('create app', '创建应用'))

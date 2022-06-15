@@ -285,7 +285,7 @@ def create_tenant_app(tenant, saas_app):
     from arkid.core.event import Event, register_event, dispatch_event
     from arkid.core.event import(
         CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP,
-        CREATE_APP_CONFIG_DONE, SET_APP_OPENAPI_VERSION,
+        CREATE_APP_DONE, SET_APP_OPENAPI_VERSION,
     )
     defaults = {
         "name": saas_app['name'],
