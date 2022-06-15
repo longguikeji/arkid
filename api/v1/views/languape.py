@@ -113,7 +113,7 @@ def create_language_data(request, tenant_id: str, id:str, data:LanguageDataItemC
     response=LanguageTranslateWordOut,
 )
 @operation(LanguageTranslateWordOut)
-def get_language_data(request, tenant_id: str):
+def translate_word(request, tenant_id: str):
     """ 获取自定义语言包
     """
     data = []

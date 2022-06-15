@@ -10,11 +10,10 @@ from arkid.core.error import ErrorCode
 from typing import Union, Literal, List
 from django.shortcuts import get_object_or_404
 from arkid.core.translation import gettext_default as _
-from arkid.core.event import Event, register_event, dispatch_event
+from arkid.core.event import APP_CONFIG_DONE, Event, register_event, dispatch_event
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
-    CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP, CREATE_APP, UPDATE_APP,
-    CREATE_APP_CONFIG_DONE, SET_APP_OPENAPI_VERSION,
+    CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP, CREATE_APP, UPDATE_APP,SET_APP_OPENAPI_VERSION,
 )
 
 import uuid
@@ -158,12 +157,14 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
         results = dispatch_event(Event(tag=UPDATE_APP_CONFIG, tenant=tenant, request=request, data=data))
         for func, (result, extension) in results:
             # 修改app信息
-            app.type = data["app_type"]
-            app.package = data["package"]
-            app.save()
-            # 修改config
-            extension.update_tenant_config(app.config.id, data["config"], app.name, data["app_type"])
-            break
+            if result:
+                app.type = data["app_type"]
+                app.package = data["package"]
+                app.save()
+                # 修改config
+                extension.update_tenant_config(app.config.id, data["config"], app.name, data["app_type"])
+                dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
+                break
     else:
         # 创建应用协议配置
         results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data))
@@ -177,7 +178,7 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
                 app.config = config
                 app.save()
                 # 创建app完成进行事件分发
-                dispatch_event(Event(tag=CREATE_APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
+                dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
                 break
         pass
     return {'error': ErrorCode.OK.value}
@@ -197,7 +198,7 @@ def get_app_config(request, tenant_id: str, id: str):
         'description': app.description,
         'type': app.type or 'OIDC',
         'app_type': app.type or 'OIDC',
-        'package': app.package or "com.longgui.auth.oauth2server",
+        'package': app.package or "com.longgui.app.protocol.oidc",
         'config': app.config.config if app.config else {
             "skip_authorization":False,
             "redirect_uris":"",

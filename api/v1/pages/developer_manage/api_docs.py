@@ -8,5 +8,5 @@ name = _("API文档")
 router = FrontRouter(
     path=tag,
     name=name,
-    url='/api/redoc'
+    url='/api/v1/redoc'
 )
