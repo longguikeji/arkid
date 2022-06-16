@@ -22,7 +22,7 @@ select_app_page.create_actions(
 
 class PermissionListSchemaOut(ModelSchema):
 
-    app_name: str = Field(default=None, alias="app.name")
+    app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
 
     class Config:
         model = Permission

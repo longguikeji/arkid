@@ -21,7 +21,6 @@ from api.v1.schema.permission import *
 import uuid
 
 
-
 @transaction.atomic
 @api.post("/tenant/{tenant_id}/permissions", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])

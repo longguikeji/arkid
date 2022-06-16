@@ -27,7 +27,7 @@ router = routers.FrontRouter(
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/permission_groups/',
+        path='/api/v1/tenant/{tenant_id}/all_apps_in_arkid/',
         method=actions.FrontActionMethod.GET,
     ),
     global_actions={
@@ -44,6 +44,10 @@ page.create_actions(
         )
     },
     node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/permission_groups/?parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
         actions.CascadeAction(
             page=group_permissions_page
         )

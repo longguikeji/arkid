@@ -8,7 +8,7 @@ from ninja.pagination import paginate
 from arkid.core.error import ErrorCode
 from arkid.core.api import api, operation
 from django.shortcuts import get_object_or_404
-from arkid.core.models import Permission, SystemPermission
+from arkid.core.models import Permission, SystemPermission, App
 from arkid.core.event import Event, dispatch_event
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import (
@@ -16,67 +16,10 @@ from arkid.core.event import (
     REMOVE_GROUP_PERMISSION_PERMISSION, UPDATE_GROUP_PERMISSION_PERMISSION,
 )
 from arkid.core.translation import gettext_default as _
+from api.v1.schema.permission_group import *
 
 import uuid
 
-class PermissionGroupListSchemaOut(ModelSchema):
-
-    app_id: UUID = Field(default=None)
-
-    class Config:
-        model = Permission
-        model_fields = ['id', 'name', 'is_system']
-
-
-class PermissionGroupDetailSchemaOut(ModelSchema):
-
-    parent_id: UUID = Field(default=None)
-
-    class Config:
-        model = Permission
-        model_fields = ['id', 'name', 'category']
-
-
-class PermissionGroupSchemaOut(Schema):
-    permission_group_id: str
-
-
-class PermissionGroupSchemaIn(ModelSchema):
-
-    app_id: str
-    parent_id: str = None
-
-    class Config:
-        model = Permission
-        model_fields = ['name']
-
-
-class PermissionGroupEditSchemaIn(ModelSchema):
-
-    parent_id: str = None
-
-    class Config:
-        model = Permission
-        model_fields = ['name']
-
-class PermissionListSchemaOut(ModelSchema):
-
-    class Config:
-        model = SystemPermission
-        model_fields = ['id', 'name', 'category', 'is_system']
-
-
-class PermissionListSelectSchemaOut(Schema):
-
-    id: UUID = Field(default=None)
-    in_current: bool
-    name: str
-    category: str
-    is_system: bool
-
-
-class PermissionSchemaIn(Schema):
-    permission_id: str
 
 @api.get("/tenant/{tenant_id}/permission_groups/", tags=["权限分组"], response=List[PermissionGroupListSchemaOut], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -85,6 +28,16 @@ def get_permission_groups(request, tenant_id: str,  parent_id: str = None,  app_
     """ 权限分组列表
     """
     # 只允许非系统并且有应用的分组编辑
+    if parent_id == 'arkid':
+        app_id = parent_id
+        parent_id = None
+    if parent_id:
+        app = App.valid_objects.filter(
+            id=parent_id
+        ).first()
+        if app:
+            parent_id = None
+            app_id = str(app.id)
     tenant = request.tenant
     systempermissions = SystemPermission.valid_objects.filter(
         category='group'
@@ -100,9 +53,14 @@ def get_permission_groups(request, tenant_id: str,  parent_id: str = None,  app_
         systempermissions = systempermissions.filter(parent_id__isnull=True)
         permissions = permissions.filter(parent_id__isnull=True)
     if app_id:
-        systempermissions = systempermissions.filter(app_id=app_id)
-        permissions = permissions.filter(app_id=app_id)
+        if app_id == 'arkid':
+            systempermissions.filter(tenant_id=None)
+        else:
+            systempermissions.filter(tenant_id=tenant_id)
+            # systempermissions = systempermissions.filter(app_id=app_id)
+            permissions = permissions.filter(app_id=app_id)
     return list(systempermissions)+list(permissions)
+
 
 @api.get("/tenant/{tenant_id}/permission_groups/{id}/", response=PermissionGroupDetailSchemaOut, tags=["权限分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -188,7 +146,10 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
     permission = SystemPermission.valid_objects.filter(id=permission_group_id).first()
     if permission is None:
         permission = Permission.valid_objects.filter(id=permission_group_id).first()
-    return permission.container.all()
+    if permission:
+        return permission.container.all()
+    else:
+        return []
     # tenant = request.tenant
     # if tenant.is_platform_tenant:
     #     permission = get_object_or_404(SystemPermission, id=permission_group_id, is_del=False)
