@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 from pyclbr import Function
 from typing import Union, Literal, Any, List, Optional, Tuple, Type, Callable
 from typing_extensions import Annotated
@@ -787,12 +788,28 @@ class Extension(ABC):
             
 ################################################################################
 
-    def error(self, enum=None, **kwargs):
+    def error(self, enum:Enum=None, **kwargs):
+        """API接口错误dict
+
+        Args:
+            enum (Enum, optional): 错误的枚举类，如果为None，标识成功返回. Defaults to None.
+
+        Returns:
+            dict : 生成的错误dict
+        """
         if not enum:
             return ErrorDict(ErrorCode.OK, self.package, **kwargs)
         return ErrorDict(enum, self.package, **kwargs)
     
     def success(self, data=None, **kwargs):
+        """API接口成功dict
+
+        Args:
+            data (dict, optional): 成功时需要返回的数据. Defaults to None.
+
+        Returns:
+            dict: 生成的成功dict
+        """
         return SuccessDict(data, self.package, **kwargs)
 
     @abstractmethod
