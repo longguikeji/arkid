@@ -59,12 +59,12 @@ group_permissions_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions={
-        "update":actions.OpenAction(
-            name=_("添加权限"),
-            page=edit_permissions_page,
-        )
-    },
+    # global_actions={
+    #     "update":actions.OpenAction(
+    #         name=_("添加权限"),
+    #         page=edit_permissions_page,
+    #     )
+    # },
     local_actions={
         "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/{id}/",

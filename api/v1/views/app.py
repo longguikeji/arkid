@@ -84,14 +84,14 @@ def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
     items = []
     if not_arkid is None:
         items.append({
-            'name': 'arkid',
             'id': 'arkid',
+            'name': 'arkid',
             'is_system': True,
         })
     for app in apps:
         items.append({
-            'name': app.name,
             'id': str(app.id),
+            'name': app.name,
             'is_system': True,
         })
     return {'data':items}

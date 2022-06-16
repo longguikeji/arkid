@@ -5,7 +5,7 @@ tag = 'app_grant'
 name = '所有应用'
 
 
-page = pages.ListPage(tag=tag,name=name)
+page = pages.TreePage(tag=tag,name=name)
 app_permission_page = pages.TablePage(name=_("该应用权限"))
 
 pages.register_front_pages(page)
@@ -13,7 +13,7 @@ pages.register_front_pages(app_permission_page)
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/apps/',
+        path='/api/v1/tenant/{tenant_id}/all_apps_in_arkid/',
         method=actions.FrontActionMethod.GET,
     ),
     node_actions=[
@@ -25,7 +25,7 @@ page.create_actions(
 
 app_permission_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/apps/{app_id}/permissions/',
+        path='/api/v1/tenant/{tenant_id}/permissions?app_id={app_id}',
         method=actions.FrontActionMethod.GET
     )
 )

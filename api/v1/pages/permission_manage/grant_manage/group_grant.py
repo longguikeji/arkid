@@ -5,7 +5,7 @@ tag = 'group_grant'
 name = '所有分组'
 
 
-page = pages.ListPage(tag=tag,name=name)
+page = pages.TreePage(tag=tag,name=name)
 group_permission_page = pages.TablePage(name=_("该分组权限"))
 update_group_permission_page = pages.TablePage(name=_("更新用户分组权限"),select=True)
 

@@ -980,14 +980,31 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
     
-    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user):
+    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False):
         '''
         根据应用，用户，分组查权限(要根据用户身份显示正确的列表)
         '''
         permissions = Permission.valid_objects.filter(
             Q(tenant_id=tenant_id)|Q(is_open=True)
         )
-        systempermissions = SystemPermission.valid_objects.all()
+        systempermissions = SystemPermission.valid_objects
+        if is_only_show_group:
+            permissions = permissions.filter(
+                category='group'
+            )
+            systempermissions = systempermissions.filter(
+                category='group'
+            )
+            if app_id and app_id == 'arkid':
+                app_id = None
+                systempermissions = systempermissions.filter(tenant_id=None)
+                permissions = permissions.filter(app_id=None)
+            if parent_id:
+                systempermissions = systempermissions.filter(parent_id=parent_id)
+                permissions = permissions.filter(parent_id=parent_id)
+            else:
+                systempermissions = systempermissions.filter(parent_id__isnull=True)
+                permissions = permissions.filter(parent_id__isnull=True)
         compress = Compress()
         if app_id or user_id or group_id:
             if app_id:

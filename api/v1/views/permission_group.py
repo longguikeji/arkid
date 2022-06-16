@@ -5,6 +5,7 @@ from ninja import Schema
 from ninja import ModelSchema
 from django.db import transaction
 from ninja.pagination import paginate
+from arkid.core.pagenation import CustomPagination
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.api import api, operation
 from django.shortcuts import get_object_or_404
@@ -23,7 +24,7 @@ import uuid
 
 @api.get("/tenant/{tenant_id}/permission_groups/", tags=["权限分组"], response=List[PermissionGroupListSchemaOut], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate
+@paginate(CustomPagination)
 def get_permission_groups(request, tenant_id: str,  parent_id: str = None,  app_id: str = None):
     """ 权限分组列表
     """
@@ -38,29 +39,10 @@ def get_permission_groups(request, tenant_id: str,  parent_id: str = None,  app_
         if app:
             parent_id = None
             app_id = str(app.id)
-    tenant = request.tenant
-    systempermissions = SystemPermission.valid_objects.filter(
-        category='group'
-    )
-    permissions = Permission.valid_objects.filter(
-        tenant=tenant,
-        category='group'
-    )
-    if parent_id:
-        systempermissions = systempermissions.filter(parent_id=parent_id)
-        permissions = permissions.filter(parent_id=parent_id)
-    else:
-        systempermissions = systempermissions.filter(parent_id__isnull=True)
-        permissions = permissions.filter(parent_id__isnull=True)
-    if app_id:
-        if app_id == 'arkid':
-            systempermissions.filter(tenant_id=None)
-            permissions = permissions.filter(app_id=None)
-        else:
-            systempermissions.filter(tenant_id=tenant_id)
-            # systempermissions = systempermissions.filter(app_id=app_id)
-            permissions = permissions.filter(app_id=app_id)
-    return list(systempermissions)+list(permissions)
+    login_user = request.user
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_permissions_by_search(tenant_id, app_id, None, None, login_user, parent_id, True)
 
 
 @api.get("/tenant/{tenant_id}/permission_groups/{id}/", response=PermissionGroupDetailSchemaOut, tags=["权限分组"],auth=None)
@@ -215,6 +197,7 @@ def get_select_permissions(request, tenant_id: str, permission_group_id: str):
     permission_group = SystemPermission.valid_objects.filter(id=id, category='group').first()
     if permission_group is None:
         permission_group = Permission.valid_objects.filter(id=id, category='group').first()
+    
     if isinstance(permission_group, SystemPermission):
         # permission_group = get_object_or_404(SystemPermission, id=permission_group_id, is_del=False, category='group')
         containers = permission_group.container.all()
@@ -223,24 +206,25 @@ def get_select_permissions(request, tenant_id: str, permission_group_id: str):
             ids.append(container.id.hex)
 
         permissions = SystemPermission.valid_objects.exclude(category='group')
-        for permission in permissions:
-            id_hex = permission.id.hex
-            if id_hex in ids:
-                permission.in_current = True
-            else:
-                permission.in_current = False
+        # for permission in permissions:
+        #     id_hex = permission.id.hex
+        #     if id_hex in ids:
+        #         permission.in_current = True
+        #     else:
+        #         permission.in_current = False
     else:
         containers = permission_group.container.all()
         ids = []
         for container in containers:
             ids.append(container.id.hex)
-        permissions = Permission.valid_objects.filter(tenant=permission_group.tenant).exclude(category='group')
-        for permission in permissions:
-            id_hex = permission.id.hex
-            if id_hex in ids:
-                permission.in_current = True
-            else:
-                permission.in_current = False
+
+        # permissions = Permission.valid_objects.filter(tenant=permission_group.tenant).exclude(category='group')
+        # for permission in permissions:
+        #     id_hex = permission.id.hex
+        #     if id_hex in ids:
+        #         permission.in_current = True
+        #     else:
+        #         permission.in_current = False
     return permissions
 
 
