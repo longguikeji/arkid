@@ -82,7 +82,6 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             'GET',
             self.get_user_key_fields,
             response=List[GetUserKeyFieldItemOut],
-            tags=["密码认证因素"],
         )
         select_pw_login_fields_page.create_actions(
             init_action=actions.DirectAction(
@@ -99,7 +98,6 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             self.reset_user_password,
             tenant_path=True,
             response=ResponseSchema,
-            tags=["密码认证因素"],
         )
         
         user_list_page.add_local_actions(
