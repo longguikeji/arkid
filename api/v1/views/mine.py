@@ -75,7 +75,6 @@ from api.v1.schema.approve_request import (
     "/mine/tenant/{tenant_id}/approve_requests/",
     tags=["我的"],
     response=List[ApproveRequestListItemOut],
-    auth=None,
 )
 @operation(ApproveRequestListOut)
 @paginate(CustomPagination)

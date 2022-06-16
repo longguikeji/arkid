@@ -138,7 +138,7 @@ class ExternalIdpExtension(Extension):
                 "token": "",
                 "ext_id": ext_id,
                 "tenant_id": tenant.id,
-                "bind": configs.get('callback_url'),
+                "bind": configs.get('bind_url'),
             }
 
         return context
@@ -151,7 +151,7 @@ class ExternalIdpExtension(Extension):
         如果没有，返回重定向到前端绑定页面
         """
         code = request.GET["code"]
-        next_url = request.GET.get("next", None)
+        next_url = request.GET.get("next", '')
         frontend_host = (
             get_app_config()
             .get_frontend_host()

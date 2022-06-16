@@ -10,6 +10,8 @@ from arkid.core.extension.auth_factor import AuthFactorExtension
 from arkid.core.translation import gettext_default as _
 from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
 from arkid.common.logger import logger
+from arkid.extension.models import TenantExtensionConfig
+from arkid.core.extension.external_idp import ExternalIdpExtension
 
 
 class ButtonRedirectSchema(Schema):
@@ -62,7 +64,7 @@ class LoginFormSchema(Schema):
 
 
 class LoginPageExtendSchema(Schema):
-    title: str = Field(title=_('title', '页面扩展标题'))
+    title: Optional[str] = Field(title=_('title', '页面扩展标题'))
     buttons: List[ButtonSchema] = Field(title=_('buttons', '扩展按钮'))
 
 
@@ -137,6 +139,26 @@ def login_page(request, tenant_id: str):
     if data.get(AuthFactorExtension.REGISTER) and data.get(AuthFactorExtension.RESET_PASSWORD):
         bottom = {"prepend": _("No Account,","还没有账号，"), "label": _("Register Now","立即注册"), "gopage": AuthFactorExtension.REGISTER}
         data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)
+
+    # 增加第三方登录按钮
+    if data.get(AuthFactorExtension.LOGIN):
+        idp_configs = TenantExtensionConfig.active_objects.filter(type=ExternalIdpExtension.TYPE)
+        login_extend = data.get(AuthFactorExtension.LOGIN).get('extend')
+        if not login_extend:
+            login_extend = {}
+
+        login_extend_buttons = login_extend.get('buttons', [])
+        for config in idp_configs:
+            login_extend_buttons.append(
+                {
+                    "img":config.config.get("img_url", ""),
+                    "redirect":{"url": config.config.get("login_url", "")}
+                }
+            )
+        login_extend["buttons"]  = login_extend_buttons
+        if login_extend_buttons and "title" not in login_extend:
+            login_extend["title"] = _("Third Auth", "第三方登录")
+        data[AuthFactorExtension.LOGIN]['extend'] = login_extend
 
     return {
         'tenant': tenant, 
