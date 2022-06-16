@@ -60,11 +60,11 @@ class ApproveRequestMiddleware:
                     data=approve_request,
                 )
             )
-            response = HttpResponse(status=401)
+            response = HttpResponse(status=403)
             return response
         else:
             if approve_request.status != "pass":
-                response = HttpResponse(status=401)
+                response = HttpResponse(status=403)
                 return response
             else:
                 return None
