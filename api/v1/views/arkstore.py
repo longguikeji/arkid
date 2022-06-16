@@ -161,20 +161,20 @@ def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
         tenant = Tenant.objects.get(id=tenant_id)
         access_token = get_arkstore_access_token(tenant, token)
         resp = get_arkstore_extension_rent_status(access_token, uuid)
-        return resp
+        if resp.get('error'):
+            return resp
+    
+    tenant_extension = TenantExtension.objects.filter(tenant_id=tenant_id, extension_id=uuid).first()
+    if not tenant_extension:
+        TenantExtension.objects.create(
+            tenant=request.tenant,
+            extension_id=uuid,
+            is_active = True,
+        )
     else:
-        tenant_extension = TenantExtension.objects.filter(extension_id=uuid)
-        if not tenant_extension:
-            TenantExtension.objects.create(
-                tenant=request.tenant,
-                extension_id=uuid,
-                is_active = True,
-            )
-        else:
-            tenant_extension = tenant_extension.first()
-            tenant_extension.is_active = True
-            tenant_extension.save()
-        return {'purchased':True}
+        tenant_extension.is_active = True
+        tenant_extension.save()
+    return {'purchased':True}
 
 
 @api.post("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['方舟商店'])

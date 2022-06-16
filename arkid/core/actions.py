@@ -74,7 +74,7 @@ class FrontAction(DeepSN):
     """
 
     def __init__(self, action_type: FrontActionType, tag: str = None, path: str = None, method: FrontActionMethod = None,
-                 name: str = None, page=None, page_tag=None, icon: str = None, tag_pre: str = None, *args, **kwargs):
+                 name: str = None, page=None, page_tag=None, icon: str = None, tag_pre: str = None, init_data = None, *args, **kwargs):
         """初始化函数
 
         Args:
@@ -86,6 +86,7 @@ class FrontAction(DeepSN):
             method (FrontActionMethod, optional): 请求方法.
             icon (str, optional): 图标名称.
             tag_pre (str, optional): 标识前缀.
+            init_data (dict, optional): schema中的字段值来自key对应的上文中的字段值,支持用.来表示父级层次
         """
         self.type = action_type.value
 
@@ -104,6 +105,8 @@ class FrontAction(DeepSN):
             self.method = method.value
         if icon:
             self.icon = icon
+        if init_data:
+            self.init_data = init_data
 
         super().__init__(*args, **kwargs)
 
