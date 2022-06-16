@@ -138,7 +138,7 @@ class ExternalIdpExtension(Extension):
                 "token": "",
                 "ext_id": ext_id,
                 "tenant_id": tenant.id,
-                "bind": configs.get('callback_url'),
+                "bind": configs.get('bind_url'),
             }
 
         return context
