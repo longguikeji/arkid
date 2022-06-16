@@ -74,18 +74,20 @@ def list_all_apps(request, tenant_id: str):
 
 @api.get("/tenant/{tenant_id}/all_apps_in_arkid/", response=AppListsOut, tags=['应用'], auth=None)
 @operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def all_apps_in_arkid(request, tenant_id: str):
+def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
     '''
     所有app列表(含arkid)
     '''
     apps = App.valid_objects.filter(
         Q(entry_permission__is_open=True)|Q(tenant_id=tenant_id)
     )
-    items = [{
-        'name': 'arkid',
-        'id': 'arkid',
-        'is_system': True,
-    }]
+    items = []
+    if not_arkid is None:
+        items.append({
+            'name': 'arkid',
+            'id': 'arkid',
+            'is_system': True,
+        })
     for app in apps:
         items.append({
             'name': app.name,

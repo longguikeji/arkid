@@ -95,9 +95,36 @@ edit_page.create_actions(
     ),
     global_actions={
        'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/permission_groups/{id}/"
+            path="/api/v1/tenant/{tenant_id}/permission_groups/{id}/",
+            method=actions.FrontActionMethod.PUT
         ),
     }
 )
 
+select_app_page = pages.TablePage(select=True,name=_("选择应用"))
 
+pages.register_front_pages(select_app_page)
+
+select_app_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/apps/',
+        method=actions.FrontActionMethod.GET
+    )
+)
+
+select_permission_group_page = pages.TreePage(select=True, name=_("选择权限分组"))
+
+pages.register_front_pages(select_permission_group_page)
+
+select_permission_group_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/all_apps_in_arkid/?not_arkid=1',
+        method=actions.FrontActionMethod.GET,
+    ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/permission_groups/?parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
+    ]
+)

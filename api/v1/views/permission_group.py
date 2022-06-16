@@ -5,10 +5,10 @@ from ninja import Schema
 from ninja import ModelSchema
 from django.db import transaction
 from ninja.pagination import paginate
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.api import api, operation
 from django.shortcuts import get_object_or_404
-from arkid.core.models import Permission, SystemPermission, App
+from arkid.core.models import Permission, SystemPermission, App, Tenant
 from arkid.core.event import Event, dispatch_event
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import (
@@ -55,6 +55,7 @@ def get_permission_groups(request, tenant_id: str,  parent_id: str = None,  app_
     if app_id:
         if app_id == 'arkid':
             systempermissions.filter(tenant_id=None)
+            permissions = permissions.filter(app_id=None)
         else:
             systempermissions.filter(tenant_id=tenant_id)
             # systempermissions = systempermissions.filter(app_id=app_id)
@@ -67,32 +68,32 @@ def get_permission_groups(request, tenant_id: str,  parent_id: str = None,  app_
 def get_permission_group(request, tenant_id: str, id: str):
     """ 获取权限分组
     """
-    tenant = request.tenant
-    if tenant.is_platform_tenant:
-        return get_object_or_404(SystemPermission, id=id, is_del=False, category='group')
+    permission = Permission.valid_objects.filter(category='group', id=id).first()
+    if permission:
+        return {'data': permission}
     else:
-        return get_object_or_404(Permission, id=id, is_del=False, category='group')
+        return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/permission_groups/", response=PermissionGroupSchemaOut, tags=["权限分组"],auth=None)
+@api.post("/tenant/{tenant_id}/permission_groups/", tags=["权限分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_permission_group(request, tenant_id: str, data: PermissionGroupSchemaIn):
     """ 创建权限分组
     """
     permission = Permission()
-    permission.tenant_id = tenant_id
+    permission.tenant = Tenant.valid_objects.filter(id=tenant_id).first()
     permission.name = data.name
     permission.category = 'group'
     permission.code = 'other_{}'.format(uuid.uuid4())
     if data.parent_id:
-        permission.parent_id = data.parent_id
-    permission.app_id = data.app_id
+        permission.parent = Permission.valid_objects.filter(id=data.parent_id).first()
+    permission.app = App.valid_objects.filter(id=data.app_id).first()
     permission.is_system = False
     permission.save()
     # 分发事件开始
     result = dispatch_event(Event(tag=CREATE_GROUP_PERMISSION, tenant=request.tenant, request=request, data=permission))
     # 分发事件结束
-    return {"permission_group_id": permission.id.hex}
+    return {'error': ErrorCode.OK.value}
 
 @api.put("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -143,11 +144,14 @@ def delete_permission_group(request, tenant_id: str, id: str):
 def get_permissions_from_group(request, tenant_id: str, permission_group_id: str):
     """ 获取当前分组的权限列表
     """
-    permission = SystemPermission.valid_objects.filter(id=permission_group_id).first()
-    if permission is None:
-        permission = Permission.valid_objects.filter(id=permission_group_id).first()
-    if permission:
-        return permission.container.all()
+    if permission_group_id != 'arkid':
+        permission = SystemPermission.valid_objects.filter(id=permission_group_id).first()
+        if permission is None:
+            permission = Permission.valid_objects.filter(id=permission_group_id).first()
+        if permission:
+            return permission.container.all()
+        else:
+            return []
     else:
         return []
     # tenant = request.tenant
@@ -168,14 +172,18 @@ def remove_permission_from_group(request, tenant_id: str, permission_group_id: s
     #     permission_group = get_object_or_404(SystemPermission, id=permission_group_id, is_del=False, category='group')
     #     permission = get_object_or_404(SystemPermission, id=id, is_del=False)
     # else:
-    permission_group = get_object_or_404(Permission, id=permission_group_id, is_del=False, category='group')
-    permission = get_object_or_404(Permission, id=id, is_del=False)
+
+    permission_group = Permission.valid_objects.filter(id=permission_group_id, category='group').first()
+    permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=id).first()
+
     if permission_group and permission:
         permission_group.container.remove(permission)
         # 分发事件开始
         dispatch_event(Event(tag=REMOVE_GROUP_PERMISSION_PERMISSION, tenant=request.tenant, request=request, data=permission_group))
         # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+        return {'error': ErrorCode.OK.value}
+    else:
+        return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
 
 @api.post("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", tags=["权限分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
