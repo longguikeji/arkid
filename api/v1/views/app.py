@@ -221,7 +221,7 @@ def create_app(request, tenant_id: str, data:CreateAppIn):
     '''
     创建应用
     '''
-    app = App.objects.create(tenant=request.tenant)
+    app = App.objects.create(tenant=request.tenant, url=data.url)
     for key,value in data.dict().items():
         setattr(app,key,value)
     app.save()

@@ -147,11 +147,11 @@ class ScimSyncExtension(Extension, ProviderBase):
         if config["mode"] == "server":
             server_host = get_app_config().get_host()
             user_url = server_host + reverse(
-                f'api:{self.name}_tenant:{self.name}_scim_users',
+                f'api:{self.pname}_tenant:{self.pname}_scim_users',
                 args=[tenant.id, config_created.id],
             )
             group_url = server_host + reverse(
-                f'api:{self.name}_tenant:{self.name}_scim_groups',
+                f'api:{self.pname}_tenant:{self.pname}_scim_groups',
                 args=[tenant.id, config_created.id],
             )
             config["group_url"] = group_url
