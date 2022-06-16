@@ -27,7 +27,7 @@ page.create_actions(
 
 group_permission_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/',
+        path='/api/v1/tenant/{tenant_id}/permissions?group_id={group_id}',
         method=actions.FrontActionMethod.GET
     ),
     local_actions={

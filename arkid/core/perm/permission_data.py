@@ -995,16 +995,17 @@ class PermissionData(object):
             systempermissions = systempermissions.filter(
                 category='group'
             )
-            if app_id and app_id == 'arkid':
-                app_id = None
-                systempermissions = systempermissions.filter(tenant_id=None)
-                permissions = permissions.filter(app_id=None)
             if parent_id:
                 systempermissions = systempermissions.filter(parent_id=parent_id)
                 permissions = permissions.filter(parent_id=parent_id)
             else:
                 systempermissions = systempermissions.filter(parent_id__isnull=True)
                 permissions = permissions.filter(parent_id__isnull=True)
+        if app_id and app_id == 'arkid':
+            # arkid没有应用权限
+            app_id = None
+            systempermissions = systempermissions.filter(tenant_id=None)
+            permissions = permissions.filter(app_id=None)
         compress = Compress()
         if app_id or user_id or group_id:
             if app_id:
@@ -1088,14 +1089,11 @@ class PermissionData(object):
             if group_id:
                 usergroup = UserGroup.valid_objects.filter(id=group_id).first()
                 if usergroup:
-                    permission_ids = []
-                    group_permissions = usergroup.permission.all()
-                    for group_permission in group_permissions:
-                        permission_ids.append(group_permission.id)
-                    if len(permission_ids) == 0:
+                    group_permission = usergroup.permission
+                    if group_permission is None:
                         systempermissions = systempermissions.filter(id__isnull=True)
                     else:
-                        systempermissions = systempermissions.filter(id__in=permission_ids)
+                        systempermissions = systempermissions.filter(id=group_permission.id)
                     # 没有应用分组，只有系统分组
                     permissions = permissions.filter(id__isnull=True)
         else:

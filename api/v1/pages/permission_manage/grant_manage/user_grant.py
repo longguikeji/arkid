@@ -2,7 +2,7 @@ from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
 tag = 'user_grant'
-name = '所有分组'
+name = '所有用户'
 
 
 page = pages.TreePage(tag=tag,name=name)
