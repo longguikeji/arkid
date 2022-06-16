@@ -10,7 +10,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.event import CREATE_LOGIN_PAGE_AUTH_FACTOR, CREATE_LOGIN_PAGE_RULES
 from arkid.common.logger import logger
 from api.v1.schema.user import UserCreateIn, UserCreateOut, UserDeleteOut, UserListItemOut, UserListOut, UserListQueryIn, UserOut, UserUpdateIn, UserUpdateOut
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.pagenation import CustomPagination
 from ninja.pagination import paginate
 

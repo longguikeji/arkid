@@ -5,7 +5,7 @@ from arkid.extension.utils import import_extension
 from arkid.extension.models import TenantExtensionConfig, Extension, TenantExtension
 from uuid import UUID
 from django.shortcuts import get_object_or_404
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from ninja import Schema, ModelSchema
 from typing import List
 from ninja.pagination import paginate
@@ -68,7 +68,7 @@ def create_third_auth(request, tenant_id: str, data: ThirdAuthCreateIn):
     extension_config = extension.create_tenant_config(
         request.tenant, data.config.dict(), data.dict()["name"], data.type
     )
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.put(
@@ -82,7 +82,7 @@ def update_third_auth(request, tenant_id: str, id: str, data: ThirdAuthUpdateIn)
     config = TenantExtensionConfig.valid_objects.get(id=id)
     config.config = data.config.dict()
     config.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete(
@@ -97,4 +97,4 @@ def delete_third_auth(request, tenant_id: str, id: str):
 
     config = TenantExtensionConfig.valid_objects.get(id=id)
     config.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)

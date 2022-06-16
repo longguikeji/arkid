@@ -8,7 +8,7 @@ from arkid.core.models import AppGroup
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.translation import gettext_default as _
 from api.v1.schema.app_group import *
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.pagenation import CustomPagination
 from ninja.pagination import paginate
 
@@ -37,7 +37,7 @@ def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
         data["parent"] = get_object_or_404(AppGroup.active_objects,id=data["parent"], is_del=False, is_active=True)
     group = AppGroup.expand_objects.create(tenant=request.tenant,**data)
 
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupOut, tags=["应用分组"],auth=None)
@@ -67,7 +67,7 @@ def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
         return ErrorDict(ErrorCode.APP_GROUP_PARENT_CANT_BE_ITSELF)
         
     group.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.delete("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupDeleteOut, tags=["应用分组"],auth=None)
 @operation(AppGroupDeleteOut)
@@ -76,7 +76,7 @@ def delete_app_group(request, tenant_id: str, id: str):
     """
     group = get_object_or_404(AppGroup.expand_objects,id=id, is_del=False, is_active=True)
     group.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/",response=List[AppGroupAppListItemOut],tags=["应用分组"],auth=None)
 @operation(AppGroupAppListOut)
@@ -98,7 +98,7 @@ def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str):
     group = get_object_or_404(AppGroup,tenant__id=tenant_id, id=app_group_id, is_del=False, is_active=True)
     group.apps.remove(app)
     group.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.post("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/", response=AppGroupAppUpdateOut,tags=["应用分组"],auth=None)
 @operation(AppGroupAppUpdateOut)
@@ -114,7 +114,7 @@ def update_apps_from_group(request, tenant_id: str, app_group_id: str,data: AppG
     
     group.save()
     
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/exclude_apps/",response=List[AppGroupExcludeAppsItemOut], tags=["应用分组"],auth=None)

@@ -7,7 +7,7 @@ from arkid.core.api import api, operation
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
 from arkid.core.schema import ResponseSchema
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.tenant import *
 
 @api.get("/tenants/", response=TenantListOut,tags=["租户管理"],auth=None)
@@ -41,7 +41,7 @@ def create_tenant(request, data:TenantCreateIn):
     """
 
     tenant = Tenant.expand_objects.create(**data.dict())
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.post("/tenants/{id}/", response=TenantUpdateOut,tags=["租户管理"],auth=None)
 @operation(TenantUpdateOut)
@@ -52,7 +52,7 @@ def update_tenant(request, id: str, data:TenantUpdateIn):
     for attr, value in data.dict().items():
         setattr(tenant, attr, value)
     tenant.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.delete("/tenants/{id}/", response=TenantDeleteOut, tags=["租户管理"],auth=None)
 @operation(TenantDeleteOut)
@@ -61,7 +61,7 @@ def delete_tenant(request, id: str):
     """
     tenant = Tenant.active_objects.get(id=id)
     tenant.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.get("/tenants/{tenant_id}/config/", response=TenantConfigOut, tags=["租户管理"],auth=None)
 @operation(TenantConfigOut)
@@ -83,7 +83,7 @@ def update_tenant_config(request, tenant_id: str,data:TenantConfigUpdateIn):
     for attr, value in data.dict().items():
         setattr(tenant, attr, value)
     tenant.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.get("/default_tenant/",response=DefaultTenantOut, tags=["租户管理"], auth=None)
 def default_tenant(request):

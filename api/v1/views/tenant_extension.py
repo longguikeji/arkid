@@ -9,7 +9,7 @@ from arkid.extension.models import TenantExtensionConfig, TenantExtension, Exten
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from ninja.pagination import paginate
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.schema import ResponseSchema
 
@@ -98,7 +98,7 @@ def delete_extension_config(request, tenant_id: str, extension_id: str, config_i
         id=config_id,
     )
     config.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 ExtensionSettingsCreateIn = Extension.create_settings_schema(
@@ -173,7 +173,7 @@ def toggle_tenant_extension_status(request, tenant_id: str, id: str):
     extension= TenantExtension.objects.get(id=id)
     extension.is_active = True if extension.is_active is False else False
     extension.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/extensions/{id}/", tags=["租户插件"])

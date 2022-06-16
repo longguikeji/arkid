@@ -7,7 +7,7 @@ from ninja.pagination import paginate
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auth_rule import AuthRuleExtension
 from arkid.extension.models import Extension, TenantExtensionConfig
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.auth_rule import AuthRuleCreateIn, AuthRuleCreateOut, AuthRuleDeleteOut, AuthRuleListItemOut, AuthRuleListOut, AuthRuleOut, AuthRuleUpdateIn, AuthRuleUpdateOut
 from arkid.core.pagenation import CustomPagination
 
@@ -65,7 +65,7 @@ def create_auth_rule(request, tenant_id: str, data: AuthRuleCreateIn):
     config.name = data.dict()["name"]
     config.type = data.type
     config.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.post("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleUpdateOut, tags=["认证规则"], auth=None)
@@ -80,7 +80,7 @@ def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
     for attr, value in data.dict().items():
         setattr(config, attr, value)
     config.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleDeleteOut, tags=["认证规则"], auth=None)
@@ -92,4 +92,4 @@ def delete_auth_rule(request, tenant_id: str, id: str):
         tenant__id=tenant_id, id=id
     )
     config.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)

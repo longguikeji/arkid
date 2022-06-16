@@ -3,7 +3,7 @@ import xxlimited
 from django.http import JsonResponse
 from collections import OrderedDict
 from arkid.core.models import Platform, Tenant
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
     get_arkstore_access_token,
     purcharse_arkstore_extension,

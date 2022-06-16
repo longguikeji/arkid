@@ -6,7 +6,7 @@ from arkid.core.models import App
 from arkid.core.api import api, operation
 from django.db import transaction
 from ninja.pagination import paginate
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from typing import Union, Literal, List
 from django.shortcuts import get_object_or_404
 from arkid.core.translation import gettext_default as _
@@ -115,7 +115,7 @@ def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpe
         app_config['version'] = data.version
         app_config['openapi_uris'] = data.openapi_uris
     config.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.delete("/tenant/{tenant_id}/apps/{id}/", tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -126,7 +126,7 @@ def delete_app(request, tenant_id: str, id: str):
     app = App.valid_objects.get(id=id)
     dispatch_event(Event(tag=DELETE_APP, tenant=request.tenant, request=request, data=app))
     app.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.post("/tenant/{tenant_id}/apps/{id}/", tags=['应用'], auth=None)
 @operation(AppUpdateOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -139,7 +139,7 @@ def update_app(request, tenant_id: str, id: str, data: AppUpdateIn):
         setattr(app, attr, value)
     app.save()
     dispatch_event(Event(tag=UPDATE_APP, tenant=request.tenant, request=request, data=app))
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.post("/tenant/{tenant_id}/apps/{id}/config/", tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -181,7 +181,7 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
                 dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
                 break
         pass
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.get("/tenant/{tenant_id}/apps/{id}/config/", response=AppProtocolConfigOut,tags=['应用'], auth=None)
 @operation(AppProtocolConfigOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -227,4 +227,4 @@ def create_app(request, tenant_id: str, data:CreateAppIn):
     app.save()
     dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
 
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)

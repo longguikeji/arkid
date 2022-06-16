@@ -5,7 +5,7 @@ from typing import List
 from arkid.core.event import Event
 from arkid.extension.utils import import_extension
 from django.shortcuts import get_object_or_404
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from ninja import ModelSchema
 from ninja.pagination import paginate
 from arkid.core.api import api, operation
@@ -92,7 +92,7 @@ def create_auto_auth(request, tenant_id: str, data: AutoAuthCreateIn):
         )
     )
 
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.put(
@@ -115,7 +115,7 @@ def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
             data=config,
         )
     )
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete(
@@ -129,4 +129,4 @@ def delete_auto_auth(request, tenant_id: str, id: str):
     """删除自动认证"""
     config = TenantExtensionConfig.valid_objects.get(id=id)
     config.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)

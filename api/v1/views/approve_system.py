@@ -6,7 +6,7 @@ from arkid.core.extension.approve_system import ApproveSystemExtension
 from arkid.extension.models import TenantExtensionConfig, Extension, TenantExtension
 from arkid.extension.utils import import_extension
 from django.shortcuts import get_object_or_404
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from ninja import ModelSchema
 from typing import List
 from ninja.pagination import paginate
@@ -90,7 +90,7 @@ def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
             data=extension_config,
         )
     )
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.put(
@@ -115,7 +115,7 @@ def update_approve_system(
             data=config,
         )
     )
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete(
@@ -136,4 +136,4 @@ def delete_approve_system(request, tenant_id: str, id: str):
         )
     )
     config.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)

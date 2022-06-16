@@ -12,7 +12,7 @@ from datetime import datetime
 from django.shortcuts import get_object_or_404
 from typing import List
 from ninja.pagination import paginate
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from pydantic import UUID4
 from api.v1.schema.approve_request import (
     ApproveRequestListItemOut,
@@ -61,4 +61,4 @@ def arkid_approve_request_process(request, tenant_id: str, id: str, action: str 
     elif action == "deny":
         approve_request.status = "deny"
         approve_request.save()
-        return {'error': ErrorCode.OK.value}
+        return ErrorDict(ErrorCode.OK)

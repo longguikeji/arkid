@@ -41,7 +41,7 @@ def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
     # 分发事件开始
     result = dispatch_event(Event(tag=CREATE_PERMISSION, tenant=request.tenant, request=request, data=permission))
     # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/permissions", response=List[PermissionListSchemaOut], tags=['权限'])
@@ -81,7 +81,7 @@ def update_permission(request, tenant_id: str, permission_id: str, data: Permiss
     # 分发事件开始
     dispatch_event(Event(tag=UPDATE_PERMISSION, tenant=request.tenant, request=request, data=permission))
     # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
@@ -95,7 +95,7 @@ def delete_permission(request, tenant_id: str, permission_id: str):
     # 分发事件开始
     dispatch_event(Event(tag=DELETE_PERMISSION, tenant=request.tenant, request=request, data=permission))
     # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/permissionstr", tags=['权限'], response=PermissionStrSchemaOut)
@@ -150,7 +150,7 @@ def user_add_permission(request, tenant_id: str, permission_id: str, user_id: st
     else:
         # 添加应用权限
         dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/remove_permission", tags=['权限'], auth=None)
@@ -167,7 +167,7 @@ def user_remove_permission(request, tenant_id: str, permission_id: str, user_id:
         dispatch_event(Event(tag=REMOVE_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
         dispatch_event(Event(tag=REMOVE_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.post("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'], auth=None)
@@ -189,7 +189,7 @@ def permission_set_open(request, tenant_id: str, permission_id: str):
             dispatch_event(Event(tag=OPEN_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
         else:
             dispatch_event(Event(tag=OPEN_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
-        return {'error': ErrorCode.OK.value}
+        return ErrorDict(ErrorCode.OK)
     else:
         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
 
@@ -215,7 +215,7 @@ def permission_batch_open(request, tenant_id: str, data: PermissionBatchSchemaIn
     if permissions:
         permissions.update(is_open=True)
         dispatch_event(Event(tag=OPEN_APP_PERMISSION, tenant=request.tenant, request=request, data=None))
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.post("/tenant/{tenant_id}/permissions/batch_close", tags=['权限'], auth=None)
@@ -254,7 +254,7 @@ def permission_batch_close(request, tenant_id: str, data: PermissionBatchSchemaI
                 'tenant_id': permission.tenant_id,
             })
         dispatch_event(Event(tag=CLOSE_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/permission/{permission_id}/set_close", tags=['权限'], auth=None)
@@ -289,6 +289,6 @@ def permission_set_close(request, tenant_id: str, permission_id: str):
                 'tenant_id': permission.tenant_id,
             })
             dispatch_event(Event(tag=CLOSE_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
-        return {'error': ErrorCode.OK.value}
+        return ErrorDict(ErrorCode.OK)
     else:
         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)

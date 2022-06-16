@@ -1,7 +1,7 @@
 from arkid.core.event import dispatch_event, Event
 from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.event import SAVE_FILE
 from ninja import NinjaAPI, File
 from ninja.files import UploadedFile

@@ -3,7 +3,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.extension.utils import import_extension
 from django.shortcuts import get_object_or_404
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from ninja import ModelSchema
 from typing import List
 import json
@@ -96,7 +96,7 @@ def create_account_life(request, tenant_id: str, data: AccountLifeCreateIn):
             data=config,
         )
     )
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.put(
@@ -121,7 +121,7 @@ def update_account_life(request, tenant_id: str, id: str, data: AccountLifeUpdat
             data=config,
         )
     )
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete(
@@ -143,7 +143,7 @@ def delete_account_life(request, tenant_id: str, id: str):
         )
     )
     config.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get(

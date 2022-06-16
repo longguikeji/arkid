@@ -7,7 +7,7 @@ from arkid.core.models import ApproveAction, ApproveRequest
 from pydantic import Field
 from enum import Enum
 from arkid.extension.models import TenantExtensionConfig, Extension
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from typing import List
 from django.shortcuts import get_object_or_404
 from arkid.core.extension.approve_system import ApproveSystemExtension

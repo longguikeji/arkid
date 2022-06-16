@@ -12,7 +12,7 @@ from typing import List
 from ninja.pagination import paginate
 from django.shortcuts import get_object_or_404
 from uuid import UUID
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.pagenation import CustomPagination
 
 from api.v1.schema.scim_sync import (
@@ -128,7 +128,7 @@ def create_scim_sync(request, tenant_id: str, data: ScimSyncCreateIn):
     )
     if data.config.mode == "client":
         update_or_create_periodic_task(config)
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.put(
@@ -148,7 +148,7 @@ def update_scim_sync(request, tenant_id: str, id: str, data: ScimSyncUpdateIn):
     if data.config.mode == "client":
         update_or_create_periodic_task(config)
 
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete("/tenant/{tenant_id}/scim_syncs/{id}/", tags=[_("用户数据同步配置")], auth=None)
@@ -159,7 +159,7 @@ def delete_scim_sync(request, tenant_id: str, id: str):
     if config.config["mode"] == "client":
         delete_periodic_task(config)
     config.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 class ScimServerOut(ModelSchema):
