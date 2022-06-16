@@ -11,7 +11,7 @@
 ## 安装
 ``` py
 ## 下载arkid 的chart
-git clone --branch v2-dev --depth 1  https://github.com/longguikeji/arkid-charts.git
+git clone --branch v2.5-dev --depth 1  https://github.com/longguikeji/arkid-charts.git
 
 cd arkid-charts/chart
 

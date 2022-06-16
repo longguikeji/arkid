@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - v2.5-dev 
+    paths:
+      - 'docs/**'
+      - 'extension_root/**'
 jobs:
   deploy:
     runs-on: ubuntu-latest
