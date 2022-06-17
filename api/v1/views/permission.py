@@ -135,28 +135,30 @@ def get_arkstore_permission_str(request):
     return permissiondata.id_token_to_permission_str(request, True)
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{select_user_id}/add_permission", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/user/{select_user_id}/add_permission", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def user_add_permission(request, tenant_id: str, permission_id: str, select_user_id: str):
+def user_add_permission(request, tenant_id: str, select_user_id: str, data: PermissionBatchSchemaIn):
     '''
     添加用户权限
     '''
-    permission = SystemPermission.valid_objects.filter(id=permission_id).first()
-    if permission is None:
-        permission = Permission.valid_objects.filter(id=permission_id).first()
-    permission.user_id = select_user_id
-    if isinstance(permission, SystemPermission):
-        # 添加系统权限
-        dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
-    else:
-        # 添加应用权限
-        dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    data_arr = data.data
+    for permission_id in data_arr:
+        permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+        if permission is None:
+            permission = Permission.valid_objects.filter(id=permission_id).first()
+        permission.user_id = select_user_id
+        if isinstance(permission, SystemPermission):
+            # 添加系统权限
+            dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+        else:
+            # 添加应用权限
+            dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{select_user_id}/remove_permission", tags=['权限'], auth=None)
+@api.delete("/tenant/{tenant_id}/permission/user/{select_user_id}/{permission_id}/remove_permission", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def user_remove_permission(request, tenant_id: str, permission_id: str, select_user_id: str):
+def user_remove_permission(request, tenant_id: str, select_user_id: str, permission_id: str):
     '''
     移除用户权限
     '''
@@ -296,6 +298,9 @@ def permission_set_close(request, tenant_id: str, permission_id: str):
 @api.post("/tenant/{tenant_id}/permission/{permission_id}/toggle_open", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_toggle_open(request, tenant_id: str, permission_id: str):
+    '''
+    切换权限是否打开的状态
+    '''
     permission = SystemPermission.valid_objects.filter(
         tenant_id=tenant_id,
         id=permission_id

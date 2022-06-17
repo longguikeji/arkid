@@ -15,7 +15,7 @@ pages.register_front_pages(update_user_permission_page)
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/users/',
+        path='/api/v1/tenant/{tenant_id}/user_no_super/',
         method=actions.FrontActionMethod.GET,
     ),
     node_actions=[
@@ -32,7 +32,7 @@ user_permission_page.create_actions(
     ),
     local_actions={
         "delete": actions.DeleteAction(
-            path='/api/v1/tenant/{tenant_id}/users/{user_id}/permissions/{id}/'
+            path='/api/v1/tenant/{tenant_id}/permission/user/{select_user_id}/{permission_id}/remove_permission'
         )
     },
     global_actions={
@@ -50,7 +50,7 @@ update_user_permission_page.create_actions(
     ),
     global_actions={
         'confirm':actions.ConfirmAction(
-            path='/api/v1/tenant/{tenant_id}/users/{user_id}/permissions/',
+            path='/api/v1/tenant/{tenant_id}/permission/user/{select_user_id}/add_permission',
         ),
     }
 )

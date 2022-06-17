@@ -19,8 +19,16 @@ from ninja.pagination import paginate
 @operation(UserListOut)
 @paginate(CustomPagination)
 def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
-    users = User.expand_objects.filter(is_del=False,is_active=True)
+    users = User.expand_objects.filter(tenant_id=tenant_id, is_del=False,is_active=True)
     return list(users)
+
+@api.get("/tenant/{tenant_id}/user_no_super/",response=List[UserListItemOut], tags=['用户'], auth=None)
+@operation(UserListOut)
+@paginate(CustomPagination)
+def user_list(request, tenant_id: str):
+    super_user_id = User.valid_objects.order_by('created').first().id
+    users = User.valid_objects.filter(tenant_id=tenant_id).exclude(id=super_user_id)
+    return users
 
 # ------------- 创建用户接口 --------------
 @api.post("/tenant/{tenant_id}/users/",response=UserCreateOut, tags=['用户'], auth=None)
