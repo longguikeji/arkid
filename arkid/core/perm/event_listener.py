@@ -53,7 +53,7 @@ class EventListener(object):
         from arkid.core.tasks.tasks import update_single_user_system_permission_and_app_permisssion
         user = event.data
         tenant = event.tenant
-        update_single_user_system_permission_and_app_permisssion().delay(tenant.id, user.id)
+        update_single_user_system_permission_and_app_permisssion.delay(tenant.id, user.id)
 
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission
