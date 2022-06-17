@@ -27,5 +27,5 @@ app_permission_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/permissions?app_id={app_id}',
         method=actions.FrontActionMethod.GET
-    )
+    ),
 )

@@ -291,3 +291,46 @@ def permission_set_close(request, tenant_id: str, permission_id: str):
         return {'error': ErrorCode.OK.value}
     else:
         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
+
+
+@api.post("/tenant/{tenant_id}/permission/{permission_id}/toggle_open", tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def permission_toggle_open(request, tenant_id: str, permission_id: str):
+    permission = SystemPermission.valid_objects.filter(
+        tenant_id=tenant_id,
+        id=permission_id
+    ).first()
+    if permission is None:
+        permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
+    if permission:
+        is_open = permission.is_open
+        if is_open:
+            # 原来是打开，现在是关闭
+            permission.is_open = False
+            permission.save()
+            if isinstance(permission, SystemPermission):
+                system_permissions_info = []
+                system_permissions_info.append({
+                    'sort_id': permission.sort_id,
+                    'tenant_id': permission.tenant_id,
+                })
+                dispatch_event(Event(tag=CLOSE_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=system_permissions_info))
+            else:
+                app_permissions_info = []
+                app_permissions_info.append({
+                    'app_id': permission.app_id,
+                    'sort_id': permission.sort_id,
+                    'tenant_id': permission.tenant_id,
+                })
+                dispatch_event(Event(tag=CLOSE_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
+        else:
+            # 原来是关闭，现在是打开
+            permission.is_open = True
+            permission.save()
+            if isinstance(permission, SystemPermission):
+                dispatch_event(Event(tag=OPEN_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+            else:
+                dispatch_event(Event(tag=OPEN_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+        return {'error': ErrorCode.OK.value}
+    else:
+        return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)

@@ -6,8 +6,8 @@ name = '所有用户'
 
 
 page = pages.TreePage(tag=tag,name=name)
-user_permission_page = pages.TablePage(name=_("该分组权限"))
-update_user_permission_page = pages.TablePage(name=_("更新用户分组权限"),select=True)
+user_permission_page = pages.TablePage(name=_("该用户权限"))
+update_user_permission_page = pages.TablePage(name=_("更新用户权限"),select=True)
 
 pages.register_front_pages(page)
 pages.register_front_pages(user_permission_page)
@@ -37,7 +37,7 @@ user_permission_page.create_actions(
     },
     global_actions={
         'open': actions.OpenAction(
-            name=("添加用户分组权限"),
+            name=("添加用户权限"),
             page=update_user_permission_page
         )
     }
