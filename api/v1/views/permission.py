@@ -135,16 +135,16 @@ def get_arkstore_permission_str(request):
     return permissiondata.id_token_to_permission_str(request, True)
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/add_permission", tags=['权限'], auth=None)
+@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{select_user_id}/add_permission", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def user_add_permission(request, tenant_id: str, permission_id: str, user_id: str):
+def user_add_permission(request, tenant_id: str, permission_id: str, select_user_id: str):
     '''
     添加用户权限
     '''
     permission = SystemPermission.valid_objects.filter(id=permission_id).first()
     if permission is None:
         permission = Permission.valid_objects.filter(id=permission_id).first()
-    permission.user_id = user_id
+    permission.user_id = select_user_id
     if isinstance(permission, SystemPermission):
         # 添加系统权限
         dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
@@ -154,16 +154,16 @@ def user_add_permission(request, tenant_id: str, permission_id: str, user_id: st
     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/remove_permission", tags=['权限'], auth=None)
+@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{select_user_id}/remove_permission", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def user_remove_permission(request, tenant_id: str, permission_id: str, user_id: str):
+def user_remove_permission(request, tenant_id: str, permission_id: str, select_user_id: str):
     '''
     移除用户权限
     '''
     permission = SystemPermission.valid_objects.filter(id=permission_id).first()
     if permission is None:
         permission = Permission.valid_objects.filter(id=permission_id).first()
-    permission.user_id = user_id
+    permission.user_id = select_user_id
     if isinstance(permission, SystemPermission):
         dispatch_event(Event(tag=REMOVE_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
