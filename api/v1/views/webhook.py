@@ -124,7 +124,7 @@ def delete_webhook(request, tenant_id: str, id: str):
         return ErrorDict(ErrorCode.WEBHOOK_NOT_EXISTS)
     else:
         webhook.delete()
-        return {'error': ErrorCode.OK.value}
+        return ErrorDict(ErrorCode.OK)
 
 
 @api.get(
@@ -179,7 +179,7 @@ def delete_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
     if not history:
         return ErrorDict(ErrorCode.WEBHOOK_HISTORY_NOT_EXISTS)
     history.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get(
@@ -225,4 +225,4 @@ def retry_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
             }
         )
         history.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)

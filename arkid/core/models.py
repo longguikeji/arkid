@@ -164,7 +164,7 @@ class App(BaseModel, ExpandModel):
 
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
     name = models.CharField(max_length=128, verbose_name=_('name', '名称'))
-    url = models.CharField(max_length=1024, blank=True, verbose_name=_('url', '地址'))
+    url = models.CharField(max_length=1024,null=True,blank=True, verbose_name=_('url', '地址'))
     logo = models.CharField(
         max_length=1024, blank=True, null=True, default='', verbose_name=_('logo', '图标')
     )

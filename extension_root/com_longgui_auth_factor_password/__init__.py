@@ -1,8 +1,10 @@
 from asyncio.log import logger
 from distutils import core
 import re
+from unicodedata import name
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
-
+from arkid.core.schema import ResponseSchema
+from arkid.core.api import operation
 from .error import ErrorCode
 from arkid.core.models import Tenant, User
 from arkid.core import pages,actions
@@ -19,20 +21,14 @@ from django.contrib.auth.hashers import (
 from django.db import transaction
 from django.db.models import Q
 from arkid.core.extension import create_extension_schema
-from . import views
+from .schema import *
+from api.v1.pages.user_manage.user_list import page as user_list_page
+from api.v1.schema.auth import AuthIn
+from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
 
 package = "com.longgui.auth.factor.password"
-
 select_pw_login_fields_page = pages.TablePage(select=True, name=_("Select Password Login Fields", "选择密码登录字段"))
 
-pages.register_front_pages(select_pw_login_fields_page)
-
-select_pw_login_fields_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/'+package.replace('.','_')+'/user_key_fields/',
-        method=actions.FrontActionMethod.GET,
-    ),
-)
 
 PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',package, 
         [
@@ -62,6 +58,12 @@ PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',pa
         BaseAuthFactorSchema,
     )
 
+RestUserPasswordIn = create_extension_schema('RestUserPasswordIn',package, 
+        [
+            ('password', str , Field(title='新密码',type='password')),
+       ],
+    )
+
 GetUserKeyFieldItemOut = create_extension_schema('GetUserKeyFieldItemOut',package, 
         [
             ('key', str , Field()),
@@ -74,14 +76,36 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         super().load()
         self.register_extend_field(UserPassword, "password")
         self.register_auth_factor_schema(PasswordAuthFactorSchema, 'password')
-        from api.v1.schema.auth import AuthIn
         self.register_extend_api(AuthIn, password=str)
-        self.register_api(
+        user_key_fields_path = self.register_api(
             '/user_key_fields/',
             'GET',
             self.get_user_key_fields,
             response=List[GetUserKeyFieldItemOut],
-            auth=None,
+        )
+        select_pw_login_fields_page.create_actions(
+            init_action=actions.DirectAction(
+                path=user_key_fields_path,
+                method=actions.FrontActionMethod.GET,
+            ),
+        )
+        self.register_front_pages(select_pw_login_fields_page)
+        
+        # 租户管理员：用户管理-用户列表-重置密码
+        reset_user_password_path = self.register_api(
+            '/reset_user_password/{id}/',
+            'POST',
+            self.reset_user_password,
+            tenant_path=True,
+            response=ResponseSchema,
+        )
+        
+        user_list_page.add_local_actions(
+            actions.OpenAction(
+                name='重置密码',
+                path=reset_user_password_path,
+                method=actions.FrontActionMethod.POST,
+            )
         )
         
         # 初始化部分配置数据
@@ -105,6 +129,14 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         except Exception as e:
             print(e)
     
+    @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+    def reset_user_password(self, request, tenant_id:str, id:str, data:RestUserPasswordIn):
+        user = User.active_objects.get(id=id)
+        password = data.password
+        user.password = make_password(password)
+        user.save()
+        return self.success()
+        
     def get_user_key_fields(self,request):
         data = [{'key':key,'name':value} for key,value in User.key_fields.items()]
         return data
@@ -256,23 +288,43 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def create_auth_manage_page(self):
         # 更改密码页面
         
+        mine_password_path = self.register_api(
+            "/mine_password/",
+            'POST',
+            self.update_mine_password,
+            tenant_path=True,
+            response=UpdateMinePasswordOut,
+        )
+        
         name = '更改密码'
 
         page = pages.FormPage(name=name)
-        
-        pages.register_front_pages(page)
-
         page.create_actions(
             init_action=actions.ConfirmAction(
-                path='/api/v1/tenant/{tenant_id}/mine_password/',
+                path=mine_password_path,
             ),
             global_actions={
                 'confirm': actions.ConfirmAction(
-                    path="/api/v1/tenant/{tenant_id}/mine_password/"
+                    path=mine_password_path
                 ),
             }
         )
         return page
+    
+    def update_mine_password(self,request, tenant_id: str,data:UpdateMinePasswordIn):
+        """更改密码"""
+        user = request.user
+        user = UserPassword.objects.filter(target=user).first()
+        user_password = user.password
+        if not user_password or check_password(data.old_password, user_password):
+            if data.password == data.confirm_password:
+                user.password = make_password(data.password)
+                user.save()
+                return self.success()
+            else:
+                return self.error(ErrorCode.TWO_TIME_PASSWORD_MISMATCH)
+        
+        return self.error(ErrorCode.OLD_PASSWORD_ERROR)
 
 
 extension = PasswordAuthFactorExtension(
@@ -282,5 +334,5 @@ extension = PasswordAuthFactorExtension(
     labels='auth_factor',
     homepage='https://www.longguikeji.com',
     logo='',
-    author='hanbin@jinji-inc.com',
+    author='wely@longguikeji.com',
 )

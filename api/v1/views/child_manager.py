@@ -2,7 +2,7 @@
 
 from arkid.core.models import User
 from ninja.pagination import paginate
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from typing import Union, Literal, List
 from arkid.core.api import api, operation
 from api.v1.schema.child_manager import *
@@ -54,6 +54,6 @@ def delete_child_manager(request, tenant_id: str, id: str):
     user = User.valid_objects.filter(tenant=tenant, id=id).first()
     permissiondata = PermissionData()
     permissiondata.delete_child_man(user, tenant)
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 

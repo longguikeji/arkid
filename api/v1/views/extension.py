@@ -9,7 +9,7 @@ from arkid.core.constants import PLATFORM_ADMIN, TENANT_ADMIN
 from arkid.core.extension import Extension
 from arkid.extension.utils import import_extension
 from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
 
@@ -90,9 +90,9 @@ class ExtensionListOut(ModelSchema):
 def list_extensions(request, status: str = None):
     """ 获取平台插件列表"""
     if not status:
-        qs = ExtensionModel.active_objects.all()
+        qs = ExtensionModel.valid_objects.all()
     else:
-        qs = ExtensionModel.active_objects.filter(status=status).all()
+        qs = ExtensionModel.valid_objects.filter(status=status).all()
     return qs
 
 
@@ -163,4 +163,4 @@ def toggle_extension_status(request, id: str):
         extension.is_active = True
 
     extension.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)

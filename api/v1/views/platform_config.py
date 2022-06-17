@@ -2,7 +2,7 @@ from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
 from api.v1.schema.platform_config import *
 from arkid.core.models import Platform
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 
 @api.get("/platform_config/",response=PlatformConfigOut, tags=["平台配置"],auth=None)
 def get_platform_config(request):

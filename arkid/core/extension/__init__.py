@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 from pyclbr import Function
 from typing import Union, Literal, Any, List, Optional, Tuple, Type, Callable
 from typing_extensions import Annotated
 from uuid import UUID
 from attr import field
 from pydantic import Field
-from arkid.core.error import ErrorDict
+from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from django.urls import include, re_path
 from pathlib import Path
 from ninja.constants import NOT_SET
@@ -457,7 +458,7 @@ class Extension(ABC):
         Args:
             page (core_pages.FrontPage): 前端页面
         """
-        page.add_tag_pre(self.package)
+        page.add_tag_pre(self.pname)
         core_page.register_front_pages(page)
         self.front_pages.append(page)
 
@@ -787,9 +788,29 @@ class Extension(ABC):
             
 ################################################################################
 
-    def error(self, enum, **kwargs):
+    def error(self, enum:Enum=None, **kwargs):
+        """API接口错误dict
+
+        Args:
+            enum (Enum, optional): 错误的枚举类，如果为None，标识成功返回. Defaults to None.
+
+        Returns:
+            dict : 生成的错误dict
+        """
+        if not enum:
+            return ErrorDict(ErrorCode.OK, self.package, **kwargs)
         return ErrorDict(enum, self.package, **kwargs)
     
+    def success(self, data=None, **kwargs):
+        """API接口成功dict
+
+        Args:
+            data (dict, optional): 成功时需要返回的数据. Defaults to None.
+
+        Returns:
+            dict: 生成的成功dict
+        """
+        return SuccessDict(data, self.package, **kwargs)
 
     @abstractmethod
     def load(self):

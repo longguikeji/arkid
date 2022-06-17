@@ -68,9 +68,20 @@ class ErrorCode(Enum):
 class ErrorDict(dict):
 
   def __init__(self, enum, package='core', **kwargs):
-    self['error'] = enum.value[0]
-    message = enum.value[1]
-    for key, value in kwargs.items():
-      message.replace('{'+key+'}', value)
-    self['message'] = message
+    if type(enum.value) is tuple:
+      self['error'] = enum.value[0]
+    else:
+      self['error'] = enum.value
+    
+    if len(enum.value) > 1:
+      message = enum.value[1]
+      for key, value in kwargs.items():
+        message.replace('{'+key+'}', value)
+      self['message'] = message
     self['package'] = package
+    
+class SuccessDict(ErrorDict):
+  def __init__(self, data = None, package='core', **kwargs):
+    super().__init__(ErrorCode.OK, package, **kwargs)
+    if data:
+      self['data'] = data

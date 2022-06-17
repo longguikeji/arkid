@@ -8,7 +8,7 @@ from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import LanguageData
 from arkid.core.translation import lang_maps as core_maps,reset_lang_maps,default_lang_maps
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 
 
 @api.get("/tenant/{tenant_id}/languages/",response=List[LanguageListItemOut],tags=["语言包管理"],auth=None)
@@ -41,7 +41,7 @@ def create_language(request, tenant_id: str,data:LanguageCreateIn):
         **data.dict()
     )
     
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.delete(
     "/tenant/{tenant_id}/languages/{id}/",
@@ -62,7 +62,7 @@ def delete_language(request, tenant_id: str,id:str):
         language_data.save()
     else:
         language_data.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.get(
     "/tenant/{tenant_id}/languages/{id}/translates/",
@@ -104,7 +104,7 @@ def create_language_data(request, tenant_id: str, id:str, data:LanguageDataItemC
         language_data.custom_data = custom_translate_data
     language_data.save()
     core_maps = reset_lang_maps()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.get(
     "/tenant/{tenant_id}/translate_word/",
@@ -113,7 +113,7 @@ def create_language_data(request, tenant_id: str, id:str, data:LanguageDataItemC
     response=LanguageTranslateWordOut,
 )
 @operation(LanguageTranslateWordOut)
-def get_language_data(request, tenant_id: str):
+def translate_word(request, tenant_id: str):
     """ 获取自定义语言包
     """
     data = []

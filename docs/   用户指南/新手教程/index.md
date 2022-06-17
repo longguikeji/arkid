@@ -9,7 +9,7 @@
 
 === "打开应用列表"
 
-    ![XhhlVg.jpg](https://s1.ax1x.com/2022/06/14/XhhlVg.jpg)
+    [![X40bd0.jpg](https://s1.ax1x.com/2022/06/14/X40bd0.jpg)](https://imgtu.com/i/X40bd0)
 
 === "点击创建，填写表单"
 
@@ -36,9 +36,55 @@
 
 
 ## 添加一个新的账号
+=== "打开用户列表"
+
+    [![X4BBkV.jpg](https://s1.ax1x.com/2022/06/14/X4BBkV.jpg)](https://imgtu.com/i/X4BBkV)
+
+=== "点击创建"
+    填写下面的表单，点击创建即可。
+
+    [![X4BrfU.jpg](https://s1.ax1x.com/2022/06/14/X4BrfU.jpg)](https://imgtu.com/i/X4BrfU)
+
+
+
+
 ## 添加组织结构或角色
+
+=== "打开用户分组"
+    关于分组的详细介绍可以看 [用户管理-用户分组](/%20%20%20用户指南/用户手册/%20租户管理员/%20%20%20%20%20用户管理/#_3)
+
+    [![X4TpdK.jpg](https://s1.ax1x.com/2022/06/14/X4TpdK.jpg)](https://imgtu.com/i/X4TpdK)
+
+=== "点击创建"
+    填写下面的表单，点击创建即可。
+
+    [![X4Tndf.jpg](https://s1.ax1x.com/2022/06/14/X4Tndf.jpg)](https://imgtu.com/i/X4Tndf)
+
+=== "为分组添加用户"
+
+    [![X4TGyn.jpg](https://s1.ax1x.com/2022/06/14/X4TGyn.jpg)](https://imgtu.com/i/X4TGyn)
+
+=== "选择用户"
+
+    [![X4T0W4.jpg](https://s1.ax1x.com/2022/06/14/X4T0W4.jpg)](https://imgtu.com/i/X4T0W4)
+
 ## 为目标账号开通一个应用
+
+
 ## 为目标组织结构开通一组权限
 ## 添加手机验证码作为新的认证因素
+
+=== "打开认证因素"
+
+    [![X4Tndf.jpg](https://s1.ax1x.com/2022/06/14/X4Tndf.jpg)](https://imgtu.com/i/X4Tndf)
+
+=== "点击创建"
+
+    选择认证因素类型“mobile”，填写表单
+
+
+=== "打开认证因素"
+
+
 ## AD与ArkID的数据同步
 ## 启用多租户，成为IDaaS

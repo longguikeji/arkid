@@ -7,7 +7,7 @@ from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auth_factor import AuthFactorExtension
 from arkid.extension.models import Extension, TenantExtensionConfig
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.auth_factor import AuthFactorCreateIn, AuthFactorCreateOut, AuthFactorDeleteOut, AuthFactorListItemOut, AuthFactorListOut, AuthFactorOut, AuthFactorUpdateIn, AuthFactorUpdateOut
 from arkid.core.pagenation import CustomPagination
 
@@ -65,7 +65,7 @@ def create_auth_factor(request, tenant_id: str, data: AuthFactorCreateIn):
     config.name = data.dict()["name"]
     config.type = data.type
     config.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.post("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorUpdateOut, tags=["认证因素"], auth=None)
@@ -78,7 +78,7 @@ def update_auth_factor(request, tenant_id: str, id: str, data: AuthFactorUpdateI
     for attr, value in data.dict().items():
         setattr(config, attr, value)
     config.save()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorDeleteOut, tags=["认证因素"], auth=None)
@@ -90,4 +90,4 @@ def delete_auth_factor(request, tenant_id: str, id: str):
         tenant__id=tenant_id, id=id
     )
     config.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)

@@ -72,7 +72,7 @@ def create_approve_action(request, tenant_id: str, data: ApproveActionCreateIn):
             extension=extension,
             tenant=request.tenant,
         )
-        return {'error': ErrorCode.OK.value}
+        return ErrorDict(ErrorCode.OK)
 
 
 @api.put(
@@ -96,7 +96,7 @@ def update_approve_action(
         action.method = data.method
         action.extension = extension
         action.save()
-        return {'error': ErrorCode.OK.value}
+        return ErrorDict(ErrorCode.OK)
 
 
 @api.delete(
@@ -113,7 +113,7 @@ def delete_approve_action(request, tenant_id: str, id: str):
         return ErrorDict(ErrorCode.APPROVE_ACTION_NOT_EXISTS)
     else:
         action.delete()
-        return {'error': ErrorCode.OK.value}
+        return ErrorDict(ErrorCode.OK)
 
 
 class ApproveSystemExtensionListOut(ModelSchema):

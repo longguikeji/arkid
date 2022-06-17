@@ -86,7 +86,11 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
         Returns:
             arkid.core.models.User: 返回ext_id绑定的ArkID用户
         """
-        return GithubUser.valid_objects.filter(github_user_id=ext_id).first().user
+        github_user =  GithubUser.valid_objects.filter(github_user_id=ext_id).first()
+        if github_user:
+            return github_user.target
+        else:
+            return None
 
     def bind_arkid_user(self, ext_id, user):
         """

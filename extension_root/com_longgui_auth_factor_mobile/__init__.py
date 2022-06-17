@@ -9,7 +9,7 @@ from typing import List, Optional
 from arkid.core.translation import gettext_default as _
 from django.db import transaction
 from arkid.core.extension import create_extension_schema
-from . import views
+from .schema import *
 
 package = "com.longgui.auth.factor.mobile"
 
@@ -39,7 +39,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             ProfileSchemaOut, 
             mobile=(Optional[str],Field(readonly=True))
         )
-        
+    
+    def update_mine_mobile(self, request, tenant_id: str,data:UpdateMineMobileIn):
+    
+        return self.success()
+    
     def authenticate(self, event, **kwargs):
         tenant = event.tenant
         request = event.request
@@ -202,19 +206,25 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         pass
     
     def create_auth_manage_page(self):
+        
+        mine_mobile_path = self.register_api(
+            "/mine_mobile/",
+            'POST',
+            self.update_mine_mobile,
+            tenant_path=True,
+            response=UpdateMineMobileOut
+        )
+        
         name = '更改手机号码'
 
         page = pages.FormPage(name=name)
-        
-        pages.register_front_pages(page)
-
         page.create_actions(
             init_action=actions.ConfirmAction(
-                path="/api/v1/tenant/{tenant_id}/mine_mobile/"
+                path=mine_mobile_path
             ),
             global_actions={
                 'confirm': actions.ConfirmAction(
-                    path="/api/v1/tenant/{tenant_id}/mine_mobile/"
+                    path=mine_mobile_path
                 ),
             }
         )
@@ -223,7 +233,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
 
 extension = MobileAuthFactorExtension(
     package=package,
-    name="手机验证码认证",
+    name="手机验证码认证因素",
     version='1.0',
     labels='auth_factor',
     homepage='https://www.longguikeji.com',

@@ -2,8 +2,8 @@
 # 通过docker部署
 
 ``` py
-# 下载 arkid v2.0 部署文件
-git clone --branch v2-dev --depth 1  https://github.com/longguikeji/arkid-charts.git
+# 下载 arkid v2.5 部署文件
+git clone --branch v2.5-dev --depth 1  https://github.com/longguikeji/arkid-charts.git
 
 cd arkid-charts/docker-compose
 

@@ -99,7 +99,7 @@ def update_permission_group(request, tenant_id: str, id: str, data: PermissionGr
     # 分发事件开始
     dispatch_event(Event(tag=UPDATE_GROUP_PERMISSION, tenant=request.tenant, request=request, data=permission))
     # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.delete("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -118,7 +118,7 @@ def delete_permission_group(request, tenant_id: str, id: str):
     # 分发事件开始
     dispatch_event(Event(tag=DELETE_GROUP_PERMISSION, tenant=request.tenant, request=request, data=permission))
     # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", response=List[PermissionListSchemaOut], tags=["权限分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -185,7 +185,7 @@ def update_permissions_from_group(request, tenant_id: str, permission_group_id: 
         # 分发事件开始
         dispatch_event(Event(tag=UPDATE_GROUP_PERMISSION_PERMISSION, tenant=tenant, request=request, data=permission_group))
         # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/select_permissions/", response=List[PermissionListSelectSchemaOut], tags=["权限分组"], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])

@@ -15,6 +15,7 @@ class ExtensionLoader:
 
         return cls._instance
 
+    
     def _start(self):
         
         try:# 防止在migrate或其它命令运行时没有创建数据库而报错
@@ -23,16 +24,21 @@ class ExtensionLoader:
             return
         
         exts = find_available_extensions()
+        packages = []
         for ext in exts:
-            Extension.objects.update_or_create(
+            extension, is_create = Extension.objects.update_or_create(
                 defaults={
                     'type': ext.type,
                     'labels': ext.labels,
                     'ext_dir': str(ext.ext_dir),
                     'name': ext.name,
                     'version': ext.version,
-                    'is_active': True,
                 },
                 package = ext.package,
             )
+            packages.append(ext.package)
+            
+        del_exts = Extension.objects.exclude(package__in=packages)
+        for del_ext in del_exts:
+            del_ext.delete()
         load_active_extensions()

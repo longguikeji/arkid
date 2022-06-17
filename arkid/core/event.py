@@ -1,5 +1,6 @@
 from typing import Dict
 from django.dispatch import Signal
+from django.forms import model_to_dict
 from arkid.core.translation import gettext_default as _
 from ninja import Schema
 from arkid.core.models import Tenant
@@ -9,8 +10,9 @@ from django.core.serializers import serialize
 from django.db import models
 from django.db.models.query import QuerySet
 from arkid.common.logger import logger
+from arkid.common.utils import data_to_simplenamespace
 import json
-
+from types import SimpleNamespace
 event_id_map = {}
 
 
@@ -107,7 +109,7 @@ class Event:
         request: HttpRequest = None,
         response: HttpResponse = None,
         packages: str = None,
-        data=None,
+        data = None,
         uuid: str = None,
     ):
         """事件
@@ -126,6 +128,7 @@ class Event:
         self._request = request
         self._response = response
         self.packages = packages
+        # self.data = data_to_simplenamespace(data)
         self.data = data
         self.uuid = uuid
 
@@ -280,8 +283,8 @@ def unlisten_event(tag, func, **kwargs):
 CREATE_LOGIN_PAGE_AUTH_FACTOR = 'CREATE_LOGIN_PAGE_AUTH_FACTOR'
 CREATE_LOGIN_PAGE_RULES = 'CREATE_LOGIN_PAGE_RULES'
 CREATE_APP_CONFIG = 'CREATE_APP_CONFIG'
-CREATE_APP_CONFIG_DONE = 'CREATE_APP_CONFIG_DONE'
 UPDATE_APP_CONFIG = 'UPDATE_APP_CONFIG'
+APP_CONFIG_DONE = 'APP_CONFIG_DONE'
 DELETE_APP = 'DELETE_APP'
 CREATE_APP = 'CREATE_APP'
 UPDATE_APP = 'UPDATE_APP'
@@ -347,7 +350,7 @@ register_event(
 )
 register_event(CREATE_LOGIN_PAGE_RULES, _('create login page rules', '登录页面生成规则'))
 register_event(CREATE_APP_CONFIG, _('create app config', '创建应用协议配置'))
-register_event(CREATE_APP_CONFIG_DONE, _('create app config done', '创建应用协议配置完成'))
+register_event(APP_CONFIG_DONE, _('app config done', '应用协议配置完成'))
 register_event(UPDATE_APP_CONFIG, _('update app config', '修改应用协议配置'))
 register_event(DELETE_APP, _('delete app', '删除应用'))
 register_event(CREATE_APP, _('create app', '创建应用'))

@@ -50,7 +50,7 @@ def create_group(request, tenant_id: str, data: UserGroupCreateIn):
         )
     )
     # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/user_groups/", response=UserGroupListOut, tags=['用户分组'], auth=None)
@@ -101,7 +101,7 @@ def update_group(request, tenant_id: str, id: str, data: UserGroupUpdateIn):
     dispatch_event(Event(tag=UPDATE_GROUP, tenant=request.tenant,
                    request=request, data=group))
     # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete("/tenant/{tenant_id}/user_groups/{id}/", response=UserGroupDeleteOut, tags=['用户分组'], auth=None)
@@ -116,7 +116,7 @@ def delete_group(request, tenant_id: str, id: str):
                    request=request, data=group))
     # 分发事件结束
     group.delete()
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", response=List[UserGroupUserListItemOut], tags=['用户分组'], auth=None)
@@ -147,7 +147,7 @@ def group_users_add(request, tenant_id: str, user_group_id: str, data: UserGroup
         # 分发事件开始
         result = dispatch_event(Event(tag=GROUP_ADD_USER, tenant=request.tenant, request=request, data=group))
         # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'], auth=None)
@@ -166,7 +166,7 @@ def group_batch_users_remove(request, tenant_id: str, user_group_id: str, data: 
         # 分发事件开始
         result = dispatch_event(Event(tag=GROUP_REMOVE_USER, tenant=request.tenant, request=request, data=group))
         # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.delete("/tenant/{tenant_id}/user_groups/{user_group_id}/users/{id}/", tags=['用户分组'], auth=None)
@@ -183,7 +183,7 @@ def group_users_remove(request, tenant_id: str, user_group_id: str, id: str):
     # 分发事件开始
     result = dispatch_event(Event(tag=GROUP_REMOVE_USER, tenant=request.tenant, request=request, data=group))
     # 分发事件结束
-    return {'error': ErrorCode.OK.value}
+    return ErrorDict(ErrorCode.OK)
 
 @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/exclude_users/", response=List[UserGroupExcludeUsersItemOut], tags=["用户分组"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])

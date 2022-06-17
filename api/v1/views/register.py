@@ -6,7 +6,7 @@ from arkid.core.api import api, operation
 from arkid.core.models import Tenant, ExpiringToken, User
 from arkid.core.translation import gettext_default as _
 from arkid.core.token import refresh_token
-from arkid.core.error import ErrorCode
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.schema import ResponseSchema, UserSchemaOut
 
 
