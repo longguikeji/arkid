@@ -22,11 +22,12 @@ select_app_page.create_actions(
 
 class PermissionListSchemaOut(ModelSchema):
 
-    app_id: UUID = Field(default=None)
+    app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
+    is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value})
 
     class Config:
         model = Permission
-        model_fields = ['id', 'name', 'category', 'is_system']
+        model_fields = ['id', 'name', 'category', 'is_system', 'is_open']
 
 
 class PermissionSchemaOut(Schema):

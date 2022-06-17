@@ -5,7 +5,7 @@ tag = 'group_grant'
 name = '所有分组'
 
 
-page = pages.ListPage(tag=tag,name=name)
+page = pages.TreePage(tag=tag,name=name)
 group_permission_page = pages.TablePage(name=_("该分组权限"))
 update_group_permission_page = pages.TablePage(name=_("更新用户分组权限"),select=True)
 
@@ -27,20 +27,20 @@ page.create_actions(
 
 group_permission_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/',
+        path='/api/v1/tenant/{tenant_id}/permissions?group_id={group_id}',
         method=actions.FrontActionMethod.GET
     ),
     local_actions={
         "delete": actions.DeleteAction(
             path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/{id}/'
         )
-    },
-    global_actions={
-        'open': actions.OpenAction(
-            name=("添加用户分组权限"),
-            page=update_group_permission_page
-        )
     }
+    # global_actions={
+    #     'open': actions.OpenAction(
+    #         name=("添加用户分组权限"),
+    #         page=update_group_permission_page
+    #     )
+    # }
 )
 
 update_group_permission_page.create_actions(

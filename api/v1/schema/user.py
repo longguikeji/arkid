@@ -2,6 +2,7 @@ from typing import List
 from ninja import ModelSchema, Schema
 from arkid.core.models import User
 from pydantic import Field
+from arkid.core.translation import gettext_default as _
 from arkid.core.schema import ResponseSchema
 
 class UserListQueryIn(Schema):
@@ -10,6 +11,7 @@ class UserListQueryIn(Schema):
     )
 
 class UserListItemOut(ModelSchema):
+
     class Config:
         model = User
         model_fields = ['id', 'username', 'avatar']

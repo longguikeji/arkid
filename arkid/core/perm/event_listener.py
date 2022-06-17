@@ -53,7 +53,7 @@ class EventListener(object):
         from arkid.core.tasks.tasks import update_single_user_system_permission_and_app_permisssion
         user = event.data
         tenant = event.tenant
-        update_single_user_system_permission_and_app_permisssion().delay(tenant.id, user.id)
+        update_single_user_system_permission_and_app_permisssion.delay(tenant.id, user.id)
 
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission
@@ -137,11 +137,11 @@ class EventListener(object):
     def delete_app(self, event, **kwargs):
         app = event.data
         tenant = event.tenant
-        permission = Permission.active_objects.filter(category='entry', app=app, is_system=True).first()
+        permission = app.entry_permission
         if permission:
             permission.delete()
-            from arkid.core.tasks.tasks import update_only_user_app_permission
-            update_only_user_app_permission.delay(tenant.id, permission.app.id)
+            from arkid.core.tasks.tasks import update_arkid_all_user_permission
+            update_arkid_all_user_permission.delay()
         return True
     
     def create_group_permission(self, event, **kwargs):

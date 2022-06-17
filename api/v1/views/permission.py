@@ -1,5 +1,4 @@
 
-
 from arkid.core.api import api, operation
 from typing import List, Optional
 from django.db import transaction
@@ -19,7 +18,6 @@ from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from api.v1.schema.permission import *
 
 import uuid
-
 
 
 @transaction.atomic
@@ -47,14 +45,14 @@ def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
 @api.get("/tenant/{tenant_id}/permissions", response=List[PermissionListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_permissions(request, tenant_id: str,  app_id: str = None, user_id: str = None, group_id: str = None):
+def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_id: str = None, group_id: str = None):
     '''
     权限列表
     '''
     login_user = request.user
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_permissions_by_search(tenant_id, app_id, user_id, group_id, login_user)
+    return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user)
 
 @api.get("/tenant/{tenant_id}/permission/{permission_id}", response=PermissionDetailOut, tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -90,7 +88,9 @@ def delete_permission(request, tenant_id: str, permission_id: str):
     '''
     删除权限
     '''
-    permission = get_object_or_404(Permission, id=permission_id, is_del=False)
+    permission = Permission.valid_objects.filter(id=permission_id).first()
+    if permission is None:
+        return ErrorDict(ErrorCode.PERMISSION_NOT_EDIT)
     permission.delete()
     # 分发事件开始
     dispatch_event(Event(tag=DELETE_PERMISSION, tenant=request.tenant, request=request, data=permission))
@@ -134,35 +134,37 @@ def get_arkstore_permission_str(request):
     return permissiondata.id_token_to_permission_str(request, True)
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/add_permission", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/user/{select_user_id}/add_permission", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def user_add_permission(request, tenant_id: str, permission_id: str, user_id: str):
+def user_add_permission(request, tenant_id: str, select_user_id: str, data: PermissionBatchSchemaIn):
     '''
     添加用户权限
     '''
-    permission = SystemPermission.valid_objects.filter(id=permission_id).first()
-    if permission is None:
-        permission = Permission.valid_objects.filter(id=permission_id).first()
-    permission.user_id = user_id
-    if isinstance(permission, SystemPermission):
-        # 添加系统权限
-        dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
-    else:
-        # 添加应用权限
-        dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
-    return ErrorDict(ErrorCode.OK)
+    data_arr = data.data
+    for permission_id in data_arr:
+        permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+        if permission is None:
+            permission = Permission.valid_objects.filter(id=permission_id).first()
+        permission.user_id = select_user_id
+        if isinstance(permission, SystemPermission):
+            # 添加系统权限
+            dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+        else:
+            # 添加应用权限
+            dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    return {'error': ErrorCode.OK.value}
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/user/{user_id}/remove_permission", tags=['权限'], auth=None)
+@api.delete("/tenant/{tenant_id}/permission/user/{select_user_id}/{permission_id}/remove_permission", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def user_remove_permission(request, tenant_id: str, permission_id: str, user_id: str):
+def user_remove_permission(request, tenant_id: str, select_user_id: str, permission_id: str):
     '''
     移除用户权限
     '''
     permission = SystemPermission.valid_objects.filter(id=permission_id).first()
     if permission is None:
         permission = Permission.valid_objects.filter(id=permission_id).first()
-    permission.user_id = user_id
+    permission.user_id = select_user_id
     if isinstance(permission, SystemPermission):
         dispatch_event(Event(tag=REMOVE_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
@@ -257,7 +259,7 @@ def permission_batch_close(request, tenant_id: str, data: PermissionBatchSchemaI
     return ErrorDict(ErrorCode.OK)
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}/set_close", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/{permission_id}/set_close", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_set_close(request, tenant_id: str, permission_id: str):
     '''
@@ -267,8 +269,6 @@ def permission_set_close(request, tenant_id: str, permission_id: str):
         tenant_id=tenant_id,
         id=permission_id
     ).first()
-    items = {
-    }
     if permission is None:
         permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
     if permission:
@@ -290,5 +290,51 @@ def permission_set_close(request, tenant_id: str, permission_id: str):
             })
             dispatch_event(Event(tag=CLOSE_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
         return ErrorDict(ErrorCode.OK)
+    else:
+        return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
+
+
+@api.post("/tenant/{tenant_id}/permission/{permission_id}/toggle_open", tags=['权限'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def permission_toggle_open(request, tenant_id: str, permission_id: str):
+    '''
+    切换权限是否打开的状态
+    '''
+    permission = SystemPermission.valid_objects.filter(
+        tenant_id=tenant_id,
+        id=permission_id
+    ).first()
+    if permission is None:
+        permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
+    if permission:
+        is_open = permission.is_open
+        if is_open:
+            # 原来是打开，现在是关闭
+            permission.is_open = False
+            permission.save()
+            if isinstance(permission, SystemPermission):
+                system_permissions_info = []
+                system_permissions_info.append({
+                    'sort_id': permission.sort_id,
+                    'tenant_id': permission.tenant_id,
+                })
+                dispatch_event(Event(tag=CLOSE_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=system_permissions_info))
+            else:
+                app_permissions_info = []
+                app_permissions_info.append({
+                    'app_id': permission.app_id,
+                    'sort_id': permission.sort_id,
+                    'tenant_id': permission.tenant_id,
+                })
+                dispatch_event(Event(tag=CLOSE_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
+        else:
+            # 原来是关闭，现在是打开
+            permission.is_open = True
+            permission.save()
+            if isinstance(permission, SystemPermission):
+                dispatch_event(Event(tag=OPEN_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+            else:
+                dispatch_event(Event(tag=OPEN_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+        return {'error': ErrorCode.OK.value}
     else:
         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
