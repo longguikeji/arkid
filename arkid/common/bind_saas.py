@@ -103,7 +103,7 @@ def create_arkidstore_login_app(tenant, saas_tenant_id):
 
 def create_arkid_saas_login_app(tenant, saas_tenant_id):
     url = f"{settings.ARKID_SAAS_URL}/login?tenant_id={saas_tenant_id}"
-    create_tenant_oidc_app(tenant, url, 'arkdi_saas_login', 'arkid_saas login')
+    create_tenant_oidc_app(tenant, url, 'arkid_saas_login', 'arkid_saas login')
 
 
 def bind_saas(tenant_id, data=None):
