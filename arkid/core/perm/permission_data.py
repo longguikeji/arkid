@@ -279,7 +279,7 @@ class PermissionData(object):
                 else:
                     auth_user.is_tenant_admin = False
         # 权限数据
-        system_permissions = SystemPermission.valid_objects.order_by('sort_id')
+        system_permissions = SystemPermission.objects.order_by('sort_id')
         data_dict = {}
         data_group_parent_child = {}
         for system_permission in system_permissions:
