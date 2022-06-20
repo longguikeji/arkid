@@ -1170,8 +1170,8 @@ class PermissionData(object):
         创建租户管理员权限和租户管理员
         '''
         systempermission, is_create = self.create_tenant_admin_permission(tenant)
-        if is_create:
-            self.add_system_permission_to_user(tenant.id, user.id, systempermission.id)
+        # if is_create:
+        self.add_system_permission_to_user(tenant.id, user.id, systempermission.id)
 
     def get_user_group_all_permissions(self, tenant_id, user_group_id):
         '''
