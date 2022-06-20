@@ -45,7 +45,7 @@ user_permission_page.create_actions(
 
 update_user_permission_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/permissions',
+        path='/api/v1/tenant/{tenant_id}/permissions?select_user_id={select_user_id}',
         method=actions.FrontActionMethod.GET
     ),
     global_actions={
