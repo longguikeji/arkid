@@ -1676,7 +1676,7 @@ class PermissionData(object):
             app_tenant_id = app_info.get('app_tenant_id')
             if app_tenant_id == tenant_uid:
                 # 同一个租户
-                update_single_user_app_permission(tenant_uid, user_id, app_id)
+                self.update_single_user_app_permission(tenant_uid, user_id, app_id)
             else:
                 # 不同租户
                 max_permission = Permission.objects.filter(app=app_id).order_by('-sort_id').first()
