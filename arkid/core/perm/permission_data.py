@@ -1230,10 +1230,6 @@ class PermissionData(object):
         ).first()
         if not app:
             return False, '没有找到应用'
-        
-        # 特殊处理 OIDC-Platform
-        if app.type == 'OIDC-Platform':
-            return True, ''
 
         permission = app.entry_permission
         if not permission:
