@@ -16,18 +16,6 @@ class LdapServerExtension(InMemExtension):
     """
 
     def start(self, runtime: Runtime, *args, **kwargs):
-        # extension = Extension.active_objects.filter(
-        #     is_del=False,
-        #     type=KEY
-        # ).last()
-
-        # print(extension.data)
-        # extension.data["people_api_url"] = get_app_config().get_host(
-        # ) + reverse("api:ldapserver:user_search", args=(extension.tenant.uuid,))
-        # extension.data["group_api_url"] = get_app_config().get_host(
-        # ) + reverse("api:ldapserver:group_search", args=(extension.tenant.uuid,))
-        # extension.save()
-
         super().start(runtime=runtime, *args, **kwargs)
 
     def teardown(self, runtime: Runtime, *args, **kwargs):  # pylint: disable=unused-argument

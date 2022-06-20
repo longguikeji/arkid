@@ -14,7 +14,7 @@ class Search(View):
     搜索
     """
 
-    def get(self, request, tenant_uuid):    # pylint: disable=unused-argument
+    def get(self, request):    # pylint: disable=unused-argument
         """
         GET
         """
@@ -51,16 +51,38 @@ class Search(View):
         match_params = re.findall("(.*)=(.*)", item)
         if match_params:
             match_params = match_params[0]
-        if match_params[0] == "ou":
-            if match_params[1] == "people":
-                people_item = {
-                    "dn": "ou=people" + dc_suf,
-                    "attributes": {
-                        "objectClass": ["top", "organizationUnit"],
-                        "ou": "people"
+        if match_params[0] == "cn":
+            
+            if "ou=people" in dc_suf:
+                user = User.active_objects.get(username=match_params[1])
+                res = []
+                attributes = {}
+                attribute_mappings = self.get_attribute_mappings(
+                    "people"
+                )
+                for k in attribute_mappings.keys():
+                    attributes[k] = getattr(user, attribute_mappings[k], None)
+                res.append(
+                    {
+                        "attributes": attributes
                     }
-                }
-                res.append(people_item)
+                )
+            elif "ou=group" in dc_suf:
+                group = Group.active_objects.get(id=match_params[1])
+                res = []
+                attributes = {}
+                attribute_mappings = self.get_attribute_mappings(
+                    "group"
+                )
+                for k in attribute_mappings.keys():
+                    attributes[k] = getattr(group, attribute_mappings[k], None)
+                res.append(
+                    {
+                        "attributes": attributes
+                    }
+                )
+        elif match_params[0] == "ou":
+            if match_params[1] == "people":
                 dc_suf = f",{item}{dc_suf}"
                 res.extend(
                     self.user_search(
@@ -91,31 +113,29 @@ class Search(View):
                     )
                 )
         elif match_params[0] == "o":
-            res.extend(
-                self.tenant_search(
-                    match_params[1],
-                    dc_suf
-                )
-            )
-        elif match_params[0] == "dc":
-            top_item = {
-                "dn": f"{item}" + dc_suf,
+            people_item = {
+                "dn": f"ou=people,{item}{dc_suf}",
                 "attributes": {
-                    "objectClass": ["top", "organization", "dcObject"],
-                    "dc": match_params[1]
+                    "objectClass": ["organizationUnit"],
                 }
             }
-            res.append(top_item)
+            res.append(people_item)
+            group_item = {
+                "dn": f"ou=group,{item}{dc_suf}",
+                "attributes": {
+                    "objectClass": ["organizationUnit"],
+                }
+            }
+            res.append(group_item)
+        elif match_params[0] == "dc":
             for tenant in Tenant.objects.all():
-                res.extend(
-                    self.tenant_search(
-                        tenant.uuid,
-                        f",{item}{dc_suf}"
-                    )
+                res.append(
+                    {
+                        "dn":f"o={tenant.uuid.hex},{item}{dc_suf}",
+                        "attributes":{"objectClass": ["tenant" ]},
+                    }
                 )
-
-        # res = self.user_search(filters, attribute_mappings)
-
+        
         return JsonResponse(
             data={
                 "error": 0,
@@ -155,7 +175,7 @@ class Search(View):
             for k in attribute_mappings.keys():
                 attributes[k] = getattr(group, attribute_mappings[k], None)
 
-            res["dn"] = f"cn={group.name},ou=group{dc_suf}"
+            res["dn"] = f"cn={group.id},ou=group{dc_suf}"
             attributes["objectClass"] = ["top", "group", "groupOfNames"]
             attributes["member"] = []
             for member in group.user_set.all():
