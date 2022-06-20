@@ -980,7 +980,7 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
     
-    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False):
+    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False, app_name=None, category=None):
         '''
         根据应用，用户，分组查权限(要根据用户身份显示正确的列表)
         '''
@@ -1007,6 +1007,14 @@ class PermissionData(object):
             systempermissions = systempermissions.filter(tenant_id=None)
             permissions = permissions.filter(app_id=None)
         compress = Compress()
+        if app_id is None and user_id is None and group_id is None and login_user:
+            # 需要正确展现用户的id
+            user_id = str(login_user.id)
+        if app_name:
+            permissions = permissions.filter(app__name=app_name)
+        if category:
+            permissions = permissions.filter(category=category)
+            systempermissions = systempermissions.filter(category=category)
         if app_id or user_id or group_id:
             if app_id:
                 app = App.valid_objects.filter(
