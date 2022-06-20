@@ -25,8 +25,8 @@ def user_saved(sender, instance: User, created: bool, **kwargs):
         user = instance
         tenant = user.tenant
         if tenant:
-            tenant_id = tenant.id
-            user_id = user.id
+            tenant_id = str(tenant.id)
+            user_id = str(user.id)
             pd = PermissionData()
             pd.update_single_user_system_permission(tenant_id, user_id)
             pd.update_tenant_use_app_by_user(tenant_id, user_id)
