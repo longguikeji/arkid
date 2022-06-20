@@ -8,6 +8,7 @@ name = '应用列表'
 page = pages.TablePage(tag=tag, name=name)
 edit_page = pages.FormPage(name=_("编辑应用"))
 config_page = pages.FormPage(name=_("配置应用"))
+openapi_page = pages.FormPage(name=_("开放API配置"))
 appstore_page = pages.TabsPage(name=_("APP Store", "应用商店"))
 app_list_page = pages.TablePage(name=_("APP Store", "应用商店"))
 app_purchased_page = pages.TablePage(name=_("Purchased", "已购买"))
@@ -16,6 +17,7 @@ order_page = pages.FormPage(name=_('Order', '购买'))
 pages.register_front_pages(page)
 pages.register_front_pages(edit_page)
 pages.register_front_pages(config_page)
+pages.register_front_pages(openapi_page)
 pages.register_front_pages(appstore_page)
 pages.register_front_pages(app_list_page)
 pages.register_front_pages(app_purchased_page)
@@ -58,7 +60,11 @@ page.create_actions(
         ),
         "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/apps/{id}/",
-        )
+        ),
+        "openapi_version": actions.OpenAction(
+            name = _("开放API配置"),
+            page=openapi_page,
+        ),
     },
 )
 
@@ -70,6 +76,18 @@ edit_page.create_actions(
     global_actions={
        'confirm': actions.ConfirmAction(
             path="/api/v1/tenant/{tenant_id}/apps/{id}/"
+        ),
+    }
+)
+
+openapi_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/apps/{app_id}/openapi_version/',
+        method=actions.FrontActionMethod.GET
+    ),
+    global_actions={
+       'confirm': actions.ConfirmAction(
+            path="/api/v1/tenant/{tenant_id}/apps/{app_id}/openapi_version/"
         ),
     }
 )
