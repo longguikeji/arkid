@@ -31,6 +31,8 @@ class MobileAuthFactorConfigSchema(Schema):
     )
     
     name:str
+    
+    package:str
 
 class SendSMSCodeIn(Schema):
     config_id:str = Field(
@@ -42,7 +44,7 @@ class SendSMSCodeIn(Schema):
         default="86"
     )
     
-    phone_number:str = Field(
+    mobile:str = Field(
         title=_("电话号码")
     )
     package:str = Field(

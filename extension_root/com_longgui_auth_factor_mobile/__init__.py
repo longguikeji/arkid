@@ -2,6 +2,7 @@ from arkid.common import sms
 from arkid.core.api import operation
 from arkid.core.event import SEND_SMS, Event, dispatch_event
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
+from arkid.common.logger import logger
 from .error import ErrorCode
 from arkid.core.models import User
 from arkid.common.sms import check_sms_code
@@ -41,15 +42,16 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         )
         
         # 注册发送短信接口
-        send_sms_code_path = self.register_api(
-            '/{config_id}/send_sms_code/',
+        self.send_sms_code_path = self.register_api(
+            '/send_sms_code/',
             'POST',
             self.send_sms_code,
             tenant_path=True,
+            auth=None,
             response=SendSMSCodeOut,
         )
         
-        print(send_sms_code_path)
+        print(self.send_sms_code_path)
     
     def update_mine_mobile(self, request, tenant_id: str,data:UpdateMineMobileIn):
     
@@ -61,13 +63,15 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         sms_code = request.POST.get('sms_code')
         mobile = request.POST.get('mobile')
 
-        user_mobile = UserMobile.objects.filter(mobile=mobile).first()
-        if user_mobile:
+        user = User.expand_objects.filter(tenant=tenant,mobile=mobile)
+        if len(user) > 1:
+            logger.error(f'{mobile}在数据库中匹配到多个用户')
+            return self.auth_failed(event, data=self.error(ErrorCode.CONTACT_MANAGER))
+        if user:
+            user = user[0]
             if check_sms_code(mobile, sms_code):
-                if user_mobile.user not in tenant.users.all():
-                    msg = ErrorCode.USER_NOT_IN_TENANT_ERROR
-                else:
-                    return self.auth_success(user_mobile.user,event)
+                user = User.active_objects.get(id=user.get("id"))
+                return self.auth_success(user,event)
             else:
                 msg = ErrorCode.SMS_CODE_MISMATCH
         else:
@@ -91,9 +95,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
 
         # user = User.objects.create(tenant=tenant)
         user = User(tenant=tenant)
-        mobile = UserMobile(user=user,mobile=mobile)
+
+        user.mobile = mobile
+        
         user.save()
-        mobile.save()
         tenant.users.add(user)
         tenant.save()
 
@@ -106,18 +111,18 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "phone_number",
+                "name": "mobile",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
+                        "url": self.send_sms_code_path,
                         "method": "post",
                         "params": {
-                            "phone_number": "phone_number",
+                            "mobile": "mobile",
                             "config_id": config.id,
                             "areacode": "86",
-                            "package": self.package
+                            "package": config.id
                         },
                     },
                     "delay": 60
@@ -135,15 +140,15 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "phone_number",
+                "name": "mobile",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
+                        "url": self.send_sms_code_path,
                         "method": "post",
                         "params": {
-                            "phone_number": "phone_number",
+                            "mobile": "mobile",
                             "config_id": config.id,
                             "areacode": "86",
                             "package": self.package
@@ -164,22 +169,20 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "phone_number",
+                "name": "mobile",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": "/api/v1/tenant/{tenant_id}/send_sms_code/",
+                        "url": self.send_sms_code_path,
                         "method": "post",
                         "params": {
-                            "phone_number": "phone_number",
-                            "config_id": "config_id"
+                            "mobile": "mobile",
+                            "config_id": config.id,
+                            "areacode": "86",
+                            "package": self.package
                         },
-                        "payload": {
-                            "auth_code_length": 6
-                        }
                     },
-                    "delay": 60
                 }
             },
             {
@@ -272,7 +275,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     @operation(SendSMSCodeOut)
     def send_sms_code(self,request,tenant_id,data:SendSMSCodeIn):
         tenant = request.tenant
-        code = sms.create_sms_code(data.phone_number)
+        code = sms.create_sms_code(data.mobile)
+        print(code)
+        mobile = data.mobile
+        if not mobile or mobile=="mobile":
+            return self.error(ErrorCode.MOBILE_EMPTY)
         
         responses = dispatch_event(
             Event(
@@ -281,7 +288,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 request=request,
                 data={
                     "config_id":data.config_id,
-                    "phone_number":data.phone_number,
+                    "mobile":data.mobile,
                     "code": code,
                     "areacode": data.areacode
                 },

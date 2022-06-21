@@ -205,11 +205,16 @@ class TenantConfigSelectQueryIn(Schema):
 class TenantConfigSelectItemOut(Schema):
     
     id:UUID = Field(
-        title=_("ID")
+        title=_("ID"),
+        hidden=True
     )
     
     name:str = Field(
         title=_("Name")
+    )
+    
+    package:str = Field(
+        title=_("插件包名")
     )
 class TenantConfigSelectOut(ResponseSchema):
     data:List[TenantConfigSelectItemOut]
@@ -230,4 +235,10 @@ def get_config_select(request,tenant_id: str,query_data:TenantConfigSelectQueryI
     
     config_list = config_list.all()    
     
-    return {"data":list(config_list) or []}
+    return {
+        "data":{
+            "id": item.id,
+            "name": item.name,
+            "package":item.extension.package
+        } for item in config_list
+    }

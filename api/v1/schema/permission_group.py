@@ -25,11 +25,11 @@ class PermissionGroupDetailInfoParentOut(Schema):
         hidden=True,
     )
     name:str
+    
 class PermissionGroupDetailInfoSchemaOut(ModelSchema):
 
-    parent_id: Optional[PermissionGroupDetailInfoParentOut] = Field(
+    parent: Optional[PermissionGroupDetailInfoParentOut] = Field(
         page=select_permission_group_page.tag,
-        default=None,
         title=_("父权限分组")
     )
 
