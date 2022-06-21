@@ -2,7 +2,8 @@ from typing import Optional
 from ninja import Field, ModelSchema, Schema
 from arkid.core.actions import DirectAction
 from arkid.core.schema import ResponseSchema
-from .models import UserMobile
+from arkid.core.translation import gettext_default as _
+
     
 class UpdateMineMobileIn(Schema):
         
@@ -19,4 +20,24 @@ class UpdateMineMobileIn(Schema):
     code:str = Field(title='验证码')
     
 class UpdateMineMobileOut(ResponseSchema):
+    pass
+
+class SendSMSCodeIn(Schema):
+    config_id:str = Field(
+        title=_("配置ID")
+    )
+    
+    areacode:Optional[str] = Field(
+        title=_("区号"),
+        default="86"
+    )
+    
+    phone_number:str = Field(
+        title=_("电话号码")
+    )
+    package:str = Field(
+        title=_("包名")
+    )
+    
+class SendSMSCodeOut(ResponseSchema):
     pass

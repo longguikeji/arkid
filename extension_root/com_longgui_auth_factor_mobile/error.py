@@ -8,3 +8,5 @@ class ErrorCode(Enum):
     MOBILE_NOT_EXISTS_ERROR = ('10021', _('mobile is not exists', '电话号码不存在'))
     MOBILE_EMPTY = ('10022', _('no mobile provide', '手机号码为空'))
     MOBILE_EXISTS_ERROR = ('10023', _('mobile is already exists', '手机号码已存在'))
+    SMS_EXTENSION_NOT_EXISTS = ('10024', _('sms extension is not running', '短信插件未启用'))
+    SMS_SEND_FAILED = ('10025', _('sms send failed', '短信发送失败'))

@@ -1,3 +1,6 @@
+from arkid.common import sms
+from arkid.core.api import operation
+from arkid.core.event import SEND_SMS, Event, dispatch_event
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from .error import ErrorCode
 from arkid.core.models import User
@@ -36,10 +39,17 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             ProfileSchemaOut, 
             mobile=(Optional[str],Field(readonly=True))
         )
-        # 创建插件运行时配置前处理配置参数
-        self.listen_event("api_v1_views_auth_factor_create_auth_factor_pre",self.auth_factor_config)
-        # 更新插件运行时配置前处理配置参数
-        self.listen_event("api_v1_views_auth_factor_update_auth_factor_pre",self.auth_factor_config)
+        
+        # 注册发送短信接口
+        send_sms_code_path = self.register_api(
+            '/{config_id}/send_sms_code/',
+            'POST',
+            self.send_sms_code,
+            tenant_path=True,
+            response=SendSMSCodeOut,
+        )
+        
+        print(send_sms_code_path)
     
     def update_mine_mobile(self, request, tenant_id: str,data:UpdateMineMobileIn):
     
@@ -261,11 +271,37 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             BaseAuthFactorSchema,
         )
         self.register_auth_factor_schema(MobileAuthFactorSchema, 'mobile')
-
-    def auth_factor_config(self,event,**kwargs):
-        
-        print(event)
     
+    @operation(SendSMSCodeOut)
+    def send_sms_code(self,request,tenant_id,data:SendSMSCodeIn):
+        tenant = request.tenant
+        code = sms.create_sms_code(data.phone_number)
+        
+        responses = dispatch_event(
+            Event(
+                tag=SEND_SMS,
+                tenant=tenant,
+                request=request,
+                data={
+                    "config_id":data.config_id,
+                    "phone_number":data.phone_number,
+                    "code": code,
+                    "areacode": data.areacode
+                },
+                packages=[
+                    data.package
+                ]
+            )
+        )
+        
+        if not responses:
+            return self.error(ErrorCode.SMS_EXTENSION_NOT_EXISTS)
+        useless, (data, extension) = responses[0]
+        if data:
+            return self.success()
+        else:
+            return self.error(ErrorCode.SMS_SEND_FAILED)
+        
 extension = MobileAuthFactorExtension(
     package=package,
     name="手机验证码认证因素",
