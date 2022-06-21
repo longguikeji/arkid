@@ -13,35 +13,14 @@ from .schema import *
 
 package = "com.longgui.auth.factor.mobile"
 
-MobileAuthFactorSchema = create_extension_schema(
-    'MobileAuthFactorSchema',
-    package, 
-    [
-        (
-            'template_code', 
-            str , 
-            Field(title=_('template_code', '短信模板ID'))
-        ),
-        (
-            'sign_name', 
-            str , 
-            Field(title=_('sign_name', 'sign_name'))
-        ),
-        (
-            'sms_up_extend_code', 
-            str , 
-            Field(title=_('sms_up_extend_code', 'sms_up_extend_code'))
-        ),
-    ],
-    BaseAuthFactorSchema,
-)
-
 class MobileAuthFactorExtension(AuthFactorExtension):
     
     def load(self):
         super().load()
+        
+        self.create_extension_config_schema()
+        
         self.register_extend_field(UserMobile, "mobile")
-        self.register_auth_factor_schema(MobileAuthFactorSchema, 'mobile')
         from api.v1.schema.auth import AuthIn
         from api.v1.schema.user import UserCreateIn,UserItemOut,UserUpdateIn,UserListItemOut
         from api.v1.schema.mine import ProfileSchemaOut
@@ -57,6 +36,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             ProfileSchemaOut, 
             mobile=(Optional[str],Field(readonly=True))
         )
+        # 创建插件运行时配置前处理配置参数
+        self.listen_event("api_v1_views_auth_factor_create_auth_factor_pre",self.auth_factor_config)
+        # 更新插件运行时配置前处理配置参数
+        self.listen_event("api_v1_views_auth_factor_update_auth_factor_pre",self.auth_factor_config)
     
     def update_mine_mobile(self, request, tenant_id: str,data:UpdateMineMobileIn):
     
@@ -246,7 +229,51 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         )
         return page
 
+    def create_extension_config_schema(self):
+        
+        select_sms_page = pages.TablePage(select=True,name=_("指定短信插件运行时"))
 
+        self.register_front_pages(select_sms_page)
+
+        select_sms_page.create_actions(
+            init_action=actions.DirectAction(
+                path='/api/v1/tenants/{tenant_id}/config_select/?extension__type=sms',
+                method=actions.FrontActionMethod.GET
+            )
+        )
+
+        MobileAuthFactorSchema = create_extension_schema(
+            'MobileAuthFactorSchema',
+            package, 
+            [
+                (
+                    'sms_config_id', 
+                    str , 
+                    Field(
+                        title=_('sms extension config', '短信插件运行时'),
+                        field="id",
+                        page=select_sms_page.tag,
+                        link="name",
+                        show="sms_config_name"
+                    )
+                ),
+                (
+                    'sms_config_name', 
+                    str , 
+                    Field(
+                        title=_('sms extension config name', '短信插件运行时名称'),
+                        hidden=True
+                    )
+                ),
+            ],
+            BaseAuthFactorSchema,
+        )
+        self.register_auth_factor_schema(MobileAuthFactorSchema, 'mobile')
+
+    def auth_factor_config(self,event,**kwargs):
+        
+        print(event)
+    
 extension = MobileAuthFactorExtension(
     package=package,
     name="手机验证码认证因素",
