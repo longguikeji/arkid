@@ -258,13 +258,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             [
                 (
                     'sms_config', 
-                    str, 
+                    MobileAuthFactorConfigSchema, 
                     Field(
                         title=_('sms extension config', '短信插件运行时'),
-                        field=["id","name"],
                         page=select_sms_page.tag,
-                        link="name",
-                        show="name"
                     )
                 ),
             ],

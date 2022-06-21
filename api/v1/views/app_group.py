@@ -34,7 +34,7 @@ def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
     """
     data = data.dict()
     if "parent" in data and data["parent"]:
-        data["parent"] = get_object_or_404(AppGroup.active_objects,id=data["parent"], is_del=False, is_active=True)
+        data["parent"] = get_object_or_404(AppGroup.active_objects,id=data["parent"].get("id"), is_del=False, is_active=True)
     group = AppGroup.expand_objects.create(tenant=request.tenant,**data)
 
     return ErrorDict(ErrorCode.OK)
@@ -47,12 +47,7 @@ def get_app_group(request, tenant_id: str, id: str):
     """
     group = get_object_or_404(AppGroup.expand_objects,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
     return {
-        "data": {
-            "id": group["id"],
-            "parent_id":group["parent"] if group["parent"] else None,
-            "parent_name": AppGroup.active_objects.get(id=group["parent"]).name if group["parent"] else None,
-            "name": group["name"]
-        }
+        "data": group
     }
 
 @api.post("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupUpdateOut,tags=["应用分组"],auth=None)
@@ -61,11 +56,12 @@ def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
     """ 编辑应用分组
     """
     group = get_object_or_404(AppGroup.active_objects, id=id)
-    parent_id = data.dict().get("parent",None)
+    parent = data.dict().get("parent",None)
+    parent_id = parent.get("id",None) if parent else None
     group.parent = get_object_or_404(AppGroup.active_objects, id=parent_id) if parent_id else None
     if group.parent == group:
         return ErrorDict(ErrorCode.APP_GROUP_PARENT_CANT_BE_ITSELF)
-        
+    group.name = data.dict().get("name",group.name)
     group.save()
     return ErrorDict(ErrorCode.OK)
 

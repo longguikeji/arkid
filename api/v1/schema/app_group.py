@@ -38,6 +38,12 @@ class AppGroupListOut(ResponseSchema):
     data: List[AppGroupListItemOut]
 
 
+class AppGroupItemParentOut(Schema):
+    id:UUID = Field(
+        hidden=True
+    )
+    name:str
+
 class AppGroupItemOut(Schema):
     id:UUID = Field(
         readonly=True
@@ -47,18 +53,9 @@ class AppGroupItemOut(Schema):
         title=_("分组名称")
     )
     
-    parent:Optional[UUID] = Field(
-        field="id",
+    parent:Optional[AppGroupItemParentOut] = Field(
         page=select_appgroup_parent_page.tag,
-        link="name",
         title=_("上级应用分组"),
-        show="parent_name"
-    )
-    
-    parent_name: Optional[str] = Field(
-        title=_("上级应用分组名称"),
-        hidden=True,
-        read_only=True
     )
 
 class AppGroupOut(ResponseSchema):
@@ -68,12 +65,16 @@ class AppGroupOut(ResponseSchema):
 class AppGroupCreateOut(ResponseSchema):
     pass
 
+class AppGroupCreateParentIn(Schema):
+    id:UUID = Field(
+        hidden=True
+    )
+    name:str
+
 class AppGroupCreateIn(ModelSchema):
 
-    parent: UUID = Field(
-        field="id",
+    parent:Optional[AppGroupCreateParentIn] = Field(
         page=select_appgroup_parent_page.tag,
-        link="name",
         default=None,
         title=_("上级应用分组")
     )
@@ -82,9 +83,15 @@ class AppGroupCreateIn(ModelSchema):
         model = AppGroup
         model_fields = ['name']
         
+class AppGroupUpdateParentIn(Schema):
+    id:UUID = Field(
+        hidden=True
+    )
+    name:str
+    
 class AppGroupUpdateIn(ModelSchema):
     
-    parent: Optional[str] = Field(
+    parent: Optional[AppGroupUpdateParentIn] = Field(
         title=_("上级用户分组"),
         field="id",
         page=select_appgroup_parent_page.tag,

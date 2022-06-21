@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import UUID
 from ninja import Field, ModelSchema, Schema
 from arkid.core.actions import DirectAction
 from arkid.core.schema import ResponseSchema
@@ -21,6 +22,15 @@ class UpdateMineMobileIn(Schema):
     
 class UpdateMineMobileOut(ResponseSchema):
     pass
+
+
+class MobileAuthFactorConfigSchema(Schema):
+    
+    id:UUID = Field(
+        hidden=True,
+    )
+    
+    name:str
 
 class SendSMSCodeIn(Schema):
     config_id:str = Field(

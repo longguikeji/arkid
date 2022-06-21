@@ -20,18 +20,18 @@ class PermissionGroupListSchemaOut(ModelSchema):
         model = Permission
         model_fields = ['id', 'name', 'is_system']
 
-
+class PermissionGroupDetailInfoParentOut(Schema):
+    id:UUID = Field(
+        hidden=True,
+    )
+    name:str
 class PermissionGroupDetailInfoSchemaOut(ModelSchema):
 
-    parent_id: UUID = Field(
-        field="id",
+    parent_id: Optional[PermissionGroupDetailInfoParentOut] = Field(
         page=select_permission_group_page.tag,
-        link="name",
         default=None,
-        show="parent_name",
         title=_("父权限分组")
     )
-    parent_name: str = Field(default=None, alias="parent.name", hidden=True)
 
     class Config:
         model = Permission
