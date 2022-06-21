@@ -1,9 +1,8 @@
 from ninja import Field
 from typing import Optional
 from types import SimpleNamespace
-from arkid.core import event
-from arkid.core.extension import Extension, create_extension_schema
-from arkid.core.event import SEND_SMS
+from arkid.core.extension import create_extension_schema
+from arkid.core.extension.sms import SmsExtension
 from arkid.core.translation import gettext_default as _
 from alibabacloud_dysmsapi20170525.client import Client
 from alibabacloud_tea_openapi import models
@@ -35,10 +34,9 @@ ConfigSchema = create_extension_schema(
 )
 
 
-class AliyunSMSExtension(Extension):
+class AliyunSMSExtension(SmsExtension):
 
     def load(self):
-        self.listen_event(SEND_SMS, self.send_sms)
         self.register_settings_schema(SettingsSchema)
         self.register_config_schema(ConfigSchema)
         super().load()

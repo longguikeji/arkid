@@ -13,16 +13,31 @@ from .schema import *
 
 package = "com.longgui.auth.factor.mobile"
 
-MobileAuthFactorSchema = create_extension_schema('MobileAuthFactorSchema',package, 
-        [
-            ('template_code', str , Field(title=_('template_code', '短信模板ID'))),
-            ('sign_name', str , Field(title=_('sign_name', 'sign_name'))),
-            ('sms_up_extend_code', str , Field(title=_('sms_up_extend_code', 'sms_up_extend_code'))),
-        ],
-        BaseAuthFactorSchema,
-    )
+MobileAuthFactorSchema = create_extension_schema(
+    'MobileAuthFactorSchema',
+    package, 
+    [
+        (
+            'template_code', 
+            str , 
+            Field(title=_('template_code', '短信模板ID'))
+        ),
+        (
+            'sign_name', 
+            str , 
+            Field(title=_('sign_name', 'sign_name'))
+        ),
+        (
+            'sms_up_extend_code', 
+            str , 
+            Field(title=_('sms_up_extend_code', 'sms_up_extend_code'))
+        ),
+    ],
+    BaseAuthFactorSchema,
+)
 
 class MobileAuthFactorExtension(AuthFactorExtension):
+    
     def load(self):
         super().load()
         self.register_extend_field(UserMobile, "mobile")
@@ -32,7 +47,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         from api.v1.schema.mine import ProfileSchemaOut
         self.register_extend_api(
             AuthIn,
-            UserCreateIn, UserItemOut, UserUpdateIn, UserListItemOut,
+            UserCreateIn, 
+            UserItemOut, 
+            UserUpdateIn, 
+            UserListItemOut,
             mobile=str
         )
         self.register_extend_api(
@@ -104,11 +122,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                         "method": "post",
                         "params": {
                             "phone_number": "phone_number",
-                            "config_id": "config_id"
+                            "config_id": config.id,
+                            "areacode": "86",
+                            "package": self.package
                         },
-                        "payload": {
-                            "auth_code_length": 6
-                        }
                     },
                     "delay": 60
                 }
@@ -134,11 +151,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                         "method": "post",
                         "params": {
                             "phone_number": "phone_number",
-                            "config_id": "config_id"
+                            "config_id": config.id,
+                            "areacode": "86",
+                            "package": self.package
                         },
-                        "payload": {
-                            "auth_code_length": 6
-                        }
                     },
                     "delay": 60
                 }
