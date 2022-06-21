@@ -144,15 +144,19 @@ def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpe
     config = app.config
     app_config = config.config
     if data.version and data.openapi_uris:
-        if app_config.get('version') is None:
-            # 只有版本或接口发生变化时才调用事件
-            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
-        elif data.version != app_config['version'] or data.openapi_uris != app_config['openapi_uris']:
-            # 只有版本或接口发生变化时才调用事件
-            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
+        old_version = app_config.get('version', None)
+        old_openapi_uris = app_config.get('openapi_uris', None)
+
         app_config['version'] = data.version
         app_config['openapi_uris'] = data.openapi_uris
-    config.save()
+        config.save()
+
+        if old_version is None:
+            # 只有版本或接口发生变化时才调用事件
+            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
+        elif data.version != old_version or data.openapi_uris != old_openapi_uris:
+            # 只有版本或接口发生变化时才调用事件
+            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
     return ErrorDict(ErrorCode.OK)
 
 @api.delete("/tenant/{tenant_id}/apps/{id}/", tags=['应用'], auth=None)

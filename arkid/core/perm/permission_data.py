@@ -279,7 +279,7 @@ class PermissionData(object):
                 else:
                     auth_user.is_tenant_admin = False
         # 权限数据
-        system_permissions = SystemPermission.valid_objects.order_by('sort_id')
+        system_permissions = SystemPermission.objects.order_by('sort_id')
         data_dict = {}
         data_group_parent_child = {}
         for system_permission in system_permissions:
@@ -980,7 +980,7 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
     
-    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False):
+    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False, app_name=None, category=None):
         '''
         根据应用，用户，分组查权限(要根据用户身份显示正确的列表)
         '''
@@ -1007,6 +1007,14 @@ class PermissionData(object):
             systempermissions = systempermissions.filter(tenant_id=None)
             permissions = permissions.filter(app_id=None)
         compress = Compress()
+        if app_id is None and user_id is None and group_id is None and login_user:
+            # 需要正确展现用户的id
+            user_id = str(login_user.id)
+        if app_name:
+            permissions = permissions.filter(app__name=app_name)
+        if category:
+            permissions = permissions.filter(category=category)
+            systempermissions = systempermissions.filter(category=category)
         if app_id or user_id or group_id:
             if app_id:
                 app = App.valid_objects.filter(
@@ -1170,8 +1178,8 @@ class PermissionData(object):
         创建租户管理员权限和租户管理员
         '''
         systempermission, is_create = self.create_tenant_admin_permission(tenant)
-        if is_create:
-            self.add_system_permission_to_user(tenant.id, user.id, systempermission.id)
+        # if is_create:
+        self.add_system_permission_to_user(tenant.id, user.id, systempermission.id)
 
     def get_user_group_all_permissions(self, tenant_id, user_group_id):
         '''
@@ -1222,10 +1230,6 @@ class PermissionData(object):
         ).first()
         if not app:
             return False, '没有找到应用'
-        
-        # 特殊处理 OIDC-Platform
-        if app.type == 'OIDC-Platform':
-            return True, ''
 
         permission = app.entry_permission
         if not permission:
@@ -1676,7 +1680,7 @@ class PermissionData(object):
             app_tenant_id = app_info.get('app_tenant_id')
             if app_tenant_id == tenant_uid:
                 # 同一个租户
-                update_single_user_app_permission(tenant_uid, user_id, app_id)
+                self.update_single_user_app_permission(tenant_uid, user_id, app_id)
             else:
                 # 不同租户
                 max_permission = Permission.objects.filter(app=app_id).order_by('-sort_id').first()

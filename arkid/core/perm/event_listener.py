@@ -1,6 +1,9 @@
 from arkid.core import event as core_event
+from django.db.models.signals import post_save
+from arkid.core.perm.permission_data import PermissionData
 from arkid.core.models import(
     Permission, SystemPermission, App,
+    User, Tenant,
 )
 from arkid.core.event import (
     CREATE_APP, CREATE_GROUP, DELETE_GROUP,
@@ -14,15 +17,34 @@ from arkid.core.event import (
     OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
     UPDATE_ADMIN_ALL_PERMISSION,
 )
-
 import uuid
+
+def user_saved(sender, instance: User, created: bool, **kwargs):
+    if created:
+        print('检测到用户创建')
+        user = instance
+        tenant = user.tenant
+        if tenant:
+            tenant_id = str(tenant.id)
+            user_id = str(user.id)
+            pd = PermissionData()
+            pd.update_single_user_system_permission(tenant_id, user_id)
+            pd.update_tenant_use_app_by_user(tenant_id, user_id)
+
+
+def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
+    if created:
+        print('检测到租户创建')
+        pd = PermissionData()
+        pd.create_tenant_admin_permission(instance)
+
 
 class EventListener(object):
     '''
     处理事件回调
     '''
     def __init__(self):
-        core_event.listen_event(USER_REGISTER, self.register)
+        # core_event.listen_event(USER_REGISTER, self.register)
         core_event.listen_event(APP_START, self.app_start)
         core_event.listen_event(CREATE_GROUP, self.create_group)
         core_event.listen_event(DELETE_GROUP, self.delete_group)
@@ -49,11 +71,11 @@ class EventListener(object):
         core_event.listen_event(CLOSE_APP_PERMISSION, self.update_close_app_permission_user)
         core_event.listen_event(CLOSE_SYSTEM_PERMISSION, self.update_close_system_permission_user)
 
-    def register(self, event, **kwargs):
-        from arkid.core.tasks.tasks import update_single_user_system_permission_and_app_permisssion
-        user = event.data
-        tenant = event.tenant
-        update_single_user_system_permission_and_app_permisssion.delay(tenant.id, user.id)
+    # def register(self, event, **kwargs):
+    #     from arkid.core.tasks.tasks import update_single_user_system_permission_and_app_permisssion
+    #     user = event.data
+    #     tenant = event.tenant
+    #     update_single_user_system_permission_and_app_permisssion.delay(tenant.id, user.id)
 
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission
@@ -259,3 +281,6 @@ class EventListener(object):
         return True
 
 EventListener()
+
+post_save.connect(receiver=user_saved, sender=User)
+post_save.connect(receiver=tenant_saved, sender=Tenant)
