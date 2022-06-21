@@ -57,6 +57,44 @@ def list_open_apps(request, tenant_id: str):
     )
     return apps
 
+
+@api.get("/tenant/{tenant_id}/all_apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
+@operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def list_all_apps(request, tenant_id: str):
+    '''
+    所有app列表
+    '''
+    apps = App.valid_objects.filter(
+        Q(entry_permission__is_open=True)|Q(tenant_id=tenant_id)
+    )
+    return apps
+
+
+@api.get("/tenant/{tenant_id}/all_apps_in_arkid/", response=AppListsOut, tags=['应用'], auth=None)
+@operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
+    '''
+    所有app列表(含arkid)
+    '''
+    apps = App.valid_objects.filter(
+        Q(entry_permission__is_open=True)|Q(tenant_id=tenant_id)
+    )
+    items = []
+    if not_arkid is None:
+        items.append({
+            'id': 'arkid',
+            'name': 'arkid',
+            'is_system': True,
+        })
+    for app in apps:
+        items.append({
+            'id': str(app.id),
+            'name': app.name,
+            'is_system': True,
+        })
+    return {'data':items}
+
 @api.get("/tenant/{tenant_id}/apps/{id}/", response=AppOut, tags=['应用'], auth=None)
 @operation(AppOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app(request, tenant_id: str, id: str):
@@ -106,15 +144,19 @@ def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpe
     config = app.config
     app_config = config.config
     if data.version and data.openapi_uris:
-        if app_config.get('version') is None:
-            # 只有版本或接口发生变化时才调用事件
-            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
-        elif data.version != app_config['version'] or data.openapi_uris != app_config['openapi_uris']:
-            # 只有版本或接口发生变化时才调用事件
-            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
+        old_version = app_config.get('version', None)
+        old_openapi_uris = app_config.get('openapi_uris', None)
+
         app_config['version'] = data.version
         app_config['openapi_uris'] = data.openapi_uris
-    config.save()
+        config.save()
+
+        if old_version is None:
+            # 只有版本或接口发生变化时才调用事件
+            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
+        elif data.version != old_version or data.openapi_uris != old_openapi_uris:
+            # 只有版本或接口发生变化时才调用事件
+            dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
     return ErrorDict(ErrorCode.OK)
 
 @api.delete("/tenant/{tenant_id}/apps/{id}/", tags=['应用'], auth=None)

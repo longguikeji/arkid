@@ -19,6 +19,18 @@ class AppListOut(ResponseSchema):
     data: List[AppListItemOut]
 
 
+
+class AppItemsOut(Schema):
+
+    name: str
+    id: str
+    is_system: bool
+
+
+class AppListsOut(ResponseSchema):
+    data: List[AppItemsOut]
+
+
 class AppItemOut(ModelSchema):
 
     class Config:

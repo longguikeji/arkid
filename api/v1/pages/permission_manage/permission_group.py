@@ -27,7 +27,7 @@ router = routers.FrontRouter(
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/permission_groups/',
+        path='/api/v1/tenant/{tenant_id}/all_apps_in_arkid/',
         method=actions.FrontActionMethod.GET,
     ),
     global_actions={
@@ -44,6 +44,10 @@ page.create_actions(
         )
     },
     node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/permission_groups/?parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
         actions.CascadeAction(
             page=group_permissions_page
         )
@@ -55,12 +59,12 @@ group_permissions_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/',
         method=actions.FrontActionMethod.GET
     ),
-    global_actions={
-        "update":actions.OpenAction(
-            name=_("添加权限"),
-            page=edit_permissions_page,
-        )
-    },
+    # global_actions={
+    #     "update":actions.OpenAction(
+    #         name=_("添加权限"),
+    #         page=edit_permissions_page,
+    #     )
+    # },
     local_actions={
         "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/{id}/",
@@ -91,9 +95,36 @@ edit_page.create_actions(
     ),
     global_actions={
        'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/permission_groups/{id}/"
+            path="/api/v1/tenant/{tenant_id}/permission_groups/{id}/",
+            method=actions.FrontActionMethod.PUT
         ),
     }
 )
 
+select_app_page = pages.TablePage(select=True,name=_("选择应用"))
 
+pages.register_front_pages(select_app_page)
+
+select_app_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/apps/',
+        method=actions.FrontActionMethod.GET
+    )
+)
+
+select_permission_group_page = pages.TreePage(select=True, name=_("选择权限分组"))
+
+pages.register_front_pages(select_permission_group_page)
+
+select_permission_group_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/all_apps_in_arkid/?not_arkid=1',
+        method=actions.FrontActionMethod.GET,
+    ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/permission_groups/?parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
+    ]
+)

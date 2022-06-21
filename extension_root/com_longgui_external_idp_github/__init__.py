@@ -88,7 +88,7 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
         """
         github_user =  GithubUser.valid_objects.filter(github_user_id=ext_id).first()
         if github_user:
-            return github_user.user
+            return github_user.target
         else:
             return None
 

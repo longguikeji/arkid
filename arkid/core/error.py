@@ -39,7 +39,7 @@ class ErrorCode(Enum):
     # PROVIDER_NOT_EXISTS_ERROR = '10028'
     # PASSWORD_EXPIRED_ERROR = '10029'
     # USER_NOT_IN_TENANT_ERROR = '10030'
-    PERMISSION_EXISTS_ERROR = '10031'
+    PERMISSION_EXISTS_ERROR = ('10033', _('the permission not exists', '该权限不存在'))
     # APP_EXISTS_ERROR = '10032'
     PERMISSION_NOT_EDIT = ('10033', _('the permission not edit', '该权限不允许编辑'))
     # PERMISSION_NOT_DELETE = ('10034', _('the permission not delete', '该权限不允许删除'))
