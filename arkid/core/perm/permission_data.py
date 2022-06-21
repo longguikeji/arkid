@@ -455,7 +455,7 @@ class PermissionData(object):
                 data_item.is_pass = permission_value
                 if data_item.category == 'group' and data_item.container.all():
                     for data_item_child_api in data_item.container.all():
-                        temp_data_item = data_item.get(data_item_child_api.sort_id, None)
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
                         if temp_data_item:
                             temp_data_item.is_pass = permission_value
                 continue
@@ -874,7 +874,7 @@ class PermissionData(object):
                 data_item.is_pass = permission_value
                 if data_item.category == 'group' and data_item.container.all():
                     for data_item_child_api in data_item.container.all():
-                        temp_data_item = data_item.get(data_item_child_api.sort_id, None)
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
                         if temp_data_item:
                             temp_data_item.is_pass = permission_value
                 continue
