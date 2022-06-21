@@ -453,6 +453,11 @@ class PermissionData(object):
         for data_item in data_dict.values():
             if pass_permission != None and data_item.id == pass_permission.id:
                 data_item.is_pass = permission_value
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_item.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = permission_value
                 continue
             # 如果是通过就不查验
             if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
@@ -867,6 +872,11 @@ class PermissionData(object):
             # 跳过的数据
             if pass_permission != None and data_item.id == pass_permission.id:
                 data_item.is_pass = permission_value
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_item.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = permission_value
                 continue
             # 如果是通过就不查验
             if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
