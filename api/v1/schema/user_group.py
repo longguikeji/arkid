@@ -37,13 +37,16 @@ class UserGroupListOut(ResponseSchema):
 class UserGroupCreateOut(ResponseSchema):
     pass
 
+class UserGroupCreateParentIn(Schema):
+    id:UUID = Field(hidden=True)
+    name:str
+    
+
 class UserGroupCreateIn(ModelSchema):
 
-    parent: Optional[str] = Field(
+    parent: Optional[UserGroupCreateParentIn] = Field(
         title=_("上级用户分组"),
-        field="id",
         page=select_usergroup_parent_page.tag,
-        link="name"
     )
 
     class Config:
@@ -53,13 +56,15 @@ class UserGroupCreateIn(ModelSchema):
 class UserGroupUpdateOut(ResponseSchema):
     pass
 
+class UserGroupUpdateParentIn(Schema):
+    id:UUID = Field(hidden=True)
+    name:str
+
 class UserGroupUpdateIn(ModelSchema):
 
-    parent: Optional[str] = Field(
+    parent: Optional[UserGroupUpdateParentIn] = Field(
         title=_("上级用户分组"),
-        field="id",
         page=select_usergroup_parent_page.tag,
-        link="name"
     )
 
     class Config:
