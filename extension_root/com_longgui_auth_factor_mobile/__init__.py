@@ -247,22 +247,13 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             package, 
             [
                 (
-                    'sms_config_id', 
-                    str , 
+                    'sms_config', 
+                    str, 
                     Field(
                         title=_('sms extension config', '短信插件运行时'),
-                        field="id",
+                        field=["id","name"],
                         page=select_sms_page.tag,
-                        link="name",
-                        show="sms_config_name"
-                    )
-                ),
-                (
-                    'sms_config_name', 
-                    str , 
-                    Field(
-                        title=_('sms extension config name', '短信插件运行时名称'),
-                        hidden=True
+                        link="name"
                     )
                 ),
             ],
