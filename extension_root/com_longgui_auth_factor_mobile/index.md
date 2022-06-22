@@ -1,7 +1,3 @@
----
-template: comment.html
----
-
 ## 手机号码认证因素插件
 
 
