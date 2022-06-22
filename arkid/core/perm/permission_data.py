@@ -46,7 +46,18 @@ class PermissionData(object):
                 # 取得应用所有的权限
                 self.update_app_all_permission(tenant, app)
                 # 更新应用所有用户权限
-                self.update_app_all_user_permission(tenant, app)
+                uprs = UserPermissionResult.valid_objects.filter(
+                    app=app
+                ).exclude(tenant=tenant)
+                tenants = []
+                tenants.append(tenant)
+                for upr in uprs:
+                    tenant = upr.tenant
+                    if tenant not in tenants:
+                        tenants.append(tenant)
+                for tenant in tenants:
+                    # 需要更新对应租户的所有用户
+                    self.update_app_all_user_permission(tenant, app)
     
     def update_only_user_app_permission(self, tenant_id, app_id):
         '''
@@ -55,7 +66,19 @@ class PermissionData(object):
         tenant = Tenant.valid_objects.filter(id=tenant_id).first()
         app = App.valid_objects.filter(id=app_id).first()
         if tenant and app:
-            self.update_app_all_user_permission(tenant, app)
+            # 更新应用所有用户权限
+            uprs = UserPermissionResult.valid_objects.filter(
+                app=app
+            ).exclude(tenant=tenant)
+            tenants = []
+            tenants.append(tenant)
+            for upr in uprs:
+                tenant = upr.tenant
+                if tenant not in tenants:
+                    tenants.append(tenant)
+            for tenant in tenants:
+                # 需要更新对应租户的所有用户
+                self.update_app_all_user_permission(tenant, app)
 
     def update_tenant_permission(self, tenant_id):
         '''
@@ -338,6 +361,11 @@ class PermissionData(object):
             for data_item in data_dict.values():
                 # 如果是通过就不查验
                 if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                    if data_item.category == 'group' and data_item.container.all():
+                        for data_item_child_api in data_item.container.all():
+                            temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                            if temp_data_item:
+                                temp_data_item.is_pass = 1
                     continue
                 # 如果是超级管理员直接就通过
                 if auth_user.is_superuser:
@@ -461,6 +489,11 @@ class PermissionData(object):
                 continue
             # 如果是通过就不查验
             if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = 1
                 continue
             # 如果是超级管理员直接就通过
             if auth_user.is_superuser:
@@ -532,6 +565,11 @@ class PermissionData(object):
         response = requests.get(openapi_uris)
         response = response.json()
         permission_jsons = response.get('permissions', [])
+        app_config['permission_jsons'] = permission_jsons
+        # 缓存一下请求的权限字符串
+        config = app.config
+        config.config = app_config
+        config.save()
         return permission_jsons
 
     def update_app_all_permission(self, tenant, app):
@@ -739,6 +777,11 @@ class PermissionData(object):
             for data_item in data_dict.values():
                 # 如果是通过就不查验
                 if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                    if data_item.category == 'group' and data_item.container.all():
+                        for data_item_child_api in data_item.container.all():
+                            temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                            if temp_data_item:
+                                temp_data_item.is_pass = 1
                     continue
                 # 如果是超级管理员直接就通过
                 if auth_user.is_superuser:
@@ -880,6 +923,11 @@ class PermissionData(object):
                 continue
             # 如果是通过就不查验
             if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = 1
                 continue
             # 如果是超级管理员直接就通过
             if auth_user.is_superuser:
@@ -1136,13 +1184,117 @@ class PermissionData(object):
                 app__isnull=True,
             ).first()
         if userpermissionresult:
+            permission_result = self.get_permission_str_process(userpermissionresult, is_64)
+            return {'result': permission_result}
+        else:
+            return {'result': ''}
+    
+
+    def get_permission_str_process(self, userpermissionresult, is_64):
+        '''
+        对结果字符串加工
+        '''
+        if userpermissionresult.app:
+            # 有应用走新逻辑
+            app = userpermissionresult.app
+            app_config = app.config.config
+            permission_jsons = app_config.get('permission_jsons', [])
+            if permission_jsons:
+                # api层面第字典
+                api_permission_dict ={}
+                for permission_json in permission_jsons:
+                    api_name = permission_json.get('name', '')
+                    api_operation_id = permission_json.get('operation_id', '')
+                    api_sort_id = permission_json.get('sort_id', -1)
+                    if api_sort_id != -1:
+                        temp_api_dict = {
+                            'name': name
+                        }
+                        if api_operation_id:
+                            temp_api_dict['operation_id'] = api_operation_id
+                        api_permission_dict[api_sort_id] = temp_api_dict
+                # 数据库层面的字典
+                permission_result = compress.decrypt(userpermissionresult.result)
+                permission_result_arr = list(permission_result)
+                database_permission_dict ={}
+                # 需要拿出当前应用的所有权限
+                permissions = Permission.valid_objects.filter(
+                    is_system=True,
+                    app=app,
+                ).order_by('-sort_id')
+                max_sort_id = permissions.first().sort_id
+                last_len = max_sort_id+1
+                # 补0(缺多少位补多少位，不会比它少只会比它多，补0补的是新权限)
+                if len(permission_result_arr) < last_len:
+                    diff = last_len - len(permission_result_arr)
+                    for i in range(diff):
+                        permission_result_arr.append(0)
+                for permission in permissions:
+                    sort_id = permission.sort_id
+                    database_name = permission.name
+                    database_operation_id = permission.get('operation_id', '')
+                    check_result = permission_result_arr[sort_id]
+                    temp_database_dict = {
+                        'name': database_name
+                    }
+                    if database_operation_id:
+                        temp_database_dict['operation_id'] = database_operation_id
+                    temp_database_dict['result'] = check_result
+                    database_permission_dict[sort_id] = temp_database_dict
+                # 正确计算结果
+                result_str, result_str_64 = self.ditionairy_result(api_permission_dict, database_permission_dict)
+                if is_64:
+                    permission_result = result_str_64
+                else:
+                    permission_result = result_str
+            else:
+                if is_64:
+                    permission_result = userpermissionresult.result
+                else:
+                    permission_result = compress.decrypt(userpermissionresult.result)
+        else:
+            # 没有应用走之前的逻辑
             if is_64:
                 permission_result = userpermissionresult.result
             else:
                 permission_result = compress.decrypt(userpermissionresult.result)
-            return {'result': permission_result}
-        else:
-            return {'result': ''}
+        return permission_result
+
+
+    def ditionairy_result(self, api_permission_dict, database_permission_dict):
+        for api_item_key in api_permission_dict.keys():
+            api_item_value = api_permission_dict.get(api_item_key)
+            api_operation_id = api_item_value.get('operation_id', None)
+            api_name = api_item_value.get('name', '')
+            if api_operation_id or api_name:
+                for database_item_key in database_permission_dict:
+                    database_item_value = database_permission_dict.get(database_item_key)
+                    database_operation_id = database_item_value.get('operation_id', None)
+                    database_name = database_item_value.get('name', '')
+                    database_result = database_item_value.get('result', 0)
+                    if api_operation_id and database_operation_id == api_operation_id:
+                        api_item_value['result'] = database_result
+                        break
+                    elif api_name and api_name == database_name:
+                        api_item_value['result'] = database_result
+                        break
+            api_check_result = api_item_value.get('result', -1)
+            if api_check_result == -1:
+                api_item_value['result'] = 0
+            api_permission_dict[api_item_key] = api_item_value
+        # 取得结果
+        result_data_1 = sorted(api_permission_dict.items(),key=lambda x:x[0])
+
+        result_str = ''
+        for result_data_item in result_data_1:
+            result_data_value = result_data_item[1]
+            result = result_data_value.get('result')
+            result_str = result_str + str(result)
+
+        compress = Compress()
+        result_str_64 = compress.encrypt(result_str)
+
+        return result_str, result_str_64
 
 
     def has_admin_perm(self, tenant, user):
