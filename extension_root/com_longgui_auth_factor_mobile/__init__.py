@@ -1,11 +1,11 @@
-from arkid.common import sms
 from arkid.core.api import operation
 from arkid.core.event import SEND_SMS, Event, dispatch_event
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.common.logger import logger
+from arkid.extension.models import TenantExtensionConfig
 from .error import ErrorCode
 from arkid.core.models import User
-from arkid.common.sms import check_sms_code
+from .sms import check_sms_code, create_sms_code,gen_sms_code
 from arkid.core import actions, pages
 from .models import UserMobile
 from pydantic import Field
@@ -21,6 +21,8 @@ from django.contrib.auth.hashers import (
 package = "com.longgui.auth.factor.mobile"
 
 class MobileAuthFactorExtension(AuthFactorExtension):
+    
+    send_sms_code_path:str = ""
     
     def load(self):
         super().load()
@@ -54,12 +56,6 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             auth=None,
             response=SendSMSCodeOut,
         )
-        
-        print(self.send_sms_code_path)
-    
-    def update_mine_mobile(self, request, tenant_id: str,data:UpdateMineMobileIn):
-    
-        return self.success()
     
     def authenticate(self, event, **kwargs):
         tenant = event.tenant
@@ -142,7 +138,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "mobile",
+                "title":"mobile",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
@@ -161,7 +157,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             },
             {
                 "type": "text",
-                "name": "sms_code",
+                "title":"sms_code",
                 "placeholder": "验证码",
             },
         ]
@@ -171,7 +167,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "mobile",
+                "title":"mobile",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
@@ -190,7 +186,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             },
             {
                 "type": "text",
-                "name": "sms_code",
+                "title":"sms_code",
                 "placeholder": "验证码"
             },
         ]
@@ -200,7 +196,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "name": "mobile",
+                "title":"mobile",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
@@ -218,17 +214,17 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             },
             {
                 "type": "text",
-                "name": "sms_code",
+                "title":"sms_code",
                 "placeholder": "验证码"
             },
             {
                 "type": "password",
-                "name": "password",
+                "title":"password",
                 "placeholder": "密码"
             },
             {
                 "type": "password",
-                "name": "checkpassword",
+                "title":"checkpassword",
                 "placeholder": "密码确认"
             },
         ]
@@ -249,29 +245,59 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         pass
     
     def create_auth_manage_page(self):
-        
-        mine_mobile_path = self.register_api(
-            "/mine_mobile/",
-            'POST',
-            self.update_mine_mobile,
-            tenant_path=True,
-            response=UpdateMineMobileOut
-        )
-        
-        name = '更改手机号码'
 
-        page = pages.FormPage(name=name)
-        page.create_actions(
-            init_action=actions.ConfirmAction(
-                path=mine_mobile_path
-            ),
-            global_actions={
-                'confirm': actions.ConfirmAction(
+        configs = TenantExtensionConfig.active_objects.filter(extension__package=self.package)
+        
+        for config in configs:
+            class UpdateMineMobileIn(Schema):
+                    
+                modile:str = Field(
+                    title='手机号',
+                    suffix_action=DirectAction(
+                        name='发送验证码',
+                        path=self.send_sms_code_path,
+                        method=actions.FrontActionMethod.POST,
+                        params={
+                            "mobile": "mobile",
+                            "config_id": config.id,
+                            "areacode": "86",
+                            "package": self.package
+                        },
+                        delay=60,
+                    ).dict()
+                )
+                
+                code:str = Field(title='验证码')
+            
+            class UpdateMineMobileOut(ResponseSchema):
+                pass
+            
+            def update_mine_mobile(request, tenant_id: str,data:UpdateMineMobileIn):
+                return self.success()
+        
+            
+            mine_mobile_path = self.register_api(
+                "/mine_mobile/",
+                'POST',
+                update_mine_mobile,
+                tenant_path=True,
+                response=UpdateMineMobileOut
+            )
+            
+            name = '更改手机号码'
+
+            page = pages.FormPage(name=name)
+            page.create_actions(
+                init_action=actions.ConfirmAction(
                     path=mine_mobile_path
                 ),
-            }
-        )
-        return page
+                global_actions={
+                    'confirm': actions.ConfirmAction(
+                        path=mine_mobile_path
+                    ),
+                }
+            )
+            return page
 
     def create_extension_config_schema(self):
         
@@ -305,8 +331,15 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     
     @operation(SendSMSCodeOut)
     def send_sms_code(self,request,tenant_id,data:SendSMSCodeIn):
+        """发送短信验证码
+
+        Args:
+            request : 请求对象
+            tenant_id (str): 租户ID
+            data (SendSMSCodeIn): 参数体
+        """
         tenant = request.tenant
-        code = sms.create_sms_code(data.mobile)
+        code = create_sms_code(data.mobile)
         print(code)
         mobile = data.mobile
         if not mobile or mobile=="mobile":
