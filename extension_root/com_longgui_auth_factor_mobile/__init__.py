@@ -1,3 +1,4 @@
+from django.urls import reverse
 from arkid.core.api import operation
 from arkid.core.event import SEND_SMS, Event, dispatch_event
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
@@ -48,8 +49,8 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         )
         
         # 注册发送短信接口
-        self.send_sms_code_path = self.register_api(
-            '/send_sms_code/',
+        self.register_api(
+            '/config/{config_id}/send_sms_code/',
             'POST',
             self.send_sms_code,
             tenant_path=True,
@@ -138,18 +139,16 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "title":"mobile",
+                "name":"mobile",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": self.send_sms_code_path,
+                        "url": f"/api/v1/tenant/{event.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
-                            "config_id": config.id,
                             "areacode": "86",
-                            "package": config.id
                         },
                     },
                     "delay": 60
@@ -157,7 +156,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             },
             {
                 "type": "text",
-                "title":"sms_code",
+                "name":"sms_code",
                 "placeholder": "验证码",
             },
         ]
@@ -167,18 +166,16 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "title":"mobile",
+                "name":"mobile",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": self.send_sms_code_path,
+                        "url": f"/api/v1/tenant/{event.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
-                            "config_id": config.id,
                             "areacode": "86",
-                            "package": self.package
                         },
                     },
                     "delay": 60
@@ -186,7 +183,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             },
             {
                 "type": "text",
-                "title":"sms_code",
+                "name":"sms_code",
                 "placeholder": "验证码"
             },
         ]
@@ -196,35 +193,33 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
-                "title":"mobile",
+                "name":"mobile",
                 "placeholder": "手机号码",
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": self.send_sms_code_path,
+                        "url": f"/api/v1/tenant/{event.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
-                            "config_id": config.id,
                             "areacode": "86",
-                            "package": self.package
                         },
                     },
                 }
             },
             {
                 "type": "text",
-                "title":"sms_code",
+                "name":"sms_code",
                 "placeholder": "验证码"
             },
             {
                 "type": "password",
-                "title":"password",
+                "name":"password",
                 "placeholder": "密码"
             },
             {
                 "type": "password",
-                "title":"checkpassword",
+                "name":"checkpassword",
                 "placeholder": "密码确认"
             },
         ]
@@ -248,20 +243,19 @@ class MobileAuthFactorExtension(AuthFactorExtension):
 
         configs = TenantExtensionConfig.active_objects.filter(extension__package=self.package)
         
+        _pages = []
         for config in configs:
             class UpdateMineMobileIn(Schema):
                     
-                modile:str = Field(
+                mobile:str = Field(
                     title='手机号',
                     suffix_action=DirectAction(
                         name='发送验证码',
-                        path=self.send_sms_code_path,
+                        path=f"/api/v1/tenant/{config.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
                         method=actions.FrontActionMethod.POST,
                         params={
                             "mobile": "mobile",
-                            "config_id": config.id,
                             "areacode": "86",
-                            "package": self.package
                         },
                         delay=60,
                     ).dict()
@@ -273,11 +267,14 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 pass
             
             def update_mine_mobile(request, tenant_id: str,data:UpdateMineMobileIn):
+                
+                
+                
                 return self.success()
         
             
             mine_mobile_path = self.register_api(
-                "/mine_mobile/",
+                f"/{config.id}_mine_mobile/",
                 'POST',
                 update_mine_mobile,
                 tenant_path=True,
@@ -297,7 +294,9 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                     ),
                 }
             )
-            return page
+            
+            _pages.append(page)
+        return _pages
 
     def create_extension_config_schema(self):
         
@@ -330,7 +329,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         self.register_auth_factor_schema(MobileAuthFactorSchema, 'mobile')
     
     @operation(SendSMSCodeOut)
-    def send_sms_code(self,request,tenant_id,data:SendSMSCodeIn):
+    def send_sms_code(self,request,tenant_id,config_id:str,data:SendSMSCodeIn):
         """发送短信验证码
 
         Args:
@@ -340,8 +339,12 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         """
         tenant = request.tenant
         code = create_sms_code(data.mobile)
-        print(code)
         mobile = data.mobile
+        print(code)
+        config = self.get_config_by_id(config_id)
+        if not config:
+            return self.error(ErrorCode.CONFIG_IS_NOT_EXISTS)
+        
         if not mobile or mobile=="mobile":
             return self.error(ErrorCode.MOBILE_EMPTY)
         
@@ -351,13 +354,13 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 tenant=tenant,
                 request=request,
                 data={
-                    "config_id":data.config_id,
+                    "config_id":config.sms_config.id,
                     "mobile":data.mobile,
                     "code": code,
                     "areacode": data.areacode
                 },
                 packages=[
-                    data.package
+                    config.sms_config.package
                 ]
             )
         )
@@ -369,7 +372,8 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             return self.success()
         else:
             return self.error(ErrorCode.SMS_SEND_FAILED)
-        
+    
+    
 extension = MobileAuthFactorExtension(
     package=package,
     name="手机验证码认证因素",

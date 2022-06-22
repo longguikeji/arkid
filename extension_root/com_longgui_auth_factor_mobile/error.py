@@ -12,3 +12,4 @@ class ErrorCode(Enum):
     SMS_SEND_FAILED = ('10002-5', _('sms send failed', '短信发送失败'))
     CONTACT_MANAGER = ('10002-6', _('contact manager', '发生了意外，请联系管理人员'))
     PASSWORD_IS_INCONSISTENT = ('10002-7', _('password is inconsistent', '输入密码不一致'))
+    CONFIG_IS_NOT_EXISTS = ('10002-8', _('tenant extension config is not exists', '指定插件运行时配置不存在'))

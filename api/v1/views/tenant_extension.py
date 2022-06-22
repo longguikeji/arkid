@@ -236,9 +236,9 @@ def get_config_select(request,tenant_id: str,query_data:TenantConfigSelectQueryI
     config_list = config_list.all()    
     
     return {
-        "data":{
+        "data":[{
             "id": item.id,
             "name": item.name,
             "package":item.extension.package
-        } for item in config_list
+        } for item in config_list]
     }
