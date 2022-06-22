@@ -23,7 +23,7 @@ class RegisterDataOut(Schema):
 
 
 class RegisterOut(ResponseSchema):
-    data: RegisterDataOut
+    data: Optional[RegisterDataOut]
 
 
 @api.post("/tenant/{tenant_id}/register/", response=RegisterOut, tags=['登录与注册'], auth=None)
@@ -39,10 +39,14 @@ def register(request, tenant_id: str, event_tag: str):
 
     useless, (user, useless) = responses[0]
 
-    # 用户注册和登录
-    dispatch_event(Event(tag=USER_REGISTER, tenant=tenant, request=request, data=user))
+    # 此处临时判断注册返回结果是否为User对象
+    if isinstance(user,User):
+        # 用户注册和登录
+        dispatch_event(Event(tag=USER_REGISTER, tenant=tenant, request=request, data=user))
 
-    # 生成 token
-    token = refresh_token(user)
+        # 生成 token
+        token = refresh_token(user)
 
-    return {'error': ErrorCode.OK.value, 'data': {'user': user, 'token': token}}
+        return {'error': ErrorCode.OK.value, 'data': {'user': user, 'token': token}}
+    else:
+        return user

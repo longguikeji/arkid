@@ -23,3 +23,13 @@ class AuthDataOut(Schema):
 
 class AuthOut(ResponseSchema):
     data: AuthDataOut
+    
+    
+class ResetPasswordIn(Schema):
+    
+    username: Optional[str]
+    
+    password: Optional[str]
+    
+class ResetPasswordOut(ResponseSchema):
+    pass

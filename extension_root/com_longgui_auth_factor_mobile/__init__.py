@@ -14,6 +14,9 @@ from arkid.core.translation import gettext_default as _
 from django.db import transaction
 from arkid.core.extension import create_extension_schema
 from .schema import *
+from django.contrib.auth.hashers import (
+    make_password,
+)
 
 package = "com.longgui.auth.factor.mobile"
 
@@ -34,7 +37,8 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             UserItemOut, 
             UserUpdateIn, 
             UserListItemOut,
-            mobile=str
+            mobile=(Optional[str],Field(title=_("电话号码"))),
+            # areacode=(str,Field(title=_("区号")))
         )
         self.register_extend_api(
             ProfileSchemaOut, 
@@ -92,11 +96,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         
         if not check_sms_code(mobile, sms_code):
             return self.error(ErrorCode.SMS_CODE_MISMATCH)
-
-        # user = User.objects.create(tenant=tenant)
+        
         user = User(tenant=tenant)
 
         user.mobile = mobile
+        user.username = mobile
         
         user.save()
         tenant.users.add(user)
@@ -105,7 +109,34 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         return user
 
     def reset_password(self, event, **kwargs):
-        pass
+        print(event)
+        tenant = event.tenant
+        request = event.request
+        mobile = request.POST.get('mobile')
+        sms_code = request.POST.get('sms_code')
+        
+        password = request.POST.get('password')
+        checkpassword = request.POST.get('checkpassword')
+        
+        if password != checkpassword:
+            return self.error(ErrorCode.PASSWORD_IS_INCONSISTENT)
+                
+        if not check_sms_code(mobile, sms_code):
+            return self.error(ErrorCode.SMS_CODE_MISMATCH)
+        
+        user = User.expand_objects.filter(tenant=tenant,mobile=mobile)
+        
+        if len(user) > 1:
+            logger.error(f'{mobile}在数据库中匹配到多个用户')
+            return self.error(ErrorCode.CONTACT_MANAGER)
+        if user:
+            user = user[0]
+            user = User.active_objects.get(id=user.get("id"))
+            user.password = make_password(password)
+            user.save()
+            return self.success()
+        
+        return self.error(ErrorCode.MOBILE_NOT_EXISTS_ERROR)
 
     def create_login_page(self, event, config):
         items = [
@@ -254,7 +285,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 method=actions.FrontActionMethod.GET
             )
         )
-
+        
         MobileAuthFactorSchema = create_extension_schema(
             'MobileAuthFactorSchema',
             package, 
