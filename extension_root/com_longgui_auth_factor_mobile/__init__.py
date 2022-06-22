@@ -22,9 +22,7 @@ from django.contrib.auth.hashers import (
 package = "com.longgui.auth.factor.mobile"
 
 class MobileAuthFactorExtension(AuthFactorExtension):
-    
-    send_sms_code_path:str = ""
-    
+        
     def load(self):
         super().load()
         
