@@ -95,7 +95,9 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if not check_sms_code(mobile, sms_code):
             return self.error(ErrorCode.SMS_CODE_MISMATCH)
         
-        
+        ret, message = self.check_username_exists(username, tenant)
+        if not ret:
+            return self.error(message)
         
         user = User(tenant=tenant)
 
@@ -109,7 +111,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         return user
 
     def reset_password(self, event, **kwargs):
-        print(event)
+        
         tenant = event.tenant
         request = event.request
         mobile = request.POST.get('mobile')

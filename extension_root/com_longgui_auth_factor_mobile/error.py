@@ -13,3 +13,5 @@ class ErrorCode(Enum):
     CONTACT_MANAGER = ('10002-6', _('contact manager', '发生了意外，请联系管理人员'))
     PASSWORD_IS_INCONSISTENT = ('10002-7', _('password is inconsistent', '输入密码不一致'))
     CONFIG_IS_NOT_EXISTS = ('10002-8', _('tenant extension config is not exists', '指定插件运行时配置不存在'))
+    USERNAME_EXISTS_ERROR = ('10002-9', _('username is already exists', '用户名已存在'))
+    USERNAME_EMPTY = ('10002-10', _('username is empty', '用户名为空'))
