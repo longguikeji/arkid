@@ -85,19 +85,22 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         request = event.request
         mobile = request.POST.get('mobile')
         sms_code = request.POST.get('sms_code')
+        username = request.POST.get('username')
 
         config = self.get_current_config(event)
-        ret, message = self.check_mobile_exists(mobile, config)
+        ret, message = self.check_mobile_exists(mobile, tenant)
         if not ret:
             return self.error(message)
         
         if not check_sms_code(mobile, sms_code):
             return self.error(ErrorCode.SMS_CODE_MISMATCH)
         
+        
+        
         user = User(tenant=tenant)
 
         user.mobile = mobile
-        user.username = mobile
+        user.username = username
         
         user.save()
         tenant.users.add(user)
@@ -166,6 +169,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         items = [
             {
                 "type": "text",
+                "name": "username",
+                "placeholder": "用户名"
+            },
+            {
+                "type": "text",
                 "name":"mobile",
                 "placeholder": "手机号码",
                 "append": {
@@ -228,12 +236,21 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     def create_other_page(self, event, config):
         pass
     
-    def check_mobile_exists(self, mobile, config):
+    def check_mobile_exists(self, mobile, tenant):
         if not mobile:
             return False, ErrorCode.MOBILE_EMPTY
 
-        if UserMobile.active_objects.filter(mobile=mobile).count():
+        if User.expand_objects.filter(tenant=tenant,mobile=mobile).count():
             return False, ErrorCode.MOBILE_EXISTS_ERROR
+        return True, None
+    
+    def check_username_exists(self,username,tenant):
+        if not username:
+            return False, ErrorCode.USERNAME_EMPTY
+        
+        if User.expand_objects.filter(tenant=tenant,username=username).count():
+            return False, ErrorCode.USERNAME_EXISTS_ERROR
+        
         return True, None
 
     def _get_register_user(self, tenant, field_name, field_value):
@@ -267,8 +284,19 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 pass
             
             def update_mine_mobile(request, tenant_id: str,data:UpdateMineMobileIn):
+                print(request.user)
+                mobile = data.mobile
+                ret, message = self.check_mobile_exists(mobile, request.tenant)
+                if not ret:
+                    return self.error(message)
                 
+                sms_code = data.code
+                if not check_sms_code(mobile, sms_code):
+                    return self.error(ErrorCode.SMS_CODE_MISMATCH)
                 
+                user = request.user
+                user.mobile=data.mobile
+                user.save()
                 
                 return self.success()
         
