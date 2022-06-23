@@ -93,9 +93,7 @@ class AppGroupUpdateIn(ModelSchema):
     
     parent: Optional[AppGroupUpdateParentIn] = Field(
         title=_("上级用户分组"),
-        field="id",
         page=select_appgroup_parent_page.tag,
-        link="name"
     )
     
     class Config:
@@ -150,7 +148,6 @@ class AppGroupAppUpdateIn(Schema):
         field="id",
         page=select_appgroup_parent_page.tag,
         link="name",
-        select_status = "status",
         type="array"
     )
     
