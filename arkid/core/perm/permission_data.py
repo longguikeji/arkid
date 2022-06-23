@@ -1233,7 +1233,7 @@ class PermissionData(object):
                 for permission in permissions:
                     sort_id = permission.sort_id
                     database_name = permission.name
-                    database_operation_id = permission.get('operation_id', '')
+                    database_operation_id = permission.operation_id
                     check_result = permission_result_arr[sort_id]
                     temp_database_dict = {
                         'name': database_name
