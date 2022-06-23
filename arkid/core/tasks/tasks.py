@@ -176,7 +176,6 @@ def update_single_user_app_permission(tenant_id, user_id, app_id):
     permissiondata = PermissionData()
     permissiondata.update_single_user_app_permission(tenant_id, user_id, app_id)
 
-
 @app.task
 def add_system_permission_to_user(tenant_id, user_id, permission_id):
     '''
@@ -185,6 +184,13 @@ def add_system_permission_to_user(tenant_id, user_id, permission_id):
     permissiondata = PermissionData()
     permissiondata.add_system_permission_to_user(tenant_id, user_id, permission_id)
 
+@app.task
+def add_user_many_permission(permissions_dict):
+    '''
+    添加多个权限给用户
+    '''
+    permissiondata = PermissionData()
+    permissiondata.add_user_many_permission(permissions_dict)
 
 @app.task
 def remove_system_permission_to_user(tenant_id, user_id, permission_id):

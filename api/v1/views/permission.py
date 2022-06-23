@@ -13,6 +13,7 @@ from arkid.core.event import(
     ADD_USER_SYSTEM_PERMISSION, ADD_USER_APP_PERMISSION,
     REMOVE_USER_SYSTEM_PERMISSION, REMOVE_USER_APP_PERMISSION, OPEN_APP_PERMISSION,
     OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
+    ADD_USER_MANY_PERMISSION,
 )
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from api.v1.schema.permission import *
@@ -141,21 +142,27 @@ def user_add_permission(request, tenant_id: str, select_user_id: str, data: Perm
     添加用户权限
     '''
     data_arr = data.data
-    from arkid.core.perm.permission_data import PermissionData
-    permissiondata = PermissionData()
-    for permission_id in data_arr:
-        permission = SystemPermission.valid_objects.filter(id=permission_id).first()
-        if permission is None:
-            permission = Permission.valid_objects.filter(id=permission_id).first()
-        permission.user_id = select_user_id
-        if isinstance(permission, SystemPermission):
-            # 添加系统权限
-            permissiondata.add_system_permission_to_user(tenant_id, permission.user_id, str(permission.id))
-            #dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
-        else:
-            # 添加应用权限
-            permissiondata.add_app_permission_to_user(tenant_id, str(permission.app_id),permission.user_id, str(permission.id))
-            #dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    if data_arr:
+        dispatch_event(Event(tag=ADD_USER_MANY_PERMISSION, tenant=request.tenant, request=request, data={
+            'user_id': select_user_id,
+            'tenant_id': tenant_id,
+            'data_arr': data_arr
+        }))
+    # from arkid.core.perm.permission_data import PermissionData
+    # permissiondata = PermissionData()
+    # for permission_id in data_arr:
+    #     permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+    #     if permission is None:
+    #         permission = Permission.valid_objects.filter(id=permission_id).first()
+    #     permission.user_id = select_user_id
+    #     if isinstance(permission, SystemPermission):
+    #         # 添加系统权限
+    #         permissiondata.add_system_permission_to_user(tenant_id, permission.user_id, str(permission.id))
+    #         #dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    #     else:
+    #         # 添加应用权限
+    #         permissiondata.add_app_permission_to_user(tenant_id, str(permission.app_id),permission.user_id, str(permission.id))
+    #         #dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
     return {'error': ErrorCode.OK.value}
 
 

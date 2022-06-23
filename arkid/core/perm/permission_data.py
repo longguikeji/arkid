@@ -139,6 +139,27 @@ class PermissionData(object):
         else:
             print('不存在租户或者用户无法更新')
     
+    def add_user_many_permission(self, permissions_dict):
+        '''
+        给用户添加多个权限自动区分类型
+        '''
+        user_id = permissions_dict.get('user_id', None)
+        data_arr = permissions_dict.get('data_arr', [])
+        tenant_id = permissions_dict.get('tenant_id', None)
+        if user_id and data_arr and tenant_id:
+            for permission_id in data_arr:
+                permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+                if permission is None:
+                    permission = Permission.valid_objects.filter(id=permission_id).first()
+                if isinstance(permission, SystemPermission):
+                    # 添加系统权限
+                    self.add_system_permission_to_user(tenant_id, user_id, permission_id)
+                else:
+                    # 添加应用权限
+                    self.add_app_permission_to_user(tenant_id, str(permission.app_id), user_id, permission_id)
+        else:
+            print('缺少必填参数无法添加请检查用户和权限内容')
+
     def remove_system_permission_to_user(self, tenant_id, user_id, permission_id):
         '''
         给某个用户删除系统权限
