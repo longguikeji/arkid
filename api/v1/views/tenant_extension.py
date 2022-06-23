@@ -125,19 +125,22 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
     settings, created = TenantExtension.objects.get_or_create(
         tenant_id=tenant_id,
         extension_id=extension_id,
-        defaults={"settings": data.settings and data.settings.dict()}
     )
+    
+    settings.settings = data.settings.dict()
+    settings.save()
+    
     return {"error": ErrorCode.OK.value, "data": {"settings_id": settings.id.hex}}
 
 
 @api.get("/tenant/{tenant_id}/extension/{extension_id}/settings/", response=Optional[ExtensionSettingsGetSchemaOut], tags=['租户插件'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_extension_settings(request, tenant_id: str, extension_id: str):
-    '''租户下，创建插件配置'''
-    tenant_extension = TenantExtension.objects.filter(
+    '''租户下，获取插件配置'''
+    tenant_extension,created = TenantExtension.active_objects.get_or_create(
         tenant_id=tenant_id,
         extension_id=extension_id,
-    ).first()
+    )
     tenant_extension.package = tenant_extension.extension.package
     return tenant_extension
 

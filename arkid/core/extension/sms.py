@@ -18,7 +18,7 @@ class SmsExtension(Extension):
         super().load()
         
     def event_send_sms(self,event,**kwargs):
-        if event.package == self.package:
+        if event.packages == self.package or self.package in event.packages:
             return self.send_sms(event,**kwargs)
         
         

@@ -10,13 +10,15 @@ from arkid.core.translation import gettext_default as _
 
 class MobileAuthFactorConfigSchema(Schema):
     
-    id:UUID = Field(
+    id:str = Field(
         hidden=True,
     )
     
     name:str
     
-    package:str
+    package:str = Field(
+        hidden=True
+    )
 
 class SendSMSCodeIn(Schema):
     areacode:Optional[str] = Field(

@@ -382,14 +382,14 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 tenant=tenant,
                 request=request,
                 data={
-                    "config_id":config.sms_config.id,
+                    "config_id":config.config["sms_config"]["id"],
                     "mobile":data.mobile,
                     "code": code,
-                    "areacode": data.areacode
+                    "areacode": data.areacode,
+                    "username": request.user.username if request.user else ""
                 },
-                packages=[
-                    config.sms_config.package
-                ]
+                packages=config.config["sms_config"]["package"]
+                
             )
         )
         

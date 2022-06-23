@@ -43,11 +43,12 @@ class AliyunSMSExtension(SmsExtension):
 
     def send_sms(self, event, **kwargs):
         tenant = event.tenant
-        config_id = event.data["config_id"]
-        template_params = event.data["template_params"]
-        phone_number = event.data["phone_number"]
+        config_id = event.data.pop("config_id")
+        mobile = event.data.pop("mobile")
         
-        settings = self.get_tenant_settings(tenant)
+        template_params = event.data
+        
+        settings = self.get_settings(tenant)
         settings = SimpleNamespace(**settings.settings)
         
         config = self.get_config_by_id(config_id).config
@@ -66,7 +67,7 @@ class AliyunSMSExtension(SmsExtension):
 
         client = Client(aliyun_config)
         send_sms_request = dysmsapi_20170525_models.SendSmsRequest(
-            phone_numbers=phone_number,
+            mobiles=mobile,
             sign_name=config.sign_name,
             template_code=config.template_code,
             template_param=template_params,
