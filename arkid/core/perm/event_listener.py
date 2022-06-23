@@ -3,7 +3,7 @@ from django.db.models.signals import post_save
 from arkid.core.perm.permission_data import PermissionData
 from arkid.core.models import(
     Permission, SystemPermission, App,
-    User, Tenant,
+    User, Tenant, UserGroup,
 )
 from arkid.core.event import (
     CREATE_APP, CREATE_GROUP, DELETE_GROUP,
@@ -15,7 +15,8 @@ from arkid.core.event import (
     ADD_USER_SYSTEM_PERMISSION, ADD_USER_APP_PERMISSION, GROUP_ADD_USER,
     REMOVE_USER_SYSTEM_PERMISSION, REMOVE_USER_APP_PERMISSION, OPEN_APP_PERMISSION,
     OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
-    UPDATE_ADMIN_ALL_PERMISSION, ADD_USER_MANY_PERMISSION,
+    UPDATE_ADMIN_ALL_PERMISSION, ADD_USER_MANY_PERMISSION, ADD_USERGROUP_MANY_PERMISSION,
+    REMOVE_USERGROUP_SYSTEM_PERMISSION, REMOVE_USERGROUP_APP_PERMISSION,
 )
 import uuid
 
@@ -37,6 +38,13 @@ def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
         print('检测到租户创建')
         pd = PermissionData()
         pd.create_tenant_admin_permission(instance)
+
+
+def usergroup_saved(sender, instance: UserGroup, created: bool, **kwargs):
+    if created:
+        print('检测到用户分组创建')
+        pd = PermissionData()
+        pd.create_usergroup_permission(instance)
 
 
 class EventListener(object):
@@ -63,10 +71,13 @@ class EventListener(object):
         core_event.listen_event(DELETE_PERMISSION, self.delete_permission)
         core_event.listen_event(ADD_USER_SYSTEM_PERMISSION, self.add_user_system_permission)
         core_event.listen_event(ADD_USER_MANY_PERMISSION, self.add_user_many_permission)
+        core_event.listen_event(ADD_USERGROUP_MANY_PERMISSION, self.add_usergroup_many_permission)
         core_event.listen_event(UPDATE_ADMIN_ALL_PERMISSION, self.update_open_system_app_permission_admin)
         core_event.listen_event(ADD_USER_APP_PERMISSION, self.add_user_app_permission)
         core_event.listen_event(REMOVE_USER_SYSTEM_PERMISSION, self.remove_user_system_permission)
         core_event.listen_event(REMOVE_USER_APP_PERMISSION, self.remove_user_app_permission)
+        core_event.listen_event(REMOVE_USERGROUP_SYSTEM_PERMISSION, self.remove_system_permission_to_usergroup)
+        core_event.listen_event(REMOVE_USERGROUP_APP_PERMISSION, self.remove_app_permission_to_usergroup)
         core_event.listen_event(OPEN_APP_PERMISSION, self.update_open_app_permission_admin)
         core_event.listen_event(OPEN_SYSTEM_PERMISSION, self.update_open_system_permission_admin)
         core_event.listen_event(CLOSE_APP_PERMISSION, self.update_close_app_permission_user)
@@ -265,6 +276,11 @@ class EventListener(object):
         from arkid.core.tasks.tasks import add_user_many_permission
         add_user_many_permission.delay(permissions_dict)
 
+    def add_usergroup_many_permission(self, event, **kwars):
+        permissions_dict = event.data
+        from arkid.core.tasks.tasks import add_usergroup_many_permission
+        add_usergroup_many_permission.delay(permissions_dict)
+
     def add_user_app_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
@@ -286,7 +302,22 @@ class EventListener(object):
         remove_app_permission_to_user.delay(tenant.id, permission.app_id, permission.user_id, permission.id)
         return True
 
+    def remove_system_permission_to_usergroup(self, event, **kwargs):
+        permission = event.data
+        tenant = event.tenant
+        from arkid.core.tasks.tasks import remove_system_permission_to_usergroup
+        remove_system_permission_to_usergroup.delay(tenant.id, permission.usergroup_id, permission.id)
+        return True
+
+    def remove_app_permission_to_usergroup(self, event, **kwargs):
+        permission = event.data
+        tenant = event.tenant
+        from arkid.core.tasks.tasks import remove_app_permission_to_usergroup
+        remove_app_permission_to_usergroup.delay(tenant.id, permission.app_id, permission.usergroup_id, permission.id)
+        return True
+
 EventListener()
 
 post_save.connect(receiver=user_saved, sender=User)
 post_save.connect(receiver=tenant_saved, sender=Tenant)
+post_save.connect(receiver=usergroup_saved, sender=UserGroup)

@@ -193,13 +193,28 @@ def add_user_many_permission(permissions_dict):
     permissiondata.add_user_many_permission(permissions_dict)
 
 @app.task
+def add_usergroup_many_permission(permissions_dict):
+    '''
+    添加多个权限给用户分组
+    '''
+    permissiondata = PermissionData()
+    permissiondata.add_usergroup_many_permission(permissions_dict)
+
+@app.task
 def remove_system_permission_to_user(tenant_id, user_id, permission_id):
     '''
-    移除系统权限
+    移除用户的系统权限
     '''
     permissiondata = PermissionData()
     permissiondata.remove_system_permission_to_user(tenant_id, user_id, permission_id)
 
+@app.task
+def remove_system_permission_to_usergroup(tenant_id, usergroup_id, permission_id):
+    '''
+    移除用户分组的系统权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.remove_system_permission_to_usergroup(tenant_id, usergroup_id, permission_id)
 
 @app.task
 def add_app_permission_to_user(tenant_id, app_id, user_id, permission_id):
@@ -209,6 +224,15 @@ def add_app_permission_to_user(tenant_id, app_id, user_id, permission_id):
     permissiondata = PermissionData()
     permissiondata.add_app_permission_to_user(tenant_id, app_id, user_id, permission_id)
 
+@app.task
+def remove_app_permission_to_usergroup(tenant_id, app_id, usergroup_id, permission_id):
+    '''
+    移除应用权限用户分组
+    '''
+    permissiondata = PermissionData()
+    permissiondata.remove_app_permission_to_usergroup(
+        tenant_id, app_id, usergroup_id, permission_id
+    )
 
 @app.task
 def remove_app_permission_to_user(tenant_id, app_id, user_id, permission_id):
