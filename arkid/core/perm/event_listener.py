@@ -15,7 +15,7 @@ from arkid.core.event import (
     ADD_USER_SYSTEM_PERMISSION, ADD_USER_APP_PERMISSION, GROUP_ADD_USER,
     REMOVE_USER_SYSTEM_PERMISSION, REMOVE_USER_APP_PERMISSION, OPEN_APP_PERMISSION,
     OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
-    UPDATE_ADMIN_ALL_PERMISSION,
+    UPDATE_ADMIN_ALL_PERMISSION, ADD_USER_MANY_PERMISSION,
 )
 import uuid
 
@@ -62,6 +62,7 @@ class EventListener(object):
         core_event.listen_event(UPDATE_PERMISSION, self.update_permission)
         core_event.listen_event(DELETE_PERMISSION, self.delete_permission)
         core_event.listen_event(ADD_USER_SYSTEM_PERMISSION, self.add_user_system_permission)
+        core_event.listen_event(ADD_USER_MANY_PERMISSION, self.add_user_many_permission)
         core_event.listen_event(UPDATE_ADMIN_ALL_PERMISSION, self.update_open_system_app_permission_admin)
         core_event.listen_event(ADD_USER_APP_PERMISSION, self.add_user_app_permission)
         core_event.listen_event(REMOVE_USER_SYSTEM_PERMISSION, self.remove_user_system_permission)
@@ -258,6 +259,11 @@ class EventListener(object):
         #             # 如果给了入口权限，需要同步更新app权限
         #             update_single_user_app_permission.delay(tenant.id, permission.user_id, app.id)
         return True
+
+    def add_user_many_permission(self, event, **kwars):
+        permissions_dict = event.data
+        from arkid.core.tasks.tasks import add_user_many_permission
+        add_user_many_permission.delay(permissions_dict)
 
     def add_user_app_permission(self, event, **kwargs):
         permission = event.data

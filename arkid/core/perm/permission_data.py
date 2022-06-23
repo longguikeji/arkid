@@ -139,6 +139,27 @@ class PermissionData(object):
         else:
             print('不存在租户或者用户无法更新')
     
+    def add_user_many_permission(self, permissions_dict):
+        '''
+        给用户添加多个权限自动区分类型
+        '''
+        user_id = permissions_dict.get('user_id', None)
+        data_arr = permissions_dict.get('data_arr', [])
+        tenant_id = permissions_dict.get('tenant_id', None)
+        if user_id and data_arr and tenant_id:
+            for permission_id in data_arr:
+                permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+                if permission is None:
+                    permission = Permission.valid_objects.filter(id=permission_id).first()
+                if isinstance(permission, SystemPermission):
+                    # 添加系统权限
+                    self.add_system_permission_to_user(tenant_id, user_id, permission_id)
+                else:
+                    # 添加应用权限
+                    self.add_app_permission_to_user(tenant_id, str(permission.app_id), user_id, permission_id)
+        else:
+            print('缺少必填参数无法添加请检查用户和权限内容')
+
     def remove_system_permission_to_user(self, tenant_id, user_id, permission_id):
         '''
         给某个用户删除系统权限
@@ -1194,6 +1215,7 @@ class PermissionData(object):
         '''
         对结果字符串加工
         '''
+        compress = Compress()
         if userpermissionresult.app:
             # 有应用走新逻辑
             app = userpermissionresult.app
@@ -1208,7 +1230,7 @@ class PermissionData(object):
                     api_sort_id = permission_json.get('sort_id', -1)
                     if api_sort_id != -1:
                         temp_api_dict = {
-                            'name': name
+                            'name': api_name
                         }
                         if api_operation_id:
                             temp_api_dict['operation_id'] = api_operation_id
@@ -1232,7 +1254,7 @@ class PermissionData(object):
                 for permission in permissions:
                     sort_id = permission.sort_id
                     database_name = permission.name
-                    database_operation_id = permission.get('operation_id', '')
+                    database_operation_id = permission.operation_id
                     check_result = permission_result_arr[sort_id]
                     temp_database_dict = {
                         'name': database_name
