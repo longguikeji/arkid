@@ -355,11 +355,11 @@ def check_arkstore_purchased(tenant, token, app):
     return False
 
 
-def check_arkstore_expired(tenant, token, package_idendifer):
+def check_arkstore_expired(tenant, token, package):
     access_token = get_arkstore_access_token(tenant, token)
     order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/order/'
     headers = {'Authorization': f'Token {access_token}'}
-    params = {'package_idendifer': package_idendifer}
+    params = {'package': package}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
     if resp.status_code != 200:
         print(f'Error check_arkstore_expired: {resp.status_code}')
