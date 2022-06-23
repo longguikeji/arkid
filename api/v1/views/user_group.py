@@ -74,6 +74,7 @@ def get_group(request, tenant_id: str, id: str):
     获取分组
     '''
     group = get_object_or_404(UserGroup.expand_objects, id=id, is_del=False)
+    group["parent"] = UserGroup.active_objects.get(id=group["parent_id"]) if group["parent_id"] else None
     return {
         "data": group
     }
