@@ -141,6 +141,8 @@ def user_add_permission(request, tenant_id: str, select_user_id: str, data: Perm
     添加用户权限
     '''
     data_arr = data.data
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
     for permission_id in data_arr:
         permission = SystemPermission.valid_objects.filter(id=permission_id).first()
         if permission is None:
@@ -148,10 +150,12 @@ def user_add_permission(request, tenant_id: str, select_user_id: str, data: Perm
         permission.user_id = select_user_id
         if isinstance(permission, SystemPermission):
             # 添加系统权限
-            dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
+            permissiondata.add_system_permission_to_user(tenant_id, permission.user_id, str(permission.id))
+            #dispatch_event(Event(tag=ADD_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
         else:
             # 添加应用权限
-            dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+            permissiondata.add_app_permission_to_user(tenant_id, str(permission.app_id),permission.user_id, str(permission.id))
+            #dispatch_event(Event(tag=ADD_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
     return {'error': ErrorCode.OK.value}
 
 
