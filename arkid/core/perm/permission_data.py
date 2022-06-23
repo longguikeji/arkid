@@ -1194,6 +1194,7 @@ class PermissionData(object):
         '''
         对结果字符串加工
         '''
+        compress = Compress()
         if userpermissionresult.app:
             # 有应用走新逻辑
             app = userpermissionresult.app
@@ -1208,7 +1209,7 @@ class PermissionData(object):
                     api_sort_id = permission_json.get('sort_id', -1)
                     if api_sort_id != -1:
                         temp_api_dict = {
-                            'name': name
+                            'name': api_name
                         }
                         if api_operation_id:
                             temp_api_dict['operation_id'] = api_operation_id
