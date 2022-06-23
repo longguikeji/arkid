@@ -363,6 +363,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         Args:
             request : 请求对象
             tenant_id (str): 租户ID
+            config_id (str): 配置ID
             data (SendSMSCodeIn): 参数体
         """
         tenant = request.tenant

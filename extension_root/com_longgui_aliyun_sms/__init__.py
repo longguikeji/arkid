@@ -46,6 +46,7 @@ class AliyunSMSExtension(SmsExtension):
         config_id = event.data.pop("config_id")
         mobile = event.data.pop("mobile")
         
+        # TODO 处理短信发送的数据结构
         template_params = event.data
         
         settings = self.get_settings(tenant)
@@ -67,7 +68,7 @@ class AliyunSMSExtension(SmsExtension):
 
         client = Client(aliyun_config)
         send_sms_request = dysmsapi_20170525_models.SendSmsRequest(
-            mobiles=mobile,
+            phone_numbers=mobile,
             sign_name=config.sign_name,
             template_code=config.template_code,
             template_param=template_params,
