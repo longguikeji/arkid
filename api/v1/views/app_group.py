@@ -46,6 +46,7 @@ def get_app_group(request, tenant_id: str, id: str):
     """ 获取应用分组
     """
     group = get_object_or_404(AppGroup.expand_objects,tenant_id=tenant_id,id=id, is_del=False, is_active=True)
+    group["parent"] = AppGroup.active_objects.get(id=group["parent_id"]) if group["parent_id"] else None
     return {
         "data": group
     }
