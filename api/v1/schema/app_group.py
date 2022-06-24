@@ -145,9 +145,7 @@ select_appgroup_excluded_apps_page.create_actions(
 class AppGroupAppUpdateIn(Schema):
     
     apps: List[str] = Field(
-        field="id",
         page=select_appgroup_parent_page.tag,
-        link="name",
         type="array"
     )
     

@@ -14,7 +14,7 @@ def gen_sms_code_key(mobile):
     return f'sms:{mobile}'
 
 def create_sms_code(phone_number,uth_code_length=6):
-    """发送短信验证码
+    """生成短信验证码并存储至缓存
     """
     code = gen_sms_code()
     cache.set(gen_sms_code_key(phone_number), code)

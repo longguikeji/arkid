@@ -22,7 +22,8 @@ from django.contrib.auth.hashers import (
 package = "com.longgui.auth.factor.mobile"
 
 class MobileAuthFactorExtension(AuthFactorExtension):
-        
+    """手机短信验证码认证因素插件
+    """
     def load(self):
         super().load()
         
@@ -57,6 +58,14 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         )
     
     def authenticate(self, event, **kwargs):
+        """ 认证
+        
+        通过手机号码查找用户并校验短信验证码
+
+        Args:
+            event (Event): 事件
+
+        """
         tenant = event.tenant
         request = event.request
         sms_code = request.POST.get('sms_code')
@@ -79,6 +88,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
 
     @transaction.atomic()
     def register(self, event, **kwargs):
+        """ 注册用户
+
+        Args:
+            event (Event): 事件
+        """
         tenant = event.tenant
         request = event.request
         mobile = request.POST.get('mobile')
@@ -109,7 +123,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         return user
 
     def reset_password(self, event, **kwargs):
-        
+        """ 重置密码
+
+        Args:
+            event (Event): 事件
+        """
         tenant = event.tenant
         request = event.request
         mobile = request.POST.get('mobile')
@@ -139,6 +157,13 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         return self.error(ErrorCode.MOBILE_NOT_EXISTS_ERROR)
 
     def create_login_page(self, event, config):
+        """ 生成手机验证码登录页面Schema描述
+
+        Args:
+            event (Event): 事件
+            config (TenantExtensionConfig): 插件运行时配置
+        """
+        
         items = [
             {
                 "type": "text",
@@ -166,6 +191,14 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         self.add_page_form(config, self.LOGIN, "手机验证码登录", items)
 
     def create_register_page(self, event, config):
+        """生成手机验证码用户注册页面Schema描述
+
+        因本插件提供重置密码功能，此处需用户指定账号用户名
+
+        Args:
+            event (Event): 事件
+            config (TenantExtensionConfig): 插件运行时配置
+        """
         items = [
             {
                 "type": "text",
@@ -198,6 +231,16 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         self.add_page_form(config, self.REGISTER, "手机验证码注册", items)
 
     def create_password_page(self, event, config):
+        """生成重置密码页面Schema描述
+        
+        通过手机验证码重置密码时需提供手机号码以及对应验证码，同时此处添加新密码确认机制
+        
+        注意：重置密码功能需要启用用户名密码认证插件以提供完整支持
+
+        Args:
+            event (Event): 事件
+            config (TenantExtensionConfig): 插件运行时配置
+        """
         items = [
             {
                 "type": "text",
@@ -234,9 +277,24 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         self.add_page_form(config, self.RESET_PASSWORD, "手机验证码重置密码", items)
 
     def create_other_page(self, event, config):
+        """创建其他页面（本插件无相关页面）
+
+        Args:
+            event (Event): 事件
+            config (TenantExtensionConfig): 插件运行时配置
+        """
         pass
     
     def check_mobile_exists(self, mobile, tenant):
+        """检查电话号码是否已存在
+
+        Args:
+            mobile (str): 手机号
+            tenant (Tenant): 租户
+
+        Returns:
+            (bool,ErrorCode): mobile是否存在以及对应错误
+        """
         if not mobile:
             return False, ErrorCode.MOBILE_EMPTY
 
@@ -245,25 +303,36 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         return True, None
     
     def check_username_exists(self,username,tenant):
+        """检查用户名是否已存在
+
+        Args:
+            username (str): 用户名
+            tenant (Tenant): 租户
+
+        Returns:
+            (bool,ErrorCode): username是否存在以及对应错误
+        """
+        # 检查username是否为空
         if not username:
             return False, ErrorCode.USERNAME_EMPTY
-        
+        # 检查username是否已存在
         if User.expand_objects.filter(tenant=tenant,username=username).count():
             return False, ErrorCode.USERNAME_EXISTS_ERROR
         
         return True, None
-
-    def _get_register_user(self, tenant, field_name, field_value):
-        pass
     
     def create_auth_manage_page(self):
-
+        """ 创建“我的-认证管理”中的更换手机号码页面
+        """
         configs = TenantExtensionConfig.active_objects.filter(extension__package=self.package)
         
         _pages = []
         for config in configs:
             class UpdateMineMobileIn(Schema):
-                    
+                """ 更新手机号码参数Schema描述类
+
+                注意： 此处因需要部分运行时配置参数故而临时写在此处，未来可能优化
+                """
                 mobile:str = Field(
                     title='手机号',
                     suffix_action=DirectAction(
@@ -284,7 +353,13 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 pass
             
             def update_mine_mobile(request, tenant_id: str,data:UpdateMineMobileIn):
-                print(request.user)
+                """ 普通用户：更新手机号码
+
+                Args:
+                    request: 请求体
+                    tenant_id (str): 租户ID
+                    data (UpdateMineMobileIn): 参数
+                """
                 mobile = data.mobile
                 ret, message = self.check_mobile_exists(mobile, request.tenant)
                 if not ret:
@@ -327,7 +402,8 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         return _pages
 
     def create_extension_config_schema(self):
-        
+        """创建插件运行时配置schema描述
+        """
         select_sms_page = pages.TablePage(select=True,name=_("指定短信插件运行时"))
 
         self.register_front_pages(select_sms_page)
