@@ -25,6 +25,8 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     """手机短信验证码认证因素插件
     """
     def load(self):
+        """加载插件
+        """
         super().load()
         
         self.create_extension_config_schema()
