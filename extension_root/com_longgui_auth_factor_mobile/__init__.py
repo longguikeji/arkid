@@ -8,12 +8,12 @@ from pydantic import Field
 from typing import List, Optional
 from arkid.core.translation import gettext_default as _
 from django.db import transaction
-from arkid.core.extension import create_extension_schema
+from arkid.core.extension import create_extension_schema_by_package
 from .schema import *
 
 package = "com.longgui.auth.factor.mobile"
 
-MobileAuthFactorSchema = create_extension_schema('MobileAuthFactorSchema',package, 
+MobileAuthFactorSchema = create_extension_schema_by_package('MobileAuthFactorSchema',package, 
         [
             ('template_code', str , Field(title=_('template_code', '短信模板ID'))),
             ('sign_name', str , Field(title=_('sign_name', 'sign_name'))),

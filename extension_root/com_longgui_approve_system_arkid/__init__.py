@@ -1,5 +1,5 @@
 from arkid.core.extension.approve_system import ApproveSystemExtension
-from arkid.core.extension import create_extension_schema
+from arkid.core.extension import create_extension_schema_by_package
 from arkid.extension.models import TenantExtensionConfig, TenantExtension
 
 from pydantic import Field
@@ -17,7 +17,7 @@ class ApproveSystemArkIDSchema(ApproveSystemBaseSchema):
     pass
 
 
-ApproveSystemArkIDConfigSchema = create_extension_schema(
+ApproveSystemArkIDConfigSchema = create_extension_schema_by_package(
     'ApproveSystemArkIDConfigSchema', package, base_schema=ApproveSystemArkIDSchema
 )
 

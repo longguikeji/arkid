@@ -1,4 +1,4 @@
-from arkid.core.extension import create_extension_schema
+from arkid.core.extension import create_extension_schema_by_package
 from arkid.core.extension.auth_rule import AuthRuleExtension, BaseAuthRuleSchema
 from arkid.core.translation import gettext_default as _
 from ninja import Schema
@@ -6,7 +6,7 @@ from pydantic import Field
 
 package = 'com.longgui.authrule.retrytimes'
 
-AuthRuleRetryTimesConfigSchema = create_extension_schema(
+AuthRuleRetryTimesConfigSchema = create_extension_schema_by_package(
     'AuthRuleRetryTimesConfigSchema',
     package,
     [

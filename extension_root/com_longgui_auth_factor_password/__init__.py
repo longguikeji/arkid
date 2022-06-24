@@ -20,7 +20,7 @@ from django.contrib.auth.hashers import (
 )
 from django.db import transaction
 from django.db.models import Q
-from arkid.core.extension import create_extension_schema
+from arkid.core.extension import create_extension_schema_by_package
 from .schema import *
 from api.v1.pages.user_manage.user_list import page as user_list_page
 from api.v1.schema.auth import AuthIn
@@ -30,7 +30,7 @@ package = "com.longgui.auth.factor.password"
 select_pw_login_fields_page = pages.TablePage(select=True, name=_("Select Password Login Fields", "选择密码登录字段"))
 
 
-PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',package, 
+PasswordAuthFactorSchema = create_extension_schema_by_package('PasswordAuthFactorSchema',package, 
         [
             ('reset_password_enabled', Optional[bool] , Field(deprecated=True)),
             ('login_enabled_field_names', List[str],
@@ -58,13 +58,13 @@ PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',pa
         BaseAuthFactorSchema,
     )
 
-RestUserPasswordIn = create_extension_schema('RestUserPasswordIn',package, 
+RestUserPasswordIn = create_extension_schema_by_package('RestUserPasswordIn',package, 
         [
             ('password', str , Field(title='新密码',type='password')),
        ],
     )
 
-GetUserKeyFieldItemOut = create_extension_schema('GetUserKeyFieldItemOut',package, 
+GetUserKeyFieldItemOut = create_extension_schema_by_package('GetUserKeyFieldItemOut',package, 
         [
             ('key', str , Field()),
             ('name', str,Field()),
