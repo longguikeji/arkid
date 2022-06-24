@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from django.dispatch import Signal
 from django.forms import model_to_dict
 from arkid.core.translation import gettext_default as _
@@ -108,7 +108,7 @@ class Event:
         tenant: Tenant = None,
         request: HttpRequest = None,
         response: HttpResponse = None,
-        packages: str = None,
+        packages: List[str] = [],
         data = None,
         uuid: str = None,
     ):
@@ -119,7 +119,7 @@ class Event:
             tenant (Tenant): 租户
             request (HttpRequest, optional): django http request
             response (HttpResponse, optional): django http response
-            packages (str, optional): 插件package标识
+            packages (list[str], optional): 插件package标识
             data (_type_, optional): 事件data
             uuid (str, optional): 事件包含的request_uuid
         """
@@ -127,7 +127,10 @@ class Event:
         self.tenant = tenant
         self._request = request
         self._response = response
-        self.packages = packages
+        if type(packages) is list:
+            self.packages = packages
+        else:
+            self.packages = [packages]
         # self.data = data_to_simplenamespace(data)
         self.data = data
         self.uuid = uuid
