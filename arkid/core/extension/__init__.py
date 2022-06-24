@@ -40,6 +40,18 @@ EventType = core_event.EventType
 
 
 def create_extension_schema(name, file_path, fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]):
+    """提供给插件用来创建Schema的方法
+    
+    注意:
+        插件必须使用此方法来定义Schema,避免与其它Schema的命名冲突
+    Args:
+        name (str): Schema的类名
+        file_path (str): 指插件__init__.py文件所在的路径, 用来通过插件的config.toml文件获取package,从而避免schema的命名冲突
+        fields (Optional[List[Tuple[str, Any, Any]]], optional): Schema的字段定义
+        base_schema (Type[Schema], optional): Schema的基类. 默认为: ninja.Schema
+    Returns:
+        ninja.Schema : 创建的Schema类
+    """
     config_path = Path(file_path).parent / "config.toml"
     if not config_path.exists():
         raise Exception("config.tmol not found")
