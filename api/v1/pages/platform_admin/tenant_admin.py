@@ -6,10 +6,8 @@ tag = 'tenant_admin'
 name = '租户列表'
 
 page = pages.TablePage(name=name,tag=tag)
-edit_page = pages.FormPage(name=_("编辑租户"))
 
 pages.register_front_pages(page)
-pages.register_front_pages(edit_page)
 
 router = routers.FrontRouter(
     path=tag,
@@ -35,23 +33,5 @@ page.create_actions(
             path='/api/v1/mine/switch_tenant/{id}/',
             method=actions.FrontActionMethod.GET
         ),
-        "edit": actions.EditAction(
-            page=edit_page,
-        ),
-        "delete":actions.DeleteAction(
-            path="/api/v1/tenants/{id}/",
-        )
     },
-)
-
-edit_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/tenants/{id}/',
-        method=actions.FrontActionMethod.GET
-    ),
-    global_actions={
-       'confirm': actions.ConfirmAction(
-            path="/api/v1/tenants/{id}/"
-        ),
-    }
 )
