@@ -196,7 +196,7 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
     data["app"] = app
     if config:
         # 更新应用协议配置
-        results = dispatch_event(Event(tag=UPDATE_APP_CONFIG, tenant=tenant, request=request, data=data))
+        results = dispatch_event(Event(tag=UPDATE_APP_CONFIG, tenant=tenant, request=request, data=data, packages=[data["package"]]))
         for func, (result, extension) in results:
             # 修改app信息
             if result:
@@ -209,7 +209,7 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
                 break
     else:
         # 创建应用协议配置
-        results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data))
+        results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data, packages=[data["package"]]))
         for func, (result, extension) in results:
             if result:
                 # 创建config
