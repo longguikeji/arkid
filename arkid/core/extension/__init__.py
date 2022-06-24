@@ -1,3 +1,4 @@
+import toml
 from abc import ABC, abstractmethod
 from enum import Enum
 from pyclbr import Function
@@ -37,7 +38,17 @@ app_config = config.get_app_config()
 Event = core_event.Event
 EventType = core_event.EventType
 
-def create_extension_schema( name, package = '',fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]) :
+
+def create_extension_schema(name, file_path, fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]):
+    config_path = Path(file_path).parent / "config.toml"
+    if not config_path.exists():
+        raise Exception("config.tmol not found")
+
+    config = toml.load(config_path)
+    return create_extension_schema_by_package(name, config["package"], fields, base_schema, exclude)
+
+
+def create_extension_schema_by_package( name, package = '',fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]) :
     """提供给插件用来创建Schema的方法
     
     注意:
@@ -93,7 +104,7 @@ def create_extension_schema_from_django_model(
     return schema
 
 def create_empty_root_schema(name):
-    return create_extension_schema(name, fields=[("__root__", str, Field())],base_schema=RootSchema,)
+    return create_extension_schema_by_package(name, fields=[("__root__", str, Field())],base_schema=RootSchema,)
 
 def get_root_schema(schema_list, discriminator, depth = 0):
     if len(schema_list) == 0:
@@ -115,14 +126,14 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
         fields.append( (k,t,f) )
     
     if len(schema_list) == 0:
-        schema = create_extension_schema(schema_cls_name+'0', exclude=exclude, fields=fields)
+        schema = create_extension_schema_by_package(schema_cls_name+'0', exclude=exclude, fields=fields)
     elif len(schema_list) == 1:
         # schema = list(schema_list)[0]
-        schema = create_extension_schema(schema_cls_name+'1', base_schema=list(schema_list)[0], exclude=exclude, fields=fields)
+        schema = create_extension_schema_by_package(schema_cls_name+'1', base_schema=list(schema_list)[0], exclude=exclude, fields=fields)
     else:
         new_schema_list = []
         for schema in schema_list:
-            schema = create_extension_schema(schema_cls_name + '_' + schema.name, base_schema=schema)
+            schema = create_extension_schema_by_package(schema_cls_name + '_' + schema.name, base_schema=schema)
             core_api.add_fields(schema, **field_definitions)
             core_api.remove_fields(schema, exclude)
             new_schema_list.append(schema)
@@ -130,7 +141,7 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
         schema_list = new_schema_list
         root_type, root_field = Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)
         
-        schema = create_extension_schema(
+        schema = create_extension_schema_by_package(
             schema_cls_name, 
             fields=[
                 ("__root__", root_type, root_field) # type: ignore
@@ -159,10 +170,10 @@ class Extension(ABC):
 
     def __init__(
         self, 
-        package:str, 
-        version:str, 
-        name:str,  
-        logo:str, 
+        package:str = None, 
+        version:str = None, 
+        name:str = None,  
+        logo:str = None, 
         description:str = None, 
         labels:List[str] = None, 
         homepage:str = None, 
@@ -184,15 +195,14 @@ class Extension(ABC):
         self.version = version
         self.name = name
         self.description = description
-        self.labels = []
+        self._labels = []
         if type(labels) is list:
-            self.labels.extend(labels)
-        else:
-            self.labels.append(labels)
+            self._labels.extend(labels)
+        elif labels:
+            self._labels.append(labels)
         self.homepage = homepage
         self.logo = logo
         self.author = author
-        self.pname = self.package.replace('.', '_')
         self.apis = []
         self.urls = []
         self.extend_fields = []
@@ -205,6 +215,28 @@ class Extension(ABC):
         self.settings_schema_list = []
         self.config_schema_list = []
         self.lang_code = None
+
+    def load_config(self):
+        config_path = Path(self._ext_dir) / "config.toml"
+        if config_path.exists():
+            config = toml.load(config_path)
+            for k, v in config.items():
+                setattr(self, k, v)
+
+    @property
+    def pname(self):
+        return self.package.replace('.', '_')
+
+    @property
+    def labels(self):
+        return self._labels
+
+    @labels.setter
+    def labels(self, value: str):
+        if type(value) is list:
+            self._labels.extend(value)
+        elif value:
+            self._labels.append(value)
 
     @property
     def model(self):
@@ -223,6 +255,7 @@ class Extension(ABC):
     @ext_dir.setter
     def ext_dir(self, value: str):
         self._ext_dir = value
+        self.load_config()
 
     @property
     def full_name(self):
@@ -241,6 +274,9 @@ class Extension(ABC):
         except Exception as e:
             print(e)
             print(f'migrate {self.pname} fail')
+    
+    def create_schema(self, name, fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]):
+        return create_extension_schema_by_package(name, self.package, fields, base_schema,  exclude)
             
     def register_api(
         self, 
@@ -754,7 +790,7 @@ class Extension(ABC):
         Returns:
             Schema: 创建好的Schema
         """
-        schema = create_extension_schema(
+        schema = create_extension_schema_by_package(
             schema_cls_name, 
             fields=[
                 ("__root__", str, Field(depth=1)) # type: ignore

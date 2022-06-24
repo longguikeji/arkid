@@ -8,11 +8,9 @@ from alibabacloud_dysmsapi20170525.client import Client
 from alibabacloud_tea_openapi import models
 from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
 
-package = 'com.longgui.aliyun_sms'
-
 SettingsSchema = create_extension_schema(
     'SettingsSchema',
-    package,
+    __file__,
     fields = [
         ('access_key_id', str, Field(title=_("AccessKey ID"))),
         ('access_key_secret', str, Field(title=_("AccessKey Secret"))),
@@ -24,7 +22,7 @@ SettingsSchema = create_extension_schema(
 
 ConfigSchema = create_extension_schema(
     "ConfigSchema",
-    package,
+    __file__,
     fields = [
         ('sign_name', str, Field(title=_("Sign Name", "短信签名名称"))),
         ('template_code', str, Field(title=_("Template Code", "短信模板CODE"))),
@@ -79,12 +77,4 @@ class AliyunSMSExtension(SmsExtension):
         return res.body.to_map()
 
 
-extension = AliyunSMSExtension(
-    package=package,
-    name='阿里云短信',
-    version='1.0',
-    labels='sms',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='hanbin@jinji-inc.com',
-)
+extension = AliyunSMSExtension()

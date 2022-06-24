@@ -9,7 +9,6 @@ from arkid.core.translation import gettext_default as _
 from django.conf import settings
 import os
 
-package = "com.longgui.language.zh"
     
 class TranslationZhExtension(LanguageExtension):
     def language_type(self) -> str:
@@ -21,13 +20,5 @@ class TranslationZhExtension(LanguageExtension):
         }
     
 
-extension = TranslationZhExtension(
-    package=package,
-    name='中文语言包',
-    version='1.0',
-    labels='translation',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='guancyxx@guancyxx.cn',
-)
+extension = TranslationZhExtension()
 

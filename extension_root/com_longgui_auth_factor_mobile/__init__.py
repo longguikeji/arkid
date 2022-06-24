@@ -19,8 +19,6 @@ from django.contrib.auth.hashers import (
     make_password,
 )
 
-package = "com.longgui.auth.factor.mobile"
-
 class MobileAuthFactorExtension(AuthFactorExtension):
     """手机短信验证码认证因素插件
     """
@@ -419,7 +417,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         
         MobileAuthFactorSchema = create_extension_schema(
             'MobileAuthFactorSchema',
-            package, 
+            __file__, 
             [
                 (
                     'sms_config', 
@@ -481,12 +479,4 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             return self.error(ErrorCode.SMS_SEND_FAILED)
     
     
-extension = MobileAuthFactorExtension(
-    package=package,
-    name="手机验证码认证因素",
-    version='1.0',
-    labels='auth_factor',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='guancyxx@guancyxx.cn',
-)
+extension = MobileAuthFactorExtension()

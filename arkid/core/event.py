@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from django.dispatch import Signal
 from django.forms import model_to_dict
 from arkid.core.translation import gettext_default as _
@@ -108,7 +108,7 @@ class Event:
         tenant: Tenant = None,
         request: HttpRequest = None,
         response: HttpResponse = None,
-        packages: str = None,
+        packages: List[str] = [],
         data = None,
         uuid: str = None,
     ):
@@ -119,7 +119,7 @@ class Event:
             tenant (Tenant): 租户
             request (HttpRequest, optional): django http request
             response (HttpResponse, optional): django http response
-            packages (str, optional): 插件package标识
+            packages (list[str], optional): 插件package标识
             data (_type_, optional): 事件data
             uuid (str, optional): 事件包含的request_uuid
         """
@@ -127,7 +127,10 @@ class Event:
         self.tenant = tenant
         self._request = request
         self._response = response
-        self.packages = packages
+        if type(packages) is list:
+            self.packages = packages
+        else:
+            self.packages = [packages]
         # self.data = data_to_simplenamespace(data)
         self.data = data
         self.uuid = uuid
@@ -308,8 +311,12 @@ REMOVE_GROUP_PERMISSION_PERMISSION = 'REMOVE_GROUP_PERMISSION_PERMISSION'
 UPDATE_GROUP_PERMISSION_PERMISSION = 'UPDATE_GROUP_PERMISSION_PERMISSION'
 ADD_USER_SYSTEM_PERMISSION = 'ADD_USER_SYSTEM_PERMISSION'
 ADD_USER_APP_PERMISSION = 'ADD_USER_APP_PERMISSION'
+ADD_USER_MANY_PERMISSION = 'ADD_USER_MANY_PERMISSION'
+ADD_USERGROUP_MANY_PERMISSION = 'ADD_USERGROUP_MANY_PERMISSION'
 REMOVE_USER_SYSTEM_PERMISSION = 'REMOVE_USER_SYSTEM_PERMISSION'
 REMOVE_USER_APP_PERMISSION = 'REMOVE_USER_APP_PERMISSION'
+REMOVE_USERGROUP_SYSTEM_PERMISSION = 'REMOVE_USERGROUP_SYSTEM_PERMISSION'
+REMOVE_USERGROUP_APP_PERMISSION = 'REMOVE_USERGROUP_APP_PERMISSION'
 OPEN_APP_PERMISSION = 'OPEN_APP_PERMISSION'
 OPEN_SYSTEM_PERMISSION = 'OPEN_SYSTEM_PERMISSION'
 CLOSE_SYSTEM_PERMISSION = 'CLOSE_SYSTEM_PERMISSION'
@@ -392,20 +399,26 @@ register_event(UPDATE_APPROVE_SYSTEM_CONFIG, _('Update Approve System', '更新�
 register_event(DELETE_APPROVE_SYSTEM_CONFIG, _('Delete Approve System', '删除审批系统'))
 register_event(ADD_USER_SYSTEM_PERMISSION, _('add user system permission', '添加用户系统权限'))
 register_event(ADD_USER_APP_PERMISSION, _('add user app permission', '添加用户应用权限'))
+register_event(ADD_USER_MANY_PERMISSION,_('add user many permission', '添加多个用户权限'))
+register_event(ADD_USERGROUP_MANY_PERMISSION,_('add usergroup many permission', '添加多个用户分组权限'))
 register_event(
     REMOVE_USER_SYSTEM_PERMISSION, _('remove user system permission', '移除用户系统权限')
 )
 register_event(REMOVE_USER_APP_PERMISSION, _('remove user app permission', '移除用户应用权限'))
+register_event(
+    REMOVE_USERGROUP_SYSTEM_PERMISSION, _('remove usergroup system permission', '移除用户分组系统权限')
+)
+register_event(REMOVE_USERGROUP_APP_PERMISSION, _('remove usergroup app permission', '移除用户分组应用权限'))
 register_event(AUTO_LOGIN, _('Auto Login', '开始自动登录'))
 
 register_event(CREATE_AUTO_AUTH_CONFIG, _('Create Auto Auth', '添加自动登录'))
 register_event(UPDATE_AUTO_AUTH_CONFIG, _('Update Auto Auth', '更新自动登录'))
 register_event(DELETE_AUTO_AUTH_CONFIG, _('Delete Auto Auth', '删除自动登录'))
-register_event(OPEN_APP_PERMISSION, _('OPEN APP PERMISSION', '开放应用权限'))
-register_event(OPEN_SYSTEM_PERMISSION, _('OPEN SYSTEM PERMISSION', '开放系统权限'))
-register_event(CLOSE_SYSTEM_PERMISSION, _('CLOSE SYSTEM PERMISSION', '关闭系统权限'))
-register_event(CLOSE_APP_PERMISSION, _('CLOSE APP PERMISSION', '关闭应用权限'))
-register_event(UPDATE_ADMIN_ALL_PERMISSION, _('UPDATE ADMIN ALL PERMISSION', '更新所有管理员权限'))
+register_event(OPEN_APP_PERMISSION, _('open app permission', '开放应用权限'))
+register_event(OPEN_SYSTEM_PERMISSION, _('open system permission', '开放系统权限'))
+register_event(CLOSE_SYSTEM_PERMISSION, _('close system permission', '关闭系统权限'))
+register_event(CLOSE_APP_PERMISSION, _('close app permission', '关闭应用权限'))
+register_event(UPDATE_ADMIN_ALL_PERMISSION, _('update admin all permission', '更新所有管理员权限'))
 
 register_event(SAVE_FILE, _('SAVE FILE', '保存文件'))
 register_event(ACCOUNT_LIFE_PERIODIC_TASK, _('ACCOUNT_LIFE_PERIODIC_TASK', '生命周期定时任务'))

@@ -22,7 +22,7 @@ from api.v1.schema.permission_group import *
 import uuid
 
 
-@api.get("/tenant/{tenant_id}/permission_groups/", tags=["权限分组"], response=List[PermissionGroupListSchemaOut], auth=None)
+@api.get("/tenant/{tenant_id}/permission_groups/", tags=["权限分组"], response=List[PermissionGroupListSchemaOut])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_permission_groups(request, tenant_id: str,  parent_id: str = None,  app_id: str = None):

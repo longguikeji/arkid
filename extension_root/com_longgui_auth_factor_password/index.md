@@ -1,7 +1,3 @@
----
-template: comment.html
----
-
 # 密码认证因素
 ## 功能介绍
 

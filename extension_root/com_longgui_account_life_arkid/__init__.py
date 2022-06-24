@@ -1,5 +1,5 @@
 from arkid.core.extension.account_life import AccountLifeExtension
-from arkid.core.extension import create_extension_schema
+from arkid.core.extension import create_extension_schema_by_package
 from arkid.extension.models import TenantExtensionConfig, TenantExtension, Extension
 from arkid.core.models import User
 import urllib.parse
@@ -16,9 +16,6 @@ from datetime import datetime
 from typing import List
 from arkid.core import pages, actions
 from django.utils import dateformat, timezone
-
-
-package = 'com.longgui.account.life.arkid'
 
 
 select_user_page = pages.TablePage(select=True, name=_("Select User", "选择用户"))
@@ -121,12 +118,4 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
                     user.offline()
 
 
-extension = AccountLifeArkIDExtension(
-    package=package,
-    name='默认账号生命周期管理',
-    version='1.0',
-    labels='account-life-arkid',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='hanbin@jinji-inc.com',
-)
+extension = AccountLifeArkIDExtension()

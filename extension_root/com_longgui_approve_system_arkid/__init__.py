@@ -10,15 +10,12 @@ from api.v1.pages.approve_manage import router as approve_manage_router
 from . import views
 from arkid.core.extension.approve_system import ApproveSystemBaseSchema
 
-package = 'com.longgui.approve.system.arkid'
-
-
 class ApproveSystemArkIDSchema(ApproveSystemBaseSchema):
     pass
 
 
 ApproveSystemArkIDConfigSchema = create_extension_schema(
-    'ApproveSystemArkIDConfigSchema', package, base_schema=ApproveSystemArkIDSchema
+    'ApproveSystemArkIDConfigSchema', __file__, base_schema=ApproveSystemArkIDSchema
 )
 
 
@@ -35,12 +32,4 @@ class ApproveSystemArkIDExtension(ApproveSystemExtension):
         pass
 
 
-extension = ApproveSystemArkIDExtension(
-    package=package,
-    name='默认审批系统',
-    version='1.0',
-    labels='approve-system-arkid',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='hanbin@jinji-inc.com',
-)
+extension = ApproveSystemArkIDExtension()

@@ -5,7 +5,7 @@ from abc import abstractmethod
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtension, TenantExtensionConfig
-from arkid.core.extension import RootSchema, create_extension_schema
+from arkid.core.extension import RootSchema, create_extension_schema_by_package
 from arkid.common.logger import logger
 from django.urls import reverse
 from arkid.config import get_app_config

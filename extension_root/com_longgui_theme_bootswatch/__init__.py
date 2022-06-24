@@ -2,9 +2,8 @@ from arkid.core.extension.front_theme import FrontThemeExtension, BaseFrontTheme
 from pydantic import Field
 from typing import List, Optional, Literal
 from arkid.core.translation import gettext_default as _
-from arkid.core.extension import create_extension_schema
+from arkid.core.extension import create_extension_schema_by_package
 
-package = "com.longgui.theme.bootswatch"
 
 class ThemeBootswatch(FrontThemeExtension):
     def load(self):
@@ -14,12 +13,4 @@ class ThemeBootswatch(FrontThemeExtension):
         return super().load()
 
 
-extension = ThemeBootswatch(
-    package=package,
-    name='Bootswatch主题',
-    version='1.0',
-    labels=['theme','bootswatch'],
-    homepage='https://bootswatch.com/',
-    logo='',
-    author='wely@longguikeji.com',
-)
+extension = ThemeBootswatch()
