@@ -136,6 +136,7 @@ class PermissionData(object):
         permission = SystemPermission.valid_objects.filter(id=permission_id).first()
         if tenant:
             self.update_arkid_single_user_permission(tenant, user, permission, 1)
+            self.update_arkid_single_user_permission(tenant, user, None, None)
         else:
             print('不存在租户或者用户无法更新')
     
@@ -169,6 +170,7 @@ class PermissionData(object):
         permission = SystemPermission.valid_objects.filter(id=permission_id).first()
         if tenant and user:
             self.update_arkid_single_user_permission(tenant, user, permission, 0)
+            self.update_arkid_single_user_permission(tenant, user, None, None)
         else:
             print('不存在租户或者用户无法更新')
 
@@ -1009,6 +1011,7 @@ class PermissionData(object):
         permission = Permission.valid_objects.filter(id=permission_id).first()
         if tenant and user:
             self.update_app_single_user_permission_detail(tenant, user, app, permission, 1)
+            self.update_app_single_user_permission_detail(tenant, user, app, None, None)
         else:
             print('不存在租户或者用户无法更新')
     
@@ -1022,6 +1025,7 @@ class PermissionData(object):
         permission = Permission.valid_objects.filter(id=permission_id).first()
         if tenant and user:
             self.update_app_single_user_permission_detail(tenant, user, app, permission, 0)
+            self.update_app_single_user_permission_detail(tenant, user, app, None, None)
         else:
             print('不存在租户或者用户无法更新')
 
@@ -1060,7 +1064,8 @@ class PermissionData(object):
         根据应用，用户，分组查权限(要根据用户身份显示正确的列表)
         '''
         permissions = Permission.valid_objects.filter(
-            Q(tenant_id=tenant_id)|Q(is_open=True)
+            Q(tenant_id=tenant_id)|Q(is_open=True),
+            app__is_del=False
         )
         systempermissions = SystemPermission.valid_objects
         if is_only_show_group:
@@ -1191,7 +1196,8 @@ class PermissionData(object):
         根据应用，用户分组，分类查权限(要根据分组身份显示正确的列表)
         '''
         permissions = Permission.valid_objects.filter(
-            tenant_id=tenant_id
+            tenant_id=tenant_id,
+            app__is_del=False
         )
         systempermissions = SystemPermission.valid_objects.filter(
             Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
@@ -1237,7 +1243,7 @@ class PermissionData(object):
                             permission_sort_ids.append(index)
                 if permission_sort_ids:
                     flag = False
-                    permissions = permissions.filter(sort_id__in=permission_sort_ids)
+                    permissions = permissions.filter(app=usergroup_permissionresult.app, sort_id__in=permission_sort_ids)
             if flag:
                 permissions = permissions.filter(id__isnull=True)
         return list(systempermissions)+list(permissions)
@@ -2013,28 +2019,30 @@ class PermissionData(object):
         else:
             print('缺少必填参数无法添加请检查分组和权限内容')
     
-    def add_system_permission_to_usergroup(tenant_id, usergroup_id, permission_id):
+    def add_system_permission_to_usergroup(self, tenant_id, usergroup_id, permission_id):
         '''
         给某个分组增加系统权限
         '''
         tenant = Tenant.valid_objects.filter(id=tenant_id).first()
-        usergroup = UserGroup.valid_objects.filter(id=usergroup_id).first()
+        user_group = UserGroup.valid_objects.filter(id=usergroup_id).first()
         permission = SystemPermission.valid_objects.filter(id=permission_id).first()
         if tenant:
             self.update_arkid_single_usergroup_permission(tenant, user_group, permission, 1)
+            self.update_arkid_single_usergroup_permission(tenant, user_group, None, None)
         else:
             print('不存在租户无法更新')
 
     
-    def remove_system_permission_to_usergroup(tenant_id, usergroup_id, permission_id):
+    def remove_system_permission_to_usergroup(self, tenant_id, usergroup_id, permission_id):
         '''
         给某个分组移除系统权限
         '''
         tenant = Tenant.valid_objects.filter(id=tenant_id).first()
-        usergroup = UserGroup.valid_objects.filter(id=usergroup_id).first()
+        user_group = UserGroup.valid_objects.filter(id=usergroup_id).first()
         permission = SystemPermission.valid_objects.filter(id=permission_id).first()
         if tenant:
             self.update_arkid_single_usergroup_permission(tenant, user_group, permission, 0)
+            self.update_arkid_single_usergroup_permission(tenant, user_group, None, None)
         else:
             print('不存在租户无法更新')
 
@@ -2145,9 +2153,10 @@ class PermissionData(object):
         tenant = Tenant.valid_objects.filter(id=tenant_id).first()
         usergroup = UserGroup.valid_objects.filter(id=usergroup_id).first()
         app = App.valid_objects.filter(id=app_id).first()
-        permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+        permission = Permission.valid_objects.filter(id=permission_id).first()
         if tenant:
             self.update_app_single_usergroup_permission(tenant, usergroup, app, permission, 1)
+            self.update_app_single_usergroup_permission(tenant, usergroup, app)
         else:
             print('不存在租户无法更新')
 
@@ -2158,13 +2167,14 @@ class PermissionData(object):
         tenant = Tenant.valid_objects.filter(id=tenant_id).first()
         usergroup = UserGroup.valid_objects.filter(id=usergroup_id).first()
         app = App.valid_objects.filter(id=app_id).first()
-        permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+        permission = Permission.valid_objects.filter(id=permission_id).first()
         if tenant:
             self.update_app_single_usergroup_permission(tenant, usergroup, app, permission, 0)
+            self.update_app_single_usergroup_permission(tenant, usergroup, app)
         else:
             print('不存在租户无法更新')
     
-    def update_app_single_usergroup_permission(self, tenant, usergroup, app, pass_permission, permission_value):
+    def update_app_single_usergroup_permission(self, tenant, usergroup, app, pass_permission=None, permission_value=None):
         '''
         更新指定分组应用权限
         '''
@@ -2230,8 +2240,9 @@ class PermissionData(object):
             # 跳过的数据
             if pass_permission != None and data_item.id == pass_permission.id:
                 data_item.is_pass = permission_value
-                if data_item.category == 'group' and data_item.container.all():
-                    for data_item_child_api in data_item.container.all():
+                data_item_container = data_item.container.all()
+                if data_item.category == 'group' and data_item_container:
+                    for data_item_child_api in data_item_container:
                         temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
                         if temp_data_item:
                             temp_data_item.is_pass = permission_value
@@ -2241,7 +2252,7 @@ class PermissionData(object):
                 if data_item.category == 'group' and data_item.container.all():
                     for data_item_child_api in data_item.container.all():
                         temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
-                        if temp_data_item:
+                        if temp_data_item and temp_data_item != pass_permission:
                             temp_data_item.is_pass = 1
                 continue
             # 因为分组权限无法根据用户身份去给1，所以默认都是0
