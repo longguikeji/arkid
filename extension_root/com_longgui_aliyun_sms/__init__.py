@@ -2,7 +2,7 @@ from ninja import Field
 from typing import Optional
 from types import SimpleNamespace
 from arkid.core import event
-from arkid.core.extension import Extension, create_extension_schema
+from arkid.core.extension import Extension, create_extension_schema_by_package
 from arkid.core.event import SEND_SMS
 from arkid.core.translation import gettext_default as _
 from alibabacloud_dysmsapi20170525.client import Client
@@ -11,7 +11,7 @@ from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
 
 package = 'com.longgui.aliyun_sms'
 
-SettingsSchema = create_extension_schema(
+SettingsSchema = create_extension_schema_by_package(
     'SettingsSchema',
     package,
     fields = [
@@ -23,7 +23,7 @@ SettingsSchema = create_extension_schema(
 )
 
 
-ConfigSchema = create_extension_schema(
+ConfigSchema = create_extension_schema_by_package(
     "ConfigSchema",
     package,
     fields = [

@@ -1,5 +1,5 @@
 from arkid.core.extension.account_life import AccountLifeExtension
-from arkid.core.extension import create_extension_schema
+from arkid.core.extension import create_extension_schema_by_package
 from arkid.extension.models import TenantExtensionConfig, TenantExtension, Extension
 from arkid.core.models import User
 import urllib.parse

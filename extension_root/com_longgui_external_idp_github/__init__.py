@@ -2,7 +2,7 @@ from arkid.core.extension.external_idp import (
     ExternalIdpExtension,
     ExternalIdpBaseSchema,
 )
-from arkid.core.extension import create_extension_schema
+from arkid.core.extension import create_extension_schema_by_package
 from .constants import AUTHORIZE_URL, IMG_URL, GET_TOKEN_URL, GET_USERINFO_URL
 from .models import GithubUser
 import requests
@@ -10,7 +10,7 @@ from urllib.parse import parse_qs
 
 package = 'com.longgui.external.idp.github'
 
-GithubConfigSchema = create_extension_schema(
+GithubConfigSchema = create_extension_schema_by_package(
     'GithubConfigSchema', package, base_schema=ExternalIdpBaseSchema
 )
 

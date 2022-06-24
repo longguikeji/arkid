@@ -5,7 +5,7 @@ from typing import List, Optional, Literal
 from pydantic import Field
 from abc import abstractmethod
 from arkid.config import get_app_config
-from arkid.core.extension import Extension, create_extension_schema
+from arkid.core.extension import Extension, create_extension_schema_by_package
 from arkid.core.translation import gettext_default as _
 from arkid.core import event as core_event
 from arkid.extension.models import TenantExtensionConfig
@@ -52,7 +52,7 @@ class FrontThemeExtension(Extension):
         
     def register_front_theme(self, type, css_url):
         
-        schema = create_extension_schema(
+        schema = create_extension_schema_by_package(
             'MateriaConfigSchema',
             self.package, 
             base_schema = BaseFrontThemeConfigSchema,

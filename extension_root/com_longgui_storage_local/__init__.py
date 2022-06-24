@@ -3,7 +3,7 @@ from typing import Optional
 import uuid
 from django.urls import reverse
 from ninja import Field
-from arkid.core.extension import Extension, create_extension_schema
+from arkid.core.extension import Extension, create_extension_schema_by_package
 from arkid.core.event import SAVE_FILE
 from arkid.core.translation import gettext_default as _
 from arkid.config import get_app_config
@@ -12,7 +12,7 @@ from . import views
 
 package = 'com.longgui.storage.local'
 
-ProfileSchema = create_extension_schema(
+ProfileSchema = create_extension_schema_by_package(
     "LocalStorageProfileSchema",
     package,
     fields = [

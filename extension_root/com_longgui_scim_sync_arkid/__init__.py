@@ -4,7 +4,7 @@ from ninja import Field
 from typing import Optional
 from types import SimpleNamespace
 from arkid.core import event
-from arkid.core.extension import Extension, create_extension_schema
+from arkid.core.extension import Extension, create_extension_schema_by_package
 from arkid.core.event import SEND_SMS
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.scim_sync import (
@@ -32,7 +32,7 @@ from scim_server.exceptions import NotImplementedException
 package = 'com.longgui.scim.sync.arkid'
 
 
-ClientConfig = create_extension_schema(
+ClientConfig = create_extension_schema_by_package(
     "ClientConfig",
     package,
     fields=[
@@ -44,7 +44,7 @@ ClientConfig = create_extension_schema(
     base_schema=BaseScimSyncClientSchema,
 )
 
-ServerConfig = create_extension_schema(
+ServerConfig = create_extension_schema_by_package(
     "ServerConfig",
     package,
     fields=[

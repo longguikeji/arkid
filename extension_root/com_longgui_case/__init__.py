@@ -5,11 +5,10 @@ from .models import CaseUser
 from typing import List, Optional
 from pydantic import Field
 
-package = 'com.longgui.case'
 
 UserSchema = extension.create_extension_schema(
     'UserSchema',
-    package,
+    __file__,
     fields=[
         ('username', str, Field()),
         ('nickname', Optional[str], Field(title=_('nickname','昵称'))),
@@ -43,12 +42,4 @@ class CaseExtension(extension.Extension):
         users = User.expand_objects.filter(tenant=request.tenant).all()
         return list(users)
     
-extension = CaseExtension(
-    package=package,
-    name="示例插件",
-    version='1.0',
-    labels='case',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='wely',
-)
+extension = CaseExtension()

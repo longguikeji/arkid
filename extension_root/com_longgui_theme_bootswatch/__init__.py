@@ -2,7 +2,7 @@ from arkid.core.extension.front_theme import FrontThemeExtension, BaseFrontTheme
 from pydantic import Field
 from typing import List, Optional, Literal
 from arkid.core.translation import gettext_default as _
-from arkid.core.extension import create_extension_schema
+from arkid.core.extension import create_extension_schema_by_package
 
 package = "com.longgui.theme.bootswatch"
 
