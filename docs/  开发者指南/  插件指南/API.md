@@ -12,10 +12,6 @@ ArkID基于Django-ninja框架来开发API，完整继承了其所有能力。
 
 使用 [arkid.core.extension.Extension.register_api](../%20插件基类/#arkid.core.extension.Extension.register_api)
 
-#### 权限与分页
-
- {todo}
-
 ```py title='示例'
 from arkid.core import extension
 
@@ -28,6 +24,36 @@ class CaseExtension(extension.Extension):
     def api_func(self, request):
         pass
 ```
+#### 权限
+{todo}
+
+#### 分页
+
+
+
+``` py title="分页"
+
+class AppGroupListItemOut(Schema):
+    id:str
+    name:str
+
+class AppGroupListOut(ResponseSchema):
+    data: List[AppGroupListItemOut]
+
+@api.get("/path/", response=List[AppGroupListItemOut]) #注意 此处因分页器会自动封装错误提示等数据  故而此处不需要填写封装错误信息后的Schema
+@operation(AppGroupListOut)
+@paginate(CustomPagination)
+def get_app_groups(request, ):
+    """ 应用分组列表
+    """
+    groups = AppGroup.expand_objects.filter(tenant__id=tenant_id)
+    parent_id = query_data.dict().get("parent_id",None)
+    groups = groups.filter(parent__id=parent_id)
+    return {"data":list(groups.all())}
+
+
+```
+
 
 ### Django 的 API 定义方式
 
