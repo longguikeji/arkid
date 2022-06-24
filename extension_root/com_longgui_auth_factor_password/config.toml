@@ -1,0 +1,7 @@
+package = "com.longgui.auth.factor.password"
+name="密码认证因素"
+version='1.0'
+labels='auth_factor'
+homepage='https://www.longguikeji.com'
+logo=''
+author='wely@longguikeji.com'

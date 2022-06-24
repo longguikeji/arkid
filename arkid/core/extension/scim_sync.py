@@ -8,7 +8,7 @@ from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core import event as core_event
 from arkid.extension.models import TenantExtensionConfig
-from arkid.core.extension import RootSchema, create_extension_schema
+from arkid.core.extension import RootSchema, create_extension_schema_by_package
 from pydantic import UUID4
 from celery import shared_task
 from arkid.common.logger import logger
@@ -63,7 +63,7 @@ class ScimSyncExtension(Extension, ProviderBase):
         super().load()
 
     def register_scim_sync_schema(self, sync_type, client_schema, server_schema):
-        schema = create_extension_schema(
+        schema = create_extension_schema_by_package(
             self.package,
             fields=[
                 (

@@ -1,0 +1,7 @@
+package = "com.longgui.auth.factor.mobile"
+name="手机验证码认证因素"
+version='1.0'
+labels='mobile'
+homepage='https://www.longguikeji.com'
+logo=''
+author='guancyxx@guancyxx.cn'
