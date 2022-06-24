@@ -26,6 +26,7 @@ class ExtensionLoader:
         exts = find_available_extensions()
         packages = []
         for ext in exts:
+            logger.info(ext.package + ' is update_or_create')
             extension, is_create = Extension.objects.update_or_create(
                 defaults={
                     'type': ext.type,
@@ -33,6 +34,7 @@ class ExtensionLoader:
                     'ext_dir': str(ext.ext_dir),
                     'name': ext.name,
                     'version': ext.version,
+                    'is_del': False,
                 },
                 package = ext.package,
             )
@@ -40,5 +42,6 @@ class ExtensionLoader:
             
         del_exts = Extension.objects.exclude(package__in=packages)
         for del_ext in del_exts:
+            logger.info(del_ext.package + ' is deleted')
             del_ext.delete()
         load_active_extensions()

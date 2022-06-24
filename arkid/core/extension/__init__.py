@@ -188,7 +188,7 @@ class Extension(ABC):
         self._labels = []
         if type(labels) is list:
             self._labels.extend(labels)
-        else:
+        elif labels:
             self._labels.append(labels)
         self.homepage = homepage
         self.logo = logo
@@ -225,7 +225,7 @@ class Extension(ABC):
     def labels(self, value: str):
         if type(value) is list:
             self._labels.extend(value)
-        else:
+        elif value:
             self._labels.append(value)
 
     @property

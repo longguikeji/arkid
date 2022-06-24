@@ -21,3 +21,7 @@
     margin-right: 2em;
     transition: color 125ms,background-color 125ms,border-color 125ms;
 }
+
+a:hover {
+    color: inherit;
+}

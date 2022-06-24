@@ -5,11 +5,9 @@ from .models import CaseUser
 from typing import List, Optional
 from pydantic import Field
 
-package = 'com.longgui.case'
-
 UserSchema = extension.create_extension_schema(
     'UserSchema',
-    package,
+    __file__,
     fields=[
         ('username', str, Field()),
         ('nickname', Optional[str], Field(title=_('nickname','昵称'))),
@@ -17,6 +15,7 @@ UserSchema = extension.create_extension_schema(
 )
 
 class CaseExtension(extension.Extension):
+    
     def load(self):
         super().load()
         self.register_extend_field(CaseUser, 'nickname')
@@ -28,8 +27,8 @@ class CaseExtension(extension.Extension):
             nickname=str
         )
         
-        # self.register_api('/test/', 'POST', self.post_handler, auth=None, tenant_path=True)
-        # self.register_api('/test/', 'GET', self.get_handler, response=List[UserSchema], auth=None, tenant_path=True)
+        self.register_api('/test/', 'POST', self.post_handler, auth=None, tenant_path=True)
+        self.register_api('/test/', 'GET', self.get_handler, response=List[UserSchema], auth=None, tenant_path=True)
 
     def post_handler(self, request, tenant_id:str, data:UserSchema):
         tenant = request.tenant
@@ -39,16 +38,8 @@ class CaseExtension(extension.Extension):
         user.nickname = data.nickname
         user.save()
 
-    def get_handler(self, request, tenant_id:str, ):
+    def get_handler(self, request, tenant_id:str):
         users = User.expand_objects.filter(tenant=request.tenant).all()
         return list(users)
     
-extension = CaseExtension(
-    package=package,
-    name="示例插件",
-    version='1.0',
-    labels='case',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='wely',
-)
+extension = CaseExtension()
