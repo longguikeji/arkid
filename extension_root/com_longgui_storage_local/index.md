@@ -1,7 +1,3 @@
----
-template: comment.html
----
-
 # 静态文件存储插件：本地文件存储
 
 

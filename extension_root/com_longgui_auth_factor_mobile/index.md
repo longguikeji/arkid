@@ -1,7 +1,3 @@
----
-template: comment.html
----
-
 # 手机验证码认证因素
 ## 功能介绍
 
