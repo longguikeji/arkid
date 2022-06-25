@@ -26,8 +26,8 @@ class CustomPagination(PaginationBase):
 
     def paginate_queryset(self, queryset, pagination: Input, request, **params):
         
-        if not (isinstance(queryset,list) or isinstance(queryset,QueryDict)):
-            queryset.update({"items":[]})
+        if isinstance(queryset,dict) and "error" in queryset.keys() and queryset.get("error") not in ["0",0]:
+            queryset["items"] = []
             return queryset
         
         page = pagination.page
