@@ -29,29 +29,33 @@ class CaseExtension(extension.Extension):
 
 #### 分页
 
-
+arkid提供基础分页器功能，其使用方法如下：
 
 ``` py title="分页"
+...
+from ninja.pagination import paginate #引入分页装饰器
+from arkid.core.pagenation import CustomPagination #引入分页器
+...
 
+
+# 声明返回列表项结构
 class AppGroupListItemOut(Schema):
     id:str
     name:str
-
+# 声明返回结构体
 class AppGroupListOut(ResponseSchema):
     data: List[AppGroupListItemOut]
 
 @api.get("/path/", response=List[AppGroupListItemOut]) #注意 此处因分页器会自动封装错误提示等数据  故而此处不需要填写封装错误信息后的Schema
 @operation(AppGroupListOut)
 @paginate(CustomPagination)
-def get_app_groups(request, ):
+def get_app_groups(request,tenant_id: str):
     """ 应用分组列表
     """
     groups = AppGroup.expand_objects.filter(tenant__id=tenant_id)
     parent_id = query_data.dict().get("parent_id",None)
     groups = groups.filter(parent__id=parent_id)
-    return {"data":list(groups.all())}
-
-
+    return groups.all()
 ```
 
 
