@@ -97,3 +97,4 @@ class DefaultTenantItemOut(ModelSchema):
 
 class DefaultTenantOut(ResponseSchema):
     data: DefaultTenantItemOut
+    

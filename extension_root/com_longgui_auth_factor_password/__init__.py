@@ -26,11 +26,10 @@ from api.v1.pages.user_manage.user_list import page as user_list_page
 from api.v1.schema.auth import AuthIn
 from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
 
-package = "com.longgui.auth.factor.password"
 select_pw_login_fields_page = pages.TablePage(select=True, name=_("Select Password Login Fields", "选择密码登录字段"))
 
 
-PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',package, 
+PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',__file__, 
         [
             ('reset_password_enabled', Optional[bool] , Field(deprecated=True)),
             ('login_enabled_field_names', List[str],
@@ -58,13 +57,13 @@ PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',pa
         BaseAuthFactorSchema,
     )
 
-RestUserPasswordIn = create_extension_schema('RestUserPasswordIn',package, 
+RestUserPasswordIn = create_extension_schema('RestUserPasswordIn',__file__, 
         [
             ('password', str , Field(title='新密码',type='password')),
        ],
     )
 
-GetUserKeyFieldItemOut = create_extension_schema('GetUserKeyFieldItemOut',package, 
+GetUserKeyFieldItemOut = create_extension_schema('GetUserKeyFieldItemOut',__file__, 
         [
             ('key', str , Field()),
             ('name', str,Field()),
@@ -162,7 +161,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         if len(users) > 1:
             logger.error(f'{username}在{login_enabled_field_names}中匹配到多个用户')
             return self.auth_failed(event, data=self.error(ErrorCode.CONTACT_MANAGER))
-        user = users[0]
+        user = users[0] if users else None
         if user:
             user_password = user.get("password")
             if user_password:
@@ -327,12 +326,4 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         return self.error(ErrorCode.OLD_PASSWORD_ERROR)
 
 
-extension = PasswordAuthFactorExtension(
-    package=package,
-    name="密码认证因素",
-    version='1.0',
-    labels='auth_factor',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='wely@longguikeji.com',
-)
+extension = PasswordAuthFactorExtension()

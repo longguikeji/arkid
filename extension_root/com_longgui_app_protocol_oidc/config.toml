@@ -1,0 +1,7 @@
+package='com.longgui.app.protocol.oidc'
+name='OIDC&OAuth2认证协议'
+version='1.0'
+labels=['OAuth2','OIDC']
+homepage='https://www.longguikeji.com'
+logo=''
+author='hanbin@jinji-inc.com'

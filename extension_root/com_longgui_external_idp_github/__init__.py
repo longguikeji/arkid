@@ -8,10 +8,9 @@ from .models import GithubUser
 import requests
 from urllib.parse import parse_qs
 
-package = 'com.longgui.external.idp.github'
 
 GithubConfigSchema = create_extension_schema(
-    'GithubConfigSchema', package, base_schema=ExternalIdpBaseSchema
+    'GithubConfigSchema', __file__, base_schema=ExternalIdpBaseSchema
 )
 
 
@@ -103,11 +102,5 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
 
 
 extension = ExternalIdpGithubExtension(
-    package=package,
-    name='Github第三方登录服务',
-    version='1.0',
-    labels='external-idp-github',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='hanbin@jinji-inc.com',
+
 )

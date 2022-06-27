@@ -152,8 +152,10 @@ class AuthFactorExtension(Extension):
     
     def register_auth_manage_page(self):
         from api.v1.pages.mine.auth_manage import page as auth_manage_page
-        page = self.create_auth_manage_page()
-        if page:
+        pages = self.create_auth_manage_page()
+        if not isinstance(pages,list):
+            pages = [pages]
+        for page in pages:
             self.register_front_pages(page)
             auth_manage_page.add_pages(page)
     

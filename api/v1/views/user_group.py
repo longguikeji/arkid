@@ -37,7 +37,8 @@ def create_group(request, tenant_id: str, data: UserGroupCreateIn):
     group = UserGroup()
     group.tenant_id = tenant_id
     group.name = data.name
-    parent_id = data.dict().get("parent",None)
+    parent = data.dict().get("parent",None)
+    parent_id = parent.get("id",None) if parent else None
     group.parent = get_object_or_404(UserGroup, id=parent_id) if parent_id else None
     group.save()
     # 分发事件开始
@@ -73,13 +74,9 @@ def get_group(request, tenant_id: str, id: str):
     获取分组
     '''
     group = get_object_or_404(UserGroup.expand_objects, id=id, is_del=False)
+    group["parent"] = UserGroup.active_objects.get(id=group["parent_id"]) if group["parent_id"] else None
     return {
-        "data": {
-            "id": group["id"],
-            "parent":group["parent"] if group["parent"] else None,
-            "parent_name": UserGroup.active_objects.get(id=group["parent"]).name if group["parent"] else None,
-            "name": group["name"]
-        }
+        "data": group
     }
 
 
@@ -89,9 +86,10 @@ def update_group(request, tenant_id: str, id: str, data: UserGroupUpdateIn):
     '''
     修改分组
     '''
-    group = get_object_or_404(UserGroup.active_objects, id=id, is_del=False)
-    group.name = data.name
-    parent_id = data.dict().get("parent",None)
+    group = get_object_or_404(UserGroup.active_objects, id=id)
+    group.name = data.dict().get("name",None)
+    parent = data.dict().get("parent",None)
+    parent_id = parent.get("id",None) if parent else None
     group.parent = get_object_or_404(UserGroup.active_objects, id=parent_id) if parent_id else None
     
     if group.parent == group:

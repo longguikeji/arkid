@@ -56,7 +56,7 @@ def get_arkstore_list(request, purchased, type):
 class ArkstoreItemSchemaOut(Schema):
     uuid: str = Field(hidden=True)
     name: str = Field(readonly=True)
-    package_idendifer: str = Field(readonly=True)
+    package: str = Field(readonly=True)
     version: str = Field(readonly=True)
     author: str = Field(readonly=True)
     logo: str = Field(readonly=True, default="")

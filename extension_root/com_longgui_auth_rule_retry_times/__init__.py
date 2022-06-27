@@ -4,11 +4,10 @@ from arkid.core.translation import gettext_default as _
 from ninja import Schema
 from pydantic import Field
 
-package = 'com.longgui.authrule.retrytimes'
 
 AuthRuleRetryTimesConfigSchema = create_extension_schema(
     'AuthRuleRetryTimesConfigSchema',
-    package,
+    __file__,
     [
         ('try_times', str, Field(title=_('try_times', '限制重试次数'))),
         ('verify_code_digits', str, Field(title=_('verify_code_digits', '验证码位数'))),
@@ -38,12 +37,4 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         pass
 
 
-extension = AuthRuleRetryTimesExtension(
-    package=package,
-    name='认证次数限制规则',
-    version='1.0',
-    labels='auth_rule',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='guancyxx@guancyxx.cn',
-)
+extension = AuthRuleRetryTimesExtension()
