@@ -19,7 +19,8 @@ theme:
     - content.code.annotate
   icon:
     repo: fontawesome/brands/github
-    logo: material/space-station
+  logo: assets/logo.png
+  favicon: assets/logo.png
 
 docs_dir: "docs/"
 
