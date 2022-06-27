@@ -59,7 +59,7 @@ def list_groups(request, tenant_id: str,  parent_id: str = None):
     '''
     分组列表
     '''
-    usergroups = UserGroup.expand_objects.filter(
+    usergroups = UserGroup.valid_objects.filter(
         tenant_id=tenant_id,
         parent__id=parent_id
     )
