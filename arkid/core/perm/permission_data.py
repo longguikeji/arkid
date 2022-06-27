@@ -1032,10 +1032,8 @@ class PermissionData(object):
             sort_id_result = int(permission_result_arr[sort_id])
             if sort_id_result == 1:
                 if data_item.category == 'group':
-                    # 如果用户对某一个分组有权限，则对该分组的所有下属分组都有权限。
                     group_id_hex = data_item.id.hex
                     if group_id_hex in data_group_parent_child:
-                        # 递归<查找>
                         await_result = []
                         self.process_chilld(data_group_parent_child, group_id_hex, await_result)
                         for parent_child_item in await_result:
@@ -2329,10 +2327,8 @@ class PermissionData(object):
             sort_id_result = int(permission_result_arr[sort_id])
             if sort_id_result == 1:
                 if data_item.category == 'group':
-                    # 如果用户对某一个分组有权限，则对该分组的所有下属分组都有权限。
                     group_id_hex = data_item.id.hex
                     if group_id_hex in data_group_parent_child:
-                        # 递归<查找>
                         await_result = []
                         self.process_chilld(data_group_parent_child, group_id_hex, await_result)
                         for parent_child_item in await_result:
