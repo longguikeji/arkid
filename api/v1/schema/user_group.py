@@ -124,4 +124,4 @@ class UserGroupExcludeUsersItemOut(Schema):
 
     id: UUID = Field(default=None)
     username: str
-    avatar: str
+    avatar: str = Field(default=None)

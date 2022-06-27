@@ -142,6 +142,7 @@ class EventListener(object):
         return True
     
     def group_add_user(self, event, **kwargs):
+        tenant = event.tenant
         from arkid.core.tasks.tasks import update_arkid_all_user_permission
         update_arkid_all_user_permission.delay(tenant.id)
         return True

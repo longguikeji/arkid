@@ -195,8 +195,8 @@ def get_exclude_users(request, tenant_id: str, user_group_id: str):
     users = tenant.user_set
     group = get_object_or_404(UserGroup.active_objects, id=user_group_id)
     group_users = group.users.all()
-    
-    users = users.exclude(id__in=group_users).all()
+    super_user_id = User.valid_objects.order_by('created').first().id
+    users = users.exclude(id__in=group_users).exclude(id=super_user_id).all()
     users = User.expand_objects.filter(id__in=users).all()
     return users
 
