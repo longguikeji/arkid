@@ -1391,10 +1391,29 @@ class PermissionData(object):
                 permission_result = userpermissionresult.result
             else:
                 permission_result = compress.decrypt(userpermissionresult.result)
+        # permission_result = self.composite_result(userpermissionresult.user, userpermissionresult.app, permission_result, is_64)
         return permission_result
 
 
+    def composite_result(self, user, app, result_str, is_64):
+        '''
+        综合计算结果，需要考虑到用户分组
+        '''
+        if result_str:
+            compress = Compress()
+            if is_64:
+                result_str = compress.encrypt(result_str)
+            # 取得当前用户的所有分组
+            usergroup = UserGroup.valid_objects.filter(users__id=user.id)
+            return result_str
+        else:
+            return ''
+
+
     def ditionairy_result(self, api_permission_dict, database_permission_dict):
+        '''
+        计算开放权限时的排序
+        '''
         for api_item_key in api_permission_dict.keys():
             api_item_value = api_permission_dict.get(api_item_key)
             api_operation_id = api_item_value.get('operation_id', None)
