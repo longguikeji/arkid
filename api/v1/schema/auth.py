@@ -1,3 +1,4 @@
+from typing import Optional
 from ninja import Schema, ModelSchema
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
@@ -5,7 +6,7 @@ from arkid.core.schema import ResponseSchema, UserSchemaOut
 
 
 class AuthIn(Schema):
-    username: str
+    username: Optional[str]
 
 
 class AuthTenantSchema(ModelSchema):
@@ -22,3 +23,13 @@ class AuthDataOut(Schema):
 
 class AuthOut(ResponseSchema):
     data: AuthDataOut
+    
+    
+class ResetPasswordIn(Schema):
+    
+    username: Optional[str]
+    
+    password: Optional[str]
+    
+class ResetPasswordOut(ResponseSchema):
+    pass

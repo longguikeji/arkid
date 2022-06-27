@@ -1,22 +1,33 @@
 from typing import Optional
+from uuid import UUID
 from ninja import Field, ModelSchema, Schema
 from arkid.core.actions import DirectAction
 from arkid.core.schema import ResponseSchema
-from .models import UserMobile
+from arkid.core.translation import gettext_default as _
     
-class UpdateMineMobileIn(Schema):
-        
-    modile:str = Field(
-        title='手机号',
-        suffix_action=DirectAction(
-            name='发送验证码',
-            path='',
-            method='',
-            delay=60,
-        ).dict()
+
+
+
+class MobileAuthFactorConfigSchema(Schema):
+    
+    id:str = Field(
+        hidden=True,
     )
     
-    code:str = Field(title='验证码')
+    name:str
     
-class UpdateMineMobileOut(ResponseSchema):
+    package:str = Field(
+        hidden=True
+    )
+
+class SendSMSCodeIn(Schema):
+    areacode:Optional[str] = Field(
+        title=_("区号"),
+        default="86"
+    )
+    
+    mobile:str = Field(
+        title=_("电话号码")
+    )
+class SendSMSCodeOut(ResponseSchema):
     pass

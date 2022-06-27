@@ -1,5 +1,5 @@
 from uuid import UUID
-from ninja import Schema, ModelSchema
+from ninja import Query, Schema, ModelSchema
 from arkid.core.api import api, operation
 from typing import List,Optional
 from pydantic import Field
@@ -16,14 +16,20 @@ from arkid.core.schema import ResponseSchema
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
     'ExtensionConfigSchemaIn',
+    exclude=[
+        "id",
+        "extension_id"
+    ]
 )
 
 
 ExtensionConfigGetSchemaOut = Extension.create_config_schema(
     'ExtensionConfigGetSchemaOut',
-    id=(UUID, Field(hidden=True, read_only=True)),
+    id=(UUID, Field(hidden=True, read_only=True))
 )
 
+class ExtensionConfigGetOut(ResponseSchema):
+    data:ExtensionConfigGetSchemaOut
 
 class ExtensionConfigCreateSchemaOut(Schema):
     config_id: str
@@ -41,15 +47,16 @@ class TenantExtensionConfigOut(ModelSchema):
 def create_extension_config(request, tenant_id: str, extension_id: str, data: ExtensionConfigSchemaIn):
     '''租户下，创建插件运行时配置'''
     config = TenantExtensionConfig.objects.create(
+        name = data.dict()["name"],
         tenant_id=tenant_id,
         extension_id=extension_id,
-        config=data.config.dict(),
+        config=data.dict()["config"],
     )
     return {"config_id": config.id.hex}
 
 
-@api.get("/tenant/{tenant_id}/extension/{extension_id}/config/{config_id}/", response=ExtensionConfigGetSchemaOut, tags=['租户插件'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/extension/{extension_id}/config/{config_id}/", response=ExtensionConfigGetOut, tags=['租户插件'])
+@operation(ExtensionConfigGetOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_extension_config(request, tenant_id: str, extension_id: str, config_id: str):
     '''租户下，插件运行时配置列表'''
     config = TenantExtensionConfig.objects.get(
@@ -58,7 +65,7 @@ def get_extension_config(request, tenant_id: str, extension_id: str, config_id: 
         id=config_id,
     )
     config.package = config.extension.package
-    return config
+    return {"data":config}
 
 
 @api.post("/tenant/{tenant_id}/extension/{extension_id}/config/{config_id}/", response=ExtensionConfigGetSchemaOut, tags=['租户插件'])
@@ -81,7 +88,7 @@ def update_extension_config(request, tenant_id: str, extension_id: str, config_i
 @paginate(CustomPagination)
 def list_extension_config(request, tenant_id: str, extension_id: str):
     '''租户下，插件运行时配置列表'''
-    configs = TenantExtensionConfig.objects.filter(
+    configs = TenantExtensionConfig.active_objects.filter(
         tenant_id=tenant_id,
         extension_id=extension_id,
     )
@@ -118,19 +125,22 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
     settings, created = TenantExtension.objects.get_or_create(
         tenant_id=tenant_id,
         extension_id=extension_id,
-        defaults={"settings": data.settings and data.settings.dict()}
     )
+    
+    settings.settings = data.settings.dict()
+    settings.save()
+    
     return {"error": ErrorCode.OK.value, "data": {"settings_id": settings.id.hex}}
 
 
 @api.get("/tenant/{tenant_id}/extension/{extension_id}/settings/", response=Optional[ExtensionSettingsGetSchemaOut], tags=['租户插件'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_extension_settings(request, tenant_id: str, extension_id: str):
-    '''租户下，创建插件配置'''
-    tenant_extension = TenantExtension.objects.filter(
+    '''租户下，获取插件配置'''
+    tenant_extension,created = TenantExtension.active_objects.get_or_create(
         tenant_id=tenant_id,
         extension_id=extension_id,
-    ).first()
+    )
     tenant_extension.package = tenant_extension.extension.package
     return tenant_extension
 
@@ -189,3 +199,49 @@ def delete_extension(request, tenant_id: str, id: str):
     """ 删除租户插件,TODO
     """
     return {}
+
+class TenantConfigSelectQueryIn(Schema):
+    extension__type:Optional[str] =Field(
+        title=_("类型")
+    )
+    
+class TenantConfigSelectItemOut(Schema):
+    
+    id:UUID = Field(
+        title=_("ID"),
+        hidden=True
+    )
+    
+    name:str = Field(
+        title=_("Name")
+    )
+    
+    package:str = Field(
+        title=_("插件包名")
+    )
+class TenantConfigSelectOut(ResponseSchema):
+    data:List[TenantConfigSelectItemOut]
+
+@api.get("/tenants/{tenant_id}/config_select/",response=TenantConfigSelectOut, tags=["租户插件"], auth=None)
+@operation(TenantConfigSelectOut)
+def get_config_select(request,tenant_id: str,query_data:TenantConfigSelectQueryIn=Query(...)):
+    """ 分类获取租户下插件配置列表
+    """
+    tenant = Tenant.active_objects.get(id=tenant_id)
+    
+    config_list = TenantExtensionConfig.active_objects.filter(
+        tenant=tenant,
+    )
+    query_data = query_data.dict()
+    if query_data:
+        config_list = config_list.filter(**query_data)
+    
+    config_list = config_list.all()    
+    
+    return {
+        "data":[{
+            "id": item.id,
+            "name": item.name,
+            "package":item.extension.package
+        } for item in config_list]
+    }

@@ -161,7 +161,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         if len(users) > 1:
             logger.error(f'{username}在{login_enabled_field_names}中匹配到多个用户')
             return self.auth_failed(event, data=self.error(ErrorCode.CONTACT_MANAGER))
-        user = users[0]
+        user = users[0] if users else None
         if user:
             user_password = user.get("password")
             if user_password:

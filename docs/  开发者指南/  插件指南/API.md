@@ -12,15 +12,12 @@ ArkID基于Django-ninja框架来开发API，完整继承了其所有能力。
 
 使用 [arkid.core.extension.Extension.register_api](../%20插件基类/#arkid.core.extension.Extension.register_api)
 
+
 #### 创建Schema
 
 使用 [arkid.core.extension.create_extension_schema](../%20插件基类/#arkid.core.extension.create_extension_schema)
 
 注意！该函数的第二个参数，是指的插件的 \_\_init\_\_.py 文件所在的目录
-
-#### 权限与分页
-
- {todo}
 
 ```py title='示例'
 from arkid.core import extension
@@ -34,6 +31,40 @@ class CaseExtension(extension.Extension):
     def api_func(self, request):
         pass
 ```
+#### 权限
+{todo}
+
+#### 分页
+
+arkid提供基础分页器功能，其使用方法如下：
+
+``` py title="分页"
+...
+from ninja.pagination import paginate #引入分页装饰器
+from arkid.core.pagenation import CustomPagination #引入分页器
+...
+
+
+# 声明返回列表项结构
+class AppGroupListItemOut(Schema):
+    id:str
+    name:str
+# 声明返回结构体
+class AppGroupListOut(ResponseSchema):
+    data: List[AppGroupListItemOut]
+
+@api.get("/path/", response=List[AppGroupListItemOut]) #注意 此处因分页器会自动封装错误提示等数据  故而此处不需要填写封装错误信息后的Schema
+@operation(AppGroupListOut)
+@paginate(CustomPagination)
+def get_app_groups(request,tenant_id: str):
+    """ 应用分组列表
+    """
+    groups = AppGroup.expand_objects.filter(tenant__id=tenant_id)
+    parent_id = query_data.dict().get("parent_id",None)
+    groups = groups.filter(parent__id=parent_id)
+    return groups.all()
+```
+
 
 
 
