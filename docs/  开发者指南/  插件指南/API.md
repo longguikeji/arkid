@@ -12,6 +12,13 @@ ArkID基于Django-ninja框架来开发API，完整继承了其所有能力。
 
 使用 [arkid.core.extension.Extension.register_api](../%20插件基类/#arkid.core.extension.Extension.register_api)
 
+
+#### 创建Schema
+
+使用 [arkid.core.extension.create_extension_schema](../%20插件基类/#arkid.core.extension.create_extension_schema)
+
+注意！该函数的第二个参数，是指的插件的 \_\_init\_\_.py 文件所在的目录
+
 ```py title='示例'
 from arkid.core import extension
 
@@ -57,6 +64,9 @@ def get_app_groups(request,tenant_id: str):
     groups = groups.filter(parent__id=parent_id)
     return groups.all()
 ```
+
+
+
 
 
 ### Django 的 API 定义方式

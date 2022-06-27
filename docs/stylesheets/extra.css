@@ -1,13 +1,13 @@
 .md-grid {
-    /* max-width: 65rem; */
+    /* max-width: 72rem; */
     /* margin-left: 6rem;
     margin-right: 6rem; */
     max-width: none;
 }
 .md-sidebar {
-    /* min-width: 15rem; */
-    /* max-width: ;
-    width: auto; */
+    min-width: 12rem;
+    /* max-width: 20rem; */
+    width: auto;
 }
 
 

@@ -406,7 +406,7 @@ class GroupPermissionResult(BaseModel, ExpandModel):
         verbose_name = _("GroupPermissionResult", "分组权限结果")
         verbose_name_plural = _("GroupPermissionResult", "分组权限结果")
 
-    user_group = models.ForeignKey(UserGroup, on_delete=models.CASCADE, verbose_name='用户')
+    user_group = models.ForeignKey(UserGroup, on_delete=models.CASCADE, verbose_name='用户分组')
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
     app = models.ForeignKey(
         App,

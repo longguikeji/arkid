@@ -178,15 +178,19 @@ def usergroup_add_permission(request, tenant_id: str, select_usergroup_id: str, 
     '''
     data_arr = data.data
     if data_arr:
-        dispatch_event(Event(tag=ADD_USERGROUP_MANY_PERMISSION, tenant=request.tenant, request=request, data={
+        permissions_dict = {
             'usergroup_id': select_usergroup_id,
             'tenant_id': tenant_id,
             'data_arr': data_arr
-        }))
+        }
+        # from arkid.core.perm.permission_data import PermissionData
+        # permissiondata = PermissionData()
+        # permissiondata.add_usergroup_many_permission(permissions_dict)
+        dispatch_event(Event(tag=ADD_USERGROUP_MANY_PERMISSION, tenant=request.tenant, request=request, data=permissions_dict))
     return {'error': ErrorCode.OK.value}
 
 
-@api.delete("/tenant/{tenant_id}/permission/user/{select_user_id}/{permission_id}/remove_permission", tags=['权限'], auth=None)
+@api.delete("/tenant/{tenant_id}/permission/usergroup/{select_usergroup_id}/{permission_id}/remove_permission", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def usergroup_remove_permission(request, tenant_id: str, select_usergroup_id: str, permission_id: str):
     '''
@@ -196,9 +200,15 @@ def usergroup_remove_permission(request, tenant_id: str, select_usergroup_id: st
     if permission is None:
         permission = Permission.valid_objects.filter(id=permission_id).first()
     permission.usergroup_id = select_usergroup_id
+    # from arkid.core.perm.permission_data import PermissionData
+    # pd = PermissionData()
     if isinstance(permission, SystemPermission):
+        pass
         dispatch_event(Event(tag=REMOVE_USERGROUP_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
+        # pd.remove_app_permission_to_usergroup(
+        #     tenant_id, permission.app_id, select_usergroup_id, str(permission.id)
+        # )
         dispatch_event(Event(tag=REMOVE_USERGROUP_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
     return ErrorDict(ErrorCode.OK)
 
