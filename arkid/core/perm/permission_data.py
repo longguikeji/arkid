@@ -1391,7 +1391,7 @@ class PermissionData(object):
                 permission_result = userpermissionresult.result
             else:
                 permission_result = compress.decrypt(userpermissionresult.result)
-        permission_result = self.composite_result(userpermissionresult.user, userpermissionresult.app, permission_result, is_64)
+        # permission_result = self.composite_result(userpermissionresult.user, userpermissionresult.app, permission_result, is_64)
         return permission_result
 
 
