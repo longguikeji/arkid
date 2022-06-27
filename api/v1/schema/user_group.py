@@ -18,7 +18,7 @@ select_usergroup_parent_page.create_actions(
     ),
     node_actions=[
         actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/app_groups/?parent_id={id}',
+            path='/api/v1/tenant/{tenant_id}/user_groups/?parent_id={id}',
             method=actions.FrontActionMethod.GET
         )
     ],
@@ -37,13 +37,16 @@ class UserGroupListOut(ResponseSchema):
 class UserGroupCreateOut(ResponseSchema):
     pass
 
+class UserGroupCreateParentIn(Schema):
+    id:UUID = Field(hidden=True)
+    name:str
+    
+
 class UserGroupCreateIn(ModelSchema):
 
-    parent: Optional[str] = Field(
+    parent: Optional[UserGroupCreateParentIn] = Field(
         title=_("上级用户分组"),
-        field="id",
         page=select_usergroup_parent_page.tag,
-        link="name"
     )
 
     class Config:
@@ -53,13 +56,15 @@ class UserGroupCreateIn(ModelSchema):
 class UserGroupUpdateOut(ResponseSchema):
     pass
 
+class UserGroupUpdateParentIn(Schema):
+    id:UUID = Field(hidden=True)
+    name:str
+
 class UserGroupUpdateIn(ModelSchema):
 
-    parent: Optional[str] = Field(
+    parent: Optional[UserGroupUpdateParentIn] = Field(
         title=_("上级用户分组"),
-        field="id",
         page=select_usergroup_parent_page.tag,
-        link="name"
     )
 
     class Config:
@@ -78,6 +83,10 @@ class UserGroupUserListOut(ResponseSchema):
     data:List[UserGroupUserListItemOut]
 
 
+class UserGroupDetailItemOutParent(Schema):
+    id:UUID = Field(hidden=True)
+    name:str
+
 class UserGroupDetailItemOut(Schema):
     id: UUID =Field(
         readonly=True,
@@ -88,18 +97,9 @@ class UserGroupDetailItemOut(Schema):
         title=_("分组名称")
     )
     
-    parent:Optional[UUID] = Field(
-        field="id",
+    parent:Optional[UserGroupDetailItemOutParent] = Field(
         page=select_usergroup_parent_page.tag,
-        link="name",
         title=_("上级应用分组"),
-        show="parent_name"
-    )
-    
-    parent_name: Optional[str] = Field(
-        title=_("上级应用分组名称"),
-        hidden=True,
-        readonly=True
     )
     
 class UserGroupDetailOut(ResponseSchema):
@@ -124,4 +124,4 @@ class UserGroupExcludeUsersItemOut(Schema):
 
     id: UUID = Field(default=None)
     username: str
-    avatar: str
+    avatar: str = Field(default=None)

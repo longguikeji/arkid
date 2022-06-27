@@ -11,7 +11,6 @@ from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.auth_factor import AuthFactorCreateIn, AuthFactorCreateOut, AuthFactorDeleteOut, AuthFactorListItemOut, AuthFactorListOut, AuthFactorOut, AuthFactorUpdateIn, AuthFactorUpdateOut
 from arkid.core.pagenation import CustomPagination
 
-
 @api.get("/tenant/{tenant_id}/auth_factors/", response=List[AuthFactorListItemOut], tags=[_("认证因素")], auth=None)
 @operation(AuthFactorListOut)
 @paginate(CustomPagination)
@@ -65,6 +64,7 @@ def create_auth_factor(request, tenant_id: str, data: AuthFactorCreateIn):
     config.name = data.dict()["name"]
     config.type = data.type
     config.save()
+    
     return ErrorDict(ErrorCode.OK)
 
 

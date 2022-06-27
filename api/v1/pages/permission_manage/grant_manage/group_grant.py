@@ -19,6 +19,10 @@ page.create_actions(
         method=actions.FrontActionMethod.GET,
     ),
     node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/user_groups/?parent_id={id}',
+            method=actions.FrontActionMethod.GET
+        ),
         actions.CascadeAction(
             page=group_permission_page
         )
