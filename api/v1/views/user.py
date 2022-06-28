@@ -15,19 +15,29 @@ from arkid.core.pagenation import CustomPagination
 from ninja.pagination import paginate
 
 # ------------- 用户列表接口 --------------        
-@api.get("/tenant/{tenant_id}/users/",response=List[UserListItemOut], tags=['用户'], auth=None)
+@api.get("/tenant/{tenant_id}/users/",response=List[UserListItemOut], tags=['用户'])
 @operation(UserListOut)
 @paginate(CustomPagination)
 def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
+    from arkid.core.perm.permission_data import PermissionData
     users = User.expand_objects.filter(tenant_id=tenant_id, is_del=False,is_active=True)
+    login_user = request.user
+    tenant = request.tenant
+    pd = PermissionData()
+    users = pd.get_manage_all_user(login_user, tenant, users)
     return list(users)
 
-@api.get("/tenant/{tenant_id}/user_no_super/",response=List[UserListItemOut], tags=['用户'], auth=None)
+@api.get("/tenant/{tenant_id}/user_no_super/",response=List[UserListItemOut], tags=['用户'])
 @operation(UserListOut)
 @paginate(CustomPagination)
 def user_list(request, tenant_id: str):
     super_user_id = User.valid_objects.order_by('created').first().id
     users = User.valid_objects.filter(tenant_id=tenant_id).exclude(id=super_user_id)
+    # 如果当前登录的用户不是管理员，需要根据用户所拥有的分组进行区分
+    login_user = request.user
+    tenant = request.tenant
+    pd = PermissionData()
+    users = pd.get_manage_all_user(login_user, tenant, users)
     return users
 
 # ------------- 创建用户接口 --------------
