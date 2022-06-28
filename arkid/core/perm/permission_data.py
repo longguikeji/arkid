@@ -1643,6 +1643,9 @@ class PermissionData(object):
         if userpermissionresult:
             compress = Compress()
             permission_result = compress.decrypt(userpermissionresult.result)
+            # 此处需要考虑分组的情况
+            permission_result = self.composite_result(user, userpermissionresult.app, permission_result, tenant_id, False)
+            # 拆分结果
             permission_result_arr = list(permission_result)
             check_result = int(permission_result_arr[sort_id])
             if check_result == 1:
