@@ -8,7 +8,7 @@ title: 首页
 * 统一的身份，认证，权限管理系统
 
 [官方网站](https://arkid.cc){ .md-button .md-button--primary }
-[官方SaaS网站](https://saas.arkid.cc){ .md-button }
+[中心ArkID](https://saas.arkid.cc){ .md-button }
 [官方文档](https://longguikeji.github.io/arkid/){ .md-button }
 
 ------

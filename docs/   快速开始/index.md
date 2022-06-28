@@ -1,6 +1,6 @@
 # 快速开始
 
-## 官方IDaaS
+## 中心ArkID
 如果希望快速的了解系统的基本使用，可以访问 [https://saas.akid.cc](https://saas.arkid.cc)
 
 注册后，创建自己的租户，即可使用系统的大部分功能
