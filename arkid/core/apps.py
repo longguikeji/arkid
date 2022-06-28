@@ -16,7 +16,7 @@ class CoreConfig(AppConfig):
             from arkid.core.models import Tenant, User
             tenant, _ = Tenant.objects.get_or_create(
                 slug='',
-                name="platform tenant",
+                name="平台租户",
             )
             user, _ = User.objects.get_or_create(
                 username="admin",

@@ -121,7 +121,7 @@ def get_app_openapi_version(request, tenant_id: str, app_id: str):
     # from arkid.core.perm.permission_data import PermissionData
     # tenant, _ = Tenant.objects.get_or_create(
     #   slug='',
-    #   name="platform tenant",
+    #   name="平台租户",
     # )
     # auth_user, _ = User.objects.get_or_create(
     #     username="hanbin",

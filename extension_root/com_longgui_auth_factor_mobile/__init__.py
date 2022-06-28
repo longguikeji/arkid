@@ -48,7 +48,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         )
         
         # 注册发送短信接口
-        self.register_api(
+        self.url_send_sms_code = self.register_api(
             '/config/{config_id}/send_sms_code/',
             'POST',
             self.send_sms_code,
@@ -172,7 +172,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": f"/api/v1/tenant/{event.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
+                        "url": self.url_send_sms_code,
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
@@ -212,7 +212,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": f"/api/v1/tenant/{event.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
+                        "url": self.url_send_sms_code,
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
@@ -249,7 +249,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": f"/api/v1/tenant/{event.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
+                        "url": self.url_send_sms_code,
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
@@ -337,7 +337,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                     title='手机号',
                     suffix_action=DirectAction(
                         name='发送验证码',
-                        path=f"/api/v1/tenant/{config.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
+                        path=self.url_send_sms_code,
                         method=actions.FrontActionMethod.POST,
                         params={
                             "mobile": "mobile",

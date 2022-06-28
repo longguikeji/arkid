@@ -76,10 +76,20 @@ def create_extension_schema_by_package( name, package = '',fields: Optional[List
     if package:
         name = package + '_' + name
     name = name.replace('.','_')
+    
+    custom_fields = []
+    if fields:
+        for f_name, f_type, f_field in fields:
+            if type(f_type) is Optional:
+                continue;
+            else:
+                f_type = Optional[f_type]
+            custom_fields.append((f_name, f_type, f_field))
+        
     schema = create_schema(EmptyModel,
             name=name, 
             exclude=['id'],
-            custom_fields=fields,
+            custom_fields=custom_fields,
             base_class=base_schema,
         )
     core_api.remove_fields(schema, exclude)
@@ -521,7 +531,7 @@ class Extension(ABC):
             fields = fields,
             custom_fields=[
                 ("package", Literal[schema_tag], Field()),  # type: ignore
-                (type, schema, Field())
+                (type, Optional[schema], Field())
             ],
         )
         new_schema.name = name

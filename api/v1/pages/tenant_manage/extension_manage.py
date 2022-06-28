@@ -77,11 +77,11 @@ tenant_extension_rented_page.create_actions(
             method=actions.FrontActionMethod.POST,
         ),
         "setting": actions.OpenAction(
-            name='插件租户配置',
+            name='租户配置',
             page=setting_page
         ),
         "config": actions.OpenAction(
-            name='插件运行时配置',
+            name='运行时配置',
             page=config_page
         ),
     },

@@ -95,7 +95,7 @@ class PermissionData(object):
         '''
         tenant, _ = Tenant.objects.get_or_create(
             slug='',
-            name="platform tenant",
+            name="平台租户",
         )
         return tenant
     
