@@ -8,8 +8,8 @@ name = '插件管理'
 
 
 page = pages.TabsPage(tag=tag, name=name)
-platform_extension_page = pages.TablePage(name=_('Platform Extensions', '平台插件'))
-tenant_extension_rented_page = pages.TablePage(name=_('Rented Extensions', '已租赁'))
+platform_extension_page = pages.CardsPage(name=_('Platform Extensions', '平台插件'))
+tenant_extension_rented_page = pages.CardsPage(name=_('Rented Extensions', '已租赁'))
 rent_page = pages.FormPage(name=_('Rent', '租赁'))
 setting_page = pages.FormPage(name='插件租户配置')
 config_page = pages.TablePage(name='插件运行时配置')
