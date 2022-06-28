@@ -5,7 +5,7 @@ tag = 'extension_admin'
 name = '平台插件'
 
 
-page = pages.TablePage(tag=tag, name=name)
+page = pages.CardsPage(tag=tag, name=name)
 
 store_page = pages.TabsPage(name='插件商店')
 all_page = pages.TablePage(name='所有插件')
