@@ -1316,13 +1316,13 @@ class PermissionData(object):
                 app__isnull=True,
             ).first()
         if userpermissionresult:
-            permission_result = self.get_permission_str_process(userpermissionresult, is_64)
+            permission_result = self.get_permission_str_process(userpermissionresult, tenant_id, is_64)
             return {'result': permission_result}
         else:
             return {'result': ''}
     
 
-    def get_permission_str_process(self, userpermissionresult, is_64):
+    def get_permission_str_process(self, userpermissionresult, tenant_id, is_64):
         '''
         对结果字符串加工
         '''
@@ -1391,23 +1391,64 @@ class PermissionData(object):
                 permission_result = userpermissionresult.result
             else:
                 permission_result = compress.decrypt(userpermissionresult.result)
-        # permission_result = self.composite_result(userpermissionresult.user, userpermissionresult.app, permission_result, is_64)
+        permission_result = self.composite_result(userpermissionresult.user, userpermissionresult.app, permission_result, tenant_id, is_64)
         return permission_result
 
 
-    def composite_result(self, user, app, result_str, is_64):
+    def composite_result(self, user, app, result_str, tenant_id, is_64):
         '''
         综合计算结果，需要考虑到用户分组
         '''
         if result_str:
             compress = Compress()
             if is_64:
-                result_str = compress.encrypt(result_str)
+                result_str = compress.decrypt(result_str)
             # 取得当前用户的所有分组
-            usergroup = UserGroup.valid_objects.filter(users__id=user.id)
+            usergroups = UserGroup.valid_objects.filter(users__id=user.id)
+            # 取得当前用户的所有分组的父分组
+            all_groups = []
+            for usergroup in usergroups:
+                all_groups.append(usergroup)
+                all_groups.extend(self.get_user_all_groups(usergroup, []))
+            # 取得当前用户所有分组的父分组的权限
+            group_permission_results = GroupPermissionResult.valid_objects.filter(
+                user_group__in=all_groups,
+                tenant_id=tenant_id,
+                app=app,
+            )
+            # 需要把已有的权限结果字符串解开
+            permission_result_arr = list(result_str)
+            for group_permission_result in group_permission_results:
+                if group_permission_result:
+                    group_permission_arr = compress.decrypt(group_permission_result.result)
+                    self.group_arr_merge(permission_result_arr, group_permission_arr)
+            result_str = "".join(map(str, permission_result_arr))
+            if is_64:
+                result_str = compress.encrypt(result_str)
             return result_str
         else:
             return ''
+
+
+    def group_arr_merge(self, permission_result_arr, group_permission_arr):
+        '''
+        分组权限合并
+        '''
+        group_len = len(group_permission_arr)
+        for index, value in enumerate(permission_result_arr):
+            if int(value) == 0 and (index+1) <= group_len:
+                group_value = int(group_permission_arr[index])
+                if group_value == 1:
+                    permission_result_arr[index] = 1
+
+    
+    def get_user_all_groups(self, usergroup, items):
+        parent = usergroup.parent
+        if parent:
+            items.append(parent)
+            return self.get_user_all_groups(parent, items)
+        else:
+            return items
 
 
     def ditionairy_result(self, api_permission_dict, database_permission_dict):
