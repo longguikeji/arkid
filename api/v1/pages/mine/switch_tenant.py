@@ -24,10 +24,10 @@ page.create_actions(
         method=actions.FrontActionMethod.GET
     ),
     local_actions={
-        'switch_tenant': actions.DirectAction(
+        'switch_tenant': actions.URLAction(
             name=_('Switch', '切换'),
             path='/api/v1/mine/switch_tenant/{id}/',
-            method=actions.FrontActionMethod.GET
-        )
+            method=actions.FrontActionMethod.GET,
+        ),
     },
 )
