@@ -1,4 +1,5 @@
-FROM python:3.8-buster as build_deps
+ARG BASEIMAGE=python:3.8-buster
+FROM ${BASEIMAGE} as build_deps
 EXPOSE 80
 WORKDIR /var/arkid
 ARG DEBIAN=http://mirrors.aliyun.com/debian
