@@ -54,16 +54,21 @@ def create_group(request, tenant_id: str, data: UserGroupCreateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.get("/tenant/{tenant_id}/user_groups/", response=UserGroupListOut, tags=['用户分组'], auth=None)
+@api.get("/tenant/{tenant_id}/user_groups/", response=UserGroupListOut, tags=['用户分组'])
 @operation(UserGroupListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def list_groups(request, tenant_id: str,  parent_id: str = None):
     '''
     分组列表
     '''
+    from arkid.core.perm.permission_data import PermissionData
     usergroups = UserGroup.valid_objects.filter(
         tenant_id=tenant_id,
         parent__id=parent_id
     )
+    login_user = request.user
+    tenant = request.tenant
+    pd = PermissionData()
+    usergroups = pd.get_manage_user_group(login_user, tenant, usergroups)
     return {"data": list(usergroups.all())}
 
 

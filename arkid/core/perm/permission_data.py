@@ -1454,6 +1454,47 @@ class PermissionData(object):
             return items
     
 
+    def get_manage_user_group(self, login_user, tenant, usergroups):
+        '''
+        取得能管理的所有用户分组
+        '''
+        is_admin = tenant.has_admin_perm(login_user)
+        if is_admin is False:
+            compress = Compress()
+            userpermissionresult= UserPermissionResult.valid_objects.filter(
+                user=login_user,
+                tenant=tenant,
+                app=None,
+            ).first()
+            if userpermissionresult:
+                permission_result = compress.decrypt(userpermissionresult.result)
+                permission_result = self.composite_result(userpermissionresult.user, userpermissionresult.app, permission_result, str(tenant.id), False)
+                permission_result_arr = list(permission_result)
+                # 拿到分组的sort_id
+                sort_ids, sps = self.get_group_sort_id(str(tenant.id))
+                permission_result_arr_len = len(permission_result_arr)
+                result_permissions = []
+                for sp in sps:
+                    sort_id = sp.sort_id
+                    if (sort_id+1) <= permission_result_arr_len:
+                        value = int(permission_result_arr[sort_id])
+                        if value == 1:
+                            result_permissions.append(sp)
+                if result_permissions:
+                    ugs = UserGroup.valid_objects.filter(permission__in=result_permissions)
+                    # 取得这些分组的用户
+                    ug_ids = []
+                    for ug in  ugs:
+                        ug_ids.append(str(ug.id))
+                    if ug_ids:
+                        usergroups = usergroups.filter(id__in=ug_ids)
+                    else:
+                        usergroups = usergroups.filter(id__isnull=True)
+                else:
+                    usergroups = usergroups.filter(id__isnull=True)
+        return usergroups
+
+
     def get_manage_all_user(self, login_user, tenant, users):
         '''
         取得能管理的所有用户
@@ -1485,7 +1526,7 @@ class PermissionData(object):
                 for sp in sps:
                     sort_id = sp.sort_id
                     if (sort_id+1) <= permission_result_arr_len:
-                        value = permission_result_arr[sort_id]
+                        value = int(permission_result_arr[sort_id])
                         if value == 1:
                             result_permissions.append(sp)
                 if result_permissions:
@@ -1493,7 +1534,7 @@ class PermissionData(object):
                     # 取得这些分组的用户
                     ug_users = []
                     for ug in  ugs:
-                        for ug_user in ug.users:
+                        for ug_user in ug.users.all():
                             ug_users.append(str(ug_user.id))
                     if ug_users:
                         users = users.filter(id__in=ug_users)
