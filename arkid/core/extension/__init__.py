@@ -13,7 +13,7 @@ from pathlib import Path
 from ninja.constants import NOT_SET
 
 from requests import delete
-from arkid import config
+from arkid import config, extension
 from types import SimpleNamespace
 from collections import OrderedDict
 from django.apps import apps
@@ -427,11 +427,11 @@ class Extension(ABC):
         """
         def signal_func(event, **kwargs2):
             # 判断租户是否启用该插件
-            # tenant
-            # 插件名 tag
-            # func.__module__ 'extension_root.abc.xx'
-            # kwargs2.pop()
-            # Extension.
+            if not self.model.is_active:
+                return
+            tenant_extension = TenantExtension.active_objects.filter(is_rented=True, extension=self.model).first()
+            if not event.tenant.is_platform_tenant and not tenant_extension:
+                return
             if event.packages and not self.package in event.packages:
                 return
             return func(event=event, **kwargs2)

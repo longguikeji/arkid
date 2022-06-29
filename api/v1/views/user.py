@@ -31,6 +31,7 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
 @operation(UserListOut)
 @paginate(CustomPagination)
 def user_list(request, tenant_id: str):
+    from arkid.core.perm.permission_data import PermissionData
     super_user_id = User.valid_objects.order_by('created').first().id
     users = User.valid_objects.filter(tenant_id=tenant_id).exclude(id=super_user_id)
     # 如果当前登录的用户不是管理员，需要根据用户所拥有的分组进行区分

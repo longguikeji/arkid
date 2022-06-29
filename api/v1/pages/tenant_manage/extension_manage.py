@@ -8,7 +8,7 @@ name = '插件管理'
 
 
 page = pages.TabsPage(tag=tag, name=name)
-platform_extension_page = pages.CardsPage(name=_('Platform Extensions', '平台插件'))
+platform_extension_page = pages.CardsPage(name=_('Platform Extensions', '插件租赁'))
 tenant_extension_rented_page = pages.CardsPage(name=_('Rented Extensions', '已租赁'))
 rent_page = pages.FormPage(name=_('Rent', '租赁'))
 setting_page = pages.FormPage(name='插件租户配置')
@@ -28,8 +28,8 @@ pages.register_front_pages(update_config_page)
 
 
 page.add_pages([
-    platform_extension_page,
-    tenant_extension_rented_page
+    tenant_extension_rented_page,
+    platform_extension_page
 ])
 
 router = routers.FrontRouter(

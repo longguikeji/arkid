@@ -1,6 +1,7 @@
 from email.policy import default
 import requests
 from arkid.config import get_app_config
+from arkid.core import extension
 from oauth2_provider.models import Application
 from django.conf import settings
 from datetime import datetime
@@ -10,6 +11,10 @@ from arkid.core.models import User, App
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.db import transaction
+from arkid.core.models import Tenant
+from arkid.extension.models import TenantExtension, Extension
+from arkid.extension.utils import import_extension, unload_extension
+from pathlib import Path
 
 
 arkid_saas_token_cache = {}
@@ -184,9 +189,8 @@ def install_arkstore_extension(tenant, token, extension_id):
 
 def download_arkstore_extension(tenant, token, extension_id, extension_detail):
     from arkid import config
-    from pathlib import Path
     access_token = get_arkstore_access_token(tenant, token)
-    extension_name = extension_detail['name']
+    ext_package = extension_detail['package'].replace('.', '_')
 
     app_config = config.get_app_config()
     extension_root = app_config.extension.config.get('install_dir') or app_config.extension.root[0]
@@ -201,14 +205,8 @@ def download_arkstore_extension(tenant, token, extension_id, extension_detail):
         raise Exception('error: download failed')
 
     # delete extension folder
-    folder_name = Path(extension_root) / extension_name
-    import shutil
-    if folder_name.exists():
-        try:
-            shutil.rmtree(folder_name)
-        except OSError as e:
-            print ("Error remove folder: %s - %s." % (e.filename, e.strerror))
-            return {'error': 'delete extension fodler failed'}
+    ext_dir = str(Path(extension_root) / ext_package)
+    uninstall_extension(ext_dir)
 
     # unzip
     import zipfile
@@ -217,7 +215,52 @@ def download_arkstore_extension(tenant, token, extension_id, extension_detail):
     with zipfile.ZipFile(io.BytesIO(resp.content)) as zip_ref:
         zip_ref.extractall(extract_folder)
 
+    load_installed_extension(ext_dir)
+
     return {'success': 'true'}
+
+
+def uninstall_extension(ext_dir):
+    unload_extension(ext_dir)
+
+    # delete extension folder
+    import shutil
+    if Path(ext_dir).exists():
+        try:
+            shutil.rmtree(Path(ext_dir))
+        except OSError as e:
+            print ("Error remove folder: %s - %s." % (e.filename, e.strerror))
+            return {'error': 'delete extension fodler failed'}
+
+    extension = Extension.objects.filter(ext_dir=ext_dir).first()
+    if extension:
+        extension.delete()
+
+
+def load_installed_extension(ext_dir):
+    ext = import_extension(ext_dir)
+    extension, is_create = Extension.objects.update_or_create(
+        defaults={
+            'type': ext.type,
+            'labels': ext.labels,
+            'ext_dir': str(ext.ext_dir),
+            'name': ext.name,
+            'version': ext.version,
+            'is_del': False,
+        },
+        package = ext.package,
+    )
+
+    platform_tenant = Tenant.platform_tenant()
+    tenant_extension, is_create = TenantExtension.objects.update_or_create(
+        defaults={
+            'is_rented': True,
+        },
+        tenant = platform_tenant,
+        extension = extension,
+    )
+
+    ext.start()
 
 
 def get_bind_arkstore_agent(access_token):
@@ -363,6 +406,31 @@ def check_arkstore_expired(tenant, token, package):
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
     if resp.status_code != 200:
         print(f'Error check_arkstore_expired: {resp.status_code}')
+        return True
+    resp = resp.json()
+    if resp.get("use_end_time") == '0':
+        return True
+    if resp.get("use_end_time") is not None:
+        exp_dt = parse_datetime(resp["use_end_time"])
+        expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
+        now = timezone.localtime()
+        if now <= expire_time:
+            return True
+    if resp.get("max_users"):
+        count = len(User.active_objects.filter(tenant=tenant).all())
+        if resp.get("max_users") is not None and resp.get("max_users") <= count:
+            return True
+    return False
+
+
+def check_arkstore_rent_expired(tenant, token, package):
+    access_token = get_arkstore_access_token(tenant, token)
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/lease/order/'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {'package': package}
+    resp = requests.get(order_url, params=params, headers=headers, timeout=10)
+    if resp.status_code != 200:
+        print(f'Error check_arkstore_rent_expired: {resp.status_code}')
         return True
     resp = resp.json()
     if resp.get("use_end_time") == '0':

@@ -31,6 +31,7 @@ class TenantExtension(BaseModel):
     extension = models.ForeignKey('Extension', blank=False, on_delete=models.PROTECT, verbose_name=_('插件'))
     settings = models.JSONField(blank=True, default=dict, verbose_name=_('Tenant Settings','租户配置'))
     is_active = models.BooleanField(default=False, verbose_name=_('是否使用'))
+    is_rented = models.BooleanField(default=False, verbose_name=_('是否已租赁'))
     # 如果启用平台配置，运行时，平台租户的配置将会被允许该租户使用，而本身的配置变得无效
     use_platform_config = models.BooleanField(default=False, verbose_name=_('是否使用平台配置'))
 

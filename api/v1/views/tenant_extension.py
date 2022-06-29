@@ -46,6 +46,13 @@ class TenantExtensionConfigOut(ModelSchema):
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_extension_config(request, tenant_id: str, extension_id: str, data: ExtensionConfigSchemaIn):
     '''租户下，创建插件运行时配置'''
+    settings, created = TenantExtension.objects.get_or_create(
+            tenant_id=tenant_id,
+            extension_id=extension_id,
+        )
+    if not settings.is_rented:
+        return {"error": ErrorCode.OK.value, "message": "插件未租赁或租赁已到期"}
+
     config = TenantExtensionConfig.objects.create(
         name = data.dict()["name"],
         tenant_id=tenant_id,
@@ -72,6 +79,13 @@ def get_extension_config(request, tenant_id: str, extension_id: str, config_id: 
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_extension_config(request, tenant_id: str, extension_id: str, config_id: str, data: ExtensionConfigSchemaIn):
     '''租户下，插件运行时配置列表'''
+    settings, created = TenantExtension.objects.get_or_create(
+        tenant_id=tenant_id,
+        extension_id=extension_id,
+    )
+    if not settings.is_rented:
+        return {"error": ErrorCode.OK.value, "message": "插件未租赁或租赁已到期"}
+    
     config = TenantExtensionConfig.objects.get(
         tenant_id=tenant_id,
         extension_id=extension_id,
@@ -126,7 +140,9 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
         tenant_id=tenant_id,
         extension_id=extension_id,
     )
-    
+    if not settings.is_rented:
+        return {"error": ErrorCode.OK.value, "message": "插件未租赁或租赁已到期"}
+
     settings.settings = data.settings.dict()
     settings.save()
     
@@ -137,7 +153,7 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_extension_settings(request, tenant_id: str, extension_id: str):
     '''租户下，获取插件配置'''
-    tenant_extension,created = TenantExtension.active_objects.get_or_create(
+    tenant_extension,created = TenantExtension.objects.get_or_create(
         tenant_id=tenant_id,
         extension_id=extension_id,
     )
@@ -152,6 +168,15 @@ class TenantExtensionListOut(ModelSchema):
         model_fields=["id","name","type","package","labels","version"]
         
     labels:Optional[List[str]]
+
+    # id: str
+
+    # @staticmethod
+    # def resolve_id(obj):
+    #     if obj.extension:
+    #         return obj.extension.id
+    #     else:
+    #         return ''
 
 
 @api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],response=List[TenantExtensionListOut])

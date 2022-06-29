@@ -5,19 +5,19 @@ tag = 'extension_admin'
 name = '平台插件'
 
 
-page = pages.CardsPage(tag=tag, name=name)
+page = pages.TabsPage(tag=tag, name=name)
 
-store_page = pages.TabsPage(name='插件商店')
-all_page = pages.TablePage(name='所有插件')
+store_page = pages.CardsPage(name='插件商店')
+installed_page = pages.CardsPage(name='已安装')
 order_page = pages.FormPage(name=_('Order', '购买'))
 bind_agent_page = pages.FormPage(name=_('Bind Agent', '绑定代理商'))
-purchased_page = pages.TablePage(name='已购买')
+purchased_page = pages.CardsPage(name='已购买')
 edit_page = pages.FormPage(name=_("编辑插件"))
 profile_page = pages.FormPage(name='插件配置')
 
 
 pages.register_front_pages(page)
-pages.register_front_pages(all_page)
+pages.register_front_pages(installed_page)
 pages.register_front_pages(store_page)
 pages.register_front_pages(order_page)
 pages.register_front_pages(bind_agent_page)
@@ -33,17 +33,17 @@ router = routers.FrontRouter(
     icon='extension',
 )
 
-page.create_actions(
+page.add_pages([
+    installed_page,
+    store_page,
+    purchased_page
+])
+
+installed_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/extensions/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions={
-        'store':actions.OpenAction(
-            name='插件商店',
-            page=store_page
-        )
-    },
     local_actions={
         "update": actions.DirectAction(
             name='更新',
@@ -62,12 +62,7 @@ page.create_actions(
     },
 )
 
-store_page.add_pages([
-    all_page,
-    purchased_page
-])
-
-all_page.create_actions(
+store_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/arkstore/extensions/',
         method=actions.FrontActionMethod.GET,
@@ -99,8 +94,6 @@ purchased_page.create_actions(
         ),
     },
 )
-
-
 
 edit_page.create_actions(
     init_action=actions.DirectAction(
