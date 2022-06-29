@@ -148,6 +148,8 @@ def load_extension(ext_dir: str) -> any:
 
 
 def unload_extension(ext_dir: str) -> any:
+    if not Path(ext_dir).exists():
+        return
     ext_name = f'{Path(ext_dir).parent}.{Path(ext_dir).name}'
     ext = importlib.import_module(ext_name)
     if ext:
