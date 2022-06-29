@@ -101,7 +101,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
         app_id = kwargs.get('app_id', '')
         if tenant:
             tenant_id = tenant.id
-            namespace = f'api:com_longgui_auth_oauth2_server_tenant'
+            namespace = f'api:com_longgui_app_protocol_oidc_tenant'
 
             issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
 
