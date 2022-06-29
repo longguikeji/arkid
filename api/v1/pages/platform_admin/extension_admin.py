@@ -12,7 +12,7 @@ installed_page = pages.CardsPage(name='已安装')
 order_page = pages.FormPage(name=_('Order', '购买'))
 bind_agent_page = pages.FormPage(name=_('Bind Agent', '绑定代理商'))
 purchased_page = pages.CardsPage(name='已购买')
-edit_page = pages.FormPage(name=_("编辑插件"))
+markdown_page = pages.FormPage(name=_("文档"))
 profile_page = pages.FormPage(name='插件配置')
 
 
@@ -22,7 +22,7 @@ pages.register_front_pages(store_page)
 pages.register_front_pages(order_page)
 pages.register_front_pages(bind_agent_page)
 pages.register_front_pages(purchased_page)
-pages.register_front_pages(edit_page)
+pages.register_front_pages(markdown_page)
 pages.register_front_pages(profile_page)
 
 
@@ -45,6 +45,10 @@ installed_page.create_actions(
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
+        "markdown": actions.OpenAction(
+            name='文档',
+            page=markdown_page
+        ),
         "update": actions.DirectAction(
             name='更新',
             path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
@@ -95,16 +99,11 @@ purchased_page.create_actions(
     },
 )
 
-edit_page.create_actions(
+markdown_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/extensions/{id}/',
+        path='/api/v1/extensions/{id}/markdown/',
         method=actions.FrontActionMethod.GET
-    ),
-    global_actions={
-       'confirm': actions.ConfirmAction(
-            path="/api/v1/extensions/{id}/"
-        ),
-    }
+    )
 )
 
 order_page.create_actions(

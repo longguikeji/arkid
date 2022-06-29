@@ -7,6 +7,7 @@ from typing_extensions import Annotated
 from pydantic import Field
 from arkid.core.constants import PLATFORM_ADMIN, TENANT_ADMIN
 from arkid.core.extension import Extension
+from arkid.core.schema import ResponseSchema
 from arkid.extension.utils import import_extension
 from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
 from arkid.core.error import ErrorCode, ErrorDict
@@ -143,11 +144,23 @@ def update_extension(request, id: str):
     """
     return {"success": True}
 
-@api.get("/extensions/{id}/",tags=['平台插件'])
+class ExtensionMarkDownSchema(ResponseSchema):
+    data:dict = Field(format='markdown')
+    
+@api.get("/extensions/{id}/markdown/",tags=['平台插件'])
 def get_extension(request, id: str):
-    """ 获取平台插件信息 TODO
-    """
-    return {"success": True}
+    """ 获取平台插件的markdown文档"""
+    
+    ext_model = ExtensionModel.valid_objects.get(id=id)
+    import os
+    files = os.listdir(ext_model.ext_dir)
+    data = {}
+    for file in files:
+        if file.endswith('.md'):
+            md_file = open(ext_model.ext_dir+"/"+file)
+            data[file] = md_file.read()
+            md_file.close()
+    return {"data": data}
 
 @api.post("/extensions/{id}/active/", tags=["平台插件"])
 def toggle_extension_status(request, id: str):
