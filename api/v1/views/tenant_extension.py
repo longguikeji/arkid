@@ -153,7 +153,7 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_extension_settings(request, tenant_id: str, extension_id: str):
     '''租户下，获取插件配置'''
-    tenant_extension,created = TenantExtension.active_objects.get_or_create(
+    tenant_extension,created = TenantExtension.objects.get_or_create(
         tenant_id=tenant_id,
         extension_id=extension_id,
     )
@@ -168,6 +168,15 @@ class TenantExtensionListOut(ModelSchema):
         model_fields=["id","name","type","package","labels","version"]
         
     labels:Optional[List[str]]
+
+    # id: str
+
+    # @staticmethod
+    # def resolve_id(obj):
+    #     if obj.extension:
+    #         return obj.extension.id
+    #     else:
+    #         return ''
 
 
 @api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],response=List[TenantExtensionListOut])
