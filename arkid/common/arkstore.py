@@ -378,3 +378,28 @@ def check_arkstore_expired(tenant, token, package):
         if resp.get("max_users") is not None and resp.get("max_users") <= count:
             return True
     return False
+
+
+def check_arkstore_rent_expired(tenant, token, package):
+    access_token = get_arkstore_access_token(tenant, token)
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/lease/order/'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {'package': package}
+    resp = requests.get(order_url, params=params, headers=headers, timeout=10)
+    if resp.status_code != 200:
+        print(f'Error check_arkstore_rent_expired: {resp.status_code}')
+        return True
+    resp = resp.json()
+    if resp.get("use_end_time") == '0':
+        return True
+    if resp.get("use_end_time") is not None:
+        exp_dt = parse_datetime(resp["use_end_time"])
+        expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
+        now = timezone.localtime()
+        if now <= expire_time:
+            return True
+    if resp.get("max_users"):
+        count = len(User.active_objects.filter(tenant=tenant).all())
+        if resp.get("max_users") is not None and resp.get("max_users") <= count:
+            return True
+    return False
