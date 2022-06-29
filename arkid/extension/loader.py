@@ -21,6 +21,7 @@ class ExtensionLoader:
         
         try:# 防止在migrate或其它命令运行时没有创建数据库而报错
             extensions = list(Extension.active_objects.filter())
+            tenant_extensions = list(TenantExtension.active_objects.filter())
         except Exception:
             return
         
