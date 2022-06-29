@@ -19,6 +19,7 @@ class FrontActionType(Enum):
     - url 内外链接类型
     - password 编辑密码类型
     - cascade 级联类型
+    - next 下一步类型
     ```
     """
 
@@ -30,6 +31,7 @@ class FrontActionType(Enum):
     URL_ACTION = 'url'
     PASSWORD_ACTION = 'password'
     CASCADE_ACTION = 'cascade'
+    NEXT_ACTION = 'next'
 
 
 class FrontActionMethod(Enum):
@@ -122,6 +124,12 @@ class FrontAction(DeepSN):
 class DirectAction(FrontAction):
     def __init__(self, *args, **kwargs):
         super().__init__(action_type=FrontActionType.DIRECT_ACTION, *args, **kwargs)
+
+
+class NextAction(FrontAction):
+    def __init__(self, *args, **kwargs):
+        self.name = _("下一步")
+        super().__init__(action_type=FrontActionType.NEXT_ACTION, *args, **kwargs)
 
 
 class OpenAction(FrontAction):

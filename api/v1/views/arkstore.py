@@ -11,6 +11,7 @@ from arkid.common.arkstore import (
     install_arkstore_extension,
     get_arkstore_extensions,
     get_arkstore_extension_detail,
+    order_arkstore_extension,
     get_arkstore_extension_order_status,
     get_arkstore_extension_rent_status,
     get_arkid_saas_app_detail,
@@ -111,12 +112,12 @@ def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extension_detail(access_token, uuid)
+    resp = order_arkstore_extension(access_token, uuid)
     return resp
 
 
 @api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'])
-def order_arkstore_extension(request, tenant_id: str, uuid: str):
+def create_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
