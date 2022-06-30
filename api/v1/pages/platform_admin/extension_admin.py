@@ -133,7 +133,7 @@ price_page.create_actions(
 
 copies_page.create_actions(
     init_action=actions.DirectAction(
-        path="/api/v1/arkstore/extensions/{extension_uuid}/set_copies",
+        path="/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/set_copies/",
         method=actions.FrontActionMethod.POST
     ),
     global_actions={

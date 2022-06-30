@@ -26,6 +26,7 @@ from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
 from arkid.extension.models import TenantExtension
 from arkid.core.translation import gettext_default as _
+from pydantic import condecimal, conint
 
 
 def get_arkstore_list(request, purchased, type):
@@ -102,6 +103,11 @@ class OrderSchemaOut(Schema):
     order_no: str
 
 
+class SetCopies(Schema):
+    days_copies: conint(ge=1) = Field(default=1, title=_('Days Copies', '份数(天)'))
+    users_copies: conint(ge=1) = Field(defaul=1, title=_('Users Copies', '份数(人)'))
+
+
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
@@ -146,6 +152,11 @@ def create_order_arkstore_extension(request, tenant_id: str, uuid: str, data: Or
     access_token = get_arkstore_access_token(tenant, token)
     resp = purcharse_arkstore_extension(access_token, uuid, data.dict())
     return resp
+
+
+@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/set_copies/", tags=['方舟商店'], response=SetCopies)
+def set_copies_order_arkstore_extension(request, tenant_id: str, uuid: str):
+    return
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/", tags=['方舟商店'], response=OrderStatusSchema)
