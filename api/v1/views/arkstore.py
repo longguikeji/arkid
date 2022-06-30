@@ -213,7 +213,7 @@ def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str)
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/order/{order_no}/payment_status/", tags=['方舟商店'], response=OrderPaymentOut)
+@api.get("/tenant/{tenant_id}/arkstore/order/{order_no}/payment_status/", tags=['方舟商店'], response=PaymentStatus)
 def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
