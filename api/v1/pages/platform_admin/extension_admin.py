@@ -151,7 +151,7 @@ payment_page.create_actions(
         method=actions.FrontActionMethod.GET
     ),
     global_actions={
-       'confirm': actions.DirectAction(
+       'confirm': actions.NextAction(
             name="已支付",
             path="/api/v1/tenant/{tenant_id}/arkstore/order/{order_no}/payment_status/",
             method=actions.FrontActionMethod.GET
