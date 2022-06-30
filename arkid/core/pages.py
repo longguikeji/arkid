@@ -257,8 +257,21 @@ class StepPage(FrontPage):
     """步骤页面
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, pages:list=[], *args, **kwargs):
+        self.add_pages(pages)
         super().__init__(type=FrontPageType.STEP_PAGE, *args, **kwargs)
+    
+    def add_pages(self,pages:list=[]):
+        if not pages:
+            return
+            
+        if not isinstance(pages, tuple) or not isinstance(pages, list):
+            pages = [pages.tag] if isinstance(pages,FrontPage) else list(pages)
+        if not hasattr(self, "pages"):
+            self.pages = []
+        
+        for item in pages:
+            self.pages.append(item.tag if isinstance(item,FrontPage) else item)
 
 def register_front_pages(pages):
     """注册前端页面
