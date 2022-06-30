@@ -103,7 +103,7 @@ class OrderSchemaIn(Schema):
 
 
 class OrderSchemaOut(Schema):
-    order_no: str
+    order_no: str = Field(format='qrcode')
 
 
 class SetCopies(Schema):
