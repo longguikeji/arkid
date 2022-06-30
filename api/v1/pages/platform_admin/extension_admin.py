@@ -147,7 +147,7 @@ copies_page.create_actions(
 
 payment_page.create_actions(
     init_action=actions.DirectAction(
-        path="/api/v1/user/orders/{order_no}/payment",
+        path="/api/v1/tenant/{tenant_id}/arkstore/order/{order_no}/payment/",
         method=actions.FrontActionMethod.GET
     ),
     global_actions={

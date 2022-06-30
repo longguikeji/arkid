@@ -10,6 +10,7 @@ from arkid.common.arkstore import (
     get_arkstore_extensions,
     get_arkstore_extension_detail,
     get_arkstore_extension_price,
+    order_payment_arkstore_extension,
     get_arkstore_extension_order_status,
     get_arkstore_extension_rent_status,
     get_arkid_saas_app_detail,
@@ -108,6 +109,10 @@ class SetCopies(Schema):
     users_copies: conint(ge=1) = Field(defaul=1, title=_('Users Copies', '份数(人)'))
 
 
+class OrderPaymentOut(Schema):
+    code_url: str = Field(title="微信支付二维码", format="qrcode")
+
+
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
@@ -157,6 +162,15 @@ def create_order_arkstore_extension(request, tenant_id: str, uuid: str, data: Or
 @api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/set_copies/", tags=['方舟商店'], response=SetCopies)
 def set_copies_order_arkstore_extension(request, tenant_id: str, uuid: str):
     return
+
+
+@api.get("/tenant/{tenant_id}/arkstore/order/{order_no}/payment/", tags=['方舟商店'], response=OrderPaymentOut)
+def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = order_payment_arkstore_extension(access_token, order_no)
+    return resp
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/", tags=['方舟商店'], response=OrderStatusSchema)

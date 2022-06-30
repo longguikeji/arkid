@@ -153,7 +153,18 @@ def get_arkstore_extension_price(access_token, extension_id):
     params = {}
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+        raise Exception(f'Error get_arkstore_extension_price: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def order_payment_arkstore_extension(access_token, order_no):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/user/orders/{order_no}/payment'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error order_payment_arkstore_extension: {resp.status_code}')
     resp = resp.json()
     return resp
 
