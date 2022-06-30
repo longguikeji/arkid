@@ -145,7 +145,7 @@ def update_extension(request, id: str):
     return {"success": True}
 
 class ExtensionMarkDownOut(ResponseSchema):
-    data:dict = Field(format='markdown')
+    data:dict = Field(format='markdown',readonly=True)
     
 @api.get("/extensions/{id}/markdown/",tags=['平台插件'], response=ExtensionMarkDownOut)
 def get_extension(request, id: str):
