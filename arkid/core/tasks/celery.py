@@ -25,8 +25,19 @@ class MyBootstep(bootsteps.Step):
         if is_init_permission:
             from arkid.core.tasks.tasks import update_system_permission
             update_system_permission.delay()
-        
+
+class BindTenantBootstep(bootsteps.Step):
+
+    def __init__(self, parent, **options):
+        super().__init__(parent, **options)
+        from arkid.common.bind_saas import bind_saas
+        from arkid.core.models import Tenant
+        tenants = Tenant.active_objects.all()
+        for tenant in tenants:
+            bind_saas(tenant.id.hex)
+
 app.steps['worker'].add(MyBootstep)
+app.steps['worker'].add(BindTenantBootstep)
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
