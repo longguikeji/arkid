@@ -2,6 +2,7 @@
 from platform import platform
 from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
+from ..platform_admin.extension_admin import markdown_page
 
 tag = 'tenant_extension_manage'
 name = '插件管理'
@@ -45,6 +46,10 @@ platform_extension_page.create_actions(
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
+        "markdown": actions.OpenAction(
+            name='文档',
+            page=markdown_page  
+        ),
         "rent": actions.OpenAction(
             name="租赁",
             page=rent_page
@@ -75,6 +80,10 @@ tenant_extension_rented_page.create_actions(
         "active": actions.DirectAction(
             path='/api/v1/tenant/{tenant_id}/tenant/extensions/{id}/active/',
             method=actions.FrontActionMethod.POST,
+        ),
+        "markdown": actions.OpenAction(
+            name='文档',
+            page=markdown_page  
         ),
         "setting": actions.OpenAction(
             name='租户配置',
