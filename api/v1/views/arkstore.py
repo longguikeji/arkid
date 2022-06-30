@@ -1,5 +1,3 @@
-
-import xxlimited
 from django.http import JsonResponse
 from collections import OrderedDict
 from arkid.core.models import Platform, Tenant
@@ -11,7 +9,7 @@ from arkid.common.arkstore import (
     install_arkstore_extension,
     get_arkstore_extensions,
     get_arkstore_extension_detail,
-    order_arkstore_extension,
+    get_arkstore_extension_price,
     get_arkstore_extension_order_status,
     get_arkstore_extension_rent_status,
     get_arkid_saas_app_detail,
@@ -27,6 +25,7 @@ from pydantic import Field
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
 from arkid.extension.models import TenantExtension
+from arkid.core.translation import gettext_default as _
 
 
 def get_arkstore_list(request, purchased, type):
@@ -79,6 +78,30 @@ class BindAgentSchemaOut(Schema):
     tenant_slug: str = None
 
 
+class ListPriceSchema(Schema):
+    uuid: str = Field(hidden=True)
+    type: str
+    days: int
+    users: int
+    standard_price: str
+
+
+class ExtensionOrderOut(Schema):
+    prices: List[ListPriceSchema] = Field(
+        hidden=True, title=_("Extension Prices", "插件价格")
+    )
+
+
+class OrderSchemaIn(Schema):
+    users_copies: int
+    days_copies: int
+    price_uuid: str
+
+
+class OrderSchemaOut(Schema):
+    order_no: str
+
+
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
@@ -107,21 +130,21 @@ def list_arkstore_purchased_apps(request, tenant_id: str):
     return get_arkstore_list(request, True, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=ArkstoreItemSchemaOut)
+@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=ExtensionOrderOut)
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
-    resp = order_arkstore_extension(access_token, uuid)
+    resp = get_arkstore_extension_price(access_token, uuid)
     return resp
 
 
-@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'])
-def create_order_arkstore_extension(request, tenant_id: str, uuid: str):
+@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=OrderSchemaOut)
+def create_order_arkstore_extension(request, tenant_id: str, uuid: str, data: OrderSchemaIn):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
-    resp = purcharse_arkstore_extension(access_token, uuid)
+    resp = purcharse_arkstore_extension(access_token, uuid, data.dict())
     return resp
 
 

@@ -121,7 +121,7 @@ order_page.add_pages([
 
 price_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/arkstore/extensions/{extension_uuid}/order',
+        path='/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/',
         method=actions.FrontActionMethod.GET
     ),
     local_actions={
@@ -139,7 +139,7 @@ copies_page.create_actions(
     global_actions={
        'next': actions.NextAction(
             name="创建订单",
-            path="/api/v1/arkstore/extensions/{extension_uuid}/order",
+            path="/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/",
             method=actions.FrontActionMethod.POST
         ),
     }
