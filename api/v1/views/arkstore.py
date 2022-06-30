@@ -108,7 +108,7 @@ class OrderSchemaOut(Schema):
 
 class SetCopies(Schema):
     days_copies: conint(ge=1) = Field(default=1, title=_('Days Copies', '份数(天)'))
-    users_copies: conint(ge=1) = Field(defaul=1, title=_('Users Copies', '份数(人)'))
+    users_copies: conint(ge=1) = Field(default=1, title=_('Users Copies', '份数(人)'))
 
 
 class OrderPaymentOut(Schema):
