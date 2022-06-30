@@ -179,13 +179,15 @@ def list_arkstore_purchased_apps(request, tenant_id: str):
     return get_arkstore_list(request, True, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=ExtensionOrderOut)
+@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=List[ListPriceSchema])
+@operation(List[ListPriceSchema])
+@paginate(CustomPagination)
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
     resp = get_arkstore_extension_price(access_token, uuid)
-    return resp
+    return resp['prices']
 
 
 @api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=OrderSchemaOut)
@@ -198,7 +200,7 @@ def create_order_arkstore_extension(request, tenant_id: str, uuid: str, data: Or
 
 
 @api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/set_copies/", tags=['方舟商店'], response=SetCopies)
-def set_copies_order_arkstore_extension(request, tenant_id: str, uuid: str):
+def set_copies_order_arkstore_extension(request, tenant_id: str, uuid: str, data: SetCopies):
     return
 
 
