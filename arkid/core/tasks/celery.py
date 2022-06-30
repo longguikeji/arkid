@@ -30,11 +30,10 @@ class BindTenantBootstep(bootsteps.Step):
 
     def __init__(self, parent, **options):
         super().__init__(parent, **options)
-        from arkid.common.bind_saas import bind_saas
-        from arkid.core.models import Tenant
-        tenants = Tenant.active_objects.all()
-        for tenant in tenants:
-            bind_saas(tenant.id.hex)
+        from django.conf import settings
+        if not settings.IS_CENTRAL_ARKID:
+            from arkid.core.tasks.tasks import bind_arkid_saas_all_tenants
+            bind_arkid_saas_all_tenants.delay()
 
 app.steps['worker'].add(MyBootstep)
 app.steps['worker'].add(BindTenantBootstep)
