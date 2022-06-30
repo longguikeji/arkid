@@ -49,11 +49,12 @@ class TenantMiddleware:
                 if not tenant:
                     tenant_not_found = True
         
-        if not tenant and tenant_not_found:
-            raise Exception('tenant not found for request: {request.path}')
-        else:
-            tenant = Tenant.platform_tenant()
-        
+        if not tenant:
+            if tenant_not_found:
+                raise Exception('tenant not found for request: {request.path}')
+            else:
+                tenant = Tenant.platform_tenant()
+
         request.tenant = tenant
         request.operation_id = self.get_operation_id(request)
         response = self.get_response(request)
