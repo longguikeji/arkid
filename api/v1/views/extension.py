@@ -144,10 +144,10 @@ def update_extension(request, id: str):
     """
     return {"success": True}
 
-class ExtensionMarkDownSchema(ResponseSchema):
+class ExtensionMarkDownOut(ResponseSchema):
     data:dict = Field(format='markdown')
     
-@api.get("/extensions/{id}/markdown/",tags=['平台插件'])
+@api.get("/extensions/{id}/markdown/",tags=['平台插件'], response=ExtensionMarkDownOut)
 def get_extension(request, id: str):
     """ 获取平台插件的markdown文档"""
     
