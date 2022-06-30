@@ -153,7 +153,7 @@ payment_page.create_actions(
     global_actions={
        'confirm': actions.DirectAction(
             name="已支付",
-            path="/api/v1/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/",
+            path="/api/v1/tenant/{tenant_id}/arkstore/order/{order_no}/payment_status/",
             method=actions.FrontActionMethod.GET
         ),
     }
