@@ -112,12 +112,10 @@ def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, l
     return resp
 
 
-def purcharse_arkstore_extension(access_token, extension_id):
-    order_url = settings.ARKSTOER_URL + '/api/v1/user/orders'
+def purcharse_arkstore_extension(access_token, extension_id, data):
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/order'
     headers = {'Authorization': f'Token {access_token}'}
-    params = {
-        'extension_uuid': extension_id
-    }
+    params = data
     resp = requests.post(order_url, json=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error purcharse_arkstore_extension: {resp.status_code}')
@@ -145,6 +143,39 @@ def get_arkstore_extension_detail(access_token, extension_id):
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extension_price(access_token, extension_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/order'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_price: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def order_payment_arkstore_extension(access_token, order_no):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/user/orders/{order_no}/payment'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error order_payment_arkstore_extension: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def order_payment_status_arkstore_extension(access_token, order_no):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/user/orders/{order_no}/payment_status'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error order_payment_status_arkstore_extension: {resp.status_code}')
     resp = resp.json()
     return resp
 

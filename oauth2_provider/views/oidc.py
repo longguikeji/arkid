@@ -97,7 +97,16 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
-        tenant = request.tenant
+        tenant = None
+        path = request.path
+        uuid4hex = re.compile('tenant/[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}', re.I)
+        matchs = uuid4hex.findall(path)
+        for match in matchs:
+            match = match[7:]
+            tenant = Tenant.active_objects.filter(id=match).first()
+            if tenant:
+                break
+
         app_id = kwargs.get('app_id', '')
         if tenant:
             tenant_id = tenant.id

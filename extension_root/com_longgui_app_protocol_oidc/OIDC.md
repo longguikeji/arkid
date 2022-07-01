@@ -5,28 +5,22 @@ OIDC是基于OAuth2和OpenID整合的新认证授权协议
 ## 添加OIDC应用
 
 === "打开应用列表"
-
     [![X55Ch4.md.jpg](https://s1.ax1x.com/2022/06/14/X55Ch4.md.jpg)](https://imgtu.com/i/X55Ch4)
 
 === "点击创建，填写表单"
-
     点击确认后，对话框关闭，可以看到你创建的应用。
-
     [![XonRpV.md.jpg](https://s1.ax1x.com/2022/06/15/XonRpV.md.jpg)](https://imgtu.com/i/XonRpV)
 
 === "点击协议配置"
-
     [![XouEjS.md.jpg](https://s1.ax1x.com/2022/06/15/XouEjS.md.jpg)](https://imgtu.com/i/XouEjS)
 
 === "填写配置"
     应用类型选择为OIDC，填写参数，创建完毕
-
     [![XoK9rF.md.jpg](https://s1.ax1x.com/2022/06/15/XoK9rF.md.jpg)](https://imgtu.com/i/XoK9rF)
 
 === "再次点击协议配置"
     即可查看该协议所有相关的参数。
-
-    [![XoMPQf.md.jpg](https://s1.ax1x.com/2022/06/15/XoMPQf.md.jpg)](https://imgtu.com/i/XoMPQf)
+    ![XoMPQf.md.jpg](https://s1.ax1x.com/2022/06/15/XoMPQf.md.jpg)](https://imgtu.com/i/XoMPQf)
 
 
 ## 使用OIDC应用
