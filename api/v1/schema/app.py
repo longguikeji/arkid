@@ -76,6 +76,11 @@ class ConfigOpenApiVersionSchemaOut(Schema):
     openapi_uris: str = Field(title=_('openapi uris', '接口文档地址'), default='')
 
 
+class ConfigOpenApiVersionDataSchemaOut(ResponseSchema):
+
+    data: ConfigOpenApiVersionSchemaOut
+
+
 AppProtocolConfigIn = AppProtocolExtension.create_composite_config_schema(
     'AppProtocolConfigIn',
     exclude=["name", "type", "logo", "url", 'description', 'entry_permission'],

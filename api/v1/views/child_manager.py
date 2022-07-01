@@ -26,7 +26,7 @@ def get_child_managers(request, tenant_id: str):
     child_mans = permissiondata.get_child_mans(users, tenant)
     return child_mans
 
-@api.get("/tenant/{tenant_id}/child_managers/{id}/", response=ChildManagerDeatilOut, tags=["子管理员"],auth=None)
+@api.get("/tenant/{tenant_id}/child_managers/{id}/", response=ChildManagerDeatilBaseOut, tags=["子管理员"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
 def get_child_manager(request, tenant_id: str, id: str):
     """ 获取子管理员,TODO
@@ -38,8 +38,8 @@ def get_child_manager(request, tenant_id: str, id: str):
     permissions = []
     manager_scope = []
     pd = PermissionData()
-    permissions,manager_scope = pd.get_child_manager_info(str(tenant.id), user)
-    return {'permissions': permissions, 'manager_scope': manager_scope}
+    permissions, manager_scope, self_source_ids = pd.get_child_manager_info(str(tenant.id), user)
+    return {'data': {'permissions': permissions, 'manager_scope': manager_scope}}
 
 @api.post("/tenant/{tenant_id}/child_managers/", tags=["子管理员"], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -57,15 +57,41 @@ def create_child_manager(request, tenant_id: str, data: ChildManagerCreateSchema
         }))
     return ErrorDict(ErrorCode.OK)
 
-# @api.put("/tenant/{tenant_id}/child_managers/{id}/", tags=["子管理员"],auth=None)
-# def update_child_manager(request, tenant_id: str, id: str):
-#     """ 编辑子管理员,TODO
-#     """
-#     return {}
+@api.put("/tenant/{tenant_id}/child_managers/{id}/", tags=["子管理员"],auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def update_child_manager(request, tenant_id: str, id: str, data: ChildManagerEditSchemaIn):
+    """ 编辑子管理员,TODO
+    """
+    from arkid.core.perm.permission_data import PermissionData
+    tenant = request.tenant
+    permission_ids = data.permissions
+    manager_scope_ids = data.manager_scope
+    user = User.valid_objects.filter(tenant=tenant, id=id).first()
+    permissiondata = PermissionData()
+    # 重新查一次
+    permissions_1, manager_scope_1, self_source_ids = pd.get_child_manager_info(str(tenant.id), user)
+    for self_source_id in self_source_ids:
+        if self_source_id in permission_ids:
+            # 去掉分组权限
+            permission_ids.remove(self_source_id)
+        else:
+            # 直接提示移除了分组权限
+            return ErrorDict(ErrorCode.BAN_REMOVE_GROUP_PERMISSION)
+    # 先删除管理员在重新加权限
+    permissiondata.delete_child_man(user, tenant)
+    # 重新加权限
+    if permission_ids and manager_scope_ids:
+        dispatch_event(Event(tag=ADD_USER_MANY_PERMISSION, tenant=tenant, request=request, data={
+            'user_ids': [str(user.id)],
+            'tenant_id': tenant_id,
+            'data_arr': permission_ids+manager_scope_ids
+        }))
+    return ErrorDict(ErrorCode.OK)
 
 @api.delete("/tenant/{tenant_id}/child_managers/{id}/", tags=["子管理员"],auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_child_manager(request, tenant_id: str, id: str):
-    """ 删除子管理员,TODO
+    """ 删除子管理员
     """
     from arkid.core.perm.permission_data import PermissionData
     tenant = request.tenant

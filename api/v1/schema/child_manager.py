@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import List
+from typing import List, Optional
 from ninja import Field
 from ninja import Schema
 from ninja import ModelSchema
@@ -29,46 +29,80 @@ class ChildManagerListOut(ModelSchema):
         return usergroup_str
 
 
+class ChildManagerCreateInItem(Schema):
+    id:UUID = Field(hidden=True)
+    name:str
+
 class ChildManagerDeatilOut(Schema):
 
-    permissions: List[UUID] = Field(
-        field="id",
+    permissions: Optional[List[ChildManagerCreateInItem]] = Field(
+        # field="id",
         page=select_permission_page.tag,
-        link="name",
-        default=None,
+        # link="name",
+        # default=None,
         title=_("拥有权限")
     )
 
-    manager_scope: List[UUID] = Field(
-        field="id",
+    manager_scope: Optional[List[ChildManagerCreateInItem]] = Field(
+        # field="id",
         page=select_scope_page.tag,
-        link="name",
-        default=None,
+        # link="name",
+        # default=None,
         title=_("管理范围")
     )
 
+class ChildManagerDeatilBaseOut(ResponseSchema):
+
+    data: ChildManagerDeatilOut
+
 class ChildManagerCreateSchemaIn(Schema):
 
-    users: List[UUID] = Field(
-        field="id",
+    users: Optional[List[ChildManagerCreateInItem]] = Field(
+        # field="id",
         page=select_user_page.tag,
-        link="name",
-        default=None,
+        # link="name",
+        # default=None,
         title=_("选择用户")
     )
 
-    permissions: List[UUID] = Field(
-        field="id",
+    permissions: Optional[List[ChildManagerCreateInItem]] = Field(
+        # field="id",
         page=select_permission_page.tag,
-        link="name",
-        default=None,
+        # link="name",
+        # default=None,
         title=_("拥有权限")
     )
 
-    manager_scope: List[UUID] = Field(
-        field="id",
+    manager_scope: Optional[List[ChildManagerCreateInItem]] = Field(
+        # field="id",
         page=select_scope_page.tag,
-        link="name",
-        default=None,
+        # link="name",
+        # default=None,
+        title=_("管理范围")
+    )
+
+class ChildManagerEditSchemaIn(Schema):
+
+    users: Optional[List[ChildManagerCreateInItem]] = Field(
+        # field="id",
+        page=select_user_page.tag,
+        # link="name",
+        # default=None,
+        title=_("选择用户")
+    )
+
+    permissions: Optional[List[ChildManagerCreateInItem]] = Field(
+        # field="id",
+        page=select_permission_page.tag,
+        # link="name",
+        # default=None,
+        title=_("拥有权限")
+    )
+
+    manager_scope: Optional[List[ChildManagerCreateInItem]] = Field(
+        # field="id",
+        page=select_scope_page.tag,
+        # link="name",
+        # default=None,
         title=_("管理范围")
     )

@@ -1861,6 +1861,8 @@ class PermissionData(object):
             temp_user = userpermissionresult.user
             if userpermissionresult:
                 permission_result = compress.decrypt(userpermissionresult.result)
+                # 此处需要考虑分组的情况(可能存在性能问题需要优化，多个用户时)
+                permission_result = self.composite_result(temp_user, None, permission_result, str(tenant.id), False)
                 permission_result_arr = list(permission_result)
                 temp_user.arr = permission_result_arr
             else:
@@ -1885,23 +1887,37 @@ class PermissionData(object):
         permissions = []
         manager_scope = []
         if system_userpermissionresult:
-            permission_result = compress.decrypt(system_userpermissionresult.result)
+            permission_result_1 = compress.decrypt(system_userpermissionresult.result)
+            permission_result_1_arr = list(permission_result_1)
             # 此处需要考虑分组的情况
-            permission_result = self.composite_result(select_user, None, permission_result, tenant_id, False)
+            permission_result = self.composite_result(select_user, None, permission_result_1, tenant_id, False)
             # 拆分结果
             permission_result_arr = list(permission_result)
             possess_sort_ids = []
+            self_source_sort_ids = []
+            self_source_ids = []
             for index, permission_result_item in enumerate(permission_result_arr):
                 if index not in sort_ids and int(permission_result_item) == 1:
                     possess_sort_ids.append(index)
+                    if index <= (len(permission_result_1_arr) - 1) and int(permission_result_1_arr[index]) == 0:
+                        self_source_sort_ids.append(index)
             # 根据取得的权限计算出子管理员的权限和授权范围
             systempermissions = systempermissions.filter(sort_id__in=possess_sort_ids)
             for systempermission in systempermissions:
+                source = '分组' if systempermission.sort_id in self_source_sort_ids else '用户'
+                if source == '分组':
+                    self_source_ids.append(str(systempermission.id))
                 if systempermission.category == 'group' and systempermission.code.startswith('group_role') is False:
-                    manager_scope.append(str(systempermission.id))
+                    manager_scope.append({
+                        'id': str(systempermission.id),
+                        'name': systempermission.name+ (' (分组)' if source == '分组' else '')
+                    })
                 else:
-                    permissions.append(str(systempermission.id))
-        return permissions, manager_scope
+                    permissions.append({
+                        'id': str(systempermission.id),
+                        'name': systempermission.name+ (' (分组)' if source == '分组' else '')
+                    })
+        return permissions, manager_scope, self_source_ids
     
     def get_child_mans(self, auth_users, tenant):
         '''
@@ -1945,9 +1961,11 @@ class PermissionData(object):
                     if check_result == 1:
                         auth_user.is_tenant_admin = True
                     else:
+                        # 没有管理员权限
                         ids.append(auth_user.id)
                         auth_user.is_tenant_admin = False
                 else:
+                    # 没在结果集中，可能性小
                     ids.append(auth_user.id)
                     auth_user.is_tenant_admin = False
 
