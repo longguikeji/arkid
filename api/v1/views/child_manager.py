@@ -66,7 +66,7 @@ def create_child_manager(request, tenant_id: str, data: ChildManagerCreateSchema
         }))
     return ErrorDict(ErrorCode.OK)
 
-@api.put("/tenant/{tenant_id}/child_managers/{id}/", tags=["子管理员"],auth=None)
+@api.post("/tenant/{tenant_id}/child_managers/{id}/", tags=["子管理员"],auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_child_manager(request, tenant_id: str, id: str, data: ChildManagerEditSchemaIn):
     """ 编辑子管理员,TODO
@@ -76,26 +76,39 @@ def update_child_manager(request, tenant_id: str, id: str, data: ChildManagerEdi
     permission_ids_1 = data.permissions
     permission_ids = []
     for permission_ids_item in permission_ids_1:
-        permission_ids.append(permission_ids_item.id)
+        permission_ids.append(str(permission_ids_item.id))
     manager_scope_ids_1 = data.manager_scope
     manager_scope_ids = []
     for manager_scope_ids_item in manager_scope_ids_1:
-        manager_scope_ids.append(manager_scope_ids_item.id)
+        manager_scope_ids.append(str(manager_scope_ids_item.id))
     user = User.valid_objects.filter(tenant=tenant, id=id).first()
     permissiondata = PermissionData()
     # 重新查一次
-    permissions_1, manager_scope_1, self_source_ids = pd.get_child_manager_info(str(tenant.id), user)
+    permissions_1, manager_scope_1, self_source_ids = permissiondata.get_child_manager_info(str(tenant.id), user)
     for self_source_id in self_source_ids:
         if self_source_id in permission_ids:
             # 去掉分组权限
             permission_ids.remove(self_source_id)
+        elif self_source_id in manager_scope_ids:
+            manager_scope_ids.remove(self_source_id)
         else:
             # 直接提示移除了分组权限
             return ErrorDict(ErrorCode.BAN_REMOVE_GROUP_PERMISSION)
+        # if self_source_id in manager_scope_ids:
+        #     # 去掉分组权限
+        #     manager_scope_ids.remove(self_source_id)
+        # else:
+        #     # 直接提示移除了分组范围
+        #     return ErrorDict(ErrorCode.BAN_REMOVE_GROUP_SCOPE)
     # 先删除管理员在重新加权限
     permissiondata.delete_child_man(user, tenant)
     # 重新加权限
     if permission_ids and manager_scope_ids:
+        # permissiondata.add_user_many_permission({
+        #     'user_ids': [str(user.id)],
+        #     'tenant_id': tenant_id,
+        #     'data_arr': permission_ids+manager_scope_ids
+        # })
         dispatch_event(Event(tag=ADD_USER_MANY_PERMISSION, tenant=tenant, request=request, data={
             'user_ids': [str(user.id)],
             'tenant_id': tenant_id,
