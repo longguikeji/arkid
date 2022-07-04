@@ -4,12 +4,14 @@ from arkid.core.models import Platform, Tenant
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
     get_arkstore_access_token,
+    get_arkstore_extension_detail_by_package,
     purcharse_arkstore_extension,
     lease_arkstore_extension,
     install_arkstore_extension,
     get_arkstore_extensions,
     get_arkstore_extension_detail,
     get_arkstore_extension_price,
+    get_arkstore_extension_rent_price,
     order_payment_arkstore_extension,
     order_payment_status_arkstore_extension,
     get_arkstore_extension_order_status,
@@ -231,12 +233,29 @@ def order_status_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/rent/extensions/{uuid}/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
-def get_rent_arkstore_extension(request, tenant_id: str, uuid: str):
+@api.get("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=List[ListPriceSchema])
+@operation(List[ListPriceSchema])
+@paginate(CustomPagination)
+def get_rent_arkstore_extension(request, tenant_id: str, package: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extension_detail(access_token, uuid)
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return []
+    resp = get_arkstore_extension_rent_price(access_token, ext_info['uuid'])
+    return resp['prices']
+
+
+@api.post("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=OrderSchemaOut)
+def create_rent_order_arkstore_extension(request, tenant_id: str, package: str, data: OrderSchemaIn):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return []
+    resp = lease_arkstore_extension(access_token, ext_info['uuid'], data.dict())
     return resp
 
 
