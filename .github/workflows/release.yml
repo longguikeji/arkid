@@ -1,0 +1,66 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '2.*.*'
+      - '!v1.*.*'
+
+jobs:
+  tag2image:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: "${{ github.ref_name}}"
+    - id: get-versions
+      run: |
+        sversion="${{ github.ref_name}}"
+        echo "::set-output name=sversion::${sversion: 0 :3}"
+    - name: Login harbor
+      uses: docker/login-action@v1
+      with:
+        registry: harbor.longguikeji.com
+        username: ${{ secrets.HARBORUSER }}
+        password: ${{ secrets.HARBORPWD }}
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUBUSERNAME }}
+        password: ${{ secrets.DOCKERHUBPWD }}
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        platforms: linux/amd64
+        build-args: |
+          DEBIAN=http://deb.debian.org/debian
+          DEBIANSRT=http://security.debian.org/debian-security
+          PIP="https://pypi.python.org/simple"
+        push: true
+        tags: |
+          "docker.io/longguikeji/arkid:${{ github.ref_name}}"
+          "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.sversion}}"
+          "docker.io/longguikeji/arkid:2"
+          "${{ secrets.ARK_RLS }}/arkid:${{ github.ref_name}}"
+          "${{ secrets.ARK_RLS }}/arkid:${{steps.get-versions.outputs.sversion}}"
+          "${{ secrets.ARK_RLS }}/arkid:2"
+    - name: Feishu 报忧
+      if: ${{ failure() }}
+      uses: wangsijie/feishu-bot@v1
+      with:
+        uuid: ${{ secrets.FEISHU_UUID }}
+        data: |
+          {"msg_type":"post","content":{"post":{"zh_cn":{"title":"${{ github.event.repository.name }} 镜像版本 ${{ github.ref_name}} 发布失败",
+          "content":[[{"tag":"text","text":""},
+          {"tag":"a","text":"点击查看具体日志","href":"https://github.com/${{ github.repository }}/actions/workflows/release.yml"}]]}}}}
+    - name: Feishu 报喜
+      if: ${{ success() }}
+      uses: wangsijie/feishu-bot@v1
+      with:
+        uuid: ${{ secrets.FEISHU_UUID }}
+        data: |
+          {"msg_type":"post","content":{"post":{"zh_cn":{"title": "${{ github.event.repository.name }} 镜像版本 ${{ github.ref_name}} 发布成功",
+          "content":[[{"tag":"text","text":""},
+          {"tag":"a","text":"","href":"https://hub.docker.com/r/longguikeji/arkid/tags"}]]}}}}
