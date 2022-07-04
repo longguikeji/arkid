@@ -35,7 +35,7 @@ def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
     permission.category = data.category
     permission.code = 'other_{}'.format(uuid.uuid4())
     permission.parent = None
-    permission.app_id = data.app_id
+    permission.app_id = data.app.id
     permission.is_system = False
     permission.save()
     # 分发事件开始
@@ -82,7 +82,7 @@ def get_permission(request, tenant_id: str, permission_id: str):
     return {'data': permission}
 
 
-@api.put("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_permission(request, tenant_id: str, permission_id: str, data: PermissionEditSchemaIn):
     '''
