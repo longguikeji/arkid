@@ -105,7 +105,7 @@ def get_app(request, tenant_id: str, id: str):
     app = App.expand_objects.get(id=id)
     return {"data":app}
 
-@api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionSchemaOut, tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionDataSchemaOut, tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app_openapi_version(request, tenant_id: str, app_id: str):
     '''
@@ -131,7 +131,7 @@ def get_app_openapi_version(request, tenant_id: str, app_id: str):
     # tenant.save()
     # permissiondata = PermissionData()
     # permissiondata.update_single_user_system_permission(tenant.id, auth_user.id)
-    return result
+    return {'data':result}
 
 
 @api.post("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", tags=['应用'], auth=None)

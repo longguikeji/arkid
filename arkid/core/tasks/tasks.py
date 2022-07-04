@@ -434,6 +434,15 @@ def bind_arkid_saas(tenant_id, data=None):
     bind_saas(tenant_id, data)
 
 
+@app.task
+def bind_arkid_saas_all_tenants():
+    from arkid.common.bind_saas import bind_saas
+    from arkid.core.models import Tenant
+    tenants = Tenant.active_objects.all()
+    for tenant in tenants:
+        bind_saas(tenant.id.hex)
+
+
 # class ReadyCelery(object):
 
 #     def __init__(self, *args, **kwargs):

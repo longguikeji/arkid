@@ -42,13 +42,16 @@ class PermissionCategory(str, Enum):
     ui = 'ui'
     other = 'other'
 
+
+class PermissionCreateItemSchemaIn(Schema):
+
+    id:UUID = Field(hidden=True)
+    name:str
+
 class PermissionCreateSchemaIn(ModelSchema):
 
-    app_id: UUID = Field(
-        field="id",
+    app: PermissionCreateItemSchemaIn = Field(
         page=select_app_page.tag,
-        link="app",
-        default=None,
         title=_("应用")
     )
 
@@ -59,21 +62,24 @@ class PermissionCreateSchemaIn(ModelSchema):
         model_fields = ['name']
 
 
-class PermissionEditSchemaIn(ModelSchema):
+class PermissionEditSchemaIn(Schema):
 
-    class Config:
-        model = Permission
-        model_fields = ['name', 'category']
+    name: str
+    category: str
+    # class Config:
+    #     model = Permission
+    #     model_fields = ['name', 'category']
 
 
 class PermissionDetailSchemaOut(ModelSchema):
 
-    app_id: UUID = Field(default=None)
-    parent_id: UUID = Field(default=None)
+    id: UUID = Field(hidden=True)
+    # parent_id: UUID = Field(default=None)
+    category: PermissionCategory
 
     class Config:
         model = Permission
-        model_fields = ['id', 'name', 'category']
+        model_fields = ['name']
 
 
 class PermissionDetailOut(ResponseSchema):

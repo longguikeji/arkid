@@ -19,6 +19,7 @@ class FrontPageType(Enum):
         - 列表型页面 (list)- 暂不支持
         - 卡片型页面 (cards)- 暂不支持
         - 网格型页面 (grid)- 暂不支持
+        - 步骤型页面 (step)- 暂不支持
     ```
     """
     FORM_PAGE = 'form'
@@ -29,6 +30,7 @@ class FrontPageType(Enum):
     LIST_PAGE = 'list'
     CARDS_PAGE = 'cards'
     GRID_PAGE = 'grid'
+    STEP_PAGE = 'step'
 
 class FrontPage(DeepSN):
     """ 前端页面配置类
@@ -239,6 +241,26 @@ class TabsPage(FrontPage):
         self.add_pages(pages)
         super().__init__(type=FrontPageType.TABS_PAGE, *args, **kwargs)
 
+    def add_pages(self,pages:list=[]):
+        if not pages:
+            return
+            
+        if not isinstance(pages, tuple) or not isinstance(pages, list):
+            pages = [pages.tag] if isinstance(pages,FrontPage) else list(pages)
+        if not hasattr(self, "pages"):
+            self.pages = []
+        
+        for item in pages:
+            self.pages.append(item.tag if isinstance(item,FrontPage) else item)
+
+class StepPage(FrontPage):
+    """步骤页面
+    """
+
+    def __init__(self, pages:list=[], *args, **kwargs):
+        self.add_pages(pages)
+        super().__init__(type=FrontPageType.STEP_PAGE, *args, **kwargs)
+    
     def add_pages(self,pages:list=[]):
         if not pages:
             return
