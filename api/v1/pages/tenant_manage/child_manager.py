@@ -81,7 +81,8 @@ edit_page.create_actions(
     ),
     global_actions={
        'confirm': actions.ConfirmAction(
-            path="/api/v1/tenant/{tenant_id}/child_managers/{id}/"
+            path="/api/v1/tenant/{tenant_id}/child_managers/{id}/",
+            refresh=False
         ),
     }
 )
