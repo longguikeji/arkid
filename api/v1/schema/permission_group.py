@@ -28,6 +28,7 @@ class PermissionGroupDetailInfoParentOut(Schema):
     
 class PermissionGroupDetailInfoSchemaOut(ModelSchema):
 
+    id: UUID = Field(hidden=True)
     parent: Optional[PermissionGroupDetailInfoParentOut] = Field(
         page=select_permission_group_page.tag,
         title=_("父权限分组")
@@ -35,7 +36,7 @@ class PermissionGroupDetailInfoSchemaOut(ModelSchema):
 
     class Config:
         model = Permission
-        model_fields = ['id', 'name']
+        model_fields = ['name']
 
 
 class PermissionGroupDetailSchemaOut(ResponseSchema):
@@ -45,21 +46,23 @@ class PermissionGroupDetailSchemaOut(ResponseSchema):
 class PermissionGroupSchemaOut(Schema):
     permission_group_id: str
 
+class UserGroupCreateParentIn(Schema):
+    id:UUID = Field(hidden=True)
+    name:str
 
 class PermissionGroupSchemaIn(ModelSchema):
 
-    app_id: UUID = Field(
-        field="id",
+    app: UserGroupCreateParentIn = Field(
+        # field="id",
         page=select_app_page.tag,
-        link="app",
-        default=None,
+        # link="app",
+        # default=None,
         title=_("应用")
     )
-    parent_id: UUID = Field(
-        field="id",
+    parent: UserGroupCreateParentIn = Field(
+        # field="id",
         page=select_permission_group_page.tag,
-        link="name",
-        default=None,
+        # link="name",
         title=_("父权限分组")
     )
 
@@ -68,13 +71,19 @@ class PermissionGroupSchemaIn(ModelSchema):
         model_fields = ['name']
 
 
-class PermissionGroupEditSchemaIn(ModelSchema):
+class PermissionGroupEditSchemaIn(Schema):
 
-    parent_id: str = None
+    parent: UserGroupCreateParentIn = Field(
+        # field="id",
+        page=select_permission_group_page.tag,
+        # link="name",
+        title=_("父权限分组")
+    )
+    name: str
 
-    class Config:
-        model = Permission
-        model_fields = ['name']
+    # class Config:
+    #     model = Permission
+    #     model_fields = ['name']
 
 class PermissionListSchemaOut(ModelSchema):
 

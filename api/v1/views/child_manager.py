@@ -46,9 +46,18 @@ def get_child_manager(request, tenant_id: str, id: str):
 def create_child_manager(request, tenant_id: str, data: ChildManagerCreateSchemaIn):
     """ 创建子管理员,TODO
     """
-    user_ids = data.users
-    permission_ids = data.permissions
-    manager_scope_ids = data.manager_scope
+    user_ids_1 = data.users
+    user_ids = []
+    for user_ids_item in user_ids_1:
+        user_ids.append(user_ids_item.id)
+    permission_ids_1 = data.permissions
+    permission_ids = []
+    for permission_ids_item in permission_ids_1:
+        permission_ids.append(permission_ids_item.id)
+    manager_scope_ids_1 = data.manager_scope
+    manager_scope_ids = []
+    for manager_scope_ids_item in manager_scope_ids_1:
+        manager_scope_ids.append(manager_scope_ids_item.id)
     if user_ids and permission_ids and manager_scope_ids:
         dispatch_event(Event(tag=ADD_USER_MANY_PERMISSION, tenant=request.tenant, request=request, data={
             'user_ids': user_ids,
@@ -64,8 +73,14 @@ def update_child_manager(request, tenant_id: str, id: str, data: ChildManagerEdi
     """
     from arkid.core.perm.permission_data import PermissionData
     tenant = request.tenant
-    permission_ids = data.permissions
-    manager_scope_ids = data.manager_scope
+    permission_ids_1 = data.permissions
+    permission_ids = []
+    for permission_ids_item in permission_ids_1:
+        permission_ids.append(permission_ids_item.id)
+    manager_scope_ids_1 = data.manager_scope
+    manager_scope_ids = []
+    for manager_scope_ids_item in manager_scope_ids_1:
+        manager_scope_ids.append(manager_scope_ids_item.id)
     user = User.valid_objects.filter(tenant=tenant, id=id).first()
     permissiondata = PermissionData()
     # 重新查一次
