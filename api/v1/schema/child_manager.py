@@ -33,6 +33,10 @@ class ChildManagerCreateInItem(Schema):
     id:UUID = Field(hidden=True)
     name:str
 
+class ChildManagerUserCreateInItem(Schema):
+    id:UUID = Field(hidden=True)
+    username:str
+
 class ChildManagerDeatilOut(Schema):
 
     permissions: Optional[List[ChildManagerCreateInItem]] = Field(
@@ -57,7 +61,7 @@ class ChildManagerDeatilBaseOut(ResponseSchema):
 
 class ChildManagerCreateSchemaIn(Schema):
 
-    users: Optional[List[ChildManagerCreateInItem]] = Field(
+    users: Optional[List[ChildManagerUserCreateInItem]] = Field(
         # field="id",
         page=select_user_page.tag,
         # link="name",
@@ -83,7 +87,7 @@ class ChildManagerCreateSchemaIn(Schema):
 
 class ChildManagerEditSchemaIn(Schema):
 
-    users: Optional[List[ChildManagerCreateInItem]] = Field(
+    users: Optional[List[ChildManagerUserCreateInItem]] = Field(
         # field="id",
         page=select_user_page.tag,
         # link="name",
