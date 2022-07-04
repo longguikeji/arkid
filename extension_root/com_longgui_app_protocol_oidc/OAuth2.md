@@ -71,7 +71,7 @@ OAuth2是一个授权的开放协议
 
     | 参数名称        | 参数说明           | 示例           |
     | :---------:    | :--------------: | :--------------: |
-    | `Authorization`    | 这个token由client_id和client_secret生成  |  Basic Token
+    | `Authorization`    | token格式为 client_id:client_secret 使用base64编码  |  Basic Token
     | `Content-Type` | 填入multipart/form-data |
 
     - 请求参数:

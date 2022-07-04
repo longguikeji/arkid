@@ -89,5 +89,5 @@ def update_tenant_config(request, tenant_id: str,data:TenantConfigUpdateIn):
 def default_tenant(request):
     """ 获取当前域名下的默认租户(如无slug则为平台租户)
     """
-    tenant = Tenant.active_objects.order_by("id").first()
+    tenant = Tenant.platform_tenant()
     return {"data":tenant}
