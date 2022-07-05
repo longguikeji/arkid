@@ -32,6 +32,8 @@ from arkid.core.pagenation import CustomPagination
 from arkid.extension.models import TenantExtension
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
+from arkid.core.schema import ResponseSchema
+
 
 
 def get_arkstore_list(request, purchased, type):
@@ -113,8 +115,11 @@ class SetCopies(Schema):
     users_copies: conint(ge=1) = Field(default=1, title=_('Users Copies', '份数(人)'))
 
 
-class OrderPaymentOut(Schema):
+class OrderPaymentUrlOut(Schema):
     code_url: str = Field(title="微信支付二维码", format="qrcode")
+
+class OrderPaymentOut(ResponseSchema):
+    data: OrderPaymentUrlOut
 
 
 class Payer(Schema):
@@ -212,7 +217,7 @@ def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str)
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
     resp = order_payment_arkstore_extension(access_token, order_no)
-    return resp
+    return {'data': resp}
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/{order_no}/payment_status/", tags=['方舟商店'], response=PaymentStatus)

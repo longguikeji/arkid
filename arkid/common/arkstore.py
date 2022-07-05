@@ -93,7 +93,7 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
 
 def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, limit=10):
     if type == 'extension':
-        url = '/api/v1/arkstore/extensions?'
+        url = '/api/v1/arkstore/extensions/purchased'
     elif type == 'app':
         url = '/api/v1/arkstore/apps'
     else:
