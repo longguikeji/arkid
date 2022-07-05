@@ -124,7 +124,7 @@ def purcharse_arkstore_extension(access_token, extension_id, data):
 
 
 def lease_arkstore_extension(access_token, extension_id, data):
-    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/rent'
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/lease'
     headers = {'Authorization': f'Token {access_token}'}
     params = data
     resp = requests.post(order_url, json=params, headers=headers)
@@ -170,7 +170,7 @@ def get_arkstore_extension_price(access_token, extension_id):
 
 
 def get_arkstore_extension_rent_price(access_token, extension_id):
-    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/rent'
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/lease'
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
