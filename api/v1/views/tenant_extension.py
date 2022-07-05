@@ -185,8 +185,7 @@ class TenantExtensionListOut(ModelSchema):
 def get_platform_extensions(request, tenant_id: str):
     """ 平台插件列表
     """
-    txs = TenantExtension.active_objects.filter(tenant_id=tenant_id).values('extension')
-    return ExtensionModel.active_objects.exclude(id__in=txs)
+    return ExtensionModel.active_objects.all()
 
 
 @api.get("/tenant/{tenant_id}/tenant/extensions/", tags=["租户插件"],response=List[TenantExtensionListOut])
@@ -195,7 +194,7 @@ def get_platform_extensions(request, tenant_id: str):
 def get_tenant_extensions(request, tenant_id: str):
     """ 租户插件列表
     """
-    extension_ids = TenantExtension.valid_objects.filter(tenant_id = tenant_id).values('extension_id')
+    extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_rented=True).values('extension_id')
     extensions = ExtensionModel.active_objects.filter(id__in = extension_ids)
     return extensions
 

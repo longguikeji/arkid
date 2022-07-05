@@ -123,12 +123,10 @@ def purcharse_arkstore_extension(access_token, extension_id, data):
     return resp
 
 
-def lease_arkstore_extension(access_token, extension_id):
-    order_url = settings.ARKSTOER_URL + '/api/v1/user/lease'
+def lease_arkstore_extension(access_token, extension_id, data):
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/lease'
     headers = {'Authorization': f'Token {access_token}'}
-    params = {
-        'extension_uuid': extension_id
-    }
+    params = data
     resp = requests.post(order_url, json=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error lease_arkstore_extension: {resp.status_code}')
@@ -147,6 +145,19 @@ def get_arkstore_extension_detail(access_token, extension_id):
     return resp
 
 
+def get_arkstore_extension_detail_by_package(access_token, package):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/extensions/package/{package}'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code == 404:
+        return
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
 def get_arkstore_extension_price(access_token, extension_id):
     arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/order'
     headers = {'Authorization': f'Token {access_token}'}
@@ -154,6 +165,17 @@ def get_arkstore_extension_price(access_token, extension_id):
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error get_arkstore_extension_price: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extension_rent_price(access_token, extension_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/lease'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_rent_price: {resp.status_code}')
     resp = resp.json()
     return resp
 
