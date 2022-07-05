@@ -113,7 +113,7 @@ def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, l
 
 
 def purcharse_arkstore_extension(access_token, extension_id, data):
-    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/order'
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/purchase'
     headers = {'Authorization': f'Token {access_token}'}
     params = data
     resp = requests.post(order_url, json=params, headers=headers)
@@ -159,7 +159,7 @@ def get_arkstore_extension_detail_by_package(access_token, package):
 
 
 def get_arkstore_extension_price(access_token, extension_id):
-    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/order'
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/purchase'
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
