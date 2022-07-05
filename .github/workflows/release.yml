@@ -1,6 +1,12 @@
 name: release
 
 on:
+  workflow_dispatch:
+    inputs:
+      prod_version:
+        description: 'the tag of the charts to release, like `2.5.1`'
+        default: ''
+        required: true
   push:
     tags:
       - '2.*.*'
@@ -10,13 +16,21 @@ jobs:
   tag2image:
     runs-on: ubuntu-latest
     steps:
+    - id: set-version
+      run: |
+        PRODVERSIONIN=${{ github.event.inputs.prod_version }}
+        PRODVERSION=${PRODVERSIONIN:-"${{ github.ref_name}}"}
+        echo "PRODVERSION=$PRODVERSION" >> $GITHUB_ENV
+    - id: get-versions
+      run: |
+        echo "::set-output name=PRODVERSION::${PRODVERSION}"
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: "${{ github.ref_name}}"
+        ref: '${{steps.get-versions.outputs.PRODVERSION}}'
     - id: get-versions
       run: |
-        sversion="${{ github.ref_name}}"
+        sversion="${{steps.get-versions.outputs.PRODVERSION}}"
         echo "::set-output name=sversion::${sversion: 0 :3}"
     - name: Login harbor
       uses: docker/login-action@v1
@@ -40,19 +54,17 @@ jobs:
           PIP="https://pypi.python.org/simple"
         push: true
         tags: |
-          "docker.io/longguikeji/arkid:${{ github.ref_name}}"
+          "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.PRODVERSION}}"
           "docker.io/longguikeji/arkid:${{steps.get-versions.outputs.sversion}}"
-          "docker.io/longguikeji/arkid:2"
-          "${{ secrets.ARK_RLS }}/arkid:${{ github.ref_name}}"
+          "${{ secrets.ARK_RLS }}/arkid:${{steps.get-versions.outputs.PRODVERSION}}"
           "${{ secrets.ARK_RLS }}/arkid:${{steps.get-versions.outputs.sversion}}"
-          "${{ secrets.ARK_RLS }}/arkid:2"
     - name: Feishu 报忧
       if: ${{ failure() }}
       uses: wangsijie/feishu-bot@v1
       with:
         uuid: ${{ secrets.FEISHU_UUID }}
         data: |
-          {"msg_type":"post","content":{"post":{"zh_cn":{"title":"${{ github.event.repository.name }} 镜像版本 ${{ github.ref_name}} 发布失败",
+          {"msg_type":"post","content":{"post":{"zh_cn":{"title":"${{ github.event.repository.name }} 镜像版本 ${{steps.get-versions.outputs.PRODVERSION}} 发布失败",
           "content":[[{"tag":"text","text":""},
           {"tag":"a","text":"点击查看具体日志","href":"https://github.com/${{ github.repository }}/actions/workflows/release.yml"}]]}}}}
     - name: Feishu 报喜
@@ -61,6 +73,6 @@ jobs:
       with:
         uuid: ${{ secrets.FEISHU_UUID }}
         data: |
-          {"msg_type":"post","content":{"post":{"zh_cn":{"title": "${{ github.event.repository.name }} 镜像版本 ${{ github.ref_name}} 发布成功",
+          {"msg_type":"post","content":{"post":{"zh_cn":{"title": "${{ github.event.repository.name }} 镜像版本 ${{steps.get-versions.outputs.PRODVERSION}} 发布成功",
           "content":[[{"tag":"text","text":""},
           {"tag":"a","text":"","href":"https://hub.docker.com/r/longguikeji/arkid/tags"}]]}}}}
