@@ -23,6 +23,7 @@ from arkid.common.arkstore import (
     unbind_arkstore_agent
 )
 from arkid.core.api import api, operation
+from datetime import datetime
 from typing import List, Optional
 from ninja import Schema
 import enum
@@ -32,6 +33,8 @@ from arkid.core.pagenation import CustomPagination
 from arkid.extension.models import TenantExtension
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
+from arkid.core.schema import ResponseSchema
+
 
 
 def get_arkstore_list(request, purchased, type):
@@ -69,7 +72,26 @@ class ArkstoreItemSchemaOut(Schema):
     description: str = Field(readonly=True)
     categories: str = Field(readonly=True)
     labels: str = Field(readonly=True)
+    # "homepage",
+    # "status",
+    # "created",
+    # "type",
     # button: str
+
+
+class UserExtensionOut(Schema):
+    order_type: str
+    price_type: str
+    use_begin_time: datetime
+    use_end_time: datetime
+    max_users: int
+
+
+class OnShelveExtensionPurchaseOut(ArkstoreItemSchemaOut):
+    purchased: bool = False
+    purchase_records: List[UserExtensionOut] = Field(
+        default=[], title=_("Purchase Records", "购买记录")
+    )
 
 
 class OrderStatusSchema(Schema):
@@ -113,8 +135,11 @@ class SetCopies(Schema):
     users_copies: conint(ge=1) = Field(default=1, title=_('Users Copies', '份数(人)'))
 
 
-class OrderPaymentOut(Schema):
+class OrderPaymentUrlOut(Schema):
     code_url: str = Field(title="微信支付二维码", format="qrcode")
+
+class OrderPaymentOut(ResponseSchema):
+    data: OrderPaymentUrlOut
 
 
 class Payer(Schema):
@@ -167,7 +192,7 @@ def list_arkstore_apps(request, tenant_id: str):
     return get_arkstore_list(request, None, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
+@api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str):
@@ -212,7 +237,7 @@ def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str)
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
     resp = order_payment_arkstore_extension(access_token, order_no)
-    return resp
+    return {'data': resp}
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/{order_no}/payment_status/", tags=['方舟商店'], response=PaymentStatus)
