@@ -98,12 +98,14 @@ def set_saas_bind_slug(tenant, data):
 
 def create_arkidstore_login_app(tenant, saas_tenant_id):
     url = f"{settings.ARKSTOER_URL}/api/v1/login?tenant_id={saas_tenant_id}"
-    create_tenant_oidc_app(tenant, url, 'arkstore_login', 'arkidstore login')
+    create_tenant_oidc_app(tenant, url, 'arkstore_login', 'arkidstore login',
+        'https://s1.ax1x.com/2022/07/04/jJrVxg.png')
 
 
 def create_arkid_saas_login_app(tenant, saas_tenant_id):
     url = f"{settings.ARKID_SAAS_URL}/login?tenant_id={saas_tenant_id}"
-    create_tenant_oidc_app(tenant, url, 'arkid_saas_login', 'arkid_saas login')
+    create_tenant_oidc_app(tenant, url, 'arkid_saas_login', 'arkid_saas login', 
+        'https://s1.ax1x.com/2022/07/04/jJDh2F.png')
 
 
 def bind_saas(tenant_id, data=None):
