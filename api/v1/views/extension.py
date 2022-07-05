@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import datetime
 from ninja import Schema, ModelSchema
 from arkid.core import actions, extension
 from arkid.core.api import api, operation
@@ -13,6 +14,9 @@ from arkid.extension.models import TenantExtensionConfig, Extension as Extension
 from arkid.core.error import ErrorCode, ErrorDict
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
+from arkid.core.models import Tenant
+from arkid.core.translation import gettext_default as _
+from arkid.common.arkstore import get_arkstore_access_token, get_arkstore_extensions_purchased
 
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
@@ -72,6 +76,13 @@ def update_extension_profile(request, id: str, data:ExtensionProfileGetSchemaOut
     extension.save()
     return {'error':ErrorCode.OK.value}
 
+class ExtensionPurchaseRecordOut(Schema):
+    order_type: str
+    price_type: str
+    use_begin_time: datetime
+    use_end_time: datetime
+    max_users: int
+
 class ExtensionListOut(ModelSchema):
     
     class Config:
@@ -84,6 +95,9 @@ class ExtensionListOut(ModelSchema):
         # path='/api/v1/extensions/{id}/active/',
         # method=actions.FrontActionMethod.POST,
     )
+    purchase_records: List[ExtensionPurchaseRecordOut] = Field(
+        default=[], title=_("Purchase Records", "购买记录")
+    )
 
 @api.get("/extensions/", response=List[ExtensionListOut], tags=['平台插件'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -94,6 +108,15 @@ def list_extensions(request, status: str = None):
         qs = ExtensionModel.valid_objects.all()
     else:
         qs = ExtensionModel.valid_objects.filter(status=status).all()
+
+    token = request.user.auth_token
+    tenant = Tenant.platform_tenant()
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extensions_purchased(access_token)
+    extensions_purchased = {ext['package']: ext for ext in resp['items']}
+    for ext in qs:
+        if ext.package in extensions_purchased:
+            ext.purchase_records = extensions_purchased[ext.package]['purchase_records']
     return qs
 
 

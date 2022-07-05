@@ -512,3 +512,16 @@ def get_arkstore_extensions_rented(access_token, offset=0, limit=10):
         raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
     resp = resp.json()
     return resp
+
+
+def get_arkstore_extensions_purchased(access_token, offset=0, limit=10):
+    url = '/api/v1/arkstore/extensions/purchased'
+    arkstore_extensions_url = settings.ARKSTOER_URL + url
+    headers = {'Authorization': f'Token {access_token}'}
+    # params = {'offset': offset, 'limit': limit}
+    params = {'purchased': 'true'}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
+    resp = resp.json()
+    return resp
