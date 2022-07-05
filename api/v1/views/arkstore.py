@@ -23,6 +23,7 @@ from arkid.common.arkstore import (
     unbind_arkstore_agent
 )
 from arkid.core.api import api, operation
+from datetime import datetime
 from typing import List, Optional
 from ninja import Schema
 import enum
@@ -71,7 +72,26 @@ class ArkstoreItemSchemaOut(Schema):
     description: str = Field(readonly=True)
     categories: str = Field(readonly=True)
     labels: str = Field(readonly=True)
+    # "homepage",
+    # "status",
+    # "created",
+    # "type",
     # button: str
+
+
+class UserExtensionOut(Schema):
+    order_type: str
+    price_type: str
+    use_begin_time: datetime
+    use_end_time: datetime
+    max_users: int
+
+
+class OnShelveExtensionPurchaseOut(ArkstoreItemSchemaOut):
+    purchased: bool = False
+    purchase_records: List[UserExtensionOut] = Field(
+        default=[], title=_("Purchase Records", "购买记录")
+    )
 
 
 class OrderStatusSchema(Schema):
@@ -172,7 +192,7 @@ def list_arkstore_apps(request, tenant_id: str):
     return get_arkstore_list(request, None, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
+@api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str):
