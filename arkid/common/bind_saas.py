@@ -109,6 +109,9 @@ def create_arkid_saas_login_app(tenant, saas_tenant_id):
 
 
 def bind_saas(tenant_id, data=None):
+    from django.conf import settings
+    if settings.IS_CENTRAL_ARKID:
+        return {}
     tenant = Tenant.objects.get(id=tenant_id)
     if not data:
         data = {
