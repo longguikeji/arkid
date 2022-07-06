@@ -181,9 +181,10 @@ class TenantExtensionListOut(ModelSchema):
 
 
 class TenantRentedExtensionListOut(TenantExtensionListOut):
-    lease_records: List[ExtensionRentRecordOut] = Field(
-        default=[], title=_("Rent Records", "租赁记录")
-    )
+    # lease_records: List[ExtensionRentRecordOut] = Field(
+    #     default=[], title=_("Rent Records", "租赁记录")
+    # )
+    lease_useful_life: Optional[List[str]] = Field(title=_('Lease Useful Life', '有效期'))
 
 
 @api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],response=List[TenantExtensionListOut])
@@ -210,7 +211,8 @@ def get_tenant_extensions(request, tenant_id: str):
     extensions = ExtensionModel.active_objects.filter(id__in = extension_ids)
     for ext in extensions:
         if ext.package in extensions_rented:
-            ext.lease_records = extensions_rented[ext.package]['lease_records']
+            ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
+            
     return extensions
 
 

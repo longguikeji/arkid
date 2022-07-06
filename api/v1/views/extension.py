@@ -95,8 +95,11 @@ class ExtensionListOut(ModelSchema):
         # path='/api/v1/extensions/{id}/active/',
         # method=actions.FrontActionMethod.POST,
     )
-    purchase_records: List[ExtensionPurchaseRecordOut] = Field(
-        default=[], title=_("Purchase Records", "购买记录")
+    # purchase_records: List[ExtensionPurchaseRecordOut] = Field(
+    #     default=[], title=_("Purchase Records", "购买记录")
+    # )
+    purchase_useful_life: Optional[List[str]] = Field(
+        title=_('Purchase Useful Life', '有效期')
     )
 
 @api.get("/extensions/", response=List[ExtensionListOut], tags=['平台插件'])
@@ -116,7 +119,7 @@ def list_extensions(request, status: str = None):
     extensions_purchased = {ext['package']: ext for ext in resp['items']}
     for ext in qs:
         if ext.package in extensions_purchased:
-            ext.purchase_records = extensions_purchased[ext.package]['purchase_records']
+            ext.purchase_useful_life = extensions_purchased[ext.package]['purchase_useful_life']
     return qs
 
 

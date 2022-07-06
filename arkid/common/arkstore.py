@@ -196,7 +196,7 @@ def order_payment_status_arkstore_extension(access_token, order_no):
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
-    if resp.status_code != 200:
+    if resp.status_code != 200 and resp.status_code != 404:
         raise Exception(f'Error order_payment_status_arkstore_extension: {resp.status_code}')
     resp = resp.json()
     return resp
@@ -429,7 +429,7 @@ def get_arkid_saas_app_detail(tenant, token, extension_id):
     return resp
 
 
-def check_arkstore_purchased(tenant, token, app):
+def check_arkstore_app_purchased(tenant, token, app):
     access_token = get_arkstore_access_token_with_saas_token(tenant.slug, tenant.id, token)
     order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/apps/saas_app_order/{app.id.hex}'
     headers = {'Authorization': f'Token {access_token}'}
@@ -451,52 +451,66 @@ def check_arkstore_purchased(tenant, token, app):
     return False
 
 
-def check_arkstore_expired(tenant, token, package):
+def check_arkstore_purcahsed_extension_expired(tenant, token, package):
     access_token = get_arkstore_access_token(tenant, token)
-    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/order/'
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return True
+    extension_uuid = ext_info['uuid']
+    order_url = settings.ARKSTOER_URL + f'/arkstore/extensions/{extension_uuid}/purchased'
     headers = {'Authorization': f'Token {access_token}'}
-    params = {'package': package}
+    params = {}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
-    if resp.status_code != 200:
-        print(f'Error check_arkstore_expired: {resp.status_code}')
+    if resp.status_code != 200 and resp.status_code != 404:
+        print(f'Error check_arkstore_purcahsed_extension_expired: {resp.status_code}')
         return True
     resp = resp.json()
-    if resp.get("use_end_time") == '0':
-        return True
-    if resp.get("use_end_time") is not None:
-        exp_dt = parse_datetime(resp["use_end_time"])
-        expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
-        now = timezone.localtime()
-        if now <= expire_time:
-            return True
-    if resp.get("max_users"):
-        count = len(User.active_objects.filter(tenant=tenant).all())
-        if resp.get("max_users") is not None and resp.get("max_users") <= count:
+    for record in resp.get('purchase_records'):
+        time_status = True
+        user_status = True
+        if resp.get("use_end_time"):
+            expire_time = parse_datetime(record["use_end_time"])
+            # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
+            now = timezone.localtime()
+            if now > expire_time:
+                time_status = False
+        if record.get("max_users"):
+            count = len(User.active_objects.filter(tenant=tenant).all())
+            if count > record["max_users"]:
+                return False
+        if time_status and user_status:
             return True
     return False
 
 
-def check_arkstore_rent_expired(tenant, token, package):
+def check_arkstore_rented_extension_expired(tenant, token, package):
     access_token = get_arkstore_access_token(tenant, token)
-    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/lease/order/'
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return True
+    extension_uuid = ext_info['uuid']
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_uuid}/leased'
     headers = {'Authorization': f'Token {access_token}'}
-    params = {'package': package}
+    params = {}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
-    if resp.status_code != 200:
-        print(f'Error check_arkstore_rent_expired: {resp.status_code}')
+    if resp.status_code != 200 and resp.status_code != 404:
+        print(f'Error check_arkstore_rented_extension_expired: {resp.status_code}')
         return True
     resp = resp.json()
-    if resp.get("use_end_time") == '0':
-        return True
-    if resp.get("use_end_time") is not None:
-        exp_dt = parse_datetime(resp["use_end_time"])
-        expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
-        now = timezone.localtime()
-        if now <= expire_time:
-            return True
-    if resp.get("max_users"):
-        count = len(User.active_objects.filter(tenant=tenant).all())
-        if resp.get("max_users") is not None and resp.get("max_users") <= count:
+    for record in resp.get('purchase_records'):
+        time_status = True
+        user_status = True
+        if resp.get("use_end_time"):
+            expire_time = parse_datetime(record["use_end_time"])
+            # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
+            now = timezone.localtime()
+            if now > expire_time:
+                time_status = False
+        if record.get("max_users"):
+            count = len(User.active_objects.filter(tenant=tenant).all())
+            if count > record["max_users"]:
+                return False
+        if time_status and user_status:
             return True
     return False
 
