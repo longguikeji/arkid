@@ -10,6 +10,9 @@
 
 ## 通过helm安装
 
+> !!! 生产环境推荐使用 gitops工具（如argoCD）来部署和管理
+> chart源码仓库地址： https://github.com/longguikeji/arkid-charts.git
+
 ### 添加helm仓库
 ```shell
 helm repo add lgkj https://harbor.longguikeji.com/chartrepo/public
@@ -23,6 +26,8 @@ helm search repo arkid -l
 ```
 
 ### 安装 arkid chart
+
+
 ```shell
 kubectl create ns arkid
 
