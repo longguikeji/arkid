@@ -3,6 +3,8 @@ from collections import OrderedDict
 from arkid.core.models import Platform, Tenant
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
+    check_arkstore_purcahsed_extension_expired,
+    check_arkstore_rented_extension_expired,
     get_arkstore_access_token,
     get_arkstore_extension_detail_by_package,
     purcharse_arkstore_extension,
@@ -30,7 +32,7 @@ import enum
 from pydantic import Field
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
-from arkid.extension.models import TenantExtension
+from arkid.extension.models import Extension, TenantExtension
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
 from arkid.core.schema import ResponseSchema
@@ -89,8 +91,11 @@ class UserExtensionOut(Schema):
 
 class OnShelveExtensionPurchaseOut(ArkstoreItemSchemaOut):
     purchased: bool = False
-    purchase_records: List[UserExtensionOut] = Field(
-        default=[], title=_("Purchase Records", "购买记录")
+    # purchase_records: List[UserExtensionOut] = Field(
+    #     default=[], title=_("Purchase Records", "购买记录")
+    # )
+    purchase_useful_life: Optional[List[str]] = Field(
+        title=_('Purchase Useful Life', '有效期')
     )
 
 
@@ -240,12 +245,28 @@ def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str)
     return {'data': resp}
 
 
-@api.get("/tenant/{tenant_id}/arkstore/order/{order_no}/payment_status/", tags=['方舟商店'], response=PaymentStatus)
+@api.get("/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/", tags=['方舟商店'], response=PaymentStatus)
 def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
     resp = order_payment_status_arkstore_extension(access_token, order_no)
+    return resp
+
+
+@api.get("/tenant/{tenant_id}/arkstore/rent/order/{order_no}/payment_status/extensions/{package}/", tags=['方舟商店'], response=PaymentStatus)
+def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str, package: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = order_payment_status_arkstore_extension(access_token, order_no)
+    if check_arkstore_rented_extension_expired(tenant, token, package):
+        extension = Extension.valid_objects.filter(package=package).first()
+        tenant_extension, created = TenantExtension.objects.update_or_create(
+            tenant_id=tenant_id,
+            extension=extension,
+            defaults={"is_rented": True}
+        )
     return resp
 
 

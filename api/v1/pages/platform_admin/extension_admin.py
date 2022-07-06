@@ -152,7 +152,7 @@ payment_page.create_actions(
     global_actions={
        'next': actions.NextAction(
             name="已支付",
-            path="/api/v1/tenant/{tenant_id}/arkstore/order/{order_no}/payment_status/",
+            path="/api/v1/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/",
             method=actions.FrontActionMethod.GET
         ),
     }
