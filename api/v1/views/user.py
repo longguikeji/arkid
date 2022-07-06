@@ -25,7 +25,7 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
 @api.get("/tenant/{tenant_id}/user_no_super/",response=List[UserListItemOut], tags=['用户'], auth=None)
 @operation(UserListOut)
 @paginate(CustomPagination)
-def user_list(request, tenant_id: str):
+def user_list_no_super(request, tenant_id: str):
     super_user_id = User.valid_objects.order_by('created').first().id
     users = User.valid_objects.filter(tenant_id=tenant_id).exclude(id=super_user_id)
     return users
