@@ -255,13 +255,20 @@ def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str)
     return {'data': resp}
 
 
-@api.get("/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/", tags=['方舟商店'], response=PaymentStatus)
+@api.get("/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/", tags=['方舟商店'],
+    response={
+        200: PaymentStatus,
+        202: ResponseSchema,
+    })
 def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
     resp = order_payment_status_arkstore_extension(access_token, order_no)
-    return resp
+    if resp.get('code') == '0' and not resp.get('appid'):
+        return 202, {'data': resp}
+    else:
+        return 200, resp
 
 
 @api.get("/tenant/{tenant_id}/arkstore/rent/order/{order_no}/payment_status/extensions/{package}/", tags=['方舟商店'], 
