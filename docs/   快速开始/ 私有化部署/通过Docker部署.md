@@ -1,9 +1,9 @@
 
-# 通过docker部署
+# 通过docker-compose部署
 
-``` py
-# 下载 arkid v2.5 部署文件
-git clone --branch v2.5-dev --depth 1  https://github.com/longguikeji/arkid-charts.git
+```shell
+# 下载 arkid 部署文件
+git clone https://github.com/longguikeji/arkid-charts.git
 
 cd arkid-charts/docker-compose
 
@@ -29,3 +29,19 @@ docker-compose up -d
 ## 部署完成
 
 浏览器打开[http://localhost:8989](http://localhost:8989)，探索ArkID的完整功能
+
+# 更新docker-compose部署版本
+```shell
+## 进入 docker-compose 目录
+cd arkid-charts/docker-compose
+
+## 停止
+docker-compose down
+
+## 拉取更新 git仓库
+git pull
+
+## 再次执行启动命令，就会拉取新的镜像更新版本
+docker-compose up -d
+
+```

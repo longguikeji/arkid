@@ -1,16 +1,21 @@
-
-import xxlimited
 from django.http import JsonResponse
 from collections import OrderedDict
 from arkid.core.models import Platform, Tenant
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
+    check_arkstore_purcahsed_extension_expired,
+    check_arkstore_rented_extension_expired,
     get_arkstore_access_token,
+    get_arkstore_extension_detail_by_package,
     purcharse_arkstore_extension,
     lease_arkstore_extension,
     install_arkstore_extension,
     get_arkstore_extensions,
     get_arkstore_extension_detail,
+    get_arkstore_extension_price,
+    get_arkstore_extension_rent_price,
+    order_payment_arkstore_extension,
+    order_payment_status_arkstore_extension,
     get_arkstore_extension_order_status,
     get_arkstore_extension_rent_status,
     get_arkid_saas_app_detail,
@@ -20,12 +25,18 @@ from arkid.common.arkstore import (
     unbind_arkstore_agent
 )
 from arkid.core.api import api, operation
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 from ninja import Schema
+import enum
 from pydantic import Field
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
-from arkid.extension.models import TenantExtension
+from arkid.extension.models import Extension, TenantExtension
+from arkid.core.translation import gettext_default as _
+from pydantic import condecimal, conint
+from arkid.core.schema import ResponseSchema
+
 
 
 def get_arkstore_list(request, purchased, type):
@@ -63,7 +74,29 @@ class ArkstoreItemSchemaOut(Schema):
     description: str = Field(readonly=True)
     categories: str = Field(readonly=True)
     labels: str = Field(readonly=True)
+    # "homepage",
+    # "status",
+    # "created",
+    # "type",
     # button: str
+
+
+class UserExtensionOut(Schema):
+    order_type: str
+    price_type: str
+    use_begin_time: datetime
+    use_end_time: datetime
+    max_users: int
+
+
+class OnShelveExtensionPurchaseOut(ArkstoreItemSchemaOut):
+    purchased: bool = False
+    # purchase_records: List[UserExtensionOut] = Field(
+    #     default=[], title=_("Purchase Records", "购买记录")
+    # )
+    purchase_useful_life: Optional[List[str]] = Field(
+        title=_('Purchase Useful Life', '有效期')
+    )
 
 
 class OrderStatusSchema(Schema):
@@ -76,6 +109,78 @@ class BindAgentSchemaIn(Schema):
 
 class BindAgentSchemaOut(Schema):
     tenant_slug: str = None
+
+
+class ListPriceSchema(Schema):
+    uuid: str = Field(hidden=True)
+    type: str
+    days: int
+    users: int
+    standard_price: str
+
+
+class ExtensionOrderOut(Schema):
+    prices: List[ListPriceSchema] = Field(
+        hidden=True, title=_("Extension Prices", "插件价格")
+    )
+
+
+class OrderSchemaIn(Schema):
+    users_copies: int
+    days_copies: int
+    price_uuid: str
+
+
+class OrderSchemaOut(Schema):
+    order_no: str = Field(format='qrcode')
+
+
+class SetCopies(Schema):
+    days_copies: conint(ge=1) = Field(default=1, title=_('Days Copies', '份数(天)'))
+    users_copies: conint(ge=1) = Field(default=1, title=_('Users Copies', '份数(人)'))
+
+
+class OrderPaymentUrlOut(Schema):
+    code_url: str = Field(title="微信支付二维码", format="qrcode")
+
+class OrderPaymentOut(ResponseSchema):
+    data: OrderPaymentUrlOut
+
+
+class Payer(Schema):
+    openid: str
+
+
+class TradeState(str, enum.Enum):
+    SUCCESS = "SUCCESS"
+    REFUND = "REFUND"
+    NOTPAY = "NOTPAY"
+    CLOSED = "CLOSED"
+    REVOKED = "REVOKED"
+    USERPAYING = "USERPAYING"
+    PAYERROR = "PAYERROR"
+
+
+class Amount(Schema):
+    total: Optional[int]
+    payer_total: Optional[int]
+    currency: Optional[str]
+    payer_currency: Optional[str]
+
+
+class PaymentStatus(Schema):
+    appid: str
+    mchid: str
+    out_trade_no: str
+    transaction_id: str = Field(default='')
+    trade_type: str = Field(default='')
+    trade_state: TradeState
+    trade_state_desc: str
+    bank_type: str = Field(default='')
+    attach: str = Field(default='')
+    success_time: str = Field(default='')
+    payer: Payer = Field(default=None)
+    amount: Amount
 
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
@@ -92,7 +197,7 @@ def list_arkstore_apps(request, tenant_id: str):
     return get_arkstore_list(request, None, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
+@api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut])
 @paginate(CustomPagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str):
@@ -106,21 +211,62 @@ def list_arkstore_purchased_apps(request, tenant_id: str):
     return get_arkstore_list(request, True, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=ArkstoreItemSchemaOut)
+@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=List[ListPriceSchema])
+@operation(List[ListPriceSchema])
+@paginate(CustomPagination)
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extension_detail(access_token, uuid)
-    return resp
+    resp = get_arkstore_extension_price(access_token, uuid)
+    return resp['prices']
 
 
-@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'])
-def order_arkstore_extension(request, tenant_id: str, uuid: str):
+@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=OrderSchemaOut)
+def create_order_arkstore_extension(request, tenant_id: str, uuid: str, data: OrderSchemaIn):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
-    resp = purcharse_arkstore_extension(access_token, uuid)
+    resp = purcharse_arkstore_extension(access_token, uuid, data.dict())
+    return resp
+
+
+@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/set_copies/", tags=['方舟商店'], response=SetCopies)
+def set_copies_order_arkstore_extension(request, tenant_id: str, uuid: str, data: SetCopies):
+    return
+
+
+@api.get("/tenant/{tenant_id}/arkstore/order/{order_no}/payment/", tags=['方舟商店'], response=OrderPaymentOut)
+def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = order_payment_arkstore_extension(access_token, order_no)
+    return {'data': resp}
+
+
+@api.get("/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/", tags=['方舟商店'], response=PaymentStatus)
+def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = order_payment_status_arkstore_extension(access_token, order_no)
+    return resp
+
+
+@api.get("/tenant/{tenant_id}/arkstore/rent/order/{order_no}/payment_status/extensions/{package}/", tags=['方舟商店'], response=PaymentStatus)
+def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str, package: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = order_payment_status_arkstore_extension(access_token, order_no)
+    if check_arkstore_rented_extension_expired(tenant, token, package):
+        extension = Extension.valid_objects.filter(package=package).first()
+        tenant_extension, created = TenantExtension.objects.update_or_create(
+            tenant_id=tenant_id,
+            extension=extension,
+            defaults={"is_rented": True}
+        )
     return resp
 
 
@@ -133,12 +279,29 @@ def order_status_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/rent/extensions/{uuid}/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
-def get_rent_arkstore_extension(request, tenant_id: str, uuid: str):
+@api.get("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=List[ListPriceSchema])
+@operation(List[ListPriceSchema])
+@paginate(CustomPagination)
+def get_rent_arkstore_extension(request, tenant_id: str, package: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extension_detail(access_token, uuid)
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return []
+    resp = get_arkstore_extension_rent_price(access_token, ext_info['uuid'])
+    return resp['prices']
+
+
+@api.post("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=OrderSchemaOut)
+def create_rent_order_arkstore_extension(request, tenant_id: str, package: str, data: OrderSchemaIn):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return []
+    resp = lease_arkstore_extension(access_token, ext_info['uuid'], data.dict())
     return resp
 
 
@@ -164,16 +327,11 @@ def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
         if resp.get('error'):
             return resp
     
-    tenant_extension = TenantExtension.objects.filter(tenant_id=tenant_id, extension_id=uuid).first()
-    if not tenant_extension:
-        TenantExtension.objects.create(
-            tenant=request.tenant,
-            extension_id=uuid,
-            is_active = True,
-        )
-    else:
-        tenant_extension.is_active = True
-        tenant_extension.save()
+    tenant_extension, created = TenantExtension.objects.update_or_create(
+        tenant_id=tenant_id,
+        extension_id=uuid,
+        defaults={"is_rented": True}
+    )
     return {'purchased':True}
 
 

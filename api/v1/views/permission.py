@@ -35,7 +35,7 @@ def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
     permission.category = data.category
     permission.code = 'other_{}'.format(uuid.uuid4())
     permission.parent = None
-    permission.app_id = data.app_id
+    permission.app_id = data.app.id
     permission.is_system = False
     permission.save()
     # 分发事件开始
@@ -57,6 +57,19 @@ def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_i
     return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category)
 
 
+@api.get("/tenant/{tenant_id}/childmanager_permissions", response=List[PermissionListSchemaOut], tags=['权限'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def childmanager_permissions(request, tenant_id: str, only_show_group: int = 0):
+    '''
+    子管理员的权限列表
+    '''
+    login_user = request.user
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_permissions_by_childmanager(tenant_id, login_user, only_show_group)
+
+
 @api.get("/tenant/{tenant_id}/permission/{permission_id}", response=PermissionDetailOut, tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_permission(request, tenant_id: str, permission_id: str):
@@ -69,7 +82,7 @@ def get_permission(request, tenant_id: str, permission_id: str):
     return {'data': permission}
 
 
-@api.put("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_permission(request, tenant_id: str, permission_id: str, data: PermissionEditSchemaIn):
     '''
@@ -146,7 +159,7 @@ def user_add_permission(request, tenant_id: str, select_user_id: str, data: Perm
     data_arr = data.data
     if data_arr:
         dispatch_event(Event(tag=ADD_USER_MANY_PERMISSION, tenant=request.tenant, request=request, data={
-            'user_id': select_user_id,
+            'user_ids': [select_user_id],
             'tenant_id': tenant_id,
             'data_arr': data_arr
         }))

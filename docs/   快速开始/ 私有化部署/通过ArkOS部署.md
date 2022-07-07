@@ -91,3 +91,15 @@ ansible_password=xxxx
 docker run --rm --mount type=bind,source="$(pwd)"/hosts,target=/etc/ansible/hosts harbor.longguikeji.com/ark-releases/arkos two
 
 ```
+
+### 更新集群中的arkid
+
+> !!! 生产环境推荐使用 gitops工具（如argoCD）来部署和管理
+> chart源码仓库地址： https://github.com/longguikeji/arkid-charts.git
+
+```shell
+helm repo update
+
+helm -n arkid upgrade arkid lgkj/arkid \
+--set persistence.init=true
+```

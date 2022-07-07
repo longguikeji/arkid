@@ -105,7 +105,7 @@ class Event:
     def __init__(
         self,
         tag: str,
-        tenant: Tenant = None,
+        tenant: Tenant,
         request: HttpRequest = None,
         response: HttpResponse = None,
         packages: List[str] = [],
@@ -124,6 +124,8 @@ class Event:
             uuid (str, optional): 事件包含的request_uuid
         """
         self.tag = tag
+        if not tenant:
+            raise Exception('tenant can not be None')
         self.tenant = tenant
         self._request = request
         self._response = response

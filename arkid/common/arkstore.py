@@ -1,6 +1,7 @@
 from email.policy import default
 import requests
 from arkid.config import get_app_config
+from arkid.core import extension
 from oauth2_provider.models import Application
 from django.conf import settings
 from datetime import datetime
@@ -10,6 +11,10 @@ from arkid.core.models import User, App
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.db import transaction
+from arkid.core.models import Tenant
+from arkid.extension.models import TenantExtension, Extension
+from arkid.extension.utils import import_extension, unload_extension
+from pathlib import Path
 
 
 arkid_saas_token_cache = {}
@@ -88,7 +93,7 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
 
 def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, limit=10):
     if type == 'extension':
-        url = '/api/v1/arkstore/extensions?'
+        url = '/api/v1/arkstore/extensions/purchased'
     elif type == 'app':
         url = '/api/v1/arkstore/apps'
     else:
@@ -107,12 +112,10 @@ def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, l
     return resp
 
 
-def purcharse_arkstore_extension(access_token, extension_id):
-    order_url = settings.ARKSTOER_URL + '/api/v1/user/orders'
+def purcharse_arkstore_extension(access_token, extension_id, data):
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/purchase'
     headers = {'Authorization': f'Token {access_token}'}
-    params = {
-        'extension_uuid': extension_id
-    }
+    params = data
     resp = requests.post(order_url, json=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error purcharse_arkstore_extension: {resp.status_code}')
@@ -120,12 +123,10 @@ def purcharse_arkstore_extension(access_token, extension_id):
     return resp
 
 
-def lease_arkstore_extension(access_token, extension_id):
-    order_url = settings.ARKSTOER_URL + '/api/v1/user/lease'
+def lease_arkstore_extension(access_token, extension_id, data):
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/lease'
     headers = {'Authorization': f'Token {access_token}'}
-    params = {
-        'extension_uuid': extension_id
-    }
+    params = data
     resp = requests.post(order_url, json=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error lease_arkstore_extension: {resp.status_code}')
@@ -140,6 +141,63 @@ def get_arkstore_extension_detail(access_token, extension_id):
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extension_detail_by_package(access_token, package):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/extensions/package/{package}'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code == 404:
+        return
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extension_price(access_token, extension_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/purchase'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_price: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extension_rent_price(access_token, extension_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/lease'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_rent_price: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def order_payment_arkstore_extension(access_token, order_no):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/user/orders/{order_no}/payment'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error order_payment_arkstore_extension: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def order_payment_status_arkstore_extension(access_token, order_no):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/user/orders/{order_no}/payment_status'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200 and resp.status_code != 404:
+        raise Exception(f'Error order_payment_status_arkstore_extension: {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -184,9 +242,8 @@ def install_arkstore_extension(tenant, token, extension_id):
 
 def download_arkstore_extension(tenant, token, extension_id, extension_detail):
     from arkid import config
-    from pathlib import Path
     access_token = get_arkstore_access_token(tenant, token)
-    extension_name = extension_detail['name']
+    ext_package = extension_detail['package'].replace('.', '_')
 
     app_config = config.get_app_config()
     extension_root = app_config.extension.config.get('install_dir') or app_config.extension.root[0]
@@ -201,14 +258,8 @@ def download_arkstore_extension(tenant, token, extension_id, extension_detail):
         raise Exception('error: download failed')
 
     # delete extension folder
-    folder_name = Path(extension_root) / extension_name
-    import shutil
-    if folder_name.exists():
-        try:
-            shutil.rmtree(folder_name)
-        except OSError as e:
-            print ("Error remove folder: %s - %s." % (e.filename, e.strerror))
-            return {'error': 'delete extension fodler failed'}
+    ext_dir = str(Path(extension_root) / ext_package)
+    uninstall_extension(ext_dir)
 
     # unzip
     import zipfile
@@ -217,7 +268,52 @@ def download_arkstore_extension(tenant, token, extension_id, extension_detail):
     with zipfile.ZipFile(io.BytesIO(resp.content)) as zip_ref:
         zip_ref.extractall(extract_folder)
 
+    load_installed_extension(ext_dir)
+
     return {'success': 'true'}
+
+
+def uninstall_extension(ext_dir):
+    unload_extension(ext_dir)
+
+    # delete extension folder
+    import shutil
+    if Path(ext_dir).exists():
+        try:
+            shutil.rmtree(Path(ext_dir))
+        except OSError as e:
+            print ("Error remove folder: %s - %s." % (e.filename, e.strerror))
+            return {'error': 'delete extension fodler failed'}
+
+    extension = Extension.objects.filter(ext_dir=ext_dir).first()
+    if extension:
+        extension.delete()
+
+
+def load_installed_extension(ext_dir):
+    ext = import_extension(ext_dir)
+    extension, is_create = Extension.objects.update_or_create(
+        defaults={
+            'type': ext.type,
+            'labels': ext.labels,
+            'ext_dir': str(ext.ext_dir),
+            'name': ext.name,
+            'version': ext.version,
+            'is_del': False,
+        },
+        package = ext.package,
+    )
+
+    platform_tenant = Tenant.platform_tenant()
+    tenant_extension, is_create = TenantExtension.objects.update_or_create(
+        defaults={
+            'is_rented': True,
+        },
+        tenant = platform_tenant,
+        extension = extension,
+    )
+
+    ext.start()
 
 
 def get_bind_arkstore_agent(access_token):
@@ -333,7 +429,7 @@ def get_arkid_saas_app_detail(tenant, token, extension_id):
     return resp
 
 
-def check_arkstore_purchased(tenant, token, app):
+def check_arkstore_app_purchased(tenant, token, app):
     access_token = get_arkstore_access_token_with_saas_token(tenant.slug, tenant.id, token)
     order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/apps/saas_app_order/{app.id.hex}'
     headers = {'Authorization': f'Token {access_token}'}
@@ -355,26 +451,91 @@ def check_arkstore_purchased(tenant, token, app):
     return False
 
 
-def check_arkstore_expired(tenant, token, package):
+def check_arkstore_purcahsed_extension_expired(tenant, token, package):
     access_token = get_arkstore_access_token(tenant, token)
-    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/order/'
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return True
+    extension_uuid = ext_info['uuid']
+    order_url = settings.ARKSTOER_URL + f'/arkstore/extensions/{extension_uuid}/purchased'
     headers = {'Authorization': f'Token {access_token}'}
-    params = {'package': package}
+    params = {}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
-    if resp.status_code != 200:
-        print(f'Error check_arkstore_expired: {resp.status_code}')
+    if resp.status_code != 200 and resp.status_code != 404:
+        print(f'Error check_arkstore_purcahsed_extension_expired: {resp.status_code}')
         return True
     resp = resp.json()
-    if resp.get("use_end_time") == '0':
-        return True
-    if resp.get("use_end_time") is not None:
-        exp_dt = parse_datetime(resp["use_end_time"])
-        expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
-        now = timezone.localtime()
-        if now <= expire_time:
-            return True
-    if resp.get("max_users"):
-        count = len(User.active_objects.filter(tenant=tenant).all())
-        if resp.get("max_users") is not None and resp.get("max_users") <= count:
+    for record in resp.get('purchase_records'):
+        time_status = True
+        user_status = True
+        if resp.get("use_end_time"):
+            expire_time = parse_datetime(record["use_end_time"])
+            # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
+            now = timezone.localtime()
+            if now > expire_time:
+                time_status = False
+        if record.get("max_users"):
+            count = len(User.active_objects.filter(tenant=tenant).all())
+            if count > record["max_users"]:
+                return False
+        if time_status and user_status:
             return True
     return False
+
+
+def check_arkstore_rented_extension_expired(tenant, token, package):
+    access_token = get_arkstore_access_token(tenant, token)
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return True
+    extension_uuid = ext_info['uuid']
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_uuid}/leased'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(order_url, params=params, headers=headers, timeout=10)
+    if resp.status_code != 200 and resp.status_code != 404:
+        print(f'Error check_arkstore_rented_extension_expired: {resp.status_code}')
+        return True
+    resp = resp.json()
+    for record in resp.get('purchase_records'):
+        time_status = True
+        user_status = True
+        if resp.get("use_end_time"):
+            expire_time = parse_datetime(record["use_end_time"])
+            # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
+            now = timezone.localtime()
+            if now > expire_time:
+                time_status = False
+        if record.get("max_users"):
+            count = len(User.active_objects.filter(tenant=tenant).all())
+            if count > record["max_users"]:
+                return False
+        if time_status and user_status:
+            return True
+    return False
+
+
+def get_arkstore_extensions_rented(access_token, offset=0, limit=10):
+    url = '/api/v1/arkstore/extensions/leased'
+    arkstore_extensions_url = settings.ARKSTOER_URL + url
+    headers = {'Authorization': f'Token {access_token}'}
+    # params = {'offset': offset, 'limit': limit}
+    params = {'leased': 'true'}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extensions_purchased(access_token, offset=0, limit=10):
+    url = '/api/v1/arkstore/extensions/purchased'
+    arkstore_extensions_url = settings.ARKSTOER_URL + url
+    headers = {'Authorization': f'Token {access_token}'}
+    # params = {'offset': offset, 'limit': limit}
+    params = {'purchased': 'true'}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
+    resp = resp.json()
+    return resp

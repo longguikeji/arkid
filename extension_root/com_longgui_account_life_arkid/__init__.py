@@ -1,5 +1,5 @@
 from arkid.core.extension.account_life import AccountLifeExtension
-from arkid.core.extension import create_extension_schema_by_package
+from arkid.core.extension import create_extension_schema
 from arkid.extension.models import TenantExtensionConfig, TenantExtension, Extension
 from arkid.core.models import User
 import urllib.parse
@@ -29,7 +29,6 @@ select_user_page.create_actions(
     ),
 )
 
-
 class UserExpirationSchema(Schema):
     user: str = Field(
         title=_("Username", "用户名"),
@@ -47,6 +46,9 @@ class UserExpirationSchema(Schema):
     class Config:
         title = _("User Expiration Setting", "用户过期设置")
 
+UserExpirationSchema = create_extension_schema('UserExpirationSchema', __file__,base_schema=UserExpirationSchema)
+
+
 
 class UserExpirationListSchema(Schema):
     __root__: List[UserExpirationSchema] = Field(
@@ -55,6 +57,8 @@ class UserExpirationListSchema(Schema):
 
     class Config:
         title = _("User Expiration Setting", "用户过期设置")
+
+UserExpirationListSchema = create_extension_schema('UserExpirationListSchema', __file__,base_schema=UserExpirationListSchema)
 
 
 class AccountLifeArkIDExtension(AccountLifeExtension):

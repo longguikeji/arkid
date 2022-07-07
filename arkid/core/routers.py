@@ -23,7 +23,7 @@ class FrontRouter(DeepSN):
         >>>     ],
         >>> )
     """
-    def __init__(self, path:str, name:str=None, icon:str=None, children=None, redirect=None, page=None, url=None, *args, **kwargs):
+    def __init__(self, path:str, name:str=None, icon:str=None, children=None, redirect=None, page=None, url=None,web=True,mobile=False, *args, **kwargs):
         """初始化
 
         Args:
@@ -55,6 +55,8 @@ class FrontRouter(DeepSN):
                 self.page = page.tag if isinstance(page,FrontPage) else page
         if url:
             self.url = url
+        self.web = web
+        self.mobile = mobile
         super().__init__(*args, **kwargs)
         
     def add_page(self, page):

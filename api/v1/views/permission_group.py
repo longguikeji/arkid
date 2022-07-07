@@ -67,9 +67,9 @@ def create_permission_group(request, tenant_id: str, data: PermissionGroupSchema
     permission.name = data.name
     permission.category = 'group'
     permission.code = 'other_{}'.format(uuid.uuid4())
-    if data.parent_id:
-        permission.parent = Permission.valid_objects.filter(id=data.parent_id).first()
-    permission.app = App.valid_objects.filter(id=data.app_id).first()
+    if data.parent:
+        permission.parent = Permission.valid_objects.filter(id=data.parent.id).first()
+    permission.app = App.valid_objects.filter(id=data.app.id).first()
     permission.is_system = False
     permission.save()
     # 分发事件开始
@@ -91,8 +91,8 @@ def update_permission_group(request, tenant_id: str, id: str, data: PermissionGr
     # if permission is None:
     permission = Permission.valid_objects.filter(id=id, category='group').first()
     permission.name = data.name
-    if data.parent_id:
-        permission.parent_id = data.parent_id
+    if data.parent:
+        permission.parent = Permission.valid_objects.filter(id=data.parent.id).first()
     # if data.app_id:
     #     permission.app_id = data.app_id
     permission.save()

@@ -13,7 +13,7 @@ from pathlib import Path
 from ninja.constants import NOT_SET
 
 from requests import delete
-from arkid import config
+from arkid import config, extension
 from types import SimpleNamespace
 from collections import OrderedDict
 from django.apps import apps
@@ -76,10 +76,20 @@ def create_extension_schema_by_package( name, package = '',fields: Optional[List
     if package:
         name = package + '_' + name
     name = name.replace('.','_')
+    
+    custom_fields = []
+    if fields:
+        for f_name, f_type, f_field in fields:
+            if type(f_type) is Optional:
+                continue;
+            else:
+                f_type = Optional[f_type]
+            custom_fields.append((f_name, f_type, f_field))
+        
     schema = create_schema(EmptyModel,
             name=name, 
             exclude=['id'],
-            custom_fields=fields,
+            custom_fields=custom_fields,
             base_class=base_schema,
         )
     core_api.remove_fields(schema, exclude)
@@ -417,11 +427,11 @@ class Extension(ABC):
         """
         def signal_func(event, **kwargs2):
             # 判断租户是否启用该插件
-            # tenant
-            # 插件名 tag
-            # func.__module__ 'extension_root.abc.xx'
-            # kwargs2.pop()
-            # Extension.
+            if not self.model.is_active:
+                return
+            tenant_extension = TenantExtension.active_objects.filter(is_rented=True, extension=self.model).first()
+            if not event.tenant.is_platform_tenant and not tenant_extension:
+                return
             if event.packages and not self.package in event.packages:
                 return
             return func(event=event, **kwargs2)
@@ -521,7 +531,7 @@ class Extension(ABC):
             fields = fields,
             custom_fields=[
                 ("package", Literal[schema_tag], Field()),  # type: ignore
-                (type, schema, Field())
+                (type, Optional[schema], Field())
             ],
         )
         new_schema.name = name

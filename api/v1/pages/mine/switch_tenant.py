@@ -23,10 +23,11 @@ page.create_actions(
         path='/api/v1/mine/tenants/',
         method=actions.FrontActionMethod.GET
     ),
-    node_actions=[
-        actions.URLAction(
+    local_actions={
+        'switch_tenant': actions.URLAction(
+            name=_('Switch', '切换'),
             path='/api/v1/mine/switch_tenant/{id}/',
-            method=actions.FrontActionMethod.GET
-        )
-    ]
+            method=actions.FrontActionMethod.GET,
+        ),
+    },
 )

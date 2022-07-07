@@ -23,7 +23,7 @@ class BindSaasSchemaOut(Schema):
     mobile: Optional[str] = Field(readonly=True)
     # local_tenant_id: str = Field(hidden=True)
     # local_tenant_slug: str = Field(hidden=True)
-    saas_tenant_id: str = Field(readonly=True)
+    saas_tenant_id: Optional[str] = Field(readonly=True)
     saas_tenant_slug: Optional[str]  = Field(readonly=True, default='')
     # saas_tenant_url: str = Field(hidden=True)
 
