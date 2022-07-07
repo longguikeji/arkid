@@ -490,7 +490,7 @@ def check_arkstore_purcahsed_extension_expired(tenant, token, package):
     for record in resp.get('purchase_records'):
         time_status = True
         user_status = True
-        if resp.get("use_end_time"):
+        if record.get("use_end_time"):
             expire_time = parse_datetime(record["use_end_time"])
             # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
             now = timezone.localtime()
@@ -522,7 +522,7 @@ def check_arkstore_rented_extension_expired(tenant, token, package):
     for record in resp.get('lease_records'):
         time_status = True
         user_status = True
-        if resp.get("use_end_time"):
+        if record.get("use_end_time"):
             expire_time = parse_datetime(record["use_end_time"])
             # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
             now = timezone.localtime()
