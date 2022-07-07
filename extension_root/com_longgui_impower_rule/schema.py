@@ -19,7 +19,7 @@ app_page.create_actions(
 app_permission_page = create_extension_page(__file__,pages.TablePage, select=True, name='该应用权限')
 app_permission_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/permissions?app_id={app_id}',
+        path='/api/v1/tenant/{tenant_id}/permissions?app_id={id}',
         method=actions.FrontActionMethod.GET
     ),
 )
