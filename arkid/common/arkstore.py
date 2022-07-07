@@ -135,7 +135,7 @@ def lease_arkstore_extension(access_token, extension_id, data):
 
 
 def get_arkstore_extension_detail(access_token, extension_id):
-    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/extensions/{extension_id}'
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}'
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
