@@ -174,6 +174,6 @@ def operation(respnose_model=None, use_id=False, roles: Optional[List[str]] = No
 def event_disrupt(request, exc):
     return api.create_response(
         request,
-        exc.args,
+        exc.args[0],
         status=200,
     )
