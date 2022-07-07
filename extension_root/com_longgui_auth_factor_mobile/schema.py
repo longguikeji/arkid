@@ -35,6 +35,20 @@ class SendSMSCodeOut(ResponseSchema):
     pass
 
 
+class MineMobileItemOut(Schema):
+    
+    # areacode:str = Field(
+    #     title=_("区号"),
+    #     default="86"
+    # )
+    
+    mobile:str = Field(
+        title='手机号',
+    )
+    
+class MineMobileBaseOut(ResponseSchema):
+    data: Optional[MineMobileItemOut]
+
 class UpdateMineMobileBaseIn(Schema):
     """ 更新手机号码参数Schema描述类
 
@@ -42,23 +56,16 @@ class UpdateMineMobileBaseIn(Schema):
     """
     mobile:str = Field(
         title='手机号',
-        suffix_action=DirectAction(
-            name='发送验证码',
-            # path=self.url_send_sms_code,
-            method=actions.FrontActionMethod.POST,
-            params={
-                "mobile": "mobile",
-                "areacode": "86",
-            },
-            delay=60,
-        ).dict()
     )
-    
-    code:str = Field(title='验证码')
-
 class UpdateMineMobileBaseOut(ResponseSchema):
     pass
 
+
+MineMobileOut = create_extension_schema(
+    "MineMobileOut",
+    __file__,
+    base_schema=MineMobileBaseOut
+)
 
 UpdateMineMobileOut = create_extension_schema(
     'UpdateMineMobileOut',

@@ -324,11 +324,18 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     def create_auth_manage_page(self):
         """ 创建“我的-认证管理”中的更换手机号码页面
         """
-        configs = TenantExtensionConfig.active_objects.filter(extension__package=self.package)
-        
         _pages = []
+        
         mine_mobile_path = self.register_api(
-            "/config/{config_id}/mine_mobile/",
+            "/mine_mobile/",
+            "GET",
+            self.mine_mobile,
+            tenant_path=True,
+            response=MineMobileOut
+        )
+        
+        upodate_mine_mobile_path = self.register_api(
+            "/mine_mobile/",
             'POST',
             self.update_mine_mobile,
             tenant_path=True,
@@ -339,12 +346,13 @@ class MobileAuthFactorExtension(AuthFactorExtension):
 
         page = pages.FormPage(name=name)
         page.create_actions(
-            init_action=actions.ConfirmAction(
-                path=mine_mobile_path
+            init_action=actions.DirectAction(
+                path=mine_mobile_path,
+                method=actions.FrontActionMethod.GET
             ),
             global_actions={
                 'confirm': actions.ConfirmAction(
-                    path=mine_mobile_path
+                    path=upodate_mine_mobile_path
                 ),
             }
         )
@@ -443,14 +451,19 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if not ret:
             return self.error(message)
         
-        sms_code = data.code
-        if not check_sms_code(mobile, sms_code):
-            return self.error(ErrorCode.SMS_CODE_MISMATCH)
-        
         user = request.user
         user.mobile=data.mobile
         user.save()
         
         return self.success()
+    
+    # @operation(MineMobileOut)
+    def mine_mobile(self,request,tenant_id: str):
+        user = request.user
+        user_expand = User.expand_objects.filter(id=user.id).first()
+        return {
+            "data":user_expand
+        }
 
+    
 extension = MobileAuthFactorExtension()
