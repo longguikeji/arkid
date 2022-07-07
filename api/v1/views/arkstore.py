@@ -18,6 +18,8 @@ from arkid.common.arkstore import (
     order_payment_status_arkstore_extension,
     get_arkstore_extension_order_status,
     get_arkstore_extension_rent_status,
+    get_arkstore_extension_trial_days,
+    trial_arkstore_extension,
     get_arkid_saas_app_detail,
     get_bind_arkstore_agent,
     bind_arkstore_agent,
@@ -147,6 +149,14 @@ class OrderPaymentOut(ResponseSchema):
     data: OrderPaymentUrlOut
 
 
+class TrialDays(Schema):
+    trial_period: int = Field(title=_('Trial Days',"试用期(天)"))
+
+
+class TrialDaysOut(ResponseSchema):
+    data: TrialDays
+
+
 class Payer(Schema):
     openid: str
 
@@ -254,7 +264,11 @@ def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_n
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/rent/order/{order_no}/payment_status/extensions/{package}/", tags=['方舟商店'], response=PaymentStatus)
+@api.get("/tenant/{tenant_id}/arkstore/rent/order/{order_no}/payment_status/extensions/{package}/", tags=['方舟商店'], 
+    response={
+        200: PaymentStatus,
+        202: ResponseSchema,
+    })
 def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str, package: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -267,7 +281,10 @@ def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_n
             extension=extension,
             defaults={"is_rented": True}
         )
-    return resp
+    if resp.get('code') == '0' and not resp.get('appid'):
+        return 202, {'data': resp}
+    else:
+        return 200, resp
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/", tags=['方舟商店'], response=OrderStatusSchema)
@@ -288,7 +305,7 @@ def get_rent_arkstore_extension(request, tenant_id: str, package: str):
     access_token = get_arkstore_access_token(tenant, token)
     ext_info = get_arkstore_extension_detail_by_package(access_token, package)
     if ext_info is None:
-        return []
+        return ErrorDict(ErrorCode.RENT_EXTENSION_SUCCESS)
     resp = get_arkstore_extension_rent_price(access_token, ext_info['uuid'])
     return resp['prices']
 
@@ -333,6 +350,24 @@ def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
         defaults={"is_rented": True}
     )
     return {'purchased':True}
+
+
+@api.get("/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/", tags=['方舟商店'], response=TrialDaysOut)
+def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extension_trial_days(access_token, uuid)
+    return {'data': resp}
+
+
+@api.post("/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/", tags=['方舟商店'])
+def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = trial_arkstore_extension(access_token, uuid)
+    return {'data': resp}
 
 
 @api.post("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['方舟商店'])
