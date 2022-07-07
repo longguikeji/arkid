@@ -6,19 +6,15 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.schema import ResponseSchema
 from arkid.core import pages, actions
 
-app_page = pages.TreePage(name='应用列表')
-app_permission_page = pages.TablePage(name=_("该应用权限"), select=True)
+app_page = pages.TablePage(select=True, name='应用列表')
 app_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/all_apps_in_arkid/',
-        method=actions.FrontActionMethod.GET,
-    ),
-    node_actions=[
-        actions.CascadeAction(
-            page=app_permission_page
-        )
-    ]
+        method=actions.FrontActionMethod.GET
+    )
 )
+
+app_permission_page = pages.TablePage(name=_("该应用权限"), select=True)
 app_permission_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/permissions?app_id={app_id}',
