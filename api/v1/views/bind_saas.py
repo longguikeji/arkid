@@ -67,7 +67,7 @@ def set_bind_saas_slug(request, tenant_id: str, data: BindSaasSlugSchemaOut):
     tenant = Tenant.objects.get(id=tenant_id)
     bind_info = set_saas_bind_slug(tenant, data.dict())
     create_arkidstore_login_app(tenant, bind_info['saas_tenant_id'])
-    create_arkid_saas_login_app(tenant, bind_info['saas_tenant_id'])
+    create_arkid_saas_login_app(tenant, bind_info['saas_tenant_id'], bind_info.get('saas_login_url'))
     return bind_info
 
 
@@ -88,7 +88,7 @@ def update_bind_saas_info(request, tenant_id: str, data: BindSaasInfoSchema):
     tenant = Tenant.objects.get(id=tenant_id)
     bind_info = update_saas_binding(tenant, data.dict())
     create_arkidstore_login_app(tenant, bind_info['saas_tenant_id'])
-    create_arkid_saas_login_app(tenant, bind_info['saas_tenant_id'])
+    create_arkid_saas_login_app(tenant, bind_info['saas_tenant_id'], bind_info.get('saas_login_url'))
     return bind_info
 
 
