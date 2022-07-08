@@ -1,7 +1,7 @@
 from django.views import View
 from abc import abstractmethod
 from django.urls import re_path
-from arkid.core.models import App
+from arkid.core.models import App, Tenant
 from arkid.settings import LOGIN_URL
 from django.http import HttpResponseRedirect
 from arkid.core.extension import Extension
@@ -108,16 +108,27 @@ class AppProtocolExtension(Extension):
                 next_uri = urllib.parse.quote(full_path)
                 host = get_app_config().get_frontend_host()
                 tenant = request.tenant
+                # TODO fix default tenant
                 if not tenant:
+                    return f'{host}{LOGIN_URL}?tenant_id=&next={next_uri}'
+
+                if tenant.is_platform_tenant and tenant.id.hex not in request.get_full_path() and \
+                    str(tenant.id) not in request.get_full_path():
                     return f'{host}{LOGIN_URL}?tenant_id=&next={next_uri}'
 
                 token = request.GET.get('token', '')
                 if not token:
-                    if tenant.slug:
-                        host =get_app_config().get_slug_frontend_host(tenant.slug)
-                        return f'{host}{LOGIN_URL}?&next={next_uri}'
-                    else:
-                        return f'{host}{LOGIN_URL}?tenant_id={tenant.id}&next={next_uri}'
+                    tenant_expand = Tenant.expand_objects.get(id=tenant.id)
+                    if tenant_expand.get('login_url'):
+                        return f"{tenant_expand['login_url']}?tenant_id={tenant.id}&next={next_uri}"
+                    backend_host = get_app_config().get_host()
+                    backend_login_url = '/api/v1/login'
+                    return f"{backend_host}{backend_login_url}?tenant_id={tenant.id}&next={next_uri}"
+                    # if tenant.slug:
+                    #     host =get_app_config().get_slug_frontend_host(tenant.slug)
+                    #     return f'{host}{LOGIN_URL}?&next={next_uri}'
+                    # else:
+                    #     return f'{host}{LOGIN_URL}?tenant_id={tenant.id}&next={next_uri}'
                 
                 if tenant.slug:
                     host =get_app_config().get_slug_frontend_host(tenant.slug)
