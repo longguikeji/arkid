@@ -62,9 +62,14 @@ class LoginProcess(View):
                 raise Exception(_('Token has expired'))
             
             if next:
-                response = redirect(
-                    next+f"?token={token}&{params_str}"
-                )
+                if '?' in next:
+                    response = redirect(
+                        next+f"&token={token}&{params_str}"
+                    )
+                else:
+                    response = redirect(
+                        next+f"?token={token}&{params_str}"
+                    )
             else:
                 response = redirect(f'{login_uri}?token={token}&{params_str}')
             
