@@ -13,7 +13,11 @@ from ninja.pagination import paginate
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.schema import ResponseSchema
-from arkid.common.arkstore import get_arkstore_access_token, get_arkstore_extensions_rented
+from arkid.common.arkstore import (
+    get_arkstore_access_token,
+    get_arkstore_extensions_rented,
+    check_time_and_user_valid
+)
 
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
@@ -212,7 +216,15 @@ def get_tenant_extensions(request, tenant_id: str):
     for ext in extensions:
         if ext.package in extensions_rented:
             ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
-            
+            lease_records = extensions_rented[ext.package].get('lease_records') or []
+            # check_lease_records_expired
+            if check_time_and_user_valid(lease_records, tenant):
+                tenant_extension, created = TenantExtension.objects.update_or_create(
+                    tenant_id=tenant_id,
+                    extension=ext,
+                    defaults={"is_rented": True}
+                )
+
     return extensions
 
 
