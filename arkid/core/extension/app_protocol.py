@@ -108,7 +108,6 @@ class AppProtocolExtension(Extension):
                 next_uri = urllib.parse.quote(full_path)
                 host = get_app_config().get_frontend_host()
                 tenant = request.tenant
-                # TODO fix default tenant
                 if not tenant:
                     return f'{host}{LOGIN_URL}?tenant_id=&next={next_uri}'
 
