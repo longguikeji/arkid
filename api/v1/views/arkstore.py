@@ -133,8 +133,12 @@ class OrderSchemaIn(Schema):
     price_uuid: str
 
 
-class OrderSchemaOut(Schema):
+class OrderSchema(Schema):
     order_no: str = Field(format='qrcode')
+
+
+class OrderSchemaOut(ResponseSchema):
+    data: OrderSchema
 
 
 class SetCopies(Schema):
@@ -232,7 +236,7 @@ def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp['prices']
 
 
-@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=OrderSchemaOut)
+@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=OrderSchema)
 def create_order_arkstore_extension(request, tenant_id: str, uuid: str, data: OrderSchemaIn):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -317,14 +321,14 @@ def get_rent_arkstore_extension(request, tenant_id: str, package: str):
     return resp['prices']
 
 
-@api.post("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=OrderSchemaOut)
+@api.post("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=OrderSchema)
 def create_rent_order_arkstore_extension(request, tenant_id: str, package: str, data: OrderSchemaIn):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
     ext_info = get_arkstore_extension_detail_by_package(access_token, package)
     if ext_info is None:
-        return []
+        return {}
     resp = lease_arkstore_extension(access_token, ext_info['uuid'], data.dict())
     return resp
 
@@ -368,7 +372,7 @@ def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     return {'data': resp}
 
 
-@api.post("/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/", tags=['方舟商店'])
+@api.post("/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/", tags=['方舟商店'], response=OrderSchemaOut)
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)

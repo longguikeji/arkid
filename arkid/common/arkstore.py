@@ -487,22 +487,7 @@ def check_arkstore_purcahsed_extension_expired(tenant, token, package):
         print(f'Error check_arkstore_purcahsed_extension_expired: {resp.status_code}')
         return True
     resp = resp.json()
-    for record in resp.get('purchase_records'):
-        time_status = True
-        user_status = True
-        if record.get("use_end_time"):
-            expire_time = parse_datetime(record["use_end_time"])
-            # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
-            now = timezone.localtime()
-            if now > expire_time:
-                time_status = False
-        if record.get("max_users"):
-            count = len(User.active_objects.filter(tenant=tenant).all())
-            if count > record["max_users"]:
-                return False
-        if time_status and user_status:
-            return True
-    return False
+    return check_time_and_user_valid(resp.get('purchase_records') or [], tenant)
 
 
 def check_arkstore_rented_extension_expired(tenant, token, package):
@@ -519,22 +504,30 @@ def check_arkstore_rented_extension_expired(tenant, token, package):
         print(f'Error check_arkstore_rented_extension_expired: {resp.status_code}')
         return True
     resp = resp.json()
-    for record in resp.get('lease_records'):
-        time_status = True
-        user_status = True
+    return check_time_and_user_valid(resp.get('lease_records') or [], tenant)
+
+
+def check_time_and_user_valid(data, tenant):
+    max_users_sum = 0
+    users_count = len(User.active_objects.filter(tenant=tenant).all())
+    for record in data:
         if record.get("use_end_time"):
             expire_time = parse_datetime(record["use_end_time"])
             # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
             now = timezone.localtime()
             if now > expire_time:
-                time_status = False
+                continue
         if record.get("max_users"):
-            count = len(User.active_objects.filter(tenant=tenant).all())
-            if count > record["max_users"]:
-                return False
-        if time_status and user_status:
+            if users_count > record["max_users"]:
+                max_users_sum += record["max_users"]
+            else:
+                return True
+        else:
             return True
-    return False
+    if users_count > max_users_sum:
+        return False
+    else:
+        return True
 
 
 def get_arkstore_extensions_rented(access_token, offset=0, limit=10):
