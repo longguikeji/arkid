@@ -29,7 +29,6 @@ from arkid.core.pagenation import CustomPagination
 @api.get(
     "/tenant/{tenant_id}/webhooks/",
     tags=["Webhook"],
-    auth=None,
     response=List[WebhookListItemOut],
 )
 @operation(WebhookListOut)
@@ -43,7 +42,6 @@ def get_webhooks(request, tenant_id: str):
 @api.get(
     "/tenant/{tenant_id}/webhooks/{id}/",
     tags=["Webhook"],
-    auth=None,
     response=WebhookOut,
 )
 @operation(WebhookOut)
@@ -64,7 +62,6 @@ def get_webhook(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/webhooks/",
     tags=["Webhook"],
-    auth=None,
     response=WebhookCreateOut,
 )
 @operation(WebhookCreateOut)
@@ -86,7 +83,6 @@ def create_webhook(request, tenant_id: str, data: WebhookCreateIn):
 @api.put(
     "/tenant/{tenant_id}/webhooks/{id}/",
     tags=["Webhook"],
-    auth=None,
     response=WebhookUpdateOut,
 )
 @operation(WebhookUpdateOut)
@@ -113,7 +109,6 @@ def update_webhook(request, tenant_id: str, id: str, data: WebhookUpdateIn):
 @api.delete(
     "/tenant/{tenant_id}/webhooks/{id}/",
     tags=["Webhook"],
-    auth=None,
     response=WebhookDeleteOut,
 )
 @operation(WebhookDeleteOut)
@@ -130,7 +125,6 @@ def delete_webhook(request, tenant_id: str, id: str):
 @api.get(
     "/tenant/{tenant_id}/webhooks/{webhook_id}/histories/",
     tags=["Webhook"],
-    auth=None,
     response=List[WebhookHistoryListItemOut],
 )
 @operation(WebhookHistoryListOut)
@@ -148,7 +142,6 @@ def get_webhook_histories(request, tenant_id: str, webhook_id: str):
 @api.get(
     "/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/",
     tags=["Webhook"],
-    auth=None,
     response=WebhookHistoryOut,
 )
 def get_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
@@ -166,7 +159,6 @@ def get_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
 @api.delete(
     "/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/",
     tags=["Webhook"],
-    auth=None,
     response=WebhookHistoryDeleteOut,
 )
 def delete_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
@@ -185,7 +177,6 @@ def delete_webhook_history(request, tenant_id: str, webhook_id: str, id: str):
 @api.get(
     "/tenant/{tenant_id}/webhooks/{webhook_id}/histories/{id}/retry/",
     tags=["Webhook"],
-    auth=None,
     response=WebhookHistoryRetryOut,
 )
 def retry_webhook_history(request, tenant_id: str, webhook_id: str, id: str):

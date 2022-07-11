@@ -98,17 +98,20 @@ def set_saas_bind_slug(tenant, data):
 
 def create_arkidstore_login_app(tenant, saas_tenant_id):
     url = f"{settings.ARKSTOER_URL}/api/v1/login?tenant_id={saas_tenant_id}"
-    create_tenant_oidc_app(tenant, url, 'arkstore_login', 'arkidstore login',
+    create_tenant_oidc_app(tenant, url, 'ArkStore', '方舟商店，包含插件与应用',
         'https://s1.ax1x.com/2022/07/04/jJrVxg.png')
 
 
-def create_arkid_saas_login_app(tenant, saas_tenant_id):
-    url = f"{settings.ARKID_SAAS_URL}/login?tenant_id={saas_tenant_id}"
-    create_tenant_oidc_app(tenant, url, 'arkid_saas_login', 'arkid_saas login', 
+def create_arkid_saas_login_app(tenant, saas_tenant_id, saas_login_url=None):
+    url = saas_login_url or f"{settings.ARKID_SAAS_URL}/login?tenant_id={saas_tenant_id}"
+    create_tenant_oidc_app(tenant, url, 'Central ArkID', '中心ArkID', 
         'https://s1.ax1x.com/2022/07/04/jJDh2F.png')
 
 
 def bind_saas(tenant_id, data=None):
+    from django.conf import settings
+    if settings.IS_CENTRAL_ARKID:
+        return {}
     tenant = Tenant.objects.get(id=tenant_id)
     if not data:
         data = {
@@ -143,5 +146,5 @@ def bind_saas(tenant_id, data=None):
         'saas_tenant_slug': resp['saas_tenant_slug'],
     }
     create_arkidstore_login_app(tenant, resp['saas_tenant_id'])
-    create_arkid_saas_login_app(tenant, resp['saas_tenant_id'])
+    create_arkid_saas_login_app(tenant, resp['saas_tenant_id'], resp.get('saas_login_url'))
     return data

@@ -9,9 +9,13 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.schema import ResponseSchema
 from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.tenant import *
+from ninja.pagination import paginate
+from arkid.core.pagenation import CustomPagination
 
-@api.get("/tenants/", response=TenantListOut,tags=["租户管理"],auth=None)
-# @operation(List[TenantListOut])
+
+@api.get("/tenants/", response=List[TenantListItemOut],tags=["租户管理"])
+@operation(TenantListOut)
+@paginate(CustomPagination)
 def get_tenant_list(request, query_data:TenantListQueryIn=Query(...)):
     """ 获取租户列表
     """
@@ -21,11 +25,9 @@ def get_tenant_list(request, query_data:TenantListQueryIn=Query(...)):
     if query_data:
         tenants = tenants.filter(**query_data)
 
-    return {
-        "data": list(tenants.all())
-    }
+    return tenants
 
-@api.get("/tenants/{id}/", response=TenantOut,tags=["租户管理"],auth=None)
+@api.get("/tenants/{id}/", response=TenantOut,tags=["租户管理"], auth=None)
 @operation(TenantOut)
 def get_tenant(request, id: str):
     """ 获取租户
@@ -35,7 +37,7 @@ def get_tenant(request, id: str):
         "data": tenant
     }
 
-@api.post("/tenants/",response=TenantCreateOut,tags=["租户管理"],auth=None)
+@api.post("/tenants/",response=TenantCreateOut,tags=["租户管理"])
 def create_tenant(request, data:TenantCreateIn):
     """ 创建租户
     """
@@ -43,7 +45,7 @@ def create_tenant(request, data:TenantCreateIn):
     tenant = Tenant.expand_objects.create(**data.dict())
     return ErrorDict(ErrorCode.OK)
 
-@api.post("/tenants/{id}/", response=TenantUpdateOut,tags=["租户管理"],auth=None)
+@api.post("/tenants/{id}/", response=TenantUpdateOut,tags=["租户管理"])
 @operation(TenantUpdateOut)
 def update_tenant(request, id: str, data:TenantUpdateIn):
     """ 编辑租户
@@ -54,7 +56,7 @@ def update_tenant(request, id: str, data:TenantUpdateIn):
     tenant.save()
     return ErrorDict(ErrorCode.OK)
 
-@api.delete("/tenants/{id}/", response=TenantDeleteOut, tags=["租户管理"],auth=None)
+@api.delete("/tenants/{id}/", response=TenantDeleteOut, tags=["租户管理"])
 @operation(TenantDeleteOut)
 def delete_tenant(request, id: str):
     """ 删除租户
@@ -63,7 +65,7 @@ def delete_tenant(request, id: str):
     tenant.delete()
     return ErrorDict(ErrorCode.OK)
 
-@api.get("/tenants/{tenant_id}/config/", response=TenantConfigOut, tags=["租户管理"],auth=None)
+@api.get("/tenants/{tenant_id}/config/", response=TenantConfigOut, tags=["租户管理"])
 @operation(TenantConfigOut)
 def get_tenant_config(request, tenant_id: str):
     """ 获取租户配置
@@ -74,7 +76,7 @@ def get_tenant_config(request, tenant_id: str):
         "data": tenant
     }
 
-@api.post("/tenants/{tenant_id}/config/", response=TenantConfigUpdateOut,tags=["租户管理"],auth=None)
+@api.post("/tenants/{tenant_id}/config/", response=TenantConfigUpdateOut,tags=["租户管理"])
 @operation(TenantConfigUpdateOut)
 def update_tenant_config(request, tenant_id: str,data:TenantConfigUpdateIn):
     """ 编辑租户配置

@@ -33,10 +33,10 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
     users = pd.get_manage_all_user(login_user, tenant, users)
     return list(users)
 
-@api.get("/tenant/{tenant_id}/user_no_super/",response=UserListOut, tags=['用户'])
-@operation(UserListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/user_no_super/",response=List[UserListItemOut], tags=['用户'])
+@operation(UserListOut)
 # @paginate(CustomPagination)
-def user_list(request, tenant_id: str):
+def user_list_no_super(request, tenant_id: str):
     from arkid.core.perm.permission_data import PermissionData
     super_user_id = User.valid_objects.order_by('created').first().id
     users = User.valid_objects.filter(tenant_id=tenant_id).exclude(id=super_user_id)
@@ -48,7 +48,7 @@ def user_list(request, tenant_id: str):
     return {"data": list(users.all())}
 
 # ------------- 创建用户接口 --------------
-@api.post("/tenant/{tenant_id}/users/",response=UserCreateOut, tags=['用户'], auth=None)
+@api.post("/tenant/{tenant_id}/users/",response=UserCreateOut, tags=['用户'])
 @operation(UserCreateOut)
 def user_create(request, tenant_id: str,data:UserCreateIn):
 
@@ -63,7 +63,7 @@ def user_create(request, tenant_id: str,data:UserCreateIn):
     return {"data":{"user":user.id.hex}}
 
 # ------------- 删除用户接口 --------------    
-@api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'], auth=None)
+@api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'])
 @operation(UserDeleteOut)
 def user_delete(request, tenant_id: str,id:str):
     user = get_object_or_404(User,tenant=request.tenant, id=id)
@@ -71,7 +71,7 @@ def user_delete(request, tenant_id: str,id:str):
     return {"error":ErrorCode.OK.value}
         
 # ------------- 更新用户接口 --------------
-@api.post("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOut, tags=['用户'], auth=None)
+@api.post("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOut, tags=['用户'])
 @operation(UserUpdateOut)
 def user_update(request, tenant_id: str,id:str, data:UserUpdateIn):
 
@@ -102,7 +102,7 @@ def user_fields(request, tenant_id: str):
     return {"data":items}
 # ------------- 获取用户接口 --------------
         
-@api.get("/tenant/{tenant_id}/users/{id}/",response=UserOut, tags=['用户'], auth=None)
+@api.get("/tenant/{tenant_id}/users/{id}/",response=UserOut, tags=['用户'])
 @operation(UserOut)
 def get_user(request, tenant_id: str,id:str):
     id = id.replace("-", "")

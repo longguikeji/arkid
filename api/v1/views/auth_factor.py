@@ -52,7 +52,7 @@ def get_auth_factor(request, tenant_id: str, id: str):
     }
 
 
-@api.post("/tenant/{tenant_id}/auth_factors/", response=AuthFactorCreateOut, tags=["认证因素"], auth=None)
+@api.post("/tenant/{tenant_id}/auth_factors/", response=AuthFactorCreateOut, tags=["认证因素"])
 @operation(AuthFactorCreateOut)
 def create_auth_factor(request, tenant_id: str, data: AuthFactorCreateIn):
     """ 创建认证因素
@@ -68,7 +68,7 @@ def create_auth_factor(request, tenant_id: str, data: AuthFactorCreateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.post("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorUpdateOut, tags=["认证因素"], auth=None)
+@api.post("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorUpdateOut, tags=["认证因素"])
 @operation(AuthFactorUpdateOut)
 def update_auth_factor(request, tenant_id: str, id: str, data: AuthFactorUpdateIn):
     """ 编辑认证因素
@@ -81,7 +81,7 @@ def update_auth_factor(request, tenant_id: str, id: str, data: AuthFactorUpdateI
     return ErrorDict(ErrorCode.OK)
 
 
-@api.delete("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorDeleteOut, tags=["认证因素"], auth=None)
+@api.delete("/tenant/{tenant_id}/auth_factors/{id}/", response=AuthFactorDeleteOut, tags=["认证因素"])
 @operation(AuthFactorDeleteOut)
 def delete_auth_factor(request, tenant_id: str, id: str):
     """ 删除认证因素

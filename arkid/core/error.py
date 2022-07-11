@@ -66,6 +66,8 @@ class ErrorCode(Enum):
     APP_GROUP_PARENT_CANT_BE_ITSELF = ('16001', _('app group parent can not be itself', '应用分组上级分组不能设置为其自身'))
     USER_GROUP_PARENT_CANT_BE_ITSELF = ('16002', _('user group parent can not be itself', '用户分组上级分组不能设置为其自身'))
 
+    RENT_EXTENSION_SUCCESS = ('17001', _('rent extension success', '插件租赁成功'))
+
 class ErrorDict(dict):
 
   def __init__(self, enum, package='core', **kwargs):

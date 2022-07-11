@@ -7,7 +7,7 @@ from ninja import NinjaAPI, File
 from ninja.files import UploadedFile
 from api.v1.schema.upload import *
 
-@api.post("/tenant/{tenant_id}/upload/",response=UploadOut, tags=['文件上传'], auth=None)
+@api.post("/tenant/{tenant_id}/upload/",response=UploadOut, tags=['文件上传'])
 @operation(UploadOut, use_id=True)
 def upload(request, tenant_id:str, file: UploadedFile = File(...)):
     tenant = request.tenant

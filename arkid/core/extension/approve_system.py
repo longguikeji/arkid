@@ -35,7 +35,7 @@ class ApproveSystemExtension(Extension):
         self.path = self.register_api(
             f'/change_approve_request_status/{{approve_request_id}}/',
             'POST',
-            self.change_approve_request_status, auth=None
+            self.change_approve_request_status
         )
         super().load()
 

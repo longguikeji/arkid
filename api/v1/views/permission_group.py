@@ -45,7 +45,7 @@ def get_permission_groups(request, tenant_id: str,  parent_id: str = None,  app_
     return permissiondata.get_permissions_by_search(tenant_id, app_id, None, None, login_user, parent_id, True)
 
 
-@api.get("/tenant/{tenant_id}/permission_groups/{id}/", response=PermissionGroupDetailSchemaOut, tags=["权限分组"],auth=None)
+@api.get("/tenant/{tenant_id}/permission_groups/{id}/", response=PermissionGroupDetailSchemaOut, tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_permission_group(request, tenant_id: str, id: str):
     """ 获取权限分组
@@ -57,7 +57,7 @@ def get_permission_group(request, tenant_id: str, id: str):
         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/permission_groups/", tags=["权限分组"],auth=None)
+@api.post("/tenant/{tenant_id}/permission_groups/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_permission_group(request, tenant_id: str, data: PermissionGroupSchemaIn):
     """ 创建权限分组
@@ -77,7 +77,7 @@ def create_permission_group(request, tenant_id: str, data: PermissionGroupSchema
     # 分发事件结束
     return {'error': ErrorCode.OK.value}
 
-@api.put("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"],auth=None)
+@api.put("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_permission_group(request, tenant_id: str, id: str, data: PermissionGroupEditSchemaIn):
     """ 编辑权限分组
@@ -101,7 +101,7 @@ def update_permission_group(request, tenant_id: str, id: str, data: PermissionGr
     # 分发事件结束
     return ErrorDict(ErrorCode.OK)
 
-@api.delete("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"],auth=None)
+@api.delete("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_permission_group(request, tenant_id: str, id: str):
     """ 删除权限分组
@@ -120,7 +120,7 @@ def delete_permission_group(request, tenant_id: str, id: str):
     # 分发事件结束
     return ErrorDict(ErrorCode.OK)
 
-@api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", response=List[PermissionListSchemaOut], tags=["权限分组"],auth=None)
+@api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", response=List[PermissionListSchemaOut], tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate
 def get_permissions_from_group(request, tenant_id: str, permission_group_id: str):
@@ -143,7 +143,7 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
     #     permission = get_object_or_404(Permission, id=permission_group_id, is_del=False)
     
 
-@api.delete("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/{id}/", tags=["权限分组"],auth=None)
+@api.delete("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/{id}/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def remove_permission_from_group(request, tenant_id: str, permission_group_id: str, id:str):
     """ 将权限移除出权限分组
@@ -167,7 +167,7 @@ def remove_permission_from_group(request, tenant_id: str, permission_group_id: s
     else:
         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
 
-@api.post("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", tags=["权限分组"],auth=None)
+@api.post("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_permissions_from_group(request, tenant_id: str, permission_group_id: str, data: PermissionSchemaIn):
     """ 更新当前分组的权限列表
@@ -187,7 +187,7 @@ def update_permissions_from_group(request, tenant_id: str, permission_group_id: 
         # 分发事件结束
     return ErrorDict(ErrorCode.OK)
 
-@api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/select_permissions/", response=List[PermissionListSelectSchemaOut], tags=["权限分组"], auth=None)
+@api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/select_permissions/", response=List[PermissionListSelectSchemaOut], tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate
 def get_select_permissions(request, tenant_id: str, permission_group_id: str):

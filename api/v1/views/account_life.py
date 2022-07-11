@@ -38,7 +38,6 @@ from django.db.models import F
 @api.get(
     "/tenant/{tenant_id}/account_lifes/",
     tags=["账号生命周期"],
-    auth=None,
     response=List[AccountLifeListItemOut],
 )
 @operation(AccountLifeListOut)
@@ -60,7 +59,6 @@ def get_account_life_list(request, tenant_id: str):
 @api.get(
     "/tenant/{tenant_id}/account_lifes/{id}/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeOut,
 )
 @operation(AccountLifeOut)
@@ -77,7 +75,6 @@ def get_account_life(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/account_lifes/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeCreateOut,
 )
 @operation(AccountLifeCreateOut)
@@ -102,7 +99,6 @@ def create_account_life(request, tenant_id: str, data: AccountLifeCreateIn):
 @api.put(
     "/tenant/{tenant_id}/account_lifes/{id}/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeUpdateOut,
 )
 @operation(AccountLifeUpdateOut)
@@ -127,7 +123,6 @@ def update_account_life(request, tenant_id: str, id: str, data: AccountLifeUpdat
 @api.delete(
     "/tenant/{tenant_id}/account_lifes/{id}/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeDeleteOut,
 )
 @operation(AccountLifeDeleteOut)
@@ -149,7 +144,6 @@ def delete_account_life(request, tenant_id: str, id: str):
 @api.get(
     "/tenant/{tenant_id}/account_life_crontab/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeCrontabOut,
 )
 @operation(AccountLifeCrontabOut)
@@ -165,7 +159,6 @@ def get_account_life_crontab(request, tenant_id: str):
 @api.put(
     "/tenant/{tenant_id}/account_life_crontab/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeCrontabOut,
 )
 @operation(AccountLifeCrontabOut)

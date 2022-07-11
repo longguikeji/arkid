@@ -27,8 +27,8 @@ class CaseExtension(extension.Extension):
             nickname=str
         )
         
-        self.register_api('/test/', 'POST', self.post_handler, auth=None, tenant_path=True)
-        self.register_api('/test/', 'GET', self.get_handler, response=List[UserSchema], auth=None, tenant_path=True)
+        self.register_api('/test/', 'POST', self.post_handler, tenant_path=True)
+        self.register_api('/test/', 'GET', self.get_handler, response=List[UserSchema], tenant_path=True)
 
     def post_handler(self, request, tenant_id:str, data:UserSchema):
         tenant = request.tenant

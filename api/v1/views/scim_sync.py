@@ -69,7 +69,6 @@ def delete_periodic_task(extension_config):
     "/tenant/{tenant_id}/scim_syncs/",
     response=List[ScimSyncListItemOut],
     tags=[_("用户数据同步配置")],
-    auth=None,
 )
 @operation(ScimSyncListOut)
 @paginate(CustomPagination)
@@ -94,7 +93,6 @@ def get_scim_syncs(request, tenant_id: str):
     "/tenant/{tenant_id}/scim_syncs/{id}/",
     response=ScimSyncOut,
     tags=[_("用户数据同步配置")],
-    auth=None,
 )
 @operation(ScimSyncOut)
 def get_scim_sync(request, tenant_id: str, id: str):
@@ -115,7 +113,6 @@ def get_scim_sync(request, tenant_id: str, id: str):
     "/tenant/{tenant_id}/scim_syncs/",
     tags=[_("用户数据同步配置")],
     response=ScimSyncCreateOut,
-    auth=None,
 )
 @operation(ScimSyncCreateOut)
 def create_scim_sync(request, tenant_id: str, data: ScimSyncCreateIn):
@@ -135,7 +132,6 @@ def create_scim_sync(request, tenant_id: str, data: ScimSyncCreateIn):
     "/tenant/{tenant_id}/scim_syncs/{id}/",
     tags=[_("用户数据同步配置")],
     response=ScimSyncUpdateOut,
-    auth=None,
 )
 @operation(ScimSyncUpdateOut)
 def update_scim_sync(request, tenant_id: str, id: str, data: ScimSyncUpdateIn):
@@ -151,7 +147,7 @@ def update_scim_sync(request, tenant_id: str, id: str, data: ScimSyncUpdateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.delete("/tenant/{tenant_id}/scim_syncs/{id}/", tags=[_("用户数据同步配置")], auth=None)
+@api.delete("/tenant/{tenant_id}/scim_syncs/{id}/", tags=[_("用户数据同步配置")])
 @operation(ScimSyncDeleteOut)
 def delete_scim_sync(request, tenant_id: str, id: str):
     """删除用户数据同步配置"""
@@ -172,7 +168,6 @@ class ScimServerOut(ModelSchema):
     "/tenant/{tenant_id}/scim_server_list/",
     response=List[ScimServerOut],
     tags=['用户数据同步配置'],
-    auth=None,
 )
 def list_scim_servers(request, tenant_id: str):
     """获取Scim同步server列表"""

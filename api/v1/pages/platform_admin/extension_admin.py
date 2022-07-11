@@ -10,6 +10,7 @@ page = pages.TabsPage(tag=tag, name=name)
 store_page = pages.CardsPage(name='插件商店')
 installed_page = pages.CardsPage(name='已安装')
 order_page = pages.StepPage(name=_('Order', '购买'))
+trial_page = pages.FormPage(name=_('Trial', '试用'))
 bind_agent_page = pages.FormPage(name=_('Bind Agent', '绑定代理商'))
 purchased_page = pages.CardsPage(name='已购买')
 markdown_page = pages.FormPage(name=_("文档"))
@@ -23,6 +24,7 @@ pages.register_front_pages(page)
 pages.register_front_pages(installed_page)
 pages.register_front_pages(store_page)
 pages.register_front_pages(order_page)
+pages.register_front_pages(trial_page)
 pages.register_front_pages(bind_agent_page)
 pages.register_front_pages(purchased_page)
 pages.register_front_pages(markdown_page)
@@ -87,6 +89,10 @@ store_page.create_actions(
         "order": actions.OpenAction(
             name='购买',
             page=order_page
+        ),
+        "trial": actions.OpenAction(
+            name='试用',
+            page=trial_page
         )
     },
 )
@@ -152,7 +158,7 @@ payment_page.create_actions(
     global_actions={
        'next': actions.NextAction(
             name="已支付",
-            path="/api/v1/tenant/{tenant_id}/arkstore/order/{order_no}/payment_status/",
+            path="/api/v1/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/",
             method=actions.FrontActionMethod.GET
         ),
     }
@@ -185,6 +191,21 @@ bind_agent_page.create_actions(
             name='删除',
             path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
             method=actions.FrontActionMethod.DELETE
+        ),
+    },
+)
+
+
+trial_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    global_actions={
+        "confirm": actions.DirectAction(
+            name='试用',
+            path='/api/v1/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/',
+            method=actions.FrontActionMethod.POST
         ),
     },
 )

@@ -27,7 +27,6 @@ from arkid.core.approve import restore_approve_request
     "/tenant/{tenant_id}/approve_requests/arkid/",
     response=List[ApproveRequestListItemOut],
     tags=['审批请求'],
-    auth=None,
 )
 @operation(ApproveRequestListOut)
 @paginate(CustomPagination)
@@ -47,7 +46,6 @@ def arkid_approve_request_list(request, tenant_id: str, is_approved: str = ""):
     "/tenant/{tenant_id}/approve_requests/arkid/{id}/",
     # response=ApproveRequestOut,
     tags=['审批请求'],
-    auth=None,
 )
 def arkid_approve_request_process(request, tenant_id: str, id: str, action: str = ''):
     tenant = request.tenant

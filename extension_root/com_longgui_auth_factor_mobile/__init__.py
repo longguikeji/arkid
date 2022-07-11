@@ -53,7 +53,6 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             'POST',
             self.send_sms_code,
             tenant_path=True,
-            auth=None,
             response=SendSMSCodeOut,
         )
     
@@ -186,7 +185,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "type": "text",
                 "name":"sms_code",
                 "placeholder": "验证码",
-            },
+            }
         ]
         self.add_page_form(config, self.LOGIN, "手机验证码登录", items)
 
@@ -226,7 +225,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "type": "text",
                 "name":"sms_code",
                 "placeholder": "验证码"
-            },
+            }
         ]
         self.add_page_form(config, self.REGISTER, "手机验证码注册", items)
 
@@ -272,7 +271,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "type": "password",
                 "name":"checkpassword",
                 "placeholder": "密码确认"
-            },
+            }
         ]
         self.add_page_form(config, self.RESET_PASSWORD, "手机验证码重置密码", items)
 
@@ -324,81 +323,40 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     def create_auth_manage_page(self):
         """ 创建“我的-认证管理”中的更换手机号码页面
         """
-        configs = TenantExtensionConfig.active_objects.filter(extension__package=self.package)
-        
         _pages = []
-        for config in configs:
-            class UpdateMineMobileIn(Schema):
-                """ 更新手机号码参数Schema描述类
-
-                注意： 此处因需要部分运行时配置参数故而临时写在此处，未来可能优化
-                """
-                mobile:str = Field(
-                    title='手机号',
-                    suffix_action=DirectAction(
-                        name='发送验证码',
-                        path=self.url_send_sms_code,
-                        method=actions.FrontActionMethod.POST,
-                        params={
-                            "mobile": "mobile",
-                            "areacode": "86",
-                        },
-                        delay=60,
-                    ).dict()
-                )
-                
-                code:str = Field(title='验证码')
-            
-            class UpdateMineMobileOut(ResponseSchema):
-                pass
-            
-            def update_mine_mobile(request, tenant_id: str,data:UpdateMineMobileIn):
-                """ 普通用户：更新手机号码
-
-                Args:
-                    request: 请求体
-                    tenant_id (str): 租户ID
-                    data (UpdateMineMobileIn): 参数
-                """
-                mobile = data.mobile
-                ret, message = self.check_mobile_exists(mobile, request.tenant)
-                if not ret:
-                    return self.error(message)
-                
-                sms_code = data.code
-                if not check_sms_code(mobile, sms_code):
-                    return self.error(ErrorCode.SMS_CODE_MISMATCH)
-                
-                user = request.user
-                user.mobile=data.mobile
-                user.save()
-                
-                return self.success()
         
-            
-            mine_mobile_path = self.register_api(
-                f"/{config.id}_mine_mobile/",
-                'POST',
-                update_mine_mobile,
-                tenant_path=True,
-                response=UpdateMineMobileOut
-            )
-            
-            name = '更改手机号码'
+        mine_mobile_path = self.register_api(
+            "/mine_mobile/",
+            "GET",
+            self.mine_mobile,
+            tenant_path=True,
+            response=MineMobileOut
+        )
+        
+        upodate_mine_mobile_path = self.register_api(
+            "/mine_mobile/",
+            'POST',
+            self.update_mine_mobile,
+            tenant_path=True,
+            response=UpdateMineMobileOut
+        )
+        
+        name = '更改手机号码'
 
-            page = pages.FormPage(name=name)
-            page.create_actions(
-                init_action=actions.ConfirmAction(
-                    path=mine_mobile_path
+        page = pages.FormPage(name=name)
+        page.create_actions(
+            init_action=actions.DirectAction(
+                path=mine_mobile_path,
+                method=actions.FrontActionMethod.GET
+            ),
+            global_actions={
+                'confirm': actions.ConfirmAction(
+                    path=upodate_mine_mobile_path
                 ),
-                global_actions={
-                    'confirm': actions.ConfirmAction(
-                        path=mine_mobile_path
-                    ),
-                }
-            )
-            
-            _pages.append(page)
+            }
+        )
+        
+        _pages.append(page)
         return _pages
 
     def create_extension_config_schema(self):
@@ -477,6 +435,34 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             return self.success()
         else:
             return self.error(ErrorCode.SMS_SEND_FAILED)
+
+    @operation(UpdateMineMobileOut)
+    def update_mine_mobile(self, request, tenant_id: str,data:UpdateMineMobileIn):
+        """ 普通用户：更新手机号码
+
+        Args:
+            request: 请求体
+            tenant_id (str): 租户ID
+            data (UpdateMineMobileIn): 参数
+        """
+        mobile = data.mobile
+        ret, message = self.check_mobile_exists(mobile, request.tenant)
+        if not ret:
+            return self.error(message)
+        
+        user = request.user
+        user.mobile=data.mobile
+        user.save()
+        
+        return self.success()
     
+    # @operation(MineMobileOut)
+    def mine_mobile(self,request,tenant_id: str):
+        user = request.user
+        user_expand = User.expand_objects.filter(id=user.id).first()
+        return {
+            "data":user_expand
+        }
+
     
 extension = MobileAuthFactorExtension()
