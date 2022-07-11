@@ -72,7 +72,6 @@ def get_auto_auth(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/auto_auths/",
     tags=["自动认证"],
-    auth=None,
     response=AutoAuthCreateOut,
 )
 @operation(AutoAuthCreateOut)
@@ -98,7 +97,6 @@ def create_auto_auth(request, tenant_id: str, data: AutoAuthCreateIn):
 @api.put(
     "/tenant/{tenant_id}/auto_auths/{id}/",
     tags=["自动认证"],
-    auth=None,
     response=AutoAuthUpdateOut,
 )
 def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
@@ -121,7 +119,6 @@ def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
 @api.delete(
     "/tenant/{tenant_id}/auto_auths/{id}/",
     tags=["自动认证"],
-    auth=None,
     response=AutoAuthDeleteOut,
 )
 @operation(AutoAuthDeleteOut)

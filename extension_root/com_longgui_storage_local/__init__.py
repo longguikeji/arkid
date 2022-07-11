@@ -26,7 +26,6 @@ class LocalStorageExtension(StorageExtension):
             'GET',
             self.get_file,
             tenant_path=True,
-            auth=None
         )
         
         super().load()

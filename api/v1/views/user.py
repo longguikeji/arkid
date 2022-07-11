@@ -42,7 +42,7 @@ def user_list(request, tenant_id: str):
     return users
 
 # ------------- 创建用户接口 --------------
-@api.post("/tenant/{tenant_id}/users/",response=UserCreateOut, tags=['用户'], auth=None)
+@api.post("/tenant/{tenant_id}/users/",response=UserCreateOut, tags=['用户'])
 @operation(UserCreateOut)
 def user_create(request, tenant_id: str,data:UserCreateIn):
 
@@ -57,7 +57,7 @@ def user_create(request, tenant_id: str,data:UserCreateIn):
     return {"data":{"user":user.id.hex}}
 
 # ------------- 删除用户接口 --------------    
-@api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'], auth=None)
+@api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'])
 @operation(UserDeleteOut)
 def user_delete(request, tenant_id: str,id:str):
     user = get_object_or_404(User,tenant=request.tenant, id=id)
@@ -65,7 +65,7 @@ def user_delete(request, tenant_id: str,id:str):
     return {"error":ErrorCode.OK.value}
         
 # ------------- 更新用户接口 --------------
-@api.post("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOut, tags=['用户'], auth=None)
+@api.post("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOut, tags=['用户'])
 @operation(UserUpdateOut)
 def user_update(request, tenant_id: str,id:str, data:UserUpdateIn):
 
@@ -76,7 +76,7 @@ def user_update(request, tenant_id: str,id:str, data:UserUpdateIn):
     return {"error":ErrorCode.OK.value}
 # ------------- 获取用户接口 --------------
         
-@api.get("/tenant/{tenant_id}/users/{id}/",response=UserOut, tags=['用户'], auth=None)
+@api.get("/tenant/{tenant_id}/users/{id}/",response=UserOut, tags=['用户'])
 @operation(UserOut)
 def get_user(request, tenant_id: str,id:str):
     id = id.replace("-", "")
@@ -84,25 +84,25 @@ def get_user(request, tenant_id: str,id:str):
     return {"data":user}
 
 
-@api.get("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=["用户"],auth=None)
+@api.get("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=["用户"])
 def get_user_permissions(request, tenant_id: str,user_id:str):
     """ 用户权限列表,TODO
     """
     return []
 
-@api.post("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=["用户"],auth=None)
+@api.post("/tenant/{tenant_id}/users/{user_id}/permissions/",tags=["用户"])
 def update_user_permissions(request, tenant_id: str,user_id:str):
     """ 更新用户权限列表,TODO
     """
     return []
 
-@api.delete("/tenant/{tenant_id}/users/{user_id}/permissions/{id}/",tags=["用户"],auth=None)
+@api.delete("/tenant/{tenant_id}/users/{user_id}/permissions/{id}/",tags=["用户"])
 def delete_user_permissions(request, tenant_id: str,user_id:str,id:str):
     """ 删除用户权限,TODO
     """
     return []
 
-@api.get("/tenant/{tenant_id}/users/{user_id}/all_permissions/",tags=["用户"],auth=None)
+@api.get("/tenant/{tenant_id}/users/{user_id}/all_permissions/",tags=["用户"])
 def get_user_all_permissions(request, tenant_id: str,user_id:str):
     """ 获取所有权限并附带是否已授权给用户状态,TODO
     """

@@ -11,7 +11,7 @@ from arkid.core.translation import lang_maps as core_maps,reset_lang_maps,defaul
 from arkid.core.error import ErrorCode, ErrorDict
 
 
-@api.get("/tenant/{tenant_id}/languages/",response=List[LanguageListItemOut],tags=["语言包管理"],auth=None)
+@api.get("/tenant/{tenant_id}/languages/",response=List[LanguageListItemOut],tags=["语言包管理"])
 @operation(LanguageListOut)
 @paginate(CustomPagination)
 def get_languages(request,tenant_id:str):
@@ -31,7 +31,6 @@ def get_languages(request,tenant_id:str):
 @api.post(
     "/tenant/{tenant_id}/languages/",
     tags=["语言包管理"],
-    auth=None,
     response=LanguageCreateOut,
 )
 def create_language(request, tenant_id: str,data:LanguageCreateIn):
@@ -46,7 +45,6 @@ def create_language(request, tenant_id: str,data:LanguageCreateIn):
 @api.delete(
     "/tenant/{tenant_id}/languages/{id}/",
     tags=["语言包管理"],
-    auth=None,
     response=LanguageDeleteOut,
 )
 def delete_language(request, tenant_id: str,id:str):
@@ -67,7 +65,6 @@ def delete_language(request, tenant_id: str,id:str):
 @api.get(
     "/tenant/{tenant_id}/languages/{id}/translates/",
     tags=["语言包管理"],
-    auth=None,
     response=List[LanguageDataItemOut],
 )
 @operation(LanguageDataOut)
@@ -85,7 +82,6 @@ def get_language_data(request, tenant_id: str,id:str):
 @api.post(
     "/tenant/{tenant_id}/languages/{id}/translates/",
     tags=["语言包管理"],
-    auth=None,
     response=LanguageDataItemCreateOut,
 )
 @operation(LanguageDataItemCreateOut)
@@ -109,7 +105,6 @@ def create_language_data(request, tenant_id: str, id:str, data:LanguageDataItemC
 @api.get(
     "/tenant/{tenant_id}/translate_word/",
     tags=["语言包管理"],
-    auth=None,
     response=LanguageTranslateWordOut,
 )
 @operation(LanguageTranslateWordOut)

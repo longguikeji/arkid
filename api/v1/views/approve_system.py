@@ -35,7 +35,6 @@ from django.db.models import F
 @api.get(
     "/tenant/{tenant_id}/approve_systems/",
     tags=["审批系统"],
-    auth=None,
     response=List[ApproveSystemListItemOut],
 )
 @operation(ApproveSystemListOut)
@@ -56,7 +55,6 @@ def get_approve_system_list(request, tenant_id: str):
 @api.get(
     "/tenant/{tenant_id}/approve_systems/{id}/",
     tags=["审批系统"],
-    auth=None,
     response=ApproveSystemOut,
 )
 @operation(ApproveSystemOut)
@@ -72,7 +70,6 @@ def get_approve_system(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/approve_systems/",
     tags=["审批系统"],
-    auth=None,
     response=ApproveSystemCreateOut,
 )
 def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
@@ -96,7 +93,6 @@ def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
 @api.put(
     "/tenant/{tenant_id}/approve_systems/{id}/",
     tags=["审批系统"],
-    auth=None,
     response=ApproveSystemUpdateOut,
 )
 def update_approve_system(
@@ -121,7 +117,6 @@ def update_approve_system(
 @api.delete(
     "/tenant/{tenant_id}/approve_systems/{id}/",
     tags=["审批系统"],
-    auth=None,
     response=ApproveSystemDeleteOut,
 )
 @operation(ApproveSystemDeleteOut)

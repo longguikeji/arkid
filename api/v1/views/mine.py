@@ -47,19 +47,19 @@ def update_mine_profile(request, tenant_id: str, data: ProfileSchemaIn):
     return user
 
 
-@api.get("/mine/tenant/{tenant_id}/permissions/", tags=["我的"], auth=None)
+@api.get("/mine/tenant/{tenant_id}/permissions/", tags=["我的"])
 def get_mine_permissions(request, tenant_id: str):
     """我的权限列表,TODO"""
     return []
 
 
-@api.post("/mine/tenant/{tenant_id}/permissions/", tags=["我的"], auth=None)
+@api.post("/mine/tenant/{tenant_id}/permissions/", tags=["我的"])
 def update_mine_permissions(request, tenant_id: str):
     """更新我的权限列表,TODO"""
     return []
 
 
-@api.get("/mine/tenant/{tenant_id}/all_permissions/", tags=["我的"], auth=None)
+@api.get("/mine/tenant/{tenant_id}/all_permissions/", tags=["我的"])
 def get_mine_all_permissions(request, tenant_id: str):
     """获取所有权限并附带是否已授权给我的状态,TODO"""
     return []
@@ -95,7 +95,7 @@ def get_mine_approve_requests(
     return requests
 
 
-@api.get("/mine/switch_tenant/{id}/", tags=["我的"], auth=None)
+@api.get("/mine/switch_tenant/{id}/", tags=["我的"])
 def get_mine_switch_tenant(request, id):
     """租户开关,TODO"""
     context = {}
@@ -106,7 +106,7 @@ def get_mine_switch_tenant(request, id):
     return render(request, template_name='switch_tenant.html', context=context)
 
 
-@api.get("/mine/logout/", tags=["我的"], auth=None)
+@api.get("/mine/logout/", tags=["我的"])
 def get_mine_logout(request):
     """退出登录"""
     # request.token.expire()
@@ -115,7 +115,7 @@ def get_mine_logout(request):
 
 
 
-@api.get("/mine/tenants/", response=MineTenantListOut, tags=["我的"], auth=None)
+@api.get("/mine/tenants/", response=MineTenantListOut, tags=["我的"])
 def get_mine_tenants(request):
     """获取我的租户,TODO"""
     tenants = Tenant.active_objects.all()

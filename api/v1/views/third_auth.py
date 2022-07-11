@@ -26,7 +26,6 @@ from django.db.models import F
 @api.get(
     "/tenant/{tenant_id}/third_auths/",
     tags=["第三方认证"],
-    auth=None,
     response=List[ThirdAuthListItemOut],
 )
 @operation(ThirdAuthListOut)
@@ -42,7 +41,6 @@ def get_third_auths(request, tenant_id: str):
 @api.get(
     "/tenant/{tenant_id}/third_auths/{id}/",
     tags=["第三方认证"],
-    auth=None,
     response=ThirdAuthOut,
 )
 @operation(ThirdAuthOut)
@@ -57,7 +55,6 @@ def get_third_auth(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/third_auths/",
     tags=["第三方认证"],
-    auth=None,
     response=ThirdAuthCreateOut,
 )
 @operation(ThirdAuthCreateOut)
@@ -74,7 +71,6 @@ def create_third_auth(request, tenant_id: str, data: ThirdAuthCreateIn):
 @api.put(
     "/tenant/{tenant_id}/third_auths/{id}/",
     tags=["第三方认证"],
-    auth=None,
     response=ThirdAuthUpdateOut,
 )
 def update_third_auth(request, tenant_id: str, id: str, data: ThirdAuthUpdateIn):
@@ -88,7 +84,6 @@ def update_third_auth(request, tenant_id: str, id: str, data: ThirdAuthUpdateIn)
 @api.delete(
     "/tenant/{tenant_id}/third_auths/{id}/",
     tags=["第三方认证"],
-    auth=None,
     response=ThirdAuthDeleteOut,
 )
 @operation(ThirdAuthDeleteOut)

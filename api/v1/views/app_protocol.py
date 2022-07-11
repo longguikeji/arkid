@@ -9,7 +9,7 @@ from arkid.core.extension.app_protocol import AppProtocolExtension
 from arkid.config import get_app_config
 
 
-@api.get("/tenant/{tenant_id}/app_protocols/",response=List[AppProtocolListItemOut],tags=["应用协议"],auth=None)
+@api.get("/tenant/{tenant_id}/app_protocols/",response=List[AppProtocolListItemOut],tags=["应用协议"])
 @operation(AppProtocolListOut)
 @paginate(CustomPagination)
 def get_app_protocols(request, tenant_id: str):
