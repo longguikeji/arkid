@@ -29,38 +29,38 @@ class ImpowerRuleBaseExtension(Extension):
         self.register_config_schema(schema, self.package + '_' + impowerrule_type)
         self.register_composite_config_schema(schema, impowerrule_type, exclude=['extension'])
 
-    @abstractmethod
-    def create_rule(self, event, **kwargs):
-        """
-        抽象方法，创建授权规则
-        Params:
-            event: 事件参数
-            kwargs: 其它方法参数
-        Return:
-            bool: 是否成功执行
-        """
-        pass
+    # @abstractmethod
+    # def create_rule(self, event, **kwargs):
+    #     """
+    #     抽象方法，创建授权规则
+    #     Params:
+    #         event: 事件参数
+    #         kwargs: 其它方法参数
+    #     Return:
+    #         bool: 是否成功执行
+    #     """
+    #     pass
 
-    @abstractmethod
-    def update_rule(self, event, **kwargs):
-        """
-        抽象方法，修改授权规则
-        Params:
-            event: 事件参数
-            kwargs: 其它方法参数
-        Return:
-            bool: 是否成功执行
-        """
-        pass
+    # @abstractmethod
+    # def update_rule(self, event, **kwargs):
+    #     """
+    #     抽象方法，修改授权规则
+    #     Params:
+    #         event: 事件参数
+    #         kwargs: 其它方法参数
+    #     Return:
+    #         bool: 是否成功执行
+    #     """
+    #     pass
 
-    @abstractmethod
-    def delete_rule(self, event, **kwargs):
-        """
-        抽象方法，删除授权规则
-        Params:
-            event: 事件参数
-            kwargs: 其它方法参数
-        Return:
-            bool: 是否成功执行
-        """
-        pass
+    # @abstractmethod
+    # def delete_rule(self, event, **kwargs):
+    #     """
+    #     抽象方法，删除授权规则
+    #     Params:
+    #         event: 事件参数
+    #         kwargs: 其它方法参数
+    #     Return:
+    #         bool: 是否成功执行
+    #     """
+    #     pass

@@ -94,7 +94,6 @@ class GlobalAuth(HttpBearer):
         except Exception as err:
             logger.error(err)
             return
-
         request.user = token.user
         return token
 

@@ -19,7 +19,8 @@ class PermissionRuleListOut(ResponseSchema):
 
 class PermissionRuleOut(ResponseSchema):
     data: ImpowerRuleBaseExtension.create_composite_config_schema(
-        'PermissionRuleDataOut'
+        'PermissionRuleDataOut',
+        exclude=['id']
     )
 
 PermissionRuleCreateIn = ImpowerRuleBaseExtension.create_composite_config_schema(
@@ -29,6 +30,11 @@ PermissionRuleCreateIn = ImpowerRuleBaseExtension.create_composite_config_schema
 
 class PermissionRuleCreateOut(ResponseSchema):
     pass
+
+PermissionRuleUpdateIn = ImpowerRuleBaseExtension.create_composite_config_schema(
+    'PermissionRuleUpdateIn',
+    exclude=['id']
+)
 
 class PermissionRuleUpdateOut(ResponseSchema):
     pass

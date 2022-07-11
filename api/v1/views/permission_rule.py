@@ -1,5 +1,6 @@
 from ninja.pagination import paginate
 from arkid.core.api import api, operation
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.extension.impower_rule import ImpowerRuleBaseExtension
@@ -61,7 +62,7 @@ def create_permission_rule(request, tenant_id: str, data: PermissionRuleCreateIn
 
 @api.post("/tenant/{tenant_id}/permission_rules/{id}/", response=PermissionRuleUpdateOut, tags=["授权规则"],auth=None)
 @operation(PermissionRuleUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_permission_rule(request, tenant_id: str, id: str):
+def update_permission_rule(request, tenant_id: str, id: str, data: PermissionRuleUpdateIn):
     """ 编辑授权规则
     """
     config = TenantExtensionConfig.active_objects.get(

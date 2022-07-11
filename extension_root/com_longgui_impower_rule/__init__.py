@@ -18,16 +18,17 @@ class ImpowerRuleExtension(ImpowerRuleBaseExtension):
         '''
         注册前端页面
         '''
+        self.register_front_pages(user_field_page)
         self.register_front_pages(app_page)
         self.register_front_pages(app_permission_page)
 
-    def create_rule(self, event, **kwargs):
-        pass
+    # def create_rule(self, event, **kwargs):
+    #     pass
 
-    def update_rule(self, event, **kwargs):
-        pass
+    # def update_rule(self, event, **kwargs):
+    #     pass
 
-    def delete_rule(self, event, **kwargs):
-        pass
+    # def delete_rule(self, event, **kwargs):
+    #     pass
         
 extension = ImpowerRuleExtension()
