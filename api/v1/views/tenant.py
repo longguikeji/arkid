@@ -9,9 +9,13 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.schema import ResponseSchema
 from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.tenant import *
+from ninja.pagination import paginate
+from arkid.core.pagenation import CustomPagination
 
-@api.get("/tenants/", response=TenantListOut,tags=["租户管理"],auth=None)
-# @operation(List[TenantListOut])
+
+@api.get("/tenants/", response=List[TenantListItemOut],tags=["租户管理"],auth=None)
+@operation(TenantListOut)
+@paginate(CustomPagination)
 def get_tenant_list(request, query_data:TenantListQueryIn=Query(...)):
     """ 获取租户列表
     """
@@ -21,9 +25,7 @@ def get_tenant_list(request, query_data:TenantListQueryIn=Query(...)):
     if query_data:
         tenants = tenants.filter(**query_data)
 
-    return {
-        "data": list(tenants.all())
-    }
+    return tenants
 
 @api.get("/tenants/{id}/", response=TenantOut,tags=["租户管理"],auth=None)
 @operation(TenantOut)
