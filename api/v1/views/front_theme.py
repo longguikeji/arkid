@@ -21,7 +21,7 @@ class FrontThemeListSchemaItem(Schema):
     css_url:str = Field(title=_('CSS文件地址'))
     priority:int = Field(title=_('优先级'))
     
-@api.get("/tenant/{tenant_id}/front_theme/", response=List[FrontThemeListSchemaItem], tags=["前端主题"],auth=None)
+@api.get("/tenant/{tenant_id}/front_theme/", response=List[FrontThemeListSchemaItem], tags=["前端主题"])
 def get_front_theme_list(request, tenant_id: str):
     """ 前端主题配置列表 """
     extensions = Extension.active_objects.filter(type=FrontThemeExtension.TYPE).all()
@@ -41,7 +41,7 @@ def get_front_theme_list(request, tenant_id: str):
 
 GetFrontThemeOut = FrontThemeExtension.create_composite_config_schema('GetFrontThemeOut')
 
-@api.get("/tenant/{tenant_id}/front_theme/{id}/", response=GetFrontThemeOut, tags=["前端主题"],auth=None)
+@api.get("/tenant/{tenant_id}/front_theme/{id}/", response=GetFrontThemeOut, tags=["前端主题"])
 def get_front_theme(request, tenant_id: str, id: str):
     """ 获取前端主题配置 """
     config = TenantExtensionConfig.active_objects.filter(id=id).annotate(package=F('extension__package')).values('package','id','name','type','config').first()
@@ -54,7 +54,7 @@ CreateFrontThemeIn = FrontThemeExtension.create_composite_config_schema(
 class CreateFrontThemeOut(Schema):
     config_id: str
 
-@api.post("/tenant/{tenant_id}/front_theme/", response=CreateFrontThemeOut, tags=["前端主题"],auth=None)
+@api.post("/tenant/{tenant_id}/front_theme/", response=CreateFrontThemeOut, tags=["前端主题"])
 def create_front_theme(request, tenant_id: str, data:CreateFrontThemeIn):
     """ 创建前端主题配置 """
     extension = Extension.active_objects.filter(package = data.package).first()
@@ -67,7 +67,7 @@ def create_front_theme(request, tenant_id: str, data:CreateFrontThemeIn):
     return {'error':'无法找到{data.package}对应的插件'}
 
 
-@api.post("/tenant/{tenant_id}/front_theme/{id}/", response=CreateFrontThemeOut, tags=["前端主题"],auth=None)
+@api.post("/tenant/{tenant_id}/front_theme/{id}/", response=CreateFrontThemeOut, tags=["前端主题"])
 def update_front_theme(request, tenant_id: str, id: str, data: CreateFrontThemeIn):
     """ 编辑前端主题配置,TODO """
     extension = Extension.active_objects.filter(package = data.package).first()
@@ -79,7 +79,7 @@ def update_front_theme(request, tenant_id: str, id: str, data: CreateFrontThemeI
     return {'error':'无法找到{data.package}对应的插件'}
 
 
-@api.delete("/tenant/{tenant_id}/front_theme/{id}/", tags=["前端主题"],auth=None)
+@api.delete("/tenant/{tenant_id}/front_theme/{id}/", tags=["前端主题"])
 def delete_front_theme(request, tenant_id: str, id: str):
     """ 删除前端主题配置,TODO """
     config = TenantExtensionConfig.objects.get(id=id)

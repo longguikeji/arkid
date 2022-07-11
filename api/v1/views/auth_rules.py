@@ -53,7 +53,7 @@ def get_auth_rule(request, tenant_id: str, id: str):
     }
 
 
-@api.post("/tenant/{tenant_id}/auth_rules/", response=AuthRuleCreateOut, tags=["认证规则"], auth=None)
+@api.post("/tenant/{tenant_id}/auth_rules/", response=AuthRuleCreateOut, tags=["认证规则"])
 @operation(AuthRuleCreateOut)
 def create_auth_rule(request, tenant_id: str, data: AuthRuleCreateIn):
     """ 创建认证规则
@@ -68,7 +68,7 @@ def create_auth_rule(request, tenant_id: str, data: AuthRuleCreateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.post("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleUpdateOut, tags=["认证规则"], auth=None)
+@api.post("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleUpdateOut, tags=["认证规则"])
 @operation(AuthRuleUpdateOut)
 def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
     """ 编辑认证规则
@@ -83,7 +83,7 @@ def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.delete("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleDeleteOut, tags=["认证规则"], auth=None)
+@api.delete("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleDeleteOut, tags=["认证规则"])
 @operation(AuthRuleDeleteOut)
 def delete_auth_rule(request, tenant_id: str, id: str):
     """ 删除认证规则

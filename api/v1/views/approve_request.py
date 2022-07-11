@@ -23,7 +23,6 @@ from api.v1.schema.approve_request import (
     "/tenant/{tenant_id}/approve_requests/",
     response=List[ApproveRequestListItemOut],
     tags=['审批请求'],
-    auth=None,
 )
 @operation(ApproveRequestListOut)
 @paginate(CustomPagination)

@@ -13,7 +13,7 @@ from arkid.core.event import(
 )
 
 
-@api.get("/tenant/{tenant_id}/child_managers/", response=List[ChildManagerListOut], tags=["子管理员"],auth=None)
+@api.get("/tenant/{tenant_id}/child_managers/", response=List[ChildManagerListOut], tags=["子管理员"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_child_managers(request, tenant_id: str):
@@ -26,7 +26,7 @@ def get_child_managers(request, tenant_id: str):
     child_mans = permissiondata.get_child_mans(users, tenant)
     return child_mans
 
-@api.get("/tenant/{tenant_id}/child_managers/{id}/", response=ChildManagerDeatilBaseOut, tags=["子管理员"],auth=None)
+@api.get("/tenant/{tenant_id}/child_managers/{id}/", response=ChildManagerDeatilBaseOut, tags=["子管理员"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
 def get_child_manager(request, tenant_id: str, id: str):
     """ 获取子管理员,TODO
@@ -41,7 +41,7 @@ def get_child_manager(request, tenant_id: str, id: str):
     permissions, manager_scope, self_source_ids = pd.get_child_manager_info(str(tenant.id), user)
     return {'data': {'permissions': permissions, 'manager_scope': manager_scope}}
 
-@api.post("/tenant/{tenant_id}/child_managers/", tags=["子管理员"], auth=None)
+@api.post("/tenant/{tenant_id}/child_managers/", tags=["子管理员"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_child_manager(request, tenant_id: str, data: ChildManagerCreateSchemaIn):
     """ 创建子管理员,TODO
@@ -66,7 +66,7 @@ def create_child_manager(request, tenant_id: str, data: ChildManagerCreateSchema
         }))
     return ErrorDict(ErrorCode.OK)
 
-@api.post("/tenant/{tenant_id}/child_managers/{id}/", tags=["子管理员"],auth=None)
+@api.post("/tenant/{tenant_id}/child_managers/{id}/", tags=["子管理员"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_child_manager(request, tenant_id: str, id: str, data: ChildManagerEditSchemaIn):
     """ 编辑子管理员,TODO
@@ -116,7 +116,7 @@ def update_child_manager(request, tenant_id: str, id: str, data: ChildManagerEdi
         }))
     return ErrorDict(ErrorCode.OK)
 
-@api.delete("/tenant/{tenant_id}/child_managers/{id}/", tags=["子管理员"],auth=None)
+@api.delete("/tenant/{tenant_id}/child_managers/{id}/", tags=["子管理员"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_child_manager(request, tenant_id: str, id: str):
     """ 删除子管理员

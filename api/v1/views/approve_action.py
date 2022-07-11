@@ -23,7 +23,6 @@ from api.v1.schema.approve_action import (
 @api.get(
     "/tenant/{tenant_id}/approve_actions/",
     tags=["审批动作"],
-    auth=None,
     response=List[ApproveActionListItemOut],
 )
 @operation(ApproveActionListOut)
@@ -39,7 +38,6 @@ def get_approve_actions(request, tenant_id: str):
     operation_id="",
     path="/tenant/{tenant_id}/approve_actions/{id}/",
     tags=["审批动作"],
-    auth=None,
     response=ApproveActionOut,
 )
 def get_approve_action(request, tenant_id: str, id: str):
@@ -52,7 +50,6 @@ def get_approve_action(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/approve_actions/",
     tags=["审批动作"],
-    auth=None,
     response=ApproveActionCreateOut,
 )
 def create_approve_action(request, tenant_id: str, data: ApproveActionCreateIn):
@@ -78,7 +75,6 @@ def create_approve_action(request, tenant_id: str, data: ApproveActionCreateIn):
 @api.put(
     "/tenant/{tenant_id}/approve_actions/{id}/",
     tags=["审批动作"],
-    auth=None,
     response=ApproveActionUpdateOut,
 )
 def update_approve_action(
@@ -102,7 +98,6 @@ def update_approve_action(
 @api.delete(
     "/tenant/{tenant_id}/approve_actions/{id}/",
     tags=["审批动作"],
-    auth=None,
     response=ApproveActionDeleteOut,
 )
 @operation(ApproveActionDeleteOut)
@@ -135,7 +130,6 @@ class ApproveSystemExtensionListOut(ModelSchema):
     "/tenant/{tenant_id}/approve_system_extensions/",
     response=List[ApproveSystemExtensionListOut],
     tags=['审批动作'],
-    auth=None,
 )
 def list_approve_system_extensions(request, tenant_id: str):
     """获取审批系统插件列表"""

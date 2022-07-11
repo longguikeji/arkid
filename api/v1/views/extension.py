@@ -28,7 +28,7 @@ class ExtensionConfigSchemaOut(Schema):
     config_id: str
 
 
-@api.post("/extensions/{extension_id}/unload/",  tags=['平台插件'], auth=None)
+@api.post("/extensions/{extension_id}/unload/",  tags=['平台插件'])
 def unload_extension(request, extension_id: str):
     """卸载插件
     """
@@ -41,7 +41,7 @@ def unload_extension(request, extension_id: str):
         return {}
 
 
-@api.post("/extensions/{extension_id}/load/", tags=['平台插件'], auth=None)
+@api.post("/extensions/{extension_id}/load/", tags=['平台插件'])
 def load_extension(request, extension_id: str):
     """加载插件
     """
