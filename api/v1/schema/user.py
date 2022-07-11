@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from ninja import ModelSchema, Schema
 from arkid.core.models import User
 from pydantic import Field
@@ -45,3 +45,12 @@ class UserUpdateIn(ModelSchema):
         
 class UserUpdateOut(ResponseSchema):
     pass
+
+class UserFieldsItemOut(Schema):
+    
+    id: str = Field(title=_("id"), hidden=True)
+    name: str = Field(title=_("名称"))
+
+class UserFieldsOut(ResponseSchema):
+    
+    data: Optional[List[UserFieldsItemOut]]

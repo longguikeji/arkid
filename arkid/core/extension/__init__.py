@@ -172,6 +172,32 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
         )
         extension_schema_map[schema_cls_name] = schema
     return schema
+
+#############################################
+
+def create_extension_page(file_path, page_cls, *args, **kwargs):
+    """提供给插件用来创建Page的方法
+    
+    注意:
+        插件必须使用此方法来定义Page,避免与其它page的tag冲突
+    Args:
+        file_path (str): 指插件__init__.py文件所在的路径, 用来通过插件的config.toml文件获取package,从而避免schema的命名冲突
+        page_cls (page): 页面的类，在core.pages中定义的TablePage、TreePage等等
+        args (optional): 页面类构造参数
+        kwargs (optional): 页面类构造参数
+    Returns:
+        page : 创建的page_cls的页面实例
+    """
+    config_path = Path(file_path).parent / "config.toml"
+    if not config_path.exists():
+        raise Exception("config.tmol not found")
+
+    config = toml.load(config_path)
+    page = page_cls(*args, **kwargs)
+    page.add_tag_pre(config['package'].replace('.','_'))
+    return page
+
+
 class Extension(ABC):
     """
     Args:
@@ -516,7 +542,6 @@ class Extension(ABC):
         Args:
             page (core_pages.FrontPage): 前端页面
         """
-        page.add_tag_pre(self.pname)
         core_page.register_front_pages(page)
         self.front_pages.append(page)
 
