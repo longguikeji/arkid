@@ -3,7 +3,7 @@ from collections import defaultdict
 from ninja.openapi import get_schema
 from ninja.openapi.schema import OpenAPISchema
 from arkid.core import routers, pages, translation, actions
-from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
+from arkid.core.constants import *
 
 import copy
 
@@ -56,26 +56,14 @@ roles = [
         "type": "group",
     },
     {
-        "name": PLATFORM_ADMIN,
+        "name": PLATFORM_USER,
         "sort_id": 2,
         "type": "group",
     },
     {
-        "name": "分组",
+        "name": PLATFORM_ADMIN,
         "sort_id": 3,
         "type": "group",
-    },
-    {
-        "name": "分组1",
-        "sort_id": 4,
-        "type": "group",
-        "parent": 3
-    },
-    {
-        "name": "分组1.1",
-        "sort_id": 5,
-        "type": "group",
-        "parent": 4
     },
 ]
 
