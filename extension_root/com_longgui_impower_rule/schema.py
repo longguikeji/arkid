@@ -1,7 +1,6 @@
 from uuid import UUID
 from enum import Enum
 from ninja import Field
-from aenum import extend_enum
 from typing import List, Optional
 from ninja import ModelSchema, Schema
 from arkid.core.translation import gettext_default as _
