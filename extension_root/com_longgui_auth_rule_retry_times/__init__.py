@@ -8,6 +8,7 @@ from arkid.core.extension.auth_rule import AuthRuleExtension, BaseAuthRuleSchema
 from arkid.core.translation import gettext_default as _
 from ninja import Schema
 from pydantic import Field
+from .error import ErrorCode
 from .schema import *
 from django.core.cache import cache
 from arkid.core import event as core_event
@@ -19,18 +20,23 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         self.listen_event(AUTH_FAIL,self.auth_fail)
         
     def auth_fail(self, event, **kwargs):
-        request_id = event.request.META.get('request_id')
-        key = self.gen_key(request_id)
-        try_times  = cache.get(key,0)
-        cache.set(key,try_times+1)
-    
+        data = event.data["data"]
+        # 检查是否存在满足条件的配置
+        for config in self.get_tenant_configs(event.tenant):
+            if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
+                host = event.request.get_host()
+                key = self.gen_key(host,config.id.hex)
+                try_times  = cache.get(key,0)
+                cache.set(key,try_times+1)
+                if self.check_retry_times(host,config.id.hex,config.config.get("try_times",0)):
+                    data.update(self.error(ErrorCode.AUTH_FAIL_TIMES_OVER_LIMITED))
+                    data["refresh"] = True
+
     def check_rule(self, event, config):
         # 判断规则是否通过 如通过则执行对应操作
         login_pages = event.data
         
-        # TODO 判断规则
-        
-        if True: 
+        if self.check_retry_times(event,config.id.hex,config.config.get("try_times",0)): 
             dispatch_event(
                 Event(
                     core_event.AUTHRULE_FIX_LOGIN_PAGE,
@@ -46,10 +52,15 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
                     }
                 )
             )
+            
+    def check_retry_times(self,host,config_id,limited=3):
+        key=self.gen_key(host,config_id)
+        retry_times = cache.get(key,0)
+        return retry_times > limited
         
     
-    def gen_key(self,request_id:str):
-        return f"{self.package}_cache_{request_id}"
+    def gen_key(self,host:str,config_id:str):
+        return f"{self.package}_cache_auth_retry_times_{host}_{config_id}"
     
     def create_extension_config_schema(self):
         main_auth_factor_page = pages.TablePage(select=True,name=_("选择主认证因素"))

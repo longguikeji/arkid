@@ -59,7 +59,7 @@ class AuthFactorExtension(Extension):
     
     def auth_failed(self, event, data, **kwargs):
         config = self.get_current_config(event)
-        dispatch_event(Event(tag=core_event.AUTH_FAIL, tenant=event.tenant, request=event.request,  data={"auth_factor_config":config}))
+        dispatch_event(Event(tag=core_event.AUTH_FAIL, tenant=event.tenant, request=event.request,  data={"auth_factor_config_id":config.id.hex,"data":data}))
         core_event.remove_event_id(event)
         core_event.break_event_loop(data)
 
