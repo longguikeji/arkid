@@ -1188,6 +1188,9 @@ class PermissionData(object):
                             permissions = permissions.filter(id__isnull=True)
                         else:
                             permissions = permissions.filter(sort_id__in=permission_sort_ids)
+                elif app and app.entry_permission is None:
+                    systempermissions = systempermissions.filter(id__isnull=True)
+                    permissions = permissions.filter(id__isnull=True)
             if user_id:
                 # 系统权限
                 userpermissionresult = UserPermissionResult.valid_objects.filter(
@@ -1238,7 +1241,7 @@ class PermissionData(object):
                     permissions = permissions.filter(id__isnull=True)
         else:
             systempermissions = systempermissions.filter(Q(tenant__isnull=True)|Q(tenant_id=tenant_id))
-        return list(systempermissions)+list(permissions)
+        return list(systempermissions.all())+list(permissions.all())
     
     def get_permissions_by_childmanager(self, tenant_id, login_user, only_show_group, user_id=None):
         '''
