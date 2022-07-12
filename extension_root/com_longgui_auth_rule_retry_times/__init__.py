@@ -1,6 +1,7 @@
 import uuid
+from api.v1.views.loginpage import login_page
 from arkid.core import actions, pages
-from arkid.core.event import Event, dispatch_event
+from arkid.core.event import AUTH_FAIL, Event, dispatch_event
 from arkid.core.extension import create_extension_schema
 from arkid.core.extension.auth_factor import BaseAuthFactorSchema
 from arkid.core.extension.auth_rule import AuthRuleExtension, BaseAuthRuleSchema,MainAuthRuleSchema
@@ -15,30 +16,37 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
     def load(self):
         super().load()
         self.create_extension_config_schema()
+        self.listen_event(AUTH_FAIL,self.auth_fail)
         
-    def before_auth(self, event, **kwargs):
-        pass
-
-    def auth_success(self, event, **kwargs):
-        pass
-
     def auth_fail(self, event, **kwargs):
         request_id = event.request.META.get('request_id')
         key = self.gen_key(request_id)
         try_times  = cache.get(key,0)
         cache.set(key,try_times+1)
     
-    def login_page(self, event, **kwargs):
-        request_id = event.request.META.get('request_id')
-        key = self.gen_key(request_id)
-        try_times  = cache.get(key,0)
+    def check_rule(self, event, config):
+        # 判断规则是否通过 如通过则执行对应操作
+        login_pages = event.data
         
-        auth_factor_config = event.data.get("auth_factor_config")
-        title = event.data.get("title")
-        items = event.data.get("items")
-        for config in self.get_tenant_configs(event.tenant):
-            if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == auth_factor_config.id.hex:
-                dispatch_event(Event(tag=f"{config.config['second_auth_factor']['package']}.fix_login_page", tenant=event.tenant, request=event.request,  data={"items":items,"title":title}))
+        # TODO 判断规则
+        
+        if True: 
+            dispatch_event(
+                Event(
+                    core_event.AUTHRULE_FIX_LOGIN_PAGE,
+                    tenant=event.tenant,
+                    request=event.request,
+                    packages=[
+                        config.config["second_auth_factor"]["package"]
+                    ],
+                    data={
+                        "login_pages": login_pages,
+                        "main_auth_factor_id": config.config["main_auth_factor"]["id"],
+                        "config_id":config.config["second_auth_factor"]["id"]
+                    }
+                )
+            )
+        
     
     def gen_key(self,request_id:str):
         return f"{self.package}_cache_{request_id}"
@@ -103,4 +111,5 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
             "retry_times"
         )
 
+    
 extension = AuthRuleRetryTimesExtension()

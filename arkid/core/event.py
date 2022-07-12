@@ -355,6 +355,8 @@ CREATE_APPROVE_REQUEST = 'CREATE_APPROVE_REQUEST'
 
 AUTHFACTOR_CREATE_LOGIN_PAGE = 'AUTHFACTOR_CREATE_LOGIN_PAGE'
 
+AUTHRULE_FIX_LOGIN_PAGE = 'AUTHRULE_FIX_LOGIN_PAGE'
+
 # register events
 register_event(
     CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
@@ -429,3 +431,5 @@ register_event(ACCOUNT_LIFE_PERIODIC_TASK, _('ACCOUNT_LIFE_PERIODIC_TASK', '生�
 register_event(CREATE_APPROVE_REQUEST, _('CREATE_APPROVE_REQUEST', '创建审批请求'))
 
 register_event(AUTHFACTOR_CREATE_LOGIN_PAGE, _('AUTHFACTOR_CREATE_LOGIN_PAGE', '认证因素:创建登陆页面'))
+
+register_event(AUTHRULE_FIX_LOGIN_PAGE, _('AUTHRULE_FIX_LOGIN_PAGE', '认证规则:填充登录页面'))

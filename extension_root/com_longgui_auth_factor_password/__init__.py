@@ -212,7 +212,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def reset_password(self, event, **kwargs):
         pass
 
-    def create_login_page(self, event, config):
+    def create_login_page(self, event, config, config_data):
         username_placeholder = ""
         for lefn in config.config.get('login_enabled_field_names',[]):
             if username_placeholder:
@@ -231,9 +231,9 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 "placeholder": "密码"
             },
         ]
-        return _("密码登录"), items
+        self.add_page_form(config, self.LOGIN, "用户名密码登录", items, config_data)
 
-    def create_register_page(self, event, config):
+    def create_register_page(self, event, config, config_data):
         items = []
         register_fields = config.config.get('register_enabled_field_names')
         for rf in register_fields:
@@ -254,12 +254,12 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 "placeholder": "密码确认"
             },
         ])
-        self.add_page_form(config, self.REGISTER, "用户名密码注册", items)
+        self.add_page_form(config, self.REGISTER, "用户名密码注册", items, config_data)
 
-    def create_password_page(self, event, config):
+    def create_password_page(self, event, config, config_data):
         pass
 
-    def create_other_page(self, event, config):
+    def create_other_page(self, event, config, config_data):
         pass
     
     def check_password_complexity(self, pwd, config):

@@ -104,24 +104,25 @@ def login_page(request, tenant_id: str):
         if not login_page:
             continue
         
-        for k,v in login_page.items():
-            if not data.get(k):
-                data[k] = v
-            else:
-                if not data[k].get('bottoms'):
-                    data[k]['bottoms'] = v.get('bottoms')
+        for confg_data in login_page.values():
+            for k,v in confg_data.items():
+                if not data.get(k):
+                    data[k] = v
                 else:
-                    data[k]['bottoms'].extend(v.get('bottoms',[]))
-                if not data[k].get('forms'):
-                    data[k]['forms'] = v.get('forms')
-                else:
-                    data[k]['forms'].extend(v.get('forms',[]))
-                if not data[k].get('extend'):
-                    data[k]['extend'] = v.get('extend')
-                else:
-                    data[k]['extend']['buttons'].extend(v.get('extend', {}).get('buttons', []))
-            if not data[k].get('name'):
-                data[k]['name'] = k
+                    if not data[k].get('bottoms'):
+                        data[k]['bottoms'] = v.get('bottoms')
+                    else:
+                        data[k]['bottoms'].extend(v.get('bottoms',[]))
+                    if not data[k].get('forms'):
+                        data[k]['forms'] = v.get('forms')
+                    else:
+                        data[k]['forms'].extend(v.get('forms',[]))
+                    if not data[k].get('extend'):
+                        data[k]['extend'] = v.get('extend')
+                    else:
+                        data[k]['extend']['buttons'].extend(v.get('extend', {}).get('buttons', []))
+                if not data[k].get('name'):
+                    data[k]['name'] = k
 
     if data.get(AuthFactorExtension.RESET_PASSWORD):
         if len(data.get(AuthFactorExtension.RESET_PASSWORD)['forms']) > 0:

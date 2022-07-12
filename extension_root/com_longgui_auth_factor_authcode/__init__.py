@@ -40,7 +40,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
     def reset_password(self, event, **kwargs):
         pass
     
-    def create_login_page(self, event, config):
+    def create_login_page(self, event, config, config_data):
         pass
     
     def fix_login_page(self, event,**kwargs):
@@ -70,15 +70,19 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
                 "name": "authcode_key",
             },
         ]
-        event.data["items"].extend(items)
+        for login_pages,ext in event.data["login_pages"]:
+            for config_id,login_page in login_pages.items():
+                if config_id == uuid.UUID(event.data["main_auth_factor_id"]).hex:
+                    for form in login_page[self.LOGIN]["forms"]:
+                        form["items"].extend(items)
 
-    def create_register_page(self, event, config):
+    def create_register_page(self, event, config, config_data):
         pass
 
-    def create_password_page(self, event, config):
+    def create_password_page(self, event, config, config_data):
         pass
 
-    def create_other_page(self, event, config):
+    def create_other_page(self, event, config, config_data):
         """创建其他页面（本插件无相关页面）
 
         Args:

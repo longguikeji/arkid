@@ -74,38 +74,42 @@ class AuthFactorExtension(Extension):
     def create_response(self, event, **kwargs):
         logger.info(f'{self.package} create_response start')
         self.data = {
-            self.LOGIN: {
-                'forms':[],
-                'bottoms':[],
-                'expand':{},
-            },
-            self.REGISTER: {
-                'forms':[],
-                'bottoms':[],
-                'expand':{},
-            },
-            self.RESET_PASSWORD: {
-                'forms':[],
-                'bottoms':[],
-                'expand':{},
-            },
+            
         }
         configs = self.get_tenant_configs(event.tenant)
         for config in configs:
+            
+            config_data = {
+                self.LOGIN: {
+                    'forms':[],
+                    'bottoms':[],
+                    'expand':{},
+                },
+                self.REGISTER: {
+                    'forms':[],
+                    'bottoms':[],
+                    'expand':{},
+                },
+                self.RESET_PASSWORD: {
+                    'forms':[],
+                    'bottoms':[],
+                    'expand':{},
+                },
+            }
+            
             if config.config.get("login_enabled", True):
-                title,items = self.create_login_page(event, config)
-                dispatch_event(Event(tag=core_event.AUTHFACTOR_CREATE_LOGIN_PAGE, tenant=event.tenant, request=event.request,  data={"auth_factor_config":config,"items":items,"title":title}))
-                self.add_page_form(config, self.LOGIN, title, items)
+                self.create_login_page(event,config,config_data)
             if config.config.get("register_enabled", True):
-                self.create_register_page(event, config)
+                self.create_register_page(event, config,config_data)
             if config.config.get("reset_password_enabled", True):
-                self.create_password_page(event, config)
-            self.create_other_page(event, config)
+                self.create_password_page(event, config,config_data)
+            self.create_other_page(event, config, config_data)
+            self.data[config.id.hex] = config_data
         logger.info(self.data)
         logger.info(f'{self.package} create_response end')
         return self.data
         
-    def add_page_form(self, config, page_name, label, items, submit_url=None, submit_label=None):
+    def add_page_form(self, config, page_name, label, items, config_data, submit_url=None, submit_label=None):
         default = {
             "login": ("登录", f"/api/v1/tenant/tenant_id/auth/?event_tag={self.auth_event_tag}"),
             "register": ("登录", f"/api/v1/tenant/tenant_id/register/?event_tag={self.register_event_tag}"),
@@ -117,7 +121,7 @@ class AuthFactorExtension(Extension):
             useless, submit_url = default.get(page_name)
 
         items.append({"type": "hidden", "name": "config_id", "value": config.id})
-        self.data[page_name]['forms'].append({
+        config_data[page_name]['forms'].append({
             'label': label,
             'items': items,
             'submit': {'label': submit_label, 'http': {'url': submit_url, 'method': "post"}}
@@ -134,19 +138,19 @@ class AuthFactorExtension(Extension):
         self.data[page_name]['extend']['buttons'].append(buttons)
 
     @abstractmethod
-    def create_login_page(self, event, config):
+    def create_login_page(self, event, config, config_data):
         pass
 
     @abstractmethod
-    def create_register_page(self, event, config):
+    def create_register_page(self, event, config, config_data):
         pass
 
     @abstractmethod
-    def create_password_page(self, event, config):
+    def create_password_page(self, event, config, config_data):
         pass
 
     @abstractmethod
-    def create_other_page(self, event, config):
+    def create_other_page(self, event, config, config_data):
         pass
     
     def register_auth_manage_page(self):
@@ -166,7 +170,7 @@ class AuthFactorExtension(Extension):
     def create_auth_manage_page(self):
         pass
     
-    def fix_login_page(self,event,**kwargs):
+    def fix_login_page(self, event, **kwargs):
         pass
     
     def get_current_config(self, event):
@@ -182,8 +186,7 @@ class AuthFactorExtension(Extension):
         self.listen_event(self.password_event_tag, self.reset_password)
         self.listen_event(core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.create_response)
         
-        self.fix_login_page_event_tag = self.register_event('fix_login_page', '填充登录页')
-        self.listen_event(self.fix_login_page_event_tag, self.fix_login_page)
+        self.listen_event(core_event.AUTHRULE_FIX_LOGIN_PAGE,self.fix_login_page)
 
 class BaseAuthFactorSchema(Schema):
     login_enabled: bool = Field(default=True, title=_('login_enabled', '启用登录'))

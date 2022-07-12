@@ -156,7 +156,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         
         return self.error(ErrorCode.MOBILE_NOT_EXISTS_ERROR)
 
-    def create_login_page(self, event, config):
+    def create_login_page(self, event, config, config_data):
         """ 生成手机验证码登录页面Schema描述
 
         Args:
@@ -188,9 +188,9 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "placeholder": "验证码",
             }
         ]
-        return _("手机验证码登录"),items
+        self.add_page_form(config, self.LOGIN, "手机验证码登录", items, config_data)
 
-    def create_register_page(self, event, config):
+    def create_register_page(self, event, config, config_data):
         """生成手机验证码用户注册页面Schema描述
 
         因本插件提供重置密码功能，此处需用户指定账号用户名
@@ -228,9 +228,9 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "placeholder": "验证码"
             }
         ]
-        self.add_page_form(config, self.REGISTER, "手机验证码注册", items)
+        self.add_page_form(config, self.REGISTER, "手机验证码注册", items, config_data)
 
-    def create_password_page(self, event, config):
+    def create_password_page(self, event, config, config_data):
         """生成重置密码页面Schema描述
         
         通过手机验证码重置密码时需提供手机号码以及对应验证码，同时此处添加新密码确认机制
@@ -274,9 +274,9 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "placeholder": "密码确认"
             }
         ]
-        self.add_page_form(config, self.RESET_PASSWORD, "手机验证码重置密码", items)
+        self.add_page_form(config, self.RESET_PASSWORD, "手机验证码重置密码", items, config_data)
 
-    def create_other_page(self, event, config):
+    def create_other_page(self, event, config, config_data):
         """创建其他页面（本插件无相关页面）
 
         Args:
