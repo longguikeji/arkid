@@ -1,4 +1,5 @@
 from arkid.core.api import api, operation
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.extension.utils import import_extension
@@ -38,10 +39,9 @@ from django.db.models import F
 @api.get(
     "/tenant/{tenant_id}/account_lifes/",
     tags=["账号生命周期"],
-    auth=None,
     response=List[AccountLifeListItemOut],
 )
-@operation(AccountLifeListOut)
+@operation(AccountLifeListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_account_life_list(request, tenant_id: str):
     """账号生命周期配置列表"""
@@ -60,10 +60,9 @@ def get_account_life_list(request, tenant_id: str):
 @api.get(
     "/tenant/{tenant_id}/account_lifes/{id}/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeOut,
 )
-@operation(AccountLifeOut)
+@operation(AccountLifeOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_account_life(request, tenant_id: str, id: str):
     """获取账号生命周期配置"""
     config = (
@@ -77,10 +76,9 @@ def get_account_life(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/account_lifes/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeCreateOut,
 )
-@operation(AccountLifeCreateOut)
+@operation(AccountLifeCreateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_account_life(request, tenant_id: str, data: AccountLifeCreateIn):
     """创建账号生命周期配置"""
     extension = Extension.valid_objects.get(package=data.package)
@@ -102,10 +100,9 @@ def create_account_life(request, tenant_id: str, data: AccountLifeCreateIn):
 @api.put(
     "/tenant/{tenant_id}/account_lifes/{id}/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeUpdateOut,
 )
-@operation(AccountLifeUpdateOut)
+@operation(AccountLifeUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_account_life(request, tenant_id: str, id: str, data: AccountLifeUpdateIn):
     """编辑账号生命周期配置"""
     extension = Extension.valid_objects.get(package=data.package)
@@ -127,10 +124,9 @@ def update_account_life(request, tenant_id: str, id: str, data: AccountLifeUpdat
 @api.delete(
     "/tenant/{tenant_id}/account_lifes/{id}/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeDeleteOut,
 )
-@operation(AccountLifeDeleteOut)
+@operation(AccountLifeDeleteOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_account_life(request, tenant_id: str, id: str):
     """删除账号生命周期配置"""
     config = TenantExtensionConfig.active_objects.get(id=id)
@@ -149,10 +145,9 @@ def delete_account_life(request, tenant_id: str, id: str):
 @api.get(
     "/tenant/{tenant_id}/account_life_crontab/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeCrontabOut,
 )
-@operation(AccountLifeCrontabOut)
+@operation(AccountLifeCrontabOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_account_life_crontab(request, tenant_id: str):
     """获取账号生命周期定时任务配置"""
     crontab = AccountLifeCrontab.valid_objects.filter(tenant=request.tenant).first()
@@ -165,10 +160,9 @@ def get_account_life_crontab(request, tenant_id: str):
 @api.put(
     "/tenant/{tenant_id}/account_life_crontab/",
     tags=["账号生命周期"],
-    auth=None,
     response=AccountLifeCrontabOut,
 )
-@operation(AccountLifeCrontabOut)
+@operation(AccountLifeCrontabOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_account_life_crontab(
     request, tenant_id: str, data: AccountLifeCrontabSchema
 ):

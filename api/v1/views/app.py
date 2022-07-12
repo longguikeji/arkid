@@ -22,7 +22,7 @@ from arkid.core.pagenation import CustomPagination
 from api.v1.schema.app import *
 
 
-@api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'])
 @operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_apps(request, tenant_id: str):
@@ -45,7 +45,7 @@ def list_apps(request, tenant_id: str):
     return apps.all()
 
 
-@api.get("/tenant/{tenant_id}/open_apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/open_apps/", response=List[AppListItemOut], tags=['应用'])
 @operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_open_apps(request, tenant_id: str):
@@ -58,7 +58,7 @@ def list_open_apps(request, tenant_id: str):
     return apps
 
 
-@api.get("/tenant/{tenant_id}/all_apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/all_apps/", response=List[AppListItemOut], tags=['应用'])
 @operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_all_apps(request, tenant_id: str):
@@ -71,7 +71,7 @@ def list_all_apps(request, tenant_id: str):
     return apps
 
 
-@api.get("/tenant/{tenant_id}/all_apps_in_arkid/", response=AppListsOut, tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/all_apps_in_arkid/", response=AppListsOut, tags=['应用'])
 @operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
     '''
@@ -95,7 +95,7 @@ def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
         })
     return {'data':items}
 
-@api.get("/tenant/{tenant_id}/apps/{id}/", response=AppOut, tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/apps/{id}/", response=AppOut, tags=['应用'])
 @operation(AppOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app(request, tenant_id: str, id: str):
     '''
@@ -105,7 +105,7 @@ def get_app(request, tenant_id: str, id: str):
     app = App.expand_objects.get(id=id)
     return {"data":app}
 
-@api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionDataSchemaOut, tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionDataSchemaOut, tags=['应用'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app_openapi_version(request, tenant_id: str, app_id: str):
     '''
@@ -134,7 +134,7 @@ def get_app_openapi_version(request, tenant_id: str, app_id: str):
     return {'data':result}
 
 
-@api.post("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", tags=['应用'], auth=None)
+@api.post("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", tags=['应用'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpenApiVersionSchemaOut):
     '''
@@ -159,7 +159,7 @@ def set_app_openapi_version(request, tenant_id: str, app_id: str, data:ConfigOpe
             dispatch_event(Event(tag=SET_APP_OPENAPI_VERSION, tenant=request.tenant, request=request, data=app))
     return ErrorDict(ErrorCode.OK)
 
-@api.delete("/tenant/{tenant_id}/apps/{id}/", tags=['应用'], auth=None)
+@api.delete("/tenant/{tenant_id}/apps/{id}/", tags=['应用'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_app(request, tenant_id: str, id: str):
     '''
@@ -170,7 +170,7 @@ def delete_app(request, tenant_id: str, id: str):
     app.delete()
     return ErrorDict(ErrorCode.OK)
 
-@api.post("/tenant/{tenant_id}/apps/{id}/", tags=['应用'], auth=None)
+@api.post("/tenant/{tenant_id}/apps/{id}/", tags=['应用'])
 @operation(AppUpdateOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_app(request, tenant_id: str, id: str, data: AppUpdateIn):
     '''
@@ -183,7 +183,7 @@ def update_app(request, tenant_id: str, id: str, data: AppUpdateIn):
     dispatch_event(Event(tag=UPDATE_APP, tenant=request.tenant, request=request, data=app))
     return ErrorDict(ErrorCode.OK)
 
-@api.post("/tenant/{tenant_id}/apps/{id}/config/", tags=['应用'], auth=None)
+@api.post("/tenant/{tenant_id}/apps/{id}/config/", tags=['应用'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
     '''
@@ -225,7 +225,7 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
         pass
     return ErrorDict(ErrorCode.OK)
 
-@api.get("/tenant/{tenant_id}/apps/{id}/config/", response=AppProtocolConfigOut,tags=['应用'], auth=None)
+@api.get("/tenant/{tenant_id}/apps/{id}/config/", response=AppProtocolConfigOut,tags=['应用'])
 @operation(AppProtocolConfigOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app_config(request, tenant_id: str, id: str):
     '''
@@ -257,7 +257,7 @@ def get_app_config(request, tenant_id: str, id: str):
     }
     return {"data":result}
 
-@api.post("/tenant/{tenant_id}/apps/", tags=['应用'],response=CreateAppOut, auth=None)
+@api.post("/tenant/{tenant_id}/apps/", tags=['应用'],response=CreateAppOut)
 @operation(CreateAppOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_app(request, tenant_id: str, data:CreateAppIn):
     '''

@@ -1,3 +1,4 @@
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auto_auth import AutoAuthExtension
 from arkid.extension.models import TenantExtensionConfig, Extension, TenantExtension
@@ -33,10 +34,9 @@ from django.db.models import F
 @api.get(
     "/tenant/{tenant_id}/auto_auths/",
     tags=["自动认证"],
-    auth=None,
     response=List[AutoAuthListItemOut],
 )
-@operation(AutoAuthListOut)
+@operation(List[AutoAuthListItemOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_auto_auths(request, tenant_id: str):
     """自动认证列表"""
@@ -55,10 +55,9 @@ def get_auto_auths(request, tenant_id: str):
 @api.get(
     "/tenant/{tenant_id}/auto_auths/{id}/",
     tags=["自动认证"],
-    auth=None,
     response=AutoAuthOut,
 )
-@operation(AutoAuthOut)
+@operation(AutoAuthOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_auto_auth(request, tenant_id: str, id: str):
     """获取自动认证"""
     config = (
@@ -72,10 +71,9 @@ def get_auto_auth(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/auto_auths/",
     tags=["自动认证"],
-    auth=None,
     response=AutoAuthCreateOut,
 )
-@operation(AutoAuthCreateOut)
+@operation(AutoAuthCreateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_auto_auth(request, tenant_id: str, data: AutoAuthCreateIn):
     """创建自动认证"""
     extension = Extension.valid_objects.get(package=data.package)
@@ -98,9 +96,9 @@ def create_auto_auth(request, tenant_id: str, data: AutoAuthCreateIn):
 @api.put(
     "/tenant/{tenant_id}/auto_auths/{id}/",
     tags=["自动认证"],
-    auth=None,
     response=AutoAuthUpdateOut,
 )
+@operation(AutoAuthUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
     """编辑自动认证"""
 
@@ -121,10 +119,9 @@ def update_auto_auth(request, tenant_id: str, id: str, data: AutoAuthUpdateIn):
 @api.delete(
     "/tenant/{tenant_id}/auto_auths/{id}/",
     tags=["自动认证"],
-    auth=None,
     response=AutoAuthDeleteOut,
 )
-@operation(AutoAuthDeleteOut)
+@operation(AutoAuthDeleteOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_auto_auth(request, tenant_id: str, id: str):
     """删除自动认证"""
     config = TenantExtensionConfig.valid_objects.get(id=id)

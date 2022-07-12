@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from arkid.core.api import api, operation
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from ninja import ModelSchema, Schema
 from arkid.core.models import ApproveAction, ApproveRequest
@@ -23,9 +24,8 @@ from api.v1.schema.approve_request import (
     "/tenant/{tenant_id}/approve_requests/",
     response=List[ApproveRequestListItemOut],
     tags=['审批请求'],
-    auth=None,
 )
-@operation(ApproveRequestListOut)
+@operation(List[ApproveRequestListItemOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def approve_request_list(
     request, tenant_id: str, package: str = "", is_approved: str = ""

@@ -1,3 +1,4 @@
+from arkid.core.constants import *
 from arkid.core.models import Tenant
 from django.views import View
 from django.http import JsonResponse
@@ -13,7 +14,7 @@ from arkid.common.bind_saas import (
 from ninja import Schema
 from pydantic import Field
 from typing import Optional
-from arkid.core.api import api
+from arkid.core.api import api, operation
 
 
 class BindSaasSchemaOut(Schema):
@@ -40,6 +41,7 @@ class BindSaasInfoSchema(Schema):
 
 
 @api.get("/tenant/{tenant_id}/bind_saas/", tags=['中心平台'], response=BindSaasSchemaOut)
+@operation(BindSaasSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_bind_saas(request, tenant_id: str):
     """
     查询 saas 绑定信息
@@ -51,6 +53,7 @@ def get_bind_saas(request, tenant_id: str):
 
 
 @api.get("/tenant/{tenant_id}/bind_saas/slug/", tags=['中心平台'], response=BindSaasSlugSchemaOut)
+@operation(BindSaasSlugSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_bind_saas_slug(request, tenant_id: str):
     """
     查询 saas slug 绑定信息
@@ -60,6 +63,7 @@ def get_bind_saas_slug(request, tenant_id: str):
 
 
 @api.post("/tenant/{tenant_id}/bind_saas/slug/", tags=['中心平台'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def set_bind_saas_slug(request, tenant_id: str, data: BindSaasSlugSchemaOut):
     """
     设置 saas slug 绑定信息
@@ -72,6 +76,7 @@ def set_bind_saas_slug(request, tenant_id: str, data: BindSaasSlugSchemaOut):
 
 
 @api.get("/tenant/{tenant_id}/bind_saas/info/", tags=['中心平台'], response=BindSaasInfoSchema)
+@operation(BindSaasInfoSchema, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_bind_saas_info(request, tenant_id: str):
     """
     查询 saas info 绑定信息
@@ -81,6 +86,7 @@ def get_bind_saas_info(request, tenant_id: str):
 
 
 @api.post("/tenant/{tenant_id}/bind_saas/info/", tags=['中心平台'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_bind_saas_info(request, tenant_id: str, data: BindSaasInfoSchema):
     """
     更新 saas info 绑定信息
@@ -93,6 +99,7 @@ def update_bind_saas_info(request, tenant_id: str, data: BindSaasInfoSchema):
 
 
 @api.post("/tenant/{tenant_id}/bind_saas/", tags=['中心平台'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_bind_saas(request, tenant_id: str):
     """
     检查slug是否存在的api

@@ -7,7 +7,7 @@ from arkid.core.models import App, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from ninja.pagination import paginate
 from django.db.models import Q
-from ..schema.mine import MineAppsOut, ProfileSchemaOut, ProfileSchemaIn, MineTenantListOut
+from ..schema.mine import MineAppsOut, MineTenantListItemOut, ProfileSchemaOut, ProfileSchemaIn, MineTenantListOut
 
 
 @api.get("/mine/tenant/{tenant_id}/apps/", tags=["我的"], response=MineAppsOut)
@@ -47,19 +47,22 @@ def update_mine_profile(request, tenant_id: str, data: ProfileSchemaIn):
     return user
 
 
-@api.get("/mine/tenant/{tenant_id}/permissions/", tags=["我的"], auth=None)
+@api.get("/mine/tenant/{tenant_id}/permissions/", tags=["我的"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_permissions(request, tenant_id: str):
     """我的权限列表,TODO"""
     return []
 
 
-@api.post("/mine/tenant/{tenant_id}/permissions/", tags=["我的"], auth=None)
+@api.post("/mine/tenant/{tenant_id}/permissions/", tags=["我的"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def update_mine_permissions(request, tenant_id: str):
     """更新我的权限列表,TODO"""
     return []
 
 
-@api.get("/mine/tenant/{tenant_id}/all_permissions/", tags=["我的"], auth=None)
+@api.get("/mine/tenant/{tenant_id}/all_permissions/", tags=["我的"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_all_permissions(request, tenant_id: str):
     """获取所有权限并附带是否已授权给我的状态,TODO"""
     return []
@@ -76,7 +79,7 @@ from api.v1.schema.approve_request import (
     tags=["我的"],
     response=List[ApproveRequestListItemOut],
 )
-@operation(ApproveRequestListOut)
+@operation(ApproveRequestListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_mine_approve_requests(
     request, tenant_id: str, package: str = "", is_approved: str = ""
@@ -95,9 +98,10 @@ def get_mine_approve_requests(
     return requests
 
 
-@api.get("/mine/switch_tenant/{id}/", tags=["我的"], auth=None)
+@api.get("/mine/switch_tenant/{id}/", tags=["我的"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_switch_tenant(request, id):
-    """租户开关,TODO"""
+    """租户切换"""
     context = {}
     tenant = Tenant.active_objects.get(id=id)
     context['tenant_id'] = id
@@ -106,7 +110,8 @@ def get_mine_switch_tenant(request, id):
     return render(request, template_name='switch_tenant.html', context=context)
 
 
-@api.get("/mine/logout/", tags=["我的"], auth=None)
+@api.get("/mine/logout/", tags=["我的"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_logout(request):
     """退出登录"""
     # request.token.expire()
@@ -115,8 +120,11 @@ def get_mine_logout(request):
 
 
 
-@api.get("/mine/tenants/", response=MineTenantListOut, tags=["我的"], auth=None)
+@api.get("/mine/tenants/", response=List[MineTenantListItemOut], tags=["我的"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
 def get_mine_tenants(request):
-    """获取我的租户,TODO"""
-    tenants = Tenant.active_objects.all()
-    return {"data": list(tenants)}
+    """获取我的租户"""
+    tenants = Tenant.active_objects.filter(users=request.user).all()
+    return list(tenants)
+ 

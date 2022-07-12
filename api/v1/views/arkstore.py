@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from collections import OrderedDict
+from arkid.core.constants import *
 from arkid.core.models import Platform, Tenant
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
@@ -198,35 +199,36 @@ class PaymentStatus(Schema):
 
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
-@operation(List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_extensions(request, tenant_id: str):
     return get_arkstore_list(request, None, 'extension')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
-@operation(List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_apps(request, tenant_id: str):
     return get_arkstore_list(request, None, 'app')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
-@operation(List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str):
     return get_arkstore_list(request, True, 'extension')
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
-@operation(List[ArkstoreItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_purchased_apps(request, tenant_id: str):
     return get_arkstore_list(request, True, 'app')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=List[ListPriceSchema])
-@operation(List[ListPriceSchema])
+@api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'],
+         response=List[ListPriceSchema])
+@operation(List[ListPriceSchema], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
@@ -236,7 +238,9 @@ def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp['prices']
 
 
-@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], response=OrderSchema)
+@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'], 
+          response=OrderSchema)
+@operation(OrderSchema, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_order_arkstore_extension(request, tenant_id: str, uuid: str, data: OrderSchemaIn):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -245,12 +249,15 @@ def create_order_arkstore_extension(request, tenant_id: str, uuid: str, data: Or
     return resp
 
 
-@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/set_copies/", tags=['方舟商店'], response=SetCopies)
+@api.post("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/set_copies/", tags=['方舟商店'],
+          response=SetCopies)
+@operation(SetCopies, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def set_copies_order_arkstore_extension(request, tenant_id: str, uuid: str, data: SetCopies):
     return
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/{order_no}/payment/", tags=['方舟商店'], response=OrderPaymentOut)
+@operation(OrderPaymentOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -264,6 +271,7 @@ def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str)
         200: PaymentStatus,
         202: ResponseSchema,
     })
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -280,6 +288,7 @@ def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_n
         200: PaymentStatus,
         202: ResponseSchema,
     })
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str, package: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -299,6 +308,7 @@ def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_n
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/status/extensions/{uuid}/", tags=['方舟商店'], response=OrderStatusSchema)
+@operation(OrderStatusSchema, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def order_status_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -308,7 +318,7 @@ def order_status_arkstore_extension(request, tenant_id: str, uuid: str):
 
 
 @api.get("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=List[ListPriceSchema])
-@operation(List[ListPriceSchema])
+@operation(List[ListPriceSchema], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_rent_arkstore_extension(request, tenant_id: str, package: str):
     token = request.user.auth_token
@@ -322,6 +332,7 @@ def get_rent_arkstore_extension(request, tenant_id: str, package: str):
 
 
 @api.post("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=OrderSchema)
+@operation(OrderSchema, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_rent_order_arkstore_extension(request, tenant_id: str, package: str, data: OrderSchemaIn):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -334,6 +345,7 @@ def create_rent_order_arkstore_extension(request, tenant_id: str, package: str, 
 
 
 @api.post("/tenant/{tenant_id}/arkstore/rent/extensions/{uuid}/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def rent_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -346,6 +358,7 @@ def rent_arkstore_extension(request, tenant_id: str, uuid: str):
 
 
 @api.post("/tenant/{tenant_id}/arkstore/rent/status/extensions/{uuid}/", tags=['方舟商店'], response=OrderStatusSchema)
+@operation(OrderStatusSchema, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
     if Platform.get_config().is_need_rent:
         token = request.user.auth_token
@@ -364,6 +377,7 @@ def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
 
 
 @api.get("/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/", tags=['方舟商店'], response=TrialDaysOut)
+@operation(TrialDaysOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -373,6 +387,7 @@ def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
 
 
 @api.post("/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/", tags=['方舟商店'], response=OrderSchemaOut)
+@operation(OrderSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -382,6 +397,7 @@ def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
 
 
 @api.post("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def download_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -391,6 +407,7 @@ def download_arkstore_extension(request, tenant_id: str, uuid: str):
 
 
 @api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchemaOut)
+@operation(BindAgentSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_arkstore_bind_agent(request, tenant_id: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -400,6 +417,7 @@ def get_arkstore_bind_agent(request, tenant_id: str):
 
 
 @api.post("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchemaIn):
     tenant_slug = data.tenant_slug
     token = request.user.auth_token
@@ -410,6 +428,7 @@ def create_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchemaIn)
 
 
 @api.delete("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_arkstore_bind_agent(request, tenant_id: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -419,6 +438,7 @@ def delete_arkstore_bind_agent(request, tenant_id: str):
 
 
 @api.put("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchemaIn):
     tenant_slug = data.tenant_slug
     token = request.user.auth_token
@@ -429,6 +449,7 @@ def update_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchemaIn)
 
 
 @api.get("/tenant/{tenant_id}/arkstore/auto_fill_form/{uuid}/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_arkstore_app(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)

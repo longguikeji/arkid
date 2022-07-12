@@ -27,7 +27,6 @@ from . import (
     child_manager,
     permission_group,
     platform_config,
-    devices,
     languape,
     log,
     front_theme,
