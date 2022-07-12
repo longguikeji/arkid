@@ -2,6 +2,7 @@
 
 from typing import List
 from arkid.core.api import api, operation
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from arkid.core import event
 from ninja import Schema
@@ -19,7 +20,7 @@ class GetPathListOutItem(Schema):
     tags=["API Path列表"],
     auth=None,
 )
-@operation(List[GetPathListOutItem])
+@operation(List[GetPathListOutItem], roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_path_list(request, tenant_id: str):
     """Openapi path列表"""
     result = []

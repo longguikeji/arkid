@@ -23,7 +23,7 @@ import uuid
 
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/permissions", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permissions", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
     '''
@@ -70,7 +70,7 @@ def childmanager_permissions(request, tenant_id: str, only_show_group: int = 0):
     return permissiondata.get_permissions_by_childmanager(tenant_id, login_user, only_show_group)
 
 
-@api.get("/tenant/{tenant_id}/permission/{permission_id}", response=PermissionDetailOut, tags=['权限'], auth=None)
+@api.get("/tenant/{tenant_id}/permission/{permission_id}", response=PermissionDetailOut, tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_permission(request, tenant_id: str, permission_id: str):
     '''
@@ -82,7 +82,7 @@ def get_permission(request, tenant_id: str, permission_id: str):
     return {'data': permission}
 
 
-@api.post("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_permission(request, tenant_id: str, permission_id: str, data: PermissionEditSchemaIn):
     '''
@@ -98,7 +98,7 @@ def update_permission(request, tenant_id: str, permission_id: str, data: Permiss
     return ErrorDict(ErrorCode.OK)
 
 
-@api.delete("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'], auth=None)
+@api.delete("/tenant/{tenant_id}/permission/{permission_id}", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_permission(request, tenant_id: str, permission_id: str):
     '''
@@ -130,7 +130,7 @@ def get_permission_str(request, tenant_id: str,  app_id: str = None):
     return permissiondata.get_permission_str(user, tenant_id, app_id)
 
 
-@api.get("/app/permission_result", tags=['权限'], response=PermissionStrSchemaOut, auth=None)
+@api.get("/app/permission_result", tags=['权限'], response=PermissionStrSchemaOut)
 def get_arkstore_permission_str(request):
     '''
     获取应用权限字符串(二进制)
@@ -140,7 +140,7 @@ def get_arkstore_permission_str(request):
     return permissiondata.id_token_to_permission_str(request)
 
 
-@api.get("/app/permission_result/bin", tags=['权限'], response=PermissionStrSchemaOut, auth=None)
+@api.get("/app/permission_result/bin", tags=['权限'], response=PermissionStrSchemaOut)
 def get_arkstore_permission_str(request):
     '''
     获取应用权限字符串(base64结果中的0b1不做计算)
@@ -150,7 +150,7 @@ def get_arkstore_permission_str(request):
     return permissiondata.id_token_to_permission_str(request, True)
 
 
-@api.post("/tenant/{tenant_id}/permission/user/{select_user_id}/add_permission", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/user/{select_user_id}/add_permission", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def user_add_permission(request, tenant_id: str, select_user_id: str, data: PermissionBatchSchemaIn):
     '''
@@ -166,7 +166,7 @@ def user_add_permission(request, tenant_id: str, select_user_id: str, data: Perm
     return {'error': ErrorCode.OK.value}
 
 
-@api.delete("/tenant/{tenant_id}/permission/user/{select_user_id}/{permission_id}/remove_permission", tags=['权限'], auth=None)
+@api.delete("/tenant/{tenant_id}/permission/user/{select_user_id}/{permission_id}/remove_permission", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def user_remove_permission(request, tenant_id: str, select_user_id: str, permission_id: str):
     '''
@@ -183,7 +183,7 @@ def user_remove_permission(request, tenant_id: str, select_user_id: str, permiss
     return ErrorDict(ErrorCode.OK)
 
 
-@api.post("/tenant/{tenant_id}/permission/usergroup/{select_usergroup_id}/add_permission", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/usergroup/{select_usergroup_id}/add_permission", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def usergroup_add_permission(request, tenant_id: str, select_usergroup_id: str, data: PermissionBatchSchemaIn):
     '''
@@ -203,7 +203,7 @@ def usergroup_add_permission(request, tenant_id: str, select_usergroup_id: str, 
     return {'error': ErrorCode.OK.value}
 
 
-@api.delete("/tenant/{tenant_id}/permission/usergroup/{select_usergroup_id}/{permission_id}/remove_permission", tags=['权限'], auth=None)
+@api.delete("/tenant/{tenant_id}/permission/usergroup/{select_usergroup_id}/{permission_id}/remove_permission", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def usergroup_remove_permission(request, tenant_id: str, select_usergroup_id: str, permission_id: str):
     '''
@@ -237,7 +237,7 @@ def list_group_permissions(request, tenant_id: str, select_usergroup_id: str = N
     permissiondata = PermissionData()
     return permissiondata.get_group_permissions_by_search(tenant_id, select_usergroup_id, app_name, category)
 
-# @api.post("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'], auth=None)
+# @api.post("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'])
 # @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 # def permission_set_open(request, tenant_id: str, permission_id: str):
 #     '''
@@ -261,7 +261,7 @@ def list_group_permissions(request, tenant_id: str, select_usergroup_id: str = N
 #         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
 
 
-@api.post("/tenant/{tenant_id}/permissions/batch_open", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permissions/batch_open", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_batch_open(request, tenant_id: str, data: PermissionBatchSchemaIn):
     '''
@@ -311,7 +311,7 @@ def permission_batch_open(request, tenant_id: str, data: PermissionBatchSchemaIn
     return ErrorDict(ErrorCode.OK)
 
 
-@api.post("/tenant/{tenant_id}/permissions/batch_close", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permissions/batch_close", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_batch_close(request, tenant_id: str, data: PermissionBatchSchemaIn):
     '''
@@ -376,7 +376,7 @@ def permission_batch_close(request, tenant_id: str, data: PermissionBatchSchemaI
     return ErrorDict(ErrorCode.OK)
 
 
-# @api.post("/tenant/{tenant_id}/permission/{permission_id}/set_close", tags=['权限'], auth=None)
+# @api.post("/tenant/{tenant_id}/permission/{permission_id}/set_close", tags=['权限'])
 # @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 # def permission_set_close(request, tenant_id: str, permission_id: str):
 #     '''
@@ -412,7 +412,7 @@ def permission_batch_close(request, tenant_id: str, data: PermissionBatchSchemaI
 #         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
 
 
-@api.post("/tenant/{tenant_id}/permission/{permission_id}/toggle_open", tags=['权限'], auth=None)
+@api.post("/tenant/{tenant_id}/permission/{permission_id}/toggle_open", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def permission_toggle_open(request, tenant_id: str, permission_id: str):
     '''

@@ -64,7 +64,7 @@ def update_mine_permissions(request, tenant_id: str):
 @api.get("/mine/tenant/{tenant_id}/all_permissions/", tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_all_permissions(request, tenant_id: str):
-    """获取所有权限并附带是否已授权给我的状态,TODO"""
+    """获取所有权限并附带是否已授权给我的状态"""
     return []
 
 

@@ -275,8 +275,8 @@ class TenantConfigSelectItemOut(Schema):
 class TenantConfigSelectOut(ResponseSchema):
     data:List[TenantConfigSelectItemOut]
 
-@api.get("/tenants/{tenant_id}/config_select/",response=TenantConfigSelectOut, tags=["租户插件"], auth=None)
-@operation(TenantConfigSelectOut)
+@api.get("/tenants/{tenant_id}/config_select/",response=TenantConfigSelectOut, tags=["租户插件"])
+@operation(TenantConfigSelectOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_config_select(request,tenant_id: str,query_data:TenantConfigSelectQueryIn=Query(...)):
     """ 分类获取租户下插件配置列表
     """

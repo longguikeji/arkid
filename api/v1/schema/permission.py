@@ -23,6 +23,7 @@ select_app_page.create_actions(
 class PermissionListSchemaOut(ModelSchema):
 
     app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
+    sort_id: int = Field(hidden=True)
     is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value})
 
     class Config:

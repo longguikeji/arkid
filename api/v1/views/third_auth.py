@@ -1,4 +1,5 @@
 from arkid.core.api import api
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.external_idp import ExternalIdpExtension
 from arkid.extension.utils import import_extension
@@ -26,10 +27,9 @@ from django.db.models import F
 @api.get(
     "/tenant/{tenant_id}/third_auths/",
     tags=["第三方认证"],
-    auth=None,
     response=List[ThirdAuthListItemOut],
 )
-@operation(ThirdAuthListOut)
+@operation(List[ThirdAuthListItemOut],roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_third_auths(request, tenant_id: str):
     """第三方认证列表,TODO"""
@@ -42,10 +42,9 @@ def get_third_auths(request, tenant_id: str):
 @api.get(
     "/tenant/{tenant_id}/third_auths/{id}/",
     tags=["第三方认证"],
-    auth=None,
     response=ThirdAuthOut,
 )
-@operation(ThirdAuthOut)
+@operation(ThirdAuthOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_third_auth(request, tenant_id: str, id: str):
     """获取第三方认证"""
     config = TenantExtensionConfig.valid_objects.annotate(package=F('extension__package')).select_related("extension").get(id=id)
@@ -57,10 +56,9 @@ def get_third_auth(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/third_auths/",
     tags=["第三方认证"],
-    auth=None,
     response=ThirdAuthCreateOut,
 )
-@operation(ThirdAuthCreateOut)
+@operation(ThirdAuthCreateOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_third_auth(request, tenant_id: str, data: ThirdAuthCreateIn):
     """创建第三方认证"""
     extension = Extension.valid_objects.get(package=data.package)
@@ -74,9 +72,9 @@ def create_third_auth(request, tenant_id: str, data: ThirdAuthCreateIn):
 @api.put(
     "/tenant/{tenant_id}/third_auths/{id}/",
     tags=["第三方认证"],
-    auth=None,
     response=ThirdAuthUpdateOut,
 )
+@operation(ThirdAuthUpdateOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_third_auth(request, tenant_id: str, id: str, data: ThirdAuthUpdateIn):
     """编辑第三方认证"""
     config = TenantExtensionConfig.valid_objects.get(id=id)
@@ -88,10 +86,9 @@ def update_third_auth(request, tenant_id: str, id: str, data: ThirdAuthUpdateIn)
 @api.delete(
     "/tenant/{tenant_id}/third_auths/{id}/",
     tags=["第三方认证"],
-    auth=None,
     response=ThirdAuthDeleteOut,
 )
-@operation(ThirdAuthDeleteOut)
+@operation(ThirdAuthDeleteOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_third_auth(request, tenant_id: str, id: str):
     """删除第三方认证"""
 
