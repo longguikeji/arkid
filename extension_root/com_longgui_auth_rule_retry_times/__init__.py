@@ -24,7 +24,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         # 检查是否存在满足条件的配置
         for config in self.get_tenant_configs(event.tenant):
             if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
-                host = event.request.get_host()
+                host = event.request.META.get("REMOTE_ADDR")
                 key = self.gen_key(host,config.id.hex)
                 try_times  = cache.get(key,0)
                 cache.set(key,try_times+1)
@@ -36,7 +36,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         # 判断规则是否通过 如通过则执行对应操作
         login_pages = event.data
         
-        if self.check_retry_times(event,config.id.hex,config.config.get("try_times",0)): 
+        if self.check_retry_times(event.request.META.get("REMOTE_ADDR"),config.id.hex,config.config.get("try_times",0)): 
             dispatch_event(
                 Event(
                     core_event.AUTHRULE_FIX_LOGIN_PAGE,
