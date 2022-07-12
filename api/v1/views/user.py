@@ -33,7 +33,7 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
     users = pd.get_manage_all_user(login_user, tenant, users)
     return list(users)
 
-@api.get("/tenant/{tenant_id}/user_no_super/",response=List[UserListItemOut], tags=['用户'])
+@api.get("/tenant/{tenant_id}/user_no_super/",response=UserListOut, tags=['用户'])
 @operation(UserListOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 # @paginate(CustomPagination)
 def user_list_no_super(request, tenant_id: str):
