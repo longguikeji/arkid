@@ -1,5 +1,6 @@
 from typing import List
 from arkid.core.api import api, operation
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from api.v1.schema.app_protocol import AppProtocolListItemOut, AppProtocolListOut
 from ninja.pagination import paginate
@@ -9,8 +10,8 @@ from arkid.core.extension.app_protocol import AppProtocolExtension
 from arkid.config import get_app_config
 
 
-@api.get("/tenant/{tenant_id}/app_protocols/",response=List[AppProtocolListItemOut],tags=["应用协议"],auth=None)
-@operation(AppProtocolListOut)
+@api.get("/tenant/{tenant_id}/app_protocols/",response=List[AppProtocolListItemOut],tags=["应用协议"])
+@operation(AppProtocolListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_app_protocols(request, tenant_id: str):
     """ 应用协议列表

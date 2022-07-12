@@ -18,7 +18,7 @@ RUN set -eux; \
         gettext xmlsec1 supervisor \
         freetds-dev freetds-bin \
         python-dev python-pip \
-        python-dev default-libmysqlclient-dev tini gosu; \
+        default-libmysqlclient-dev tini gosu; \
     # verify that the binary works
     gosu nobody true; \
     rm -rf /var/lib/apt/lists/*; \
@@ -26,6 +26,7 @@ RUN set -eux; \
     setcap 'cap_net_bind_service=+ep' /usr/local/bin/python3.8
 
 ADD requirements.txt ./
+RUN sed -i "s@https://mirrors.aliyun.com/pypi/simple@$PIP@g" requirements.txt;
 RUN pip install --no-cache-dir -r requirements.txt
 
 ADD . .

@@ -28,7 +28,7 @@ class UserGroupPermissionListSelectSchemaOut(Schema):
     name: str
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/user_groups/", response=UserGroupCreateOut, tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/", response=UserGroupCreateOut, tags=['用户分组'])
 @operation(UserGroupCreateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_group(request, tenant_id: str, data: UserGroupCreateIn):
     '''
@@ -55,7 +55,7 @@ def create_group(request, tenant_id: str, data: UserGroupCreateIn):
 
 
 @api.get("/tenant/{tenant_id}/user_groups/", response=UserGroupListOut, tags=['用户分组'])
-@operation(UserGroupListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(UserGroupListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def list_groups(request, tenant_id: str,  parent_id: str = None):
     '''
     分组列表
@@ -72,8 +72,8 @@ def list_groups(request, tenant_id: str,  parent_id: str = None):
     return {"data": list(usergroups.all())}
 
 
-@api.get("/tenant/{tenant_id}/user_groups/{id}/", response=UserGroupDetailOut, tags=['用户分组'], auth=None)
-@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/user_groups/{id}/", response=UserGroupDetailOut, tags=['用户分组'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_group(request, tenant_id: str, id: str):
     '''
     获取分组
@@ -85,7 +85,7 @@ def get_group(request, tenant_id: str, id: str):
     }
 
 
-@api.post("/tenant/{tenant_id}/user_groups/{id}/", tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/{id}/", tags=['用户分组'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_group(request, tenant_id: str, id: str, data: UserGroupUpdateIn):
     '''
@@ -107,7 +107,7 @@ def update_group(request, tenant_id: str, id: str, data: UserGroupUpdateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.delete("/tenant/{tenant_id}/user_groups/{id}/", response=UserGroupDeleteOut, tags=['用户分组'], auth=None)
+@api.delete("/tenant/{tenant_id}/user_groups/{id}/", response=UserGroupDeleteOut, tags=['用户分组'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_group(request, tenant_id: str, id: str):
     '''
@@ -122,8 +122,8 @@ def delete_group(request, tenant_id: str, id: str):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", response=List[UserGroupUserListItemOut], tags=['用户分组'], auth=None)
-@operation(UserGroupUserListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", response=List[UserGroupUserListItemOut], tags=['用户分组'])
+@operation(UserGroupUserListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_group_users(request, tenant_id: str, user_group_id: str):
     '''
@@ -134,7 +134,7 @@ def get_group_users(request, tenant_id: str, user_group_id: str):
     return users
 
 
-@api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def group_users_add(request, tenant_id: str, user_group_id: str, data: UserGroupUserIn):
     '''
@@ -153,7 +153,7 @@ def group_users_add(request, tenant_id: str, user_group_id: str, data: UserGroup
     return ErrorDict(ErrorCode.OK)
 
 
-@api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'], auth=None)
+@api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def group_batch_users_remove(request, tenant_id: str, user_group_id: str, data: UserGroupUserIn):
     '''
@@ -172,7 +172,7 @@ def group_batch_users_remove(request, tenant_id: str, user_group_id: str, data: 
     return ErrorDict(ErrorCode.OK)
 
 
-@api.delete("/tenant/{tenant_id}/user_groups/{user_group_id}/users/{id}/", tags=['用户分组'], auth=None)
+@api.delete("/tenant/{tenant_id}/user_groups/{user_group_id}/users/{id}/", tags=['用户分组'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def group_users_remove(request, tenant_id: str, user_group_id: str, id: str):
     '''
@@ -188,7 +188,7 @@ def group_users_remove(request, tenant_id: str, user_group_id: str, id: str):
     # 分发事件结束
     return ErrorDict(ErrorCode.OK)
 
-@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/exclude_users/", response=List[UserGroupExcludeUsersItemOut], tags=["用户分组"],auth=None)
+@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/exclude_users/", response=List[UserGroupExcludeUsersItemOut], tags=["用户分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_exclude_users(request, tenant_id: str, user_group_id: str):
@@ -203,7 +203,7 @@ def get_exclude_users(request, tenant_id: str, user_group_id: str):
     users = User.expand_objects.filter(id__in=users).all()
     return users
 
-@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/", response=List[UserGroupPermissionListSelectSchemaOut], tags=["用户分组"],auth=None)
+@api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/", response=List[UserGroupPermissionListSelectSchemaOut], tags=["用户分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_user_group_all_permissions(request, tenant_id: str, user_group_id:str):

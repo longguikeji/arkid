@@ -13,7 +13,11 @@ from ninja.pagination import paginate
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.schema import ResponseSchema
-from arkid.common.arkstore import get_arkstore_access_token, get_arkstore_extensions_rented
+from arkid.common.arkstore import (
+    get_arkstore_access_token,
+    get_arkstore_extensions_rented,
+    check_time_and_user_valid
+)
 
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
@@ -204,15 +208,23 @@ def get_tenant_extensions(request, tenant_id: str):
     """
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    # access_token = get_arkstore_access_token(tenant, token)
-    # resp = get_arkstore_extensions_rented(access_token)
-    # extensions_rented = {ext['package']: ext for ext in resp['items']}
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extensions_rented(access_token)
+    extensions_rented = {ext['package']: ext for ext in resp['items']}
     extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_rented=True).values('extension_id')
     extensions = ExtensionModel.active_objects.filter(id__in = extension_ids)
-    # for ext in extensions:
-    #     if ext.package in extensions_rented:
-    #         ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
-            
+    for ext in extensions:
+        if ext.package in extensions_rented:
+            ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
+            lease_records = extensions_rented[ext.package].get('lease_records') or []
+            # check_lease_records_expired
+            if check_time_and_user_valid(lease_records, tenant):
+                tenant_extension, created = TenantExtension.objects.update_or_create(
+                    tenant_id=tenant_id,
+                    extension=ext,
+                    defaults={"is_rented": True}
+                )
+
     return extensions
 
 
@@ -263,8 +275,8 @@ class TenantConfigSelectItemOut(Schema):
 class TenantConfigSelectOut(ResponseSchema):
     data:List[TenantConfigSelectItemOut]
 
-@api.get("/tenants/{tenant_id}/config_select/",response=TenantConfigSelectOut, tags=["租户插件"], auth=None)
-@operation(TenantConfigSelectOut)
+@api.get("/tenants/{tenant_id}/config_select/",response=TenantConfigSelectOut, tags=["租户插件"])
+@operation(TenantConfigSelectOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_config_select(request,tenant_id: str,query_data:TenantConfigSelectQueryIn=Query(...)):
     """ 分类获取租户下插件配置列表
     """

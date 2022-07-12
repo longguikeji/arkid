@@ -135,7 +135,7 @@ def lease_arkstore_extension(access_token, extension_id, data):
 
 
 def get_arkstore_extension_detail(access_token, extension_id):
-    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/extensions/{extension_id}'
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}'
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
@@ -196,7 +196,7 @@ def order_payment_status_arkstore_extension(access_token, order_no):
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
-    if resp.status_code != 200 and resp.status_code != 404:
+    if not(resp.status_code >= 200 and resp.status_code < 300):
         raise Exception(f'Error order_payment_status_arkstore_extension: {resp.status_code}')
     resp = resp.json()
     return resp
@@ -220,6 +220,28 @@ def get_arkstore_extension_rent_status(access_token, extension_id):
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error get_arkstore_extension_rent_status: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extension_trial_days(access_token, extension_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/trial'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_trial_days: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def trial_arkstore_extension(access_token, extension_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/trial'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.post(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error trial_arkstore_extension: {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -373,6 +395,20 @@ def create_tenant_oidc_app(tenant, url, name, description='', logo=''):
             url=url,
             defaults={"description": description, "logo": logo,}
         )
+    if app.entry_permission is None:
+        from arkid.core.models import SystemPermission
+        from arkid.core.perm.permission_data import PermissionData
+        permission = SystemPermission()
+        permission.name = app.name
+        permission.code = 'entry_{}'.format(uuid.uuid4())
+        permission.tenant = tenant
+        permission.category = 'entry'
+        permission.is_system = True
+        permission.save()
+        app.entry_permission = permission
+        app.save()
+        permissiondata = PermissionData()
+        permissiondata.update_arkid_all_user_permission(str(tenant.id))
     return app
 
 
@@ -461,26 +497,11 @@ def check_arkstore_purcahsed_extension_expired(tenant, token, package):
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
-    if resp.status_code != 200 and resp.status_code != 404:
+    if not(resp.status_code >= 200 and resp.status_code < 300):
         print(f'Error check_arkstore_purcahsed_extension_expired: {resp.status_code}')
         return True
     resp = resp.json()
-    for record in resp.get('purchase_records'):
-        time_status = True
-        user_status = True
-        if resp.get("use_end_time"):
-            expire_time = parse_datetime(record["use_end_time"])
-            # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
-            now = timezone.localtime()
-            if now > expire_time:
-                time_status = False
-        if record.get("max_users"):
-            count = len(User.active_objects.filter(tenant=tenant).all())
-            if count > record["max_users"]:
-                return False
-        if time_status and user_status:
-            return True
-    return False
+    return check_time_and_user_valid(resp.get('purchase_records') or [], tenant)
 
 
 def check_arkstore_rented_extension_expired(tenant, token, package):
@@ -493,26 +514,34 @@ def check_arkstore_rented_extension_expired(tenant, token, package):
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
-    if resp.status_code != 200 and resp.status_code != 404:
+    if not(resp.status_code >= 200 and resp.status_code < 300):
         print(f'Error check_arkstore_rented_extension_expired: {resp.status_code}')
         return True
     resp = resp.json()
-    for record in resp.get('purchase_records'):
-        time_status = True
-        user_status = True
-        if resp.get("use_end_time"):
+    return check_time_and_user_valid(resp.get('lease_records') or [], tenant)
+
+
+def check_time_and_user_valid(data, tenant):
+    max_users_sum = 0
+    users_count = len(User.active_objects.filter(tenant=tenant).all())
+    for record in data:
+        if record.get("use_end_time"):
             expire_time = parse_datetime(record["use_end_time"])
             # expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
             now = timezone.localtime()
             if now > expire_time:
-                time_status = False
+                continue
         if record.get("max_users"):
-            count = len(User.active_objects.filter(tenant=tenant).all())
-            if count > record["max_users"]:
-                return False
-        if time_status and user_status:
+            if users_count > record["max_users"]:
+                max_users_sum += record["max_users"]
+            else:
+                return True
+        else:
             return True
-    return False
+    if users_count > max_users_sum:
+        return False
+    else:
+        return True
 
 
 def get_arkstore_extensions_rented(access_token, offset=0, limit=10):

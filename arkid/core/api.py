@@ -94,8 +94,11 @@ class GlobalAuth(HttpBearer):
         except Exception as err:
             logger.error(err)
             return
+        from arkid.core.models import User
+        expand_user_dict = User.expand_objects.filter(id=token.user.id).first()
 
         request.user = token.user
+        request.user_expand = expand_user_dict
         return token
 
 

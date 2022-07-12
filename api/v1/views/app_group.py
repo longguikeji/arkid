@@ -4,6 +4,7 @@ from django.shortcuts import get_list_or_404, get_object_or_404
 from ninja import Field, ModelSchema, Query, Schema
 from requests import Response
 from arkid.core.api import api,operation
+from arkid.core.constants import *
 from arkid.core.models import AppGroup
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.translation import gettext_default as _
@@ -13,8 +14,8 @@ from arkid.core.pagenation import CustomPagination
 from ninja.pagination import paginate
 
 
-@api.get("/tenant/{tenant_id}/app_groups/", response=AppGroupListOut,tags=["应用分组"],auth=None)
-@operation(AppGroupListOut)
+@api.get("/tenant/{tenant_id}/app_groups/", response=AppGroupListOut,tags=["应用分组"])
+@operation(AppGroupListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app_groups(request, tenant_id: str, query_data: AppGroupListQueryIn=Query(...)):
     """ 应用分组列表
     """
@@ -27,8 +28,8 @@ def get_app_groups(request, tenant_id: str, query_data: AppGroupListQueryIn=Quer
     return {"data":list(groups.all())}
 
 
-@api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=["应用分组"],auth=None)
-@operation(AppGroupCreateOut)
+@api.post("/tenant/{tenant_id}/app_groups/", response=AppGroupCreateOut, tags=["应用分组"])
+@operation(AppGroupCreateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
     """ 创建应用分组
     """
@@ -40,8 +41,8 @@ def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.get("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupOut, tags=["应用分组"],auth=None)
-@operation(AppGroupOut)
+@api.get("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupOut, tags=["应用分组"])
+@operation(AppGroupOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app_group(request, tenant_id: str, id: str):
     """ 获取应用分组
     """
@@ -51,8 +52,8 @@ def get_app_group(request, tenant_id: str, id: str):
         "data": group
     }
 
-@api.post("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupUpdateOut,tags=["应用分组"],auth=None)
-@operation(AppGroupUpdateOut)
+@api.post("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupUpdateOut,tags=["应用分组"])
+@operation(AppGroupUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
     """ 编辑应用分组
     """
@@ -66,8 +67,8 @@ def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
     group.save()
     return ErrorDict(ErrorCode.OK)
 
-@api.delete("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupDeleteOut, tags=["应用分组"],auth=None)
-@operation(AppGroupDeleteOut)
+@api.delete("/tenant/{tenant_id}/app_groups/{id}/", response=AppGroupDeleteOut, tags=["应用分组"])
+@operation(AppGroupDeleteOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_app_group(request, tenant_id: str, id: str):
     """ 删除应用分组
     """
@@ -75,8 +76,8 @@ def delete_app_group(request, tenant_id: str, id: str):
     group.delete()
     return ErrorDict(ErrorCode.OK)
 
-@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/",response=List[AppGroupAppListItemOut],tags=["应用分组"],auth=None)
-@operation(AppGroupAppListOut)
+@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/",response=List[AppGroupAppListItemOut],tags=["应用分组"])
+@operation(AppGroupAppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_apps_from_group(request, tenant_id: str, app_group_id: str):
     """ 获取当前分组的应用列表
@@ -85,8 +86,8 @@ def get_apps_from_group(request, tenant_id: str, app_group_id: str):
     return group.apps.all()
 
 
-@api.delete("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/{id}/",response=AppGroupAppRemoveOut, tags=["应用分组"],auth=None)
-@operation(AppGroupAppRemoveOut)
+@api.delete("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/{id}/",response=AppGroupAppRemoveOut, tags=["应用分组"])
+@operation(AppGroupAppRemoveOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str):
     """ 将应用移除出应用分组
     """
@@ -97,8 +98,8 @@ def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str):
     group.save()
     return ErrorDict(ErrorCode.OK)
 
-@api.post("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/", response=AppGroupAppUpdateOut,tags=["应用分组"],auth=None)
-@operation(AppGroupAppUpdateOut)
+@api.post("/tenant/{tenant_id}/app_groups/{app_group_id}/apps/", response=AppGroupAppUpdateOut,tags=["应用分组"])
+@operation(AppGroupAppUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_apps_from_group(request, tenant_id: str, app_group_id: str,data: AppGroupAppUpdateIn):
     """ 更新当前分组的应用列表
     """
@@ -114,8 +115,8 @@ def update_apps_from_group(request, tenant_id: str, app_group_id: str,data: AppG
     return ErrorDict(ErrorCode.OK)
 
 
-@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/exclude_apps/",response=List[AppGroupExcludeAppsItemOut], tags=["应用分组"],auth=None)
-@operation(AppGroupExcludeAppsOut)
+@api.get("/tenant/{tenant_id}/app_groups/{app_group_id}/exclude_apps/",response=List[AppGroupExcludeAppsItemOut], tags=["应用分组"])
+@operation(AppGroupExcludeAppsOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_exclude_apps(request, tenant_id: str, app_group_id: str):
     """ 获取所有未添加到分组的应用

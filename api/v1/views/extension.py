@@ -28,7 +28,8 @@ class ExtensionConfigSchemaOut(Schema):
     config_id: str
 
 
-@api.post("/extensions/{extension_id}/unload/",  tags=['平台插件'], auth=None)
+@api.post("/extensions/{extension_id}/unload/",  tags=['平台插件'])
+@operation(roles=[PLATFORM_ADMIN])
 def unload_extension(request, extension_id: str):
     """卸载插件
     """
@@ -41,7 +42,8 @@ def unload_extension(request, extension_id: str):
         return {}
 
 
-@api.post("/extensions/{extension_id}/load/", tags=['平台插件'], auth=None)
+@api.post("/extensions/{extension_id}/load/", tags=['平台插件'])
+@operation(roles=[PLATFORM_ADMIN])
 def load_extension(request, extension_id: str):
     """加载插件
     """
@@ -59,7 +61,7 @@ ExtensionProfileGetSchemaOut = Extension.create_profile_schema(
 )
 
 @api.get("/extensions/{id}/profile/", response=ExtensionProfileGetSchemaOut, tags=['平台插件'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_ADMIN])
 def get_extension_profile(request, id: str):
     """获取插件启动配置
     """
@@ -67,7 +69,7 @@ def get_extension_profile(request, id: str):
     return extension
 
 @api.post("/extensions/{id}/profile/", tags=['平台插件'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_ADMIN])
 def update_extension_profile(request, id: str, data:ExtensionProfileGetSchemaOut):
     """更新插件启动配置
     """
@@ -103,7 +105,7 @@ class ExtensionListOut(ModelSchema):
     )
 
 @api.get("/extensions/", response=List[ExtensionListOut], tags=['平台插件'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_extensions(request, status: str = None):
     """ 获取平台插件列表"""
@@ -165,6 +167,7 @@ def list_extensions(request, status: str = None):
 #     return {"success": True}
 
 @api.post("/extensions/{id}/",tags=['平台插件'])
+@operation(roles=[PLATFORM_ADMIN])
 def update_extension(request, id: str):
     """ 更新平台插件 TODO
     """
@@ -174,7 +177,8 @@ class ExtensionMarkDownOut(ResponseSchema):
     data:dict = Field(format='markdown',readonly=True)
     
 @api.get("/extensions/{id}/markdown/",tags=['平台插件'], response=ExtensionMarkDownOut)
-def get_extension(request, id: str):
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_extension_markdown(request, id: str):
     """ 获取平台插件的markdown文档"""
     
     ext_model = ExtensionModel.valid_objects.get(id=id)
@@ -189,6 +193,7 @@ def get_extension(request, id: str):
     return {"data": data}
 
 @api.post("/extensions/{id}/active/", tags=["平台插件"])
+@operation(roles=[PLATFORM_ADMIN])
 def toggle_extension_status(request, id: str):
     """ 租户插件列表
     """

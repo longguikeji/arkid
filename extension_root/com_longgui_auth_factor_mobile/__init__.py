@@ -53,7 +53,6 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             'POST',
             self.send_sms_code,
             tenant_path=True,
-            auth=None,
             response=SendSMSCodeOut,
         )
     
