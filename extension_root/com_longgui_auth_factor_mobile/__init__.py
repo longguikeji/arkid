@@ -188,7 +188,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "placeholder": "验证码",
             }
         ]
-        self.add_page_form(config, self.LOGIN, "手机验证码登录", items)
+        return _("手机验证码登录"),items
 
     def create_register_page(self, event, config):
         """生成手机验证码用户注册页面Schema描述

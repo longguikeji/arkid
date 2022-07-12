@@ -55,6 +55,7 @@ class LoginFormItemSchema(Schema):
     placeholder: Optional[str] = Field(title=_('placeholder','文字提示'))
     name: str = Field(title=_('name','名字'))
     append: Optional[ButtonSchema] = Field(title=_('append','扩展按钮'))
+    http: Optional[ButtonHttpSchema] = Field(title=_('http','http请求'))
 
 
 class LoginFormSchema(Schema):

@@ -204,14 +204,14 @@ def get_tenant_extensions(request, tenant_id: str):
     """
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extensions_rented(access_token)
-    extensions_rented = {ext['package']: ext for ext in resp['items']}
+    # access_token = get_arkstore_access_token(tenant, token)
+    # resp = get_arkstore_extensions_rented(access_token)
+    # extensions_rented = {ext['package']: ext for ext in resp['items']}
     extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_rented=True).values('extension_id')
     extensions = ExtensionModel.active_objects.filter(id__in = extension_ids)
-    for ext in extensions:
-        if ext.package in extensions_rented:
-            ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
+    # for ext in extensions:
+    #     if ext.package in extensions_rented:
+    #         ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
             
     return extensions
 

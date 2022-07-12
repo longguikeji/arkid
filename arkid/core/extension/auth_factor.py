@@ -34,13 +34,8 @@ class AuthFactorExtension(Extension):
     
     def load(self):
         super().load()
-        self.auth_event_tag = self.register_event('auth', '认证')
-        self.listen_event(self.auth_event_tag, self.start_authenticate)
-        self.register_event_tag = self.register_event('register', '注册')
-        self.listen_event(self.register_event_tag, self.register)
-        self.password_event_tag = self.register_event('password', '重置密码')
-        self.listen_event(self.password_event_tag, self.reset_password)
-        self.listen_event(core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.create_response)
+        
+        self.listen_events()
         
         self.register_auth_manage_page()
 
@@ -58,11 +53,13 @@ class AuthFactorExtension(Extension):
         pass
 
     def auth_success(self, user, event, **kwargs):
-        dispatch_event(Event(tag=core_event.AUTH_SUCCESS, tenant=event.tenant, request=event.request, data=event.data))
+        config = self.get_current_config(event)
+        dispatch_event(Event(tag=core_event.AUTH_SUCCESS, tenant=event.tenant, request=event.request, data={"auth_factor_config":config}))
         return user
     
     def auth_failed(self, event, data, **kwargs):
-        dispatch_event(Event(tag=core_event.AUTH_FAIL, tenant=event.tenant, request=event.request, data=data))
+        config = self.get_current_config(event)
+        dispatch_event(Event(tag=core_event.AUTH_FAIL, tenant=event.tenant, request=event.request,  data={"auth_factor_config":config}))
         core_event.remove_event_id(event)
         core_event.break_event_loop(data)
 
@@ -96,7 +93,9 @@ class AuthFactorExtension(Extension):
         configs = self.get_tenant_configs(event.tenant)
         for config in configs:
             if config.config.get("login_enabled", True):
-                self.create_login_page(event, config)
+                title,items = self.create_login_page(event, config)
+                dispatch_event(Event(tag=core_event.AUTHFACTOR_CREATE_LOGIN_PAGE, tenant=event.tenant, request=event.request,  data={"auth_factor_config":config,"items":items,"title":title}))
+                self.add_page_form(config, self.LOGIN, title, items)
             if config.config.get("register_enabled", True):
                 self.create_register_page(event, config)
             if config.config.get("reset_password_enabled", True):
@@ -153,6 +152,10 @@ class AuthFactorExtension(Extension):
     def register_auth_manage_page(self):
         from api.v1.pages.mine.auth_manage import page as auth_manage_page
         pages = self.create_auth_manage_page()
+        
+        if not pages:
+            return
+        
         if not isinstance(pages,list):
             pages = [pages]
         for page in pages:
@@ -163,10 +166,24 @@ class AuthFactorExtension(Extension):
     def create_auth_manage_page(self):
         pass
     
+    def fix_login_page(self,event,**kwargs):
+        pass
+    
     def get_current_config(self, event):
         config_id = event.request.POST.get('config_id')
         return self.get_config_by_id(config_id)
 
+    def listen_events(self):
+        self.auth_event_tag = self.register_event('auth', '认证')
+        self.listen_event(self.auth_event_tag, self.start_authenticate)
+        self.register_event_tag = self.register_event('register', '注册')
+        self.listen_event(self.register_event_tag, self.register)
+        self.password_event_tag = self.register_event('password', '重置密码')
+        self.listen_event(self.password_event_tag, self.reset_password)
+        self.listen_event(core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.create_response)
+        
+        self.fix_login_page_event_tag = self.register_event('fix_login_page', '填充登录页')
+        self.listen_event(self.fix_login_page_event_tag, self.fix_login_page)
 
 class BaseAuthFactorSchema(Schema):
     login_enabled: bool = Field(default=True, title=_('login_enabled', '启用登录'))

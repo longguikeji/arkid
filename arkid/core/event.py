@@ -353,6 +353,8 @@ SAVE_FILE = 'SAVE_FILE'
 ACCOUNT_LIFE_PERIODIC_TASK = 'ACCOUNT_LIFE_PERIODIC_TASK'
 CREATE_APPROVE_REQUEST = 'CREATE_APPROVE_REQUEST'
 
+AUTHFACTOR_CREATE_LOGIN_PAGE = 'AUTHFACTOR_CREATE_LOGIN_PAGE'
+
 # register events
 register_event(
     CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
@@ -425,3 +427,5 @@ register_event(UPDATE_ADMIN_ALL_PERMISSION, _('update admin all permission', '�
 register_event(SAVE_FILE, _('SAVE FILE', '保存文件'))
 register_event(ACCOUNT_LIFE_PERIODIC_TASK, _('ACCOUNT_LIFE_PERIODIC_TASK', '生命周期定时任务'))
 register_event(CREATE_APPROVE_REQUEST, _('CREATE_APPROVE_REQUEST', '创建审批请求'))
+
+register_event(AUTHFACTOR_CREATE_LOGIN_PAGE, _('AUTHFACTOR_CREATE_LOGIN_PAGE', '认证因素:创建登陆页面'))

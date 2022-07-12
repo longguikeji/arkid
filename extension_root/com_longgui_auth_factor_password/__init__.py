@@ -231,7 +231,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 "placeholder": "密码"
             },
         ]
-        self.add_page_form(config, self.LOGIN, "密码登录", items)
+        return _("密码登录"), items
 
     def create_register_page(self, event, config):
         items = []

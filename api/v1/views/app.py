@@ -23,7 +23,7 @@ from api.v1.schema.app import *
 
 
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'], auth=None)
-@operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_apps(request, tenant_id: str):
     '''
