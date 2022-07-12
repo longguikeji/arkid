@@ -130,7 +130,7 @@ def get_permission_str(request, tenant_id: str,  app_id: str = None):
     return permissiondata.get_permission_str(user, tenant_id, app_id)
 
 
-@api.get("/app/permission_result", tags=['权限'], response=PermissionStrSchemaOut)
+@api.get("/app/permission_result", tags=['权限'], response=PermissionStrSchemaOut, auth=None)
 def get_arkstore_permission_str(request):
     '''
     获取应用权限字符串(二进制)
@@ -140,7 +140,7 @@ def get_arkstore_permission_str(request):
     return permissiondata.id_token_to_permission_str(request)
 
 
-@api.get("/app/permission_result/bin", tags=['权限'], response=PermissionStrSchemaOut)
+@api.get("/app/permission_result/bin", tags=['权限'], response=PermissionStrSchemaOut, auth=None)
 def get_arkstore_permission_str(request):
     '''
     获取应用权限字符串(base64结果中的0b1不做计算)
