@@ -1123,7 +1123,7 @@ class PermissionData(object):
             )
             systempermissions = systempermissions.filter(
                 category='group'
-            )
+            ).filter(Q(code__startswith='group_role')|Q(code__startswith='other'))
             if parent_id:
                 systempermissions = systempermissions.filter(parent_id=parent_id)
                 permissions = permissions.filter(parent_id=parent_id)
@@ -1133,7 +1133,7 @@ class PermissionData(object):
         if app_id and app_id == 'arkid':
             # arkid没有应用权限
             app_id = None
-            systempermissions = systempermissions.filter(tenant_id=None)
+            systempermissions = systempermissions.filter(Q(tenant_id=tenant_id)|Q(tenant_id=None))
             permissions = permissions.filter(app_id=None)
         compress = Compress()
         if app_id is None and user_id is None and group_id is None and login_user:
