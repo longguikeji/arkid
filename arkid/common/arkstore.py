@@ -395,6 +395,20 @@ def create_tenant_oidc_app(tenant, url, name, description='', logo=''):
             url=url,
             defaults={"description": description, "logo": logo,}
         )
+    if app.entry_permission is None:
+        from arkid.core.models import SystemPermission
+        from arkid.core.perm.permission_data import PermissionData
+        permission = SystemPermission()
+        permission.name = app.name
+        permission.code = 'entry_{}'.format(uuid.uuid4())
+        permission.tenant = tenant
+        permission.category = 'entry'
+        permission.is_system = True
+        permission.save()
+        app.entry_permission = permission
+        app.save()
+        permissiondata = PermissionData()
+        permissiondata.update_arkid_all_user_permission(str(tenant.id))
     return app
 
 

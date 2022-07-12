@@ -46,6 +46,24 @@ def usergroup_saved(sender, instance: UserGroup, created: bool, **kwargs):
         pd = PermissionData()
         pd.create_usergroup_permission(instance)
 
+# def app_saved(sender, instance: App, created: bool, **kwargs):
+#     if instance.entry_permission is None:
+#         print('检测到应用创建')
+#         app = instance
+#         tenant = instance.tenant
+#         permission = SystemPermission()
+#         permission.name = app.name
+#         permission.code = 'entry_{}'.format(uuid.uuid4())
+#         permission.tenant = tenant
+#         permission.category = 'entry'
+#         permission.is_system = True
+#         permission.save()
+#         # 把应用增加一个权限
+#         app.entry_permission = permission
+#         app.save()
+#         from arkid.core.tasks.tasks import update_arkid_all_user_permission
+#         update_arkid_all_user_permission.delay(tenant.id)
+
 
 class EventListener(object):
     '''
@@ -323,3 +341,4 @@ EventListener()
 post_save.connect(receiver=user_saved, sender=User)
 post_save.connect(receiver=tenant_saved, sender=Tenant)
 post_save.connect(receiver=usergroup_saved, sender=UserGroup)
+# post_save.connect(receiver=app_saved, sender=App)
