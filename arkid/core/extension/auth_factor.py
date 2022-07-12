@@ -80,17 +80,17 @@ class AuthFactorExtension(Extension):
             self.LOGIN: {
                 'forms':[],
                 'bottoms':[],
-                'expand':{},
+                'extend':{},
             },
             self.REGISTER: {
                 'forms':[],
                 'bottoms':[],
-                'expand':{},
+                'extend':{},
             },
             self.RESET_PASSWORD: {
                 'forms':[],
                 'bottoms':[],
-                'expand':{},
+                'extend':{},
             },
         }
         configs = self.get_tenant_configs(event.tenant)

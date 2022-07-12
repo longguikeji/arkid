@@ -18,7 +18,7 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
     def load(self):
         super().load()
         self.register_extend_field(GithubUser, "github_user_id")
-        self.register_external_idp_schema(self.type, GithubConfigSchema)
+        self.register_external_idp_schema("github", GithubConfigSchema)
 
     def get_img_url(self):
         """
@@ -107,6 +107,9 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
         """
         user.github_user_id = ext_id
         user.save()
+
+    def get_img_and_redirect_url(self, config):
+        return config.config.get("img_url", ""), config.config.get("login_url", "")
 
 
 extension = ExternalIdpGithubExtension()
