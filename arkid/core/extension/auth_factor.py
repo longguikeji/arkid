@@ -73,9 +73,7 @@ class AuthFactorExtension(Extension):
     
     def create_response(self, event, **kwargs):
         logger.info(f'{self.package} create_response start')
-        self.data = {
-            
-        }
+        self.data = {}
         configs = self.get_tenant_configs(event.tenant)
         for config in configs:
             

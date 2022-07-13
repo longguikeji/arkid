@@ -50,9 +50,13 @@ class UserGroupCreateParentIn(Schema):
     id:UUID = Field(hidden=True)
     name:str
 
+class UserGroupCreateAppIn(Schema):
+    id:str = Field(hidden=True)
+    name:str
+
 class PermissionGroupSchemaIn(ModelSchema):
 
-    app: UserGroupCreateParentIn = Field(
+    app: UserGroupCreateAppIn = Field(
         # field="id",
         page=select_app_page.tag,
         # link="app",
@@ -60,6 +64,7 @@ class PermissionGroupSchemaIn(ModelSchema):
         title=_("应用")
     )
     parent: UserGroupCreateParentIn = Field(
+        default=None,
         # field="id",
         page=select_permission_group_page.tag,
         # link="name",
@@ -74,6 +79,7 @@ class PermissionGroupSchemaIn(ModelSchema):
 class PermissionGroupEditSchemaIn(Schema):
 
     parent: UserGroupCreateParentIn = Field(
+        default=None,
         # field="id",
         page=select_permission_group_page.tag,
         # link="name",
@@ -95,11 +101,13 @@ class PermissionListSchemaOut(ModelSchema):
 class PermissionListSelectSchemaOut(Schema):
 
     id: UUID = Field(default=None)
-    in_current: bool
+    in_current: bool = Field(title=_("是否在当前分组里"), hidden=True)
     name: str
     category: str
     is_system: bool
 
+class PermissionListDataSelectSchemaOut(ResponseSchema):
+    data: List[PermissionListSelectSchemaOut]
 
-class PermissionSchemaIn(Schema):
-    permission_id: str
+class PermissionGroupPermissionSchemaIn(Schema):
+    data: List[str]

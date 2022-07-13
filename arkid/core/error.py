@@ -45,6 +45,8 @@ class ErrorCode(Enum):
     # PERMISSION_NOT_DELETE = ('10034', _('the permission not delete', '该权限不允许删除'))
     BAN_REMOVE_GROUP_PERMISSION = ('10035', _('ban remove group permission', '该分组权限或范围不允许移除'))
     BAN_REMOVE_GROUP_SCOPE = ('10036', _('ban remove group permission', '该分组范围不允许移除'))
+    PERMISSION_GROUP_NOT_EDIT = ('10037', _('the permission group not edit', '该分组权限不允许编辑'))
+    PERMISSION_GROUP_NOT_DELETE = ('10038', _('the permission group not delete', '该分组权限不允许删除'))
 
     # SMS_PROVIDER_IS_MISSING = '11001'
     # AUTHCODE_PROVIDER_IS_MISSING = '11002'
