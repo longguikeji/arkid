@@ -45,7 +45,13 @@ class AuthFactorExtension(Extension):
     
     def start_authenticate(self,event,**kwargs):
         config = self.get_current_config(event)
-        dispatch_event(Event(tag=core_event.BEFORE_AUTH, tenant=event.tenant, request=event.request, data={"auth_factor_config":config}))
+        responses = dispatch_event(Event(tag=core_event.BEFORE_AUTH, tenant=event.tenant, request=event.request, data={"auth_factor_config_id":config.id.hex}))
+        for useless,(response,useless) in responses:
+            if not response:
+                continue
+            result,data = response
+            if not result:
+                return self.auth_failed(event,data)
         return self.authenticate(event, **kwargs)
 
     @abstractmethod
@@ -54,7 +60,13 @@ class AuthFactorExtension(Extension):
 
     def auth_success(self, user, event, **kwargs):
         config = self.get_current_config(event)
-        dispatch_event(Event(tag=core_event.AUTH_SUCCESS, tenant=event.tenant, request=event.request, data={"auth_factor_config":config}))
+        responses = dispatch_event(Event(tag=core_event.AUTH_SUCCESS, tenant=event.tenant, request=event.request, data={"auth_factor_config_id":config,"user":user}))
+        for useless,(response,useless) in responses:
+            if not response:
+                continue
+            result,data = response
+            if not result:
+                return self.auth_failed(event,data)
         return user
     
     def auth_failed(self, event, data, **kwargs):
@@ -168,9 +180,6 @@ class AuthFactorExtension(Extension):
     def create_auth_manage_page(self):
         pass
     
-    def fix_login_page(self, event, **kwargs):
-        pass
-    
     def get_current_config(self, event):
         config_id = event.request.POST.get('config_id')
         return self.get_config_by_id(config_id)
@@ -183,8 +192,6 @@ class AuthFactorExtension(Extension):
         self.password_event_tag = self.register_event('password', '重置密码')
         self.listen_event(self.password_event_tag, self.reset_password)
         self.listen_event(core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.create_response)
-        
-        self.listen_event(core_event.AUTHRULE_FIX_LOGIN_PAGE,self.fix_login_page)
 
 class BaseAuthFactorSchema(Schema):
     login_enabled: bool = Field(default=True, title=_('login_enabled', '启用登录'))

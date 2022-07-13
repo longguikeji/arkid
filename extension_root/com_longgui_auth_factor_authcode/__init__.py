@@ -1,5 +1,6 @@
 import base64
 from io import BytesIO
+import json
 import os
 import random
 import string
@@ -18,6 +19,7 @@ from arkid.core.translation import gettext_default as _
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from django.core.cache import cache
 from .error import ErrorCode
+from arkid.core import event as core_event
 
 class AuthCodeAuthFactorExtension(AuthFactorExtension):
     """图形验证码认证因素插件
@@ -28,6 +30,9 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
         self.create_extension_config_schema()
         self.create_extension_settings_schema()
         self.register_extension_api()
+        self.listen_event(core_event.AUTHRULE_FIX_LOGIN_PAGE,self.fix_login_page)
+        self.listen_event(core_event.AUTHRULE_CHECK_AUTH_DATA,self.check_auth_data)
+        
         super().load()
     
     def authenticate(self, event, **kwargs):
@@ -43,7 +48,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
     def create_login_page(self, event, config, config_data):
         pass
     
-    def fix_login_page(self, event,**kwargs):
+    def fix_login_page(self, event, **kwargs):
         # 生成验证码
         items = [
             {
@@ -55,14 +60,6 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
                         "url": self.generate_code_path,
                         "method": "get",
                     },
-                },
-                "http":{
-                    "url": self.check_code_path,
-                    "method": "post",
-                    "params": {
-                        "authcode_key": "",
-                        "authcode": ""
-                    }
                 }
             },
             {
@@ -76,6 +73,26 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
                     for form in login_page[self.LOGIN]["forms"]:
                         form["items"].extend(items)
 
+    def check_auth_data(self, event, **kwargs):
+        """ 响应检查认证凭证事件
+
+        Args:
+            event: 事件
+        """
+        tenant = event.tenant
+        request = event.request
+        
+        data = request.POST or json.load(request.body)
+        
+        authcode = data.get('authcode')
+        authcode_key = data.get('authcode_key')
+        
+        if not self.check_authcode(authcode,authcode_key):
+            return False,self.error(
+                ErrorCode.AUTHCODE_NOT_MATCH
+            )
+        return True,None
+            
     def create_register_page(self, event, config, config_data):
         pass
 
@@ -235,12 +252,15 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
     @operation(CheckAuthCodeOut)
     def check_auth_code(self,request,tenant_id:str,data:CheckAuthCodeIn):
         
-        if cache.get(data.authcode_key) == data.authcode:
+        if self.check_authcode(data.authcode, data.authcode_key):
             return self.success()
         else:
             return self.error(
                 ErrorCode.AUTHCODE_NOT_MATCH
             )
+            
+    def check_authcode(self,authcode,authcode_key):
+        return cache.get(authcode_key).lower() == authcode.lower()
     
     def register_extension_api(self):
         self.generate_code_path = self.register_api(

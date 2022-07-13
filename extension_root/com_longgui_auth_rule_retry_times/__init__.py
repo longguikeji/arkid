@@ -1,7 +1,7 @@
 import uuid
 from api.v1.views.loginpage import login_page
 from arkid.core import actions, pages
-from arkid.core.event import AUTH_FAIL, Event, dispatch_event
+from arkid.core.event import AUTH_FAIL, Event, dispatch_event,BEFORE_AUTH
 from arkid.core.extension import create_extension_schema
 from arkid.core.extension.auth_factor import BaseAuthFactorSchema
 from arkid.core.extension.auth_rule import AuthRuleExtension, BaseAuthRuleSchema,MainAuthRuleSchema
@@ -18,6 +18,32 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         super().load()
         self.create_extension_config_schema()
         self.listen_event(AUTH_FAIL,self.auth_fail)
+        self.listen_event(BEFORE_AUTH,self.before_auth)
+        
+    def before_auth(self,event,**kwargs):
+        for config in self.get_tenant_configs(event.tenant):
+            if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
+                host = event.request.META.get("REMOTE_ADDR")
+                if self.check_retry_times(host,config.id.hex,config.config.get("try_times",0)):
+                    # 判定需要验证
+                    responses = dispatch_event(
+                        Event(
+                            core_event.AUTHRULE_CHECK_AUTH_DATA,
+                            tenant=event.tenant,
+                            request=event.request,
+                            packages=[
+                                config.config["second_auth_factor"]["package"]
+                            ]
+                        )
+                    )
+                    
+                    for useless,(response,useless) in responses:
+                        if not response:
+                            continue
+                        result,data = response
+                        if not result:
+                            return response
+        return True,None
         
     def auth_fail(self, event, **kwargs):
         data = event.data["data"]
@@ -28,9 +54,11 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
                 key = self.gen_key(host,config.id.hex)
                 try_times  = cache.get(key,0)
                 cache.set(key,try_times+1)
-                if self.check_retry_times(host,config.id.hex,config.config.get("try_times",0)):
+                if self.check_retry_times(host,config.id.hex,config.config.get("try_times",0)) and not self.check_refresh_status(host,config.id.hex):
                     data.update(self.error(ErrorCode.AUTH_FAIL_TIMES_OVER_LIMITED))
+                    self.set_refresh_status(host,config.id.hex)
                     data["refresh"] = True
+                    
 
     def check_rule(self, event, config):
         # 判断规则是否通过 如通过则执行对应操作
@@ -57,7 +85,15 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         key=self.gen_key(host,config_id)
         retry_times = cache.get(key,0)
         return retry_times > limited
+    
+    def set_refresh_status(self,host,config_id):
+        cache.set(self.gen_refresh_key(host,config_id),1)
+    
+    def check_refresh_status(self,host,config_id):
+        return bool(cache.get(self.gen_refresh_key(host,config_id),0))
         
+    def gen_refresh_key(self,host:str,config_id:str):
+        return f"{self.package}_cache_auth_refresh_{host}_{config_id}"
     
     def gen_key(self,host:str,config_id:str):
         return f"{self.package}_cache_auth_retry_times_{host}_{config_id}"

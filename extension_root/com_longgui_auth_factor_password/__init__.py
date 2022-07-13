@@ -1,5 +1,6 @@
 from asyncio.log import logger
 from distutils import core
+import json
 import re
 from unicodedata import name
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
@@ -144,10 +145,13 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         tenant = event.tenant
         request = event.request
         
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        config_id = request.POST.get('config_id')
+        data = request.POST or json.load(request.body)
+        
+        username = data.get('username')
+        password = data.get('password')
+        config_id = data.get('config_id')
+        
+        
         config = TenantExtensionConfig.active_objects.get(id=config_id).config
         login_enabled_field_names = config.get('login_enabled_field_names')
         filter_params = None
@@ -175,7 +179,10 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def register(self, event, **kwargs):
         tenant = event.tenant
         request = event.request
-        password = request.POST.get('password')
+        data = request.POST or json.load(request.body)
+        
+        username = data.get('username')
+        password = data.get('password')
 
         config = self.get_current_config(event)
         ret, message = self.check_password_complexity(password, config)
@@ -185,7 +192,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         register_fields = config.config.get('register_enabled_field_names')
         if not register_fields:
             fields = ['username']
-            if request.POST.get('username') is None:
+            if username is None:
                 self.auth_failed(event, data=self.error(ErrorCode.USERNAME_EMPTY))
         else:
             fields = [k for k in register_fields if request.POST.get(k) is not None]

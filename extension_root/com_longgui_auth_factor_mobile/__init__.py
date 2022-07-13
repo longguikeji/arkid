@@ -1,3 +1,4 @@
+import json
 from django.urls import reverse
 from arkid.core.api import operation
 from arkid.core.event import SEND_SMS, Event, dispatch_event
@@ -67,8 +68,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         """
         tenant = event.tenant
         request = event.request
-        sms_code = request.POST.get('sms_code')
-        mobile = request.POST.get('mobile')
+        data = request.POST or json.load(request.body)
+        
+        mobile = data.get('mobile')
+        sms_code = data.get('sms_code')
 
         user = User.expand_objects.filter(tenant=tenant,mobile=mobile)
         if len(user) > 1:
@@ -94,9 +97,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         """
         tenant = event.tenant
         request = event.request
-        mobile = request.POST.get('mobile')
-        sms_code = request.POST.get('sms_code')
-        username = request.POST.get('username')
+        data = request.POST or json.load(request.body)
+        
+        mobile = data.get('mobile')
+        sms_code = data.get('sms_code')
+        username = data.get('username')
 
         config = self.get_current_config(event)
         ret, message = self.check_mobile_exists(mobile, tenant)
@@ -129,11 +134,13 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         """
         tenant = event.tenant
         request = event.request
-        mobile = request.POST.get('mobile')
-        sms_code = request.POST.get('sms_code')
+        data = request.POST or json.load(request.body)
         
-        password = request.POST.get('password')
-        checkpassword = request.POST.get('checkpassword')
+        mobile = data.get('mobile')
+        sms_code = data.get('sms_code')
+        
+        password = data.get('password')
+        checkpassword = data.get('checkpassword')
         
         if password != checkpassword:
             return self.error(ErrorCode.PASSWORD_IS_INCONSISTENT)
