@@ -7,7 +7,7 @@ from arkid.core.models import App, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from ninja.pagination import paginate
 from django.db.models import Q
-from ..schema.mine import MineAppsOut, MineTenantListItemOut, ProfileSchemaOut, ProfileSchemaIn, MineTenantListOut
+from ..schema.mine import MineAppsOut, MineLogoutOut, MineTenantListItemOut, ProfileSchemaOut, ProfileSchemaIn, MineTenantListOut
 
 
 @api.get("/mine/tenant/{tenant_id}/apps/", tags=["我的"], response=MineAppsOut)
@@ -110,15 +110,14 @@ def get_mine_switch_tenant(request, id):
     return render(request, template_name='switch_tenant.html', context=context)
 
 
-@api.get("/mine/logout/", tags=["我的"])
+@api.get("/tenant/{tenant_id}/mine/logout/", response=MineLogoutOut, tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def get_mine_logout(request):
+def get_mine_logout(request,tenant_id: str):
     """退出登录"""
-    # request.token.expire()
-    return render(request, template_name='logout.html')
-
-
-
+    request.auth.delete()
+    return {
+        "refresh":True
+    }
 
 @api.get("/mine/tenants/", response=List[MineTenantListItemOut], tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])

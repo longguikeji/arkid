@@ -39,3 +39,10 @@ class MineTenantListItemOut(ModelSchema):
 
 class MineTenantListOut(ResponseSchema):
     data: List[MineTenantListItemOut]
+
+
+class MineLogoutOut(ResponseSchema):
+    
+    refresh:bool = Field(
+        title=_("是否刷新页面")
+    )
