@@ -22,7 +22,7 @@ class FrontThemeListSchemaItem(Schema):
     css_url:str = Field(title=_('CSS文件地址'))
     priority:int = Field(title=_('优先级'))
     
-@api.get("/tenant/{tenant_id}/front_theme/", response=List[FrontThemeListSchemaItem], tags=["前端主题"])
+@api.get("/tenant/{tenant_id}/front_theme/", response=List[FrontThemeListSchemaItem], tags=["前端主题"], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_front_theme_list(request, tenant_id: str):
     """ 前端主题配置列表 """

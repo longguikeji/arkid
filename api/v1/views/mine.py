@@ -110,7 +110,7 @@ def get_mine_switch_tenant(request, id):
     return render(request, template_name='switch_tenant.html', context=context)
 
 
-@api.get("/mine/logout/", tags=["我的"])
+@api.get("/mine/logout/", tags=["我的"], auth=None)
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_logout(request):
     """退出登录"""
