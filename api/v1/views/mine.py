@@ -7,7 +7,7 @@ from arkid.core.models import App, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from ninja.pagination import paginate
 from django.db.models import Q
-from ..schema.mine import MineAppsOut, MineTenantListItemOut, ProfileSchemaOut, ProfileSchemaIn, MineTenantListOut
+from ..schema.mine import *
 
 
 @api.get("/mine/tenant/{tenant_id}/apps/", tags=["我的"], response=MineAppsOut)
@@ -47,17 +47,21 @@ def update_mine_profile(request, tenant_id: str, data: ProfileSchemaIn):
     return user
 
 
-@api.get("/mine/tenant/{tenant_id}/permissions/", tags=["我的"])
+@api.get("/mine/tenant/{tenant_id}/permissions/", response=List[MinePermissionListSchemaOut], tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def get_mine_permissions(request, tenant_id: str):
-    """我的权限列表,TODO"""
-    return []
+@paginate(CustomPagination)
+def get_mine_permissions(request, tenant_id: str, app_id: str = None, app_name: str = None, category: str = None):
+    """我的权限列表"""
+    login_user = request.user
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_permissions_by_search(tenant_id, app_id, None, None, login_user, app_name=app_name, category=category)
 
 
 @api.post("/mine/tenant/{tenant_id}/permissions/", tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def update_mine_permissions(request, tenant_id: str):
-    """更新我的权限列表,TODO"""
+    """更新我的权限列表"""
     return []
 
 
