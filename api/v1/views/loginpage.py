@@ -65,7 +65,7 @@ class LoginFormSchema(Schema):
 
 class LoginPageExtendSchema(Schema):
     title: Optional[str] = Field(title=_('title', '页面扩展标题'))
-    buttons: List[ButtonSchema] = Field(title=_('buttons', '扩展按钮'))
+    buttons: Optional[List[ButtonSchema]] = Field(title=_('buttons', '扩展按钮'))
 
 
 class LoginPageSchema(Schema):
