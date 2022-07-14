@@ -102,6 +102,9 @@ class ExtensionListOut(ModelSchema):
     # purchase_records: List[ExtensionPurchaseRecordOut] = Field(
     #     default=[], title=_("Purchase Records", "购买记录")
     # )
+    purchase_state: Optional[str] = Field(
+        title=_('Purchase State', '购买状态')
+    )
     purchase_useful_life: Optional[List[str]] = Field(
         title=_('Purchase Useful Life', '有效期')
     )
@@ -123,7 +126,8 @@ def list_extensions(request, status: str = None):
     extensions_purchased = {ext['package']: ext for ext in resp['items']}
     for ext in qs:
         if ext.package in extensions_purchased:
-            ext.purchase_useful_life = extensions_purchased[ext.package]['purchase_useful_life']
+            ext.purchase_useful_life = extensions_purchased[ext.package].get('purchase_useful_life')
+            ext.purchase_state = extensions_purchased[ext.package].get('purchase_state')
     return qs
 
 

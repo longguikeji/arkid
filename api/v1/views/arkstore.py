@@ -94,10 +94,13 @@ class UserExtensionOut(Schema):
 
 
 class OnShelveExtensionPurchaseOut(ArkstoreItemSchemaOut):
-    purchased: bool = False
+    # purchased: bool = False
     # purchase_records: List[UserExtensionOut] = Field(
     #     default=[], title=_("Purchase Records", "购买记录")
     # )
+    purchase_state: Optional[str] = Field(
+        title=_('Purchase State', '购买状态')
+    )
     purchase_useful_life: Optional[List[str]] = Field(
         title=_('Purchase Useful Life', '有效期')
     )
@@ -202,7 +205,7 @@ class PaymentStatus(Schema):
     amount: Amount
 
 
-@api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
+@api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_extensions(request, tenant_id: str):
