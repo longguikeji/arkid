@@ -17,7 +17,7 @@ class Redoc(View):
         # 获得当前的HTTP或HTTPS
         # host = request.META['HTTP_HOST']
         # 获取当前域名
-        openapi_url = http_host + '/api/v1/openapi_redoc.json'
+        openapi_url = '/api/v1/openapi_redoc.json'
         # openapi_url = http + '://' + host + '/api/v1/openapi.json'
         # openapi_url = reverse('api/v1/openapi_redoc.json')
         return render(request, 'redoc.html', context={'openapi_url': openapi_url})
