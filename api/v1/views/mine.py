@@ -73,7 +73,7 @@ def update_mine_permissions(request, tenant_id: str, permission_id: str, in_curr
 
 @api.get("/mine/tenant/{tenant_id}/permissions/{permission_id}/add_permisssion", tags=['权限'])
 @operation(roles=[NORMAL_USER])
-def mine_add_permission(request, tenant_id: str, permission_id: permission_id):
+def mine_add_permission(request, tenant_id: str, permission_id: str):
     '''
     添加用户权限
     '''
