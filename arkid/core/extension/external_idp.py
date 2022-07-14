@@ -271,18 +271,16 @@ class ExternalIdpExtension(Extension):
 
     def add_idp_login_buttons(self, event, **kwargs):
         logger.info(f'{self.package} add idp login buttons start')
-        buttons = []
+        data = {}
         configs = self.get_tenant_configs(event.tenant)
         for config in configs:
             img_url, redirect_url = self.get_img_and_redirect_url(config)
             if img_url and redirect_url:
-                buttons.append({"img": img_url, "redirect": {"url": redirect_url}})
-        logger.info(buttons)
+                buttons = [{"img": img_url, "redirect": {"url": redirect_url}}]
+                data[config.id.hex] = {"login": {'extend': {"buttons": buttons}}}
+
         logger.info(f'{self.package} add idp login buttions end')
-        if not buttons:
-            return {}
-        else:
-            return {"login": {'extend': {"buttons": buttons}}}
+        return data
 
     @abstractmethod
     def get_img_and_redirect_url(self, config):
