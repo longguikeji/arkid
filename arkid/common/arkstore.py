@@ -352,11 +352,11 @@ def get_bind_arkstore_agent(access_token):
     return resp
 
 
-def bind_arkstore_agent(access_token, tenant_slug):
+def bind_arkstore_agent(access_token, tenant_uuid):
     order_url = settings.ARKSTOER_URL + '/api/v1/bind_agent'
     headers = {'Authorization': f'Token {access_token}'}
     params = {
-        'tenant_slug': tenant_slug
+        'tenant_uuid': tenant_uuid
     }
     resp = requests.post(order_url, json=params, headers=headers)
     if resp.status_code != 200:
@@ -365,28 +365,28 @@ def bind_arkstore_agent(access_token, tenant_slug):
     return resp
 
 
-def change_arkstore_agent(access_token, tenant_slug):
-    order_url = settings.ARKSTOER_URL + '/api/v1/bind_agent'
-    headers = {'Authorization': f'Token {access_token}'}
-    params = {
-        'tenant_slug': tenant_slug
-    }
-    resp = requests.put(order_url, json=params, headers=headers)
-    if resp.status_code != 200:
-        raise Exception(f'Error bind_arkstore_agent: {resp.status_code}')
-    resp = resp.json()
-    return resp
+# def change_arkstore_agent(access_token, tenant_slug):
+#     order_url = settings.ARKSTOER_URL + '/api/v1/bind_agent'
+#     headers = {'Authorization': f'Token {access_token}'}
+#     params = {
+#         'tenant_slug': tenant_slug
+#     }
+#     resp = requests.put(order_url, json=params, headers=headers)
+#     if resp.status_code != 200:
+#         raise Exception(f'Error bind_arkstore_agent: {resp.status_code}')
+#     resp = resp.json()
+#     return resp
 
 
-def unbind_arkstore_agent(access_token):
-    order_url = settings.ARKSTOER_URL + '/api/v1/bind_agent'
-    headers = {'Authorization': f'Token {access_token}'}
-    params = {}
-    resp = requests.delete(order_url, json=params, headers=headers)
-    if resp.status_code != 200:
-        raise Exception(f'Error bind_arkstore_agent: {resp.status_code}')
-    resp = resp.json()
-    return resp
+# def unbind_arkstore_agent(access_token):
+#     order_url = settings.ARKSTOER_URL + '/api/v1/bind_agent'
+#     headers = {'Authorization': f'Token {access_token}'}
+#     params = {}
+#     resp = requests.delete(order_url, json=params, headers=headers)
+#     if resp.status_code != 200:
+#         raise Exception(f'Error bind_arkstore_agent: {resp.status_code}')
+#     resp = resp.json()
+#     return resp
 
 
 def create_tenant_oidc_app(tenant, url, name, description='', logo=''):

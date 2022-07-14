@@ -24,8 +24,8 @@ from arkid.common.arkstore import (
     get_arkid_saas_app_detail,
     get_bind_arkstore_agent,
     bind_arkstore_agent,
-    change_arkstore_agent,
-    unbind_arkstore_agent,
+    # change_arkstore_agent,
+    # unbind_arkstore_agent,
     get_arkstore_extension_markdown,
 )
 from arkid.core.api import api, operation
@@ -108,9 +108,13 @@ class OrderStatusSchema(Schema):
 
 
 class BindAgentSchema(Schema):
-    tenant_uuid: str = Field(
+    tenant_uuid: Optional[str] = Field(
         title=_('Agent Identifier', '代理商标识')
     )
+
+
+class BindAgentSchemaOut(ResponseSchema):
+    data: Optional[BindAgentSchema]
 
 
 class PriceSchema(Schema):
@@ -120,7 +124,6 @@ class PriceSchema(Schema):
     users: int = Field(title=_('Users', '人数'))
     standard_price: str =Field(title=_('Standard Price', '市场指导价'))
     sale_price: str =Field(title=_('Agent Sale Price', '代理价格'))
-
 
 
 class ExtensionOrderOut(Schema):
@@ -423,46 +426,49 @@ def download_arkstore_extension(request, tenant_id: str, package: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchema)
-@operation(BindAgentSchema, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchemaOut)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_arkstore_bind_agent(request, tenant_id: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
     resp = get_bind_arkstore_agent(access_token)
-    return resp
+    return {'data': resp}
 
 
-@api.post("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
+@api.post("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchemaOut)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchema):
-    tenant_slug = data.tenant_slug
+    tenant_uuid = data.tenant_uuid
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
-    resp = bind_arkstore_agent(access_token, tenant_slug)
-    return resp
+    resp = get_bind_arkstore_agent(access_token)
+    if resp.get('tenant_uuid'):
+        return ErrorDict(ErrorCode.AGENT_BIND_CAN_NOT_CHANGE)
+    resp = bind_arkstore_agent(access_token, tenant_uuid)
+    return {'data': resp}
 
 
-@api.delete("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def delete_arkstore_bind_agent(request, tenant_id: str):
-    token = request.user.auth_token
-    tenant = Tenant.objects.get(id=tenant_id)
-    access_token = get_arkstore_access_token(tenant, token)
-    resp = unbind_arkstore_agent(access_token)
-    return resp
+# @api.delete("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
+# @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+# def delete_arkstore_bind_agent(request, tenant_id: str):
+#     token = request.user.auth_token
+#     tenant = Tenant.objects.get(id=tenant_id)
+#     access_token = get_arkstore_access_token(tenant, token)
+#     resp = unbind_arkstore_agent(access_token)
+#     return resp
 
 
-@api.put("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchema):
-    tenant_slug = data.tenant_slug
-    token = request.user.auth_token
-    tenant = Tenant.objects.get(id=tenant_id)
-    access_token = get_arkstore_access_token(tenant, token)
-    resp = change_arkstore_agent(access_token, tenant_slug)
-    return resp
+# @api.put("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
+# @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+# def update_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchema):
+#     tenant_slug = data.tenant_slug
+#     token = request.user.auth_token
+#     tenant = Tenant.objects.get(id=tenant_id)
+#     access_token = get_arkstore_access_token(tenant, token)
+#     resp = change_arkstore_agent(access_token, tenant_slug)
+#     return resp
 
 
 @api.get("/tenant/{tenant_id}/arkstore/auto_fill_form/{uuid}/", tags=['方舟商店'])

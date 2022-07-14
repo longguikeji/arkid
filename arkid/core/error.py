@@ -71,6 +71,7 @@ class ErrorCode(Enum):
     RENT_EXTENSION_SUCCESS = ('17001', _('rent extension success', '插件租赁成功'))
     UPDATE_EXTENSION_SUCCESS = ('17002', _('extension not in arkstore', '插件不在插件商店中，无法更新'))
     TRIAL_EXTENSION_TWICE = ('17003', _('extension can not trial twice', '试用不允许重复下单'))
+    AGENT_BIND_CAN_NOT_CHANGE = ('17004', _('agent bind can not change', '代理商已绑定，无法修改'))
 
 class ErrorDict(dict):
 
