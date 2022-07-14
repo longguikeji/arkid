@@ -21,13 +21,13 @@ sequenceDiagram
     participant A as 图形验证码认证因素插件
     
     C->>A: 加载插件
-    A->>C: 注册并监听事件[AUTHRULE_FIX_LOGIN_PAGE]('/%20%20开发者指南/参考文档/事件列表/),[AUTHRULE_CHECK_AUTH_DATA]('/%20%20开发者指南/参考文档/事件列表/)
+    A->>C: 注册并监听事件AUTHRULE_FIX_LOGIN_PAGE,AUTHRULE_CHECK_AUTH_DATA
     D->>C: 访问注册/登录/重置密码页面
     C->>A: 发出AUTHRULE_FIX_LOGIN_PAGE事件
     A->>C: 响应事件,向注册/登录/重置密码页面注入元素
     C->>D: 渲染注册/登录/重置密码页面
     D->>C: 输入认证凭证，发起认证请求
-    C->>A: 触发认证凭证检查事件
+    C->>A: 触发认证凭证检查事件AUTHRULE_CHECK_AUTH_DATA
     A->>C: 响应事件，完成认证凭证检查，返回结果
     C->>D: 检查结果，如完成注册/登录相关操作则生成token并跳转至桌面，如完成重置密码操作或者未完成注册/登录操作则提示错误
 
