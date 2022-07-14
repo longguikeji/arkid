@@ -64,11 +64,6 @@ installed_page.create_actions(
             path='/api/v1/tenant/{tenant_id}/arkstore/update/{package}/',
             method=actions.FrontActionMethod.POST,
         ),
-        "active": actions.DirectAction(
-            name='切换启用状态',
-            path='/api/v1/extensions/{id}/active/',
-            method=actions.FrontActionMethod.POST,
-        ),
         "profile": actions.OpenAction(
             name='插件配置',
             page=profile_page
@@ -198,7 +193,7 @@ bind_agent_page.create_actions(
         "confirm": actions.DirectAction(
             name='确定',
             path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
-            method=actions.FrontActionMethod.PUT
+            method=actions.FrontActionMethod.POST
         ),
         # "delete": actions.DirectAction(
         #     name='删除',
