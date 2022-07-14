@@ -2,7 +2,8 @@ import io
 from arkid.common.logger import logger
 from django.core.handlers.wsgi import WSGIRequest
 from django.urls import resolve
-from arkid.core.models import ApproveRequest
+from arkid.core.models import ApproveRequest, ApproveAction
+from arkid.extension.models import Extension
 
 
 def restore_approve_request(approve_request):
@@ -35,3 +36,36 @@ def create_approve_request(http_request, user, approve_action):
         body=http_request.body,
     )
     return approve_request
+
+
+def create_approve_action(
+    name,
+    path,
+    method,
+    description=None,
+    extension=None,
+    tenant=None,
+):
+    """
+    如果tenant为None， 则为平台级别审批动作，对所有租户起作用
+    """
+    action = ApproveAction.valid_objects.filter(
+        path=path, method=method, tenant=tenant
+    ).first()
+    if action:
+        return action
+
+    if not extension:
+        extension = Extension.valid_objects.get(
+            package='com.longgui.approve.system.arkid'
+        )
+
+    action = ApproveAction.valid_objects.create(
+        name=name,
+        description=description,
+        path=path,
+        method=method,
+        extension=extension,
+        tenant=tenant,
+    )
+    return action

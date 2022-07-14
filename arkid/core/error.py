@@ -42,6 +42,7 @@ class ErrorCode(Enum):
     PERMISSION_EXISTS_ERROR = ('10033', _('the permission not exists', '该权限不存在'))
     # APP_EXISTS_ERROR = '10032'
     PERMISSION_NOT_EDIT = ('10033', _('the permission not edit', '该权限不允许编辑'))
+    PERMISSION_NOT_CLOSE = ('10033', _('the permission not edit', '该权限不允许关闭'))
     # PERMISSION_NOT_DELETE = ('10034', _('the permission not delete', '该权限不允许删除'))
     BAN_REMOVE_GROUP_PERMISSION = ('10035', _('ban remove group permission', '该分组权限或范围不允许移除'))
     BAN_REMOVE_GROUP_SCOPE = ('10036', _('ban remove group permission', '该分组范围不允许移除'))
