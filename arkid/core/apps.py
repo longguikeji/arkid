@@ -30,3 +30,4 @@ class CoreConfig(AppConfig):
 
         # 监听
         from arkid.core import listener
+        from arkid.core import preset_approve_action

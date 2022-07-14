@@ -60,15 +60,15 @@ def get_mine_permissions(request, tenant_id: str, app_id: str = None, app_name: 
     return items
 
 
-@api.get("/mine/tenant/{tenant_id}/permissions/{permission_id}/open", tags=["我的"])
-@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def update_mine_permissions(request, tenant_id: str, permission_id: str, in_current: bool):
-    """更新我的权限列表"""
-    if in_current is False:
-        return ErrorDict(ErrorCode.PERMISSION_NOT_CLOSE)
-    # 需要申请更新权限列表
+# @api.get("/mine/tenant/{tenant_id}/permissions/{permission_id}/open", tags=["我的"])
+# @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+# def update_mine_permissions(request, tenant_id: str, permission_id: str, in_current: bool):
+#     """更新我的权限列表"""
+#     if in_current is False:
+#         return ErrorDict(ErrorCode.PERMISSION_NOT_CLOSE)
+#     # 需要申请更新权限列表
     
-    return {'error': ErrorCode.OK.value}
+#     return {'error': ErrorCode.OK.value}
 
 
 @api.get("/mine/tenant/{tenant_id}/permissions/{permission_id}/add_permisssion", tags=['权限'])
@@ -80,7 +80,7 @@ def mine_add_permission(request, tenant_id: str, permission_id: str):
     from arkid.core.event import Event, dispatch_event
     from arkid.core.event import ADD_USER_MANY_PERMISSION
     user = request.user
-    if data_arr:
+    if user:
         dispatch_event(Event(tag=ADD_USER_MANY_PERMISSION, tenant=request.tenant, request=request, data={
             'user_ids': [str(user.id)],
             'tenant_id': tenant_id,
