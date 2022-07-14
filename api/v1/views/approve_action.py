@@ -57,7 +57,7 @@ def create_approve_action(request, tenant_id: str, data: ApproveActionCreateIn):
     """创建审批动作"""
     extension = Extension.valid_objects.get(id=data.extension_id)
     action = ApproveAction.valid_objects.filter(
-        path=data.path, method=data.method, extension=extension, tenant=request.tenant
+        path=data.path, method=data.method, tenant=request.tenant
     ).first()
     if action:
         return ErrorDict(ErrorCode.APPROVE_ACTION_DUPLICATED)
