@@ -20,6 +20,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from django.core.cache import cache
 from .error import ErrorCode
 from arkid.core import event as core_event
+from arkid.core.constants import *
 
 class AuthCodeAuthFactorExtension(AuthFactorExtension):
     """图形验证码认证因素插件
@@ -253,7 +254,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
         key = '{}'.format(uuid.uuid4().hex)
         return key
 
-    @operation(GenrateAuthCodeOut)
+    @operation(GenrateAuthCodeOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def get_authcode(self, request, tenant_id: str):
         """视图：获取图形验证码
 
@@ -280,7 +281,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
             }
         }
     
-    @operation(CheckAuthCodeOut)
+    @operation(CheckAuthCodeOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def check_auth_code(self,request,tenant_id:str,data:CheckAuthCodeIn):
         """视图：校验图形验证码
 

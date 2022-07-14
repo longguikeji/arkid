@@ -5,6 +5,7 @@ import re
 from unicodedata import name
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.schema import ResponseSchema
+from arkid.core.constants import *
 from arkid.core.api import operation
 from .error import ErrorCode
 from arkid.core.models import Tenant, User
@@ -317,6 +318,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         )
         return page
     
+    @operation(UpdateMinePasswordOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def update_mine_password(self,request, tenant_id: str,data:UpdateMinePasswordIn):
         """更改密码"""
         user = request.user

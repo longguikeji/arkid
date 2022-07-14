@@ -1,5 +1,6 @@
 import json
 from django.urls import reverse
+from arkid.core.constants import *
 from arkid.core.api import operation
 from arkid.core.event import SEND_SMS, Event, dispatch_event
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
@@ -443,7 +444,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         else:
             return self.error(ErrorCode.SMS_SEND_FAILED)
 
-    @operation(UpdateMineMobileOut)
+    @operation(UpdateMineMobileOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def update_mine_mobile(self, request, tenant_id: str,data:UpdateMineMobileIn):
         """ 普通用户：更新手机号码
 
@@ -463,7 +464,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         
         return self.success()
     
-    # @operation(MineMobileOut)
+    @operation(MineMobileOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def mine_mobile(self,request,tenant_id: str):
         user = request.user
         user_expand = User.expand_objects.filter(id=user.id).first()
