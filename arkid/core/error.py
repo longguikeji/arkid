@@ -69,6 +69,7 @@ class ErrorCode(Enum):
     USER_GROUP_PARENT_CANT_BE_ITSELF = ('16002', _('user group parent can not be itself', '用户分组上级分组不能设置为其自身'))
 
     RENT_EXTENSION_SUCCESS = ('17001', _('rent extension success', '插件租赁成功'))
+    UPDATE_EXTENSION_SUCCESS = ('17002', _('extension not in arkstore', '插件不在插件商店中，无法更新'))
 
 class ErrorDict(dict):
 

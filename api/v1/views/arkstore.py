@@ -25,7 +25,8 @@ from arkid.common.arkstore import (
     get_bind_arkstore_agent,
     bind_arkstore_agent,
     change_arkstore_agent,
-    unbind_arkstore_agent
+    unbind_arkstore_agent,
+    get_arkstore_extension_markdown,
 )
 from arkid.core.api import api, operation
 from datetime import datetime
@@ -106,12 +107,10 @@ class OrderStatusSchema(Schema):
     purchased: bool
 
 
-class BindAgentSchemaIn(Schema):
-    tenant_slug: str = None
-
-
-class BindAgentSchemaOut(Schema):
-    tenant_slug: str = None
+class BindAgentSchema(Schema):
+    tenant_uuid: str = Field(
+        title=_('Agent Identifier', '代理商标识')
+    )
 
 
 class ListPriceSchema(Schema):
@@ -406,8 +405,22 @@ def download_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchemaOut)
-@operation(BindAgentSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.post("/tenant/{tenant_id}/arkstore/update/{package}/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def download_arkstore_extension(request, tenant_id: str, package: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return ErrorDict(ErrorCode.UPDATE_EXTENSION_SUCCESS)
+    result = install_arkstore_extension(tenant, token, ext_info['uuid'])
+    resp = {'error': ErrorCode.OK.value, 'data': {}}
+    return resp
+
+
+@api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchema)
+@operation(BindAgentSchema, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_arkstore_bind_agent(request, tenant_id: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -418,7 +431,7 @@ def get_arkstore_bind_agent(request, tenant_id: str):
 
 @api.post("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def create_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchemaIn):
+def create_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchema):
     tenant_slug = data.tenant_slug
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -439,7 +452,7 @@ def delete_arkstore_bind_agent(request, tenant_id: str):
 
 @api.put("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchemaIn):
+def update_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchema):
     tenant_slug = data.tenant_slug
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -454,4 +467,19 @@ def get_arkstore_app(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     resp = get_arkid_saas_app_detail(tenant, token, uuid)
+    return resp
+
+
+class ExtensionMarkDownOut(ResponseSchema):
+    data:dict = Field(format='markdown',readonly=True)
+
+
+@api.get("/tenant/{tenant_id}/arkstore/extensions/{uuid}/markdown/", tags=['方舟商店'],
+         response=ExtensionMarkDownOut)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_markdown_arkstore_extension(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extension_markdown(access_token, uuid)
     return resp
