@@ -9,6 +9,7 @@ page = pages.TabsPage(tag=tag, name=name)
 
 store_page = pages.CardsPage(name='插件商店')
 installed_page = pages.CardsPage(name='已安装')
+arkstore_markdown_page = pages.FormPage(name=_("文档"))
 order_page = pages.StepPage(name=_('Order', '购买'))
 trial_page = pages.FormPage(name=_('Trial', '试用'))
 bind_agent_page = pages.FormPage(name=_('Bind Agent', '绑定代理商'))
@@ -23,6 +24,7 @@ payment_page = pages.FormPage(name='支付')
 pages.register_front_pages(page)
 pages.register_front_pages(installed_page)
 pages.register_front_pages(store_page)
+pages.register_front_pages(arkstore_markdown_page)
 pages.register_front_pages(order_page)
 pages.register_front_pages(trial_page)
 pages.register_front_pages(bind_agent_page)
@@ -59,7 +61,7 @@ installed_page.create_actions(
         ),
         "update": actions.DirectAction(
             name='更新',
-            path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
+            path='/api/v1/tenant/{tenant_id}/arkstore/update/{package}/',
             method=actions.FrontActionMethod.POST,
         ),
         "active": actions.DirectAction(
@@ -86,6 +88,10 @@ store_page.create_actions(
         ),
     },
     local_actions={
+        "markdown": actions.OpenAction(
+            name='文档',
+            page=arkstore_markdown_page
+        ),
         "order": actions.OpenAction(
             name='购买',
             page=order_page
@@ -114,6 +120,13 @@ purchased_page.create_actions(
 markdown_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/extensions/{id}/markdown/',
+        method=actions.FrontActionMethod.GET
+    )
+)
+
+arkstore_markdown_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/extensions/{uuid}/markdown/',
         method=actions.FrontActionMethod.GET
     )
 )

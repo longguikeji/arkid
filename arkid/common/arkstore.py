@@ -240,7 +240,7 @@ def trial_arkstore_extension(access_token, extension_id):
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.post(arkstore_extensions_url, params=params, headers=headers)
-    if resp.status_code != 200:
+    if resp.status_code != 200 and resp.status_code != 400:
         raise Exception(f'Error trial_arkstore_extension: {resp.status_code}')
     resp = resp.json()
     return resp
@@ -567,5 +567,16 @@ def get_arkstore_extensions_purchased(access_token, offset=0, limit=10):
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_extension_markdown(access_token, extension_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/extensions/{extension_id}/markdown'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_markdown: {resp.status_code}')
     resp = resp.json()
     return resp
