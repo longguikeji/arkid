@@ -65,7 +65,7 @@ class LoginFormSchema(Schema):
 
 class LoginPageExtendSchema(Schema):
     title: Optional[str] = Field(title=_('title', '页面扩展标题'))
-    buttons: List[ButtonSchema] = Field(title=_('buttons', '扩展按钮'))
+    buttons: Optional[List[ButtonSchema]] = Field(title=_('buttons', '扩展按钮'))
 
 
 class LoginPageSchema(Schema):
@@ -108,15 +108,15 @@ def login_page(request, tenant_id: str):
                 data[k] = v
             else:
                 if not data[k].get('bottoms'):
-                    data[k]['bottoms'] = v.get('bottoms')
+                    data[k]['bottoms'] = v.get('bottoms', [])
                 else:
                     data[k]['bottoms'].extend(v.get('bottoms',[]))
                 if not data[k].get('forms'):
-                    data[k]['forms'] = v.get('forms')
+                    data[k]['forms'] = v.get('forms', [])
                 else:
                     data[k]['forms'].extend(v.get('forms',[]))
                 if not data[k].get('extend'):
-                    data[k]['extend'] = v.get('extend')
+                    data[k]['extend'] = v.get('extend') if v.get('extend') else None
                 else:
                     data[k]['extend']['buttons'].extend(v.get('extend', {}).get('buttons', []))
             if not data[k].get('name'):
@@ -139,26 +139,6 @@ def login_page(request, tenant_id: str):
     if data.get(AuthFactorExtension.REGISTER) and data.get(AuthFactorExtension.RESET_PASSWORD):
         bottom = {"prepend": _("No Account,","还没有账号，"), "label": _("Register Now","立即注册"), "gopage": AuthFactorExtension.REGISTER}
         data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)
-
-    # 增加第三方登录按钮
-    if data.get(AuthFactorExtension.LOGIN):
-        idp_configs = TenantExtensionConfig.active_objects.filter(type=ExternalIdpExtension.TYPE)
-        login_extend = data.get(AuthFactorExtension.LOGIN).get('extend')
-        if not login_extend:
-            login_extend = {}
-
-        login_extend_buttons = login_extend.get('buttons', [])
-        for config in idp_configs:
-            login_extend_buttons.append(
-                {
-                    "img":config.config.get("img_url", ""),
-                    "redirect":{"url": config.config.get("login_url", "")}
-                }
-            )
-        login_extend["buttons"]  = login_extend_buttons
-        if login_extend_buttons and "title" not in login_extend:
-            login_extend["title"] = _("Third Auth", "第三方登录")
-        data[AuthFactorExtension.LOGIN]['extend'] = login_extend
 
     return {
         'tenant': tenant, 

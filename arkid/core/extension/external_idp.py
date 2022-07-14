@@ -15,6 +15,7 @@ from arkid.core.token import refresh_token
 from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import urlencode, unquote
 from arkid.common.utils import verify_token
+from arkid.core import event as core_event
 
 
 class ExternalIdpBaseSchema(Schema):
@@ -60,6 +61,9 @@ class ExternalIdpExtension(Extension):
             ),
         ]
         self.register_routers(urls, False)
+        self.listen_event(
+            core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.add_idp_login_buttons
+        )
         super().load()
 
     @abstractmethod
@@ -264,3 +268,31 @@ class ExternalIdpExtension(Extension):
         config_created.config = config
         config_created.save()
         return config_created
+
+    def add_idp_login_buttons(self, event, **kwargs):
+        logger.info(f'{self.package} add idp login buttons start')
+        buttons = []
+        configs = self.get_tenant_configs(event.tenant)
+        for config in configs:
+            img_url, redirect_url = self.get_img_and_redirect_url(config)
+            if img_url and redirect_url:
+                buttons.append({"img": img_url, "redirect": {"url": redirect_url}})
+        logger.info(buttons)
+        logger.info(f'{self.package} add idp login buttions end')
+        if not buttons:
+            return {}
+        else:
+            return {"login": {'extend': {"buttons": buttons}}}
+
+    @abstractmethod
+    def get_img_and_redirect_url(self, config):
+        """
+        返回前端渲染第三方登录的按钮
+        抽象方法
+        Args:
+            config (arkid.extension.models.TenantExtensionConfig): 第三方认证提供的Client_ID,
+
+        Returns:
+            tuple: 返回图片url和跳转地址('image_url', 'redirect_url')
+        """
+        pass

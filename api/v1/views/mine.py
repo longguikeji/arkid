@@ -1,6 +1,7 @@
 from typing import List
 from django.shortcuts import render
 from arkid.core.api import api, operation
+from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import App, Tenant, ApproveRequest, User
@@ -55,21 +56,43 @@ def get_mine_permissions(request, tenant_id: str, app_id: str = None, app_name: 
     login_user = request.user
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_permissions_by_search(tenant_id, app_id, None, None, login_user, app_name=app_name, category=category)
+    items = permissiondata.get_permissions_by_mine_search(tenant_id, app_id, None, None, login_user, app_name=app_name, category=category)
+    return items
 
 
-@api.post("/mine/tenant/{tenant_id}/permissions/", tags=["我的"])
+@api.get("/mine/tenant/{tenant_id}/permissions/{permission_id}/open", tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def update_mine_permissions(request, tenant_id: str):
+def update_mine_permissions(request, tenant_id: str, permission_id: str, in_current: bool):
     """更新我的权限列表"""
-    return []
+    if in_current is False:
+        return ErrorDict(ErrorCode.PERMISSION_NOT_CLOSE)
+    # 需要申请更新权限列表
+    
+    return {'error': ErrorCode.OK.value}
 
 
-@api.get("/mine/tenant/{tenant_id}/all_permissions/", tags=["我的"])
-@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def get_mine_all_permissions(request, tenant_id: str):
-    """获取所有权限并附带是否已授权给我的状态"""
-    return []
+@api.get("/mine/tenant/{tenant_id}/permissions/{permission_id}/add_permisssion", tags=['权限'])
+@operation(roles=[NORMAL_USER])
+def mine_add_permission(request, tenant_id: str, permission_id: permission_id):
+    '''
+    添加用户权限
+    '''
+    from arkid.core.event import Event, dispatch_event
+    from arkid.core.event import ADD_USER_MANY_PERMISSION
+    user = request.user
+    if data_arr:
+        dispatch_event(Event(tag=ADD_USER_MANY_PERMISSION, tenant=request.tenant, request=request, data={
+            'user_ids': [str(user.id)],
+            'tenant_id': tenant_id,
+            'data_arr': [permission_id]
+        }))
+    return {'error': ErrorCode.OK.value}
+
+# @api.get("/mine/tenant/{tenant_id}/all_permissions/", tags=["我的"])
+# @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+# def get_mine_all_permissions(request, tenant_id: str):
+#     """获取所有权限并附带是否已授权给我的状态"""
+#     return []
 
 
 from api.v1.schema.approve_request import (
@@ -114,15 +137,14 @@ def get_mine_switch_tenant(request, id):
     return render(request, template_name='switch_tenant.html', context=context)
 
 
-@api.get("/mine/logout/", tags=["我的"], auth=None)
+@api.get("/tenant/{tenant_id}/mine/logout/", response=MineLogoutOut, tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def get_mine_logout(request):
+def get_mine_logout(request,tenant_id: str):
     """退出登录"""
-    # request.token.expire()
-    return render(request, template_name='logout.html')
-
-
-
+    request.auth.delete()
+    return {
+        "refresh":True
+    }
 
 @api.get("/mine/tenants/", response=List[MineTenantListItemOut], tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])

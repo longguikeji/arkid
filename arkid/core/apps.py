@@ -25,7 +25,6 @@ class CoreConfig(AppConfig):
             tenant.create_tenant_user_admin_permission(user)
             tenant.users.add(user)
             tenant.save()
-
         except Exception as e:
             print(e)
 
