@@ -92,10 +92,12 @@ class ExtensionListOut(ModelSchema):
         model_fields=["id","name","type","package","labels","version","is_active","is_allow_use_platform_config"]
         
     labels:Optional[List[str]]
-    is_active:bool = Field(
+    is_active: bool = Field(
         title='是否启动',
-        # path='/api/v1/extensions/{id}/active/',
-        # method=actions.FrontActionMethod.POST,
+        item_action={
+            "path":"/api/v1/extensions/{id}/active/",
+            "method":actions.FrontActionMethod.POST.value
+        }
     )
     # purchase_records: List[ExtensionPurchaseRecordOut] = Field(
     #     default=[], title=_("Purchase Records", "购买记录")

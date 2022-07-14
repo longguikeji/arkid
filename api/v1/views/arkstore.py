@@ -479,7 +479,7 @@ class ExtensionMarkDownOut(ResponseSchema):
 @api.get("/tenant/{tenant_id}/arkstore/extensions/{uuid}/markdown/", tags=['方舟商店'],
          response=ExtensionMarkDownOut)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
+def get_markdown_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
