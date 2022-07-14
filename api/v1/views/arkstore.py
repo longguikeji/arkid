@@ -28,6 +28,7 @@ from arkid.common.arkstore import (
     # unbind_arkstore_agent,
     get_arkstore_extension_markdown,
 )
+from arkid.common.bind_saas import get_bind_info
 from arkid.core.api import api, operation
 from datetime import datetime
 from typing import List, Optional
@@ -347,7 +348,12 @@ def create_rent_order_arkstore_extension(request, tenant_id: str, package: str, 
     ext_info = get_arkstore_extension_detail_by_package(access_token, package)
     if ext_info is None:
         return {}
-    resp = lease_arkstore_extension(access_token, ext_info['uuid'], data.dict())
+    platform_tenant = Tenant.platform_tenant()
+    resp = get_bind_info(platform_tenant.id.hex)
+    agent_uuid = resp.get('saas_tenant_id')
+    rent_data = data.dict()
+    rent_data['agent_uuid'] = agent_uuid
+    resp = lease_arkstore_extension(access_token, ext_info['uuid'], rent_data)
     return resp
 
 
