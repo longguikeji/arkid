@@ -16,5 +16,9 @@
 ## 配置指南
 
 
+## 代码
 
+::: extension_root.com_longgui_auth_factor_password.PasswordAuthFactorExtension
+    rendering:
+        show_source: true
 
