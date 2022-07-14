@@ -196,15 +196,15 @@ bind_agent_page.create_actions(
     ),
     global_actions={
         "confirm": actions.DirectAction(
-            name='修改',
+            name='确定',
             path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
             method=actions.FrontActionMethod.PUT
         ),
-        "delete": actions.DirectAction(
-            name='删除',
-            path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
-            method=actions.FrontActionMethod.DELETE
-        ),
+        # "delete": actions.DirectAction(
+        #     name='删除',
+        #     path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
+        #     method=actions.FrontActionMethod.DELETE
+        # ),
     },
 )
 

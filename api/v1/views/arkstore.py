@@ -107,12 +107,10 @@ class OrderStatusSchema(Schema):
     purchased: bool
 
 
-class BindAgentSchemaIn(Schema):
-    tenant_slug: str = None
-
-
-class BindAgentSchemaOut(Schema):
-    tenant_slug: str = None
+class BindAgentSchema(Schema):
+    tenant_uuid: str = Field(
+        title=_('Agent Identifier', '代理商标识')
+    )
 
 
 class ListPriceSchema(Schema):
@@ -421,8 +419,8 @@ def download_arkstore_extension(request, tenant_id: str, package: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchemaOut)
-@operation(BindAgentSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchema)
+@operation(BindAgentSchema, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_arkstore_bind_agent(request, tenant_id: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -433,7 +431,7 @@ def get_arkstore_bind_agent(request, tenant_id: str):
 
 @api.post("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def create_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchemaIn):
+def create_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchema):
     tenant_slug = data.tenant_slug
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -454,7 +452,7 @@ def delete_arkstore_bind_agent(request, tenant_id: str):
 
 @api.put("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchemaIn):
+def update_arkstore_bind_agent(request, tenant_id: str, data: BindAgentSchema):
     tenant_slug = data.tenant_slug
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
