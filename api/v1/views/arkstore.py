@@ -296,7 +296,7 @@ def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_n
         202: ResponseSchema,
     })
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str, package: str):
+def get_order_payment_status_arkstore_extension_rent(request, tenant_id: str, order_no: str, package: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
@@ -385,7 +385,7 @@ def rent_status_arkstore_extension(request, tenant_id: str, uuid: str):
 
 @api.get("/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/", tags=['方舟商店'], response=TrialDaysOut)
 @operation(TrialDaysOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
+def get_order_arkstore_extension_trial(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
@@ -395,7 +395,7 @@ def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
 
 @api.post("/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/", tags=['方舟商店'], response=OrderSchemaOut)
 @operation(OrderSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
+def create_order_arkstore_extension_trial(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
@@ -417,7 +417,7 @@ def download_arkstore_extension(request, tenant_id: str, uuid: str):
 
 @api.post("/tenant/{tenant_id}/arkstore/update/{package}/", tags=['方舟商店'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def download_arkstore_extension(request, tenant_id: str, package: str):
+def update_arkstore_extension(request, tenant_id: str, package: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
