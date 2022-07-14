@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.db import transaction
 from arkid.core.models import Tenant
 from arkid.extension.models import TenantExtension, Extension
-from arkid.extension.utils import import_extension, unload_extension
+from arkid.extension.utils import import_extension, unload_extension, load_extension_apps
 from pathlib import Path
 
 
@@ -325,6 +325,7 @@ def load_installed_extension(ext_dir):
         },
         package = ext.package,
     )
+    load_extension_apps([extension])
 
     platform_tenant = Tenant.platform_tenant()
     tenant_extension, is_create = TenantExtension.objects.update_or_create(
