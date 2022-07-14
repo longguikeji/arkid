@@ -112,7 +112,6 @@ def get_mine_approve_requests(
     request, tenant_id: str, package: str = "", is_approved: str = ""
 ):
     """我的审批列表"""
-    from arkid.core import preset_approve_action
     tenant = request.tenant
     requests = ApproveRequest.valid_objects.filter(
         user=request.user, action__tenant=tenant
