@@ -522,6 +522,7 @@ class ApproveAction(BaseModel, ExpandModel):
     tenant = models.ForeignKey(
         'Tenant',
         default=None,
+        null=True,
         on_delete=models.CASCADE,
         verbose_name=_('Tenant', '租户'),
         related_name="approve_action_set",
