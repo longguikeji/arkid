@@ -113,16 +113,18 @@ class BindAgentSchema(Schema):
     )
 
 
-class ListPriceSchema(Schema):
+class PriceSchema(Schema):
     uuid: str = Field(hidden=True)
-    type: str
-    days: int
-    users: int
-    standard_price: str
+    type: str = Field(title=_('Payment Type', '付费方式'))
+    days: int = Field(title=_('Days', '天数'))
+    users: int = Field(title=_('Users', '人数'))
+    standard_price: str =Field(title=_('Standard Price', '市场指导价'))
+    sale_price: str =Field(title=_('Agent Sale Price', '代理价格'))
+
 
 
 class ExtensionOrderOut(Schema):
-    prices: List[ListPriceSchema] = Field(
+    prices: List[PriceSchema] = Field(
         hidden=True, title=_("Extension Prices", "插件价格")
     )
 
@@ -138,7 +140,7 @@ class OrderSchema(Schema):
 
 
 class OrderSchemaOut(ResponseSchema):
-    data: OrderSchema
+    data: Optional[OrderSchema]
 
 
 class SetCopies(Schema):
@@ -226,8 +228,8 @@ def list_arkstore_purchased_apps(request, tenant_id: str):
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'],
-         response=List[ListPriceSchema])
-@operation(List[ListPriceSchema], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+         response=List[PriceSchema])
+@operation(List[PriceSchema], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
@@ -316,8 +318,8 @@ def order_status_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
-@api.get("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=List[ListPriceSchema])
-@operation(List[ListPriceSchema], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/arkstore/rent/extensions/{package}/", tags=['方舟商店'], response=List[PriceSchema])
+@operation(List[PriceSchema], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_rent_arkstore_extension(request, tenant_id: str, package: str):
     token = request.user.auth_token
@@ -392,6 +394,8 @@ def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
     resp = trial_arkstore_extension(access_token, uuid)
+    if resp.get('code') == '10003':
+        return ErrorDict(ErrorCode.TRIAL_EXTENSION_TWICE)
     return {'data': resp}
 
 
