@@ -59,7 +59,7 @@ installed_page.create_actions(
         ),
         "update": actions.DirectAction(
             name='更新',
-            path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
+            path='/api/v1/tenant/{tenant_id}/arkstore/update/{package}/',
             method=actions.FrontActionMethod.POST,
         ),
         "active": actions.DirectAction(

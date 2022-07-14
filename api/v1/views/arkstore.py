@@ -406,6 +406,20 @@ def download_arkstore_extension(request, tenant_id: str, uuid: str):
     return resp
 
 
+@api.post("/tenant/{tenant_id}/arkstore/update/{package}/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def download_arkstore_extension(request, tenant_id: str, package: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    ext_info = get_arkstore_extension_detail_by_package(access_token, package)
+    if ext_info is None:
+        return ErrorDict(ErrorCode.UPDATE_EXTENSION_SUCCESS)
+    result = install_arkstore_extension(tenant, token, ext_info['uuid'])
+    resp = {'error': ErrorCode.OK.value, 'data': {}}
+    return resp
+
+
 @api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchemaOut)
 @operation(BindAgentSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_arkstore_bind_agent(request, tenant_id: str):
