@@ -25,7 +25,8 @@ from arkid.common.arkstore import (
     get_bind_arkstore_agent,
     bind_arkstore_agent,
     change_arkstore_agent,
-    unbind_arkstore_agent
+    unbind_arkstore_agent,
+    get_arkstore_extension_markdown,
 )
 from arkid.core.api import api, operation
 from datetime import datetime
@@ -468,4 +469,19 @@ def get_arkstore_app(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     resp = get_arkid_saas_app_detail(tenant, token, uuid)
+    return resp
+
+
+class ExtensionMarkDownOut(ResponseSchema):
+    data:dict = Field(format='markdown',readonly=True)
+
+
+@api.get("/tenant/{tenant_id}/arkstore/extensions/{uuid}/markdown/", tags=['方舟商店'],
+         response=ExtensionMarkDownOut)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_order_arkstore_extension(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extension_markdown(access_token, uuid)
     return resp
