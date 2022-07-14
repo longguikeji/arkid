@@ -21,6 +21,14 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         self.listen_event(BEFORE_AUTH,self.before_auth)
         
     def before_auth(self,event,**kwargs):
+        """ 响应事件：认证之前, 判断是否满足次级认证因素校验条件，如满足则触发事件并检查次级认证因素校验结果
+
+        Args:
+            event: 事件
+
+        Returns:
+            tuple(bool,dict): 次级认证因素校验结果
+        """
         for config in self.get_tenant_configs(event.tenant):
             if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
                 host = event.request.META.get("REMOTE_ADDR")
@@ -46,6 +54,11 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         return True,None
         
     def auth_fail(self, event, **kwargs):
+        """响应事件：认证失败，记录对应IP认证失败次数
+
+        Args:
+            event : 事件
+        """
         data = event.data["data"]
         # 检查是否存在满足条件的配置
         for config in self.get_tenant_configs(event.tenant):
@@ -61,7 +74,6 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
                     
 
     def check_rule(self, event, config):
-        # 判断规则是否通过 如通过则执行对应操作
         login_pages = event.data
         
         if self.check_retry_times(event.request.META.get("REMOTE_ADDR"),config.id.hex,config.config.get("try_times",0)): 
@@ -82,23 +94,68 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
             )
             
     def check_retry_times(self,host,config_id,limited=3):
+        """校验认证失败次数是否超出限制
+
+        Args:
+            host (str): 客户一端IP地址
+            config_id (str): 插件运行时ID
+            limited (int, optional): 认证失败次数限制. Defaults to 3.
+
+        Returns:
+            bool: 校验结果
+        """
         key=self.gen_key(host,config_id)
         retry_times = cache.get(key,0)
         return retry_times > limited
     
     def set_refresh_status(self,host,config_id):
+        """设置登陆页面刷新tag
+
+        Args:
+            host (str): 客户一端IP地址
+            config_id (str): 插件运行时ID
+        """
         cache.set(self.gen_refresh_key(host,config_id),1)
     
     def check_refresh_status(self,host,config_id):
+        """校验是否需要刷新页面
+
+        Args:
+            host (str): 客户一端IP地址
+            config_id (str): 插件运行时ID
+
+        Returns:
+            bool: 是否需要刷新页面
+        """
         return bool(cache.get(self.gen_refresh_key(host,config_id),0))
         
     def gen_refresh_key(self,host:str,config_id:str):
+        """页面刷新标识KEY
+
+        Args:
+            host (str): 客户一端IP地址
+            config_id (str): 插件运行时ID
+
+        Returns:
+            str: 页面刷新标识KEY
+        """
         return f"{self.package}_cache_auth_refresh_{host}_{config_id}"
     
     def gen_key(self,host:str,config_id:str):
+        """生成记录失败次数的KEY
+
+        Args:
+            host (str): 客户一端IP地址
+            config_id (str): 插件运行时ID
+
+        Returns:
+            str: 记录失败次数的KEY
+        """
         return f"{self.package}_cache_auth_retry_times_{host}_{config_id}"
     
     def create_extension_config_schema(self):
+        """创建插件运行时schema
+        """
         main_auth_factor_page = pages.TablePage(select=True,name=_("选择主认证因素"))
 
         self.register_front_pages(main_auth_factor_page)
