@@ -44,7 +44,7 @@ class MinePermissionListSchemaOut(Schema):
     # app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
     category: str
     sort_id: int = Field(hidden=True)
-    in_current: bool = Field(item_action={"path":"/api/v1/mine/tenant/{tenant_id}/permissions/{permission_id}/add_permisssion", "method":actions.FrontActionMethod.GET.value, "off": False})
+    in_current: bool = Field(item_action={"path":"/api/v1/mine/tenant/{tenant_id}/permissions/{permission_id}/add_permisssion", "method":actions.FrontActionMethod.GET.value, "close": False})
     # is_system: bool
     # is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value})
 
