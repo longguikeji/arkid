@@ -60,13 +60,16 @@ ExtensionProfileGetSchemaOut = Extension.create_profile_schema(
     id=(UUID,Field(hidden=True)),
 )
 
-@api.get("/extensions/{id}/profile/", response=ExtensionProfileGetSchemaOut, tags=['平台插件'])
+class ExtensionProfileGetSchemaResponse(ResponseSchema):
+    data: ExtensionProfileGetSchemaOut
+
+@api.get("/extensions/{id}/profile/", response=ExtensionProfileGetSchemaResponse, tags=['平台插件'])
 @operation(roles=[PLATFORM_ADMIN])
 def get_extension_profile(request, id: str):
     """获取插件启动配置
     """
     extension = ExtensionModel.objects.filter(id=id).first()
-    return extension
+    return {"data": extension}
 
 @api.post("/extensions/{id}/profile/", tags=['平台插件'])
 @operation(roles=[PLATFORM_ADMIN])

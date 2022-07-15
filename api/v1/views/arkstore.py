@@ -126,7 +126,7 @@ class PriceSchema(Schema):
     type: str = Field(title=_('Payment Type', '付费方式'))
     days: int = Field(title=_('Days', '天数'))
     users: int = Field(title=_('Users', '人数'))
-    standard_price: str =Field(title=_('Standard Price', '市场指导价'))
+    standard_price: str =Field(underline=True, title=_('Standard Price', '市场指导价'))
     sale_price: str =Field(title=_('Agent Sale Price', '代理价格'))
 
 

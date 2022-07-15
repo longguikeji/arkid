@@ -104,6 +104,10 @@ purchased_page.create_actions(
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
+        "markdown": actions.OpenAction(
+            name='文档',
+            page=arkstore_markdown_page
+        ),
         "install": actions.DirectAction(
             name='安装',
             path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
