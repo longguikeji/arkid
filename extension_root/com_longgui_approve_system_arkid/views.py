@@ -22,13 +22,15 @@ from arkid.core.models import ApproveAction, ApproveRequest
 from arkid.core.extension.approve_system import ApproveSystemExtension
 from arkid.core.pagenation import CustomPagination
 from arkid.core.approve import restore_approve_request
+from arkid.core.constants import *
+
 
 @api.get(
     "/tenant/{tenant_id}/approve_requests/arkid/",
     response=List[ApproveRequestListItemOut],
     tags=['审批请求'],
 )
-@operation(ApproveRequestListOut)
+@operation(ApproveRequestListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def arkid_approve_request_list(request, tenant_id: str, is_approved: str = ""):
     package = 'com.longgui.approve.system.arkid'
