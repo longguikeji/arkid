@@ -45,31 +45,37 @@ def get_permission_groups(request, tenant_id: str,  parent_id: str = None,  app_
     return permissiondata.get_permissions_by_search(tenant_id, app_id, None, None, login_user, parent_id, True)
 
 
-@api.get("/tenant/{tenant_id}/permission_groups/{id}/", response=PermissionGroupDetailSchemaOut, tags=["权限分组"],auth=None)
+@api.get("/tenant/{tenant_id}/permission_groups/{id}/", response=PermissionGroupDetailSchemaOut, tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_permission_group(request, tenant_id: str, id: str):
     """ 获取权限分组
     """
     permission = Permission.valid_objects.filter(category='group', id=id).first()
+    if permission is None:
+        permission = SystemPermission.valid_objects.filter(category='group', id=id).first()
     if permission:
         return {'data': permission}
     else:
         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
 
 @transaction.atomic
-@api.post("/tenant/{tenant_id}/permission_groups/", tags=["权限分组"],auth=None)
+@api.post("/tenant/{tenant_id}/permission_groups/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_permission_group(request, tenant_id: str, data: PermissionGroupSchemaIn):
     """ 创建权限分组
     """
-    permission = Permission()
+    if data.app.id != 'arkid':
+        permission = Permission()
+    else:
+        permission = SystemPermission()
     permission.tenant = Tenant.valid_objects.filter(id=tenant_id).first()
     permission.name = data.name
     permission.category = 'group'
     permission.code = 'other_{}'.format(uuid.uuid4())
     if data.parent:
         permission.parent = Permission.valid_objects.filter(id=data.parent.id).first()
-    permission.app = App.valid_objects.filter(id=data.app.id).first()
+    if data.app.id != 'arkid':
+        permission.app = App.valid_objects.filter(id=data.app.id).first()
     permission.is_system = False
     permission.save()
     # 分发事件开始
@@ -77,7 +83,7 @@ def create_permission_group(request, tenant_id: str, data: PermissionGroupSchema
     # 分发事件结束
     return {'error': ErrorCode.OK.value}
 
-@api.put("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"],auth=None)
+@api.put("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_permission_group(request, tenant_id: str, id: str, data: PermissionGroupEditSchemaIn):
     """ 编辑权限分组
@@ -90,6 +96,8 @@ def update_permission_group(request, tenant_id: str, id: str, data: PermissionGr
     # permission = SystemPermission.valid_objects.filter(id=id, category='group').first()
     # if permission is None:
     permission = Permission.valid_objects.filter(id=id, category='group').first()
+    if permission is None:
+        permission = SystemPermission.valid_objects.filter(category='group', id=id).first()
     permission.name = data.name
     if data.parent:
         permission.parent = Permission.valid_objects.filter(id=data.parent.id).first()
@@ -101,7 +109,7 @@ def update_permission_group(request, tenant_id: str, id: str, data: PermissionGr
     # 分发事件结束
     return ErrorDict(ErrorCode.OK)
 
-@api.delete("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"],auth=None)
+@api.delete("/tenant/{tenant_id}/permission_groups/{id}/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_permission_group(request, tenant_id: str, id: str):
     """ 删除权限分组
@@ -120,7 +128,7 @@ def delete_permission_group(request, tenant_id: str, id: str):
     # 分发事件结束
     return ErrorDict(ErrorCode.OK)
 
-@api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", response=List[PermissionListSchemaOut], tags=["权限分组"],auth=None)
+@api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", response=List[PermissionListSchemaOut], tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate
 def get_permissions_from_group(request, tenant_id: str, permission_group_id: str):
@@ -143,7 +151,7 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
     #     permission = get_object_or_404(Permission, id=permission_group_id, is_del=False)
     
 
-@api.delete("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/{id}/", tags=["权限分组"],auth=None)
+@api.delete("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/{id}/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def remove_permission_from_group(request, tenant_id: str, permission_group_id: str, id:str):
     """ 将权限移除出权限分组
@@ -155,49 +163,69 @@ def remove_permission_from_group(request, tenant_id: str, permission_group_id: s
     #     permission = get_object_or_404(SystemPermission, id=id, is_del=False)
     # else:
 
-    permission_group = Permission.valid_objects.filter(id=permission_group_id, category='group').first()
-    permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=id).first()
+
+
+    permission_group = SystemPermission.valid_objects.filter(id=permission_group_id, category='group', is_system=False).first()
+    if permission_group is None:
+        permission_group = Permission.valid_objects.filter(id=permission_group_id, category='group', is_system=False).first()
+        permission = Permission.valid_objects.filter(id=id).first()
+    else:
+        permission = SystemPermission.valid_objects.filter(id=id).first()
 
     if permission_group and permission:
         permission_group.container.remove(permission)
+        describe = permission_group.describe
+        sort_ids = describe.get('sort_ids', [])
+        sort_ids.append(permission.sort_id)
+        permission_group.describe = describe
+        permission_group.save()
         # 分发事件开始
-        dispatch_event(Event(tag=REMOVE_GROUP_PERMISSION_PERMISSION, tenant=request.tenant, request=request, data=permission_group))
+        # dispatch_event(Event(tag=REMOVE_GROUP_PERMISSION_PERMISSION, tenant=request.tenant, request=request, data=permission_group))
         # 分发事件结束
         return {'error': ErrorCode.OK.value}
     else:
-        return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
+        return ErrorDict(ErrorCode.PERMISSION_GROUP_NOT_DELETE)
 
-@api.post("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", tags=["权限分组"],auth=None)
+@api.post("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_permissions_from_group(request, tenant_id: str, permission_group_id: str, data: PermissionSchemaIn):
+def update_permissions_from_group(request, tenant_id: str, permission_group_id: str, data: PermissionGroupPermissionSchemaIn):
     """ 更新当前分组的权限列表
     """
     # 只允许非arkid的操作
     tenant = request.tenant
-    # if tenant.is_platform_tenant:
-    #     permission_group = get_object_or_404(SystemPermission, id=permission_group_id, is_del=False, category='group')
-    #     permission = get_object_or_404(SystemPermission, id=data.permission_id, is_del=False)
-    # else:
-    permission_group = get_object_or_404(Permission, id=permission_group_id, is_del=False, category='group')
-    permission = get_object_or_404(Permission, id=data.permission_id, is_del=False)
-    if permission_group and permission:
-        permission_group.container.add(permission)
+    permission_group = SystemPermission.valid_objects.filter(id=permission_group_id, category='group', is_system=False).first()
+    if permission_group is None:
+        permission_group = Permission.valid_objects.filter(id=permission_group_id, category='group', is_system=False).first()
+        permissions = Permission.valid_objects.filter(id__in=data.data)
+    else:
+        permissions = SystemPermission.valid_objects.filter(id__in=data.data)
+
+    if permission_group and permissions:
+        describe = permission_group.describe
+        sort_ids = describe.get('sort_ids', [])
+        for permission in permissions:
+            sort_id = permission.sort_id
+            permission_group.container.add(permission)
+            sort_ids.append(sort_id)
+        permission_group.describe = describe
+        permission_group.save()
         # 分发事件开始
         dispatch_event(Event(tag=UPDATE_GROUP_PERMISSION_PERMISSION, tenant=tenant, request=request, data=permission_group))
         # 分发事件结束
-    return ErrorDict(ErrorCode.OK)
+        return ErrorDict(ErrorCode.OK)
+    else:
+        return ErrorDict(ErrorCode.PERMISSION_GROUP_NOT_EDIT)
 
-@api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/select_permissions/", response=List[PermissionListSelectSchemaOut], tags=["权限分组"], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate
+@api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/select_permissions/", response=List[PermissionListSelectSchemaOut], tags=["权限分组"])
+@operation(PermissionListDataSelectSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
 def get_select_permissions(request, tenant_id: str, permission_group_id: str):
     """ 获取所有权限并附加是否在当前分组的状态
     """
     # 只允许非arkid的操作
-    permission_group = SystemPermission.valid_objects.filter(id=id, category='group').first()
+    permission_group = SystemPermission.valid_objects.filter(id=permission_group_id, category='group', is_system=False).first()
     if permission_group is None:
-        permission_group = Permission.valid_objects.filter(id=id, category='group').first()
-    
+        permission_group = Permission.valid_objects.filter(id=permission_group_id, category='group', is_system=False).first()
     if isinstance(permission_group, SystemPermission):
         # permission_group = get_object_or_404(SystemPermission, id=permission_group_id, is_del=False, category='group')
         containers = permission_group.container.all()
@@ -206,25 +234,27 @@ def get_select_permissions(request, tenant_id: str, permission_group_id: str):
             ids.append(container.id.hex)
 
         permissions = SystemPermission.valid_objects.exclude(category='group')
-        # for permission in permissions:
-        #     id_hex = permission.id.hex
-        #     if id_hex in ids:
-        #         permission.in_current = True
-        #     else:
-        #         permission.in_current = False
-    else:
+        for permission in permissions:
+            id_hex = permission.id.hex
+            if id_hex in ids:
+                permission.in_current = True
+            else:
+                permission.in_current = False
+    elif isinstance(permission_group, Permission):
         containers = permission_group.container.all()
         ids = []
         for container in containers:
             ids.append(container.id.hex)
 
-        # permissions = Permission.valid_objects.filter(tenant=permission_group.tenant).exclude(category='group')
-        # for permission in permissions:
-        #     id_hex = permission.id.hex
-        #     if id_hex in ids:
-        #         permission.in_current = True
-        #     else:
-        #         permission.in_current = False
-    return permissions
+        permissions = Permission.valid_objects.filter(tenant=permission_group.tenant, app=permission_group.app).exclude(category='group')
+        for permission in permissions:
+            id_hex = permission.id.hex
+            if id_hex in ids:
+                permission.in_current = True
+            else:
+                permission.in_current = False
+    else:
+        permissions = []
+    return list(permissions)
 
 

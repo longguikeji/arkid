@@ -76,9 +76,6 @@ class ApproveActionSchema(Schema):
     )
 
 
-class ApproveActionListOut(ResponseSchema):
-    data: List[ApproveActionListItemOut]
-
 
 class ApproveActionOut(ResponseSchema):
     data: ApproveActionSchema

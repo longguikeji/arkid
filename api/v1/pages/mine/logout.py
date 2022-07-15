@@ -8,5 +8,5 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     icon='logout',
-    url='/api/v1/mine/logout/'
+    url='/api/v1/tenant/{tenant_id}/mine/logout/'
 )

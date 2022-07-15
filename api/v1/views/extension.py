@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import datetime
 from ninja import Schema, ModelSchema
 from arkid.core import actions, extension
 from arkid.core.api import api, operation
@@ -13,6 +14,9 @@ from arkid.extension.models import TenantExtensionConfig, Extension as Extension
 from arkid.core.error import ErrorCode, ErrorDict
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
+from arkid.core.models import Tenant
+from arkid.core.translation import gettext_default as _
+from arkid.common.arkstore import get_arkstore_access_token, get_arkstore_extensions_purchased
 
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
@@ -24,7 +28,8 @@ class ExtensionConfigSchemaOut(Schema):
     config_id: str
 
 
-@api.post("/extensions/{extension_id}/unload/",  tags=['平台插件'], auth=None)
+@api.post("/extensions/{extension_id}/unload/",  tags=['平台插件'])
+@operation(roles=[PLATFORM_ADMIN])
 def unload_extension(request, extension_id: str):
     """卸载插件
     """
@@ -37,7 +42,8 @@ def unload_extension(request, extension_id: str):
         return {}
 
 
-@api.post("/extensions/{extension_id}/load/", tags=['平台插件'], auth=None)
+@api.post("/extensions/{extension_id}/load/", tags=['平台插件'])
+@operation(roles=[PLATFORM_ADMIN])
 def load_extension(request, extension_id: str):
     """加载插件
     """
@@ -54,16 +60,19 @@ ExtensionProfileGetSchemaOut = Extension.create_profile_schema(
     id=(UUID,Field(hidden=True)),
 )
 
-@api.get("/extensions/{id}/profile/", response=ExtensionProfileGetSchemaOut, tags=['平台插件'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+class ExtensionProfileGetSchemaResponse(ResponseSchema):
+    data: ExtensionProfileGetSchemaOut
+
+@api.get("/extensions/{id}/profile/", response=ExtensionProfileGetSchemaResponse, tags=['平台插件'])
+@operation(roles=[PLATFORM_ADMIN])
 def get_extension_profile(request, id: str):
     """获取插件启动配置
     """
     extension = ExtensionModel.objects.filter(id=id).first()
-    return extension
+    return {"data": extension}
 
 @api.post("/extensions/{id}/profile/", tags=['平台插件'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_ADMIN])
 def update_extension_profile(request, id: str, data:ExtensionProfileGetSchemaOut):
     """更新插件启动配置
     """
@@ -72,6 +81,13 @@ def update_extension_profile(request, id: str, data:ExtensionProfileGetSchemaOut
     extension.save()
     return {'error':ErrorCode.OK.value}
 
+class ExtensionPurchaseRecordOut(Schema):
+    order_type: str
+    price_type: str
+    use_begin_time: datetime
+    use_end_time: datetime
+    max_users: int
+
 class ExtensionListOut(ModelSchema):
     
     class Config:
@@ -79,14 +95,25 @@ class ExtensionListOut(ModelSchema):
         model_fields=["id","name","type","package","labels","version","is_active","is_allow_use_platform_config"]
         
     labels:Optional[List[str]]
-    is_active:bool = Field(
+    is_active: bool = Field(
         title='是否启动',
-        # path='/api/v1/extensions/{id}/active/',
-        # method=actions.FrontActionMethod.POST,
+        item_action={
+            "path":"/api/v1/extensions/{id}/active/",
+            "method":actions.FrontActionMethod.POST.value
+        }
+    )
+    # purchase_records: List[ExtensionPurchaseRecordOut] = Field(
+    #     default=[], title=_("Purchase Records", "购买记录")
+    # )
+    purchase_state: Optional[str] = Field(
+        title=_('Purchase State', '购买状态')
+    )
+    purchase_useful_life: Optional[List[str]] = Field(
+        title=_('Purchase Useful Life', '有效期')
     )
 
 @api.get("/extensions/", response=List[ExtensionListOut], tags=['平台插件'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_extensions(request, status: str = None):
     """ 获取平台插件列表"""
@@ -94,6 +121,16 @@ def list_extensions(request, status: str = None):
         qs = ExtensionModel.valid_objects.all()
     else:
         qs = ExtensionModel.valid_objects.filter(status=status).all()
+
+    token = request.user.auth_token
+    tenant = Tenant.platform_tenant()
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extensions_purchased(access_token)
+    extensions_purchased = {ext['package']: ext for ext in resp['items']}
+    for ext in qs:
+        if ext.package in extensions_purchased:
+            ext.purchase_useful_life = extensions_purchased[ext.package].get('purchase_useful_life')
+            ext.purchase_state = extensions_purchased[ext.package].get('purchase_state')
     return qs
 
 
@@ -139,6 +176,7 @@ def list_extensions(request, status: str = None):
 #     return {"success": True}
 
 @api.post("/extensions/{id}/",tags=['平台插件'])
+@operation(roles=[PLATFORM_ADMIN])
 def update_extension(request, id: str):
     """ 更新平台插件 TODO
     """
@@ -148,7 +186,8 @@ class ExtensionMarkDownOut(ResponseSchema):
     data:dict = Field(format='markdown',readonly=True)
     
 @api.get("/extensions/{id}/markdown/",tags=['平台插件'], response=ExtensionMarkDownOut)
-def get_extension(request, id: str):
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_extension_markdown(request, id: str):
     """ 获取平台插件的markdown文档"""
     
     ext_model = ExtensionModel.valid_objects.get(id=id)
@@ -163,6 +202,7 @@ def get_extension(request, id: str):
     return {"data": data}
 
 @api.post("/extensions/{id}/active/", tags=["平台插件"])
+@operation(roles=[PLATFORM_ADMIN])
 def toggle_extension_status(request, id: str):
     """ 租户插件列表
     """

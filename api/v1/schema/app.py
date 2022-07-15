@@ -33,6 +33,8 @@ class AppListsOut(ResponseSchema):
 
 class AppItemOut(ModelSchema):
 
+    id: UUID = Field(readonly=True)
+    
     class Config:
         model = App
         model_fields = ['id', 'name', 'url', 'logo','description']

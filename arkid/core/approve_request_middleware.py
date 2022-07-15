@@ -37,10 +37,16 @@ class ApproveRequestMiddleware:
         path = ('/' + request.resolver_match.route).replace("<", "{").replace(">", "}")
         method = request.method
 
-  
         approve_action = ApproveAction.valid_objects.filter(
             tenant=tenant, path=path, method=method
         ).first()
+        if not approve_action:
+            approve_action = ApproveAction.valid_objects.filter(
+                tenant=None,
+                path=path,
+                method=method,
+            ).first()
+
         if not approve_action or not approve_action.extension:
             return None
 

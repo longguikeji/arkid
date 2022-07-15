@@ -25,6 +25,8 @@ class MyBootstep(bootsteps.Step):
         if is_init_permission:
             from arkid.core.tasks.tasks import update_system_permission
             update_system_permission.delay()
+            # 预置
+            from arkid.core import preset_approve_action
 
 class BindTenantBootstep(bootsteps.Step):
 

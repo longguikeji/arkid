@@ -2,6 +2,7 @@ from arkid.core.api import api, operation
 import json
 from ninja import Schema
 from ninja import ModelSchema
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.scim_sync import ScimSyncExtension
 from arkid.extension.utils import import_extension
@@ -69,9 +70,8 @@ def delete_periodic_task(extension_config):
     "/tenant/{tenant_id}/scim_syncs/",
     response=List[ScimSyncListItemOut],
     tags=[_("用户数据同步配置")],
-    auth=None,
 )
-@operation(ScimSyncListOut)
+@operation(ScimSyncListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_scim_syncs(request, tenant_id: str):
     """用户数据同步配置列表"""
@@ -94,9 +94,8 @@ def get_scim_syncs(request, tenant_id: str):
     "/tenant/{tenant_id}/scim_syncs/{id}/",
     response=ScimSyncOut,
     tags=[_("用户数据同步配置")],
-    auth=None,
 )
-@operation(ScimSyncOut)
+@operation(ScimSyncOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_scim_sync(request, tenant_id: str, id: str):
     """获取用户数据同步配置"""
     config = TenantExtensionConfig.valid_objects.get(tenant__id=tenant_id, id=id)
@@ -115,9 +114,8 @@ def get_scim_sync(request, tenant_id: str, id: str):
     "/tenant/{tenant_id}/scim_syncs/",
     tags=[_("用户数据同步配置")],
     response=ScimSyncCreateOut,
-    auth=None,
 )
-@operation(ScimSyncCreateOut)
+@operation(ScimSyncCreateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_scim_sync(request, tenant_id: str, data: ScimSyncCreateIn):
     """创建用户数据同步配置"""
 
@@ -135,9 +133,8 @@ def create_scim_sync(request, tenant_id: str, data: ScimSyncCreateIn):
     "/tenant/{tenant_id}/scim_syncs/{id}/",
     tags=[_("用户数据同步配置")],
     response=ScimSyncUpdateOut,
-    auth=None,
 )
-@operation(ScimSyncUpdateOut)
+@operation(ScimSyncUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_scim_sync(request, tenant_id: str, id: str, data: ScimSyncUpdateIn):
     """编辑用户数据同步配置"""
 
@@ -151,8 +148,8 @@ def update_scim_sync(request, tenant_id: str, id: str, data: ScimSyncUpdateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.delete("/tenant/{tenant_id}/scim_syncs/{id}/", tags=[_("用户数据同步配置")], auth=None)
-@operation(ScimSyncDeleteOut)
+@api.delete("/tenant/{tenant_id}/scim_syncs/{id}/", tags=[_("用户数据同步配置")])
+@operation(ScimSyncDeleteOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_scim_sync(request, tenant_id: str, id: str):
     """删除用户数据同步配置"""
     config = TenantExtensionConfig.valid_objects.get(tenant__id=tenant_id, id=id)
@@ -172,8 +169,8 @@ class ScimServerOut(ModelSchema):
     "/tenant/{tenant_id}/scim_server_list/",
     response=List[ScimServerOut],
     tags=['用户数据同步配置'],
-    auth=None,
 )
+@operation(List[ScimServerOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def list_scim_servers(request, tenant_id: str):
     """获取Scim同步server列表"""
     qs = TenantExtensionConfig.active_objects.filter(

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from arkid.core.api import api, operation
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.account_life import AccountLifeExtension
 from arkid.core.extension.approve_system import ApproveSystemExtension
@@ -35,10 +36,9 @@ from django.db.models import F
 @api.get(
     "/tenant/{tenant_id}/approve_systems/",
     tags=["审批系统"],
-    auth=None,
     response=List[ApproveSystemListItemOut],
 )
-@operation(ApproveSystemListOut)
+@operation(List[ApproveSystemListItemOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_approve_system_list(request, tenant_id: str):
     configs = (
@@ -56,10 +56,9 @@ def get_approve_system_list(request, tenant_id: str):
 @api.get(
     "/tenant/{tenant_id}/approve_systems/{id}/",
     tags=["审批系统"],
-    auth=None,
     response=ApproveSystemOut,
 )
-@operation(ApproveSystemOut)
+@operation(ApproveSystemOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_approve_system(request, tenant_id: str, id: str):
     config = (
         TenantExtensionConfig.valid_objects.annotate(package=F('extension__package'))
@@ -72,9 +71,9 @@ def get_approve_system(request, tenant_id: str, id: str):
 @api.post(
     "/tenant/{tenant_id}/approve_systems/",
     tags=["审批系统"],
-    auth=None,
     response=ApproveSystemCreateOut,
 )
+@operation(ApproveSystemCreateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
 
     extension = Extension.valid_objects.get(package=data.package)
@@ -96,9 +95,9 @@ def create_approve_system(request, tenant_id: str, data: ApproveSystemCreateIn):
 @api.put(
     "/tenant/{tenant_id}/approve_systems/{id}/",
     tags=["审批系统"],
-    auth=None,
     response=ApproveSystemUpdateOut,
 )
+@operation(ApproveSystemUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_approve_system(
     request, tenant_id: str, id: str, data: ApproveSystemUpdateIn
 ):
@@ -121,10 +120,9 @@ def update_approve_system(
 @api.delete(
     "/tenant/{tenant_id}/approve_systems/{id}/",
     tags=["审批系统"],
-    auth=None,
     response=ApproveSystemDeleteOut,
 )
-@operation(ApproveSystemDeleteOut)
+@operation(ApproveSystemDeleteOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_approve_system(request, tenant_id: str, id: str):
     config = TenantExtensionConfig.active_objects.get(id=id)
     dispatch_event(

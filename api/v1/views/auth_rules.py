@@ -4,6 +4,7 @@ from typing import List
 from ninja import Field, ModelSchema, Schema
 from arkid.core.api import api, operation
 from ninja.pagination import paginate
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auth_rule import AuthRuleExtension
 from arkid.extension.models import Extension, TenantExtensionConfig
@@ -12,8 +13,8 @@ from api.v1.schema.auth_rule import AuthRuleCreateIn, AuthRuleCreateOut, AuthRul
 from arkid.core.pagenation import CustomPagination
 
 
-@api.get("/tenant/{tenant_id}/auth_rules/", response=List[AuthRuleListItemOut], tags=[_("认证规则")], auth=None)
-@operation(AuthRuleListOut)
+@api.get("/tenant/{tenant_id}/auth_rules/", response=List[AuthRuleListItemOut], tags=[_("认证规则")])
+@operation(List[AuthRuleListItemOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_auth_rules(request, tenant_id: str):
     """ 认证规则列表
@@ -33,8 +34,8 @@ def get_auth_rules(request, tenant_id: str):
     ]
 
 
-@api.get("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleOut, tags=["认证规则"], auth=None)
-@operation(AuthRuleOut)
+@api.get("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleOut, tags=["认证规则"])
+@operation(AuthRuleOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_auth_rule(request, tenant_id: str, id: str):
     """ 获取认证规则
     """
@@ -53,8 +54,8 @@ def get_auth_rule(request, tenant_id: str, id: str):
     }
 
 
-@api.post("/tenant/{tenant_id}/auth_rules/", response=AuthRuleCreateOut, tags=["认证规则"], auth=None)
-@operation(AuthRuleCreateOut)
+@api.post("/tenant/{tenant_id}/auth_rules/", response=AuthRuleCreateOut, tags=["认证规则"])
+@operation(AuthRuleCreateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_auth_rule(request, tenant_id: str, data: AuthRuleCreateIn):
     """ 创建认证规则
     """
@@ -68,8 +69,8 @@ def create_auth_rule(request, tenant_id: str, data: AuthRuleCreateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.post("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleUpdateOut, tags=["认证规则"], auth=None)
-@operation(AuthRuleUpdateOut)
+@api.post("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleUpdateOut, tags=["认证规则"])
+@operation(AuthRuleUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
     """ 编辑认证规则
     """
@@ -83,8 +84,8 @@ def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.delete("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleDeleteOut, tags=["认证规则"], auth=None)
-@operation(AuthRuleDeleteOut)
+@api.delete("/tenant/{tenant_id}/auth_rules/{id}/", response=AuthRuleDeleteOut, tags=["认证规则"])
+@operation(AuthRuleDeleteOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_auth_rule(request, tenant_id: str, id: str):
     """ 删除认证规则
     """

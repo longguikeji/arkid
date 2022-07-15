@@ -4,7 +4,7 @@ from enum import Enum
 from ninja import Schema
 from pydantic import Field
 from arkid.core.extension import Extension
-from arkid.core.event import AUTH_SUCCESS, AUTH_FAIL, BEFORE_AUTH
+from arkid.core.event import AUTH_SUCCESS, AUTH_FAIL, AUTHFACTOR_CREATE_LOGIN_PAGE, BEFORE_AUTH, CREATE_LOGIN_PAGE_RULES
 from arkid.core.translation import gettext_default as _
 from arkid.core import event as core_event
 from arkid.extension.models import TenantExtensionConfig
@@ -26,57 +26,58 @@ class AuthRuleExtension(Extension):
 
     def load(self):
         super().load()
+        self.listen_events()
+    
+    def check_rules(self, event, **kwargs):
+        """响应事件: CREATE_LOGIN_PAGE_RULES，遍历所有运行时配置，校验是否通过规则并决定是否进行下一步操作
 
-        # 认证前规则
-        self.listen_event(BEFORE_AUTH, self.check_before_auth)
-
-        self.listen_event(AUTH_FAIL, self.check_auth_fail)
-
-        self.listen_event(AUTH_SUCCESS, self.check_auth_success)
-
-    def check_before_auth(self, event, **kwargs):
-        auth_factor_config = event.data["auth_factor_config"]
-        config = self.get_current_config(event)
-        if config.config.get("main_auth_fator", None):
-            if config.config["main_auth_fator"] == auth_factor_config.id.hex:
-                return self.before_auth(event, auth_factor_config=auth_factor_config, **kwargs)
-        else:
-            return self.before_auth(event, **kwargs)
-
-    def check_auth_success(self, event, **kwargs):
-        return self.auth_success(event, **kwargs)
-
-    def check_auth_fail(self, event, **kwargs):
-        return self.auth_fail(event, **kwargs)
-
-    @abstractmethod
-    def auth_success(self, event, **kwargs):
-        """ 认证成功规则
+        Args:
+            event (Event): CREATE_LOGIN_PAGE_RULES事件
         """
-        pass
-
+        for config in self.get_tenant_configs(event.tenant):
+            self.check_rule(event, config)
+        
     @abstractmethod
-    def auth_fail(self, event, **kwargs):
-        """ 认证失败规则
-        """
-        pass
+    def check_rule(self,event,config):
+        """抽象方法：校验规则
 
-    @abstractmethod
-    def before_auth(self, event, auth_factor_config=None, **kwargs):
-        """ 认证前规则
+        Args:
+            event (Event): CREATE_LOGIN_PAGE_RULES事件
+            config (TenantExtensionConfig): 运行时配置
         """
         pass
 
     def register_auth_rule_schema(self, schema, auth_rule_type):
+        """注册认证规则运行时schema
+
+        Args:
+            schema (Schema): schema描述
+            auth_rule_type (str): 认证规则类型
+        """
         self.register_config_schema(
             schema, self.package + '_' + auth_rule_type)
         self.register_composite_config_schema(
             schema, auth_rule_type, exclude=['extension'])
 
-    def get_current_config(self, event):
-        config_id = event.request.POST.get('config_id')
-        return self.get_config_by_id(config_id)
+    def listen_events(self):
+        """监听事件
+        """
+        self.listen_event(CREATE_LOGIN_PAGE_RULES,self.check_rules)
 
+class MainAuthRuleSchema(Schema):
+    """主认证因素描述SCHEMA
+    """
+    id:str = Field(
+        hidden=True,
+    )
+    
+    name:str
+    
+    package:str = Field(
+        hidden=True
+    )
 
 class BaseAuthRuleSchema(Schema):
-    main_auth_factor: str = Field(title=_('main_auth_factor', '主认证因素'))
+    """认证规则插件基础运行时配置schema
+    """
+    main_auth_factor: MainAuthRuleSchema = Field(title=_('main_auth_factor', '主认证因素'))

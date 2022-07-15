@@ -1,0 +1,7 @@
+package = "com.longgui.auth.factor.authcode"
+name="图形验证码认证因素"
+version='1.0'
+labels='authcode'
+homepage='https://www.longguikeji.com'
+logo=''
+author='guancyxx@guancyxx.cn'
