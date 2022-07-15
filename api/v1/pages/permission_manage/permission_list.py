@@ -35,7 +35,7 @@ page.create_actions(
             page=edit_page,
         ),
         "delete":actions.DeleteAction(
-            path="/api/v1/tenant/{tenant_id}/permissions/{id}/",
+            path="/api/v1/tenant/{tenant_id}/permissions/{id}",
         ),
         # "toggle_open":actions.DirectAction(
         #     path="/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open",
