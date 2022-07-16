@@ -2,32 +2,31 @@
 
 from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
+from arkid.core.extension import create_extension_page
 
 tag = 'default_approve_requests'
 name = '默认请求处理'
 
 
-page = pages.TabsPage(tag=tag, name=name)
-waiting_page = pages.TablePage(name='未审核')
-approved_page = pages.TablePage(name='已审核')
+router_page = create_extension_page(__file__, pages.TabsPage, tag=tag, name=name)
+waiting_page = create_extension_page(__file__, pages.TablePage, name='未审核')
+approved_page = create_extension_page(__file__, pages.TablePage, name='已审核')
 
-pages.register_front_pages(page)
-pages.register_front_pages(waiting_page)
-pages.register_front_pages(approved_page)
 
-router = routers.FrontRouter(
-    path=tag,
-    name=name,
-    page=page,
-    icon='list',
-)
-
-page.add_pages(
+router_page.add_pages(
     [
         waiting_page,
         approved_page,
     ]
 )
+
+router = routers.FrontRouter(
+    path=tag,
+    name=name,
+    page=router_page,
+    icon='list',
+)
+
 
 waiting_page.create_actions(
     init_action=actions.DirectAction(

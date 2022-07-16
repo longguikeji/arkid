@@ -525,8 +525,8 @@ class Extension(ABC):
             router (core_routers.FrontRouter): 前端路由实例
             primary (core_routers.FrontRouter, optional): 一级路由名字，由 core_routers 文件提供定义. Defaults to None.
         """
-        router.path = self.package
-        router.change_page_tag(self.package)
+        router.path = self.package.replace('.', '_')
+        # router.change_page_tag(self.package.replace('.', '_'))
 
         for old_router, old_primary in self.front_routers:
             if old_primary == primary:
@@ -543,7 +543,10 @@ class Extension(ABC):
             page (core_pages.FrontPage): 前端页面
         """
         core_page.register_front_pages(page)
-        self.front_pages.append(page)
+        if isinstance(page, tuple) or isinstance(page, list):
+            self.front_pages.extend(page)
+        else:
+            self.front_pages.append(page)
 
 ################################################################################
 #### Base 

@@ -292,7 +292,7 @@ def unregister_front_pages(pages):
     Args:
         pages (List|FrontPage): 前端页面
     """
-    if not isinstance(pages, tuple) or not isinstance(pages, list):
+    if not isinstance(pages, tuple) and not isinstance(pages, list):
         pages = [pages]
 
     for page in pages:
