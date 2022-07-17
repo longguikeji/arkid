@@ -31,8 +31,6 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
         self.create_extension_config_schema()
         self.create_extension_settings_schema()
         self.register_extension_api()
-        self.listen_event(core_event.AUTHRULE_FIX_LOGIN_PAGE,self.fix_login_page)
-        self.listen_event(core_event.AUTHRULE_CHECK_AUTH_DATA,self.check_auth_data)
         
         super().load()
     
@@ -50,11 +48,6 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
         pass
     
     def fix_login_page(self, event, **kwargs):
-        """向login_pages填入认证元素
-
-        Args:
-            event: 事件
-        """
         items = [
             {
                 "type": "text",
