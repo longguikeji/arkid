@@ -277,7 +277,25 @@ class AuthFactorExtension(Extension):
         """抽象方法: 认证管理页面描述
         """
         pass
-    
+
+    @abstractmethod
+    def check_auth_data(self, event, **kwargs):
+        """ 响应检查认证凭证事件
+
+        Args:
+            event: AUTHRULE_CHECK_AUTH_DATA事件
+        """
+        pass
+
+    @abstractmethod
+    def fix_login_page(self, event, **kwargs):
+        """向login_pages填入认证元素
+
+        Args:
+            event: AUTHRULE_FIX_LOGIN_PAGE事件
+        """
+        pass
+
     def get_current_config(self, event):
         """获取事件指向的运行时配置
 
@@ -300,6 +318,8 @@ class AuthFactorExtension(Extension):
         self.password_event_tag = self.register_event('password', '重置密码')
         self.listen_event(self.password_event_tag, self.reset_password)
         self.listen_event(core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.create_response)
+        self.listen_event(core_event.AUTHRULE_CHECK_AUTH_DATA,self.check_auth_data)
+        self.listen_event(core_event.AUTHRULE_FIX_LOGIN_PAGE,self.fix_login_page)
 
 class BaseAuthFactorSchema(Schema):
     login_enabled: bool = Field(default=True, title=_('login_enabled', '启用登录'))
