@@ -33,6 +33,26 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
         self.register_extension_api()
         
         super().load()
+        
+        # 初始化部分配置数据
+        tenant = Tenant.platform_tenant()
+        if self.get_settings(tenant):
+            settings = {
+                "width": 180, 
+                "height": 60, 
+                "auth_code_length": 4
+            }
+            
+            self.update_or_create_settings(tenant, settings, True, False)
+        
+        if not self.get_tenant_configs(tenant):
+            config = {
+                "login_enabled": False, 
+                "register_enabled": False, 
+                "reset_password_enabled": False
+            }
+            
+            self.create_tenant_config(tenant, config, "图形验证码", "authcode")
     
     def authenticate(self, event, **kwargs):
         pass
