@@ -118,6 +118,32 @@ def update_system_permission():
 
 
 @app.task
+def init_core_code():
+    # 初始化租户和用户信息
+    from arkid.core.models import Tenant, User
+    tenant, _ = Tenant.objects.get_or_create(
+        slug='',
+        name="平台租户",
+    )
+    user, _ = User.objects.get_or_create(
+        username="admin",
+        tenant=tenant,
+    )
+    tenant.create_tenant_user_admin_permission(user)
+    tenant.users.add(user)
+    tenant.save()
+    # 初始化基础审批
+    from arkid.core import preset_approve_action
+    # 初始化系统权限
+    update_system_permission()
+    # 初始化saas
+    from django.conf import settings
+    if not settings.IS_CENTRAL_ARKID:
+        bind_arkid_saas_all_tenants()
+    
+
+
+@app.task
 def update_open_system_permission_admin():
     '''
     给所有admin更新已经开放的系统权限
