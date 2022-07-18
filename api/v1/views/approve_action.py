@@ -56,7 +56,7 @@ def get_approve_action(request, tenant_id: str, id: str):
 @operation(ApproveActionOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_approve_action(request, tenant_id: str, data: ApproveActionCreateIn):
     """创建审批动作"""
-    extension = Extension.valid_objects.get(id=data.extension_id)
+    extension = Extension.valid_objects.get(id=data.extension.id)
     action = ApproveAction.valid_objects.filter(
         path=data.path, method=data.method, tenant=request.tenant
     ).first()
@@ -84,7 +84,7 @@ def update_approve_action(
     request, tenant_id: str, id: str, data: ApproveActionUpdateIn
 ):
     """编辑审批动作"""
-    extension = Extension.valid_objects.get(id=data.extension_id)
+    extension = Extension.valid_objects.get(id=data.extension.id)
     action = ApproveAction.valid_objects.filter(tenant=request.tenant, id=id).first()
     if not action:
         return ErrorDict(ErrorCode.APPROVE_ACTION_NOT_EXISTS)
