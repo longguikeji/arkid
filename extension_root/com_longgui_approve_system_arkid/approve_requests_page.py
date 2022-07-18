@@ -27,21 +27,22 @@ router = routers.FrontRouter(
     icon='list',
 )
 
+package = 'com.longgui.approve.system.arkid'.replace('.', '_')
 
 waiting_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/approve_requests/arkid/?is_approved=false',
+        path=f'/api/v1/tenant/{{tenant_id}}/{package}/approve_requests/?is_approved=false',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
         "pass": actions.DirectAction(
             name=_("Pass", "通过"),
-            path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=pass",
+            path=f"/api/v1/{package}/approve_requests/{{request_id}}/pass/",
             method=actions.FrontActionMethod.PUT,
         ),
         "deny": actions.DirectAction(
             name=_("Deny", "拒绝"),
-            path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=deny",
+            path=f"/api/v1/{package}/approve_requests/{{request_id}}/deny/",
             method=actions.FrontActionMethod.PUT,
         ),
     },
@@ -49,19 +50,19 @@ waiting_page.create_actions(
 
 approved_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/approve_requests/arkid/?is_approved=true',
+        path=f'/api/v1/tenant/{{tenant_id}}/{package}/approve_requests/?is_approved=true',
         method=actions.FrontActionMethod.GET,
     ),
-    local_actions={
-        "pass": actions.DirectAction(
-            name=_("Pass", "通过"),
-            path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=pass",
-            method=actions.FrontActionMethod.PUT,
-        ),
-        "deny": actions.DirectAction(
-            name=_("Deny", "拒绝"),
-            path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=deny",
-            method=actions.FrontActionMethod.PUT,
-        ),
-    },
+    # local_actions={
+    #     "pass": actions.DirectAction(
+    #         name=_("Pass", "通过"),
+    #         path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=pass",
+    #         method=actions.FrontActionMethod.PUT,
+    #     ),
+    #     "deny": actions.DirectAction(
+    #         name=_("Deny", "拒绝"),
+    #         path="/api/v1/tenant/{tenant_id}/approve_requests/arkid/{id}/?action=deny",
+    #         method=actions.FrontActionMethod.PUT,
+    #     ),
+    # },
 )
