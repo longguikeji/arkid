@@ -67,10 +67,11 @@ class ApproveActionSchema(Schema):
     description: str = Field(title=_('Description', '备注'), default='')
     path: str = Field(
         title=_('Path', '请求路径'),
-        # field="path",
-        page=select_path_page.tag,
-        # link="path",
         type="string",
+        item_action={
+            "path": '/api/v1/tenant/{tenant_id}/path_list/',
+            "method": actions.FrontActionMethod.GET.value,
+        }
     )
     method: METHOD_TYPE = Field(title=_('Method', '请求方法'))
     extension: ApproveActionExtensionIn = Field(

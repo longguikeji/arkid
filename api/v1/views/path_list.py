@@ -18,7 +18,7 @@ class GetPathListOutItem(Schema):
     "/tenant/{tenant_id}/path_list/",
     response=List[GetPathListOutItem],
     tags=["API Path列表"],
-    auth=None,
+    # auth=None,
 )
 @operation(List[GetPathListOutItem], roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_path_list(request, tenant_id: str):
@@ -26,5 +26,5 @@ def get_path_list(request, tenant_id: str):
     result = []
     schema = api.get_openapi_schema()
     for path in schema["paths"].keys():
-        result.append({"path": path})
+        result.append(path)
     return result
