@@ -74,7 +74,7 @@ class ApproveSystemExtension(Extension):
             request (django.http.HttpRequest): 创建审批请求事件
             approve_request_id (str): 需要改变审批状态的审批请求ID
         """
-        approve_request = ApproveRequest.valid_objects.filter(id=request_id)
+        approve_request = ApproveRequest.valid_objects.get(id=request_id)
         self.pass_approve_request(request, approve_request)
         approve_request.status = 'pass'
         approve_request.save()
@@ -92,7 +92,7 @@ class ApproveSystemExtension(Extension):
             request (django.http.HttpRequest): 创建审批请求事件
             approve_request_id (str): 需要改变审批状态的审批请求ID
         """
-        approve_request = ApproveRequest.valid_objects.filter(id=request_id)
+        approve_request = ApproveRequest.valid_objects.get(id=request_id)
         self.deny_approve_request(request, approve_request)
         approve_request.status = 'deny'
         approve_request.save()
