@@ -119,15 +119,15 @@ def list_extensions(request, status: str = None):
     else:
         qs = ExtensionModel.valid_objects.filter(status=status).all()
 
-    token = request.user.auth_token
-    tenant = Tenant.platform_tenant()
-    access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extensions_purchased(access_token)
-    extensions_purchased = {ext['package']: ext for ext in resp['items']}
-    for ext in qs:
-        if ext.package in extensions_purchased:
-            ext.purchase_useful_life = extensions_purchased[ext.package].get('purchase_useful_life')
-            ext.purchase_state = extensions_purchased[ext.package].get('purchase_state')
+    # token = request.user.auth_token
+    # tenant = Tenant.platform_tenant()
+    # access_token = get_arkstore_access_token(tenant, token)
+    # resp = get_arkstore_extensions_purchased(access_token)
+    # extensions_purchased = {ext['package']: ext for ext in resp['items']}
+    # for ext in qs:
+    #     if ext.package in extensions_purchased:
+    #         ext.purchase_useful_life = extensions_purchased[ext.package].get('purchase_useful_life')
+    #         ext.purchase_state = extensions_purchased[ext.package].get('purchase_state')
     return qs
 
 
