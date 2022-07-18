@@ -8,23 +8,25 @@ from arkid.core import event
 from ninja import Schema
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
+from arkid.core.schema import ResponseSchema
+from pydantic import Field
 
 
-class GetPathListOutItem(Schema):
-    path: str
+class PathListOut(ResponseSchema):
+    data: List[str] = Field(default=[])
 
 
 @api.get(
     "/tenant/{tenant_id}/path_list/",
-    response=List[GetPathListOutItem],
+    response=PathListOut,
     tags=["API Path列表"],
     # auth=None,
 )
-@operation(List[GetPathListOutItem], roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(PathListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_path_list(request, tenant_id: str):
     """Openapi path列表"""
     result = []
     schema = api.get_openapi_schema()
     for path in schema["paths"].keys():
         result.append(path)
-    return result
+    return {"data": result}
