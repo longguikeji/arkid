@@ -16,11 +16,12 @@ from datetime import datetime
 from typing import List
 from arkid.core import pages, actions
 from django.utils import dateformat, timezone
-
+from uuid import UUID
+from pydantic import UUID4
 
 select_user_page = pages.TablePage(select=True, name=_("Select User", "选择用户"))
 
-pages.register_front_pages(select_user_page)
+# pages.register_front_pages(select_user_page)
 
 select_user_page.create_actions(
     init_action=actions.DirectAction(
@@ -29,25 +30,28 @@ select_user_page.create_actions(
     ),
 )
 
+
+class SelectUserIn(Schema):
+    id: UUID4 = Field(hidden=True)
+    username: str
+
+
 class UserExpirationSchema(Schema):
-    user: str = Field(
+    user: SelectUserIn = Field(
         title=_("Username", "用户名"),
-        field="id",
         page=select_user_page.tag,
-        link="username",
-        type="string",
-        show="username",
+
     )
-    username: str = Field(
-        default="", title=_("Username", "用户名"), readonly=True, hidden=True
-    )
+
     expiration_time: datetime = Field(title=_("Expiration Time", "过期时间"))
 
     class Config:
         title = _("User Expiration Setting", "用户过期设置")
 
-UserExpirationSchema = create_extension_schema('UserExpirationSchema', __file__,base_schema=UserExpirationSchema)
 
+UserExpirationSchema = create_extension_schema(
+    'UserExpirationSchema', __file__, base_schema=UserExpirationSchema
+)
 
 
 class UserExpirationListSchema(Schema):
@@ -58,12 +62,16 @@ class UserExpirationListSchema(Schema):
     class Config:
         title = _("User Expiration Setting", "用户过期设置")
 
-UserExpirationListSchema = create_extension_schema('UserExpirationListSchema', __file__,base_schema=UserExpirationListSchema)
+
+UserExpirationListSchema = create_extension_schema(
+    'UserExpirationListSchema', __file__, base_schema=UserExpirationListSchema
+)
 
 
 class AccountLifeArkIDExtension(AccountLifeExtension):
     def load(self):
         super().load()
+        self.register_front_pages(select_user_page)
         self.register_account_life_schema(UserExpirationListSchema, "user_expiration")
 
     def create_tenant_config(self, tenant, config, name, type):
@@ -73,12 +81,7 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         config_created = TenantExtensionConfig()
         config_created.tenant = tenant
         config_created.extension = Extension.active_objects.get(package=self.package)
-        for item in config.get('__root__'):  # 解决datetime不能json序列化
-            item["expiration_time"] = item["expiration_time"].strftime(
-                '%Y-%m-%d %H:%M:%S'
-            )
-            item["username"] = User.valid_objects.get(id=item["user"]).username
-        config_created.config = config.get('__root__')
+        config_created.config = json.loads(config.json())
         config_created.name = name
         config_created.type = type
         config_created.save()
@@ -91,12 +94,8 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         tenantextensionconfig = TenantExtensionConfig.valid_objects.filter(
             id=id
         ).first()
-        for item in config.get('__root__'):  # 解决datetime不能json序列化
-            item["expiration_time"] = item["expiration_time"].strftime(
-                '%Y-%m-%d %H:%M:%S'
-            )
-            item["username"] = User.valid_objects.get(id=item["user"]).username
-        tenantextensionconfig.config = config.get('__root__')
+
+        tenantextensionconfig.config = json.loads(config.json())
         tenantextensionconfig.name = name
         tenantextensionconfig.type = type
         tenantextensionconfig.save()
@@ -112,10 +111,10 @@ class AccountLifeArkIDExtension(AccountLifeExtension):
         configs = self.get_tenant_configs(event.tenant)
         for cfg in configs:
             for item in cfg.config:
-                user_id = item.get('user')
+                user_id = item.get('user').get('id')
                 user = User.objects.get(id=user_id)
                 expiration_time = timezone.datetime.strptime(
-                    item.get('expiration_time'), '%Y-%m-%d %H:%M:%S'
+                    item.get('expiration_time'), '%Y-%m-%dT%H:%M:%S'
                 )
                 logger.info(f"expiration_time: {expiration_time}/now: {datetime.now()}")
                 if expiration_time <= datetime.now():

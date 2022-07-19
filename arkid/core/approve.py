@@ -4,10 +4,10 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.urls import resolve
 from arkid.core.models import ApproveRequest, ApproveAction
 from arkid.extension.models import Extension
-
+import copy
 
 def restore_approve_request(approve_request):
-    environ = approve_request.environ
+    environ = copy.deepcopy(approve_request.environ)
     body = approve_request.body
     environ["wsgi.input"] = io.BytesIO(body)
     request = WSGIRequest(environ)
@@ -16,6 +16,7 @@ def restore_approve_request(approve_request):
     view_func, args, kwargs = resolve(request.path)
     klass = view_func.__self__
     operation, _ = klass._find_operation(request)
+    request.operation_id = operation.operation_id or klass.api.get_openapi_operation_id(operation)
     response = operation.run(request, **kwargs)
     logger.info(
         f'Restore Request: {approve_request.user.username}:{approve_request.action.method}:{approve_request.action.path}'
