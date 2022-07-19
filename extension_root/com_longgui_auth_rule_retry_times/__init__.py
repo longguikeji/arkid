@@ -34,15 +34,16 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
                 type="password"
             ).first()
             
+            second_auth_factor = TenantExtensionConfig.active_objects.filter(
+                tenant=tenant,
+                extension=Extension.active_objects.filter(
+                    package="com.longgui.auth.factor.authcode"
+                ).first(),
+                type="authcode"
+            ).first()
+            
             if main_auth_factor and second_auth_factor:
                 # 如主认证因素和此认证因素都存在的情况下 创建认证规则
-                second_auth_factor = TenantExtensionConfig.active_objects.filter(
-                    tenant=tenant,
-                    extension=Extension.active_objects.filter(
-                        package="com.longgui.auth.factor.authcode"
-                    ).first(),
-                    type="authcode"
-                ).first()
                 
                 config = {
                     "main_auth_factor": {
