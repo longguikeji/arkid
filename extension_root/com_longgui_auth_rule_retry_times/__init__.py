@@ -34,28 +34,30 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
                 type="password"
             ).first()
             
-            second_auth_factor = TenantExtensionConfig.active_objects.filter(
-                tenant=tenant,
-                extension=Extension.active_objects.filter(
-                    package="com.longgui.auth.factor.authcode"
-                ).first(),
-                type="authcode"
-            ).first()
-            
-            config = {
-                "main_auth_factor": {
-                    "id": main_auth_factor.id.hex, 
-                    "name": main_auth_factor.name, 
-                    "package": main_auth_factor.extension.package
-                }, 
-                "second_auth_factor": {
-                    "id": second_auth_factor.id.hex, 
-                    "name": second_auth_factor.name, 
-                    "package": second_auth_factor.extension.package
-                }, 
-                "try_times": 3
-            }
-            self.create_tenant_config(tenant, config, "认证规则:登录失败三次启用图形验证码", "retry_times")
+            if main_auth_factor and second_auth_factor:
+                # 如主认证因素和此认证因素都存在的情况下 创建认证规则
+                second_auth_factor = TenantExtensionConfig.active_objects.filter(
+                    tenant=tenant,
+                    extension=Extension.active_objects.filter(
+                        package="com.longgui.auth.factor.authcode"
+                    ).first(),
+                    type="authcode"
+                ).first()
+                
+                config = {
+                    "main_auth_factor": {
+                        "id": main_auth_factor.id.hex, 
+                        "name": main_auth_factor.name, 
+                        "package": main_auth_factor.extension.package
+                    }, 
+                    "second_auth_factor": {
+                        "id": second_auth_factor.id.hex, 
+                        "name": second_auth_factor.name, 
+                        "package": second_auth_factor.extension.package
+                    }, 
+                    "try_times": 3
+                }
+                self.create_tenant_config(tenant, config, "认证规则:登录失败三次启用图形验证码", "retry_times")
         
     def before_auth(self,event,**kwargs):
         """ 响应事件：认证之前, 判断是否满足次级认证因素校验条件，如满足则触发事件并检查次级认证因素校验结果
