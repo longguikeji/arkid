@@ -38,9 +38,11 @@ page.create_actions(
     local_actions={
         "edit": actions.EditAction(
             page=edit_page,
+            hidden='is_system',
         ),
         "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/permission_groups/{id}/",
+            hidden='is_system',
         )
     },
     node_actions=[

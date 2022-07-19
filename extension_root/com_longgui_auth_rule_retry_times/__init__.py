@@ -5,9 +5,12 @@ from arkid.core.event import AUTH_FAIL, Event, dispatch_event,BEFORE_AUTH
 from arkid.core.extension import create_extension_schema
 from arkid.core.extension.auth_factor import BaseAuthFactorSchema
 from arkid.core.extension.auth_rule import AuthRuleExtension, BaseAuthRuleSchema,MainAuthRuleSchema
+from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
 from ninja import Schema
 from pydantic import Field
+
+from arkid.extension.models import TenantExtensionConfig,Extension
 from .error import ErrorCode
 from .schema import *
 from django.core.cache import cache
@@ -19,6 +22,40 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         self.create_extension_config_schema()
         self.listen_event(AUTH_FAIL,self.auth_fail)
         self.listen_event(BEFORE_AUTH,self.before_auth)
+        
+        # 配置初始数据
+        tenant = Tenant.platform_tenant()
+        if not self.get_tenant_configs(tenant):
+            main_auth_factor = TenantExtensionConfig.active_objects.filter(
+                tenant=tenant,
+                extension=Extension.active_objects.filter(
+                    package="com.longgui.auth.factor.password"
+                ).first(),
+                type="password"
+            ).first()
+            
+            second_auth_factor = TenantExtensionConfig.active_objects.filter(
+                tenant=tenant,
+                extension=Extension.active_objects.filter(
+                    package="com.longgui.auth.factor.authcode"
+                ).first(),
+                type="authcode"
+            ).first()
+            
+            config = {
+                "main_auth_factor": {
+                    "id": main_auth_factor.id.hex, 
+                    "name": main_auth_factor.name, 
+                    "package": main_auth_factor.extension.package
+                }, 
+                "second_auth_factor": {
+                    "id": second_auth_factor.id.hex, 
+                    "name": second_auth_factor.name, 
+                    "package": second_auth_factor.extension.package
+                }, 
+                "try_times": 3
+            }
+            self.create_tenant_config(tenant, config, "认证规则:登录失败三次启用图形验证码", "retry_times")
         
     def before_auth(self,event,**kwargs):
         """ 响应事件：认证之前, 判断是否满足次级认证因素校验条件，如满足则触发事件并检查次级认证因素校验结果
