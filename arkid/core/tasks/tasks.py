@@ -118,20 +118,27 @@ def update_system_permission():
 
 
 @app.task
+def create_tenant_init_manager(tenant_id, user_id):
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    user = User.objects.filter(id=user_id).first()
+    permissiondata = PermissionData()
+    permissiondata.create_tenant_user_admin_permission(tenant, user)
+
+@app.task
 def init_core_code():
     # 初始化租户和用户信息
-    from arkid.core.models import Tenant, User
-    tenant, _ = Tenant.objects.get_or_create(
-        slug='',
-        name="平台租户",
-    )
-    user, _ = User.objects.get_or_create(
-        username="admin",
-        tenant=tenant,
-    )
-    tenant.create_tenant_user_admin_permission(user)
-    tenant.users.add(user)
-    tenant.save()
+    # from arkid.core.models import Tenant, User
+    # tenant, _ = Tenant.objects.get_or_create(
+    #     slug='',
+    #     name="平台租户",
+    # )
+    # user, _ = User.objects.get_or_create(
+    #     username="admin",
+    #     tenant=tenant,
+    # )
+    # tenant.create_tenant_user_admin_permission(user)
+    # tenant.users.add(user)
+    # tenant.save()
     # 初始化基础审批
     from arkid.core import preset_approve_action
     # 初始化系统权限
