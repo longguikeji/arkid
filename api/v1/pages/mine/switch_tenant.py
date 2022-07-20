@@ -29,7 +29,7 @@ page.create_actions(
         )
     },
     local_actions={
-        'switch_tenant': actions.URLAction(
+        'switch_tenant': actions.DirectAction(
             name=_('Switch', '切换'),
             path='/api/v1/mine/switch_tenant/{id}/',
             method=actions.FrontActionMethod.GET,

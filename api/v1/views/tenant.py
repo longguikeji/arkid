@@ -45,6 +45,7 @@ def create_tenant(request, data:TenantCreateIn):
     """
 
     tenant = Tenant.expand_objects.create(**data.dict())
+    tenant.users.add(request.user)
     return ErrorDict(ErrorCode.OK)
 
 @api.post("/tenants/{id}/", response=TenantUpdateOut,tags=["租户管理"])

@@ -148,16 +148,19 @@ def get_mine_approve_requests(
     return requests
 
 
-@api.get("/mine/switch_tenant/{id}/", tags=["我的"])
+@api.get("/mine/switch_tenant/{id}/", response=MineSwitchTenantOut, tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_switch_tenant(request, id):
     """租户切换"""
-    context = {}
     tenant = Tenant.active_objects.get(id=id)
-    context['tenant_id'] = id
-    context['slug'] = tenant.slug
 
-    return render(request, template_name='switch_tenant.html', context=context)
+    return {
+        "switch_tenant":{
+            "id": tenant.id.hex,
+            "slug": tenant.slug
+        },
+        "refresh": True
+    }
 
 
 @api.get("/tenant/{tenant_id}/mine/logout/", response=MineLogoutOut, tags=["我的"])
