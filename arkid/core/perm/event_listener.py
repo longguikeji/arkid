@@ -17,7 +17,7 @@ from arkid.core.event import (
     OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
     UPDATE_ADMIN_ALL_PERMISSION, ADD_USER_MANY_PERMISSION, ADD_USERGROUP_MANY_PERMISSION,
     REMOVE_USERGROUP_SYSTEM_PERMISSION, REMOVE_USERGROUP_APP_PERMISSION,
-    UPDATE_GROUP_PERMISSION, 
+    UPDATE_GROUP_PERMISSION, CREATE_TENANT,
 )
 import uuid
 
@@ -75,6 +75,7 @@ class EventListener(object):
         core_event.listen_event(APP_START, self.app_start)
         core_event.listen_event(CREATE_GROUP, self.create_group)
         core_event.listen_event(DELETE_GROUP, self.delete_group)
+        core_event.listen_event(CREATE_TENANT, self.create_tenant)
         core_event.listen_event(GROUP_ADD_USER, self.group_add_user)
         core_event.listen_event(GROUP_REMOVE_USER, self.group_remove_user)
         core_event.listen_event(CREATE_APP, self.create_app)
@@ -108,6 +109,12 @@ class EventListener(object):
     #     user = event.data
     #     tenant = event.tenant
     #     update_single_user_system_permission_and_app_permisssion.delay(tenant.id, user.id)
+
+    def create_tenant(self, event, **kwargs):
+        tenant = event.tenant
+        user = event.data
+        from arkid.core.tasks.tasks import create_tenant_init_manager
+        create_tenant_init_manager.delay(tenant.id, user.id)
 
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission

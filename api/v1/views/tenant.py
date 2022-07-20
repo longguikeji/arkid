@@ -12,6 +12,11 @@ from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.tenant import *
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
+from arkid.core.event import(
+    CREATE_TENANT, Event, register_event,
+    dispatch_event
+)
+
 
 
 @api.get("/tenants/", response=List[TenantListItemOut],tags=["租户管理"])
@@ -43,9 +48,11 @@ def get_tenant(request, id: str):
 def create_tenant(request, data:TenantCreateIn):
     """ 创建租户
     """
-
+    user = request.user
     tenant = Tenant.expand_objects.create(**data.dict())
-    tenant.users.add(request.user)
+    tenant.users.add(user)
+    # 分发一个创建租户的事件
+    dispatch_event(Event(tag=CREATE_TENANT, tenant=tenant, request=request, data=user))
     return ErrorDict(ErrorCode.OK)
 
 @api.post("/tenants/{id}/", response=TenantUpdateOut,tags=["租户管理"])
