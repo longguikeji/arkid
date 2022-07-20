@@ -1,5 +1,6 @@
 from typing import List
 from arkid.core.api import api, operation
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from arkid.core import event
 from ninja import Field, Schema
@@ -13,8 +14,8 @@ class GetEventListOutItem(Schema):
     description:str = Field(title=_("描述"))
     url:str = Field(title=_("文档链接"))
 
-@api.get("/tenant/{tenant_id}/event_list/", response=List[GetEventListOutItem], tags=["事件列表"],auth=None)
-@operation(List[GetEventListOutItem])
+@api.get("/tenant/{tenant_id}/event_list/", response=List[GetEventListOutItem], tags=["事件列表"])
+@operation(List[GetEventListOutItem], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_event_list(request, tenant_id: str):
     """ 事件列表 """

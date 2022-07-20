@@ -1,4 +1,6 @@
+import json
 from django.urls import reverse
+from arkid.core.constants import *
 from arkid.core.api import operation
 from arkid.core.event import SEND_SMS, Event, dispatch_event
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
@@ -18,8 +20,6 @@ from .schema import *
 from django.contrib.auth.hashers import (
     make_password,
 )
-
-package = "com.longgui.auth.factor.mobile"
 
 class MobileAuthFactorExtension(AuthFactorExtension):
     """手机短信验证码认证因素插件
@@ -50,12 +50,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         )
         
         # 注册发送短信接口
-        self.register_api(
+        self.url_send_sms_code = self.register_api(
             '/config/{config_id}/send_sms_code/',
             'POST',
             self.send_sms_code,
             tenant_path=True,
-            auth=None,
             response=SendSMSCodeOut,
         )
     
@@ -70,8 +69,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         """
         tenant = event.tenant
         request = event.request
-        sms_code = request.POST.get('sms_code')
-        mobile = request.POST.get('mobile')
+        data = request.POST or json.load(request.body)
+        
+        mobile = data.get('mobile')
+        sms_code = data.get('sms_code')
 
         user = User.expand_objects.filter(tenant=tenant,mobile=mobile)
         if len(user) > 1:
@@ -97,9 +98,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         """
         tenant = event.tenant
         request = event.request
-        mobile = request.POST.get('mobile')
-        sms_code = request.POST.get('sms_code')
-        username = request.POST.get('username')
+        data = request.POST or json.load(request.body)
+        
+        mobile = data.get('mobile')
+        sms_code = data.get('sms_code')
+        username = data.get('username')
 
         config = self.get_current_config(event)
         ret, message = self.check_mobile_exists(mobile, tenant)
@@ -132,11 +135,13 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         """
         tenant = event.tenant
         request = event.request
-        mobile = request.POST.get('mobile')
-        sms_code = request.POST.get('sms_code')
+        data = request.POST or json.load(request.body)
         
-        password = request.POST.get('password')
-        checkpassword = request.POST.get('checkpassword')
+        mobile = data.get('mobile')
+        sms_code = data.get('sms_code')
+        
+        password = data.get('password')
+        checkpassword = data.get('checkpassword')
         
         if password != checkpassword:
             return self.error(ErrorCode.PASSWORD_IS_INCONSISTENT)
@@ -158,7 +163,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         
         return self.error(ErrorCode.MOBILE_NOT_EXISTS_ERROR)
 
-    def create_login_page(self, event, config):
+    def create_login_page(self, event, config, config_data):
         """ 生成手机验证码登录页面Schema描述
 
         Args:
@@ -174,7 +179,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": f"/api/v1/tenant/{event.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
+                        "url": self.url_send_sms_code,
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
@@ -188,11 +193,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "type": "text",
                 "name":"sms_code",
                 "placeholder": "验证码",
-            },
+            }
         ]
-        self.add_page_form(config, self.LOGIN, "手机验证码登录", items)
+        self.add_page_form(config, self.LOGIN, "手机验证码登录", items, config_data)
 
-    def create_register_page(self, event, config):
+    def create_register_page(self, event, config, config_data):
         """生成手机验证码用户注册页面Schema描述
 
         因本插件提供重置密码功能，此处需用户指定账号用户名
@@ -214,7 +219,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": f"/api/v1/tenant/{event.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
+                        "url": self.url_send_sms_code,
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
@@ -228,11 +233,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "type": "text",
                 "name":"sms_code",
                 "placeholder": "验证码"
-            },
+            }
         ]
-        self.add_page_form(config, self.REGISTER, "手机验证码注册", items)
+        self.add_page_form(config, self.REGISTER, "手机验证码注册", items, config_data)
 
-    def create_password_page(self, event, config):
+    def create_password_page(self, event, config, config_data):
         """生成重置密码页面Schema描述
         
         通过手机验证码重置密码时需提供手机号码以及对应验证码，同时此处添加新密码确认机制
@@ -251,7 +256,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "append": {
                     "title": "发送验证码",
                     "http": {
-                        "url": f"/api/v1/tenant/{event.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
+                        "url": self.url_send_sms_code,
                         "method": "post",
                         "params": {
                             "mobile": "mobile",
@@ -274,11 +279,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                 "type": "password",
                 "name":"checkpassword",
                 "placeholder": "密码确认"
-            },
+            }
         ]
-        self.add_page_form(config, self.RESET_PASSWORD, "手机验证码重置密码", items)
+        self.add_page_form(config, self.RESET_PASSWORD, "手机验证码重置密码", items, config_data)
 
-    def create_other_page(self, event, config):
+    def create_other_page(self, event, config, config_data):
         """创建其他页面（本插件无相关页面）
 
         Args:
@@ -322,85 +327,50 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             return False, ErrorCode.USERNAME_EXISTS_ERROR
         
         return True, None
+
+    def check_auth_data(self, event, **kwargs):
+        pass
+
+    def fix_login_page(self, event, **kwargs):
+        pass
     
     def create_auth_manage_page(self):
         """ 创建“我的-认证管理”中的更换手机号码页面
         """
-        configs = TenantExtensionConfig.active_objects.filter(extension__package=self.package)
-        
         _pages = []
-        for config in configs:
-            class UpdateMineMobileIn(Schema):
-                """ 更新手机号码参数Schema描述类
-
-                注意： 此处因需要部分运行时配置参数故而临时写在此处，未来可能优化
-                """
-                mobile:str = Field(
-                    title='手机号',
-                    suffix_action=DirectAction(
-                        name='发送验证码',
-                        path=f"/api/v1/tenant/{config.tenant.id}/com_longgui_auth_factor_mobile/config/{config.id}/send_sms_code/",
-                        method=actions.FrontActionMethod.POST,
-                        params={
-                            "mobile": "mobile",
-                            "areacode": "86",
-                        },
-                        delay=60,
-                    ).dict()
-                )
-                
-                code:str = Field(title='验证码')
-            
-            class UpdateMineMobileOut(ResponseSchema):
-                pass
-            
-            def update_mine_mobile(request, tenant_id: str,data:UpdateMineMobileIn):
-                """ 普通用户：更新手机号码
-
-                Args:
-                    request: 请求体
-                    tenant_id (str): 租户ID
-                    data (UpdateMineMobileIn): 参数
-                """
-                mobile = data.mobile
-                ret, message = self.check_mobile_exists(mobile, request.tenant)
-                if not ret:
-                    return self.error(message)
-                
-                sms_code = data.code
-                if not check_sms_code(mobile, sms_code):
-                    return self.error(ErrorCode.SMS_CODE_MISMATCH)
-                
-                user = request.user
-                user.mobile=data.mobile
-                user.save()
-                
-                return self.success()
         
-            
-            mine_mobile_path = self.register_api(
-                f"/{config.id}_mine_mobile/",
-                'POST',
-                update_mine_mobile,
-                tenant_path=True,
-                response=UpdateMineMobileOut
-            )
-            
-            name = '更改手机号码'
+        mine_mobile_path = self.register_api(
+            "/mine_mobile/",
+            "GET",
+            self.mine_mobile,
+            tenant_path=True,
+            response=MineMobileOut
+        )
+        
+        upodate_mine_mobile_path = self.register_api(
+            "/mine_mobile/",
+            'POST',
+            self.update_mine_mobile,
+            tenant_path=True,
+            response=UpdateMineMobileOut
+        )
+        
+        name = '更改手机号码'
 
-            page = pages.FormPage(name=name)
-            page.create_actions(
-                init_action=actions.ConfirmAction(
-                    path=mine_mobile_path
+        page = pages.FormPage(name=name)
+        page.create_actions(
+            init_action=actions.DirectAction(
+                path=mine_mobile_path,
+                method=actions.FrontActionMethod.GET
+            ),
+            global_actions={
+                'confirm': actions.ConfirmAction(
+                    path=upodate_mine_mobile_path
                 ),
-                global_actions={
-                    'confirm': actions.ConfirmAction(
-                        path=mine_mobile_path
-                    ),
-                }
-            )
-            
-            _pages.append(page)
+            }
+        )
+        
+        _pages.append(page)
         return _pages
 
     def create_extension_config_schema(self):
@@ -419,7 +389,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         
         MobileAuthFactorSchema = create_extension_schema(
             'MobileAuthFactorSchema',
-            package, 
+            __file__, 
             [
                 (
                     'sms_config', 
@@ -479,14 +449,34 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             return self.success()
         else:
             return self.error(ErrorCode.SMS_SEND_FAILED)
+
+    @operation(UpdateMineMobileOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
+    def update_mine_mobile(self, request, tenant_id: str,data:UpdateMineMobileIn):
+        """ 普通用户：更新手机号码
+
+        Args:
+            request: 请求体
+            tenant_id (str): 租户ID
+            data (UpdateMineMobileIn): 参数
+        """
+        mobile = data.mobile
+        ret, message = self.check_mobile_exists(mobile, request.tenant)
+        if not ret:
+            return self.error(message)
+        
+        user = request.user
+        user.mobile=data.mobile
+        user.save()
+        
+        return self.success()
     
+    @operation(MineMobileOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
+    def mine_mobile(self,request,tenant_id: str):
+        user = request.user
+        user_expand = User.expand_objects.filter(id=user.id).first()
+        return {
+            "data":user_expand
+        }
+
     
-extension = MobileAuthFactorExtension(
-    package=package,
-    name="手机验证码认证因素",
-    version='1.0',
-    labels='auth_factor',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='guancyxx@guancyxx.cn',
-)
+extension = MobileAuthFactorExtension()

@@ -3,12 +3,13 @@ from arkid.core.pages import FrontPage
 
 global_routers = []
 
+
 class FrontRouter(DeepSN):
     """_前端路由类
 
     Examples:
         >>> from arkid.core import routers
-        >>> 
+        >>>
         >>> router = routers.FrontRouter(
         >>>     path='user',
         >>>     name='用户管理',
@@ -23,7 +24,21 @@ class FrontRouter(DeepSN):
         >>>     ],
         >>> )
     """
-    def __init__(self, path:str, name:str=None, icon:str=None, children=None, redirect=None, page=None, url=None, *args, **kwargs):
+
+    def __init__(
+        self,
+        path: str,
+        name: str = None,
+        icon: str = None,
+        children=None,
+        redirect=None,
+        page=None,
+        url=None,
+        web=True,
+        mobile=False,
+        *args,
+        **kwargs
+    ):
         """初始化
 
         Args:
@@ -45,28 +60,28 @@ class FrontRouter(DeepSN):
         if redirect:
             self.redirect = redirect
         if page:
-            if isinstance(page,list):
+            if isinstance(page, list):
                 self.page = []
                 for p in page:
-                    self.page.append(
-                        p.tag if isinstance(p,FrontPage) else p
-                    )
+                    # self.page.append(p.tag if isinstance(p, FrontPage) else p)
+                    self.page.append(p)
             else:
-                self.page = page.tag if isinstance(page,FrontPage) else page
+                # self.page = page.tag if isinstance(page, FrontPage) else page
+                self.page = page
         if url:
             self.url = url
+        self.web = web
+        self.mobile = mobile
         super().__init__(*args, **kwargs)
-        
+
     def add_page(self, page):
-        if not hasattr(self,"page"):
+        if not hasattr(self, "page"):
             self.page = []
-        if isinstance(page,list):
+        if isinstance(page, list):
             for p in page:
-                self.page.append(
-                    p.tag if isinstance(p,FrontPage) else p
-                )
+                self.page.append(p.tag if isinstance(p, FrontPage) else p)
         else:
-            self.page.append(page.tag if isinstance(page,FrontPage) else page)
+            self.page.append(page.tag if isinstance(page, FrontPage) else page)
 
     def add_children(self, child):
         """添加子路由
@@ -74,7 +89,7 @@ class FrontRouter(DeepSN):
         Args:
             child (OrderedDict): 子路由描述
         """
-        if not hasattr(self,"children"):
+        if not hasattr(self, "children"):
             self.children = []
         self.children.append(child)
 
@@ -96,12 +111,27 @@ class FrontRouter(DeepSN):
         Args:
             header (str): 页面标识前缀
         """
-        if hasattr(self,"page"):
-            self.page:FrontPage
+        if hasattr(self, "page"):
             self.page.add_tag_pre(header)
-        if hasattr(self,"children"):
+        if hasattr(self, "children"):
             for child in self.children:
                 child.change_page_tag(header)
+
+    def format_router_page(self):
+        if hasattr(self, "page"):
+            if isinstance(self.page, list):
+                pages = []
+                for p in self.page:
+                    pages.append(p.tag if isinstance(p, FrontPage) else p)
+                self.page = pages
+            else:
+                self.page = (
+                    self.page.tag if isinstance(self.page, FrontPage) else self.page
+                )
+        if hasattr(self, "children"):
+            for child in self.children:
+                child.format_router_page()
+
 
 def register_front_routers(routers, primary: FrontRouter = None):
     """注册前端路由
@@ -110,11 +140,12 @@ def register_front_routers(routers, primary: FrontRouter = None):
         routers (list): 路由列表或者路由
         primary (str, optional): 主路由. Defaults to ''.
     """
-    if not isinstance(routers, tuple) or not isinstance(routers, list):
-        routers = list(routers)
+    if not isinstance(routers, tuple) and not isinstance(routers, list):
+        routers = [routers]
 
     if primary:
-        primary.add_children(routers)
+        for router in routers:
+            primary.add_children(router)
         return
     global_routers.extend(routers)
 
@@ -133,10 +164,15 @@ def unregister_front_routers(routers, primary: FrontRouter = None):
         for router in routers:
             primary.remove_child(router)
         return
-        
+
     for router in routers:
         global_routers.remove(router)
 
 
 def get_global_routers():
-    return [ item.dict() for item in global_routers ]
+    # return [item.dict() for item in global_routers]
+    result = []
+    for item in global_routers:
+        item.format_router_page()
+        result.append(item.dict())
+    return result

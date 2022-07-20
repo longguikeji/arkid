@@ -8,30 +8,56 @@
 * PV provisioner support in the underlying infrastructure
 * ReadWriteMany volumes for deployment scaling
 
-## 安装
-``` py
-## 下载arkid 的chart
-git clone --branch v2.5-dev --depth 1  https://github.com/longguikeji/arkid-charts.git
+## 通过helm安装
 
-cd arkid-charts/chart
+> !!! 生产环境推荐使用 gitops工具（如argoCD）来部署和管理
+> chart源码仓库地址： https://github.com/longguikeji/arkid-charts.git
 
-# 安装
-helm install arkidv2 . \
---set persistence.init=true \
---set ingress.cert=false \
---set ingress.tls=false \
---set ingress.host.name=arkid.yourcompany.com
+### 添加helm仓库
+```shell
+helm repo add lgkj https://harbor.longguikeji.com/chartrepo/public
 
-# 暴露端口访问
-kubectl port-forward svc/arkid-portal  8989:80
-
-Forwarding from 127.0.0.1:8989 -> 80
-Handling connection for 8989
-
+helm repo update
 ```
 
-## 更多配置
+### helm 查找 arkid 的 charts
+```shell
+helm search repo arkid -l
+```
 
+### 安装 arkid chart
+
+
+```shell
+kubectl create ns arkid
+
+helm --namespace arkid install arkid lgkj/arkid \
+--set persistence.init=true
+```
+
+## 暴露端口访问
+```shell
+kubectl --namespace arkid port-forward svc/arkid-portal  8989:80
+
+Forwarding from 127.0.0.1:8989 -> 80
+Forwarding from [::1]:8989 -> 80
+
+打开浏览器访问: `http://localhost:8989/`
+初始密码：`admin/admin`
+```
+
+## 升级 arkid chart版本
+```shell
+helm repo update
+
+helm -n arkid upgrade arkid lgkj/arkid \
+--set persistence.init=true
+```
+
+
+
+## 更多配置
+> https://github.com/longguikeji/arkid-charts.git
 ### 公共配置
 | NAME | Description | DEFAULT VALUE |
 | --- | --- | --- |
@@ -45,11 +71,11 @@ Handling connection for 8989
 ### arkid配置
 | NAME | DESCRIPTION | DEFAULT VALUE |
 | --- | --- | --- |
-| fe.image | arkid前端的镜像 | longguikeji/arkid-fe:v2dev |
+| fe.image | arkid前端的镜像 |  harbor.longguikeji.com/ark-releases/arkid-fe-vue3:2.5.0 |
 | fe.pullPolicy | IfNotPresent, Always | IfNotPresent |
 | fe.resources.requests | arkid前端的requests | {"cpu": "800m","memory": "1024Mi"} |
 | fe.resources.limits | arkid前端的limits | {} |
-| be.image | arkid后端的镜像 | longguikeji/arkid:v2dev |
+| be.image | arkid后端的镜像 |  harbor.longguikeji.com/ark-releases/arkid:2.5.0  |
 | be.pullPolicy |  |  |
 | be.resources.requests | arkid后端的requests | {"cpu": "800m","memory": "1024Mi"} |
 | be.resources.limits | arkid后端的limits | {} |
@@ -59,10 +85,6 @@ Handling connection for 8989
 | NAME | Description | DEFAULT VALUE |
 | --- | --- | --- |
 | mysql.enabled | true会部署一个mysql，如果是false则需要设置externalDatabase下的配置 | true |
-| mysql.image | mysql镜像 | mysql:5.7 |
-| mysql.pullPolicy | IfNotPresent, Always | IfNotPresent |
-| mysql.rootPassword | root密码 | root |
-| mysql.database | db名字 | arkid |
 | externalDatabase.host | 外部mysql数据库的host | "" |
 | externalDatabase.port | 外部mysql数据库的port | 3306 |
 | externalDatabase.database | 外部mysql数据库的库名 | "" |
@@ -74,8 +96,6 @@ Handling connection for 8989
 | NaME | Description | DEFAULT VALUE |
 | --- | --- | --- |
 | redis.enabled | true会部署一个redis，如果是false则需要设置externalRedis下的配置 | true |
-| redis.image | redis镜像 | redis:5.0.3 |
-| redis.pullPolicy | IfNotPresent, Always | IfNotPresent |
 | externalRedis.host | 外部redis的host | "" |
 | externalRedis.port | 外部redis的port | 6379 |
 | externalRedis.db | 外部redis的db | 0 |
@@ -84,7 +104,7 @@ Handling connection for 8989
 ### ingress配置
 | name | DEscription | default value |
 | --- | --- | --- |
-| ingress.enabled | 添加ingress记录 | true |
+| ingress.enabled | 添加ingress记录 | false |
 | ingress.cert | 使用cert-manager生成证书 | false |
 | ingress.annotations | ingress的注释 | {"kubernetes.io/ingress.class": "nginx","certmanager.k8s.io/cluster-issuer": "letsencrypt-prod"} |
 | ingress.host.name | ingress记录的域名 | "" |

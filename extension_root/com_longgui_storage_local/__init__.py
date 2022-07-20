@@ -7,11 +7,9 @@ from arkid.core.translation import gettext_default as _
 from arkid.config import get_app_config
 from arkid.core.extension.storage import StorageExtension
 
-package = 'com.longgui.storage.local'
-
 ProfileSchema = create_extension_schema(
     "LocalStorageProfileSchema",
-    package,
+    __file__,
     fields = [
         ('storage_path', Optional[str], Field(title=_("Storage Path", "存储路径"))),
     ]
@@ -26,7 +24,6 @@ class LocalStorageExtension(StorageExtension):
             'GET',
             self.get_file,
             tenant_path=True,
-            auth=None
         )
         
         super().load()
@@ -59,12 +56,4 @@ class LocalStorageExtension(StorageExtension):
             open(file_path, 'rb')
         )
 
-extension = LocalStorageExtension(
-    package=package,
-    name='本地文件存储',
-    version='1.0',
-    labels='storage',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='guancyxx@guancyxx.cn',
-)
+extension = LocalStorageExtension()

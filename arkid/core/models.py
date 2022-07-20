@@ -401,6 +401,29 @@ class UserPermissionResult(BaseModel, ExpandModel):
         return f'User: {self.user.username}'
 
 
+class GroupPermissionResult(BaseModel, ExpandModel):
+    class Meta(object):
+        verbose_name = _("GroupPermissionResult", "分组权限结果")
+        verbose_name_plural = _("GroupPermissionResult", "分组权限结果")
+
+    user_group = models.ForeignKey(UserGroup, on_delete=models.CASCADE, verbose_name='用户分组')
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    app = models.ForeignKey(
+        App,
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        verbose_name='App',
+    )
+    result = models.CharField(
+        max_length=1024, blank=True, null=True, verbose_name='权限结果'
+    )
+
+    def __str__(self) -> str:
+        return f'User: {self.user_group.name}'
+
+
 # class Approve(BaseModel, ExpandModel):
 #     class Meta(object):
 #         verbose_name = _('Approve', "审批动作")
@@ -499,6 +522,7 @@ class ApproveAction(BaseModel, ExpandModel):
     tenant = models.ForeignKey(
         'Tenant',
         default=None,
+        null=True,
         on_delete=models.CASCADE,
         verbose_name=_('Tenant', '租户'),
         related_name="approve_action_set",

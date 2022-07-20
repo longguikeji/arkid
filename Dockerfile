@@ -1,4 +1,5 @@
-FROM python:3.8-buster as build_deps
+ARG BASEIMAGE=python:3.8-buster
+FROM ${BASEIMAGE} as build_deps
 EXPOSE 80
 WORKDIR /var/arkid
 ARG DEBIAN=http://mirrors.aliyun.com/debian
@@ -17,7 +18,7 @@ RUN set -eux; \
         gettext xmlsec1 supervisor \
         freetds-dev freetds-bin \
         python-dev python-pip \
-        python-dev default-libmysqlclient-dev tini gosu; \
+        default-libmysqlclient-dev tini gosu; \
     # verify that the binary works
     gosu nobody true; \
     rm -rf /var/lib/apt/lists/*; \
@@ -25,6 +26,7 @@ RUN set -eux; \
     setcap 'cap_net_bind_service=+ep' /usr/local/bin/python3.8
 
 ADD requirements.txt ./
+RUN sed -i "s@https://mirrors.aliyun.com/pypi/simple@$PIP@g" requirements.txt;
 RUN pip install --no-cache-dir -r requirements.txt
 
 ADD . .

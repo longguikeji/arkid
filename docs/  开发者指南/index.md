@@ -1,7 +1,3 @@
----
-template: comment.html
----
-
 # 概述
 
 ArkID构建于：

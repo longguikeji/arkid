@@ -117,9 +117,9 @@ def delete_extension_folder(extension) -> None:
 def import_extension(ext_dir: str) -> any:
     logger.info(f"Importing  {ext_dir}")
     ext_name = str(ext_dir).replace('/','.')
-    # from pip._internal import main
-    # requirements = str(ext_dir)+'/'+'requirements.txt'
-    # main(['install', '-r', requirements])
+    from pip._internal import main
+    requirements = str(ext_dir)+'/'+'requirements.txt'
+    main(['install', '-r', requirements])
     
     ext = importlib.import_module(ext_name)
     logger.info(f"Imported  {ext}")
@@ -148,6 +148,8 @@ def load_extension(ext_dir: str) -> any:
 
 
 def unload_extension(ext_dir: str) -> any:
+    if not Path(ext_dir).exists():
+        return
     ext_name = f'{Path(ext_dir).parent}.{Path(ext_dir).name}'
     ext = importlib.import_module(ext_name)
     if ext:

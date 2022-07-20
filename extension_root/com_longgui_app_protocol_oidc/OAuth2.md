@@ -5,27 +5,21 @@ OAuth2是一个授权的开放协议
 ## 添加OAuth2应用
 
 === "打开应用列表"
-
     [![X55Ch4.md.jpg](https://s1.ax1x.com/2022/06/14/X55Ch4.md.jpg)](https://imgtu.com/i/X55Ch4)
 
 === "点击创建，填写表单"
-
     点击确认后，对话框关闭，可以看到你创建的应用。
-
     [![XT9IET.md.jpg](https://s1.ax1x.com/2022/06/15/XT9IET.md.jpg)](https://imgtu.com/i/XT9IET)
 
 === "点击协议配置"
-
     [![XT9LvR.md.jpg](https://s1.ax1x.com/2022/06/15/XT9LvR.md.jpg)](https://imgtu.com/i/XT9LvR)
 
 === "填写配置"
     应用类型选择为OIDC，填写参数，创建完毕
-
     [![XTCP8H.md.jpg](https://s1.ax1x.com/2022/06/15/XTCP8H.md.jpg)](https://imgtu.com/i/XTCP8H)
 
 === "再次点击协议配置"
     即可查看该协议所有相关的参数。
-
     [![XTCMGQ.md.jpg](https://s1.ax1x.com/2022/06/15/XTCMGQ.md.jpg)](https://imgtu.com/i/XTCMGQ)
 
 
@@ -77,7 +71,7 @@ OAuth2是一个授权的开放协议
 
     | 参数名称        | 参数说明           | 示例           |
     | :---------:    | :--------------: | :--------------: |
-    | `Authorization`    | 这个token由client_id和client_secret生成  |  Basic Token
+    | `Authorization`    | token格式为 client_id:client_secret 使用base64编码  |  Basic Token
     | `Content-Type` | 填入multipart/form-data |
 
     - 请求参数:

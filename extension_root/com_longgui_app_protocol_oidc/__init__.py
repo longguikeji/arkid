@@ -9,12 +9,9 @@ from oauth2_provider.urls import urlpatterns as urls
 from arkid.core.extension import create_extension_schema
 from oauth2_provider.views.base import AuthorizationView
 
-import uuid
+OIDCConfigSchema = create_extension_schema('OIDCConfigSchema',__file__, base_schema=OIDCConfigSchema)
+Oauth2ConfigSchema = create_extension_schema('Oauth2ConfigSchema',__file__, base_schema=Oauth2ConfigSchema)
 
-package='com.longgui.app.protocol.oidc'
-
-OIDCConfigSchema = create_extension_schema('OIDCConfigSchema',package, base_schema=OIDCConfigSchema)
-Oauth2ConfigSchema = create_extension_schema('Oauth2ConfigSchema',package, base_schema=Oauth2ConfigSchema)
 class OAuth2ServerExtension(AppProtocolExtension):
 
     def load(self):
@@ -39,20 +36,16 @@ class OAuth2ServerExtension(AppProtocolExtension):
         self.register_enter_view(auth_view, auth_path, url_name, type)
 
     def create_app(self, event, **kwargs):
-        if event.data["package"] == package:
-            config = event.data["config"]
-            return self.update_app_data(event, config, True)
+        config = event.data["config"]
+        return self.update_app_data(event, config, True)
 
     def update_app(self, event, **kwargs):
-        if event.data["package"] == package:
-            config = event.data["config"]
-            return self.update_app_data(event, config, False)
+        config = event.data["config"]
+        return self.update_app_data(event, config, False)
 
     def delete_app(self, event, **kwargs):
-        if event.data.package == package:
-            # 删除应用
-            Application.objects.filter(uuid=event.data.id).delete()
-            return True
+        Application.objects.filter(uuid=event.data.id).delete()
+        return True
 
     def update_app_data(self, event, config, is_create):
         '''
@@ -96,12 +89,4 @@ class OAuth2ServerExtension(AppProtocolExtension):
         config["skip_authorization"] = obj.skip_authorization
 
 
-extension = OAuth2ServerExtension(
-    package=package,
-    name='OIDC&OAuth2认证协议',
-    version='1.0',
-    labels='oauth',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='hanbin@jinji-inc.com',
-)
+extension = OAuth2ServerExtension()

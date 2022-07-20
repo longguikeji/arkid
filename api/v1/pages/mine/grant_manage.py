@@ -7,18 +7,20 @@ tag = "mine_grant_manage"
 name = _("授权管理")
 
 
-page = pages.TablePage(
+page = pages.TreePage(
     name=name,
     tag=tag
 )
-permission_page = pages.TablePage(
-    name=_("申请权限"),
-    select=True,
-)
+app_permission_page = pages.TablePage(name=_("该应用权限"))
+# permission_page = pages.TablePage(
+#     name=_("申请权限"),
+#     select=True,
+# )
 
 
 pages.register_front_pages(page)
-pages.register_front_pages(permission_page)
+pages.register_front_pages(app_permission_page)
+# pages.register_front_pages(permission_page)
 
 router = routers.FrontRouter(
     path=tag,
@@ -29,25 +31,19 @@ router = routers.FrontRouter(
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/mine/tenant/{tenant_id}/permissions/',
+        path='/api/v1/tenant/{tenant_id}/all_apps_in_arkid/',
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions={
-        'open': actions.OpenAction(
-            name=("申请权限"),
-            page=permission_page
+    node_actions=[
+        actions.CascadeAction(
+            page=app_permission_page
         )
-    }
+    ]
 )
 
-permission_page.create_actions(
+app_permission_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/mine/tenant/{tenant_id}/all_permissions/',
-        method=actions.FrontActionMethod.GET,
+        path='/api/v1/mine/tenant/{tenant_id}/permissions/?app_id={app_id}',
+        method=actions.FrontActionMethod.GET
     ),
-    global_actions={
-       'confirm': actions.ConfirmAction(
-            path="/api/v1/mine/tenant/{tenant_id}/permissions/"
-        ),
-    }
 )

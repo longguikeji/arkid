@@ -1,3 +1,4 @@
+import toml
 from abc import ABC, abstractmethod
 from enum import Enum
 from pyclbr import Function
@@ -12,7 +13,7 @@ from pathlib import Path
 from ninja.constants import NOT_SET
 
 from requests import delete
-from arkid import config
+from arkid import config, extension
 from types import SimpleNamespace
 from collections import OrderedDict
 from django.apps import apps
@@ -37,7 +38,29 @@ app_config = config.get_app_config()
 Event = core_event.Event
 EventType = core_event.EventType
 
-def create_extension_schema( name, package = '',fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]) :
+
+def create_extension_schema(name, file_path, fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]):
+    """提供给插件用来创建Schema的方法
+    
+    注意:
+        插件必须使用此方法来定义Schema,避免与其它Schema的命名冲突
+    Args:
+        name (str): Schema的类名
+        file_path (str): 指插件__init__.py文件所在的路径, 用来通过插件的config.toml文件获取package,从而避免schema的命名冲突
+        fields (Optional[List[Tuple[str, Any, Any]]], optional): Schema的字段定义
+        base_schema (Type[Schema], optional): Schema的基类. 默认为: ninja.Schema
+    Returns:
+        ninja.Schema : 创建的Schema类
+    """
+    config_path = Path(file_path).parent / "config.toml"
+    if not config_path.exists():
+        raise Exception("config.tmol not found")
+
+    config = toml.load(config_path)
+    return create_extension_schema_by_package(name, config["package"], fields, base_schema, exclude)
+
+
+def create_extension_schema_by_package( name, package = '',fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]) :
     """提供给插件用来创建Schema的方法
     
     注意:
@@ -53,10 +76,20 @@ def create_extension_schema( name, package = '',fields: Optional[List[Tuple[str,
     if package:
         name = package + '_' + name
     name = name.replace('.','_')
+    
+    custom_fields = []
+    if fields:
+        for f_name, f_type, f_field in fields:
+            if type(f_type) is Optional:
+                continue;
+            else:
+                f_type = Optional[f_type]
+            custom_fields.append((f_name, f_type, f_field))
+        
     schema = create_schema(EmptyModel,
             name=name, 
             exclude=['id'],
-            custom_fields=fields,
+            custom_fields=custom_fields,
             base_class=base_schema,
         )
     core_api.remove_fields(schema, exclude)
@@ -93,7 +126,7 @@ def create_extension_schema_from_django_model(
     return schema
 
 def create_empty_root_schema(name):
-    return create_extension_schema(name, fields=[("__root__", str, Field())],base_schema=RootSchema,)
+    return create_extension_schema_by_package(name, fields=[("__root__", str, Field())],base_schema=RootSchema,)
 
 def get_root_schema(schema_list, discriminator, depth = 0):
     if len(schema_list) == 0:
@@ -115,14 +148,14 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
         fields.append( (k,t,f) )
     
     if len(schema_list) == 0:
-        schema = create_extension_schema(schema_cls_name+'0', exclude=exclude, fields=fields)
+        schema = create_extension_schema_by_package(schema_cls_name+'0', exclude=exclude, fields=fields)
     elif len(schema_list) == 1:
         # schema = list(schema_list)[0]
-        schema = create_extension_schema(schema_cls_name+'1', base_schema=list(schema_list)[0], exclude=exclude, fields=fields)
+        schema = create_extension_schema_by_package(schema_cls_name+'1', base_schema=list(schema_list)[0], exclude=exclude, fields=fields)
     else:
         new_schema_list = []
         for schema in schema_list:
-            schema = create_extension_schema(schema_cls_name + '_' + schema.name, base_schema=schema)
+            schema = create_extension_schema_by_package(schema_cls_name + '_' + schema.name, base_schema=schema)
             core_api.add_fields(schema, **field_definitions)
             core_api.remove_fields(schema, exclude)
             new_schema_list.append(schema)
@@ -130,7 +163,7 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
         schema_list = new_schema_list
         root_type, root_field = Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)
         
-        schema = create_extension_schema(
+        schema = create_extension_schema_by_package(
             schema_cls_name, 
             fields=[
                 ("__root__", root_type, root_field) # type: ignore
@@ -139,6 +172,32 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
         )
         extension_schema_map[schema_cls_name] = schema
     return schema
+
+#############################################
+
+def create_extension_page(file_path, page_cls, *args, **kwargs):
+    """提供给插件用来创建Page的方法
+    
+    注意:
+        插件必须使用此方法来定义Page,避免与其它page的tag冲突
+    Args:
+        file_path (str): 指插件__init__.py文件所在的路径, 用来通过插件的config.toml文件获取package,从而避免schema的命名冲突
+        page_cls (page): 页面的类，在core.pages中定义的TablePage、TreePage等等
+        args (optional): 页面类构造参数
+        kwargs (optional): 页面类构造参数
+    Returns:
+        page : 创建的page_cls的页面实例
+    """
+    config_path = Path(file_path).parent / "config.toml"
+    if not config_path.exists():
+        raise Exception("config.tmol not found")
+
+    config = toml.load(config_path)
+    page = page_cls(*args, **kwargs)
+    page.add_tag_pre(config['package'].replace('.','_'))
+    return page
+
+
 class Extension(ABC):
     """
     Args:
@@ -159,10 +218,10 @@ class Extension(ABC):
 
     def __init__(
         self, 
-        package:str, 
-        version:str, 
-        name:str,  
-        logo:str, 
+        package:str = None, 
+        version:str = None, 
+        name:str = None,  
+        logo:str = None, 
         description:str = None, 
         labels:List[str] = None, 
         homepage:str = None, 
@@ -184,15 +243,14 @@ class Extension(ABC):
         self.version = version
         self.name = name
         self.description = description
-        self.labels = []
+        self._labels = []
         if type(labels) is list:
-            self.labels.extend(labels)
-        else:
-            self.labels.append(labels)
+            self._labels.extend(labels)
+        elif labels:
+            self._labels.append(labels)
         self.homepage = homepage
         self.logo = logo
         self.author = author
-        self.pname = self.package.replace('.', '_')
         self.apis = []
         self.urls = []
         self.extend_fields = []
@@ -205,6 +263,28 @@ class Extension(ABC):
         self.settings_schema_list = []
         self.config_schema_list = []
         self.lang_code = None
+
+    def load_config(self):
+        config_path = Path(self._ext_dir) / "config.toml"
+        if config_path.exists():
+            config = toml.load(config_path)
+            for k, v in config.items():
+                setattr(self, k, v)
+
+    @property
+    def pname(self):
+        return self.package.replace('.', '_')
+
+    @property
+    def labels(self):
+        return self._labels
+
+    @labels.setter
+    def labels(self, value: str):
+        if type(value) is list:
+            self._labels.extend(value)
+        elif value:
+            self._labels.append(value)
 
     @property
     def model(self):
@@ -223,6 +303,7 @@ class Extension(ABC):
     @ext_dir.setter
     def ext_dir(self, value: str):
         self._ext_dir = value
+        self.load_config()
 
     @property
     def full_name(self):
@@ -241,6 +322,9 @@ class Extension(ABC):
         except Exception as e:
             print(e)
             print(f'migrate {self.pname} fail')
+    
+    def create_schema(self, name, fields: Optional[List[Tuple[str, Any, Any]]] = None, base_schema:Type[Schema] = Schema,  exclude=[]):
+        return create_extension_schema_by_package(name, self.package, fields, base_schema,  exclude)
             
     def register_api(
         self, 
@@ -369,11 +453,11 @@ class Extension(ABC):
         """
         def signal_func(event, **kwargs2):
             # 判断租户是否启用该插件
-            # tenant
-            # 插件名 tag
-            # func.__module__ 'extension_root.abc.xx'
-            # kwargs2.pop()
-            # Extension.
+            if not self.model.is_active:
+                return
+            tenant_extension = TenantExtension.active_objects.filter(is_rented=True, extension=self.model).first()
+            if not event.tenant.is_platform_tenant and not tenant_extension:
+                return
             if event.packages and not self.package in event.packages:
                 return
             return func(event=event, **kwargs2)
@@ -441,8 +525,8 @@ class Extension(ABC):
             router (core_routers.FrontRouter): 前端路由实例
             primary (core_routers.FrontRouter, optional): 一级路由名字，由 core_routers 文件提供定义. Defaults to None.
         """
-        router.path = self.package
-        router.change_page_tag(self.package)
+        router.path = self.package.replace('.', '_')
+        # router.change_page_tag(self.package.replace('.', '_'))
 
         for old_router, old_primary in self.front_routers:
             if old_primary == primary:
@@ -458,9 +542,11 @@ class Extension(ABC):
         Args:
             page (core_pages.FrontPage): 前端页面
         """
-        page.add_tag_pre(self.pname)
         core_page.register_front_pages(page)
-        self.front_pages.append(page)
+        if isinstance(page, tuple) or isinstance(page, list):
+            self.front_pages.extend(page)
+        else:
+            self.front_pages.append(page)
 
 ################################################################################
 #### Base 
@@ -473,7 +559,7 @@ class Extension(ABC):
             fields = fields,
             custom_fields=[
                 ("package", Literal[schema_tag], Field()),  # type: ignore
-                (type, schema, Field())
+                (type, Optional[schema], Field())
             ],
         )
         new_schema.name = name
@@ -754,7 +840,7 @@ class Extension(ABC):
         Returns:
             Schema: 创建好的Schema
         """
-        schema = create_extension_schema(
+        schema = create_extension_schema_by_package(
             schema_cls_name, 
             fields=[
                 ("__root__", str, Field(depth=1)) # type: ignore

@@ -1,0 +1,7 @@
+package='com.longgui.case'
+name="示例插件"
+version='1.0'
+labels='case'
+homepage='https://www.company.com'
+logo=''
+author='case@company.com'

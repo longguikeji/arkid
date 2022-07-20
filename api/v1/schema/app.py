@@ -33,6 +33,8 @@ class AppListsOut(ResponseSchema):
 
 class AppItemOut(ModelSchema):
 
+    id: UUID = Field(readonly=True)
+    
     class Config:
         model = App
         model_fields = ['id', 'name', 'url', 'logo','description']
@@ -74,6 +76,11 @@ class ConfigOpenApiVersionSchemaOut(Schema):
 
     version: str = Field(title=_('version', '应用版本'), default='')
     openapi_uris: str = Field(title=_('openapi uris', '接口文档地址'), default='')
+
+
+class ConfigOpenApiVersionDataSchemaOut(ResponseSchema):
+
+    data: ConfigOpenApiVersionSchemaOut
 
 
 AppProtocolConfigIn = AppProtocolExtension.create_composite_config_schema(

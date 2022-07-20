@@ -42,7 +42,12 @@ class ErrorCode(Enum):
     PERMISSION_EXISTS_ERROR = ('10033', _('the permission not exists', '该权限不存在'))
     # APP_EXISTS_ERROR = '10032'
     PERMISSION_NOT_EDIT = ('10033', _('the permission not edit', '该权限不允许编辑'))
+    PERMISSION_NOT_CLOSE = ('10033', _('the permission not edit', '该权限不允许关闭'))
     # PERMISSION_NOT_DELETE = ('10034', _('the permission not delete', '该权限不允许删除'))
+    BAN_REMOVE_GROUP_PERMISSION = ('10035', _('ban remove group permission', '该分组权限或范围不允许移除'))
+    BAN_REMOVE_GROUP_SCOPE = ('10036', _('ban remove group permission', '该分组范围不允许移除'))
+    PERMISSION_GROUP_NOT_EDIT = ('10037', _('the permission group not edit', '该分组权限不允许编辑'))
+    PERMISSION_GROUP_NOT_DELETE = ('10038', _('the permission group not delete', '该分组权限不允许删除'))
 
     # SMS_PROVIDER_IS_MISSING = '11001'
     # AUTHCODE_PROVIDER_IS_MISSING = '11002'
@@ -64,6 +69,10 @@ class ErrorCode(Enum):
     APP_GROUP_PARENT_CANT_BE_ITSELF = ('16001', _('app group parent can not be itself', '应用分组上级分组不能设置为其自身'))
     USER_GROUP_PARENT_CANT_BE_ITSELF = ('16002', _('user group parent can not be itself', '用户分组上级分组不能设置为其自身'))
 
+    RENT_EXTENSION_SUCCESS = ('17001', _('rent extension success', '插件租赁成功'))
+    UPDATE_EXTENSION_SUCCESS = ('17002', _('extension not in arkstore', '插件不在插件商店中，无法更新'))
+    TRIAL_EXTENSION_TWICE = ('17003', _('extension can not trial twice', '试用不允许重复下单'))
+    AGENT_BIND_CAN_NOT_CHANGE = ('17004', _('agent bind can not change', '代理商已绑定，无法修改'))
 
 class ErrorDict(dict):
 

@@ -38,9 +38,11 @@ page.create_actions(
     local_actions={
         "edit": actions.EditAction(
             page=edit_page,
+            hidden='is_system',
         ),
         "delete":actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/permission_groups/{id}/",
+            hidden='is_system',
         )
     },
     node_actions=[
@@ -59,12 +61,12 @@ group_permissions_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/',
         method=actions.FrontActionMethod.GET
     ),
-    # global_actions={
-    #     "update":actions.OpenAction(
-    #         name=_("添加权限"),
-    #         page=edit_permissions_page,
-    #     )
-    # },
+    global_actions={
+        "update":actions.OpenAction(
+            name=_("添加权限"),
+            page=edit_permissions_page,
+        )
+    },
     local_actions={
         "delete": actions.DeleteAction(
             path="/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/{id}/",
@@ -82,7 +84,7 @@ edit_permissions_page.create_actions(
     select=True,
     global_actions={
        'confirm': actions.ConfirmAction(
-            path="/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/"
+            path="/api/v1/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/"
         ),
     }
 )
@@ -107,7 +109,7 @@ pages.register_front_pages(select_app_page)
 
 select_app_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/apps/',
+        path='/api/v1/tenant/{tenant_id}/all_apps_in_arkid/',
         method=actions.FrontActionMethod.GET
     )
 )

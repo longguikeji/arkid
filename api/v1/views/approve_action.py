@@ -1,4 +1,5 @@
 from arkid.core.api import api, operation
+from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
 from ninja import ModelSchema, Schema
 from arkid.core.models import ApproveAction, ApproveRequest
@@ -12,54 +13,52 @@ from api.v1.schema.approve_action import (
     ApproveActionCreateIn,
     ApproveActionCreateOut,
     ApproveActionListItemOut,
-    ApproveActionListOut,
     ApproveActionOut,
     ApproveActionUpdateIn,
     ApproveActionUpdateOut,
     ApproveActionDeleteOut,
 )
+from django.db.models import Q
 
 
 @api.get(
     "/tenant/{tenant_id}/approve_actions/",
     tags=["审批动作"],
-    auth=None,
     response=List[ApproveActionListItemOut],
 )
-@operation(ApproveActionListOut)
+@operation(List[ApproveActionListItemOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_approve_actions(request, tenant_id: str):
     """审批动作列表"""
     tenant = request.tenant
-    actions = ApproveAction.valid_objects.filter(tenant=tenant)
+    actions = ApproveAction.valid_objects.filter(Q(tenant=tenant) | Q(tenant=None))
     return actions
 
 
 @api.get(
-    operation_id="",
     path="/tenant/{tenant_id}/approve_actions/{id}/",
     tags=["审批动作"],
-    auth=None,
     response=ApproveActionOut,
 )
+@operation(ApproveActionOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_approve_action(request, tenant_id: str, id: str):
     """获取审批动作"""
     tenant = request.tenant
-    action = ApproveAction.valid_objects.filter(tenant=tenant, id=id).first()
+    action = ApproveAction.valid_objects.filter(id=id).first()
     return {"data": action}
 
 
 @api.post(
     "/tenant/{tenant_id}/approve_actions/",
     tags=["审批动作"],
-    auth=None,
     response=ApproveActionCreateOut,
 )
+@operation(ApproveActionOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_approve_action(request, tenant_id: str, data: ApproveActionCreateIn):
     """创建审批动作"""
-    extension = Extension.valid_objects.get(id=data.extension_id)
+    extension = Extension.valid_objects.get(id=data.extension.id)
     action = ApproveAction.valid_objects.filter(
-        path=data.path, method=data.method, extension=extension, tenant=request.tenant
+        path=data.path, method=data.method, tenant=request.tenant
     ).first()
     if action:
         return ErrorDict(ErrorCode.APPROVE_ACTION_DUPLICATED)
@@ -78,14 +77,14 @@ def create_approve_action(request, tenant_id: str, data: ApproveActionCreateIn):
 @api.put(
     "/tenant/{tenant_id}/approve_actions/{id}/",
     tags=["审批动作"],
-    auth=None,
     response=ApproveActionUpdateOut,
 )
+@operation(ApproveActionUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def update_approve_action(
     request, tenant_id: str, id: str, data: ApproveActionUpdateIn
 ):
     """编辑审批动作"""
-    extension = Extension.valid_objects.get(id=data.extension_id)
+    extension = Extension.valid_objects.get(id=data.extension.id)
     action = ApproveAction.valid_objects.filter(tenant=request.tenant, id=id).first()
     if not action:
         return ErrorDict(ErrorCode.APPROVE_ACTION_NOT_EXISTS)
@@ -102,10 +101,9 @@ def update_approve_action(
 @api.delete(
     "/tenant/{tenant_id}/approve_actions/{id}/",
     tags=["审批动作"],
-    auth=None,
     response=ApproveActionDeleteOut,
 )
-@operation(ApproveActionDeleteOut)
+@operation(ApproveActionDeleteOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def delete_approve_action(request, tenant_id: str, id: str):
     """删除审批动作"""
     action = ApproveAction.valid_objects.filter(tenant=request.tenant, id=id).first()
@@ -135,8 +133,8 @@ class ApproveSystemExtensionListOut(ModelSchema):
     "/tenant/{tenant_id}/approve_system_extensions/",
     response=List[ApproveSystemExtensionListOut],
     tags=['审批动作'],
-    auth=None,
 )
+@operation(List[ApproveSystemExtensionListOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def list_approve_system_extensions(request, tenant_id: str):
     """获取审批系统插件列表"""
     qs = Extension.active_objects.filter(type='approve_system').all()

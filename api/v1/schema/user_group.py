@@ -18,7 +18,7 @@ select_usergroup_parent_page.create_actions(
     ),
     node_actions=[
         actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/app_groups/?parent_id={id}',
+            path='/api/v1/tenant/{tenant_id}/user_groups/?parent_id={id}',
             method=actions.FrontActionMethod.GET
         )
     ],
@@ -124,4 +124,4 @@ class UserGroupExcludeUsersItemOut(Schema):
 
     id: UUID = Field(default=None)
     username: str
-    avatar: str
+    avatar: str = Field(default=None)

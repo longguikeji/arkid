@@ -3,7 +3,7 @@ from arkid.core.openapi import get_permissions
 from arkid.core.models import (
     UserPermissionResult, SystemPermission, User,
     Tenant, App, Permission, UserGroup,
-    ExpiringToken,
+    ExpiringToken, GroupPermissionResult,
 )
 from arkid.core.api import api
 from django.db.models import Q
@@ -46,7 +46,18 @@ class PermissionData(object):
                 # 取得应用所有的权限
                 self.update_app_all_permission(tenant, app)
                 # 更新应用所有用户权限
-                self.update_app_all_user_permission(tenant, app)
+                uprs = UserPermissionResult.valid_objects.filter(
+                    app=app
+                ).exclude(tenant=tenant)
+                tenants = []
+                tenants.append(tenant)
+                for upr in uprs:
+                    tenant = upr.tenant
+                    if tenant not in tenants:
+                        tenants.append(tenant)
+                for tenant in tenants:
+                    # 需要更新对应租户的所有用户
+                    self.update_app_all_user_permission(tenant, app)
     
     def update_only_user_app_permission(self, tenant_id, app_id):
         '''
@@ -55,7 +66,19 @@ class PermissionData(object):
         tenant = Tenant.valid_objects.filter(id=tenant_id).first()
         app = App.valid_objects.filter(id=app_id).first()
         if tenant and app:
-            self.update_app_all_user_permission(tenant, app)
+            # 更新应用所有用户权限
+            uprs = UserPermissionResult.valid_objects.filter(
+                app=app
+            ).exclude(tenant=tenant)
+            tenants = []
+            tenants.append(tenant)
+            for upr in uprs:
+                tenant = upr.tenant
+                if tenant not in tenants:
+                    tenants.append(tenant)
+            for tenant in tenants:
+                # 需要更新对应租户的所有用户
+                self.update_app_all_user_permission(tenant, app)
 
     def update_tenant_permission(self, tenant_id):
         '''
@@ -72,7 +95,7 @@ class PermissionData(object):
         '''
         tenant, _ = Tenant.objects.get_or_create(
             slug='',
-            name="platform tenant",
+            name="平台租户",
         )
         return tenant
     
@@ -116,6 +139,28 @@ class PermissionData(object):
         else:
             print('不存在租户或者用户无法更新')
     
+    def add_user_many_permission(self, permissions_dict):
+        '''
+        给用户添加多个权限自动区分类型
+        '''
+        user_ids = permissions_dict.get('user_ids', [])
+        data_arr = permissions_dict.get('data_arr', [])
+        tenant_id = permissions_dict.get('tenant_id', None)
+        for user_id in user_ids:
+            if user_id and data_arr and tenant_id:
+                for permission_id in data_arr:
+                    permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+                    if permission is None:
+                        permission = Permission.valid_objects.filter(id=permission_id).first()
+                    if isinstance(permission, SystemPermission):
+                        # 添加系统权限
+                        self.add_system_permission_to_user(tenant_id, user_id, permission_id)
+                    else:
+                        # 添加应用权限
+                        self.add_app_permission_to_user(tenant_id, str(permission.app_id), user_id, permission_id)
+            else:
+                print('缺少必填参数无法添加请检查用户和权限内容')
+
     def remove_system_permission_to_user(self, tenant_id, user_id, permission_id):
         '''
         给某个用户删除系统权限
@@ -240,9 +285,12 @@ class PermissionData(object):
             is_update=False
         ).update(is_del=0)
 
+    # from django.db import transaction
+
+    # @transaction.atomic
     def update_arkid_all_user_permission(self, tenant_id=None):
         '''
-        更新所有用户权限
+        更新系统所有用户权限
         '''
         # 当前的租户
         if tenant_id is None:
@@ -257,13 +305,14 @@ class PermissionData(object):
             tenant=tenant,
             app=None,
         )
+        superuser_id = User.valid_objects.order_by('created').first().id
         userpermissionresults_dict = {}
         compress = Compress()
         for userpermissionresult in userpermissionresults:
             userpermissionresults_dict[userpermissionresult.user.id.hex] = userpermissionresult
         for auth_user in auth_users:
             # 权限鉴定
-            if auth_user.is_superuser:
+            if auth_user.id == superuser_id:
                 auth_user.is_tenant_admin = True
             else:
                 if auth_user.id.hex in userpermissionresults_dict:
@@ -294,7 +343,11 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
         # 计算每一个用户的权限情况
+        userpermissionresult_lists = []
+        create_user_result_list = []
+        update_user_result_list = []
         for auth_user in auth_users:
+            # print('更新用户:'+auth_user.username)
             permission_result = ''
             permission_result_arr = []
             if auth_user.id.hex in userpermissionresults_dict:
@@ -338,9 +391,14 @@ class PermissionData(object):
             for data_item in data_dict.values():
                 # 如果是通过就不查验
                 if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                    if data_item.category == 'group' and data_item.container.all():
+                        for data_item_child_api in data_item.container.all():
+                            temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                            if temp_data_item:
+                                temp_data_item.is_pass = 1
                     continue
                 # 如果是超级管理员直接就通过
-                if auth_user.is_superuser:
+                if auth_user.id == superuser_id:
                     data_item.is_pass = 1
                 else:
                     if data_item.name == 'normal-user':
@@ -367,25 +425,53 @@ class PermissionData(object):
                         data_item.is_pass = 0
                     else:
                         data_item.is_pass = 0
-                # 产生结果字符串
-                if permission_result:
-                    for data_item in data_dict.values():
-                        permission_result_arr[data_item.sort_id] = data_item.is_pass
-                else:
-                    for data_item in data_dict.values():
-                        permission_result_arr.append(data_item.is_pass)
-                permission_result = "".join(map(str, permission_result_arr))
-                compress_str_result = compress.encrypt(permission_result)
-                if compress_str_result:
-                    userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
-                        is_del=False,
-                        user=auth_user,
-                        tenant=tenant,
-                        app=None,
-                    )
-                    userpermissionresult.is_update = True
+            # 产生结果字符串
+            if permission_result:
+                for data_item in data_dict.values():
+                    permission_result_arr[data_item.sort_id] = data_item.is_pass
+            else:
+                for data_item in data_dict.values():
+                    permission_result_arr.append(data_item.is_pass)
+            # 如果父分组有权限则子分组也有权限(后处理)
+            for data_item in data_dict.values():
+                sort_id = data_item.sort_id
+                sort_id_result = int(permission_result_arr[sort_id])
+                if sort_id_result == 1:
+                    if data_item.category == 'group':
+                        group_id_hex = data_item.id.hex
+                        if group_id_hex in data_group_parent_child:
+                            await_result = []
+                            self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                            for parent_child_item in await_result:
+                                parent_child_sort_id = parent_child_item.sort_id
+                                permission_result_arr[parent_child_sort_id] = 1
+            permission_result = "".join(map(str, permission_result_arr))
+            compress_str_result = compress.encrypt(permission_result)
+            if compress_str_result:
+                # pass
+                if auth_user.id.hex in userpermissionresults_dict:
+                    userpermissionresult = userpermissionresults_dict.get(auth_user.id.hex)
                     userpermissionresult.result = compress_str_result
-                    userpermissionresult.save()
+                    update_user_result_list.append(userpermissionresult)
+                else:
+                    userpermissionresult = UserPermissionResult()
+                    userpermissionresult.user = auth_user
+                    userpermissionresult.tenant = tenant
+                    userpermissionresult.result = compress_str_result
+                    userpermissionresult.app = None
+                    create_user_result_list.append(userpermissionresult)
+                # userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
+                #     is_del=False,
+                #     user=auth_user,
+                #     tenant=tenant,
+                #     app=None,
+                # )
+                # userpermissionresult.result = compress_str_result
+                # userpermissionresult.save()
+        if create_user_result_list:
+            UserPermissionResult.objects.bulk_create(create_user_result_list)
+        if update_user_result_list:
+            UserPermissionResult.objects.bulk_update(update_user_result_list, ['result'])
 
     def update_arkid_single_user_permission(self, tenant, auth_user, pass_permission, permission_value):
         '''
@@ -453,9 +539,19 @@ class PermissionData(object):
         for data_item in data_dict.values():
             if pass_permission != None and data_item.id == pass_permission.id:
                 data_item.is_pass = permission_value
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = permission_value
                 continue
             # 如果是通过就不查验
             if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = 1
                 continue
             # 如果是超级管理员直接就通过
             if auth_user.is_superuser:
@@ -492,6 +588,19 @@ class PermissionData(object):
         else:
             for data_item in data_dict.values():
                 permission_result_arr.append(data_item.is_pass)
+        # 如果父分组有权限则子分组也有权限(后处理)
+        for data_item in data_dict.values():
+            sort_id = data_item.sort_id
+            sort_id_result = int(permission_result_arr[sort_id])
+            if sort_id_result == 1:
+                if data_item.category == 'group':
+                    group_id_hex = data_item.id.hex
+                    if group_id_hex in data_group_parent_child:
+                        await_result = []
+                        self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                        for parent_child_item in await_result:
+                            parent_child_sort_id = parent_child_item.sort_id
+                            permission_result_arr[parent_child_sort_id] = 1
         permission_result = "".join(map(str, permission_result_arr))
         compress_str_result = compress.encrypt(permission_result)
         if compress_str_result:
@@ -501,7 +610,6 @@ class PermissionData(object):
                 tenant=tenant,
                 app=None,
             )
-            userpermissionresult.is_update = True
             userpermissionresult.result = compress_str_result
             userpermissionresult.save()
     
@@ -527,6 +635,11 @@ class PermissionData(object):
         response = requests.get(openapi_uris)
         response = response.json()
         permission_jsons = response.get('permissions', [])
+        app_config['permission_jsons'] = permission_jsons
+        # 缓存一下请求的权限字符串
+        config = app.config
+        config.config = app_config
+        config.save()
         return permission_jsons
 
     def update_app_all_permission(self, tenant, app):
@@ -639,7 +752,7 @@ class PermissionData(object):
         auth_users = User.valid_objects.filter(tenant_id=tenant.id)
         # 区分出那些人是管理员
         systempermission = SystemPermission.valid_objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
-        # app的
+        # app
         userpermissionresults = UserPermissionResult.valid_objects.filter(
             tenant=tenant,
             app=app,
@@ -656,9 +769,10 @@ class PermissionData(object):
         system_userpermissionresults_dict = {}
         for system_userpermissionresult in system_userpermissionresults:
             system_userpermissionresults_dict[system_userpermissionresult.user.id.hex] = system_userpermissionresult
+        superuser_id = User.valid_objects.order_by('created').first().id
         for auth_user in auth_users:
             # 权限鉴定
-            if auth_user.is_superuser:
+            if auth_user.id == superuser_id:
                 auth_user.is_tenant_admin = True
             else:
                 if auth_user.id.hex in system_userpermissionresults_dict:
@@ -690,6 +804,8 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
         # 计算每一个用户的权限情况
+        create_user_result_list = []
+        update_user_result_list = []
         for auth_user in auth_users:
             permission_result = ''
             permission_result_arr = []
@@ -734,9 +850,14 @@ class PermissionData(object):
             for data_item in data_dict.values():
                 # 如果是通过就不查验
                 if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                    if data_item.category == 'group' and data_item.container.all():
+                        for data_item_child_api in data_item.container.all():
+                            temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                            if temp_data_item:
+                                temp_data_item.is_pass = 1
                     continue
                 # 如果是超级管理员直接就通过
-                if auth_user.is_superuser:
+                if auth_user.id == superuser_id:
                     data_item.is_pass = 1
                 else:
                     if tenant == data_item.tenant:
@@ -775,18 +896,45 @@ class PermissionData(object):
             else:
                 for data_item in data_dict.values():
                     permission_result_arr.append(data_item.is_pass)
+            # 如果父分组有权限则子分组也有权限(后处理)
+            for data_item in data_dict.values():
+                sort_id = data_item.sort_id
+                sort_id_result = int(permission_result_arr[sort_id])
+                if sort_id_result == 1:
+                    if data_item.category == 'group':
+                        group_id_hex = data_item.id.hex
+                        if group_id_hex in data_group_parent_child:
+                            await_result = []
+                            self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                            for parent_child_item in await_result:
+                                parent_child_sort_id = parent_child_item.sort_id
+                                permission_result_arr[parent_child_sort_id] = 1
             permission_result = "".join(map(str, permission_result_arr))
             compress_str_result = compress.encrypt(permission_result)
             if compress_str_result:
-                userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
-                    is_del=False,
-                    user=auth_user,
-                    tenant=tenant,
-                    app=app,
-                )
-                userpermissionresult.is_update = True
-                userpermissionresult.result = compress_str_result
-                userpermissionresult.save()
+                if auth_user.id.hex in userpermissionresults_dict:
+                    userpermissionresult = userpermissionresults_dict.get(auth_user.id.hex)
+                    userpermissionresult.result = compress_str_result
+                    update_user_result_list.append(userpermissionresult)
+                else:
+                    userpermissionresult = UserPermissionResult()
+                    userpermissionresult.user = auth_user
+                    userpermissionresult.tenant = tenant
+                    userpermissionresult.app = app
+                    userpermissionresult.result = compress_str_result
+                    create_user_result_list.append(userpermissionresult)
+                # userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
+                #     is_del=False,
+                #     user=auth_user,
+                #     tenant=tenant,
+                #     app=app,
+                # )
+                # userpermissionresult.result = compress_str_result
+                # userpermissionresult.save()
+        if create_user_result_list:
+            UserPermissionResult.objects.bulk_create(create_user_result_list)
+        if update_user_result_list:
+            UserPermissionResult.objects.bulk_update(update_user_result_list, ['result'])
 
     def update_single_user_app_permission(self, tenant_id, user_id, app_id):
         '''
@@ -867,9 +1015,19 @@ class PermissionData(object):
             # 跳过的数据
             if pass_permission != None and data_item.id == pass_permission.id:
                 data_item.is_pass = permission_value
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = permission_value
                 continue
             # 如果是通过就不查验
             if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = 1
                 continue
             # 如果是超级管理员直接就通过
             if auth_user.is_superuser:
@@ -911,6 +1069,19 @@ class PermissionData(object):
         else:
             for data_item in data_dict.values():
                 permission_result_arr.append(data_item.is_pass)
+        # 如果父分组有权限则子分组也有权限(后处理)
+        for data_item in data_dict.values():
+            sort_id = data_item.sort_id
+            sort_id_result = int(permission_result_arr[sort_id])
+            if sort_id_result == 1:
+                if data_item.category == 'group':
+                    group_id_hex = data_item.id.hex
+                    if group_id_hex in data_group_parent_child:
+                        await_result = []
+                        self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                        for parent_child_item in await_result:
+                            parent_child_sort_id = parent_child_item.sort_id
+                            permission_result_arr[parent_child_sort_id] = 1
         permission_result = "".join(map(str, permission_result_arr))
         compress_str_result = compress.encrypt(permission_result)
         if compress_str_result:
@@ -920,7 +1091,6 @@ class PermissionData(object):
                 tenant=tenant,
                 app=app,
             )
-            userpermissionresult.is_update = True
             userpermissionresult.result = compress_str_result
             userpermissionresult.save()
 
@@ -985,7 +1155,8 @@ class PermissionData(object):
         根据应用，用户，分组查权限(要根据用户身份显示正确的列表)
         '''
         permissions = Permission.valid_objects.filter(
-            Q(tenant_id=tenant_id)|Q(is_open=True)
+            Q(tenant_id=tenant_id)|Q(is_open=True),
+            app__is_del=False
         )
         systempermissions = SystemPermission.valid_objects
         if is_only_show_group:
@@ -994,7 +1165,7 @@ class PermissionData(object):
             )
             systempermissions = systempermissions.filter(
                 category='group'
-            )
+            ).filter(Q(code__startswith='group_role')|Q(code__startswith='other'))
             if parent_id:
                 systempermissions = systempermissions.filter(parent_id=parent_id)
                 permissions = permissions.filter(parent_id=parent_id)
@@ -1004,7 +1175,7 @@ class PermissionData(object):
         if app_id and app_id == 'arkid':
             # arkid没有应用权限
             app_id = None
-            systempermissions = systempermissions.filter(tenant_id=None)
+            systempermissions = systempermissions.filter(Q(tenant_id=tenant_id)|Q(tenant_id=None))
             permissions = permissions.filter(app_id=None)
         compress = Compress()
         if app_id is None and user_id is None and group_id is None and login_user:
@@ -1059,6 +1230,9 @@ class PermissionData(object):
                             permissions = permissions.filter(id__isnull=True)
                         else:
                             permissions = permissions.filter(sort_id__in=permission_sort_ids)
+                elif app and app.entry_permission is None:
+                    systempermissions = systempermissions.filter(id__isnull=True)
+                    permissions = permissions.filter(id__isnull=True)
             if user_id:
                 # 系统权限
                 userpermissionresult = UserPermissionResult.valid_objects.filter(
@@ -1078,10 +1252,130 @@ class PermissionData(object):
                 else:
                     systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
                 # 应用权限
-                userpermissionresult = UserPermissionResult.valid_objects.filter(
+                userpermissionresults = UserPermissionResult.valid_objects.filter(
                     user_id=user_id,
                     tenant_id=tenant_id,
                     app__isnull=False
+                )
+                flag = True
+                for userpermissionresult in userpermissionresults:
+                    permission_sort_ids = []
+                    if userpermissionresult:
+                        permission_result = compress.decrypt(userpermissionresult.result)
+                        permission_result_arr = list(permission_result)
+                        for index, item in enumerate(permission_result_arr):
+                            if int(item) == 1:
+                                permission_sort_ids.append(index)
+                    if permission_sort_ids:
+                        flag = False
+                        permissions = permissions.filter(sort_id__in=permission_sort_ids)
+                if flag:
+                    permissions = permissions.filter(id__isnull=True)
+            if group_id:
+                usergroup = UserGroup.valid_objects.filter(id=group_id).first()
+                if usergroup:
+                    group_permission = usergroup.permission
+                    if group_permission is None:
+                        systempermissions = systempermissions.filter(id__isnull=True)
+                    else:
+                        systempermissions = systempermissions.filter(id=group_permission.id)
+                    # 没有应用分组，只有系统分组
+                    permissions = permissions.filter(id__isnull=True)
+        else:
+            systempermissions = systempermissions.filter(Q(tenant__isnull=True)|Q(tenant_id=tenant_id))
+        return list(systempermissions.all())+list(permissions.all())
+    
+    def get_permissions_by_mine_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False, app_name=None, category=None):
+        '''
+        根据应用，用户，分组查权限(要根据用户身份显示正确的列表)
+        '''
+        permissions = Permission.valid_objects.filter(
+            Q(tenant_id=tenant_id)|Q(is_open=True),
+            app__is_del=False
+        )
+        systempermissions = SystemPermission.objects.filter(
+            is_del=False
+        )
+        if is_only_show_group:
+            permissions = permissions.filter(
+                category='group'
+            )
+            systempermissions = systempermissions.filter(
+                category='group'
+            ).filter(Q(code__startswith='group_role')|Q(code__startswith='other'))
+            if parent_id:
+                systempermissions = systempermissions.filter(parent_id=parent_id)
+                permissions = permissions.filter(parent_id=parent_id)
+            else:
+                systempermissions = systempermissions.filter(parent_id__isnull=True)
+                permissions = permissions.filter(parent_id__isnull=True)
+        if app_id and app_id == 'arkid':
+            # arkid没有应用权限
+            app_id = None
+            systempermissions = systempermissions.filter(Q(tenant_id=tenant_id)|Q(tenant_id=None))
+            permissions = permissions.filter(app_id=None)
+        compress = Compress()
+        if user_id is None and group_id is None and login_user:
+            # 需要正确展现用户的id
+            user_id = str(login_user.id)
+        if app_name:
+            permissions = permissions.filter(app__name=app_name)
+        if category:
+            permissions = permissions.filter(category=category)
+            systempermissions = systempermissions.filter(category=category)
+        if app_id or user_id or group_id:
+            if app_id:
+                app = App.valid_objects.filter(
+                    id=app_id
+                ).first()
+                tenant_uid = uuid.UUID(tenant_id)
+                if app and app.entry_permission:
+                    systempermissions = systempermissions.filter(id=app.entry_permission.id)
+                    permissions = permissions.filter(app_id=app_id)
+                    if app.tenant.id != tenant_uid:
+                        # 只展示为1的系统权限(这里属于开放的权限)
+                        userpermissionresult = UserPermissionResult.valid_objects.filter(
+                            app=None,
+                            user=login_user,
+                            tenant_id=tenant_id
+                        ).first()
+                        permission_sort_ids = []
+                        if userpermissionresult:
+                            permission_result = compress.decrypt(userpermissionresult.result)
+                            permission_result_arr = list(permission_result)
+                            for index, item in enumerate(permission_result_arr):
+                                if int(item) == 1:
+                                    permission_sort_ids.append(index)
+                        if len(permission_sort_ids) == 0:
+                            systempermissions = systempermissions.filter(id__isnull=True)
+                        else:
+                            systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+                        # 只展示为1的应用权限
+                        userpermissionresult = UserPermissionResult.valid_objects.filter(
+                            app=app,
+                            user=login_user,
+                            tenant_id=tenant_id
+                        ).first()
+                        permission_sort_ids = []
+                        if userpermissionresult:
+                            permission_result = compress.decrypt(userpermissionresult.result)
+                            permission_result_arr = list(permission_result)
+                            for index, item in enumerate(permission_result_arr):
+                                if int(item) == 1:
+                                    permission_sort_ids.append(index)
+                        if len(permission_sort_ids) == 0:
+                            permissions = permissions.filter(id__isnull=True)
+                        else:
+                            permissions = permissions.filter(sort_id__in=permission_sort_ids)
+                elif app and app.entry_permission is None:
+                    systempermissions = systempermissions.filter(id__isnull=True)
+                    permissions = permissions.filter(id__isnull=True)
+            if user_id:
+                # 系统权限
+                userpermissionresult = UserPermissionResult.valid_objects.filter(
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    app=None
                 ).first()
                 permission_sort_ids = []
                 if userpermissionresult:
@@ -1090,10 +1384,47 @@ class PermissionData(object):
                     for index, item in enumerate(permission_result_arr):
                         if int(item) == 1:
                             permission_sort_ids.append(index)
-                if len(permission_sort_ids) == 0:
-                    permissions = permissions.filter(id__isnull=True)
-                else:
-                    permissions = permissions.filter(sort_id__in=permission_sort_ids)
+                # if len(permission_sort_ids) == 0:
+                #     systempermissions = systempermissions.filter(id__isnull=True)
+                # else:
+                #     systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+                for systempermission in systempermissions:
+                    sort_id = systempermission.sort_id
+                    if sort_id in permission_sort_ids:
+                        systempermission.in_current = True
+                    else:
+                        systempermission.in_current = False
+                # 应用权限
+                userpermissionresults = UserPermissionResult.valid_objects.filter(
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    app__isnull=False
+                )
+                flag = True
+                for userpermissionresult in userpermissionresults:
+                    permission_sort_ids = []
+                    if userpermissionresult:
+                        permission_result = compress.decrypt(userpermissionresult.result)
+                        permission_result_arr = list(permission_result)
+                        for index, item in enumerate(permission_result_arr):
+                            if int(item) == 1:
+                                permission_sort_ids.append(index)
+                    if permission_sort_ids:
+                        flag = False
+                        # permissions = permissions.filter(sort_id__in=permission_sort_ids)
+                        for permission in permissions:
+                            sort_id = permission.sort_id
+                            if sort_id in permission_sort_ids:
+                                permission.in_current = True
+                            else:
+                                permission.in_current = False
+                if flag:
+                    for permission in permissions:
+                        sort_id = permission.sort_id
+                        if sort_id in permission_sort_ids:
+                            permission.in_current = True
+                        else:
+                            permission.in_current = False
             if group_id:
                 usergroup = UserGroup.valid_objects.filter(id=group_id).first()
                 if usergroup:
@@ -1107,6 +1438,97 @@ class PermissionData(object):
         else:
             systempermissions = systempermissions.filter(Q(tenant__isnull=True)|Q(tenant_id=tenant_id))
         return list(systempermissions)+list(permissions)
+
+    def get_permissions_by_childmanager(self, tenant_id, login_user, only_show_group, user_id=None):
+        '''
+        子管理员可选择的权限(要根据用户身份显示正确的列表)
+        '''
+        systempermissions = SystemPermission.valid_objects
+
+        compress = Compress()
+        if login_user:
+            # 需要正确展现用户的id
+            user_id = str(login_user.id)
+            # 系统权限
+            userpermissionresult = UserPermissionResult.valid_objects.filter(
+                user_id=user_id,
+                tenant_id=tenant_id,
+                app=None
+            ).first()
+            permission_sort_ids = []
+            if userpermissionresult:
+                permission_result = compress.decrypt(userpermissionresult.result)
+                permission_result_arr = list(permission_result)
+                for index, item in enumerate(permission_result_arr):
+                    if int(item) == 1:
+                        permission_sort_ids.append(index)
+            if len(permission_sort_ids) == 0:
+                systempermissions = systempermissions.filter(id__isnull=True)
+            else:
+                systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+        if only_show_group == 1:
+            systempermissions = systempermissions.filter(code__startswith='group_').exclude(code__startswith='group_role_')
+        return systempermissions
+
+
+    def get_group_permissions_by_search(self, tenant_id, select_usergroup_id, app_name, category):
+        '''
+        根据应用，用户分组，分类查权限(要根据分组身份显示正确的列表)
+        '''
+        permissions = Permission.valid_objects.filter(
+            tenant_id=tenant_id,
+            app__is_del=False
+        )
+        systempermissions = SystemPermission.valid_objects.filter(
+            Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
+        )
+        compress = Compress()
+        if app_name:
+            permissions = permissions.filter(app__name=app_name)
+        if category:
+            permissions = permissions.filter(category=category)
+            systempermissions = systempermissions.filter(category=category)
+        if select_usergroup_id:
+            # 系统权限
+            usergroup_permissionresult = GroupPermissionResult.valid_objects.filter(
+                user_group_id=select_usergroup_id,
+                tenant_id=tenant_id,
+                app=None
+            ).first()
+            permission_sort_ids = []
+            if usergroup_permissionresult:
+                permission_result = compress.decrypt(usergroup_permissionresult.result)
+                permission_result_arr = list(permission_result)
+                for index, item in enumerate(permission_result_arr):
+                    if int(item) == 1:
+                        permission_sort_ids.append(index)
+            if len(permission_sort_ids) == 0:
+                systempermissions = systempermissions.filter(id__isnull=True)
+            else:
+                systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+            # 应用权限
+            usergroup_permissionresults = GroupPermissionResult.valid_objects.filter(
+                user_group_id=select_usergroup_id,
+                tenant_id=tenant_id,
+                app__isnull=False
+            )
+            flag = True
+            for usergroup_permissionresult in usergroup_permissionresults:
+                permission_sort_ids = []
+                if usergroup_permissionresult:
+                    permission_result = compress.decrypt(usergroup_permissionresult.result)
+                    permission_result_arr = list(permission_result)
+                    for index, item in enumerate(permission_result_arr):
+                        if int(item) == 1:
+                            permission_sort_ids.append(index)
+                if permission_sort_ids:
+                    flag = False
+                    permissions = permissions.filter(app=usergroup_permissionresult.app, sort_id__in=permission_sort_ids)
+            if flag:
+                permissions = permissions.filter(id__isnull=True)
+        return list(systempermissions)+list(permissions)
+            
+
 
     def get_permission_str(self, user, tenant_id, app_id, is_64=False):
         '''
@@ -1126,13 +1548,344 @@ class PermissionData(object):
                 app__isnull=True,
             ).first()
         if userpermissionresult:
+            permission_result = self.get_permission_str_process(userpermissionresult, tenant_id, is_64)
+            return {'result': permission_result}
+        else:
+            return {'result': ''}
+    
+
+    def get_permission_str_process(self, userpermissionresult, tenant_id, is_64):
+        '''
+        对结果字符串加工
+        '''
+        compress = Compress()
+        if userpermissionresult.app:
+            # 有应用走新逻辑
+            app = userpermissionresult.app
+            app_config = app.config.config
+            permission_jsons = app_config.get('permission_jsons', [])
+            if permission_jsons:
+                # api层面第字典
+                api_permission_dict ={}
+                for permission_json in permission_jsons:
+                    api_name = permission_json.get('name', '')
+                    api_operation_id = permission_json.get('operation_id', '')
+                    api_sort_id = permission_json.get('sort_id', -1)
+                    if api_sort_id != -1:
+                        temp_api_dict = {
+                            'name': api_name
+                        }
+                        if api_operation_id:
+                            temp_api_dict['operation_id'] = api_operation_id
+                        api_permission_dict[api_sort_id] = temp_api_dict
+                # 数据库层面的字典
+                permission_result = compress.decrypt(userpermissionresult.result)
+                permission_result_arr = list(permission_result)
+                database_permission_dict ={}
+                # 需要拿出当前应用的所有权限
+                permissions = Permission.valid_objects.filter(
+                    is_system=True,
+                    app=app,
+                ).order_by('-sort_id')
+                max_sort_id = permissions.first().sort_id
+                last_len = max_sort_id+1
+                # 补0(缺多少位补多少位，不会比它少只会比它多，补0补的是新权限)
+                if len(permission_result_arr) < last_len:
+                    diff = last_len - len(permission_result_arr)
+                    for i in range(diff):
+                        permission_result_arr.append(0)
+                for permission in permissions:
+                    sort_id = permission.sort_id
+                    database_name = permission.name
+                    database_operation_id = permission.operation_id
+                    check_result = permission_result_arr[sort_id]
+                    temp_database_dict = {
+                        'name': database_name
+                    }
+                    if database_operation_id:
+                        temp_database_dict['operation_id'] = database_operation_id
+                    temp_database_dict['result'] = check_result
+                    database_permission_dict[sort_id] = temp_database_dict
+                # 正确计算结果
+                result_str, result_str_64 = self.ditionairy_result(api_permission_dict, database_permission_dict)
+                if is_64:
+                    permission_result = result_str_64
+                else:
+                    permission_result = result_str
+            else:
+                if is_64:
+                    permission_result = userpermissionresult.result
+                else:
+                    permission_result = compress.decrypt(userpermissionresult.result)
+        else:
+            # 没有应用走之前的逻辑
             if is_64:
                 permission_result = userpermissionresult.result
             else:
                 permission_result = compress.decrypt(userpermissionresult.result)
-            return {'result': permission_result}
+        permission_result = self.composite_result(userpermissionresult.user, userpermissionresult.app, permission_result, tenant_id, is_64)
+        return permission_result
+
+
+    def composite_result(self, user, app, result_str, tenant_id, is_64):
+        '''
+        综合计算结果，需要考虑到用户分组，需要考虑授权规则
+        '''
+        if result_str:
+            compress = Compress()
+            if is_64:
+                result_str = compress.decrypt(result_str)
+            # 取得当前用户的所有分组
+            usergroups = UserGroup.valid_objects.filter(users__id=user.id)
+            # 取得当前用户的所有分组的父分组
+            all_groups = []
+            for usergroup in usergroups:
+                all_groups.append(usergroup)
+                all_groups.extend(self.get_user_all_groups(usergroup, []))
+            # 取得当前用户所有分组的父分组的权限
+            group_permission_results = GroupPermissionResult.valid_objects.filter(
+                user_group__in=all_groups,
+                tenant_id=tenant_id,
+                app=app,
+            )
+            # 需要把已有的权限结果字符串解开
+            permission_result_arr = list(result_str)
+            for group_permission_result in group_permission_results:
+                if group_permission_result:
+                    group_permission_arr = compress.decrypt(group_permission_result.result)
+                    self.group_arr_merge(permission_result_arr, group_permission_arr)
+            # 在这里处理下授权规则的问题(事件实现)
+            self.process_permission_rule(permission_result_arr, app, user, tenant_id)
+            # 拼接结果
+            result_str = "".join(map(str, permission_result_arr))
+            if is_64:
+                result_str = compress.encrypt(result_str)
+            return result_str
         else:
-            return {'result': ''}
+            return ''
+
+    def process_permission_rule(self, permission_result_arr, app, user, tenant_id):
+        '''
+        处理授权规则
+        '''
+        from arkid.core.extension.impower_rule import ImpowerRuleBaseExtension
+        from arkid.extension.models import Extension, TenantExtensionConfig
+        extensions = Extension.active_objects.filter(type=ImpowerRuleBaseExtension.TYPE).all()
+        configs = TenantExtensionConfig.active_objects.filter(tenant__id=tenant_id, extension__in=extensions).all()
+        permission_infos = []
+        # 取得了所有配置
+        for config in configs:
+            config_info = config.config
+            config_matchfield = config_info.get('matchfield')
+            config_matchsymbol = config_info.get('matchsymbol')
+            config_matchvalue = config_info.get('matchvalue')
+            config_app = config_info.get('app')
+            config_app_id = config_app.get('id')
+            config_permissions = config_info.get('permissions')
+            if app is None:
+                if config_app_id == 'arkid':
+                    sort_ids = []
+                    for config_permission in config_permissions:
+                        sort_ids.append(config_permission.get('sort_id'))
+                    permission_infos.append({
+                        'matchfield': config_matchfield.get('id'),
+                        'matchsymbol': config_matchsymbol,
+                        'matchvalue': config_matchvalue,
+                        'sort_ids': sort_ids
+                    })
+            else:
+                app_id = str(app.id)
+                if config_app_id == app_id:
+                    sort_ids = []
+                    for config_permission in config_permissions:
+                        sort_ids.append(config_permission.sort_id)
+                    permission_infos.append({
+                        'matchfield': config_matchfield.get('sort_id'),
+                        'matchsymbol': config_matchsymbol,
+                        'matchvalue': config_matchvalue,
+                        'sort_ids': sort_ids
+                    })
+        # 计算是否拥有权限
+        sort_ids = []
+        user = User.expand_objects.filter(id=user.id).first()
+        for permission_info in permission_infos:
+            matchfield = permission_info.get('matchfield')
+            matchsymbol = permission_info.get('matchsymbol')
+            matchvalue = permission_info.get('matchvalue')
+            select_value = user.get(matchfield)
+            if matchsymbol == '等于' and matchvalue == select_value:
+                sort_ids.extend(permission_info.get('sort_ids'))
+        # 匹配的数据进行替换
+        for index, value in enumerate(permission_result_arr):
+            if int(value) == 0 and index in sort_ids:
+                permission_result_arr[index] = 1
+
+                
+
+    def group_arr_merge(self, permission_result_arr, group_permission_arr):
+        '''
+        分组权限合并
+        '''
+        group_len = len(group_permission_arr)
+        for index, value in enumerate(permission_result_arr):
+            if int(value) == 0 and (index+1) <= group_len:
+                group_value = int(group_permission_arr[index])
+                if group_value == 1:
+                    permission_result_arr[index] = 1
+
+    
+    def get_user_all_groups(self, usergroup, items):
+        '''
+        递归取得用户的所有分组
+        '''
+        parent = usergroup.parent
+        if parent:
+            items.append(parent)
+            return self.get_user_all_groups(parent, items)
+        else:
+            return items
+    
+
+    def get_manage_user_group(self, login_user, tenant, usergroups):
+        '''
+        取得能管理的所有用户分组
+        '''
+        is_admin = tenant.has_admin_perm(login_user)
+        if is_admin is False:
+            compress = Compress()
+            userpermissionresult= UserPermissionResult.valid_objects.filter(
+                user=login_user,
+                tenant=tenant,
+                app=None,
+            ).first()
+            if userpermissionresult:
+                permission_result = compress.decrypt(userpermissionresult.result)
+                permission_result = self.composite_result(userpermissionresult.user, userpermissionresult.app, permission_result, str(tenant.id), False)
+                permission_result_arr = list(permission_result)
+                # 拿到分组的sort_id
+                sort_ids, sps = self.get_group_sort_id(str(tenant.id))
+                permission_result_arr_len = len(permission_result_arr)
+                result_permissions = []
+                for sp in sps:
+                    sort_id = sp.sort_id
+                    if (sort_id+1) <= permission_result_arr_len:
+                        value = int(permission_result_arr[sort_id])
+                        if value == 1:
+                            result_permissions.append(sp)
+                if result_permissions:
+                    ugs = UserGroup.valid_objects.filter(permission__in=result_permissions)
+                    # 取得这些分组的用户
+                    ug_ids = []
+                    for ug in  ugs:
+                        ug_ids.append(str(ug.id))
+                    if ug_ids:
+                        usergroups = usergroups.filter(id__in=ug_ids)
+                    else:
+                        usergroups = usergroups.filter(id__isnull=True)
+                else:
+                    usergroups = usergroups.filter(id__isnull=True)
+        return usergroups
+
+
+    def get_manage_all_user(self, login_user, tenant, users):
+        '''
+        取得能管理的所有用户
+        '''
+        is_admin = tenant.has_admin_perm(login_user)
+        if is_admin is False:
+            compress = Compress()
+            # 取得用户所有的分组
+            # usergroups = UserGroup.valid_objects.filter(users__id=login_user.id)
+            # all_groups = []
+            # for usergroup in usergroups:
+            #     all_groups.append(usergroup)
+            #     all_groups.extend(self.get_user_all_groups(usergroup, []))
+            # 取得这些分组的用户
+            # 取得用户拥有的分组权限
+            userpermissionresult= UserPermissionResult.valid_objects.filter(
+                user=login_user,
+                tenant=tenant,
+                app=None,
+            ).first()
+            if userpermissionresult:
+                permission_result = compress.decrypt(userpermissionresult.result)
+                permission_result = self.composite_result(userpermissionresult.user, userpermissionresult.app, permission_result, str(tenant.id), False)
+                permission_result_arr = list(permission_result)
+                # 拿到分组的sort_id
+                sort_ids, sps = self.get_group_sort_id(str(tenant.id))
+                permission_result_arr_len = len(permission_result_arr)
+                result_permissions = []
+                for sp in sps:
+                    sort_id = sp.sort_id
+                    if (sort_id+1) <= permission_result_arr_len:
+                        value = int(permission_result_arr[sort_id])
+                        if value == 1:
+                            result_permissions.append(sp)
+                if result_permissions:
+                    ugs = UserGroup.valid_objects.filter(permission__in=result_permissions)
+                    # 取得这些分组的用户
+                    ug_users = []
+                    for ug in  ugs:
+                        for ug_user in ug.users.all():
+                            ug_users.append(str(ug_user.id))
+                    if ug_users:
+                        users = users.filter(id__in=ug_users)
+                    else:
+                        users = users.filter(id__isnull=True)
+                else:
+                    users = users.filter(id__isnull=True)
+        return users
+
+    
+
+    def get_group_sort_id(self, tenant_id):
+        '''
+        获取分组的sort_id
+        '''
+        sps = SystemPermission.valid_objects.filter(is_system=True, tenant_id=tenant_id, category='group', code__startswith='group_').exclude(code__startswith='group_role_').order_by('sort_id')
+        sort_ids = []
+        for sp in sps:
+            sort_ids.append(sp.sort_id)
+        return sort_ids, sps
+
+
+    def ditionairy_result(self, api_permission_dict, database_permission_dict):
+        '''
+        计算开放权限时的排序
+        '''
+        for api_item_key in api_permission_dict.keys():
+            api_item_value = api_permission_dict.get(api_item_key)
+            api_operation_id = api_item_value.get('operation_id', None)
+            api_name = api_item_value.get('name', '')
+            if api_operation_id or api_name:
+                for database_item_key in database_permission_dict:
+                    database_item_value = database_permission_dict.get(database_item_key)
+                    database_operation_id = database_item_value.get('operation_id', None)
+                    database_name = database_item_value.get('name', '')
+                    database_result = database_item_value.get('result', 0)
+                    if api_operation_id and database_operation_id == api_operation_id:
+                        api_item_value['result'] = database_result
+                        break
+                    elif api_name and api_name == database_name:
+                        api_item_value['result'] = database_result
+                        break
+            api_check_result = api_item_value.get('result', -1)
+            if api_check_result == -1:
+                api_item_value['result'] = 0
+            api_permission_dict[api_item_key] = api_item_value
+        # 取得结果
+        result_data_1 = sorted(api_permission_dict.items(),key=lambda x:x[0])
+
+        result_str = ''
+        for result_data_item in result_data_1:
+            result_data_value = result_data_item[1]
+            result = result_data_value.get('result')
+            result_str = result_str + str(result)
+
+        compress = Compress()
+        result_str_64 = compress.encrypt(result_str)
+
+        return result_str, result_str_64
 
 
     def has_admin_perm(self, tenant, user):
@@ -1288,6 +2041,9 @@ class PermissionData(object):
         if userpermissionresult:
             compress = Compress()
             permission_result = compress.decrypt(userpermissionresult.result)
+            # 此处需要考虑分组的情况
+            permission_result = self.composite_result(user, userpermissionresult.app, permission_result, tenant_id, False)
+            # 拆分结果
             permission_result_arr = list(permission_result)
             check_result = int(permission_result_arr[sort_id])
             if check_result == 1:
@@ -1364,12 +2120,63 @@ class PermissionData(object):
             temp_user = userpermissionresult.user
             if userpermissionresult:
                 permission_result = compress.decrypt(userpermissionresult.result)
+                # 此处需要考虑分组的情况(可能存在性能问题需要优化，多个用户时)
+                permission_result = self.composite_result(temp_user, None, permission_result, str(tenant.id), False)
                 permission_result_arr = list(permission_result)
                 temp_user.arr = permission_result_arr
             else:
                 temp_user.arr = []
             list_user.append(temp_user)
         return list_user
+    
+    def get_child_manager_info(self, tenant_id, select_user):
+        '''
+        获取子管理员的信息(包括额外的权限和授权范围)
+        '''
+        sort_ids = self.get_default_system_permission()
+        systempermissions = SystemPermission.valid_objects.filter(
+            Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
+        )
+        system_userpermissionresult = UserPermissionResult.valid_objects.filter(
+            user=select_user,
+            tenant_id=tenant_id,
+            app=None,
+        ).first()
+        compress = Compress()
+        permissions = []
+        manager_scope = []
+        if system_userpermissionresult:
+            permission_result_1 = compress.decrypt(system_userpermissionresult.result)
+            permission_result_1_arr = list(permission_result_1)
+            # 此处需要考虑分组的情况
+            permission_result = self.composite_result(select_user, None, permission_result_1, tenant_id, False)
+            # 拆分结果
+            permission_result_arr = list(permission_result)
+            possess_sort_ids = []
+            self_source_sort_ids = []
+            self_source_ids = []
+            for index, permission_result_item in enumerate(permission_result_arr):
+                if index not in sort_ids and int(permission_result_item) == 1:
+                    possess_sort_ids.append(index)
+                    if index <= (len(permission_result_1_arr) - 1) and int(permission_result_1_arr[index]) == 0:
+                        self_source_sort_ids.append(index)
+            # 根据取得的权限计算出子管理员的权限和授权范围
+            systempermissions = systempermissions.filter(sort_id__in=possess_sort_ids)
+            for systempermission in systempermissions:
+                source = '分组' if systempermission.sort_id in self_source_sort_ids else '用户'
+                if source == '分组':
+                    self_source_ids.append(str(systempermission.id))
+                if systempermission.category == 'group' and systempermission.code.startswith('group_role') is False:
+                    manager_scope.append({
+                        'id': str(systempermission.id),
+                        'name': systempermission.name+ (' (分组)' if source == '分组' else '')
+                    })
+                else:
+                    permissions.append({
+                        'id': str(systempermission.id),
+                        'name': systempermission.name+ (' (分组)' if source == '分组' else '')
+                    })
+        return permissions, manager_scope, self_source_ids
     
     def get_child_mans(self, auth_users, tenant):
         '''
@@ -1385,6 +2192,7 @@ class PermissionData(object):
                     include_id.append(item_user.id)
                     break
         auth_users = auth_users.filter(id__in=include_id)
+        superuser_id = User.valid_objects.order_by('created').first().id
         # 区分出那些人是管理员
         systempermission = SystemPermission.valid_objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
         # 管理权限在arkidpermission表里
@@ -1400,7 +2208,7 @@ class PermissionData(object):
         compress = Compress()
         for auth_user in auth_users:
             # 权限鉴定
-            if auth_user.is_superuser:
+            if auth_user.id == superuser_id:
                 auth_user.is_tenant_admin = True
             else:
                 if auth_user.id.hex in system_userpermissionresults_dict:
@@ -1413,9 +2221,11 @@ class PermissionData(object):
                     if check_result == 1:
                         auth_user.is_tenant_admin = True
                     else:
+                        # 没有管理员权限
                         ids.append(auth_user.id)
                         auth_user.is_tenant_admin = False
                 else:
+                    # 没在结果集中，可能性小
                     ids.append(auth_user.id)
                     auth_user.is_tenant_admin = False
 
@@ -1447,7 +2257,6 @@ class PermissionData(object):
             tenant=tenant,
             app=None,
         )
-        userpermissionresult.is_update = True
         userpermissionresult.result = compress_str_result
         userpermissionresult.save()
         return True
@@ -1653,7 +2462,6 @@ class PermissionData(object):
                     tenant=admin_user.tenant,
                     app=app,
                 )
-                userpermissionresult.is_update = True
                 userpermissionresult.result = admin_compress_str
                 userpermissionresult.save()
             for super_user in super_users:
@@ -1663,7 +2471,6 @@ class PermissionData(object):
                     tenant=super_user.tenant,
                     app=app,
                 )
-                userpermissionresult.is_update = True
                 userpermissionresult.result = super_user_compress_str
                 userpermissionresult.save()
 
@@ -1694,7 +2501,6 @@ class PermissionData(object):
                     tenant_id=tenant_id,
                     app_id=app_id,
                 )
-                userpermissionresult.is_update = True
                 userpermissionresult.result = compress.encrypt(user_str)
                 userpermissionresult.save()
 
@@ -1744,3 +2550,313 @@ class PermissionData(object):
             if obj not in items:
                 items.append(obj)
         return items
+
+    def create_usergroup_permission(self, user_group):
+        '''
+        创建用户分组时，初始化一些权限字符串，因为分组权限只参与计算，
+        不参与显示，所以只用在添加的时候初始化就可以，此处留下口子先不识闲
+        '''
+        tenant = user_group.tenant
+        # 需要给当前分组初始化系统权限字符串
+        # 需要给当前分组初始化应用权限字符串
+        # 分组是不登录的
+    
+    def add_usergroup_many_permission(self, permissions_dict):
+        '''
+        给用户分组添加多个权限自动区分类型
+        '''
+        usergroup_id = permissions_dict.get('usergroup_id', None)
+        data_arr = permissions_dict.get('data_arr', [])
+        tenant_id = permissions_dict.get('tenant_id', None)
+        if usergroup_id and data_arr and tenant_id:
+            for permission_id in data_arr:
+                permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+                if permission is None:
+                    permission = Permission.valid_objects.filter(id=permission_id).first()
+                if isinstance(permission, SystemPermission):
+                    # 添加系统权限
+                    self.add_system_permission_to_usergroup(tenant_id, usergroup_id, permission_id)
+                else:
+                    # 添加应用权限
+                    self.add_app_permission_to_usergroup(tenant_id, str(permission.app_id), usergroup_id, permission_id)
+        else:
+            print('缺少必填参数无法添加请检查分组和权限内容')
+    
+    def add_system_permission_to_usergroup(self, tenant_id, usergroup_id, permission_id):
+        '''
+        给某个分组增加系统权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        user_group = UserGroup.valid_objects.filter(id=usergroup_id).first()
+        permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+        if tenant:
+            self.update_arkid_single_usergroup_permission(tenant, user_group, permission, 1)
+        else:
+            print('不存在租户无法更新')
+
+    
+    def remove_system_permission_to_usergroup(self, tenant_id, usergroup_id, permission_id):
+        '''
+        给某个分组移除系统权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        user_group = UserGroup.valid_objects.filter(id=usergroup_id).first()
+        permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+        if tenant:
+            self.update_arkid_single_usergroup_permission(tenant, user_group, permission, 0)
+        else:
+            print('不存在租户无法更新')
+
+    def update_arkid_single_usergroup_permission(self, tenant, user_group, pass_permission, permission_value):
+        '''
+        更新指定用户分组系统权限
+        '''
+        system_permissions = SystemPermission.objects.order_by('sort_id')
+        data_dict = {}
+        data_group_parent_child = {}
+        for system_permission in system_permissions:
+            data_dict[system_permission.sort_id] = system_permission
+            if system_permission.parent:
+                parent_id_hex = system_permission.parent.id.hex
+                if parent_id_hex not in data_group_parent_child:
+                    data_group_parent_child[parent_id_hex] = [system_permission]
+                else:
+                    temp_data_group = data_group_parent_child[parent_id_hex]
+                    temp_data_group.append(system_permission)
+                    data_group_parent_child[parent_id_hex] = temp_data_group
+        # 取得当前用户权限数据
+        usergroup_permissionresult = GroupPermissionResult.valid_objects.filter(
+            user_group=user_group,
+            tenant=tenant,
+            app=None,
+        ).first()
+        compress = Compress()
+        permission_result = ''
+        if usergroup_permissionresult:
+            permission_result = compress.decrypt(usergroup_permissionresult.result)
+        # 对数据进行一次排序
+        data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
+        permission_result_arr = []
+        if permission_result:
+            permission_result_arr = list(permission_result)
+            if len(permission_result_arr) < len(data_dict.keys()):
+                # 如果原来的权限数目比较少，增加了新的权限，需要先补0
+                diff = len(data_dict.keys()) - len(permission_result_arr)
+                for i in range(diff):
+                    permission_result_arr.append(0)
+            # 提前把有父子关系的权限处理好
+            for data_item in data_dict.values():
+                sort_id = data_item.sort_id
+                sort_id_result = int(permission_result_arr[sort_id])
+                if sort_id_result == 1:
+                    if data_item.category == 'group':
+                        # 如果用户对某一个分组有权限，则对该分组的所有下属分组都有权限。
+                        group_id_hex = data_item.id.hex
+                        if group_id_hex in data_group_parent_child:
+                            # 递归<查找>
+                            await_result = []
+                            self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                            for parent_child_item in await_result:
+                                parent_child_sort_id = parent_child_item.sort_id
+                                permission_result_arr[parent_child_sort_id] = '1'
+            # 权限更新设置
+            for data_item in data_dict.values():
+                sort_id = data_item.sort_id
+                sort_id_result = int(permission_result_arr[sort_id])
+                if sort_id_result == 1:
+                    # 这里权限同步更新
+                    data_item.is_pass = 1
+                else:
+                    data_item.is_pass = 0
+        # 权限检查
+        for data_item in data_dict.values():
+            if pass_permission != None and data_item.id == pass_permission.id:
+                data_item.is_pass = permission_value
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = permission_value
+                continue
+            # 如果是通过就不查验
+            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = 1
+                continue
+            # 因为分组权限无法根据用户身份去给1，所以默认都是0
+            data_item.is_pass = 0
+        # 产生结果字符串
+        if permission_result:
+            for data_item in data_dict.values():
+                permission_result_arr[data_item.sort_id] = data_item.is_pass
+        else:
+            for data_item in data_dict.values():
+                permission_result_arr.append(data_item.is_pass)
+        # 如果父分组有权限则子分组也有权限(后处理)
+        for data_item in data_dict.values():
+            sort_id = data_item.sort_id
+            sort_id_result = int(permission_result_arr[sort_id])
+            if sort_id_result == 1:
+                if data_item.category == 'group':
+                    group_id_hex = data_item.id.hex
+                    if group_id_hex in data_group_parent_child:
+                        await_result = []
+                        self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                        for parent_child_item in await_result:
+                            parent_child_sort_id = parent_child_item.sort_id
+                            permission_result_arr[parent_child_sort_id] = 1
+        permission_result = "".join(map(str, permission_result_arr))
+        compress_str_result = compress.encrypt(permission_result)
+        if compress_str_result:
+            usergroup_permissionresult, is_create = GroupPermissionResult.objects.get_or_create(
+                is_del=False,
+                user_group=user_group,
+                tenant=tenant,
+                app=None,
+            )
+            usergroup_permissionresult.result = compress_str_result
+            usergroup_permissionresult.save()
+
+    def add_app_permission_to_usergroup(self, tenant_id, app_id, usergroup_id, permission_id):
+        '''
+        给某个分组添加应用权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        usergroup = UserGroup.valid_objects.filter(id=usergroup_id).first()
+        app = App.valid_objects.filter(id=app_id).first()
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+        if tenant:
+            self.update_app_single_usergroup_permission(tenant, usergroup, app, permission, 1)
+        else:
+            print('不存在租户无法更新')
+
+    def remove_app_permission_to_usergroup(self, tenant_id, app_id, usergroup_id, permission_id):
+        '''
+        给某个分组移除应用权限
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        usergroup = UserGroup.valid_objects.filter(id=usergroup_id).first()
+        app = App.valid_objects.filter(id=app_id).first()
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+        if tenant:
+            self.update_app_single_usergroup_permission(tenant, usergroup, app, permission, 0)
+        else:
+            print('不存在租户无法更新')
+    
+    def update_app_single_usergroup_permission(self, tenant, usergroup, app, pass_permission=None, permission_value=None):
+        '''
+        更新指定分组应用权限
+        '''
+        permissions = Permission.objects.filter(app=app).order_by('sort_id')
+        data_dict = {}
+        data_group_parent_child = {}
+        for permission in permissions:
+            data_dict[permission.sort_id] = permission
+            if permission.parent:
+                parent_id_hex = permission.parent.id.hex
+                if parent_id_hex not in data_group_parent_child:
+                    data_group_parent_child[parent_id_hex] = [permission]
+                else:
+                    temp_data_group = data_group_parent_child[parent_id_hex]
+                    temp_data_group.append(permission)
+                    data_group_parent_child[parent_id_hex] = temp_data_group
+        # 取得当前用户权限数据
+        usergroup_permissionresult = GroupPermissionResult.valid_objects.filter(
+            user_group=usergroup,
+            tenant=tenant,
+            app=app,
+        ).first()
+        compress = Compress()
+        permission_result = ''
+        if usergroup_permissionresult:
+            permission_result = compress.decrypt(usergroup_permissionresult.result)
+        # 对数据进行一次排序
+        data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
+
+        permission_result_arr = []
+        if permission_result:
+            permission_result_arr = list(permission_result)
+            if len(permission_result_arr) < len(data_dict.keys()):
+                # 如果原来的权限数目比较少，增加了新的权限，需要先补0
+                diff = len(data_dict.keys()) - len(permission_result_arr)
+                for i in range(diff):
+                    permission_result_arr.append(0)
+            # 提前把有父子关系的权限处理好
+            for data_item in data_dict.values():
+                sort_id = data_item.sort_id
+                sort_id_result = int(permission_result_arr[sort_id])
+                if sort_id_result == 1:
+                    if data_item.category == 'group':
+                        # 如果用户对某一个分组有权限，则对该分组的所有下属分组都有权限。
+                        group_id_hex = data_item.id.hex
+                        if group_id_hex in data_group_parent_child:
+                            # 递归<查找>
+                            await_result = []
+                            self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                            for parent_child_item in await_result:
+                                parent_child_sort_id = parent_child_item.sort_id
+                                permission_result_arr[parent_child_sort_id] = '1'
+            # 权限更新设置
+            for data_item in data_dict.values():
+                sort_id = data_item.sort_id
+                sort_id_result = int(permission_result_arr[sort_id])
+                if sort_id_result == 1:
+                    data_item.is_pass = 1
+                else:
+                    data_item.is_pass = 0
+        # 权限检查
+        for data_item in data_dict.values():
+            # 跳过的数据
+            if pass_permission != None and data_item.id == pass_permission.id:
+                data_item.is_pass = permission_value
+                data_item_container = data_item.container.all()
+                if data_item.category == 'group' and data_item_container:
+                    for data_item_child_api in data_item_container:
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item:
+                            temp_data_item.is_pass = permission_value
+                continue
+            # 如果是通过就不查验
+            if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
+                if data_item.category == 'group' and data_item.container.all():
+                    for data_item_child_api in data_item.container.all():
+                        temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                        if temp_data_item and temp_data_item != pass_permission:
+                            temp_data_item.is_pass = 1
+                continue
+            # 因为分组权限无法根据用户身份去给1，所以默认都是0
+            data_item.is_pass = 0
+        # 产生结果字符串
+        if permission_result:
+            for data_item in data_dict.values():
+                permission_result_arr[data_item.sort_id] = data_item.is_pass
+        else:
+            for data_item in data_dict.values():
+                permission_result_arr.append(data_item.is_pass)
+        # 如果父分组有权限则子分组也有权限(后处理)
+        for data_item in data_dict.values():
+            sort_id = data_item.sort_id
+            sort_id_result = int(permission_result_arr[sort_id])
+            if sort_id_result == 1:
+                if data_item.category == 'group':
+                    group_id_hex = data_item.id.hex
+                    if group_id_hex in data_group_parent_child:
+                        await_result = []
+                        self.process_chilld(data_group_parent_child, group_id_hex, await_result)
+                        for parent_child_item in await_result:
+                            parent_child_sort_id = parent_child_item.sort_id
+                            permission_result_arr[parent_child_sort_id] = 1
+        permission_result = "".join(map(str, permission_result_arr))
+        compress_str_result = compress.encrypt(permission_result)
+        if compress_str_result:
+            usergroup_permissionresult, is_create = GroupPermissionResult.objects.get_or_create(
+                is_del=False,
+                user_group=usergroup,
+                tenant=tenant,
+                app=app,
+            )
+            usergroup_permissionresult.result = compress_str_result
+            usergroup_permissionresult.save()

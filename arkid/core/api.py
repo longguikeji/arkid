@@ -70,15 +70,19 @@ class GlobalAuth(HttpBearer):
     openapi_scheme = "token"
 
     def authenticate(self, request, token):
+        from arkid.core.models import User  
         try:
-            token = ExpiringToken.objects.get(token=token)
-            
-            if not token.user.is_active:
-                raise Exception(_('User inactive or deleted','用户无效或被删除'))
+            if request.user and isinstance(request.user, User):  # restore 审批请求时，user已经存在，不需要再校验token
+                token = ExpiringToken.objects.get(user=request.user).token
+            else:
+                token = ExpiringToken.objects.get(token=token)
+                
+                if not token.user.is_active:
+                    raise Exception(_('User inactive or deleted','用户无效或被删除'))
 
-            tenant = request.tenant or Tenant.platform_tenant()
-            if token.expired(tenant):
-                raise Exception(_('Token has expired','秘钥已经过期'))
+                tenant = request.tenant or Tenant.platform_tenant()
+                if token.expired(tenant):
+                    raise Exception(_('Token has expired','秘钥已经过期'))
 
             operation_id = request.operation_id
             if operation_id:
@@ -94,8 +98,10 @@ class GlobalAuth(HttpBearer):
         except Exception as err:
             logger.error(err)
             return
+        expand_user_dict = User.expand_objects.filter(id=token.user.id).first()
 
         request.user = token.user
+        request.user_expand = expand_user_dict
         return token
 
 
@@ -174,6 +180,6 @@ def operation(respnose_model=None, use_id=False, roles: Optional[List[str]] = No
 def event_disrupt(request, exc):
     return api.create_response(
         request,
-        exc.args,
+        exc.args[0],
         status=200,
     )

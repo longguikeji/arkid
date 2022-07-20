@@ -19,6 +19,10 @@ page.create_actions(
         method=actions.FrontActionMethod.GET,
     ),
     node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/user_groups/?parent_id={id}',
+            method=actions.FrontActionMethod.GET
+        ),
         actions.CascadeAction(
             page=group_permission_page
         )
@@ -27,30 +31,30 @@ page.create_actions(
 
 group_permission_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/permissions?group_id={group_id}',
+        path='/api/v1/tenant/{tenant_id}/group_permissions?select_usergroup_id={select_usergroup_id}',
         method=actions.FrontActionMethod.GET
     ),
     local_actions={
         "delete": actions.DeleteAction(
-            path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/{id}/'
+            path='/api/v1/tenant/{tenant_id}/permission/usergroup/{select_usergroup_id}/{permission_id}/remove_permission'
+        )
+    },
+    global_actions={
+        'open': actions.OpenAction(
+            name=("添加用户分组权限"),
+            page=update_group_permission_page
         )
     }
-    # global_actions={
-    #     'open': actions.OpenAction(
-    #         name=("添加用户分组权限"),
-    #         page=update_group_permission_page
-    #     )
-    # }
 )
 
 update_group_permission_page.create_actions(
-    init_action=actions.DeleteAction(
-        path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/',
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/permissions',
         method=actions.FrontActionMethod.GET
     ),
     global_actions={
         'confirm':actions.ConfirmAction(
-            path='/api/v1/tenant/{tenant_id}/user_groups/{user_group_id}/permissions/',
+            path='/api/v1/tenant/{tenant_id}/permission/usergroup/{select_usergroup_id}/add_permission',
         ),
     }
 )

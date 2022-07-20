@@ -16,7 +16,7 @@ class CoreConfig(AppConfig):
             from arkid.core.models import Tenant, User
             tenant, _ = Tenant.objects.get_or_create(
                 slug='',
-                name="platform tenant",
+                name="平台租户",
             )
             user, _ = User.objects.get_or_create(
                 username="admin",
@@ -25,18 +25,9 @@ class CoreConfig(AppConfig):
             tenant.create_tenant_user_admin_permission(user)
             tenant.users.add(user)
             tenant.save()
-
-        except Exception as e:
-            print(e)
-
-        # bind all tenant to arkid_saas
-        try:
-            from arkid.common.bind_saas import bind_saas
-            tenants = Tenant.active_objects.all()
-            # for tenant in tenants:
-            #     bind_saas(tenant)
         except Exception as e:
             print(e)
 
         # 监听
         from arkid.core import listener
+

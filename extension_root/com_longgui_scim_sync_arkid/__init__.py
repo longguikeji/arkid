@@ -29,12 +29,10 @@ from scim_server.schemas.user_groups import UserGroup as ScimUserGroup
 from django.db.utils import IntegrityError
 from scim_server.exceptions import NotImplementedException
 
-package = 'com.longgui.scim.sync.arkid'
-
 
 ClientConfig = create_extension_schema(
     "ClientConfig",
-    package,
+    __file__,
     fields=[
         # ('sign_name', str, Field(title=_("Sign Name", "短信签名名称"))),
         # ('template_code', str, Field(title=_("Template Code", "短信模板CODE"))),
@@ -46,7 +44,7 @@ ClientConfig = create_extension_schema(
 
 ServerConfig = create_extension_schema(
     "ServerConfig",
-    package,
+    __file__,
     fields=[
         # ('sign_name', str, Field(title=_("Sign Name", "短信签名名称"))),
         # ('template_code', str, Field(title=_("Template Code", "短信模板CODE"))),
@@ -271,12 +269,4 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
     def update_group(self, request, patch, correlation_identifier):
         raise NotImplementedException()
 
-extension = ScimSyncArkIDExtension(
-    package=package,
-    name='ArkID用户数据同步',
-    version='1.0',
-    labels='scim-sync-arkid',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='hanbin@jinji-inc.com',
-)
+extension = ScimSyncArkIDExtension()

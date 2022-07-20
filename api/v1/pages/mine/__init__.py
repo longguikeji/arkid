@@ -13,7 +13,8 @@ router = routers.FrontRouter(
         approve_manage.router,
         switch_tenant.router,
         logout.router,
-    ]
+    ],
+    mobile=True,
 )
 
 router.hidden = True

@@ -1,9 +1,11 @@
 from asyncio.log import logger
 from distutils import core
+import json
 import re
 from unicodedata import name
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.schema import ResponseSchema
+from arkid.core.constants import *
 from arkid.core.api import operation
 from .error import ErrorCode
 from arkid.core.models import Tenant, User
@@ -26,11 +28,10 @@ from api.v1.pages.user_manage.user_list import page as user_list_page
 from api.v1.schema.auth import AuthIn
 from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
 
-package = "com.longgui.auth.factor.password"
 select_pw_login_fields_page = pages.TablePage(select=True, name=_("Select Password Login Fields", "选择密码登录字段"))
 
 
-PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',package, 
+PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',__file__, 
         [
             ('reset_password_enabled', Optional[bool] , Field(deprecated=True)),
             ('login_enabled_field_names', List[str],
@@ -58,13 +59,13 @@ PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',pa
         BaseAuthFactorSchema,
     )
 
-RestUserPasswordIn = create_extension_schema('RestUserPasswordIn',package, 
+RestUserPasswordIn = create_extension_schema('RestUserPasswordIn',__file__, 
         [
             ('password', str , Field(title='新密码',type='password')),
        ],
     )
 
-GetUserKeyFieldItemOut = create_extension_schema('GetUserKeyFieldItemOut',package, 
+GetUserKeyFieldItemOut = create_extension_schema('GetUserKeyFieldItemOut',__file__, 
         [
             ('key', str , Field()),
             ('name', str,Field()),
@@ -128,6 +129,12 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                     admin_user.save()
         except Exception as e:
             print(e)
+
+    def check_auth_data(self, event, **kwargs):
+        pass
+
+    def fix_login_page(self, event, **kwargs):
+        pass
     
     @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     def reset_user_password(self, request, tenant_id:str, id:str, data:RestUserPasswordIn):
@@ -145,10 +152,13 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         tenant = event.tenant
         request = event.request
         
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        config_id = request.POST.get('config_id')
+        data = request.POST or json.load(request.body)
+        
+        username = data.get('username')
+        password = data.get('password')
+        config_id = data.get('config_id')
+        
+        
         config = TenantExtensionConfig.active_objects.get(id=config_id).config
         login_enabled_field_names = config.get('login_enabled_field_names')
         filter_params = None
@@ -176,7 +186,10 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def register(self, event, **kwargs):
         tenant = event.tenant
         request = event.request
-        password = request.POST.get('password')
+        data = request.POST or json.load(request.body)
+        
+        username = data.get('username')
+        password = data.get('password')
 
         config = self.get_current_config(event)
         ret, message = self.check_password_complexity(password, config)
@@ -186,7 +199,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         register_fields = config.config.get('register_enabled_field_names')
         if not register_fields:
             fields = ['username']
-            if request.POST.get('username') is None:
+            if username is None:
                 self.auth_failed(event, data=self.error(ErrorCode.USERNAME_EMPTY))
         else:
             fields = [k for k in register_fields if request.POST.get(k) is not None]
@@ -213,7 +226,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def reset_password(self, event, **kwargs):
         pass
 
-    def create_login_page(self, event, config):
+    def create_login_page(self, event, config, config_data):
         username_placeholder = ""
         for lefn in config.config.get('login_enabled_field_names',[]):
             if username_placeholder:
@@ -232,9 +245,9 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 "placeholder": "密码"
             },
         ]
-        self.add_page_form(config, self.LOGIN, "密码登录", items)
+        self.add_page_form(config, self.LOGIN, "用户名密码登录", items, config_data)
 
-    def create_register_page(self, event, config):
+    def create_register_page(self, event, config, config_data):
         items = []
         register_fields = config.config.get('register_enabled_field_names')
         for rf in register_fields:
@@ -255,12 +268,12 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 "placeholder": "密码确认"
             },
         ])
-        self.add_page_form(config, self.REGISTER, "用户名密码注册", items)
+        self.add_page_form(config, self.REGISTER, "用户名密码注册", items, config_data)
 
-    def create_password_page(self, event, config):
+    def create_password_page(self, event, config, config_data):
         pass
 
-    def create_other_page(self, event, config):
+    def create_other_page(self, event, config, config_data):
         pass
     
     def check_password_complexity(self, pwd, config):
@@ -311,6 +324,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         )
         return page
     
+    @operation(UpdateMinePasswordOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def update_mine_password(self,request, tenant_id: str,data:UpdateMinePasswordIn):
         """更改密码"""
         user = request.user
@@ -327,12 +341,4 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         return self.error(ErrorCode.OLD_PASSWORD_ERROR)
 
 
-extension = PasswordAuthFactorExtension(
-    package=package,
-    name="密码认证因素",
-    version='1.0',
-    labels='auth_factor',
-    homepage='https://www.longguikeji.com',
-    logo='',
-    author='wely@longguikeji.com',
-)
+extension = PasswordAuthFactorExtension()

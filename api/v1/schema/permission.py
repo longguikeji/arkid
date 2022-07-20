@@ -23,7 +23,8 @@ select_app_page.create_actions(
 class PermissionListSchemaOut(ModelSchema):
 
     app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
-    is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value})
+    sort_id: int = Field(hidden=True)
+    is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value}, title=_("是否开放给其它租户"))
 
     class Config:
         model = Permission
@@ -42,13 +43,16 @@ class PermissionCategory(str, Enum):
     ui = 'ui'
     other = 'other'
 
+
+class PermissionCreateItemSchemaIn(Schema):
+
+    id:UUID = Field(hidden=True)
+    name:str
+
 class PermissionCreateSchemaIn(ModelSchema):
 
-    app_id: UUID = Field(
-        field="id",
+    app: PermissionCreateItemSchemaIn = Field(
         page=select_app_page.tag,
-        link="app",
-        default=None,
         title=_("应用")
     )
 
@@ -59,21 +63,24 @@ class PermissionCreateSchemaIn(ModelSchema):
         model_fields = ['name']
 
 
-class PermissionEditSchemaIn(ModelSchema):
+class PermissionEditSchemaIn(Schema):
 
-    class Config:
-        model = Permission
-        model_fields = ['name', 'category']
+    name: str
+    category: str
+    # class Config:
+    #     model = Permission
+    #     model_fields = ['name', 'category']
 
 
 class PermissionDetailSchemaOut(ModelSchema):
 
-    app_id: UUID = Field(default=None)
-    parent_id: UUID = Field(default=None)
+    id: UUID = Field(hidden=True)
+    # parent_id: UUID = Field(default=None)
+    category: PermissionCategory
 
     class Config:
         model = Permission
-        model_fields = ['id', 'name', 'category']
+        model_fields = ['name']
 
 
 class PermissionDetailOut(ResponseSchema):
