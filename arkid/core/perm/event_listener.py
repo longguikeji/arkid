@@ -23,7 +23,7 @@ import uuid
 
 def user_saved(sender, instance: User, created: bool, **kwargs):
     if created:
-        print('检测到用户创建')
+        # print('检测到用户创建')
         user = instance
         tenant = user.tenant
         if tenant:
@@ -36,14 +36,14 @@ def user_saved(sender, instance: User, created: bool, **kwargs):
 
 def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
     if created:
-        print('检测到租户创建')
+        # print('检测到租户创建')
         pd = PermissionData()
         pd.create_tenant_admin_permission(instance)
 
 
 def usergroup_saved(sender, instance: UserGroup, created: bool, **kwargs):
     if created:
-        print('检测到用户分组创建')
+        # print('检测到用户分组创建')
         pd = PermissionData()
         pd.create_usergroup_permission(instance)
 
