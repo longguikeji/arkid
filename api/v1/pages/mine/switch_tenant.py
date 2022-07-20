@@ -23,6 +23,11 @@ page.create_actions(
         path='/api/v1/mine/tenants/',
         method=actions.FrontActionMethod.GET
     ),
+    global_actions={
+        'create': actions.CreateAction(
+            path='/api/v1/tenants/',
+        )
+    },
     local_actions={
         'switch_tenant': actions.URLAction(
             name=_('Switch', '切换'),
