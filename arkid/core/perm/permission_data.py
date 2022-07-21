@@ -1664,61 +1664,33 @@ class PermissionData(object):
         else:
             return ''
 
-    def process_permission_rule(self, permission_result_arr, app, user, tenant_id):
+    def process_permission_rule(self, arr, app, user, tenant_id):
         '''
         处理授权规则
         '''
-        from arkid.core.extension.impower_rule import ImpowerRuleBaseExtension
-        from arkid.extension.models import Extension, TenantExtensionConfig
-        extensions = Extension.active_objects.filter(type=ImpowerRuleBaseExtension.TYPE).all()
-        configs = TenantExtensionConfig.active_objects.filter(tenant__id=tenant_id, extension__in=extensions).all()
-        permission_infos = []
-        # 取得了所有配置
-        for config in configs:
-            config_info = config.config
-            config_matchfield = config_info.get('matchfield')
-            config_matchsymbol = config_info.get('matchsymbol')
-            config_matchvalue = config_info.get('matchvalue')
-            config_app = config_info.get('app')
-            config_app_id = config_app.get('id')
-            config_permissions = config_info.get('permissions')
-            if app is None:
-                if config_app_id == 'arkid':
-                    sort_ids = []
-                    for config_permission in config_permissions:
-                        sort_ids.append(config_permission.get('sort_id'))
-                    permission_infos.append({
-                        'matchfield': config_matchfield.get('id'),
-                        'matchsymbol': config_matchsymbol,
-                        'matchvalue': config_matchvalue,
-                        'sort_ids': sort_ids
-                    })
-            else:
-                app_id = str(app.id)
-                if config_app_id == app_id:
-                    sort_ids = []
-                    for config_permission in config_permissions:
-                        sort_ids.append(config_permission.sort_id)
-                    permission_infos.append({
-                        'matchfield': config_matchfield.get('sort_id'),
-                        'matchsymbol': config_matchsymbol,
-                        'matchvalue': config_matchvalue,
-                        'sort_ids': sort_ids
-                    })
-        # 计算是否拥有权限
-        sort_ids = []
-        user = User.expand_objects.filter(id=user.id).first()
-        for permission_info in permission_infos:
-            matchfield = permission_info.get('matchfield')
-            matchsymbol = permission_info.get('matchsymbol')
-            matchvalue = permission_info.get('matchvalue')
-            select_value = user.get(matchfield)
-            if matchsymbol == '等于' and matchvalue == select_value:
-                sort_ids.extend(permission_info.get('sort_ids'))
-        # 匹配的数据进行替换
-        for index, value in enumerate(permission_result_arr):
-            if int(value) == 0 and index in sort_ids:
-                permission_result_arr[index] = 1
+        from arkid.core.event import Event, dispatch_event, GET_AUTH_RESULT
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        copy_arr = [x for x in arr]
+        data = {
+            'arr': copy_arr,
+            'app': app,
+            'user': user
+        }
+        # 分发事件处理
+        results = dispatch_event(Event(
+            tag=GET_AUTH_RESULT,
+            tenant=tenant,
+            request=None,
+            data=data
+        ))
+        # 合并结算结果
+        arr_len = len(arr)
+        for func, (result, extension) in results:
+            if result:
+                for index, value in enumerate(result):
+                    if int(value) == 1 and index < arr_len and int(arr[index]) == 0:
+                        arr[index] = 1
+        return arr
 
                 
 

@@ -348,6 +348,7 @@ DELETE_AUTO_AUTH_CONFIG = 'DELETE_AUTO_AUTH_CONFIG'
 
 APP_START = 'APP_START'
 AUTO_LOGIN = 'AUTO_LOGIN'
+GET_AUTH_RESULT = 'GET_AUTH_RESULT'
 
 SAVE_FILE = 'SAVE_FILE'
 
@@ -428,6 +429,7 @@ register_event(CLOSE_SYSTEM_PERMISSION, _('close system permission', '关闭系�
 register_event(CLOSE_APP_PERMISSION, _('close app permission', '关闭应用权限'))
 register_event(UPDATE_ADMIN_ALL_PERMISSION, _('update admin all permission', '更新所有管理员权限'))
 register_event(CREATE_TENANT, _('create tenant', '创建租户'))
+register_event(GET_AUTH_RESULT, _('get auth result', '获得权限鉴定结果'))
 
 register_event(SAVE_FILE, _('SAVE FILE', '保存文件'))
 register_event(ACCOUNT_LIFE_PERIODIC_TASK, _('ACCOUNT_LIFE_PERIODIC_TASK', '生命周期定时任务'))
