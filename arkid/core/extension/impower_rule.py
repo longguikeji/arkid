@@ -68,7 +68,7 @@ class ImpowerRuleBaseExtension(Extension):
                 result_sort_ids.extend(sort_ids)
         # 对于授权结果进行合并
         for index, value in enumerate(copy_arr):
-            if int(value) == 0 and index in sort_ids:
+            if int(value) == 0 and index in result_sort_ids:
                 copy_arr[index] = 1
         return copy_arr
 
