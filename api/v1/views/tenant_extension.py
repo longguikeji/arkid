@@ -138,6 +138,10 @@ ExtensionSettingsGetSchemaOut = Extension.create_settings_schema(
 )
 
 
+class ExtensionSettingsGetSchemaResponse(ResponseSchema):
+    data: Optional[ExtensionSettingsGetSchemaOut]
+
+
 @api.post("/tenant/{tenant_id}/extension/{extension_id}/settings/", response=ResponseSchema,  tags=['租户插件'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_extension_settings(request, tenant_id: str, extension_id: str, data: ExtensionSettingsCreateIn):
@@ -155,7 +159,7 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
     return {"error": ErrorCode.OK.value, "data": {"settings_id": settings.id.hex}}
 
 
-@api.get("/tenant/{tenant_id}/extension/{extension_id}/settings/", response=Optional[ExtensionSettingsGetSchemaOut], tags=['租户插件'])
+@api.get("/tenant/{tenant_id}/extension/{extension_id}/settings/", response=ExtensionSettingsGetSchemaResponse, tags=['租户插件'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_extension_settings(request, tenant_id: str, extension_id: str):
     '''租户下，获取插件配置'''
