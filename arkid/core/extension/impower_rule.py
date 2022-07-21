@@ -20,7 +20,7 @@ class ImpowerRuleBaseExtension(Extension):
 
     def load(self):
         super().load()
-        self.listen_event(core_event.GET_AUTH_RESULT, self.get_auth_result)
+        self.listen_event(core_event.GET_AUTH_RESULT, self.filter_auth_result)
     
     def get_extensions(self):
         '''
@@ -49,6 +49,28 @@ class ImpowerRuleBaseExtension(Extension):
         """
         self.register_config_schema(schema, self.package + '_' + impowerrule_type)
         self.register_composite_config_schema(schema, impowerrule_type, exclude=['extension'])
+    
+    def filter_auth_result(self, event, **kwargs):
+        '''
+        筛选抽象结果
+        '''
+        tenant = event.tenant
+        configs = self.get_all_config(tenant.id)
+        data = event.data
+        arr = data.get('arr', [])
+        copy_arr = [x for x in arr]
+        result_sort_ids = []
+        # 每一个授权规则配置单独验证
+        for config in configs:
+            data['config'] = config
+            sort_ids = self.get_auth_result(event, **kwargs)
+            if sort_ids:
+                result_sort_ids.extend(sort_ids)
+        # 对于授权结果进行合并
+        for index, value in enumerate(copy_arr):
+            if int(value) == 0 and index in sort_ids:
+                copy_arr[index] = 1
+        return copy_arr
 
     @abstractmethod
     def get_auth_result(self, event, **kwargs):
@@ -60,9 +82,10 @@ class ImpowerRuleBaseExtension(Extension):
                     user: 用户
                     app: 应用(如果app是None，就表示这个应用是arkid)
                     arr: 权限结果数组(这个是已经赋值过分组权限的数据，有权限是1，没权限是0)
+                    config: 应用的授权规则
                 tenant: 租户
             kwargs: 其它方法参数
         Return:
-            arr: 授权结果数组
+            arr: sort_id数组
         """
         pass
