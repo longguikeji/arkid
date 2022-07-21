@@ -32,58 +32,26 @@ class ImpowerRuleExtension(ImpowerRuleBaseExtension):
         tenant = event.tenant
 
         user = data.get('user')
-        app = data.get('app', None)
-        arr = data.get('arr', [])
+        config = data.get('config')
         # 处理授权逻辑
-        configs = self.get_all_config(tenant.id)
-        permission_infos = []
+        permission_info = {}
         # 取得了所有配置
-        for config in configs:
-            config_info = config.config
-            config_matchfield = config_info.get('matchfield')
-            config_matchsymbol = config_info.get('matchsymbol')
-            config_matchvalue = config_info.get('matchvalue')
-            config_app = config_info.get('app')
-            config_app_id = config_app.get('id')
-            config_permissions = config_info.get('permissions')
-            if app is None:
-                if config_app_id == 'arkid':
-                    sort_ids = []
-                    for config_permission in config_permissions:
-                        sort_ids.append(config_permission.get('sort_id'))
-                    permission_infos.append({
-                        'matchfield': config_matchfield.get('id'),
-                        'matchsymbol': config_matchsymbol,
-                        'matchvalue': config_matchvalue,
-                        'sort_ids': sort_ids
-                    })
-            else:
-                app_id = str(app.id)
-                if config_app_id == app_id:
-                    sort_ids = []
-                    for config_permission in config_permissions:
-                        sort_ids.append(config_permission.sort_id)
-                    permission_infos.append({
-                        'matchfield': config_matchfield.get('sort_id'),
-                        'matchsymbol': config_matchsymbol,
-                        'matchvalue': config_matchvalue,
-                        'sort_ids': sort_ids
-                    })
-        # 计算是否拥有权限
-        sort_ids = []
-        # 这里之所以要重新获取是因为扩展字段的筛选需要借助expand_objects
+        config_info = config.config
+        config_matchfield = config_info.get('matchfield')
+        config_matchsymbol = config_info.get('matchsymbol')
+        config_matchvalue = config_info.get('matchvalue')
+        config_app = config_info.get('app')
+        config_app_id = config_app.get('id')
+        config_permissions = config_info.get('permissions')
+        # 用户扩展字段用于筛选
         user = User.expand_objects.filter(id=user.id).first()
-        for permission_info in permission_infos:
-            matchfield = permission_info.get('matchfield')
-            matchsymbol = permission_info.get('matchsymbol')
-            matchvalue = permission_info.get('matchvalue')
-            select_value = user.get(matchfield)
-            if matchsymbol == '等于' and matchvalue == select_value:
-                sort_ids.extend(permission_info.get('sort_ids'))
-        # 匹配的数据进行替换
-        for index, value in enumerate(arr):
-            if int(value) == 0 and index in sort_ids:
-                arr[index] = 1
-        return arr
-        
+        # 选择的字段值
+        select_value = user.get(config_matchfield.get('id'))
+        # 取得返回值
+        sort_ids = []
+        if config_matchsymbol == '等于' and config_matchvalue == select_value:
+            for config_permission in config_permissions:
+                sort_ids.append(config_permission.get('sort_id'))
+        return sort_ids
+
 extension = ImpowerRuleExtension()
