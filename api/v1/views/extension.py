@@ -106,7 +106,14 @@ class ExtensionListOut(ModelSchema):
     is_active: bool = Field(
         title='是否启动',
         item_action={
-            "path":"/api/v1/extensions/{id}/active/",
+            "path":"/api/v1/extensions/{id}/toggle/",
+            "method":actions.FrontActionMethod.POST.value
+        }
+    )
+    is_allow_use_platform_config: bool = Field(
+        title='是否允许租户使用平台配置',
+        item_action={
+            "path":"/api/v1/extensions/{id}/use_platform_config/toggle/",
             "method":actions.FrontActionMethod.POST.value
         }
     )
@@ -211,7 +218,7 @@ def get_extension_markdown(request, id: str):
             md_file.close()
     return {"data": data}
 
-@api.post("/extensions/{id}/active/", tags=["平台插件"])
+@api.post("/extensions/{id}/toggle/", tags=["平台插件"])
 @operation(roles=[PLATFORM_ADMIN])
 def toggle_extension_status(request, id: str):
     """ 租户插件列表
@@ -225,5 +232,15 @@ def toggle_extension_status(request, id: str):
         ext.load()
         extension.is_active = True
 
+    extension.save()
+    return ErrorDict(ErrorCode.OK)
+
+@api.post("/extensions/{id}/use_platform_config/toggle/", tags=["平台插件"])
+@operation(roles=[PLATFORM_ADMIN])
+def toggle_extension_status(request, id: str):
+    """ 租户插件列表
+    """
+    extension= ExtensionModel.objects.get(id=id)
+    extension.is_allow_use_platform_config = not extension.is_allow_use_platform_config
     extension.save()
     return ErrorDict(ErrorCode.OK)

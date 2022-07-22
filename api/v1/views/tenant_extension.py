@@ -154,8 +154,9 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
     if not settings.is_rented:
         return {"error": ErrorCode.OK.value, "message": "插件未租赁或租赁已到期"}
 
-    settings.settings = data.settings.dict()
-    settings.save()
+    if data.settings:
+        settings.settings = data.settings.dict()
+        settings.save()
     
     return {"error": ErrorCode.OK.value, "data": {"settings_id": settings.id.hex}}
 
