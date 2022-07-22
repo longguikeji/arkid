@@ -6,6 +6,7 @@ from arkid.core.api import api, operation
 from typing import List, Union,Optional
 from typing_extensions import Annotated
 from pydantic import Field
+from django.conf import settings
 from arkid.core.constants import PLATFORM_ADMIN, TENANT_ADMIN
 from arkid.core.extension import Extension
 from arkid.core.schema import ResponseSchema
@@ -55,6 +56,10 @@ def load_extension(request, extension_id: str):
     else:
         return {}
 
+ExtensionProfileGetSchemaIn = Extension.create_profile_schema(
+    'ExtensionProfileGetSchemaIn',
+)
+
 ExtensionProfileGetSchemaOut = Extension.create_profile_schema(
     'ExtensionProfileGetSchemaOut',
     id=(UUID,Field(hidden=True)),
@@ -73,11 +78,14 @@ def get_extension_profile(request, id: str):
 
 @api.post("/extensions/{id}/profile/", tags=['平台插件'])
 @operation(roles=[PLATFORM_ADMIN])
-def update_extension_profile(request, id: str, data:ExtensionProfileGetSchemaOut):
+def update_extension_profile(request, id: str, data:ExtensionProfileGetSchemaIn):
     """更新插件启动配置
     """
     extension = ExtensionModel.objects.filter(id=id).first()
-    extension.profile = data
+    extension.is_active = data.is_active
+    extension.is_allow_use_platform_config = data.is_allow_use_platform_config
+    if data.profile:
+        extension.profile = data.profile.dict()
     extension.save()
     return {'error':ErrorCode.OK.value}
 
@@ -121,6 +129,8 @@ def list_extensions(request, status: str = None):
         qs = ExtensionModel.valid_objects.all()
     else:
         qs = ExtensionModel.valid_objects.filter(status=status).all()
+    if settings.IS_CENTRAL_ARKID:
+        return qs
 
     token = request.user.auth_token
     tenant = Tenant.platform_tenant()
