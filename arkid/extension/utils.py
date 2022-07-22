@@ -6,7 +6,6 @@ import shutil
 import string
 import sys
 
-from attr import has
 from django.apps import apps
 from django.conf import settings
 from arkid import core

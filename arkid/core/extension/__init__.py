@@ -5,7 +5,6 @@ from pyclbr import Function
 from typing import Union, Literal, Any, List, Optional, Tuple, Type, Callable
 from typing_extensions import Annotated
 from uuid import UUID
-from attr import field
 from pydantic import Field
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from django.urls import include, re_path
