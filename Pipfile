@@ -23,7 +23,6 @@ mkdocs = "*"
 mkdocs-material = "*"
 pyjwt = "*"
 django-celery-beat = "*"
-alibabacloud-dysmsapi20170525 = "*"
 django-cors-headers = "*"
 
 [requires]

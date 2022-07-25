@@ -285,6 +285,9 @@ class PermissionData(object):
             is_update=False
         ).update(is_del=0)
 
+    # from django.db import transaction
+
+    # @transaction.atomic
     def update_arkid_all_user_permission(self, tenant_id=None):
         '''
         更新系统所有用户权限
@@ -302,13 +305,14 @@ class PermissionData(object):
             tenant=tenant,
             app=None,
         )
+        superuser_id = User.valid_objects.order_by('created').first().id
         userpermissionresults_dict = {}
         compress = Compress()
         for userpermissionresult in userpermissionresults:
             userpermissionresults_dict[userpermissionresult.user.id.hex] = userpermissionresult
         for auth_user in auth_users:
             # 权限鉴定
-            if auth_user.is_superuser:
+            if auth_user.id == superuser_id:
                 auth_user.is_tenant_admin = True
             else:
                 if auth_user.id.hex in userpermissionresults_dict:
@@ -339,7 +343,11 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
         # 计算每一个用户的权限情况
+        userpermissionresult_lists = []
+        create_user_result_list = []
+        update_user_result_list = []
         for auth_user in auth_users:
+            # print('更新用户:'+auth_user.username)
             permission_result = ''
             permission_result_arr = []
             if auth_user.id.hex in userpermissionresults_dict:
@@ -390,7 +398,7 @@ class PermissionData(object):
                                 temp_data_item.is_pass = 1
                     continue
                 # 如果是超级管理员直接就通过
-                if auth_user.is_superuser:
+                if auth_user.id == superuser_id:
                     data_item.is_pass = 1
                 else:
                     if data_item.name == 'normal-user':
@@ -440,14 +448,30 @@ class PermissionData(object):
             permission_result = "".join(map(str, permission_result_arr))
             compress_str_result = compress.encrypt(permission_result)
             if compress_str_result:
-                userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
-                    is_del=False,
-                    user=auth_user,
-                    tenant=tenant,
-                    app=None,
-                )
-                userpermissionresult.result = compress_str_result
-                userpermissionresult.save()
+                # pass
+                if auth_user.id.hex in userpermissionresults_dict:
+                    userpermissionresult = userpermissionresults_dict.get(auth_user.id.hex)
+                    userpermissionresult.result = compress_str_result
+                    update_user_result_list.append(userpermissionresult)
+                else:
+                    userpermissionresult = UserPermissionResult()
+                    userpermissionresult.user = auth_user
+                    userpermissionresult.tenant = tenant
+                    userpermissionresult.result = compress_str_result
+                    userpermissionresult.app = None
+                    create_user_result_list.append(userpermissionresult)
+                # userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
+                #     is_del=False,
+                #     user=auth_user,
+                #     tenant=tenant,
+                #     app=None,
+                # )
+                # userpermissionresult.result = compress_str_result
+                # userpermissionresult.save()
+        if create_user_result_list:
+            UserPermissionResult.objects.bulk_create(create_user_result_list)
+        if update_user_result_list:
+            UserPermissionResult.objects.bulk_update(update_user_result_list, ['result'])
 
     def update_arkid_single_user_permission(self, tenant, auth_user, pass_permission, permission_value):
         '''
@@ -728,7 +752,7 @@ class PermissionData(object):
         auth_users = User.valid_objects.filter(tenant_id=tenant.id)
         # 区分出那些人是管理员
         systempermission = SystemPermission.valid_objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
-        # app的
+        # app
         userpermissionresults = UserPermissionResult.valid_objects.filter(
             tenant=tenant,
             app=app,
@@ -745,9 +769,10 @@ class PermissionData(object):
         system_userpermissionresults_dict = {}
         for system_userpermissionresult in system_userpermissionresults:
             system_userpermissionresults_dict[system_userpermissionresult.user.id.hex] = system_userpermissionresult
+        superuser_id = User.valid_objects.order_by('created').first().id
         for auth_user in auth_users:
             # 权限鉴定
-            if auth_user.is_superuser:
+            if auth_user.id == superuser_id:
                 auth_user.is_tenant_admin = True
             else:
                 if auth_user.id.hex in system_userpermissionresults_dict:
@@ -779,6 +804,8 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
         # 计算每一个用户的权限情况
+        create_user_result_list = []
+        update_user_result_list = []
         for auth_user in auth_users:
             permission_result = ''
             permission_result_arr = []
@@ -830,7 +857,7 @@ class PermissionData(object):
                                 temp_data_item.is_pass = 1
                     continue
                 # 如果是超级管理员直接就通过
-                if auth_user.is_superuser:
+                if auth_user.id == superuser_id:
                     data_item.is_pass = 1
                 else:
                     if tenant == data_item.tenant:
@@ -885,14 +912,29 @@ class PermissionData(object):
             permission_result = "".join(map(str, permission_result_arr))
             compress_str_result = compress.encrypt(permission_result)
             if compress_str_result:
-                userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
-                    is_del=False,
-                    user=auth_user,
-                    tenant=tenant,
-                    app=app,
-                )
-                userpermissionresult.result = compress_str_result
-                userpermissionresult.save()
+                if auth_user.id.hex in userpermissionresults_dict:
+                    userpermissionresult = userpermissionresults_dict.get(auth_user.id.hex)
+                    userpermissionresult.result = compress_str_result
+                    update_user_result_list.append(userpermissionresult)
+                else:
+                    userpermissionresult = UserPermissionResult()
+                    userpermissionresult.user = auth_user
+                    userpermissionresult.tenant = tenant
+                    userpermissionresult.app = app
+                    userpermissionresult.result = compress_str_result
+                    create_user_result_list.append(userpermissionresult)
+                # userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
+                #     is_del=False,
+                #     user=auth_user,
+                #     tenant=tenant,
+                #     app=app,
+                # )
+                # userpermissionresult.result = compress_str_result
+                # userpermissionresult.save()
+        if create_user_result_list:
+            UserPermissionResult.objects.bulk_create(create_user_result_list)
+        if update_user_result_list:
+            UserPermissionResult.objects.bulk_update(update_user_result_list, ['result'])
 
     def update_single_user_app_permission(self, tenant_id, user_id, app_id):
         '''
@@ -1622,61 +1664,33 @@ class PermissionData(object):
         else:
             return ''
 
-    def process_permission_rule(self, permission_result_arr, app, user, tenant_id):
+    def process_permission_rule(self, arr, app, user, tenant_id):
         '''
         处理授权规则
         '''
-        from arkid.core.extension.impower_rule import ImpowerRuleBaseExtension
-        from arkid.extension.models import Extension, TenantExtensionConfig
-        extensions = Extension.active_objects.filter(type=ImpowerRuleBaseExtension.TYPE).all()
-        configs = TenantExtensionConfig.active_objects.filter(tenant__id=tenant_id, extension__in=extensions).all()
-        permission_infos = []
-        # 取得了所有配置
-        for config in configs:
-            config_info = config.config
-            config_matchfield = config_info.get('matchfield')
-            config_matchsymbol = config_info.get('matchsymbol')
-            config_matchvalue = config_info.get('matchvalue')
-            config_app = config_info.get('app')
-            config_app_id = config_app.get('id')
-            config_permissions = config_info.get('permissions')
-            if app is None:
-                if config_app_id == 'arkid':
-                    sort_ids = []
-                    for config_permission in config_permissions:
-                        sort_ids.append(config_permission.get('sort_id'))
-                    permission_infos.append({
-                        'matchfield': config_matchfield.get('id'),
-                        'matchsymbol': config_matchsymbol,
-                        'matchvalue': config_matchvalue,
-                        'sort_ids': sort_ids
-                    })
-            else:
-                app_id = str(app.id)
-                if config_app_id == app_id:
-                    sort_ids = []
-                    for config_permission in config_permissions:
-                        sort_ids.append(config_permission.sort_id)
-                    permission_infos.append({
-                        'matchfield': config_matchfield.get('sort_id'),
-                        'matchsymbol': config_matchsymbol,
-                        'matchvalue': config_matchvalue,
-                        'sort_ids': sort_ids
-                    })
-        # 计算是否拥有权限
-        sort_ids = []
-        user = User.expand_objects.filter(id=user.id).first()
-        for permission_info in permission_infos:
-            matchfield = permission_info.get('matchfield')
-            matchsymbol = permission_info.get('matchsymbol')
-            matchvalue = permission_info.get('matchvalue')
-            select_value = user.get(matchfield)
-            if matchsymbol == '等于' and matchvalue == select_value:
-                sort_ids.extend(permission_info.get('sort_ids'))
-        # 匹配的数据进行替换
-        for index, value in enumerate(permission_result_arr):
-            if int(value) == 0 and index in sort_ids:
-                permission_result_arr[index] = 1
+        from arkid.core.event import Event, dispatch_event, GET_AUTH_RESULT
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        copy_arr = [x for x in arr]
+        data = {
+            'arr': copy_arr,
+            'app': app,
+            'user': user
+        }
+        # 分发事件处理
+        results = dispatch_event(Event(
+            tag=GET_AUTH_RESULT,
+            tenant=tenant,
+            request=None,
+            data=data
+        ))
+        # 合并结算结果
+        arr_len = len(arr)
+        for func, (result, extension) in results:
+            if result:
+                for index, value in enumerate(result):
+                    if int(value) == 1 and index < arr_len and int(arr[index]) == 0:
+                        arr[index] = 1
+        return arr
 
                 
 
@@ -2150,6 +2164,7 @@ class PermissionData(object):
                     include_id.append(item_user.id)
                     break
         auth_users = auth_users.filter(id__in=include_id)
+        superuser_id = User.valid_objects.order_by('created').first().id
         # 区分出那些人是管理员
         systempermission = SystemPermission.valid_objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
         # 管理权限在arkidpermission表里
@@ -2165,7 +2180,7 @@ class PermissionData(object):
         compress = Compress()
         for auth_user in auth_users:
             # 权限鉴定
-            if auth_user.is_superuser:
+            if auth_user.id == superuser_id:
                 auth_user.is_tenant_admin = True
             else:
                 if auth_user.id.hex in system_userpermissionresults_dict:

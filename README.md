@@ -7,9 +7,22 @@ title: 首页
 * 轻松集成您的所有应用
 * 统一的身份，认证，权限管理系统
 
-[官方网站](https://arkid.cc){ .md-button .md-button--primary }
-[官方SaaS网站](https://saas.arkid.cc){ .md-button }
-[官方文档](https://longguikeji.github.io/arkid/){ .md-button }
+## [官方网站](https://arkid.cc)
+
+[https://arkid.cc](https://arkid.cc)
+
+## [中心ArkID](https://saas.arkid.cc)
+
+[https://saas.arkid.cc](https://saas.arkid.cc)
+
+## [官方文档](https://longguikeji.github.io/arkid/)
+
+* [快速开始](https://longguikeji.github.io/arkid/%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/)
+* [用户指南](https://longguikeji.github.io/arkid/%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/)
+* [开发者指南](https://longguikeji.github.io/arkid/%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/)
+* [商业合作指南](https://longguikeji.github.io/arkid/%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/)
+* [系统插件](https://longguikeji.github.io/arkid/%20%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/)
+* [关于我们](https://longguikeji.github.io/arkid/%E5%85%B3%E4%BA%8E%E6%88%91%E4%BB%AC/)
 
 ------
 ## 功能特点

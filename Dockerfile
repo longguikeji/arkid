@@ -10,8 +10,7 @@ ARG PIP="https://mirrors.aliyun.com/pypi/simple/"
 #ARG PIP="https://pypi.python.org/simple"
 
 RUN set -eux; \
-    sed -i 's/MinProtocol = TLSv1.2/MinProtocol = TLSv1.0/g' /etc/ssl/openssl.cnf; \
-    sed -i "s@http://deb.debian.org/debian@$DEBIAN/@g" /etc/apt/sources.list; \
+    sed -i "s@http://deb.debian.org/debian@$DEBIAN@g" /etc/apt/sources.list; \
     sed -i "s@http://security.debian.org/debian-security@$DEBIANSRT@g" /etc/apt/sources.list ; \
     apt-get update; \
     apt-get install -y --no-install-recommends \

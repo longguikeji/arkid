@@ -13,6 +13,7 @@ from ninja.pagination import paginate
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.schema import ResponseSchema
+from django.conf import settings
 from arkid.common.arkstore import (
     get_arkstore_access_token,
     get_arkstore_extensions_rented,
@@ -138,6 +139,10 @@ ExtensionSettingsGetSchemaOut = Extension.create_settings_schema(
 )
 
 
+class ExtensionSettingsGetSchemaResponse(ResponseSchema):
+    data: ExtensionSettingsGetSchemaOut
+
+
 @api.post("/tenant/{tenant_id}/extension/{extension_id}/settings/", response=ResponseSchema,  tags=['租户插件'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_extension_settings(request, tenant_id: str, extension_id: str, data: ExtensionSettingsCreateIn):
@@ -149,13 +154,14 @@ def create_extension_settings(request, tenant_id: str, extension_id: str, data: 
     if not settings.is_rented:
         return {"error": ErrorCode.OK.value, "message": "插件未租赁或租赁已到期"}
 
-    settings.settings = data.settings.dict()
-    settings.save()
+    if data.settings:
+        settings.settings = data.settings.dict()
+        settings.save()
     
     return {"error": ErrorCode.OK.value, "data": {"settings_id": settings.id.hex}}
 
 
-@api.get("/tenant/{tenant_id}/extension/{extension_id}/settings/", response=Optional[ExtensionSettingsGetSchemaOut], tags=['租户插件'])
+@api.get("/tenant/{tenant_id}/extension/{extension_id}/settings/", response=ExtensionSettingsGetSchemaResponse, tags=['租户插件'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_extension_settings(request, tenant_id: str, extension_id: str):
     '''租户下，获取插件配置'''
@@ -164,7 +170,7 @@ def get_extension_settings(request, tenant_id: str, extension_id: str):
         extension_id=extension_id,
     )
     tenant_extension.package = tenant_extension.extension.package
-    return tenant_extension
+    return {"data": tenant_extension}
 
 
 class ExtensionRentRecordOut(Schema):
@@ -208,11 +214,14 @@ def get_tenant_extensions(request, tenant_id: str):
     """
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
+    extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_rented=True).values('extension_id')
+    extensions = ExtensionModel.active_objects.filter(id__in = extension_ids)
+    if settings.IS_CENTRAL_ARKID:
+        return extensions
+
     access_token = get_arkstore_access_token(tenant, token)
     resp = get_arkstore_extensions_rented(access_token)
     extensions_rented = {ext['package']: ext for ext in resp['items']}
-    extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_rented=True).values('extension_id')
-    extensions = ExtensionModel.active_objects.filter(id__in = extension_ids)
     for ext in extensions:
         if ext.package in extensions_rented:
             ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']

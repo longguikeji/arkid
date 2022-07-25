@@ -33,9 +33,11 @@ page.create_actions(
     local_actions={
         "edit": actions.EditAction(
             page=edit_page,
+            hidden='is_system'
         ),
         "delete":actions.DeleteAction(
-            path="/api/v1/tenant/{tenant_id}/permissions/{id}/",
+            path="/api/v1/tenant/{tenant_id}/permission/{permission_id}",
+            hidden='is_system'
         ),
         # "toggle_open":actions.DirectAction(
         #     path="/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open",

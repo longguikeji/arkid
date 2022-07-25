@@ -42,7 +42,7 @@ def list_apps(request, tenant_id: str):
     # from arkid.core.perm.permission_data import PermissionData
     # pd = PermissionData()
     # pd.update_arkid_system_permission()
-    return apps.all()
+    return apps.order_by('created')
 
 
 @api.get("/tenant/{tenant_id}/open_apps/", response=List[AppListItemOut], tags=['应用'])

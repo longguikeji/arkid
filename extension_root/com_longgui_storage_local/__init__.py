@@ -14,8 +14,6 @@ ProfileSchema = create_extension_schema(
         ('storage_path', Optional[str], Field(title=_("Storage Path", "存储路径"))),
     ]
 )
-
-
 class LocalStorageExtension(StorageExtension):
 
     def load(self):
@@ -57,8 +55,5 @@ class LocalStorageExtension(StorageExtension):
         return FileResponse(
             open(file_path, 'rb')
         )
-    
-    
-
 
 extension = LocalStorageExtension()
