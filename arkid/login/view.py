@@ -11,6 +11,8 @@ from ninja import Schema
 from arkid.core.models import User
 from arkid.core.token import refresh_token
 
+import urllib.parse
+
 class AutoLoginSchema(Schema):
     tenant: Any
 
@@ -92,7 +94,7 @@ class LoginProcess(View):
                 else:
                     return result
 
-       
+        next = urllib.parse.quote(next)
         if params_str:
             return redirect(f'{login_uri}?next={next}&{params_str}')
         else:
