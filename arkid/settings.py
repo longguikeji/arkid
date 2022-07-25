@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'arkid.extension',
     'django_celery_beat',
     'webhook',
+    'mama_cas',
 ]
 
 MIDDLEWARE = [
@@ -80,6 +81,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'arkid.wsgi.application'
+
+MAMA_CAS_ATTRIBUTE_CALLBACKS = ('mama_cas.callbacks.user_model_attributes',)
 
 
 # Database

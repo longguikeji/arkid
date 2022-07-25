@@ -1,0 +1,154 @@
+# Portuguese translation.
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+# Vitor C., 2018.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: django-mama-cas\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-09-22 23:16-0300\n"
+"PO-Revision-Date: 2018-05-22 22:39-0000\n"
+"Last-Translator: Vitor C\n"
+"Language-Team: Personal\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: mama_cas/cas.py:106
+msgid "You have been successfully logged out"
+msgstr "Você foi desconectado com sucesso"
+
+#: mama_cas/forms.py:14
+msgid "Username"
+msgstr "Nome de usuário"
+
+#: mama_cas/forms.py:16
+msgid "Please enter your username"
+msgstr "Por favor insira seu nome de usuário"
+
+#: mama_cas/forms.py:17
+msgid "Password"
+msgstr "Senha"
+
+#: mama_cas/forms.py:19
+msgid "Please enter your password"
+msgstr "Por favor insira sua senha"
+
+#: mama_cas/forms.py:27
+msgid "Warn before automatic login to other services"
+msgstr "Avisar antes de login automático para outros serviços"
+
+#: mama_cas/forms.py:45
+msgid "Internal error while authenticating user"
+msgstr "Erro interno ao autenticar o usuário"
+
+#: mama_cas/forms.py:50
+msgid "The username or password is not correct"
+msgstr "Por favor, entre com um usuário e senha corretos."
+" Note que ambos os campos diferenciam maiúsculas e minúsculas."
+
+#: mama_cas/forms.py:55
+msgid "This user account is disabled"
+msgstr "Esta conta de usuário está desativada"
+
+#: mama_cas/forms.py:73
+msgid "Invalid username provided"
+msgstr "Nome de usuário inválido"
+
+#: mama_cas/models.py:162
+msgid "ticket"
+msgstr "ticket"
+
+#: mama_cas/models.py:163
+msgid "user"
+msgstr "usuário"
+
+#: mama_cas/models.py:165
+msgid "expires"
+msgstr "expira"
+
+#: mama_cas/models.py:166
+msgid "consumed"
+msgstr "consumido"
+
+#: mama_cas/models.py:229 mama_cas/models.py:269
+msgid "service"
+msgstr "serviço"
+
+#: mama_cas/models.py:230
+msgid "primary"
+msgstr "primário"
+
+#: mama_cas/models.py:235
+msgid "service ticket"
+msgstr "ticket de serviço"
+
+#: mama_cas/models.py:236
+msgid "service tickets"
+msgstr "tickets de serviço"
+
+#: mama_cas/models.py:271
+msgid "granted by proxy-granting ticket"
+msgstr "concedido por ticket de concessão de proxy"
+
+#: mama_cas/models.py:275
+msgid "proxy ticket"
+msgstr "ticket de proxy"
+
+#: mama_cas/models.py:276
+msgid "proxy tickets"
+msgstr "tickets de proxy"
+
+#: mama_cas/models.py:343
+msgid "iou"
+msgstr "iou"
+
+#: mama_cas/models.py:346
+msgid "granted by service ticket"
+msgstr "concedido pelo ticket de serviço"
+
+#: mama_cas/models.py:349
+msgid "granted by proxy ticket"
+msgstr "concedido pelo ticket de proxy"
+
+#: mama_cas/models.py:354
+msgid "proxy-granting ticket"
+msgstr "ticket de concessão de proxy"
+
+#: mama_cas/models.py:355
+msgid "proxy-granting tickets"
+msgstr "tickets de concessão de proxy"
+
+#: mama_cas/templates/mama_cas/__base.html:10 mama_cas/templates/mama_cas/__login.html:6
+msgid "Central Authentication Service"
+msgstr "Serviço de Autenticação Central"
+
+#: mama_cas/templates/mama_cas/__login.html:23
+msgid "Login"
+msgstr "Login"
+
+#: mama_cas/templates/mama_cas/__warn.html:8
+msgid "Yes, continue"
+msgstr "Sim, continuar"
+
+#: mama_cas/templates/mama_cas/__warn.html:9
+msgid "No, log me out"
+msgstr "Não, me desconecte"
+
+#: mama_cas/views.py:106
+#, python-format
+msgid "You are logged in as %s"
+msgstr "Você está logado como %s"
+
+#: mama_cas/views.py:168
+#, fuzzy, python-format
+#| msgid "Do you want to access %s as %s?"
+msgid "Do you want to access %(service)s as %(user)s?"
+msgstr "Deseja acessar %(service)s como %(user)s?"
+
+#~ msgid "The application provided this link to follow: %s"
+#~ msgstr "O aplicativo forneceu este link para seguir:%s"
