@@ -197,13 +197,34 @@ class TenantRentedExtensionListOut(TenantExtensionListOut):
     lease_useful_life: Optional[List[str]] = Field(title=_('Lease Useful Life', '有效期'))
 
 
-@api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],response=List[TenantExtensionListOut])
+@api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],response=List[TenantRentedExtensionListOut])
 @operation(List[TenantExtensionListOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_platform_extensions(request, tenant_id: str):
     """ 平台插件列表
     """
-    return ExtensionModel.active_objects.all()
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    extensions = ExtensionModel.active_objects.all()
+    if settings.IS_CENTRAL_ARKID:
+        return extensions
+
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extensions_rented(access_token)
+    extensions_rented = {ext['package']: ext for ext in resp['items']}
+    for ext in extensions:
+        if ext.package in extensions_rented:
+            ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
+            lease_records = extensions_rented[ext.package].get('lease_records') or []
+            # check_lease_records_expired
+            if check_time_and_user_valid(lease_records, tenant):
+                tenant_extension, created = TenantExtension.objects.update_or_create(
+                    tenant_id=tenant_id,
+                    extension=ext,
+                    defaults={"is_rented": True}
+                )
+
+    return extensions
 
 
 @api.get("/tenant/{tenant_id}/tenant/extensions/", tags=["租户插件"],response=List[TenantRentedExtensionListOut])

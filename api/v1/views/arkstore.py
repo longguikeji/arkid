@@ -73,13 +73,13 @@ class ArkstoreItemSchemaOut(Schema):
     uuid: str = Field(hidden=True)
     name: str = Field(readonly=True)
     package: Optional[str] = Field(readonly=True)
-    version: str = Field(readonly=True)
-    author: str = Field(readonly=True)
+    version: str = Field(readonly=True, title=_('Version', '版本'))
+    author: str = Field(readonly=True, title=_('Author', '作者'))
     logo: str = Field(readonly=True, default="")
     description: str = Field(readonly=True)
     categories: str = Field(readonly=True)
     labels: str = Field(readonly=True)
-    # "homepage",
+    homepage: str = Field(readonly=True, title=_('Homepage', '官方网站'))
     # "status",
     # "created",
     # "type",
