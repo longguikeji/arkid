@@ -200,6 +200,9 @@ class App(BaseModel, ExpandModel):
         default=None,
         on_delete=models.PROTECT
     )
+    arkstore_app_id = models.CharField(
+        max_length=1024, blank=True, null=True, default=None, verbose_name=_('Arkstore app id', '方舟商店应用标识')
+    )
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'

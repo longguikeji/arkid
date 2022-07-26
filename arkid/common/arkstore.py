@@ -95,7 +95,7 @@ def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, l
     if type == 'extension':
         url = '/api/v1/arkstore/extensions/purchased'
     elif type == 'app':
-        url = '/api/v1/arkstore/apps'
+        url = '/api/v1/arkstore/apps/purchased'
     else:
         url = '/api/v1/arkstore/apps_and_extensions'
     arkstore_extensions_url = settings.ARKSTOER_URL + url
@@ -249,9 +249,11 @@ def trial_arkstore_extension(access_token, extension_id):
 def install_arkstore_extension(tenant, token, extension_id):
     access_token = get_arkstore_access_token(tenant, token)
     res = get_arkstore_extension_detail(access_token, extension_id)
-    if res['type'] == 'oidc':
+    if res['type'] in ('url', 'oidc'):
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
-        create_tenant_oidc_app(tenant, app['url'], app['name'], app['description'], app['logo'])
+        local_app = create_tenant_oidc_app(tenant, app['url'], app['name'], app['description'], app['logo'])
+        local_app.arkstore_app_id = res['uuid']
+        local_app.save()
     elif res['type'] == 'auto_form_fill':
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
         app['data'] = {}
