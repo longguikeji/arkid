@@ -455,6 +455,17 @@ def create_tenant_app(tenant, saas_app):
 
     return app
 
+
+def get_arkstore_app_detail(access_token, app_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/apps/{app_id}/download'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
     
 def get_arkid_saas_app_detail(tenant, token, extension_id):
     saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
