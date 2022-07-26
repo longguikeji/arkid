@@ -194,6 +194,7 @@ class TenantRentedExtensionListOut(TenantExtensionListOut):
     # lease_records: List[ExtensionRentRecordOut] = Field(
     #     default=[], title=_("Rent Records", "租赁记录")
     # )
+    lease_state: Optional[str] = Field(title=_('Lease State', '租赁状态'))
     lease_useful_life: Optional[List[str]] = Field(title=_('Lease Useful Life', '有效期'))
 
 
@@ -209,12 +210,19 @@ def get_platform_extensions(request, tenant_id: str):
     if settings.IS_CENTRAL_ARKID:
         return extensions
 
+    if tenant.is_platform_tenant:
+        for ext in extensions:
+            ext.lease_useful_life = ["不限天数，不限人数"]
+            ext.lease_state = '已租赁'
+        return extensions
+
     access_token = get_arkstore_access_token(tenant, token)
     resp = get_arkstore_extensions_rented(access_token)
     extensions_rented = {ext['package']: ext for ext in resp['items']}
     for ext in extensions:
         if ext.package in extensions_rented:
             ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
+            ext.lease_state = '已租赁'
             lease_records = extensions_rented[ext.package].get('lease_records') or []
             # check_lease_records_expired
             if check_time_and_user_valid(lease_records, tenant):
@@ -240,12 +248,19 @@ def get_tenant_extensions(request, tenant_id: str):
     if settings.IS_CENTRAL_ARKID:
         return extensions
 
+    if tenant.is_platform_tenant:
+        for ext in extensions:
+            ext.lease_useful_life = ["不限天数，不限人数"]
+            ext.lease_state = '已租赁'
+        return extensions
+
     access_token = get_arkstore_access_token(tenant, token)
     resp = get_arkstore_extensions_rented(access_token)
     extensions_rented = {ext['package']: ext for ext in resp['items']}
     for ext in extensions:
         if ext.package in extensions_rented:
             ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
+            ext.lease_state = '已租赁'
             lease_records = extensions_rented[ext.package].get('lease_records') or []
             # check_lease_records_expired
             if check_time_and_user_valid(lease_records, tenant):
