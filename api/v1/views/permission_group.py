@@ -130,7 +130,7 @@ def delete_permission_group(request, tenant_id: str, id: str):
 
 @api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", response=List[PermissionListSchemaOut], tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate
+@paginate(CustomPagination)
 def get_permissions_from_group(request, tenant_id: str, permission_group_id: str):
     """ 获取当前分组的权限列表
     """
