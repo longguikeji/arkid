@@ -18,6 +18,8 @@ from arkid.core.event import(
     dispatch_event
 )
 
+from django.contrib.auth.hashers import check_password
+
 
 
 @api.get("/tenants/", response=List[TenantListItemOut],tags=["租户管理"])
@@ -104,3 +106,15 @@ def default_tenant(request):
     """
     tenant = Tenant.platform_tenant()
     return {"data":tenant}
+
+@api.post("/tenants/{tenant_id}/logout/", response=TenantLogoutOut,tags=["租户管理"])
+@operation(TenantLogoutOut,roles=[TENANT_ADMIN])
+def logout_tenant(request, tenant_id: str, data:TenantLogoutIn):
+    """ 编辑租户
+    """
+    if not check_password(data.password,request.user_expand["password"]):
+        return ErrorDict(ErrorCode.PASSWORD_NOT_CORRECT)
+    
+    tenant = get_object_or_404(Tenant.active_objects,id=tenant_id)
+    tenant.delete()
+    return ErrorDict(ErrorCode.OK)
