@@ -18,10 +18,13 @@ class TenantMiddleware:
         tenant_not_found = False
     
         path = request.path
-        uuid4hex = re.compile('tenant/[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}', re.I)
+        uuid4hex = re.compile('tenant[s]?/[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}', re.I)
         matchs = uuid4hex.findall(path)
         for match in matchs:
-            match = match[7:]
+            if match.startswith('tenants'):
+                match = match[8:]
+            else:
+                match = match[7:]
             tenant = Tenant.active_objects.filter(id=match).first()
             if tenant:
                 break

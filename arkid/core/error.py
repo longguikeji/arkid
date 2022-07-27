@@ -73,6 +73,7 @@ class ErrorCode(Enum):
     UPDATE_EXTENSION_SUCCESS = ('17002', _('extension not in arkstore', '插件不在插件商店中，无法更新'))
     TRIAL_EXTENSION_TWICE = ('17003', _('extension can not trial twice', '试用不允许重复下单'))
     AGENT_BIND_CAN_NOT_CHANGE = ('17004', _('agent bind can not change', '代理商已绑定，无法修改'))
+    PLUG_IN_NOT_HIRE = ('17005', _('plug-in not hire', '插件没有租赁，无法使用'))
 
 class ErrorDict(dict):
 
