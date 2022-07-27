@@ -46,7 +46,7 @@ def get_tenant(request, id: str):
     }
 
 @api.post("/tenants/",response=TenantCreateOut,tags=["租户管理"])
-@operation(TenantOut,roles=[PLATFORM_USER, PLATFORM_ADMIN])
+@operation(TenantOut,roles=[NORMAL_USER, PLATFORM_USER, PLATFORM_ADMIN])
 def create_tenant(request, data:TenantCreateIn):
     """ 创建租户
     """
