@@ -15,27 +15,27 @@ from arkid.core.models import Tenant
 # from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
 from django.contrib.auth.mixins import AccessMixin
 
-from mama_cas.compat import defused_etree
-from mama_cas.exceptions import ValidationError
-from mama_cas.forms import LoginForm
-from mama_cas.mixins import CasResponseMixin
-from mama_cas.mixins import CsrfProtectMixin
-from mama_cas.mixins import LoginRequiredMixin
-from mama_cas.cas import logout_user
-from mama_cas.cas import validate_service_ticket
-from mama_cas.cas import validate_proxy_ticket
-from mama_cas.cas import validate_proxy_granting_ticket
-from mama_cas.mixins import NeverCacheMixin
-from mama_cas.models import ProxyTicket
-from mama_cas.models import ServiceTicket
-from mama_cas.response import ValidationResponse
-from mama_cas.response import ProxyResponse
-from mama_cas.response import SamlValidationResponse
-from mama_cas.services import service_allowed
-from mama_cas.utils import add_query_params
-from mama_cas.utils import clean_service_url
-from mama_cas.utils import redirect
-from mama_cas.utils import to_bool
+from .compat import defused_etree
+from .exceptions import ValidationError
+from .forms import LoginForm
+from .mixins import CasResponseMixin
+from .mixins import CsrfProtectMixin
+from .mixins import LoginRequiredMixin
+from .cas import logout_user
+from .cas import validate_service_ticket
+from .cas import validate_proxy_ticket
+from .cas import validate_proxy_granting_ticket
+from .mixins import NeverCacheMixin
+from extension_root.com_longgui_app_cas_server.models import ProxyTicket
+from extension_root.com_longgui_app_cas_server.models import ServiceTicket
+from .response import ValidationResponse
+from .response import ProxyResponse
+from .response import SamlValidationResponse
+from .services import service_allowed
+from .utils import add_query_params
+from .utils import clean_service_url
+from .utils import redirect
+from .utils import to_bool
 
 
 logger = logging.getLogger(__name__)

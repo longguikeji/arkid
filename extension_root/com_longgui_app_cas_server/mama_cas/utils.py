@@ -8,7 +8,7 @@ from django.urls import reverse, NoReverseMatch
 from django.http import HttpResponseRedirect
 from django.utils.encoding import force_bytes
 
-from mama_cas.services import service_allowed
+from .services import service_allowed
 
 
 logger = logging.getLogger(__name__)

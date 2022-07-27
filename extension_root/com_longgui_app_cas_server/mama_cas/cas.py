@@ -5,11 +5,11 @@ from django.contrib.auth import logout
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 from arkid.core.models import User
-from mama_cas.exceptions import InvalidTicketSpec
-from mama_cas.models import ServiceTicket
-from mama_cas.models import ProxyTicket
-from mama_cas.models import ProxyGrantingTicket
-from mama_cas.services import get_callbacks
+from .exceptions import InvalidTicketSpec
+from extension_root.com_longgui_app_cas_server.models import ServiceTicket
+from extension_root.com_longgui_app_cas_server.models import ProxyTicket
+from extension_root.com_longgui_app_cas_server.models import ProxyGrantingTicket
+from .services import get_callbacks
 
 logger = logging.getLogger(__name__)
 

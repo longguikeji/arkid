@@ -6,9 +6,9 @@ from .appscheme import (
     CasConfigSchema,
 )
 
-from mama_cas.urls import urlpatterns as urls
+from .mama_cas.urls import urlpatterns as urls
 from arkid.core.extension import create_extension_schema
-from mama_cas.views import LoginView as AuthorizationView
+from .mama_cas.views import LoginView as AuthorizationView
 
 CasConfigSchema = create_extension_schema('CasConfigSchema',__file__, base_schema=CasConfigSchema)
 
