@@ -719,6 +719,10 @@ class PermissionData(object):
                     api_permission = api_item.get('permission', None)
 
                     if sort_id in container and api_permission:
+                        if group_permission.is_open is True:
+                            # 如果分组开放，分组内权限应该也开放
+                            api_permission.is_open = True
+                            api_permission.save()
                         group_permission.container.add(api_permission)
                         group_sort_ids.append(sort_real_id)
                 # parent
