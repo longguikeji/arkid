@@ -23,6 +23,7 @@ class Redoc(View):
         return render(request, 'redoc.html', context={'openapi_url': openapi_url})
 
 
+
 class RedocOpenAPI(View):
     """专门为Redoc准备的OpenAPI接口
 
