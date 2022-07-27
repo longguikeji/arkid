@@ -1,6 +1,7 @@
 -i https://mirrors.aliyun.com/pypi/simple
 amqp==5.1.1
 asgiref==3.5.2
+astunparse==1.6.3
 async-timeout==4.0.2
 backports.zoneinfo==0.2.1
 billiard==3.6.4.0
@@ -33,6 +34,7 @@ mkdocs-autorefs==0.4.1
 mkdocs-material==8.3.9
 mkdocs-material-extensions==1.0.3
 mkdocstrings==0.19.0
+mkdocstrings-python-legacy==0.2.3
 mysqlclient==2.1.1
 oauthlib==3.2.0
 packaging==21.3
@@ -45,6 +47,7 @@ pymdown-extensions==9.5
 pyparsing==3.0.9
 python-crontab==2.6.0
 python-dateutil==2.8.2
+pytkdocs==0.16.1
 pytz==2022.1
 pyyaml==6.0
 pyyaml-env-tag==0.1
@@ -59,6 +62,7 @@ urllib3==1.26.10
 vine==5.0.0
 watchdog==2.1.9
 wcwidth==0.2.5
+wheel==0.37.1
 wrapt==1.14.1
 zipp==3.8.1
 astroid==2.11.7
@@ -69,7 +73,7 @@ cfgv==3.3.1
 decorator==5.1.1
 dill==0.3.5.1
 distlib==0.3.5
-executing==0.8.3
+executing==0.9.0
 filelock==3.7.1
 identify==2.5.2
 ipython==8.4.0

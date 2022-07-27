@@ -227,8 +227,9 @@ class ExternalIdpExtension(Extension):
         if not user:
             return JsonResponse({"error_msg": "Token验证失败", "code": ["token invalid"]})
         self.bind_arkid_user(ext_id, user)
-        token = refresh_token(user)
-        data = {"token": token}
+        # token = refresh_token(user)
+        # data = {"token": token}
+        data = {}
         return JsonResponse(data)
 
     @abstractmethod

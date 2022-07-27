@@ -24,6 +24,7 @@ mkdocs-material = "*"
 pyjwt = "*"
 django-celery-beat = "*"
 django-cors-headers = "*"
+mkdocstrings-python-legacy = "*"
 
 [requires]
 python_version = "3.8"

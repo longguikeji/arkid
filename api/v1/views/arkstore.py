@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from collections import OrderedDict
 from arkid.core.constants import *
-from arkid.core.models import Platform, Tenant
+from arkid.core.models import Platform, Tenant, App
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
     check_arkstore_purcahsed_extension_expired,
@@ -72,14 +72,14 @@ def get_arkstore_list(request, purchased, type):
 class ArkstoreItemSchemaOut(Schema):
     uuid: str = Field(hidden=True)
     name: str = Field(readonly=True)
-    package: str = Field(readonly=True)
-    version: str = Field(readonly=True)
-    author: str = Field(readonly=True)
+    package: Optional[str] = Field(readonly=True)
+    version: str = Field(readonly=True, title=_('Version', '版本'))
+    author: str = Field(readonly=True, title=_('Author', '作者'))
     logo: str = Field(readonly=True, default="")
     description: str = Field(readonly=True)
     categories: str = Field(readonly=True)
     labels: str = Field(readonly=True)
-    # "homepage",
+    homepage: str = Field(readonly=True, title=_('Homepage', '官方网站'))
     # "status",
     # "created",
     # "type",
@@ -231,7 +231,10 @@ def list_arkstore_purchased_extensions(request, tenant_id: str):
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_purchased_apps(request, tenant_id: str):
-    return get_arkstore_list(request, True, 'app')
+    arkstore_apps = get_arkstore_list(request, False, 'app')
+    installed_apps = App.objects.filter(tenant_id=tenant_id, arkstore_app_id__isnull=False)
+    installed_app_ids = set(str(app.arkstore_app_id) for app in installed_apps)
+    return [app for app in arkstore_apps if app['uuid'] in installed_app_ids]
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'],
