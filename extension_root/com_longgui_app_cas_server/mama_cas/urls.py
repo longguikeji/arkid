@@ -5,9 +5,9 @@
 from django.urls import re_path
 
 # from mama_cas.views import LoginView
-from mama_cas.views import LogoutView
+# from mama_cas.views import LogoutView
 # from mama_cas.views import ValidateView
-from mama_cas.views import ServiceValidateView
+from .views import ServiceValidateView
 # from mama_cas.views import ProxyValidateView
 # from mama_cas.views import ProxyView
 # from mama_cas.views import WarnView

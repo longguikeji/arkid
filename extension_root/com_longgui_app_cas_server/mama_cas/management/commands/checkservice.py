@@ -1,12 +1,12 @@
 from django.core.management.base import BaseCommand
 
-from mama_cas.services import get_backend_path
-from mama_cas.services import get_callbacks
-from mama_cas.services import get_logout_url
-from mama_cas.services import logout_allowed
-from mama_cas.services import proxy_allowed
-from mama_cas.services import proxy_callback_allowed
-from mama_cas.services import service_allowed
+from extension_root.com_longgui_app_cas_server.mama_cas.services import get_backend_path
+from extension_root.com_longgui_app_cas_server.mama_cas.services import get_callbacks
+from extension_root.com_longgui_app_cas_server.mama_cas.services import get_logout_url
+from extension_root.com_longgui_app_cas_server.mama_cas.services import logout_allowed
+from extension_root.com_longgui_app_cas_server.mama_cas.services import proxy_allowed
+from extension_root.com_longgui_app_cas_server.mama_cas.services import proxy_callback_allowed
+from extension_root.com_longgui_app_cas_server.mama_cas.services import service_allowed
 
 
 class Command(BaseCommand):

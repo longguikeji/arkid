@@ -1,8 +1,8 @@
 from django.core.management.base import BaseCommand
 
-from mama_cas.models import ServiceTicket
-from mama_cas.models import ProxyTicket
-from mama_cas.models import ProxyGrantingTicket
+from extension_root.com_longgui_app_cas_server.mama_cas.models import ServiceTicket
+from extension_root.com_longgui_app_cas_server.mama_cas.models import ProxyTicket
+from extension_root.com_longgui_app_cas_server.mama_cas.models import ProxyGrantingTicket
 
 
 class Command(BaseCommand):

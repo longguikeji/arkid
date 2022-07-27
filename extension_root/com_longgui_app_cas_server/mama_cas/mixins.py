@@ -2,7 +2,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 
-from mama_cas.utils import redirect
+from .utils import redirect
 
 
 class NeverCacheMixin(object):

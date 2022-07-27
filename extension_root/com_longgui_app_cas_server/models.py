@@ -14,26 +14,40 @@ from django.utils.translation import gettext_lazy as _
 
 import requests
 
-from mama_cas.compat import Session
-from mama_cas.exceptions import InvalidProxyCallback
-from mama_cas.exceptions import InvalidRequest
-from mama_cas.exceptions import InvalidService
-from mama_cas.exceptions import InvalidTicket
-from mama_cas.exceptions import UnauthorizedServiceProxy
-from mama_cas.exceptions import ValidationError
-from mama_cas.request import SingleSignOutRequest
-from mama_cas.services import get_logout_url
-from mama_cas.services import logout_allowed
-from mama_cas.services import service_allowed
-from mama_cas.services import proxy_allowed
-from mama_cas.services import proxy_callback_allowed
-from mama_cas.utils import add_query_params
-from mama_cas.utils import clean_service_url
-from mama_cas.utils import is_scheme_https
-from mama_cas.utils import match_service
+from .mama_cas.compat import Session
+from .mama_cas.exceptions import InvalidProxyCallback
+from .mama_cas.exceptions import InvalidRequest
+from .mama_cas.exceptions import InvalidService
+from .mama_cas.exceptions import InvalidTicket
+from .mama_cas.exceptions import UnauthorizedServiceProxy
+from .mama_cas.exceptions import ValidationError
+from .mama_cas.request import SingleSignOutRequest
+from .mama_cas.services import get_logout_url
+from .mama_cas.services import logout_allowed
+from .mama_cas.services import service_allowed
+from .mama_cas.services import proxy_allowed
+from .mama_cas.services import proxy_callback_allowed
+from .mama_cas.utils import add_query_params
+from .mama_cas.utils import clean_service_url
+from .mama_cas.utils import is_scheme_https
+from .mama_cas.utils import match_service
 
 
 logger = logging.getLogger(__name__)
+
+# 替换路径
+from django.db import models
+from arkid.core.expand import create_expand_abstract_model
+from arkid.core.translation import gettext_default as _
+from django.apps import AppConfig
+from arkid.core.models import UserExpandAbstract
+
+app_label = "com_longgui_app_cas_server"
+
+class LongguiCaseAppConfig(AppConfig):
+    name = app_label
+# 安装app
+
 
 
 class TicketManager(models.Manager):
@@ -236,6 +250,7 @@ class ServiceTicket(Ticket):
     class Meta:
         verbose_name = _('service ticket')
         verbose_name_plural = _('service tickets')
+        app_label = app_label
 
     def is_primary(self):
         """
@@ -276,6 +291,7 @@ class ProxyTicket(Ticket):
     class Meta:
         verbose_name = _('proxy ticket')
         verbose_name_plural = _('proxy tickets')
+        app_label = app_label
 
 
 class ProxyGrantingTicketManager(TicketManager):
@@ -355,6 +371,7 @@ class ProxyGrantingTicket(Ticket):
     class Meta:
         verbose_name = _('proxy-granting ticket')
         verbose_name_plural = _('proxy-granting tickets')
+        app_label = app_label
 
     def is_consumed(self):
         """Check a ``ProxyGrantingTicket``s consumed state."""

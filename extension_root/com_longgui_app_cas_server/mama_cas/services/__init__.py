@@ -4,13 +4,14 @@ import warnings
 from django.conf import settings
 from django.utils.module_loading import import_string
 
+MAMA_CAS_ATTRIBUTE_CALLBACKS = getattr(settings, 'MAMA_CAS_ATTRIBUTE_CALLBACKS', ('extension_root.com_longgui_app_cas_server.mama_cas.callbacks.user_model_attributes',))
 
 def _get_backends():
     """Retrieve the list of configured service backends."""
     backends = []
     backend_paths = getattr(
         settings, 'MAMA_CAS_SERVICE_BACKENDS',
-        ['mama_cas.services.backends.SettingsBackend']
+        ['extension_root.com_longgui_app_cas_server.mama_cas.services.backends.SettingsBackend']
     )
     for backend_path in backend_paths:
         backend = import_string(backend_path)()
@@ -63,7 +64,7 @@ def get_backend_path(service):
 
 def get_callbacks(service):
     """Get configured callbacks list for a given service identifier."""
-    callbacks = list(getattr(settings, 'MAMA_CAS_ATTRIBUTE_CALLBACKS', []))
+    callbacks = list(MAMA_CAS_ATTRIBUTE_CALLBACKS)
     if callbacks:
         warnings.warn(
             'The MAMA_CAS_ATTRIBUTE_CALLBACKS setting is deprecated. Service callbacks '
