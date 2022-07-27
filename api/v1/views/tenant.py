@@ -23,7 +23,7 @@ from django.contrib.auth.hashers import check_password
 
 
 @api.get("/tenants/", response=List[TenantListItemOut],tags=["租户管理"])
-@operation(List[TenantListItemOut],roles=[PLATFORM_ADMIN])
+@operation(List[TenantListItemOut], roles=[PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_tenant_list(request, query_data:TenantListQueryIn=Query(...)):
     """ 获取租户列表
