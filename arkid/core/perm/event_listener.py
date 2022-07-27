@@ -115,6 +115,8 @@ class EventListener(object):
         user = event.data
         from arkid.core.tasks.tasks import create_tenant_init_manager
         create_tenant_init_manager.delay(tenant.id, user.id)
+        # permissiondata = PermissionData()
+        # permissiondata.create_tenant_user_admin_permission(tenant, user)
 
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission

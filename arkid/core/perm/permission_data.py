@@ -501,6 +501,9 @@ class PermissionData(object):
         permission_result = ''
         if userpermissionresult:
             permission_result = compress.decrypt(userpermissionresult.result)
+        # 需要考虑到更新了租户管理员权限
+        if permission_value == 1 and 'tenant_admin' in pass_permission.code and pass_permission.tenant_id == tenant.id:
+            is_tenant_admin = True
         # 对数据进行一次排序
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
         permission_result_arr = []
