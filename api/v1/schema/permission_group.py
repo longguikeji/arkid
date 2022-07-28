@@ -92,10 +92,10 @@ class PermissionGroupEditSchemaIn(Schema):
     #     model_fields = ['name']
 
 class PermissionListSchemaOut(ModelSchema):
-
+    category: str = Field(title=_("分类名称"))
     class Config:
         model = SystemPermission
-        model_fields = ['id', 'name', 'category', 'is_system']
+        model_fields = ['id', 'name', 'is_system']
 
 
 class PermissionListSelectSchemaOut(Schema):
