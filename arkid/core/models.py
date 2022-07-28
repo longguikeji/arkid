@@ -2,6 +2,7 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from arkid.common.model import BaseModel
+from arkid.common.utils import generate_secret
 from arkid.core.translation import gettext_default as _
 from arkid.core.expand import ExpandManager, ExpandModel
 from arkid.extension.models import TenantExtensionConfig, Extension
@@ -206,6 +207,11 @@ class App(BaseModel, ExpandModel):
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'
+
+    def save(self, *args, **kwargs):
+        if self.secret == '':
+            self.secret = generate_secret()
+        super().save(*args, **kwargs)
 
 
 class AppGroup(BaseModel, ExpandModel):
