@@ -1,4 +1,7 @@
 ARG BASEIMAGE=registry.cn-zhangjiakou.aliyuncs.com/ark-releases/python38:latest
+ARG DEBIAN=http://mirrors.aliyun.com/debian
+ARG DEBIANSRT=http://mirrors.aliyun.com/debian-security
+ARG PIP="https://mirrors.aliyun.com/pypi/simple/"
 FROM ${BASEIMAGE}
 WORKDIR /var/arkid
 
