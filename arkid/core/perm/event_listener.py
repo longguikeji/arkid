@@ -37,6 +37,9 @@ def user_saved(sender, instance: User, created: bool, **kwargs):
 def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
     if created:
         # print('检测到租户创建')
+        from arkid.common.bind_saas import bind_saas
+        bind_saas(instance.id.hex)
+
         pd = PermissionData()
         pd.create_tenant_admin_permission(instance)
 
