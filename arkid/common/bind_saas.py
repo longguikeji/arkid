@@ -20,7 +20,7 @@ def get_bind_info(tenant_id):
     return resp
 
 
-def create_oidc_app():
+def create_oidc_app(tenant):
     redirect_uris = ''
     defaults = {
         'client_type': 'public',
@@ -31,6 +31,7 @@ def create_oidc_app():
     }
 
     app, created = Application.objects.update_or_create(
+        uuid = tenant.id,
         name = 'arkid_saas',
         defaults=defaults,
     )
@@ -126,7 +127,7 @@ def bind_saas(tenant_id, data=None):
         # bind_info = update_saas_binding(tenant, data)
         return bind_info
     
-    app = create_oidc_app()
+    app = create_oidc_app(tenant)
 
     try:
         resp = create_saas_binding(tenant, data, app)
