@@ -11,11 +11,11 @@ def restore_approve_request(approve_request):
     body = approve_request.body
     environ["wsgi.input"] = io.BytesIO(body)
     request = WSGIRequest(environ)
-    request.tenant = approve_request.action.tenant
     request.user = approve_request.user
+    request.tenant = approve_request.user.tenant
     view_func, args, kwargs = resolve(request.path)
     klass = view_func.__self__
-    operation, _ = klass._find_operation(request)
+    operation = klass._find_operation(request)
     request.operation_id = operation.operation_id or klass.api.get_openapi_operation_id(operation)
     response = operation.run(request, **kwargs)
     logger.info(
@@ -59,7 +59,7 @@ def create_approve_action(
     if not extension:
         extension = Extension.valid_objects.get(
             package='com.longgui.approve.system.arkid'
-        )
+        )   
 
     action = ApproveAction.valid_objects.create(
         name=name,

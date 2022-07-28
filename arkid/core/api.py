@@ -10,7 +10,7 @@ from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
 from arkid.core.event import register_event, dispatch_event, Event, EventDisruptionData
 from arkid.core.models import ExpiringToken, Tenant
-
+from arkid.core.token import refresh_token
 
 def add_fields(cls, **field_definitions: Any):
     new_fields: Dict[str, ModelField] = {}
@@ -73,7 +73,10 @@ class GlobalAuth(HttpBearer):
         from arkid.core.models import User  
         try:
             if request.user and isinstance(request.user, User):  # restore 审批请求时，user已经存在，不需要再校验token
-                token = ExpiringToken.objects.get(user=request.user).token
+                token = ExpiringToken.objects.filter(user=request.user).first()
+                if not token:
+                    token = refresh_token(request.user)
+                tenant = request.tenant
             else:
                 token = ExpiringToken.objects.get(token=token)
                 
