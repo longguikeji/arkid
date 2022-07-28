@@ -85,7 +85,7 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     resp = requests.get(app_login_url, params=params)
     if resp.status_code != 200:
         arkstore_access_token_saas_cache.pop(key, None)
-        raise Exception(f'Error get_arkstore_access_token: {resp.status_code}')
+        raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}')
     resp = resp.json()
     arkstore_access_token_saas_cache[key] = resp['access_token']
     return arkstore_access_token_saas_cache[key] 
@@ -158,7 +158,7 @@ def get_arkstore_extension_detail_by_package(access_token, package):
     if resp.status_code == 404:
         return
     if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+        raise Exception(f'Error get_arkstore_extension_detail_by_package: {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -354,7 +354,7 @@ def get_bind_arkstore_agent(access_token):
     if resp.status_code == 204:
         return {}
     if resp.status_code != 200:
-        raise Exception(f'Error bind_arkstore_agent: {resp.status_code}')
+        raise Exception(f'Error get_bind_arkstore_agent: {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -467,7 +467,7 @@ def get_arkstore_app_detail(access_token, app_id):
     params = {}
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+        raise Exception(f'Error get_arkstore_app_detail: {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -479,7 +479,7 @@ def get_arkid_saas_app_detail(tenant, token, extension_id):
     params = {}
     resp = requests.get(arkid_saas_app_url, params=params, headers=headers)
     if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+        raise Exception(f'Error get_arkid_saas_app_detail: {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -491,7 +491,7 @@ def check_arkstore_app_purchased(tenant, token, app):
     params = {}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
     if resp.status_code != 200:
-        raise Exception(f'Error check_arkstore_purchased: {resp.status_code}')
+        raise Exception(f'Error check_arkstore_app_purchased: {resp.status_code}')
     resp = resp.json()
     if resp.get("use_end_time") == '0':
         return True
