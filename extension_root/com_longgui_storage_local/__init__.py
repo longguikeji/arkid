@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Optional
 from django.http import FileResponse
 from ninja import Field
+from arkid.core.api import GlobalAuth, operation
+from arkid.core.constants import *
 from arkid.core.extension import create_extension_schema
 from arkid.core.translation import gettext_default as _
 from arkid.config import get_app_config
@@ -24,6 +26,7 @@ class LocalStorageExtension(StorageExtension):
             'GET',
             self.get_file,
             tenant_path=True,
+            auth=GlobalAuth()
         )
         
         super().load()
@@ -45,6 +48,8 @@ class LocalStorageExtension(StorageExtension):
         host = get_app_config().get_frontend_host()
         return f'{host}/api/v1/tenant/{tenant.id}/com_longgui_storage_local/localstorage/{f_key}'
     
+    
+    @operation(roles=[NORMAL_USER,TENANT_ADMIN, PLATFORM_ADMIN])
     def get_file(self, request, tenant_id: str, file_name:str):
         """ 本地存储插件获取文件
         """

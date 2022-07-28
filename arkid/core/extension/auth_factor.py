@@ -199,7 +199,7 @@ class AuthFactorExtension(Extension):
         config_data[page_name]['forms'].append({
             'label': label,
             'items': items,
-            'submit': {'label': submit_label, 'http': {'url': submit_url, 'method': "post"}}
+            'submit': {'label': submit_label, 'title':submit_label,'http': {'url': submit_url, 'method': "post"}}
         })
 
     def add_page_bottoms(self, page_name, bottoms):
