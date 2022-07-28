@@ -16,9 +16,9 @@ from arkid.core.schema import ResponseSchema
 from django.conf import settings
 from arkid.common.arkstore import (
     get_arkstore_access_token,
-    get_arkstore_extensions_rented,
     check_time_and_user_valid
 )
+from .arkstore import get_arkstore_list
 
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
@@ -217,8 +217,9 @@ def get_platform_extensions(request, tenant_id: str):
         return extensions
 
     access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extensions_rented(access_token)
-    extensions_rented = {ext['package']: ext for ext in resp['items']}
+    # resp = get_arkstore_extensions_rented(access_token)
+    resp = get_arkstore_list(request, None, 'extension', rented=True, all=True)
+    extensions_rented = {ext['package']: ext for ext in resp}
     for ext in extensions:
         if ext.package in extensions_rented:
             ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
@@ -255,8 +256,9 @@ def get_tenant_extensions(request, tenant_id: str):
         return extensions
 
     access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extensions_rented(access_token)
-    extensions_rented = {ext['package']: ext for ext in resp['items']}
+    # resp = get_arkstore_extensions_rented(access_token)
+    resp = get_arkstore_list(request, None, 'extension', rented=True, all=True)
+    extensions_rented = {ext['package']: ext for ext in resp}
     for ext in extensions:
         if ext.package in extensions_rented:
             ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
