@@ -187,8 +187,8 @@ class AuthFactorExtension(Extension):
         """
         default = {
             "login": ("登录", f"/api/v1/tenant/tenant_id/auth/?event_tag={self.auth_event_tag}"),
-            "register": ("登录", f"/api/v1/tenant/tenant_id/register/?event_tag={self.register_event_tag}"),
-            "password": ("登录", f"/api/v1/tenant/tenant_id/reset_password/?event_tag={self.password_event_tag}"),
+            "register": ("注册", f"/api/v1/tenant/tenant_id/register/?event_tag={self.register_event_tag}"),
+            "password": ("重置密码", f"/api/v1/tenant/tenant_id/reset_password/?event_tag={self.password_event_tag}"),
         }
         if not submit_label:
             submit_label, useless = default.get(page_name)
