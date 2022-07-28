@@ -142,10 +142,29 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
             return permission.container.all()
         else:
             app = App.valid_objects.filter(id=permission_group_id).first()
-            if app and app.entry_permission:
-                return SystemPermission.valid_objects.filter(id=app.entry_permission.id).all()
-            else:
-                return []
+            items = []
+            if app:
+                if app.entry_permission:
+                    items.append(app.entry_permission)
+                app_permission_ids = []
+                base_permissions = Permission.valid_objects.filter(
+                    app_id=app.id,
+                )
+                group_permissions = base_permissions.filter(
+                    category='group',
+                    code__startswith='group_role'
+                )
+                for group_permission in group_permissions:
+                    for item in group_permission.container.all():
+                        if item.id not in app_permission_ids:
+                            app_permission_ids.append(item.id)
+                if app_permission_ids:
+                    group_permission_details = base_permissions.filter(
+                        category='api',
+                    ).exclude(id__in=app_permission_ids)
+                    if group_permission_details:
+                        items.extend(group_permission_details)
+            return items
     else:
         return []
     # tenant = request.tenant

@@ -7,10 +7,11 @@ from uuid import uuid4
 from django.forms import model_to_dict
 from django.db.models import Model
 from ninja import Schema
-from arkid.core.models import ExpiringToken
 from arkid.common.logger import logger
 from django.utils.translation import gettext_lazy as _
+from random import SystemRandom
 
+CHARS_COMMON = ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 
 def deep_merge(*dicts: List[Dict], update=False) -> Dict:
     """
@@ -209,6 +210,7 @@ def gen_tag(tag: str = None, tag_pre: str = None) -> str:
 
 
 def verify_token(request):
+    from arkid.core.models import ExpiringToken
     headers = request.headers
     auth_value = headers.get("Authorization")
 
@@ -248,3 +250,13 @@ def data_to_simplenamespace(data):
     else:
         return data
     return SimpleNamespace(**data) if data else None
+
+
+def generate_secret(chars=None, length=128):
+    '''
+    生成指定位数的字符串
+    '''
+    if chars is None:
+        chars= CHARS_COMMON
+    rand = SystemRandom()
+    return ''.join(rand.choice(chars) for x in range(length))
