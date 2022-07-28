@@ -1,12 +1,13 @@
 ARG BASEIMAGE=registry.cn-zhangjiakou.aliyuncs.com/ark-releases/python38:latest
+FROM ${BASEIMAGE}
 ARG DEBIAN=http://mirrors.aliyun.com/debian
 ARG DEBIANSRT=http://mirrors.aliyun.com/debian-security
-ARG PIP="https://mirrors.aliyun.com/pypi/simple/"
-FROM ${BASEIMAGE}
+ARG PIP=https://mirrors.aliyun.com/pypi/simple
 WORKDIR /var/arkid
 
 ADD . .
 RUN sed -i "s@https://mirrors.aliyun.com/pypi/simple@$PIP@g" requirements.txt; \
+    cat requirements.txt; \
     pip install --no-cache-dir -r requirements.txt; \
     chmod +x docker-entrypoint.sh
 ENTRYPOINT ["/var/arkid/docker-entrypoint.sh"]
