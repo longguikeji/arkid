@@ -6,6 +6,7 @@ from arkid.core.models import ApproveRequest, ApproveAction
 from arkid.extension.models import Extension
 import copy
 
+
 def restore_approve_request(approve_request):
     environ = copy.deepcopy(approve_request.environ)
     body = approve_request.body
@@ -16,7 +17,9 @@ def restore_approve_request(approve_request):
     view_func, args, kwargs = resolve(request.path)
     klass = view_func.__self__
     operation = klass._find_operation(request)
-    request.operation_id = operation.operation_id or klass.api.get_openapi_operation_id(operation)
+    request.operation_id = operation.operation_id or klass.api.get_openapi_operation_id(
+        operation
+    )
     response = operation.run(request, **kwargs)
     logger.info(
         f'Restore Request: {approve_request.user.username}:{approve_request.action.method}:{approve_request.action.path}'
@@ -30,11 +33,23 @@ def create_approve_request(http_request, user, approve_action):
     environ.pop("wsgi.input")
     environ.pop("wsgi.errors")
     environ.pop("wsgi.file_wrapper")
+
+    request_get = http_request.GET.dict()
+    if 'page' in request_get:
+        request_get.pop('page')
+    if 'page_size' in request_get:
+        request_get.pop('page_size')
+
+    request_post = http_request.POST.dict()
+
     approve_request = ApproveRequest.valid_objects.create(
         action=approve_action,
         user=user,
         environ=environ,
         body=http_request.body,
+        request_path=http_request.path,
+        request_get=request_get,
+        request_post=request_post,
     )
     return approve_request
 
@@ -59,7 +74,7 @@ def create_approve_action(
     if not extension:
         extension = Extension.valid_objects.get(
             package='com.longgui.approve.system.arkid'
-        )   
+        )
 
     action = ApproveAction.valid_objects.create(
         name=name,

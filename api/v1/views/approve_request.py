@@ -31,7 +31,7 @@ def approve_request_list(
     request, tenant_id: str, package: str = "", is_approved: str = ""
 ):
     tenant = request.tenant
-    requests = ApproveRequest.valid_objects.filter(action__tenant=tenant)
+    requests = ApproveRequest.valid_objects.filter(user__tenant=tenant)
     if package:
         requests = requests.filter(action__extension__package=package)
     if is_approved == "true":
