@@ -576,9 +576,17 @@ class ApproveRequest(BaseModel, ExpandModel):
         verbose_name=_('Status', "状态"),
     )
 
+    request_path = models.CharField(
+        default='', verbose_name=_('Request Path', '请求路径'), max_length=255
+    )
+    request_get = models.JSONField(default={}, null=True, verbose_name=_('Request GET', '请求路径参数'))
+    request_post = models.JSONField(
+        default={}, null=True, verbose_name=_('Request POST', '请求表单数据')
+    )
+
     def __str__(self):
         return (
-            f'{self.action.name}:{self.action.method}:{self.action.path}:{self.status}'
+            f'{self.action.name}:{self.action.method}:{self.request_path}:{self.status}'
         )
 
 

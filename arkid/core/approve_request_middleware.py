@@ -54,9 +54,10 @@ class ApproveRequestMiddleware:
         if not user:
             return None
 
-        approve_request = ApproveRequest.valid_objects.filter(
-            action=approve_action, user=user
-        ).first()
+        # approve_request = ApproveRequest.valid_objects.filter(
+        #     action=approve_action, user=user
+        # ).first()
+        approve_request = self.get_prev_approve_request(request, user, approve_action)
         if not approve_request:
             approve_request = create_approve_request(request, user, approve_action)
             dispatch_event(
@@ -74,3 +75,46 @@ class ApproveRequestMiddleware:
                 return response
             else:
                 return None
+
+    def get_prev_approve_request(self, request, user, approve_action):
+        if request.method == 'GET':
+            get_data = request.GET.dict()
+            if 'page' in get_data:
+                get_data.pop('page')
+            if 'page_size' in get_data:
+                get_data.pop('page_size')
+            approve_request = ApproveRequest.valid_objects.filter(
+                action=approve_action,
+                user=user,
+                request_get=get_data,
+                request_path=request.path,
+            ).first()
+            return approve_request
+        elif request.method in ['POST', 'PUT']:
+            body_unicode = request.body.decode('utf-8')
+            try:
+                new_body = json.loads(body_unicode)
+            except Exception as e:
+                new_body = body_unicode
+            approve_request = ApproveRequest.valid_objects.filter(
+                action=approve_action,
+                user=user,
+                request_path=request.path,
+            ).first()
+            if approve_request:
+                stored_body = approve_request.body.decode('utf-8')
+                try:
+                    old_body = json.loads(stored_body)
+                except Exception as e:
+                    old_body = stored_body
+                if new_body == old_body:
+                    return approve_request
+        elif request.method == 'DELETE':
+            approve_request = ApproveRequest.valid_objects.filter(
+                action=approve_action,
+                user=user,
+                request_path=request.path,
+            ).first()
+            return approve_request
+
+        return None

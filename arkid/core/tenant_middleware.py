@@ -70,7 +70,7 @@ class TenantMiddleware:
         view_func, _, _ = resolve(request.path)
         try:
             klass = view_func.__self__
-            operation, _ = klass._find_operation(request)
+            operation = klass._find_operation(request)
             return operation.operation_id or klass.api.get_openapi_operation_id(operation)
         except:
             return ''
