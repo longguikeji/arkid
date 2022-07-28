@@ -141,7 +141,11 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
         if permission:
             return permission.container.all()
         else:
-            return []
+            app = App.valid_objects.filter(id=permission_group_id).first()
+            if app and app.entry_permission:
+                return SystemPermission.valid_objects.filter(id=app.entry_permission.id).all()
+            else:
+                return []
     else:
         return []
     # tenant = request.tenant
