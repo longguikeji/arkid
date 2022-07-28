@@ -26,7 +26,7 @@ class LocalStorageExtension(StorageExtension):
             'GET',
             self.get_file,
             tenant_path=True,
-            auth=GlobalAuth()
+            auth=None
         )
         
         super().load()
@@ -49,7 +49,6 @@ class LocalStorageExtension(StorageExtension):
         return f'{host}/api/v1/tenant/{tenant.id}/com_longgui_storage_local/localstorage/{f_key}'
     
     
-    @operation(roles=[NORMAL_USER,TENANT_ADMIN, PLATFORM_ADMIN])
     def get_file(self, request, tenant_id: str, file_name:str):
         """ 本地存储插件获取文件
         """

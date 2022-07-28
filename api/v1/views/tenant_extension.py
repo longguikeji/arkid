@@ -254,21 +254,21 @@ def get_tenant_extensions(request, tenant_id: str):
             ext.lease_state = '已租赁'
         return extensions
 
-    access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extensions_rented(access_token)
-    extensions_rented = {ext['package']: ext for ext in resp['items']}
-    for ext in extensions:
-        if ext.package in extensions_rented:
-            ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
-            ext.lease_state = '已租赁'
-            lease_records = extensions_rented[ext.package].get('lease_records') or []
-            # check_lease_records_expired
-            if check_time_and_user_valid(lease_records, tenant):
-                tenant_extension, created = TenantExtension.objects.update_or_create(
-                    tenant_id=tenant_id,
-                    extension=ext,
-                    defaults={"is_rented": True}
-                )
+    # access_token = get_arkstore_access_token(tenant, token)
+    # resp = get_arkstore_extensions_rented(access_token)
+    # extensions_rented = {ext['package']: ext for ext in resp['items']}
+    # for ext in extensions:
+    #     if ext.package in extensions_rented:
+    #         ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
+    #         ext.lease_state = '已租赁'
+    #         lease_records = extensions_rented[ext.package].get('lease_records') or []
+    #         # check_lease_records_expired
+    #         if check_time_and_user_valid(lease_records, tenant):
+    #             tenant_extension, created = TenantExtension.objects.update_or_create(
+    #                 tenant_id=tenant_id,
+    #                 extension=ext,
+    #                 defaults={"is_rented": True}
+    #             )
 
     return extensions
 
