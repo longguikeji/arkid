@@ -1,5 +1,18 @@
 # 快速开始
 
+## 快速启动
+
+将ArkID的仓库clone到本地后
+
+先启动celery
+```
+    celery -A arkid.core.tasks.celery worker -l debug
+```
+celery启动完毕后再启动 Django server
+```
+    python manage.py runserver 0.0.0.0:8000
+```
+
 ## 中心ArkID
 如果希望快速的了解系统的基本使用，可以访问 [https://saas.akid.cc](https://saas.arkid.cc)
 
