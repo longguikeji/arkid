@@ -252,11 +252,17 @@ def trial_arkstore_extension(access_token, extension_id):
 
 
 def install_arkstore_extension(tenant, token, extension_id):
+    saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
     access_token = get_arkstore_access_token(tenant, token)
     res = get_arkstore_extension_detail(access_token, extension_id)
     if res['type'] in ('url', 'oidc'):
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
-        local_app = create_tenant_oidc_app(tenant, app['url'], app['name'], app['description'], app['logo'])
+        url = app['url']
+        if '?' in url:
+            url = url + f'&tenant_id={saas_tenant_id}'
+        else:
+            url = url + f'?tenant_id={saas_tenant_id}'
+        local_app = create_tenant_oidc_app(tenant, url, app['name'], app['description'], app['logo'])
         local_app.arkstore_app_id = res['uuid']
         local_app.save()
     elif res['type'] == 'auto_form_fill':
@@ -407,11 +413,11 @@ def bind_arkstore_agent(access_token, tenant_uuid):
 
 
 def create_tenant_oidc_app(tenant, url, name, description='', logo=''):
-    app, created = App.objects.get_or_create(
+    app, created = App.objects.update_or_create(
             tenant=tenant,
             name=name,
             url=url,
-            defaults={"description": description, "logo": logo,}
+            defaults={"description": description, "logo": logo, 'is_del': False, 'is_active': True}
         )
     if app.entry_permission is None:
         from arkid.core.models import SystemPermission
