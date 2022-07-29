@@ -2,6 +2,7 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from arkid.common.model import BaseModel
+from arkid.common.utils import generate_secret
 from arkid.core.translation import gettext_default as _
 from arkid.core.expand import ExpandManager, ExpandModel
 from arkid.extension.models import TenantExtensionConfig, Extension
@@ -206,6 +207,11 @@ class App(BaseModel, ExpandModel):
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'
+
+    def save(self, *args, **kwargs):
+        if self.secret == '':
+            self.secret = generate_secret()
+        super().save(*args, **kwargs)
 
 
 class AppGroup(BaseModel, ExpandModel):
@@ -576,9 +582,17 @@ class ApproveRequest(BaseModel, ExpandModel):
         verbose_name=_('Status', "状态"),
     )
 
+    request_path = models.CharField(
+        default='', verbose_name=_('Request Path', '请求路径'), max_length=255
+    )
+    request_get = models.JSONField(default={}, null=True, verbose_name=_('Request GET', '请求路径参数'))
+    request_post = models.JSONField(
+        default={}, null=True, verbose_name=_('Request POST', '请求表单数据')
+    )
+
     def __str__(self):
         return (
-            f'{self.action.name}:{self.action.method}:{self.action.path}:{self.status}'
+            f'{self.action.name}:{self.action.method}:{self.request_path}:{self.status}'
         )
 
 

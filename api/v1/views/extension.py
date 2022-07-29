@@ -17,7 +17,8 @@ from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
-from arkid.common.arkstore import get_arkstore_access_token, get_arkstore_extensions_purchased
+from arkid.common.arkstore import get_arkstore_access_token
+from .arkstore import get_arkstore_list
 
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
@@ -142,8 +143,9 @@ def list_extensions(request, status: str = None):
     token = request.user.auth_token
     tenant = Tenant.platform_tenant()
     access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extensions_purchased(access_token)
-    extensions_purchased = {ext['package']: ext for ext in resp['items']}
+    # resp = get_arkstore_extensions_purchased(access_token)
+    resp = get_arkstore_list(request, True, 'extension', all=True)
+    extensions_purchased = {ext['package']: ext for ext in resp}
     for ext in qs:
         if ext.package in extensions_purchased:
             ext.purchase_useful_life = extensions_purchased[ext.package].get('purchase_useful_life')
@@ -229,7 +231,7 @@ def toggle_extension_status(request, id: str):
         ext.unload()
         extension.is_active = False
     else:
-        ext.load()
+        ext.start()
         extension.is_active = True
 
     extension.save()
