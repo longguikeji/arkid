@@ -57,7 +57,7 @@ def load_active_extensions():
     app_config = config.get_app_config()
 
     try:
-        extensions = list(Extension.active_objects.filter())
+        extensions = list(Extension.valid_objects.filter())
     except Exception:
         return []
 
@@ -67,6 +67,8 @@ def load_active_extensions():
 
     extension: Extension
     for extension in extensions:
+        if not extension.is_active:
+            continue
         package = extension.package
         name = package.replace('.', '_')
         ext_dir = Path(extension.ext_dir)
