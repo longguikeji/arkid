@@ -71,14 +71,14 @@ class ApproveRequestMiddleware:
             )
             response = JsonResponse(
                 ErrorDict(ErrorCode.APPROVE_REQUEST_WAITING),
-                status=403,
+                status=200,
             )
             return response
         else:
             if approve_request.status != "pass":
                 response = JsonResponse(
                     ErrorDict(ErrorCode.APPROVE_REQUEST_WAITING),
-                    status=403,
+                    status=200,
                 )
                 return response
             else:
