@@ -252,6 +252,8 @@ class PermissionData(object):
             container = group_item.get('container', [])
             group_systempermission = group_item.get('systempermission', None)
             group_sort_ids = []
+            # 需要先清理在添加
+            group_systempermission.container.clear()
             for api_item in api_data:
                 sort_id = api_item.get('sort_id', 0)
                 sort_real_id = api_item.get('sort_real_id', 0)
@@ -713,6 +715,8 @@ class PermissionData(object):
                 container = group_item.get('container', [])
                 group_permission = group_item.get('permission', None)
                 group_sort_ids = []
+                # 需要先清理在添加
+                group_permission.container.clear()
                 for api_item in api_data:
                     sort_id = api_item.get('sort_id', 0)
                     sort_real_id = api_item.get('sort_real_id', 0)
