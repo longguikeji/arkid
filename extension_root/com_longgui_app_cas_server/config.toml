@@ -1,7 +1,0 @@
-package='com.longgui.app.cas.server'
-name='CAS认证协议'
-version='1.0'
-labels=['CAS']
-homepage='https://www.longguikeji.com'
-logo=''
-author='hanbin@jinji-inc.com'
