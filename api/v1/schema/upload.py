@@ -11,4 +11,4 @@ class UploadItemOut(Schema):
     )
 
 class UploadOut(ResponseSchema):
-    data:UploadItemOut
+    data:Optional[UploadItemOut]

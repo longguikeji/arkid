@@ -110,11 +110,19 @@ def default_tenant(request):
 @api.post("/tenants/{tenant_id}/logout/", response=TenantLogoutOut,tags=["租户管理"])
 @operation(TenantLogoutOut,roles=[TENANT_ADMIN])
 def logout_tenant(request, tenant_id: str, data:TenantLogoutIn):
-    """ 编辑租户
+    """ 注销租户
     """
     if not check_password(data.password,request.user_expand["password"]):
         return ErrorDict(ErrorCode.PASSWORD_NOT_CORRECT)
     
     tenant = get_object_or_404(Tenant.active_objects,id=tenant_id)
     tenant.delete()
-    return ErrorDict(ErrorCode.OK)
+    
+    platform_tenant = Tenant.platform_tenant()
+    return {
+        "switch_tenant":{
+            "id": platform_tenant.id.hex,
+            "slug": platform_tenant.slug
+        },
+        "refresh": True
+    }

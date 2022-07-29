@@ -32,6 +32,7 @@ class LocalStorageExtension(StorageExtension):
         super().load()
 
     def save_file(self, file, f_key, *args, **kwargs):
+        print(f_key)
         extension = self.model
         storage_path = extension.profile.get('storage_path','./storage/')
         
