@@ -91,11 +91,14 @@ class PermissionGroupEditSchemaIn(Schema):
     #     model = Permission
     #     model_fields = ['name']
 
-class PermissionListSchemaOut(ModelSchema):
-
-    class Config:
-        model = SystemPermission
-        model_fields = ['id', 'name', 'category', 'is_system']
+class PermissionListSchemaOut(Schema):
+    category: str = Field(title=_("分类名称"))
+    id: UUID = Field(title=_("id"))
+    name: str = Field(title=_("名称"))
+    is_system: bool = Field(title=_("是否是系统权限 "))
+    # class Config:
+    #     model = SystemPermission
+    #     model_fields = ['id', 'name', 'is_system']
 
 
 class PermissionListSelectSchemaOut(Schema):

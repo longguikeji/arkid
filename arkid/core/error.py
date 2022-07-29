@@ -62,6 +62,7 @@ class ErrorCode(Enum):
 
     APPROVE_ACTION_DUPLICATED = ('14001', _('approve action duplicated', '审批动作重复'))
     APPROVE_ACTION_NOT_EXISTS = ('14002', _('approve action not exists', '审批动作不存在'))
+    APPROVE_REQUEST_WAITING = ('14003', _('approve request created, please wait', '审批请求已创建，等待审批'))
 
     WEBHOOK_NOT_EXISTS = ('15001', _('webhook not exists', '回调动作不存在'))
     WEBHOOK_HISTORY_NOT_EXISTS = ('15002', _('webhook history not exists', '回调动作历史不存在'))
@@ -73,6 +74,9 @@ class ErrorCode(Enum):
     UPDATE_EXTENSION_SUCCESS = ('17002', _('extension not in arkstore', '插件不在插件商店中，无法更新'))
     TRIAL_EXTENSION_TWICE = ('17003', _('extension can not trial twice', '试用不允许重复下单'))
     AGENT_BIND_CAN_NOT_CHANGE = ('17004', _('agent bind can not change', '代理商已绑定，无法修改'))
+    PLUG_IN_NOT_HIRE = ('17005', _('plug-in not hire', '插件没有租赁，无法使用'))
+    
+    PASSWORD_NOT_CORRECT = ('18001', _('password not correct', '密码不正确'))
 
 class ErrorDict(dict):
 

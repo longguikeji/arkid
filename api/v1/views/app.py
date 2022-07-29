@@ -166,7 +166,8 @@ def delete_app(request, tenant_id: str, id: str):
     删除app
     '''
     app = App.valid_objects.get(id=id)
-    dispatch_event(Event(tag=DELETE_APP, tenant=request.tenant, request=request, data=app))
+    if app.config:
+        dispatch_event(Event(tag=DELETE_APP, tenant=request.tenant, packages=app.config.extension.package,request=request, data=app))
     app.delete()
     return ErrorDict(ErrorCode.OK)
 
@@ -210,8 +211,10 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
     else:
         # 创建应用协议配置
         results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data, packages=[data["package"]]))
+        flag = False
         for func, (result, extension) in results:
             if result:
+                flag = True
                 # 创建config
                 config = extension.create_tenant_config(tenant, data["config"], app.name, data["app_type"])
                 # 创建app
@@ -222,7 +225,8 @@ def set_app_config(request, tenant_id: str, id: str, data:AppProtocolConfigIn):
                 # 创建app完成进行事件分发
                 dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=tenant, request=request, data=app))
                 break
-        pass
+        if flag is False:
+            return ErrorDict(ErrorCode.PLUG_IN_NOT_HIRE)
     return ErrorDict(ErrorCode.OK)
 
 @api.get("/tenant/{tenant_id}/apps/{id}/config/", response=AppProtocolConfigOut,tags=['应用'])

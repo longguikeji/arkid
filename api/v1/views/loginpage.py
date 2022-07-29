@@ -142,28 +142,32 @@ def login_page(request, tenant_id: str):
     if data.get(AuthFactorExtension.RESET_PASSWORD):
         if len(data.get(AuthFactorExtension.RESET_PASSWORD)['forms']) > 0:
             bottom = {
-                "label": _("Forget Password", "忘记密码"),
+                "label": _("忘记密码"),
+                "title": _("忘记密码"),
                 "gopage": AuthFactorExtension.RESET_PASSWORD,
             }
             data[AuthFactorExtension.LOGIN]['bottoms'].insert(0, bottom)
 
         bottom = {
-            "prepend": _("Existing Account,", "已有账号，"),
-            "label": _("Login Now", "立即登录"),
+            "prepend": _("已有账号，"),
+            "label": _("立即登录"),
+            "title": _("立即登录"),
             "gopage": AuthFactorExtension.LOGIN,
         }
         data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)
 
     if data.get(AuthFactorExtension.REGISTER):
         bottom = {
-            "prepend": _("No Account,", "还没有账号，"),
-            "label": _("Register Now", "立即注册"),
+            "prepend": _("还没有账号，"),
+            "label": _("立即注册"),
+            "title": _("立即注册"),
             "gopage": AuthFactorExtension.REGISTER,
         }
         data[AuthFactorExtension.LOGIN]['bottoms'].insert(0, bottom)
         bottom = {
-            "prepend": _("Existing Account,", "已有账号，"),
-            "label": _("Login Now", "立即登录"),
+            "prepend": _("已有账号，"),
+            "label": _("立即登录"),
+            "title": _("立即登录"),
             "gopage": AuthFactorExtension.LOGIN,
         }
         data[AuthFactorExtension.REGISTER]['bottoms'].insert(0, bottom)
@@ -172,8 +176,9 @@ def login_page(request, tenant_id: str):
         AuthFactorExtension.RESET_PASSWORD
     ):
         bottom = {
-            "prepend": _("No Account,", "还没有账号，"),
-            "label": _("Register Now", "立即注册"),
+            "prepend": _("还没有账号，"),
+            "label": _("立即注册"),
+            "title": _("立即注册"),
             "gopage": AuthFactorExtension.REGISTER,
         }
         data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)

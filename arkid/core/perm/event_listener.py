@@ -37,6 +37,9 @@ def user_saved(sender, instance: User, created: bool, **kwargs):
 def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
     if created:
         # print('检测到租户创建')
+        from arkid.common.bind_saas import bind_saas
+        bind_saas(instance.id.hex)
+
         pd = PermissionData()
         pd.create_tenant_admin_permission(instance)
 
@@ -115,6 +118,8 @@ class EventListener(object):
         user = event.data
         from arkid.core.tasks.tasks import create_tenant_init_manager
         create_tenant_init_manager.delay(tenant.id, user.id)
+        # permissiondata = PermissionData()
+        # permissiondata.create_tenant_user_admin_permission(tenant, user)
 
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission

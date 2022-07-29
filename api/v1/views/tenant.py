@@ -12,15 +12,18 @@ from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.tenant import *
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
+from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
     CREATE_TENANT, Event, register_event,
     dispatch_event
 )
 
+from django.contrib.auth.hashers import check_password
+
 
 
 @api.get("/tenants/", response=List[TenantListItemOut],tags=["租户管理"])
-@operation(List[TenantListItemOut],roles=[PLATFORM_ADMIN])
+@operation(List[TenantListItemOut], roles=[PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_tenant_list(request, query_data:TenantListQueryIn=Query(...)):
     """ 获取租户列表
@@ -44,7 +47,7 @@ def get_tenant(request, id: str):
     }
 
 @api.post("/tenants/",response=TenantCreateOut,tags=["租户管理"])
-@operation(TenantOut,roles=[PLATFORM_USER, PLATFORM_ADMIN])
+@operation(TenantOut,roles=[NORMAL_USER, PLATFORM_USER, PLATFORM_ADMIN])
 def create_tenant(request, data:TenantCreateIn):
     """ 创建租户
     """
@@ -103,3 +106,15 @@ def default_tenant(request):
     """
     tenant = Tenant.platform_tenant()
     return {"data":tenant}
+
+@api.post("/tenants/{tenant_id}/logout/", response=TenantLogoutOut,tags=["租户管理"])
+@operation(TenantLogoutOut,roles=[TENANT_ADMIN])
+def logout_tenant(request, tenant_id: str, data:TenantLogoutIn):
+    """ 编辑租户
+    """
+    if not check_password(data.password,request.user_expand["password"]):
+        return ErrorDict(ErrorCode.PASSWORD_NOT_CORRECT)
+    
+    tenant = get_object_or_404(Tenant.active_objects,id=tenant_id)
+    tenant.delete()
+    return ErrorDict(ErrorCode.OK)

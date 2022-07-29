@@ -98,3 +98,14 @@ class DefaultTenantItemOut(ModelSchema):
 class DefaultTenantOut(ResponseSchema):
     data: DefaultTenantItemOut
     
+    
+class TenantLogoutOut(ResponseSchema):
+    pass
+
+class TenantLogoutIn(Schema):
+    
+    password:str = Field(
+        title=_("密码"),
+        hint=_("请输入您的密码"),
+        type="password"
+    )

@@ -79,6 +79,7 @@ def update_app_permission(tenant_id, app_id):
     '''
     permissiondata = PermissionData()
     permissiondata.update_app_permission(tenant_id, app_id)
+    permissiondata.update_open_app_permission_admin()
 
 
 @app.task

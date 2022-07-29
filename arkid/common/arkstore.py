@@ -27,7 +27,7 @@ def get_saas_token(tenant, token, use_cache=True):
     key = (str(tenant.id), token)
     if use_cache and key in arkid_saas_token_cache:
         return arkid_saas_token_cache[key]
-    app = Application.objects.filter(name='arkid_saas').first()
+    app = Application.objects.filter(name='arkid_saas', uuid = tenant.id).first()
     host = get_app_config().get_host()
     url = f"{host}/api/v1/tenant/{tenant.id.hex}/app/{tenant.id.hex}/oauth/authorize/"
     nonce = uuid.uuid4().hex
@@ -85,17 +85,20 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     resp = requests.get(app_login_url, params=params)
     if resp.status_code != 200:
         arkstore_access_token_saas_cache.pop(key, None)
-        raise Exception(f'Error get_arkstore_access_token: {resp.status_code}')
+        raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}')
     resp = resp.json()
     arkstore_access_token_saas_cache[key] = resp['access_token']
     return arkstore_access_token_saas_cache[key] 
 
 
-def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, limit=10):
+def get_arkstore_extensions(access_token, purchased=None, rented=False, type=None, offset=0, limit=10):
     if type == 'extension':
-        url = '/api/v1/arkstore/extensions/purchased'
+        if rented:
+            url = "/api/v1/arkstore/extensions/leased"
+        else:
+            url = '/api/v1/arkstore/extensions/purchased'
     elif type == 'app':
-        url = '/api/v1/arkstore/apps'
+        url = '/api/v1/arkstore/apps/purchased'
     else:
         url = '/api/v1/arkstore/apps_and_extensions'
     arkstore_extensions_url = settings.ARKSTOER_URL + url
@@ -105,9 +108,11 @@ def get_arkstore_extensions(access_token, purchased=None, type=None, offset=0, l
         params['purchased'] = 'true'
     elif purchased is False :
         params['purchased'] = 'false'
+    if rented is True:
+        params['leased'] = 'true'
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
+        raise Exception(f'Error get_arkstore_apps_and_extensions: {url}, {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -153,7 +158,7 @@ def get_arkstore_extension_detail_by_package(access_token, package):
     if resp.status_code == 404:
         return
     if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+        raise Exception(f'Error get_arkstore_extension_detail_by_package: {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -247,11 +252,19 @@ def trial_arkstore_extension(access_token, extension_id):
 
 
 def install_arkstore_extension(tenant, token, extension_id):
+    saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
     access_token = get_arkstore_access_token(tenant, token)
     res = get_arkstore_extension_detail(access_token, extension_id)
-    if res['type'] == 'oidc':
+    if res['type'] in ('url', 'oidc'):
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
-        create_tenant_oidc_app(tenant, app['url'], app['name'], app['description'], app['logo'])
+        url = app['url']
+        if '?' in url:
+            url = url + f'&tenant_id={saas_tenant_id}'
+        else:
+            url = url + f'?tenant_id={saas_tenant_id}'
+        local_app = create_tenant_oidc_app(tenant, url, app['name'], app['description'], app['logo'])
+        local_app.arkstore_app_id = res['uuid']
+        local_app.save()
     elif res['type'] == 'auto_form_fill':
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
         app['data'] = {}
@@ -325,7 +338,7 @@ def load_installed_extension(ext_dir):
         },
         package = ext.package,
     )
-    load_extension_apps([extension])
+    # load_extension_apps([extension])
 
     platform_tenant = Tenant.platform_tenant()
     tenant_extension, is_create = TenantExtension.objects.update_or_create(
@@ -336,7 +349,17 @@ def load_installed_extension(ext_dir):
         extension = extension,
     )
 
-    ext.start()
+    # ext.start()
+
+    # 如果新安装的插件有models需重启django
+    extension_models= Path(ext_dir) / 'models.py'
+    if extension_models.exists():
+        import os
+        try:
+            print("新安装的插件有models需重启django, 正在重启django server!")
+            os.system("supervisorctl restart runserver")
+        except Exception as e:
+            print("未使用supervisor启动django server, 需手动重启django server!")
 
 
 def get_bind_arkstore_agent(access_token):
@@ -347,7 +370,7 @@ def get_bind_arkstore_agent(access_token):
     if resp.status_code == 204:
         return {}
     if resp.status_code != 200:
-        raise Exception(f'Error bind_arkstore_agent: {resp.status_code}')
+        raise Exception(f'Error get_bind_arkstore_agent: {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -390,11 +413,11 @@ def bind_arkstore_agent(access_token, tenant_uuid):
 
 
 def create_tenant_oidc_app(tenant, url, name, description='', logo=''):
-    app, created = App.objects.get_or_create(
+    app, created = App.objects.update_or_create(
             tenant=tenant,
             name=name,
             url=url,
-            defaults={"description": description, "logo": logo,}
+            defaults={"description": description, "logo": logo, 'is_del': False, 'is_active': True}
         )
     if app.entry_permission is None:
         from arkid.core.models import SystemPermission
@@ -453,6 +476,17 @@ def create_tenant_app(tenant, saas_app):
 
     return app
 
+
+def get_arkstore_app_detail(access_token, app_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/apps/{app_id}/download'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_app_detail: {resp.status_code}')
+    resp = resp.json()
+    return resp
+
     
 def get_arkid_saas_app_detail(tenant, token, extension_id):
     saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
@@ -461,7 +495,7 @@ def get_arkid_saas_app_detail(tenant, token, extension_id):
     params = {}
     resp = requests.get(arkid_saas_app_url, params=params, headers=headers)
     if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_extension_detail: {resp.status_code}')
+        raise Exception(f'Error get_arkid_saas_app_detail: {resp.status_code}')
     resp = resp.json()
     return resp
 
@@ -473,7 +507,7 @@ def check_arkstore_app_purchased(tenant, token, app):
     params = {}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
     if resp.status_code != 200:
-        raise Exception(f'Error check_arkstore_purchased: {resp.status_code}')
+        raise Exception(f'Error check_arkstore_app_purchased: {resp.status_code}')
     resp = resp.json()
     if resp.get("use_end_time") == '0':
         return True
@@ -545,30 +579,30 @@ def check_time_and_user_valid(data, tenant):
         return True
 
 
-def get_arkstore_extensions_rented(access_token, offset=0, limit=10):
-    url = '/api/v1/arkstore/extensions/leased'
-    arkstore_extensions_url = settings.ARKSTOER_URL + url
-    headers = {'Authorization': f'Token {access_token}'}
-    # params = {'offset': offset, 'limit': limit}
-    params = {'leased': 'true'}
-    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
-    if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
-    resp = resp.json()
-    return resp
+# def get_arkstore_extensions_rented(access_token, offset=0, limit=10):
+#     url = '/api/v1/arkstore/extensions/leased'
+#     arkstore_extensions_url = settings.ARKSTOER_URL + url
+#     headers = {'Authorization': f'Token {access_token}'}
+#     # params = {'offset': offset, 'limit': limit}
+#     params = {'leased': 'true'}
+#     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+#     if resp.status_code != 200:
+#         raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
+#     resp = resp.json()
+#     return resp
 
 
-def get_arkstore_extensions_purchased(access_token, offset=0, limit=10):
-    url = '/api/v1/arkstore/extensions/purchased'
-    arkstore_extensions_url = settings.ARKSTOER_URL + url
-    headers = {'Authorization': f'Token {access_token}'}
-    # params = {'offset': offset, 'limit': limit}
-    params = {'purchased': 'true'}
-    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
-    if resp.status_code != 200:
-        raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
-    resp = resp.json()
-    return resp
+# def get_arkstore_extensions_purchased(access_token, offset=0, limit=10):
+#     url = '/api/v1/arkstore/extensions/purchased'
+#     arkstore_extensions_url = settings.ARKSTOER_URL + url
+#     headers = {'Authorization': f'Token {access_token}'}
+#     # params = {'offset': offset, 'limit': limit}
+#     params = {'purchased': 'true'}
+#     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+#     if resp.status_code != 200:
+#         raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
+#     resp = resp.json()
+#     return resp
 
 
 def get_arkstore_extension_markdown(access_token, extension_id):

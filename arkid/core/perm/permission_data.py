@@ -252,6 +252,8 @@ class PermissionData(object):
             container = group_item.get('container', [])
             group_systempermission = group_item.get('systempermission', None)
             group_sort_ids = []
+            # 需要先清理在添加
+            group_systempermission.container.clear()
             for api_item in api_data:
                 sort_id = api_item.get('sort_id', 0)
                 sort_real_id = api_item.get('sort_real_id', 0)
@@ -501,6 +503,9 @@ class PermissionData(object):
         permission_result = ''
         if userpermissionresult:
             permission_result = compress.decrypt(userpermissionresult.result)
+        # 需要考虑到更新了租户管理员权限
+        if permission_value == 1 and 'tenant_admin' in pass_permission.code and pass_permission.tenant_id == tenant.id:
+            is_tenant_admin = True
         # 对数据进行一次排序
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
         permission_result_arr = []
@@ -710,12 +715,18 @@ class PermissionData(object):
                 container = group_item.get('container', [])
                 group_permission = group_item.get('permission', None)
                 group_sort_ids = []
+                # 需要先清理在添加
+                group_permission.container.clear()
                 for api_item in api_data:
                     sort_id = api_item.get('sort_id', 0)
                     sort_real_id = api_item.get('sort_real_id', 0)
                     api_permission = api_item.get('permission', None)
 
                     if sort_id in container and api_permission:
+                        if group_permission.is_open is True:
+                            # 如果分组开放，分组内权限应该也开放
+                            api_permission.is_open = True
+                            api_permission.save()
                         group_permission.container.add(api_permission)
                         group_sort_ids.append(sort_real_id)
                 # parent
