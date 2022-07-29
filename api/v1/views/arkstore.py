@@ -330,6 +330,12 @@ def get_rent_arkstore_extension(request, tenant_id: str, package: str):
     access_token = get_arkstore_access_token(tenant, token)
     ext_info = get_arkstore_extension_detail_by_package(access_token, package)
     if ext_info is None:
+        extension = Extension.valid_objects.filter(package=package).first()
+        tenant_extension, created = TenantExtension.objects.update_or_create(
+            tenant_id=tenant_id,
+            extension=extension,
+            defaults={"is_rented": True}
+        )
         return ErrorDict(ErrorCode.RENT_EXTENSION_SUCCESS)
     resp = get_arkstore_extension_rent_price(access_token, ext_info['uuid'])
     return resp['prices']
