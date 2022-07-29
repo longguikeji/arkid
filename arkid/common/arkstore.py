@@ -332,7 +332,7 @@ def load_installed_extension(ext_dir):
         },
         package = ext.package,
     )
-    load_extension_apps([extension])
+    # load_extension_apps([extension])
 
     platform_tenant = Tenant.platform_tenant()
     tenant_extension, is_create = TenantExtension.objects.update_or_create(
@@ -343,7 +343,17 @@ def load_installed_extension(ext_dir):
         extension = extension,
     )
 
-    ext.start()
+    # ext.start()
+
+    # 如果新安装的插件有models需重启django
+    extension_models= Path(ext_dir) / 'models.py'
+    if extension_models.exists():
+        import os
+        try:
+            print("新安装的插件有models需重启django, 正在重启django server!")
+            os.system("supervisorctl restart runserver")
+        except Exception as e:
+            print("未使用supervisor启动django server, 需手动重启django server!")
 
 
 def get_bind_arkstore_agent(access_token):

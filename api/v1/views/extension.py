@@ -231,7 +231,7 @@ def toggle_extension_status(request, id: str):
         ext.unload()
         extension.is_active = False
     else:
-        ext.load()
+        ext.start()
         extension.is_active = True
 
     extension.save()
