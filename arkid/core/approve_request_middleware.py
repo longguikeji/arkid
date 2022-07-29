@@ -5,7 +5,7 @@ import io
 import json
 from django.urls import resolve
 from arkid.core.models import Tenant
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from arkid.core.models import ApproveAction, ApproveRequest
 from arkid.core.approve import create_approve_request
 from arkid.common.utils import verify_token
@@ -16,6 +16,8 @@ from arkid.core.event import (
     dispatch_event,
     CREATE_APPROVE_REQUEST,
 )
+from arkid.core.translation import gettext_default as _
+from arkid.core.error import ErrorCode, ErrorDict
 
 
 class ApproveRequestMiddleware:
@@ -67,11 +69,17 @@ class ApproveRequestMiddleware:
                     data=approve_request,
                 )
             )
-            response = HttpResponse(status=403)
+            response = JsonResponse(
+                ErrorDict(ErrorCode.APPROVE_REQUEST_WAITING),
+                status=403,
+            )
             return response
         else:
             if approve_request.status != "pass":
-                response = HttpResponse(status=403)
+                response = JsonResponse(
+                    ErrorDict(ErrorCode.APPROVE_REQUEST_WAITING),
+                    status=403,
+                )
                 return response
             else:
                 return None
