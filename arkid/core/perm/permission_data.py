@@ -260,7 +260,6 @@ class PermissionData(object):
                 api_systempermission = api_item.get('systempermission', None)
 
                 if sort_id in container and api_systempermission:
-                    # 然后继续添加
                     group_systempermission.container.add(api_systempermission)
                     group_sort_ids.append(sort_real_id)
             # parent
