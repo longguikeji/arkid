@@ -18,6 +18,7 @@ from api.v1.schema.approve_action import (
     ApproveActionUpdateOut,
     ApproveActionDeleteOut,
 )
+from django.db.models import Q
 
 
 @api.get(
@@ -30,7 +31,7 @@ from api.v1.schema.approve_action import (
 def get_approve_actions(request, tenant_id: str):
     """审批动作列表"""
     tenant = request.tenant
-    actions = ApproveAction.valid_objects.filter(tenant=tenant)
+    actions = ApproveAction.valid_objects.filter(Q(tenant=tenant) | Q(tenant=None))
     return actions
 
 
@@ -43,7 +44,7 @@ def get_approve_actions(request, tenant_id: str):
 def get_approve_action(request, tenant_id: str, id: str):
     """获取审批动作"""
     tenant = request.tenant
-    action = ApproveAction.valid_objects.filter(tenant=tenant, id=id).first()
+    action = ApproveAction.valid_objects.filter(id=id).first()
     return {"data": action}
 
 
@@ -55,7 +56,7 @@ def get_approve_action(request, tenant_id: str, id: str):
 @operation(ApproveActionOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def create_approve_action(request, tenant_id: str, data: ApproveActionCreateIn):
     """创建审批动作"""
-    extension = Extension.valid_objects.get(id=data.extension_id)
+    extension = Extension.valid_objects.get(id=data.extension.id)
     action = ApproveAction.valid_objects.filter(
         path=data.path, method=data.method, tenant=request.tenant
     ).first()
@@ -83,7 +84,7 @@ def update_approve_action(
     request, tenant_id: str, id: str, data: ApproveActionUpdateIn
 ):
     """编辑审批动作"""
-    extension = Extension.valid_objects.get(id=data.extension_id)
+    extension = Extension.valid_objects.get(id=data.extension.id)
     action = ApproveAction.valid_objects.filter(tenant=request.tenant, id=id).first()
     if not action:
         return ErrorDict(ErrorCode.APPROVE_ACTION_NOT_EXISTS)

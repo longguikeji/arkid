@@ -129,6 +129,12 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                     admin_user.save()
         except Exception as e:
             print(e)
+
+    def check_auth_data(self, event, **kwargs):
+        pass
+
+    def fix_login_page(self, event, **kwargs):
+        pass
     
     @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     def reset_user_password(self, request, tenant_id:str, id:str, data:RestUserPasswordIn):

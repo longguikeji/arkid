@@ -84,7 +84,7 @@ def create_account_life(request, tenant_id: str, data: AccountLifeCreateIn):
     extension = Extension.valid_objects.get(package=data.package)
     extension = import_extension(extension.ext_dir)
     config = extension.create_tenant_config(
-        request.tenant, data.config.dict(), data.dict()["name"], data.type
+        request.tenant, data.config, data.dict()["name"], data.type
     )
     dispatch_event(
         Event(
@@ -108,7 +108,7 @@ def update_account_life(request, tenant_id: str, id: str, data: AccountLifeUpdat
     extension = Extension.valid_objects.get(package=data.package)
     extension = import_extension(extension.ext_dir)
     config = extension.update_tenant_config(
-        id, data.config.dict(), data.dict()["name"], data.type
+        id, data.config, data.dict()["name"], data.type
     )
     dispatch_event(
         Event(

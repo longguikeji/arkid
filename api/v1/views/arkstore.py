@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from collections import OrderedDict
 from arkid.core.constants import *
-from arkid.core.models import Platform, Tenant
+from arkid.core.models import Platform, Tenant, App
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
     check_arkstore_purcahsed_extension_expired,
@@ -44,7 +44,7 @@ from arkid.core.schema import ResponseSchema
 
 
 
-def get_arkstore_list(request, purchased, type):
+def get_arkstore_list(request, purchased, type, rented=False, all=False):
     page = request.GET.get('page', 1)
     page_size = request.GET.get('page_size', 10)
     token = request.user.auth_token
@@ -54,32 +54,25 @@ def get_arkstore_list(request, purchased, type):
     if page and page_size:
         limit = int(page_size)
         offset = (int(page)-1) * int(page_size)
-    saas_extensions_data = get_arkstore_extensions(access_token, purchased, type, offset, limit)
+    if all:
+        limit = 1000000
+        offset = 0
+    saas_extensions_data = get_arkstore_extensions(access_token, purchased, rented, type, offset, limit)
     saas_extensions_data = saas_extensions_data['items']
-    saas_extensions = []
-    for extension in saas_extensions_data:
-        if extension.get('upgrade'):
-            extension['button'] = '升级'
-        elif extension.get('purchased'):
-            extension['button'] = '安装'
-        else:
-            extension['button'] = '购买'
-        saas_extensions.append(extension)
-
-    return saas_extensions
+    return saas_extensions_data
 
 
 class ArkstoreItemSchemaOut(Schema):
     uuid: str = Field(hidden=True)
     name: str = Field(readonly=True)
-    package: str = Field(readonly=True)
-    version: str = Field(readonly=True)
-    author: str = Field(readonly=True)
+    package: Optional[str] = Field(readonly=True)
+    version: str = Field(readonly=True, title=_('Version', '版本'))
+    author: str = Field(readonly=True, title=_('Author', '作者'))
     logo: str = Field(readonly=True, default="")
     description: str = Field(readonly=True)
     categories: str = Field(readonly=True)
     labels: str = Field(readonly=True)
-    # "homepage",
+    homepage: str = Field(readonly=True, title=_('Homepage', '官方网站'))
     # "status",
     # "created",
     # "type",
@@ -231,7 +224,10 @@ def list_arkstore_purchased_extensions(request, tenant_id: str):
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_purchased_apps(request, tenant_id: str):
-    return get_arkstore_list(request, True, 'app')
+    arkstore_apps = get_arkstore_list(request, None, 'app', all=True)
+    installed_apps = App.objects.filter(tenant_id=tenant_id, arkstore_app_id__isnull=False)
+    installed_app_ids = set(str(app.arkstore_app_id) for app in installed_apps)
+    return [app for app in arkstore_apps if app['uuid'] in installed_app_ids]
 
 
 @api.get("/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/", tags=['方舟商店'],
@@ -334,6 +330,12 @@ def get_rent_arkstore_extension(request, tenant_id: str, package: str):
     access_token = get_arkstore_access_token(tenant, token)
     ext_info = get_arkstore_extension_detail_by_package(access_token, package)
     if ext_info is None:
+        extension = Extension.valid_objects.filter(package=package).first()
+        tenant_extension, created = TenantExtension.objects.update_or_create(
+            tenant_id=tenant_id,
+            extension=extension,
+            defaults={"is_rented": True}
+        )
         return ErrorDict(ErrorCode.RENT_EXTENSION_SUCCESS)
     resp = get_arkstore_extension_rent_price(access_token, ext_info['uuid'])
     return resp['prices']

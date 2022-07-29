@@ -10,6 +10,7 @@ from arkid.core.models import ApproveAction
 from enum import Enum
 from pydantic import UUID4
 from arkid.core import pages, actions
+from uuid import UUID
 
 select_path_page = pages.TablePage(select=True, name=_("Select Path", "选择路径"))
 select_approve_system_page = pages.TablePage(
@@ -56,25 +57,31 @@ class METHOD_TYPE(str, Enum):
     PUT = _('PUT', 'PUT')
 
 
+class ApproveActionExtensionIn(Schema):
+    id: UUID = Field(hidden=True)
+    name: str
+
+
 class ApproveActionSchema(Schema):
     name: str = Field(title=_('Name', '名称'), default='')
     description: str = Field(title=_('Description', '备注'), default='')
     path: str = Field(
         title=_('Path', '请求路径'),
-        field="path",
-        page=select_path_page.tag,
-        link="path",
         type="string",
+        option_action={
+            "path": '/api/v1/tenant/{tenant_id}/path_list/',
+            "method": actions.FrontActionMethod.GET.value,
+        },
+        format="autocomplete",
     )
     method: METHOD_TYPE = Field(title=_('Method', '请求方法'))
-    extension_id: UUID4 = Field(
+    extension: ApproveActionExtensionIn = Field(
         title=_('Extension Id', '审批系统'),
-        field="id",
+        # field="id",
         page=select_approve_system_page.tag,
-        link="name",
-        type="string",
+        # link="name",
+        # type="string",
     )
-
 
 
 class ApproveActionOut(ResponseSchema):

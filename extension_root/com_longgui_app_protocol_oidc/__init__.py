@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.conf import settings
 from arkid.config import get_app_config
 from arkid.core.extension.app_protocol import AppProtocolExtension
 from .appscheme import (
@@ -20,8 +21,9 @@ class OAuth2ServerExtension(AppProtocolExtension):
         # 加载相应的view
         self.load_auth_view()
         # 加载相应的配置文件
-        self.register_app_protocol_schema(OIDCConfigSchema, 'OIDC')
-        self.register_app_protocol_schema(Oauth2ConfigSchema, 'OAuth2')
+        if not settings.IS_CENTRAL_ARKID:
+            self.register_app_protocol_schema(OIDCConfigSchema, 'OIDC')
+            self.register_app_protocol_schema(Oauth2ConfigSchema, 'OAuth2')
         super().load()
 
     def load_urls(self):

@@ -15,9 +15,10 @@ from ..schema.mine import *
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_apps(request, tenant_id: str):
     """我的应用列表"""
-    apps = App.active_objects.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True))
-    return {'data':list(apps)}
-
+    apps = App.active_objects.filter(
+        Q(tenant=request.tenant) | Q(entry_permission__is_open=True)
+    )
+    return {'data': list(apps)}
 
 
 @api.get(
@@ -42,21 +43,34 @@ def get_mine_profile(request, tenant_id: str):
 def update_mine_profile(request, tenant_id: str, data: ProfileSchemaIn):
     """更新我的个人资料"""
     user = request.user
-    for key,value in data.dict().items():
-        setattr(user,key,value)
+    for key, value in data.dict().items():
+        setattr(user, key, value)
     user.save()
     return user
 
 
-@api.get("/mine/tenant/{tenant_id}/permissions/", response=List[MinePermissionListSchemaOut], tags=["我的"])
+@api.get(
+    "/mine/tenant/{tenant_id}/permissions/",
+    response=List[MinePermissionListSchemaOut],
+    tags=["我的"],
+)
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_mine_permissions(request, tenant_id: str, app_id: str = None, app_name: str = None, category: str = None):
+def get_mine_permissions(
+    request,
+    tenant_id: str,
+    app_id: str = None,
+    app_name: str = None,
+    category: str = None,
+):
     """我的权限列表"""
     login_user = request.user
     from arkid.core.perm.permission_data import PermissionData
+
     permissiondata = PermissionData()
-    items = permissiondata.get_permissions_by_mine_search(tenant_id, app_id, None, None, login_user, app_name=app_name, category=category)
+    items = permissiondata.get_permissions_by_mine_search(
+        tenant_id, app_id, None, None, login_user, app_name=app_name, category=category
+    )
     return items
 
 
@@ -67,11 +81,13 @@ def get_mine_permissions(request, tenant_id: str, app_id: str = None, app_name: 
 #     if in_current is False:
 #         return ErrorDict(ErrorCode.PERMISSION_NOT_CLOSE)
 #     # 需要申请更新权限列表
-    
+
 #     return {'error': ErrorCode.OK.value}
 
 
-@api.get("/mine/tenant/{tenant_id}/permissions/{permission_id}/add_permisssion", tags=['权限'])
+@api.get(
+    "/mine/tenant/{tenant_id}/permissions/{permission_id}/add_permisssion", tags=['权限']
+)
 @operation(roles=[NORMAL_USER])
 def mine_add_permission(request, tenant_id: str, permission_id: str):
     '''
@@ -79,14 +95,23 @@ def mine_add_permission(request, tenant_id: str, permission_id: str):
     '''
     from arkid.core.event import Event, dispatch_event
     from arkid.core.event import ADD_USER_MANY_PERMISSION
+
     user = request.user
     if user:
-        dispatch_event(Event(tag=ADD_USER_MANY_PERMISSION, tenant=request.tenant, request=request, data={
-            'user_ids': [str(user.id)],
-            'tenant_id': tenant_id,
-            'data_arr': [permission_id]
-        }))
+        dispatch_event(
+            Event(
+                tag=ADD_USER_MANY_PERMISSION,
+                tenant=request.tenant,
+                request=request,
+                data={
+                    'user_ids': [str(user.id)],
+                    'tenant_id': tenant_id,
+                    'data_arr': [permission_id],
+                },
+            )
+        )
     return {'error': ErrorCode.OK.value}
+
 
 # @api.get("/mine/tenant/{tenant_id}/all_permissions/", tags=["我的"])
 # @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
@@ -113,9 +138,7 @@ def get_mine_approve_requests(
 ):
     """我的审批列表"""
     tenant = request.tenant
-    requests = ApproveRequest.valid_objects.filter(
-        user=request.user, action__tenant=tenant
-    )
+    requests = ApproveRequest.valid_objects.filter(user=request.user)
     if package:
         requests = requests.filter(action__extension__package=package)
     if is_approved == "true":
@@ -125,26 +148,28 @@ def get_mine_approve_requests(
     return requests
 
 
-@api.get("/mine/switch_tenant/{id}/", tags=["我的"])
+@api.get("/mine/switch_tenant/{id}/", response=MineSwitchTenantOut, tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_switch_tenant(request, id):
     """租户切换"""
-    context = {}
     tenant = Tenant.active_objects.get(id=id)
-    context['tenant_id'] = id
-    context['slug'] = tenant.slug
 
-    return render(request, template_name='switch_tenant.html', context=context)
+    return {
+        "switch_tenant":{
+            "id": tenant.id.hex,
+            "slug": tenant.slug
+        },
+        "refresh": True
+    }
 
 
 @api.get("/tenant/{tenant_id}/mine/logout/", response=MineLogoutOut, tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def get_mine_logout(request,tenant_id: str):
+def get_mine_logout(request, tenant_id: str):
     """退出登录"""
     request.auth.delete()
-    return {
-        "refresh":True
-    }
+    return {"refresh": True}
+
 
 @api.get("/mine/tenants/", response=List[MineTenantListItemOut], tags=["我的"])
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
@@ -153,4 +178,3 @@ def get_mine_tenants(request):
     """获取我的租户"""
     tenants = Tenant.active_objects.filter(users=request.user).all()
     return list(tenants)
- 

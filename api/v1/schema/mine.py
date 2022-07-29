@@ -62,3 +62,22 @@ class MineLogoutOut(ResponseSchema):
     refresh:bool = Field(
         title=_("是否刷新页面")
     )
+    
+class MineSwitchTenantItem(Schema):
+    
+    id:str = Field(
+        title=_("租户ID")
+    )
+    
+    slug:str = Field(
+        title=_("租户SLUG")
+    )
+class MineSwitchTenantOut(ResponseSchema):
+    
+    refresh:bool = Field(
+        title=_("是否刷新页面")
+    )
+    
+    switch_tenant: MineSwitchTenantItem = Field(
+        title=_("切换租户")
+    )

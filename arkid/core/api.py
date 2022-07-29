@@ -10,7 +10,7 @@ from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
 from arkid.core.event import register_event, dispatch_event, Event, EventDisruptionData
 from arkid.core.models import ExpiringToken, Tenant
-
+from arkid.core.token import refresh_token, generate_token
 
 def add_fields(cls, **field_definitions: Any):
     new_fields: Dict[str, ModelField] = {}
@@ -70,15 +70,22 @@ class GlobalAuth(HttpBearer):
     openapi_scheme = "token"
 
     def authenticate(self, request, token):
+        from arkid.core.models import User  
         try:
-            token = ExpiringToken.objects.get(token=token)
-            
-            if not token.user.is_active:
-                raise Exception(_('User inactive or deleted','用户无效或被删除'))
+            if request.user and isinstance(request.user, User):  # restore 审批请求时，user已经存在，不需要再校验token
+                token = ExpiringToken.objects.filter(user=request.user).first()
+                if not token:
+                    token = ExpiringToken.objects.create(user=request.user, token=generate_token())
+                tenant = request.tenant
+            else:
+                token = ExpiringToken.objects.get(token=token)
+                
+                if not token.user.is_active:
+                    raise Exception(_('User inactive or deleted','用户无效或被删除'))
 
-            tenant = request.tenant or Tenant.platform_tenant()
-            if token.expired(tenant):
-                raise Exception(_('Token has expired','秘钥已经过期'))
+                tenant = request.tenant or Tenant.platform_tenant()
+                if token.expired(tenant):
+                    raise Exception(_('Token has expired','秘钥已经过期'))
 
             operation_id = request.operation_id
             if operation_id:
@@ -94,7 +101,6 @@ class GlobalAuth(HttpBearer):
         except Exception as err:
             logger.error(err)
             return
-        from arkid.core.models import User
         expand_user_dict = User.expand_objects.filter(id=token.user.id).first()
 
         request.user = token.user

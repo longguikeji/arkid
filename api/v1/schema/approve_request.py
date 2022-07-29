@@ -15,7 +15,7 @@ class ApproveRequestListItemOut(ModelSchema):
         model_fields = ['id']
 
     username: str = Field(title=_('Username', '用户名'))
-    path: str = Field(title=_('Path', '请求路径'))
+    request_path: str = Field(title=_('Path', '请求路径'))
     method: str = Field(title=_('Method', '请求方法'))
     status: str = Field(title=_('Status', '状态'))
 
@@ -23,9 +23,9 @@ class ApproveRequestListItemOut(ModelSchema):
     def resolve_username(obj):
         return obj.user.username
 
-    @staticmethod
-    def resolve_path(obj):
-        return obj.action.path
+    # @staticmethod
+    # def resolve_path(obj):
+    #     return obj.action.path
 
     @staticmethod
     def resolve_method(obj):

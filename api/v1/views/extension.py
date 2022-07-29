@@ -6,6 +6,7 @@ from arkid.core.api import api, operation
 from typing import List, Union,Optional
 from typing_extensions import Annotated
 from pydantic import Field
+from django.conf import settings
 from arkid.core.constants import PLATFORM_ADMIN, TENANT_ADMIN
 from arkid.core.extension import Extension
 from arkid.core.schema import ResponseSchema
@@ -16,7 +17,8 @@ from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
-from arkid.common.arkstore import get_arkstore_access_token, get_arkstore_extensions_purchased
+from arkid.common.arkstore import get_arkstore_access_token
+from .arkstore import get_arkstore_list
 
 
 ExtensionConfigSchemaIn = Extension.create_config_schema(
@@ -55,6 +57,10 @@ def load_extension(request, extension_id: str):
     else:
         return {}
 
+ExtensionProfileGetSchemaIn = Extension.create_profile_schema(
+    'ExtensionProfileGetSchemaIn',
+)
+
 ExtensionProfileGetSchemaOut = Extension.create_profile_schema(
     'ExtensionProfileGetSchemaOut',
     id=(UUID,Field(hidden=True)),
@@ -73,11 +79,14 @@ def get_extension_profile(request, id: str):
 
 @api.post("/extensions/{id}/profile/", tags=['平台插件'])
 @operation(roles=[PLATFORM_ADMIN])
-def update_extension_profile(request, id: str, data:ExtensionProfileGetSchemaOut):
+def update_extension_profile(request, id: str, data:ExtensionProfileGetSchemaIn):
     """更新插件启动配置
     """
     extension = ExtensionModel.objects.filter(id=id).first()
-    extension.profile = data
+    extension.is_active = data.is_active
+    extension.is_allow_use_platform_config = data.is_allow_use_platform_config
+    if data.profile:
+        extension.profile = data.profile.dict()
     extension.save()
     return {'error':ErrorCode.OK.value}
 
@@ -98,7 +107,14 @@ class ExtensionListOut(ModelSchema):
     is_active: bool = Field(
         title='是否启动',
         item_action={
-            "path":"/api/v1/extensions/{id}/active/",
+            "path":"/api/v1/extensions/{id}/toggle/",
+            "method":actions.FrontActionMethod.POST.value
+        }
+    )
+    is_allow_use_platform_config: bool = Field(
+        title='是否允许租户使用平台配置',
+        item_action={
+            "path":"/api/v1/extensions/{id}/use_platform_config/toggle/",
             "method":actions.FrontActionMethod.POST.value
         }
     )
@@ -121,12 +137,15 @@ def list_extensions(request, status: str = None):
         qs = ExtensionModel.valid_objects.all()
     else:
         qs = ExtensionModel.valid_objects.filter(status=status).all()
+    if settings.IS_CENTRAL_ARKID:
+        return qs
 
     token = request.user.auth_token
     tenant = Tenant.platform_tenant()
     access_token = get_arkstore_access_token(tenant, token)
-    resp = get_arkstore_extensions_purchased(access_token)
-    extensions_purchased = {ext['package']: ext for ext in resp['items']}
+    # resp = get_arkstore_extensions_purchased(access_token)
+    resp = get_arkstore_list(request, True, 'extension', all=True)
+    extensions_purchased = {ext['package']: ext for ext in resp}
     for ext in qs:
         if ext.package in extensions_purchased:
             ext.purchase_useful_life = extensions_purchased[ext.package].get('purchase_useful_life')
@@ -201,7 +220,7 @@ def get_extension_markdown(request, id: str):
             md_file.close()
     return {"data": data}
 
-@api.post("/extensions/{id}/active/", tags=["平台插件"])
+@api.post("/extensions/{id}/toggle/", tags=["平台插件"])
 @operation(roles=[PLATFORM_ADMIN])
 def toggle_extension_status(request, id: str):
     """ 租户插件列表
@@ -212,8 +231,18 @@ def toggle_extension_status(request, id: str):
         ext.unload()
         extension.is_active = False
     else:
-        ext.load()
+        ext.start()
         extension.is_active = True
 
+    extension.save()
+    return ErrorDict(ErrorCode.OK)
+
+@api.post("/extensions/{id}/use_platform_config/toggle/", tags=["平台插件"])
+@operation(roles=[PLATFORM_ADMIN])
+def toggle_extension_status(request, id: str):
+    """ 租户插件列表
+    """
+    extension= ExtensionModel.objects.get(id=id)
+    extension.is_allow_use_platform_config = not extension.is_allow_use_platform_config
     extension.save()
     return ErrorDict(ErrorCode.OK)

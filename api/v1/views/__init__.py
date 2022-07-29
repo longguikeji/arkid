@@ -36,5 +36,6 @@ from . import (
     arkstore,
     bind_saas,
     path_list,
-    upload
+    upload,
+    docs
 )

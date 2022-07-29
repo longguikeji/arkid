@@ -1,4 +1,5 @@
-# 授权规则插件
+# 源码
 
-## 功能介绍
-提供单独的根据规则匹配，计算用户的权限权限信息
+::: extension_root.com_longgui_impower_rule.ImpowerRuleExtension
+    rendering:
+        show_source: true

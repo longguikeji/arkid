@@ -327,6 +327,12 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             return False, ErrorCode.USERNAME_EXISTS_ERROR
         
         return True, None
+
+    def check_auth_data(self, event, **kwargs):
+        pass
+
+    def fix_login_page(self, event, **kwargs):
+        pass
     
     def create_auth_manage_page(self):
         """ 创建“我的-认证管理”中的更换手机号码页面
