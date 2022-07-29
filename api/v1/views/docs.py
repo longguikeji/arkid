@@ -4,9 +4,9 @@ from arkid.core.api import api, operation
 from arkid.core.constants import *
 from arkid.core.error import SuccessDict
 
-@api.get("/docs/redoc/", tags=["文档"])
+@api.get("/tenant/{tenant_id}/docs/redoc/", tags=["文档"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_docs(request):
+def get_docs(request,tenant_id):
     """ 
     """
     return SuccessDict(

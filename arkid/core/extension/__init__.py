@@ -454,7 +454,7 @@ class Extension(ABC):
             # 判断租户是否启用该插件
             if not self.model.is_active:
                 return
-            tenant_extension = TenantExtension.active_objects.filter(is_rented=True, extension=self.model).first()
+            tenant_extension = TenantExtension.active_objects.filter(is_rented=True, extension=self.model, tenant=event.tenant).first()
             if not event.tenant.is_platform_tenant and not tenant_extension:
                 return
             if event.packages and not self.package in event.packages:
