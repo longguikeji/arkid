@@ -31,33 +31,39 @@ from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
 select_pw_login_fields_page = pages.TablePage(select=True, name=_("Select Password Login Fields", "选择密码登录字段"))
 
 
-PasswordAuthFactorSchema = create_extension_schema('PasswordAuthFactorSchema',__file__, 
-        [
-            ('reset_password_enabled', Optional[bool] , Field(deprecated=True)),
-            ('login_enabled_field_names', List[str],
-                Field(
-                    default=[], 
-                    title=_('login_enabled_field_names', '启用密码登录的字段'),
-                    page=select_pw_login_fields_page.tag,
-                    link="key",
-                    type="string",
-                )
-            ),
-            ('register_enabled_field_names', List[str],
-                Field(
-                    default=[], 
-                    title=_('register_enabled_field_names', '启用密码注册的字段'),
-                    page=select_pw_login_fields_page.tag,
-                    link="key",
-                    type="string",
-                )
-            ),
-            ('is_apply', bool , Field(default=False, title=_('is_apply', '是否启用密码校验'))),
-            ('regular', str, Field(default='', title=_('regular', '密码校验正则表达式'))),
-            ('title', str, Field(default='', title=_('title', '密码校验提示信息'))),
-        ],
-        BaseAuthFactorSchema,
-    )
+UserFieldSchema = create_extension_schema(
+    'UserFieldSchema',
+    __file__,
+    [
+        ("key",str,Field())
+    ]
+)
+
+PasswordAuthFactorSchema = create_extension_schema(
+    'PasswordAuthFactorSchema',
+    __file__, 
+    [
+        ('reset_password_enabled', Optional[bool] , Field(deprecated=True)),
+        (
+            'login_enabled_field_names', 
+            List[UserFieldSchema],
+            Field(
+                title=_('login_enabled_field_names', '启用密码登录的字段'),
+                page=select_pw_login_fields_page.tag,
+            )
+        ),
+        ('register_enabled_field_names', List[UserFieldSchema],
+            Field(
+                title=_('register_enabled_field_names', '启用密码注册的字段'),
+                page=select_pw_login_fields_page.tag,
+            )
+        ),
+        ('is_apply', bool , Field(default=False, title=_('is_apply', '是否启用密码校验'))),
+        ('regular', str, Field(default='', title=_('regular', '密码校验正则表达式'))),
+        ('title', str, Field(default='', title=_('title', '密码校验提示信息'))),
+    ],
+    BaseAuthFactorSchema,
+)
 
 RestUserPasswordIn = create_extension_schema('RestUserPasswordIn',__file__, 
         [
@@ -113,8 +119,8 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         tenant = Tenant.platform_tenant()
         if not self.get_tenant_configs(tenant):
             config = {
-                'login_enabled_field_names': ['username'],
-                'register_enabled_field_names': ['username'],
+                'login_enabled_field_names': [{'key':'username'}],
+                'register_enabled_field_names': [{'key':'username'}],
                 'is_apply': False,
                 'regular': '',
                 'title': '',
@@ -160,7 +166,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         
         
         config = TenantExtensionConfig.active_objects.get(id=config_id).config
-        login_enabled_field_names = config.get('login_enabled_field_names')
+        login_enabled_field_names = [item["key"] for item in config.get('login_enabled_field_names')]
         filter_params = None
         for lefn in login_enabled_field_names:
             temp = {lefn:username}
@@ -168,7 +174,9 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 filter_params = Q(**temp) | filter_params
             else:
                 filter_params = Q(**temp)
+            
         users = User.expand_objects.filter(tenant=tenant).filter(filter_params)
+        
         if len(users) > 1:
             logger.error(f'{username}在{login_enabled_field_names}中匹配到多个用户')
             return self.auth_failed(event, data=self.error(ErrorCode.CONTACT_MANAGER))
@@ -196,7 +204,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         if not ret:
             return self.error(ErrorCode.PASSWORD_STRENGTH_LACK)
         
-        register_fields = config.config.get('register_enabled_field_names')
+        register_fields = [item["key"] for item in config.config.get('register_enabled_field_names')]
         if not register_fields:
             fields = ['username']
             if username is None:
@@ -228,7 +236,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
 
     def create_login_page(self, event, config, config_data):
         username_placeholder = ""
-        for lefn in config.config.get('login_enabled_field_names',[]):
+        for lefn in [item["key"] for item in config.config.get('login_enabled_field_names',[])]:
             if username_placeholder:
                 username_placeholder = ',' + User.key_fields[lefn]
             else:
@@ -249,7 +257,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
 
     def create_register_page(self, event, config, config_data):
         items = []
-        register_fields = config.config.get('register_enabled_field_names')
+        register_fields = [item["key"] for item in config.config.get('register_enabled_field_names')]
         for rf in register_fields:
             items.append({
                 "type": "text",
