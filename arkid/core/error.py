@@ -62,6 +62,7 @@ class ErrorCode(Enum):
 
     APPROVE_ACTION_DUPLICATED = ('14001', _('approve action duplicated', '审批动作重复'))
     APPROVE_ACTION_NOT_EXISTS = ('14002', _('approve action not exists', '审批动作不存在'))
+    APPROVE_REQUEST_WAITING = ('14003', _('approve request created, please wait', '审批请求已创建，等待审批'))
 
     WEBHOOK_NOT_EXISTS = ('15001', _('webhook not exists', '回调动作不存在'))
     WEBHOOK_HISTORY_NOT_EXISTS = ('15002', _('webhook history not exists', '回调动作历史不存在'))
