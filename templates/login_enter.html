@@ -121,10 +121,16 @@
        return(false);
   }
     token = getQueryVariable('token')
+    tenant_id = getQueryVariable('tenant_id')
     if(token){
       localStorage.setItem("token", token)
     }else{
       token = localStorage.getItem("token");
     }
-    location.href= "{{login_process_url}}?token="+token+"&{{params|safe}}"
+    if(tenant_id){
+      location.href= "{{login_process_url}}?token="+token+ "&tenant_id="+ tenant_id +"&{{params|safe}}"
+    }else{
+      location.href= "{{login_process_url}}?token="+token+"&{{params|safe}}"
+    }
+    
 </script>
