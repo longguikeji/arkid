@@ -27,7 +27,7 @@ def get_saas_token(tenant, token, use_cache=True):
     key = (str(tenant.id), token)
     if use_cache and key in arkid_saas_token_cache:
         return arkid_saas_token_cache[key]
-    app = Application.objects.filter(name='arkid_saas').first()
+    app = Application.objects.filter(name='arkid_saas', uuid = tenant.id).first()
     host = get_app_config().get_host()
     url = f"{host}/api/v1/tenant/{tenant.id.hex}/app/{tenant.id.hex}/oauth/authorize/"
     nonce = uuid.uuid4().hex
