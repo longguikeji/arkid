@@ -30,6 +30,9 @@ from arkid.core.constants import TENANT_ADMIN, PLATFORM_ADMIN
 
 select_pw_login_fields_page = pages.TablePage(select=True, name=_("Select Password Login Fields", "选择密码登录字段"))
 
+select_pw_register_login_fields_page = pages.TablePage(select=True, name=_("Select Password Login Fields", "选择密码登录字段"))
+
+
 
 UserFieldSchema = create_extension_schema(
     'UserFieldSchema',
@@ -50,12 +53,14 @@ PasswordAuthFactorSchema = create_extension_schema(
             Field(
                 title=_('login_enabled_field_names', '启用密码登录的字段'),
                 page=select_pw_login_fields_page.tag,
+                default=[{"key": "username"}]
             )
         ),
         ('register_enabled_field_names', List[UserFieldSchema],
             Field(
                 title=_('register_enabled_field_names', '启用密码注册的字段'),
-                page=select_pw_login_fields_page.tag,
+                page=select_pw_register_login_fields_page.tag,
+                default=[{"key": "username"}]
             )
         ),
         ('is_apply', bool , Field(default=False, title=_('is_apply', '是否启用密码校验'))),
@@ -96,7 +101,16 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 method=actions.FrontActionMethod.GET,
             ),
         )
+        
+        select_pw_register_login_fields_page.create_actions(
+            init_action=actions.DirectAction(
+                path=user_key_fields_path,
+                method=actions.FrontActionMethod.GET,
+            ),
+        )
+        
         self.register_front_pages(select_pw_login_fields_page)
+        self.register_front_pages(select_pw_register_login_fields_page)
         
         # 租户管理员：用户管理-用户列表-重置密码
         reset_user_password_path = self.register_api(
@@ -245,7 +259,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             {
                 "type": "text",
                 "name": "username",
-                "placeholder": username_placeholder
+                "placeholder": username_placeholder or '用户名'
             },
             {
                 "type": "password",
