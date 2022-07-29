@@ -77,6 +77,9 @@ class ErrorCode(Enum):
     
     PASSWORD_NOT_CORRECT = ('18001', _('password not correct', '密码不正确'))
 
+    STORAGE_NOT_EXISTS = ('18002', _('storage not exists', '存储插件未启用'))
+    STORAGE_FAILED = ('18003', _('storage failed', '存储失败'))
+    
 class ErrorDict(dict):
 
   def __init__(self, enum, package='core', **kwargs):
