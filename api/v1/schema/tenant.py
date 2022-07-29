@@ -98,10 +98,26 @@ class DefaultTenantItemOut(ModelSchema):
 class DefaultTenantOut(ResponseSchema):
     data: DefaultTenantItemOut
     
-    
-class TenantLogoutOut(ResponseSchema):
-    pass
 
+class SwitchTenantItem(Schema):
+    
+    id:str = Field(
+        title=_("租户ID")
+    )
+    
+    slug:str = Field(
+        title=_("租户SLUG")
+    )
+class TenantLogoutOut(ResponseSchema):
+    
+    refresh:bool = Field(
+        title=_("是否刷新页面")
+    )
+    
+    switch_tenant: SwitchTenantItem = Field(
+        title=_("切换租户")
+    )
+    
 class TenantLogoutIn(Schema):
     
     password:str = Field(
