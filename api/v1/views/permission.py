@@ -44,7 +44,7 @@ def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
     return ErrorDict(ErrorCode.OK)
 
 
-@api.get("/tenant/{tenant_id}/permissions", response=List[PermissionListSchemaOut], tags=['权限'])
+@api.get("/tenant/{tenant_id}/permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_id: str = None, group_id: str = None, app_name: str = None, category: str = None):
@@ -57,7 +57,7 @@ def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_i
     return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category)
 
 
-@api.get("/tenant/{tenant_id}/childmanager_permissions", response=List[PermissionListSchemaOut], tags=['权限'])
+@api.get("/tenant/{tenant_id}/childmanager_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def childmanager_permissions(request, tenant_id: str, only_show_group: int = 0):
@@ -226,7 +226,7 @@ def usergroup_remove_permission(request, tenant_id: str, select_usergroup_id: st
     return ErrorDict(ErrorCode.OK)
 
 
-@api.get("/tenant/{tenant_id}/group_permissions", response=List[PermissionListSchemaOut], tags=['权限'])
+@api.get("/tenant/{tenant_id}/group_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_group_permissions(request, tenant_id: str, select_usergroup_id: str = None, app_name: str = None, category: str = None):
