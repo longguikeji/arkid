@@ -419,9 +419,10 @@ def permission_toggle_open(request, tenant_id: str, permission_id: str):
     切换权限是否打开的状态
     '''
     permission = SystemPermission.valid_objects.filter(
-        tenant_id=tenant_id,
         id=permission_id
     ).first()
+    if permission and permission.tenant is None:
+        return ErrorDict(ErrorCode.SYSTEM_PERMISSION_NOT_OPERATION)
     if permission is None:
         permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
     if permission:
