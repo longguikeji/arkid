@@ -20,7 +20,7 @@ select_app_page.create_actions(
     )
 )
 
-class PermissionListSchemaOut(ModelSchema):
+class PermissionsListSchemaOut(ModelSchema):
 
     app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
     sort_id: int = Field(hidden=True)
@@ -29,7 +29,7 @@ class PermissionListSchemaOut(ModelSchema):
 
     class Config:
         model = Permission
-        model_fields = ['id', 'name', 'is_system', 'is_open']
+        model_fields = ['id', 'name', 'is_system']
 
 
 class PermissionSchemaOut(Schema):
