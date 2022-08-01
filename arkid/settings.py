@@ -226,7 +226,7 @@ g+gp5fQ4nmDrSNHjakzQCX2mKMsx/GLWZzoIDd7ECV9f
 # arkid_saas
 IS_CENTRAL_ARKID = False # 是否为中心ARKID
 ARKID_SAAS_URL = 'https://central.arkid.cc' # 中心ARKID链接
-ARKSTOER_URL = 'https://arkstore.longuikeji.com' # 插件商店链接
+ARKSTOER_URL = 'https://arkstore.longguikeji.com' # 插件商店链接
 
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
