@@ -19,9 +19,14 @@ class ApproveRequestOut(ResponseSchema):
 
 
 class ApproveSystemBaseSchema(Schema):
-    change_status_url: str = Field(
+    pass_request_url: str = Field(
         default='',
-        title=_('Change Approve Request Status Url', '改变审批请求URL'),
+        title=_('Pass Approve Request Url', '通过审批请求URL'),
+        readonly=True,
+    )
+    deny_request_url: str = Field(
+        default='',
+        title=_('Deny Approve Request Url', '拒绝审批请求URL'),
         readonly=True,
     )
 
