@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import List
+from typing import List, Optional
 from pydantic import Field
 from ninja import Schema, ModelSchema
 from arkid.core.translation import gettext_default as _
@@ -64,7 +64,7 @@ class ApproveActionExtensionIn(Schema):
 
 class ApproveActionSchema(Schema):
     name: str = Field(title=_('Name', '名称'), default='')
-    description: str = Field(title=_('Description', '备注'), default='')
+    description: Optional[str] = Field(title=_('Description', '备注'), default='')
     path: str = Field(
         title=_('Path', '请求路径'),
         type="string",
