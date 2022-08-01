@@ -78,14 +78,18 @@ class TenantConfigUpdateIn(Schema):
         title=_("租户名称"),
     )
     
-    slug: str = Field(
+    slug: Optional[str] = Field(
         title=_("slug")
     )
     
-    icon: str = Field(
+    icon: Optional[str] = Field(
         title=_("图标")
     )
-        
+    
+    token_duration_minutes: Optional[int] = Field(
+        title=_('Token有效时长(分钟)')
+    )
+    
 class TenantConfigUpdateOut(ResponseSchema):
     pass
 
