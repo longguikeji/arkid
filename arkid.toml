@@ -2,6 +2,7 @@ name = "demo arkid"
 # host = 'ngarkid.vaiwan.com'
 host = 'localhost:8000'
 frontend_host = 'localhost:9528'
+backend_host = 'localhost:8000'
 https_enabled = 0
 
 [email]

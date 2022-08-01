@@ -34,6 +34,7 @@ class Config(object):
         self.name = data.get('name')
         self.host = data.get('host')
         self.frontend_host = data.get('frontend_host')
+        self.backend_host = data.get('backend_host')
         self.https_enabled = data.get('https_enabled')
 
         self.extension = ExtensionConfig(
@@ -69,6 +70,11 @@ class Config(object):
             )
 
         return self.frontend_host
+
+    def get_backend_host(self):
+        return '{}://{}'.format(
+                'http', self.backend_host
+            )
 
     def get_slug_frontend_host(self, slug, schema=True):
         if schema:

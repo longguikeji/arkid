@@ -69,7 +69,7 @@ class MineSwitchTenantItem(Schema):
         title=_("租户ID")
     )
     
-    slug:str = Field(
+    slug:Optional[str] = Field(
         title=_("租户SLUG")
     )
 class MineSwitchTenantOut(ResponseSchema):
