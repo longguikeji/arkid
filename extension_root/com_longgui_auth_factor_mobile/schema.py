@@ -1,8 +1,8 @@
 from typing import Optional
 from uuid import UUID
 from ninja import Field, ModelSchema, Schema
+from arkid.config import get_app_config
 from arkid.core import actions
-from arkid.core.actions import DirectAction
 from arkid.core.extension import create_extension_schema
 from arkid.core.schema import ResponseSchema
 from arkid.core.translation import gettext_default as _
@@ -42,8 +42,33 @@ class MineMobileItemOut(Schema):
     #     default="86"
     # )
     
+    current_mobile:str = Field(
+        title=_("当前手机号码"),
+        
+    )
+    
     mobile:str = Field(
-        title='手机号',
+        title=_('新手机号码'),
+        suffix_action={
+            "path":get_app_config().get_host() + "/api/v1/tenant/{tenant_id}/com_longgui_auth_factor_mobile/config/{config_id}/send_sms_code/",
+            "method":"post",
+            "params": {
+                "mobile": "mobile",
+                "areacode": "86",
+            },
+            "delay":60,
+            "name":_("发送验证码")
+        }
+    )
+    
+    config_id:str = Field(
+        default="",
+        hidden=True
+    )
+    
+    code:str = Field(
+        title=_("验证码"),
+        default=""
     )
     
 class MineMobileBaseOut(ResponseSchema):
@@ -55,8 +80,27 @@ class UpdateMineMobileBaseIn(Schema):
     注意： 此处因需要部分运行时配置参数故而临时写在此处，未来可能优化
     """
     mobile:str = Field(
-        title='手机号',
+        title=_('手机号码'),
+        suffix_action={
+            "path":get_app_config().get_host() + "/api/v1/tenant/{tenant_id}/com_longgui_auth_factor_mobile/config/{config_id}/send_sms_code/",
+            "method":"post",
+            "params": {
+                "mobile": "mobile",
+                "areacode": "86",
+            },
+            "delay":60,
+            "name":_("发送验证码")
+        }
     )
+    
+    config_id:str = Field(
+        hidden=True
+    )
+    
+    code:str = Field(
+        title=_("验证码"),
+    )
+    
 class UpdateMineMobileBaseOut(ResponseSchema):
     pass
 
