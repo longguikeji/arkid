@@ -180,7 +180,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         
         
         config = TenantExtensionConfig.active_objects.get(id=config_id).config
-        login_enabled_field_names = [item["key"] for item in config.get('login_enabled_field_names')]
+        login_enabled_field_names = [item["key"] if isinstance(item,dict) else item for item in config.get('login_enabled_field_names')]
         filter_params = None
         for lefn in login_enabled_field_names:
             temp = {lefn:username}
@@ -218,7 +218,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         if not ret:
             return self.error(ErrorCode.PASSWORD_STRENGTH_LACK)
         
-        register_fields = [item["key"] for item in config.config.get('register_enabled_field_names')]
+        register_fields = [item["key"] if isinstance(item,dict) else item for item in config.config.get('register_enabled_field_names')]
         if not register_fields:
             fields = ['username']
             if username is None:
@@ -250,7 +250,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
 
     def create_login_page(self, event, config, config_data):
         username_placeholder = ""
-        for lefn in [item["key"] for item in config.config.get('login_enabled_field_names',[])]:
+        for lefn in [item["key"] if isinstance(item,dict) else item for item in config.config.get('login_enabled_field_names',[])]:
             if username_placeholder:
                 username_placeholder = ',' + User.key_fields[lefn]
             else:
@@ -271,7 +271,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
 
     def create_register_page(self, event, config, config_data):
         items = []
-        register_fields = [item["key"] for item in config.config.get('register_enabled_field_names')]
+        register_fields = [item["key"] if isinstance(item,dict) else item for item in config.config.get('register_enabled_field_names')]
         for rf in register_fields:
             items.append({
                 "type": "text",
