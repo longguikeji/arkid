@@ -361,7 +361,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         page.create_actions(
             init_action=actions.DirectAction(
                 path=mine_mobile_path,
-                method=actions.FrontActionMethod.GET
+                method=actions.FrontActionMethod.GET,
+                init_data={
+                    
+                }
             ),
             global_actions={
                 'confirm': actions.ConfirmAction(
