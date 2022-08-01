@@ -156,7 +156,7 @@ class OrderPaymentOut(ResponseSchema):
 
 
 class TrialDays(Schema):
-    trial_period: int = Field(title=_('Trial Days',"试用期(天)"))
+    trial_period: int = Field(readonly=True, title=_('Trial Days',"试用期(天)"))
 
 
 class TrialDaysOut(ResponseSchema):
