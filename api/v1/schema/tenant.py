@@ -58,7 +58,7 @@ class TenantConfigItemOut(Schema):
         title=_("租户名称"),
     )
     
-    slug: str = Field(
+    slug: Optional[str] = Field(
         title=_("slug")
     )
     
