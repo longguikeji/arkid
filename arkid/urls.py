@@ -22,6 +22,7 @@ from arkid.core import urls as core_urls
 from arkid.redoc import view as redoc_view
 from scim_server import urls as scim_urls
 from arkid.core.path import API_PATH_HEAD
+from django.http import HttpResponse
 
 
 urlpatterns = [
@@ -32,6 +33,7 @@ urlpatterns = [
     path(f"{API_PATH_HEAD}/redoc", redoc_view.Redoc.as_view()),
     path(f"{API_PATH_HEAD}/openapi_redoc.json", redoc_view.RedocOpenAPI.as_view()),
     path(f"{API_PATH_HEAD}/", include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path(f"{API_PATH_HEAD}/ping/", lambda _: HttpResponse('pong'), name='ping'),
 ]
 
 
