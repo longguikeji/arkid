@@ -9,6 +9,9 @@ ADD . .
 RUN sed -i "s@https://mirrors.aliyun.com/pypi/simple@$PIP@g" requirements.txt; \
     cat requirements.txt; \
     pip install --no-cache-dir -r requirements.txt; \
-    chmod +x docker-entrypoint.sh
+    chmod +x docker-entrypoint.sh; \
+    for i in `tree -f -i extension_root|grep requirements.txt`; \
+    do  sed -i "s@https://mirrors.aliyun.com/pypi/simple@$PIP@g" $i; \
+        pip install --no-cache-dir -r $i; done
 ENTRYPOINT ["/var/arkid/docker-entrypoint.sh"]
 CMD ["tini", "--", "/usr/local/bin/python3.8", "manage.py", "runserver", "0.0.0.0:80"]
