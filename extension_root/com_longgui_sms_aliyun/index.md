@@ -16,6 +16,8 @@
 
 租赁完成后，进入已租赁列表，找到阿里云短信插件卡片，点击租户配置，配置相关数据
 
+域名默认为dysmsapi.aliyuncs.com
+
 [![vEsDFe.md.png](https://s1.ax1x.com/2022/08/02/vEsDFe.md.png)](https://imgtu.com/i/vEsDFe)
 
 === "插件运行时配置"

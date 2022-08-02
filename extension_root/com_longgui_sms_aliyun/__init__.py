@@ -16,7 +16,7 @@ SettingsSchema = create_extension_schema(
         ('access_key_id', str, Field(title=_("AccessKey ID"))),
         ('access_key_secret', str, Field(title=_("AccessKey Secret"))),
         ('region_id', Optional[str], Field(title=_("Region ID", "地域ID"))),
-        ('endpoint', Optional[str], Field(title=_("Endpoint", "访问的域名"))),
+        ('endpoint', Optional[str], Field(title=_("Endpoint", "访问的域名"),default="dysmsapi.aliyuncs.com")),
     ]
 )
 
