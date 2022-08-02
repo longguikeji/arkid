@@ -136,7 +136,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
                     Field(
                         default=False, 
                         title=_('login_enabled', '启用登录'),
-                        # read_only=True
+                        readonly=True
                     )
                 ),
                 (
@@ -145,7 +145,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
                     Field(
                         default=False, 
                         title=_('register_enabled', '启用注册'),
-                        # read_only=True
+                        readonly=True
                     )
                 ),
                 (
@@ -154,7 +154,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
                     Field(
                         default=False, 
                         title=_('reset_password_enabled', '启用重置密码'),
-                        # read_only=True
+                        readonly=True
                     )
                 ),
             ],

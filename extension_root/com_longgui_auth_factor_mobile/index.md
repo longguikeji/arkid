@@ -22,7 +22,7 @@
 
 === "插件租赁"
 
-经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到手机验证码插件卡片，点击租赁
+经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到手机验证码认证因素插件卡片，点击租赁
 
 [![vEcwwV.png](https://s1.ax1x.com/2022/08/02/vEcwwV.png)](https://imgtu.com/i/vEcwwV)
 
@@ -53,6 +53,7 @@
 ## 实现思路
 
 * 普通用户：手机号码+验证码用户注册/登录/重置密码：
+
 ```mermaid
 sequenceDiagram
     participant D as 用户
@@ -78,6 +79,7 @@ sequenceDiagram
     C->>D: 检查结果，如完成注册/登录相关操作则生成token并跳转至桌面，如完成重置密码操作或者未完成注册/登录操作则提示错误
 
 ```
+
 * 普通用户：重置手机号码：
 
 ```mermaid
@@ -104,6 +106,7 @@ sequenceDiagram
 ```
 
 * 管理员用户： 更换用户手机号码
+
 ```mermaid
 sequenceDiagram
     participant D as 用户
@@ -116,6 +119,7 @@ sequenceDiagram
     C->>D: 写入数据至数据库
 
 ```
+
 ## 抽象方法实现
 * [load](#extension_root.com_longgui_auth_factor_mobile.MobileAuthFactorExtension.load)
 * [authenticate](#extension_root.com_longgui_auth_factor_mobile.MobileAuthFactorExtension.authenticate)

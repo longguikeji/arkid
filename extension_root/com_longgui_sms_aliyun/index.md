@@ -24,7 +24,7 @@
 
 [![vEyZkD.md.png](https://s1.ax1x.com/2022/08/02/vEyZkD.md.png)](https://imgtu.com/i/vEyZkD)
 
-[![vEych4.md.png](https://s1.ax1x.com/2022/08/02/vEych4.md.png)](https://imgtu.com/i/vEych4)
+[![vE7Dkd.md.png](https://s1.ax1x.com/2022/08/02/vE7Dkd.md.png)](https://imgtu.com/i/vE7Dkd)
 
 * 注意： 模板参数一项中如不填则默认为["code"]，适用于短信验证码
 
