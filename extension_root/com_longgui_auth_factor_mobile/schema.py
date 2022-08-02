@@ -44,7 +44,7 @@ class MineMobileItemOut(Schema):
     
     current_mobile:Optional[str] = Field(
         title=_("当前手机号码"),
-        
+        readonly=True
     )
     
     mobile:str = Field(
