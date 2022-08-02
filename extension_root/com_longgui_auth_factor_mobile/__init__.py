@@ -481,6 +481,11 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         
         config = self.get_tenant_configs(request.tenant).first()
         
+        if not config:
+            return self.error(
+                ErrorCode.CONFIG_IS_NOT_EXISTS
+            )
+        
         return self.success(
             data={
                 "current_mobile": user_expand.get("mobile",None),
