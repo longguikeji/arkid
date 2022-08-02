@@ -1,3 +1,4 @@
+import json
 from ninja import Field
 from typing import Optional
 from types import SimpleNamespace
@@ -45,7 +46,7 @@ class AliyunSMSExtension(SmsExtension):
         mobile = event.data.pop("mobile")
         
         # TODO 处理短信发送的数据结构
-        template_params = event.data
+        template_params = json.dumps({"code":event.data["code"]})
         
         settings = self.get_settings(tenant)
         settings = SimpleNamespace(**settings.settings)
@@ -74,6 +75,7 @@ class AliyunSMSExtension(SmsExtension):
             out_id=config.out_id or None,
         )
         res = client.send_sms(send_sms_request)
+        print(res.body)
         return res.body.to_map()
 
 
