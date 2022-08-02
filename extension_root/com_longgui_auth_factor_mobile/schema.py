@@ -42,7 +42,7 @@ class MineMobileItemOut(Schema):
     #     default="86"
     # )
     
-    current_mobile:str = Field(
+    current_mobile:Optional[str] = Field(
         title=_("当前手机号码"),
         
     )
