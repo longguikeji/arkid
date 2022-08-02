@@ -52,10 +52,6 @@ class MineMobileItemOut(Schema):
         suffix_action={
             "path":get_app_config().get_host() + "/api/v1/tenant/{tenant_id}/com_longgui_auth_factor_mobile/config/{config_id}/send_sms_code/",
             "method":"post",
-            "params": {
-                "mobile": "mobile",
-                "areacode": "86",
-            },
             "delay":60,
             "name":_("发送验证码")
         }
@@ -84,10 +80,6 @@ class UpdateMineMobileBaseIn(Schema):
         suffix_action={
             "path":get_app_config().get_host() + "/api/v1/tenant/{tenant_id}/com_longgui_auth_factor_mobile/config/{config_id}/send_sms_code/",
             "method":"post",
-            "params": {
-                "mobile": "mobile",
-                "areacode": "86",
-            },
             "delay":60,
             "name":_("发送验证码")
         }
