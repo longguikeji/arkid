@@ -1,5 +1,6 @@
 name: mkdocs
 on:
+  workflow_dispatch:
   push:
     branches:
       - v2.5-dev 
