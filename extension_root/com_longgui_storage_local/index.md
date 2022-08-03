@@ -20,6 +20,8 @@
 
 [![vELXx1.png](https://s1.ax1x.com/2022/08/02/vELXx1.png)](https://imgtu.com/i/vELXx1)
 
+[![vVD6iQ.md.png](https://s1.ax1x.com/2022/08/03/vVD6iQ.md.png)](https://imgtu.com/i/vVD6iQ)
+
 ## 实现思路
 
 开发者在开发静态文件存储插件时，需继承StorageExtension,并重载save_file和resolve方法即可
