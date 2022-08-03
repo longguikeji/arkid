@@ -1,5 +1,6 @@
 name: mkdocs
 on:
+  workflow_dispatch:
   push:
     branches:
       - v2.5-dev 
@@ -15,4 +16,5 @@ jobs:
         with:
           python-version: 3.8
       - run: pip install -r requirements.txt
+      - run: python manage.py migrate
       - run: mkdocs gh-deploy --force
