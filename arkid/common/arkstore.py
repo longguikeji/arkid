@@ -15,6 +15,7 @@ from arkid.core.models import Tenant
 from arkid.extension.models import TenantExtension, Extension
 from arkid.extension.utils import import_extension, unload_extension, load_extension_apps
 from pathlib import Path
+from arkid.common.logger import logger
 
 
 arkid_saas_token_cache = {}
@@ -303,7 +304,12 @@ def download_arkstore_extension(tenant, token, extension_id, extension_detail):
     with zipfile.ZipFile(io.BytesIO(resp.content)) as zip_ref:
         zip_ref.extractall(extract_folder)
 
-    load_installed_extension(ext_dir)
+    try:
+        load_installed_extension(ext_dir)
+        logger.info(f'load download extension: {ext_package} scuess')
+    except Exception as e:
+        logger.exception(f'load download extension: {ext_package} failed: {str(e)}')
+        return {'success': 'failed'}
 
     return {'success': 'true'}
 
@@ -349,8 +355,6 @@ def load_installed_extension(ext_dir):
         extension = extension,
     )
 
-    # ext.start()
-
     # 如果新安装的插件有models需重启django
     extension_models= Path(ext_dir) / 'models.py'
     if extension_models.exists():
@@ -360,6 +364,8 @@ def load_installed_extension(ext_dir):
             os.system("supervisorctl restart runserver")
         except Exception as e:
             print("未使用supervisor启动django server, 需手动重启django server!")
+
+    ext.start()
 
 
 def get_bind_arkstore_agent(access_token):
