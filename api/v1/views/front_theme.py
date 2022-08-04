@@ -48,7 +48,7 @@ def get_front_theme_list(request, tenant_id: str):
     return datas
 
 class LoadFrontThemeListOut(ResponseSchema):
-    data:List[FrontThemeListSchemaItem]
+    data:Optional[List[FrontThemeListSchemaItem]]
 
 @api.get("/tenant/{tenant_id}/front_theme/", response=LoadFrontThemeListOut, tags=["前端主题"], auth=None)
 def load_front_theme_list(request, tenant_id: str):
