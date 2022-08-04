@@ -160,7 +160,7 @@ def create_config_schema_from_schema_list(schema_cls_name, schema_list, discrimi
             new_schema_list.append(schema)
             
         schema_list = new_schema_list
-        root_type, root_field = Union[tuple(schema_list)], Field(discriminator=discriminator, depth=depth)
+        root_type, root_field = Union[tuple(schema_list)], Field(discriminator=discriminator, readonly=True, depth=depth)
         
         schema = create_extension_schema_by_package(
             schema_cls_name, 
