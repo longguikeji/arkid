@@ -4,7 +4,8 @@ from django import dispatch
 from django.db.models import F
 from ninja import Schema
 from pydantic import Field
-from typing import List
+from typing import List, Optional
+from arkid.core.error import SuccessDict
 from arkid.core.pagenation import CustomPagination
 from arkid.core.api import api, operation
 from arkid.core.constants import *
@@ -26,7 +27,7 @@ class FrontThemeListSchemaItem(Schema):
 class FrontThemeListOut(ResponseSchema):
     data: List[FrontThemeListSchemaItem]
     
-@api.get("/tenant/{tenant_id}/front_theme/", response=List[FrontThemeListSchemaItem], tags=["前端主题"], auth=None)
+@api.get("/tenant/{tenant_id}/front_theme_list/", response=List[FrontThemeListSchemaItem], tags=["前端主题"], auth=None)
 @operation(FrontThemeListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_front_theme_list(request, tenant_id: str):
@@ -46,7 +47,10 @@ def get_front_theme_list(request, tenant_id: str):
         datas.append(data)
     return datas
 
-@api.get("/tenant/{tenant_id}/load_front_theme/", response=List[FrontThemeListSchemaItem], tags=["前端主题"], auth=None)
+class LoadFrontThemeListOut(ResponseSchema):
+    data:List[FrontThemeListSchemaItem]
+
+@api.get("/tenant/{tenant_id}/front_theme/", response=LoadFrontThemeListOut, tags=["前端主题"], auth=None)
 def load_front_theme_list(request, tenant_id: str):
     """ 前端主题配置列表 """
     extensions = Extension.active_objects.filter(type=FrontThemeExtension.TYPE).all()
@@ -62,16 +66,21 @@ def load_front_theme_list(request, tenant_id: str):
             'css_url' : config['config']['css_url'],
         }
         datas.append(data)
-    return datas
+    return SuccessDict(
+        data=datas
+    )
 
-GetFrontThemeOut = FrontThemeExtension.create_composite_config_schema('GetFrontThemeOut')
+GetFrontThemeItemOut = FrontThemeExtension.create_composite_config_schema('GetFrontThemeItemOut')
+
+class GetFrontThemeOut(ResponseSchema):
+    data:Optional[GetFrontThemeItemOut]
 
 @api.get("/tenant/{tenant_id}/front_theme/{id}/", response=GetFrontThemeOut, tags=["前端主题"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_front_theme(request, tenant_id: str, id: str):
     """ 获取前端主题配置 """
     config = TenantExtensionConfig.active_objects.filter(id=id).annotate(package=F('extension__package')).values('package','id','name','type','config').first()
-    return config
+    return SuccessDict(data=config)
 
 CreateFrontThemeIn = FrontThemeExtension.create_composite_config_schema(
     'CreateFrontThemeIn',
