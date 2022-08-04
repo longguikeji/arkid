@@ -29,8 +29,9 @@ def get_mine_apps(request, tenant_id: str):
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_profile(request, tenant_id: str):
     """我的个人资料"""
-    user = request.user
-    user = User.expand_objects.filter(id=user.id).first()
+    real_user = request.user
+    user = User.expand_objects.filter(id=real_user.id).first()
+    user["tenant"] = real_user.tenant
     return user
 
 

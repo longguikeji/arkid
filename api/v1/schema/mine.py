@@ -16,14 +16,20 @@ class MineAppsOut(ResponseSchema):
     data:Optional[List[MineAppItem]]
 
 
+class ProfileTenantOut(Schema):
 
-class ProfileSchemaOut(ModelSchema):
-    class Config:
-        model = User
-        model_fields = ['id', 'username', 'avatar']
+    id:UUID = Field(title='ID', hidden=True)
+
+    slug:str = Field(title='slug', hidden=True)
+
+    name:str = Field(title='name', hidden=True)
+
+class ProfileSchemaOut(Schema):
     
     id:UUID = Field(title='ID', hidden=True)
     username:str = Field(title='用户名',readonly=True)
+    avatar:Optional[str] = Field(title=_('头像'))
+    tenant:ProfileTenantOut = Field(title=_("租户"),hidden=True)
 
 
 class ProfileSchemaIn(ModelSchema):
