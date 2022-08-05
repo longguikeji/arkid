@@ -821,7 +821,7 @@ class Extension(ABC):
                 (self.__class__.composite_key, Literal[composite_value], Field()), # type: ignore
                 ("package", Literal[package], Field()), # type: ignore
                 ("config", schema, Field(title=_("配置内容"))),
-                ("id",UUID,Field(hidden=True)),
+                ("id",Optional[UUID],Field(hidden=True)),
             ],
         )
         new_schema.name = name
