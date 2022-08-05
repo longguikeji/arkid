@@ -31,7 +31,7 @@ def get_frontend_url(request):
     config = Platform.get_config()
     return SuccessDict(
         data={
-            "url": config.get("frontend_url","")
+            "url": config.frontend_url
         }
     )
 
@@ -41,8 +41,11 @@ def set_frontend_url(request,data:FrontendUrlSchema):
     """ 获取ArkId访问地址
     """
     config = Platform.get_config()
-    for key,value in data.dict().items():
-        setattr(config,key,value)
+    config.frontend_url = data.dict().get("url")
     config.save()
     
-    return {"error": ErrorCode.OK.value}
+    return SuccessDict(
+        data={
+            "url": config.frontend_url
+        }
+    )
