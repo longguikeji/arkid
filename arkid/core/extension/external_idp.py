@@ -230,7 +230,7 @@ class ExternalIdpExtension(Extension):
         # token = refresh_token(user)
         # data = {"token": token}
         data = {}
-        return JsonResponse(data)
+        return JsonResponse(self.success())
 
     @abstractmethod
     def get_img_url(self):
