@@ -65,7 +65,7 @@ show_user_permission_page.create_actions(
 )
 user_app_permission_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/permissions?select_user_id={select_user_id}&app_id={app_id}',
+        path='/api/v1/tenant/{tenant_id}/user_app_last_permissions?user_id={user_id}&app_id={app_id}',
         method=actions.FrontActionMethod.GET
     ),
 )
