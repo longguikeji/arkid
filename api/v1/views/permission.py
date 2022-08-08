@@ -57,6 +57,19 @@ def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_i
     return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category)
 
 
+
+@api.get("/tenant/{tenant_id}/user_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def user_list_permissions(request, tenant_id: str,  select_user_id: str = None, app_name: str = None):
+    '''
+    用户最终结果权限列表
+    '''
+    login_user = request.user
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category)
+
 @api.get("/tenant/{tenant_id}/childmanager_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
