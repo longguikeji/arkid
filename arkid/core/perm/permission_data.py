@@ -1268,7 +1268,7 @@ class PermissionData(object):
                     tenant_id=tenant_id,
                     app__isnull=False
                 )
-                flag = True
+                permission_results = []
                 for userpermissionresult in userpermissionresults:
                     permission_sort_ids = []
                     if userpermissionresult:
@@ -1278,9 +1278,11 @@ class PermissionData(object):
                             if int(item) == 1:
                                 permission_sort_ids.append(index)
                     if permission_sort_ids:
-                        flag = False
-                        permissions = permissions.filter(sort_id__in=permission_sort_ids)
-                if flag:
+                        for item in permissions.filter(app=userpermissionresult.app, sort_id__in=permission_sort_ids):
+                            permission_results.append(item.id)
+                if permission_results:
+                    permissions = permissions.filter(id__in=permission_results)
+                else:
                     permissions = permissions.filter(id__isnull=True)
             if group_id:
                 usergroup = UserGroup.valid_objects.filter(id=group_id).first()
@@ -1295,7 +1297,115 @@ class PermissionData(object):
         else:
             systempermissions = systempermissions.filter(Q(tenant__isnull=True)|Q(tenant_id=tenant_id))
         return list(systempermissions.all())+list(permissions.all())
-    
+
+    def get_user_app_last_permissions(self, tenant_id, app_id, user_id):
+        '''
+        获取用户指定应用的最终权限
+        '''
+        user = User.valid_objects.filter(id=user_id).first()
+        if user is None:
+            return []
+        compress = Compress()
+        userpermissionresults = UserPermissionResult.valid_objects.filter(
+            user=user,
+            tenant_id=tenant_id,
+        )
+        if app_id == 'arkid':
+            app_id = None
+        if app_id:
+            userpermissionresult = userpermissionresults.filter(
+                app_id=app_id,
+            ).first()
+        else:
+            userpermissionresult = userpermissionresults.filter(   
+                app__isnull=True,
+            ).first()
+        if userpermissionresult:
+            permission_result = self.get_permission_str_process(userpermissionresult, tenant_id, False)
+            # 将结果字符串转化为权限列表
+            permission_result_list = list(permission_result)
+            index_list = []
+            for index,value in enumerate(permission_result_list):
+                if int(value) == 1:
+                    index_list.append(index)
+            if len(index_list) == 0:
+                index_list.append(-1)
+            # 筛选出需要的显示的权限
+            if app_id:
+                return Permission.valid_objects.filter(
+                    app_id=app_id,
+                    sort_id__in=index_list
+                ).order_by('sort_id')
+            else:
+                return SystemPermission.valid_objects.filter(
+                    sort_id__in=index_list
+                ).order_by('sort_id')
+        else:
+            return []
+
+    def get_user_group_last_permissions(self, tenant_id, usergroup_id):
+        '''
+        获取用户分组的最终权限
+        '''
+        permissions = Permission.valid_objects.filter(
+            tenant_id=tenant_id,
+            app__is_del=False
+        )
+        systempermissions = SystemPermission.valid_objects.filter(
+            Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
+        )
+        compress = Compress()
+        usergroup = UserGroup.valid_objects.filter(
+            id=usergroup_id
+        ).first()
+        all_groups = []
+        # 取得当前分组的所有父分组
+        all_groups.append(usergroup)
+        all_groups.extend(self.get_user_all_groups(usergroup, []))
+        # 取得所有分组拥有的系统权限
+        usergroup_permissionresults = GroupPermissionResult.valid_objects.filter(
+            user_group__in=all_groups,
+            tenant_id=tenant_id,
+            app=None
+        )
+        permission_sort_ids = []
+        for usergroup_permissionresult in usergroup_permissionresults:
+            permission_result = compress.decrypt(usergroup_permissionresult.result)
+            permission_result_arr = list(permission_result)
+            for index, item in enumerate(permission_result_arr):
+                if int(item) == 1 and index not in permission_sort_ids:
+                    permission_sort_ids.append(index)
+        if len(permission_sort_ids) == 0:
+            systempermissions = systempermissions.filter(id__isnull=True)
+        else:
+            systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+        # 取得所有分组拥有的应用权限
+        usergroup_permissionresults = GroupPermissionResult.valid_objects.filter(
+            user_group__in=all_groups,
+            tenant_id=tenant_id,
+            app__isnull=False
+        )
+        permission_results = []
+        for usergroup_permissionresult in usergroup_permissionresults:
+            permission_sort_ids = []
+            if usergroup_permissionresult:
+                permission_result = compress.decrypt(usergroup_permissionresult.result)
+                permission_result_arr = list(permission_result)
+                for index, item in enumerate(permission_result_arr):
+                    if int(item) == 1:
+                        permission_sort_ids.append(index)
+            
+            if permission_sort_ids:
+                for item in permissions.filter(app=usergroup_permissionresult.app, sort_id__in=permission_sort_ids):
+                    if item.id not in permission_results:
+                        permission_results.append(item.id)
+        if permission_results:
+            permissions = permissions.filter(id__in=permission_results)
+        else:
+            permissions = permissions.filter(id__isnull=True)
+        return list(systempermissions)+list(permissions)
+        
+
     def get_permissions_by_mine_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False, app_name=None, category=None):
         '''
         根据应用，用户，分组查权限(要根据用户身份显示正确的列表)
@@ -1523,7 +1633,7 @@ class PermissionData(object):
                 tenant_id=tenant_id,
                 app__isnull=False
             )
-            flag = True
+            permission_results = []
             for usergroup_permissionresult in usergroup_permissionresults:
                 permission_sort_ids = []
                 if usergroup_permissionresult:
@@ -1532,14 +1642,15 @@ class PermissionData(object):
                     for index, item in enumerate(permission_result_arr):
                         if int(item) == 1:
                             permission_sort_ids.append(index)
+                
                 if permission_sort_ids:
-                    flag = False
-                    permissions = permissions.filter(app=usergroup_permissionresult.app, sort_id__in=permission_sort_ids)
-            if flag:
+                    for item in permissions.filter(app=usergroup_permissionresult.app, sort_id__in=permission_sort_ids):
+                        permission_results.append(item.id)
+            if permission_results:
+                permissions = permissions.filter(id__in=permission_results)
+            else:
                 permissions = permissions.filter(id__isnull=True)
         return list(systempermissions)+list(permissions)
-            
-
 
     def get_permission_str(self, user, tenant_id, app_id, is_64=False):
         '''
