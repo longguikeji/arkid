@@ -128,3 +128,15 @@ def logout_tenant(request, tenant_id: str, data:TenantLogoutIn):
         },
         "refresh": True
     }
+    
+@api.get("/tenants/tenant_by_slug/{slug}/", response=TenantOut,tags=["租户管理"], auth=None)
+def get_tenant_by_slug(request, slug: str):
+    tenant = get_object_or_404(
+        Tenant.expand_objects,
+        slug=slug,
+        is_active=True,
+        is_del=False
+    )
+    return {
+        "data": tenant
+    }
