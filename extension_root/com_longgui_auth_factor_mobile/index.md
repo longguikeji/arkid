@@ -21,34 +21,25 @@
 ## 配置指南
 
 === "插件租赁"
-
-经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到手机验证码认证因素插件卡片，点击租赁
-
-[![vEcwwV.png](https://s1.ax1x.com/2022/08/02/vEcwwV.png)](https://imgtu.com/i/vEcwwV)
+    经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到手机验证码认证因素插件卡片，点击租赁
+    [![vEcwwV.png](https://s1.ax1x.com/2022/08/02/vEcwwV.png)](https://imgtu.com/i/vEcwwV)
 
 === "认证因素配置"
-
-经由左侧菜单栏依次进入【认证管理】-> 【认证因素】,点击创建按钮，类型选择"mobile",短信插件运行时选择一个合适的已配置的短信插件运行时配置，至此配置完成
-
-[![vE2VKA.md.png](https://s1.ax1x.com/2022/08/02/vE2VKA.md.png)](https://imgtu.com/i/vE2VKA)
+    经由左侧菜单栏依次进入【认证管理】-> 【认证因素】,点击创建按钮，类型选择"mobile",短信插件运行时选择一个合适的已配置的短信插件运行时配置，至此配置完成<br/>
+    [![vE2VKA.md.png](https://s1.ax1x.com/2022/08/02/vE2VKA.md.png)](https://imgtu.com/i/vE2VKA)
 
 === "登录界面"
-
-[![vE2hGD.png](https://s1.ax1x.com/2022/08/02/vE2hGD.png)](https://imgtu.com/i/vE2hGD)
+    [![vE2hGD.png](https://s1.ax1x.com/2022/08/02/vE2hGD.png)](https://imgtu.com/i/vE2hGD)
 
 === "注册界面"
-
-[![vE25xH.md.png](https://s1.ax1x.com/2022/08/02/vE25xH.md.png)](https://imgtu.com/i/vE25xH)
+    [![vE25xH.md.png](https://s1.ax1x.com/2022/08/02/vE25xH.md.png)](https://imgtu.com/i/vE25xH)
 
 === "密码修改界面"
-
-[![vE2TsA.png](https://s1.ax1x.com/2022/08/02/vE2TsA.png)](https://imgtu.com/i/vE2TsA)
+    [![vE2TsA.png](https://s1.ax1x.com/2022/08/02/vE2TsA.png)](https://imgtu.com/i/vE2TsA)
 
 === "更换手机号码界面"
-
-由用户头像菜单进入【认证管理】界面,选择更改手机号码标签页
-
-[![vE20GF.md.png](https://s1.ax1x.com/2022/08/02/vE20GF.md.png)](https://imgtu.com/i/vE20GF)
+    由用户头像菜单进入【认证管理】界面,选择更改手机号码标签页<br/>
+    [![vE20GF.md.png](https://s1.ax1x.com/2022/08/02/vE20GF.md.png)](https://imgtu.com/i/vE20GF)
 
 ## 实现思路
 

@@ -17,30 +17,22 @@
 ## 配置指南
 
 === "插件租赁"
-
-经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到密码认证因素插件卡片，点击租赁
-
-[![vEoE7j.png](https://s1.ax1x.com/2022/08/02/vEoE7j.png)](https://imgtu.com/i/vEoE7j)
+    经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到密码认证因素插件卡片，点击租赁<br/>
+    [![vEoE7j.png](https://s1.ax1x.com/2022/08/02/vEoE7j.png)](https://imgtu.com/i/vEoE7j)
 
 === "认证因素配置"
-
-经由左侧菜单栏依次进入【认证管理】-> 【认证因素】,点击创建按钮，类型选择"password",填入相关信息，至此配置完成
-
-[![vEoU9x.md.png](https://s1.ax1x.com/2022/08/02/vEoU9x.md.png)](https://imgtu.com/i/vEoU9x)
+    经由左侧菜单栏依次进入【认证管理】-> 【认证因素】,点击创建按钮，类型选择"password",填入相关信息，至此配置完成<br/>
+    [![vEoU9x.md.png](https://s1.ax1x.com/2022/08/02/vEoU9x.md.png)](https://imgtu.com/i/vEoU9x)
 
 === "登录界面"
-
-[![vEoWgf.md.png](https://s1.ax1x.com/2022/08/02/vEoWgf.md.png)](https://imgtu.com/i/vEoWgf)
+    [![vEoWgf.md.png](https://s1.ax1x.com/2022/08/02/vEoWgf.md.png)](https://imgtu.com/i/vEoWgf)
 
 === "注册界面"
-
-[![vEoXvT.png](https://s1.ax1x.com/2022/08/02/vEoXvT.png)](https://imgtu.com/i/vEoXvT)
+    [![vEoXvT.png](https://s1.ax1x.com/2022/08/02/vEoXvT.png)](https://imgtu.com/i/vEoXvT)
 
 === "更改密码界面"
-
-由用户头像菜单进入【认证管理】界面,选择更改密码标签页
-
-[![vEo6UA.md.png](https://s1.ax1x.com/2022/08/02/vEo6UA.md.png)](https://imgtu.com/i/vEo6UA)
+    由用户头像菜单进入【认证管理】界面,选择更改密码标签页<br/>
+    [![vEo6UA.md.png](https://s1.ax1x.com/2022/08/02/vEo6UA.md.png)](https://imgtu.com/i/vEo6UA)
 
 ## 实现思路
 

@@ -9,18 +9,13 @@
 ## 配置指南
 
 === "插件租赁"
-
-经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到本地文件存储插件卡片，点击租赁
-
-[![vELyVS.png](https://s1.ax1x.com/2022/08/02/vELyVS.png)](https://imgtu.com/i/vELyVS)
+    经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到本地文件存储插件卡片，点击租赁<br/>
+    [![插件租赁](https://s1.ax1x.com/2022/08/02/vELyVS.png)](https://imgtu.com/i/vELyVS)
 
 === "平台配置"
-
-经由左侧菜单栏依次进入【平台管理】->【平台插件】, 在已安装页面找到本地文件存储插件卡片，点击插件配置，配置文件存储路径
-
-[![vELXx1.png](https://s1.ax1x.com/2022/08/02/vELXx1.png)](https://imgtu.com/i/vELXx1)
-
-[![vVD6iQ.md.png](https://s1.ax1x.com/2022/08/03/vVD6iQ.md.png)](https://imgtu.com/i/vVD6iQ)
+    经由左侧菜单栏依次进入【平台管理】->【平台插件】, 在已安装页面找到本地文件存储插件卡片，点击插件配置，配置文件存储路径<br/>
+    [![平台配置](https://s1.ax1x.com/2022/08/02/vELXx1.png)](https://imgtu.com/i/vELXx1)<br/>
+    [![平台配置](https://s1.ax1x.com/2022/08/03/vVD6iQ.md.png)](https://imgtu.com/i/vVD6iQ)
 
 ## 实现思路
 
