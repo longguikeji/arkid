@@ -48,13 +48,16 @@
 
 ## 实现思路
 - 在**approve_requests_page**中添加**默认请求处理**页面
-- 在views中添加改变ApproveRequest状态的接口
+- **默认请求处理** 页面中调用 /approve_requests/{{request_id}}/pass/ 同意审批请求
+- **默认请求处理** 页面中调用 /approve_requests/{{request_id}}/deny/ 拒绝审批请求
+- 实现 [pass_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.pass_approve_request) 抽象方法 同意审批请求
+- 实现 [deny_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.deny_approve_request) 抽象方法 拒绝审批请求
 - 由于此插件只不需要将审批请求发送到第三方所以没有覆盖抽象方法[create_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.create_approve_request)
-- 由于此插件添加了默认请求处理页面，并且在默认请求处理页面中调用views中的方法改变审批请求状态，所以没有覆盖抽象方法[change_approve_request_status](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.change_approve_request_status)
-- 插件基类见[arkid.core.extension.extrnal_idp.ExternalIdpExtension](/%20%20开发者指南/%20插件分类/数据同步/)
+- 插件基类见[arkid.core.extension.approve_system.ApproveSystemExtension](/%20%20开发者指南/%20插件开发/%20插件分类/审批系统/)
 
 ## 抽象方法实现:
-* [change_approve_request_status](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.change_approve_request_status)
+* [pass_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.pass_approve_request)
+* [deny_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.deny_approve_request)
 * [create_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.create_approve_request)
 
 
