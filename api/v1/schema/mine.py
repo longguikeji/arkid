@@ -23,6 +23,8 @@ class ProfileTenantOut(Schema):
     slug:str = Field(title='slug', hidden=True)
 
     name:str = Field(title='name', hidden=True)
+    
+    is_platform_tenant:bool = Field(title=_("是否是平台租户"),hidden=True,default=False,readonly=True)
 
 class ProfileSchemaOut(Schema):
     
