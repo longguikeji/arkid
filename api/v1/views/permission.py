@@ -56,6 +56,17 @@ def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_i
     permissiondata = PermissionData()
     return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category)
 
+@api.get("/tenant/{tenant_id}/user_app_last_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def user_app_last_permissions(request, tenant_id: str,  user_id: str = None, app_id: str = None):
+    '''
+    用户最终结果权限列表
+    '''
+    login_user = request.user
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_user_app_last_permissions(tenant_id, app_id, user_id)
 
 @api.get("/tenant/{tenant_id}/childmanager_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -236,6 +247,17 @@ def list_group_permissions(request, tenant_id: str, select_usergroup_id: str = N
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
     return permissiondata.get_group_permissions_by_search(tenant_id, select_usergroup_id, app_name, category)
+
+@api.get("/tenant/{tenant_id}/user_group_last_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def list_user_group_last_permissions(request, tenant_id: str, usergroup_id: str = None):
+    '''
+    分组权限最终列表
+    '''
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_user_group_last_permissions(tenant_id, usergroup_id)
 
 # @api.post("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'])
 # @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -419,9 +441,10 @@ def permission_toggle_open(request, tenant_id: str, permission_id: str):
     切换权限是否打开的状态
     '''
     permission = SystemPermission.valid_objects.filter(
-        tenant_id=tenant_id,
         id=permission_id
     ).first()
+    if permission and permission.tenant is None:
+        return ErrorDict(ErrorCode.SYSTEM_PERMISSION_NOT_OPERATION)
     if permission is None:
         permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
     if permission:

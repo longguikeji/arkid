@@ -14,6 +14,7 @@ order_page = pages.StepPage(name=_('Order', '购买'))
 trial_page = pages.FormPage(name=_('Trial', '试用'))
 bind_agent_page = pages.FormPage(name=_('Bind Agent', '绑定代理商'))
 purchased_page = pages.CardsPage(name='已购买')
+history_page = pages.TablePage(name='插件历史版本')
 markdown_page = pages.FormPage(name=_("文档"))
 profile_page = pages.FormPage(name='插件配置')
 price_page = pages.CardsPage(name='选择价格')
@@ -29,6 +30,7 @@ pages.register_front_pages(order_page)
 pages.register_front_pages(trial_page)
 pages.register_front_pages(bind_agent_page)
 pages.register_front_pages(purchased_page)
+pages.register_front_pages(history_page)
 pages.register_front_pages(markdown_page)
 pages.register_front_pages(profile_page)
 pages.register_front_pages(price_page)
@@ -108,6 +110,10 @@ purchased_page.create_actions(
             name='文档',
             page=arkstore_markdown_page
         ),
+        "history": actions.OpenAction(
+            name='历史版本',
+            page=history_page
+        ),
         "install": actions.DirectAction(
             name='安装',
             path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
@@ -128,6 +134,20 @@ arkstore_markdown_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/arkstore/extensions/{uuid}/markdown/',
         method=actions.FrontActionMethod.GET
     )
+)
+
+history_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/extensions/{package}/history/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    local_actions={
+        "install": actions.DirectAction(
+            name='安装',
+            path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
+            method=actions.FrontActionMethod.POST,
+        ),
+    }
 )
 
 order_page.add_pages([

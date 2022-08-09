@@ -6,6 +6,15 @@
   {% set class = class ~ " md-header--lifted" %}
 {% endif %}
 <header class="{{ class }}" data-md-component="header">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?322f43019d4e84e4aaee53c4e755300f";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
   <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header.title') }}">
     <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="{{ config.site_name | e }}" class="md-header__button md-logo" aria-label="{{ config.site_name }}" data-md-component="logo">
       {% include "partials/logo.html" %}

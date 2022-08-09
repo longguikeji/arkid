@@ -27,6 +27,7 @@ from arkid.common.arkstore import (
     # change_arkstore_agent,
     # unbind_arkstore_agent,
     get_arkstore_extension_markdown,
+    get_arkstore_extension_history_by_package,
 )
 from arkid.common.bind_saas import get_bind_info
 from arkid.core.api import api, operation
@@ -497,10 +498,26 @@ class ExtensionMarkDownOut(ResponseSchema):
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/{uuid}/markdown/", tags=['方舟商店'],
          response=ExtensionMarkDownOut)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_markdown_arkstore_extension(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
     resp = get_arkstore_extension_markdown(access_token, uuid)
     return resp
+
+
+class ArkstoreItemHisotryOut(Schema):
+    uuid: str = Field(hidden=True)
+    version: str = Field(readonly=True, title=_('Version', '版本'))
+
+
+@api.get("/tenant/{tenant_id}/arkstore/extensions/{package}/history/", tags=['方舟商店'], response=List[ArkstoreItemHisotryOut])
+@operation(List[ArkstoreItemHisotryOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def get_arkstore_extension_history(request, tenant_id: str, package: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    resp = get_arkstore_extension_history_by_package(access_token, package)
+    return resp['items']

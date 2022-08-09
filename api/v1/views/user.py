@@ -53,11 +53,17 @@ def user_list_no_super(request, tenant_id: str):
 def user_create(request, tenant_id: str,data:UserCreateIn):
 
     # user = User.expand_objects.create(tenant=request.tenant,**data.dict())
+    if User.objects.filter(tenant=request.tenant, username=data.username).count():
+        return ErrorDict(
+            ErrorCode.USERNAME_EXISTS_ERROR
+        )
+    
     user = User.objects.create(tenant=request.tenant, username=data.username)
     for key,value in data.dict().items():
         if key=='username':
             continue
-        setattr(user,key,value)
+        if value:
+            setattr(user,key,value)
     user.save()
 
     return {"data":{"user":user.id.hex}}

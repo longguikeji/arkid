@@ -11,7 +11,7 @@ class ErrorCode(Enum):
     
     # SMS_CODE_MISMATCH = '10002'
     # EMAIL_CODE_MISMATCH = '10021'
-    # USERNAME_EXISTS_ERROR = '10004'
+    USERNAME_EXISTS_ERROR = ('10004', _('username already exists', '用户名已存在'))
 
 
     # TENANT_NO_ACCESS = '10003'
@@ -40,6 +40,7 @@ class ErrorCode(Enum):
     # PASSWORD_EXPIRED_ERROR = '10029'
     # USER_NOT_IN_TENANT_ERROR = '10030'
     PERMISSION_EXISTS_ERROR = ('10033', _('the permission not exists', '该权限不存在'))
+    
     # APP_EXISTS_ERROR = '10032'
     PERMISSION_NOT_EDIT = ('10033', _('the permission not edit', '该权限不允许编辑'))
     PERMISSION_NOT_CLOSE = ('10033', _('the permission not edit', '该权限不允许关闭'))
@@ -48,6 +49,7 @@ class ErrorCode(Enum):
     BAN_REMOVE_GROUP_SCOPE = ('10036', _('ban remove group permission', '该分组范围不允许移除'))
     PERMISSION_GROUP_NOT_EDIT = ('10037', _('the permission group not edit', '该分组权限不允许编辑'))
     PERMISSION_GROUP_NOT_DELETE = ('10038', _('the permission group not delete', '该分组权限不允许删除'))
+    SYSTEM_PERMISSION_NOT_OPERATION = ('10033', _('system permission not operation', '系统权限不支持此操作'))
 
     # SMS_PROVIDER_IS_MISSING = '11001'
     # AUTHCODE_PROVIDER_IS_MISSING = '11002'
