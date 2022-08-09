@@ -226,7 +226,7 @@ def list_arkstore_purchased_extensions(request, tenant_id: str):
 @paginate(CustomPagination)
 def list_arkstore_purchased_apps(request, tenant_id: str):
     arkstore_apps = get_arkstore_list(request, None, 'app', all=True)
-    installed_apps = App.objects.filter(tenant_id=tenant_id, arkstore_app_id__isnull=False)
+    installed_apps = App.active_objects.filter(tenant_id=tenant_id, arkstore_app_id__isnull=False)
     installed_app_ids = set(str(app.arkstore_app_id) for app in installed_apps)
     return [app for app in arkstore_apps if app['uuid'] in installed_app_ids]
 
