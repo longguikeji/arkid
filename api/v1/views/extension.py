@@ -7,13 +7,14 @@ from typing import List, Union,Optional
 from typing_extensions import Annotated
 from pydantic import Field
 from django.conf import settings
-from arkid.core.constants import PLATFORM_ADMIN, TENANT_ADMIN
+from arkid.core.constants import NORMAL_USER, PLATFORM_ADMIN, TENANT_ADMIN
 from arkid.core.extension import Extension
 from arkid.core.schema import ResponseSchema
 from arkid.extension.utils import import_extension
 from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
 from arkid.core.error import ErrorCode, ErrorDict
 from ninja.pagination import paginate
+from oauth2_provider.models import Application
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
@@ -140,8 +141,16 @@ def list_extensions(request, status: str = None):
     if settings.IS_CENTRAL_ARKID:
         return qs
 
-    token = request.user.auth_token
+    # 如果未绑定中心arkid, 直接返回
     tenant = Tenant.platform_tenant()
+    bind = Application.objects.filter(
+        uuid = tenant.id,
+        name = 'arkid_saas',
+    ).exists()
+    if not bind:
+        return qs
+
+    token = request.user.auth_token
     access_token = get_arkstore_access_token(tenant, token)
     # resp = get_arkstore_extensions_purchased(access_token)
     resp = get_arkstore_list(request, True, 'extension', all=True)
@@ -205,7 +214,7 @@ class ExtensionMarkDownOut(ResponseSchema):
     data:dict = Field(format='markdown',readonly=True)
     
 @api.get("/extensions/{id}/markdown/",tags=['平台插件'], response=ExtensionMarkDownOut)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_extension_markdown(request, id: str):
     """ 获取平台插件的markdown文档"""
     

@@ -14,15 +14,46 @@
 
 * 在”用户管理 - 用户列表“中编辑页面添加手机号码编辑功能
 
+## 前置条件
+
+需配合短信插件使用，系统已默认提供阿里云短信插件，如需查看配置方法请移步阿里云短信插件文档。
+
 ## 配置指南
 
+=== "插件租赁"
 
+经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到手机验证码认证因素插件卡片，点击租赁
 
+[![vEcwwV.png](https://s1.ax1x.com/2022/08/02/vEcwwV.png)](https://imgtu.com/i/vEcwwV)
 
+=== "认证因素配置"
+
+经由左侧菜单栏依次进入【认证管理】-> 【认证因素】,点击创建按钮，类型选择"mobile",短信插件运行时选择一个合适的已配置的短信插件运行时配置，至此配置完成
+
+[![vE2VKA.md.png](https://s1.ax1x.com/2022/08/02/vE2VKA.md.png)](https://imgtu.com/i/vE2VKA)
+
+=== "登录界面"
+
+[![vE2hGD.png](https://s1.ax1x.com/2022/08/02/vE2hGD.png)](https://imgtu.com/i/vE2hGD)
+
+=== "注册界面"
+
+[![vE25xH.md.png](https://s1.ax1x.com/2022/08/02/vE25xH.md.png)](https://imgtu.com/i/vE25xH)
+
+=== "密码修改界面"
+
+[![vE2TsA.png](https://s1.ax1x.com/2022/08/02/vE2TsA.png)](https://imgtu.com/i/vE2TsA)
+
+=== "更换手机号码界面"
+
+由用户头像菜单进入【认证管理】界面,选择更改手机号码标签页
+
+[![vE20GF.md.png](https://s1.ax1x.com/2022/08/02/vE20GF.md.png)](https://imgtu.com/i/vE20GF)
 
 ## 实现思路
 
 * 普通用户：手机号码+验证码用户注册/登录/重置密码：
+
 ```mermaid
 sequenceDiagram
     participant D as 用户
@@ -48,6 +79,7 @@ sequenceDiagram
     C->>D: 检查结果，如完成注册/登录相关操作则生成token并跳转至桌面，如完成重置密码操作或者未完成注册/登录操作则提示错误
 
 ```
+
 * 普通用户：重置手机号码：
 
 ```mermaid
@@ -74,6 +106,7 @@ sequenceDiagram
 ```
 
 * 管理员用户： 更换用户手机号码
+
 ```mermaid
 sequenceDiagram
     participant D as 用户
@@ -86,6 +119,7 @@ sequenceDiagram
     C->>D: 写入数据至数据库
 
 ```
+
 ## 抽象方法实现
 * [load](#extension_root.com_longgui_auth_factor_mobile.MobileAuthFactorExtension.load)
 * [authenticate](#extension_root.com_longgui_auth_factor_mobile.MobileAuthFactorExtension.authenticate)

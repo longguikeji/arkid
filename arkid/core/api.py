@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional, List
 from pydantic.fields import ModelField
 from arkid.core.translation import gettext_default as _
 from ninja import NinjaAPI, Schema
+from ninja.errors import HttpError
 from ninja.security import HttpBearer
 from ninja.openapi.schema import OpenAPISchema
 from arkid.common.logger import logger
@@ -81,11 +82,11 @@ class GlobalAuth(HttpBearer):
                 token = ExpiringToken.objects.get(token=token)
                 
                 if not token.user.is_active:
-                    raise Exception(_('User inactive or deleted','用户无效或被删除'))
+                    raise HttpError(401, _('User inactive or deleted','用户无效或被删除'))
 
                 tenant = request.tenant or Tenant.platform_tenant()
                 if token.expired(tenant):
-                    raise Exception(_('Token has expired','秘钥已经过期'))
+                    raise HttpError(401, _('Token has expired','秘钥已经过期'))
 
             operation_id = request.operation_id
             if operation_id:
@@ -94,13 +95,13 @@ class GlobalAuth(HttpBearer):
                 if token.user and tenant:
                     result =permissiondata.api_system_permission_check(request.tenant, token.user, operation_id)
                     if result == False:
-                        raise Exception(_('You do not have api permission','你没有这个接口的权限'))
+                        raise HttpError(403, _('You do not have api permission','你没有这个接口的权限'))
         except ExpiringToken.DoesNotExist:
             logger.error(_("Invalid token","无效的秘钥"))
             return
-        except Exception as err:
-            logger.error(err)
-            return
+        # except Exception as err:
+        #     logger.error(err)
+        #     return
         expand_user_dict = User.expand_objects.filter(id=token.user.id).first()
 
         request.user = token.user

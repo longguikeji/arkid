@@ -103,7 +103,7 @@ class ScimSyncExtension(Extension, ProviderBase):
         Args:
             config (arkid.extension.models.TenantExtensionConfig): Client模式创建的配置
         """
-        sync_server_id = config.config["sync_server_id"]
+        sync_server_id = config.config.get("sync_server", {}).get("id")
         server_config = TenantExtensionConfig.active_objects.filter(
             id=sync_server_id
         ).first()
@@ -306,35 +306,28 @@ select_scim_server_page.create_actions(
         path='/api/v1/tenant/{tenant_id}/scim_server_list/',
         method=actions.FrontActionMethod.GET,
     ),
-    # node_actions=[
-    #     actions.DirectAction(
-    #         path='/api/v1/tenant/{tenant_id}/app_groups/?parent_id={id}',
-    #         method=actions.FrontActionMethod.GET,
-    #     )
-    # ],
 )
 
 
+class SelectServerIn(Schema):
+    id: str = Field(hidden=True)
+    name: str
+
+
 class BaseScimSyncClientSchema(Schema):
-    # name: str = Field(default='', title=_('Name', '配置名称'))
     crontab: str = Field(default='0 1 * * *', title=_('Crontab', '定时运行时间'))
     max_retries: int = Field(default=3, title=_('Max Retries', '重试次数'))
     retry_delay: int = Field(default=60, title=_('Retry Delay', '重试间隔(单位秒)'))
-    # sync_server_name: str = Field(default="", title=_('Sync Server Name', '同步服务的名字'))
-    sync_server_id: str = Field(
+    sync_server: SelectServerIn = Field(
         default="",
-        title=_('Sync Server ID', 'SCIM同步服务'),
-        field="id",
+        title=_('Sync Server', 'SCIM同步服务器'),
         page=select_scim_server_page.tag,
-        link="name",
-        type="string",
     )
     # attr_map: dict = Field(default={}, title=_('Attribute Map', '同步映射关系'))
     mode: Literal["client"]
 
 
 class BaseScimSyncServerSchema(Schema):
-    # name: str = Field(title=_('配置名称'))
     mode: Literal["server"]
     user_url: str = Field(default="", title=_('User Url', '获取用户URL'), readonly=True)
     group_url: str = Field(default="", title=_('Group Url', '获取组URL'), readonly=True)

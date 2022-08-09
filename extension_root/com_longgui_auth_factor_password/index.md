@@ -14,9 +14,38 @@
 * 在”用户管理 - 用户列表“中添加重置密码的功能
 
 ## 配置指南
+## 配置指南
+
+=== "插件租赁"
+
+经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到密码认证因素插件卡片，点击租赁
+
+[![vEoE7j.png](https://s1.ax1x.com/2022/08/02/vEoE7j.png)](https://imgtu.com/i/vEoE7j)
+
+=== "认证因素配置"
+
+经由左侧菜单栏依次进入【认证管理】-> 【认证因素】,点击创建按钮，类型选择"password",填入相关信息，至此配置完成
+
+[![vEoU9x.md.png](https://s1.ax1x.com/2022/08/02/vEoU9x.md.png)](https://imgtu.com/i/vEoU9x)
+
+=== "登录界面"
+
+[![vEoWgf.md.png](https://s1.ax1x.com/2022/08/02/vEoWgf.md.png)](https://imgtu.com/i/vEoWgf)
+
+=== "注册界面"
+
+[![vEoXvT.png](https://s1.ax1x.com/2022/08/02/vEoXvT.png)](https://imgtu.com/i/vEoXvT)
+
+=== "更改密码界面"
+
+由用户头像菜单进入【认证管理】界面,选择更改密码标签页
+
+[![vEo6UA.md.png](https://s1.ax1x.com/2022/08/02/vEo6UA.md.png)](https://imgtu.com/i/vEo6UA)
 
 ## 实现思路
-* 普通用户：注册/登录：
+
+普通用户：注册/登录：
+
 ```mermaid
 sequenceDiagram
     participant D as 用户
@@ -35,7 +64,8 @@ sequenceDiagram
     C->>D: 检查结果，如完成注册/登录相关操作则生成token并跳转至桌面，如未完成注册/登录操作则提示错误
 
 ```
-* 普通用户：重置密码：
+
+普通用户：重置密码：
 
 ```mermaid
 sequenceDiagram
@@ -52,7 +82,8 @@ sequenceDiagram
 
 ```
 
-* 管理员用户： 重置用户密码
+管理员用户： 重置用户密码
+
 ```mermaid
 sequenceDiagram
     participant D as 用户
@@ -64,7 +95,9 @@ sequenceDiagram
     D->>C: 管理员登录，访问用户列表页面，编辑用户密码，点击保存
     C->>D: 修改密码字段值并保存至数据库
 ```
+
 ## 抽象方法实现
+
 * [load](#extension_root.com_longgui_auth_factor_mobile.MobileAuthFactorExtension.load)
 * [authenticate](#extension_root.com_longgui_auth_factor_mobile.MobileAuthFactorExtension.authenticate)
 * [register](#extension_root.com_longgui_auth_factor_mobile.MobileAuthFactorExtension.register)

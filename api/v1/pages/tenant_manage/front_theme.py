@@ -24,7 +24,7 @@ router = routers.FrontRouter(
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/front_theme/',
+        path='/api/v1/tenant/{tenant_id}/front_theme_list/',
         method=actions.FrontActionMethod.GET,
     ),
     global_actions={

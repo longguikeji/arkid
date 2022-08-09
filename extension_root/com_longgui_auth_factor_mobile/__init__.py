@@ -55,8 +55,10 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             'POST',
             self.send_sms_code,
             tenant_path=True,
+            auth=None,
             response=SendSMSCodeOut,
         )
+        print(self.url_send_sms_code)
     
     def authenticate(self, event, **kwargs):
         """ 认证
@@ -362,9 +364,6 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             init_action=actions.DirectAction(
                 path=mine_mobile_path,
                 method=actions.FrontActionMethod.GET,
-                init_data={
-                    
-                }
             ),
             global_actions={
                 'confirm': actions.ConfirmAction(
@@ -467,6 +466,9 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if not ret:
             return self.error(message)
         
+        if not check_sms_code(mobile,data.code):
+            return self.error(ErrorCode.SMS_CODE_MISMATCH)
+        
         user = request.user
         user.mobile=data.mobile
         user.save()
@@ -477,9 +479,22 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     def mine_mobile(self,request,tenant_id: str):
         user = request.user
         user_expand = User.expand_objects.filter(id=user.id).first()
-        return {
-            "data":user_expand
-        }
+        
+        config = self.get_tenant_configs(request.tenant).first()
+        
+        if not config:
+            return self.error(
+                ErrorCode.CONFIG_IS_NOT_EXISTS
+            )
+        
+        return self.success(
+            data={
+                "current_mobile": user_expand.get("mobile",None),
+                "mobile": "",
+                "code": "",
+                "config_id": config.id.hex,
+            },
+        )
 
     
 extension = MobileAuthFactorExtension()
