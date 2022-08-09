@@ -1,0 +1,20 @@
+name: mkdocs
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - v2.5-dev 
+    paths:
+      - 'docs/**'
+      - 'extension_root/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - run: pip install -r requirements.txt
+      - run: python manage.py migrate
+      - run: mkdocs gh-deploy --force
