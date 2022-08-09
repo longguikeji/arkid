@@ -92,7 +92,7 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     return arkstore_access_token_saas_cache[key] 
 
 
-def get_arkstore_extensions(access_token, purchased=None, rented=False, type=None, offset=0, limit=10):
+def get_arkstore_extensions(access_token, purchased=None, rented=False, type=None, offset=0, limit=10, extra_params={}):
     if type == 'extension':
         if rented:
             url = "/api/v1/arkstore/extensions/leased"
@@ -111,6 +111,7 @@ def get_arkstore_extensions(access_token, purchased=None, rented=False, type=Non
         params['purchased'] = 'false'
     if rented is True:
         params['leased'] = 'true'
+    params.update(extra_params)
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
         raise Exception(f'Error get_arkstore_apps_and_extensions: {url}, {resp.status_code}')

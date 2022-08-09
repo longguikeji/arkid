@@ -33,7 +33,7 @@ from arkid.common.bind_saas import get_bind_info
 from arkid.core.api import api, operation
 from datetime import datetime
 from typing import List, Optional
-from ninja import Schema
+from ninja import Schema, Query
 import enum
 from pydantic import Field
 from ninja.pagination import paginate
@@ -45,7 +45,7 @@ from arkid.core.schema import ResponseSchema
 
 
 
-def get_arkstore_list(request, purchased, type, rented=False, all=False):
+def get_arkstore_list(request, purchased, type, rented=False, all=False, extra_params={}):
     page = request.GET.get('page', 1)
     page_size = request.GET.get('page_size', 10)
     token = request.user.auth_token
@@ -58,7 +58,7 @@ def get_arkstore_list(request, purchased, type, rented=False, all=False):
     if all:
         limit = 1000000
         offset = 0
-    saas_extensions_data = get_arkstore_extensions(access_token, purchased, rented, type, offset, limit)
+    saas_extensions_data = get_arkstore_extensions(access_token, purchased, rented, type, offset, limit, extra_params)
     saas_extensions_data = saas_extensions_data['items']
     return saas_extensions_data
 
@@ -200,18 +200,46 @@ class PaymentStatus(Schema):
     amount: Amount
 
 
+class ArkstoreExtensionQueryIn(Schema):
+    name__contains:str = Field(
+        default="",
+        title=_("插件名")
+    )
+    package__contains:str = Field(
+        default="",
+        title=_("插件包名")
+    )
+    labels__contains:str = Field(
+        default="",
+        title=_("插件标签")
+    )
+
+
+class ArkstoreAppQueryIn(Schema):
+    name__contains:str = Field(
+        default="",
+        title=_("应用名")
+    )
+    labels__contains:str = Field(
+        default="",
+        title=_("应用标签")
+    )
+
+
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_arkstore_extensions(request, tenant_id: str):
-    return get_arkstore_list(request, None, 'extension')
+def list_arkstore_extensions(request, tenant_id: str, query_data: ArkstoreExtensionQueryIn=Query(...)):
+    query_data = query_data.dict()
+    return get_arkstore_list(request, None, 'extension', extra_params=query_data)
 
 
 @api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_arkstore_apps(request, tenant_id: str):
-    return get_arkstore_list(request, None, 'app')
+def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
+    query_data = query_data.dict()
+    return get_arkstore_list(request, None, 'app', extra_params=query_data)
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
