@@ -73,12 +73,6 @@ class ApproveSystemExtension(Extension):
 
     @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     def pass_approve_request_handler(self, request, request_id):
-        """
-        抽象方法
-        Args:
-            request (django.http.HttpRequest): 创建审批请求事件
-            approve_request_id (str): 需要改变审批状态的审批请求ID
-        """
         approve_request = ApproveRequest.valid_objects.get(id=request_id)
         self.pass_approve_request(request, approve_request)
         approve_request.status = 'pass'
@@ -87,16 +81,16 @@ class ApproveSystemExtension(Extension):
 
     @abstractmethod
     def pass_approve_request(self, request, approve_request):
+        """
+        抽象方法
+        Args:
+            request (django.http.HttpRequest): HTTP 请求
+            approve_request (arkid.core.models.ApproveRequest): 需要同意的审批请求
+        """
         pass
 
     @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     def deny_approve_request_handler(self, request, request_id):
-        """
-        抽象方法
-        Args:
-            request (django.http.HttpRequest): 创建审批请求事件
-            approve_request_id (str): 需要改变审批状态的审批请求ID
-        """
         approve_request = ApproveRequest.valid_objects.get(id=request_id)
         self.deny_approve_request(request, approve_request)
         approve_request.status = 'deny'
@@ -105,6 +99,12 @@ class ApproveSystemExtension(Extension):
 
     @abstractmethod
     def deny_approve_request(self, request, approve_request):
+        """
+        抽象方法
+        Args:
+            request (django.http.HttpRequest): HTTP 请求
+            approve_request (arkid.core.models.ApproveRequest): 需要拒绝的审批请求
+        """
         pass
 
     def create_tenant_config(self, tenant, config, name, type):
