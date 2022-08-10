@@ -28,6 +28,7 @@ class FrontActionType(Enum):
     CANCEL_ACTION = 'cancel'
     RESET_ACTION = 'reset'
     IMPORT_ACTION = 'import'
+    EXPORT_ACTION = 'export'
     URL_ACTION = 'url'
     PASSWORD_ACTION = 'password'
     CASCADE_ACTION = 'cascade'
@@ -140,6 +141,11 @@ class OpenAction(FrontAction):
 class ImportAction(FrontAction):
     def __init__(self, *args, **kwargs):
         super().__init__(action_type=FrontActionType.IMPORT_ACTION, *args, **kwargs)
+
+
+class ExportAction(FrontAction):
+    def __init__(self, *args, **kwargs):
+        super().__init__(action_type=FrontActionType.EXPORT_ACTION, *args, **kwargs)
 
 
 class URLAction(FrontAction):
