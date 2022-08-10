@@ -24,7 +24,7 @@ def auth(request, tenant_id: str, event_tag: str, data: AuthIn):
 
     return {'error': ErrorCode.OK.value, 'data': {'user': user, 'token': token}}
 
-@api.post("/tenant/{tenant_id}/reset_password/", response=ResetPasswordOut, tags=['登录与注册'])
+@api.post("/tenant/{tenant_id}/reset_password/", response=ResetPasswordOut, tags=['登录与注册'],auth=None)
 @operation(ResetPasswordOut, use_id=True)
 def reset_passowrd(request, tenant_id: str, event_tag: str, data: ResetPasswordIn):
     tenant = request.tenant
