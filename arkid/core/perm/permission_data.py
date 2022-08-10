@@ -2105,16 +2105,16 @@ class PermissionData(object):
         user_id = payload.get('sub_id', '')
         tenant_id = payload.get('tenant_id', '')
     
-        apps = App.valid_objects.filter(
-            type__in=['OIDC-Platform'],
-        )
+        apps = App.valid_objects.all()
         app_temp = None
         for app in apps:
-            data = app.config.config
-            app_client_id = data.get('client_id', '')
-            if app_client_id == client_id:
-                app_temp = app
-                break
+            app_config = app.config
+            if app_config:
+                data = app_config.config
+                app_client_id = data.get('client_id', '')
+                if app_client_id == client_id:
+                    app_temp = app
+                    break
         user = User.valid_objects.filter(id=user_id).first()
         if user and app_temp and tenant_id:
             return self.get_permission_str(user, tenant_id, app_temp.id, is_64)
