@@ -13,7 +13,7 @@ ProfileSchema = create_extension_schema(
     "LocalStorageProfileSchema",
     __file__,
     fields = [
-        ('storage_path', Optional[str], Field(title=_("Storage Path", "存储路径"))),
+        ('storage_path', Optional[str], Field(title=_("Storage Path", "存储路径"),default=_("/data"))),
     ]
 )
 class LocalStorageExtension(StorageExtension):
@@ -34,7 +34,7 @@ class LocalStorageExtension(StorageExtension):
     def save_file(self, file, f_key, *args, **kwargs):
         print(f_key)
         extension = self.model
-        storage_path = extension.profile.get('storage_path','./storage/')
+        storage_path = extension.profile.get('storage_path','/data')
         
         p = Path(storage_path) / f_key
 
@@ -54,7 +54,7 @@ class LocalStorageExtension(StorageExtension):
         """ 本地存储插件获取文件
         """
         extension = self.model
-        storage_path = extension.profile.get('storage_path','./storage/')
+        storage_path = extension.profile.get('storage_path','/data')
         file_path = Path(storage_path) / file_name
         
         return FileResponse(

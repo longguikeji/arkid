@@ -12,22 +12,16 @@
 ## 配置指南
 
 === "插件租赁"
-
-经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到图形验证码认证因素插件卡片，点击租赁
-
-[![vEHa3q.png](https://s1.ax1x.com/2022/08/02/vEHa3q.png)](https://imgtu.com/i/vEHa3q)
+    经由左侧菜单栏依次进入【租户管理】->【插件管理】，在插件租赁页面中找到图形验证码认证因素插件卡片，点击租赁
+    [![vEHa3q.png](https://s1.ax1x.com/2022/08/02/vEHa3q.png)](https://imgtu.com/i/vEHa3q)
 
 === "租户配置"
-
-租赁完成后，进入已租赁列表，找到图形验证码认证因素插件卡片，点击租户配置，配置相关数据
-
-[![vEbAx0.md.png](https://s1.ax1x.com/2022/08/02/vEbAx0.md.png)](https://imgtu.com/i/vEbAx0)
-
+    租赁完成后，进入已租赁列表，找到图形验证码认证因素插件卡片，点击租户配置，配置相关数据
+    [![vEbAx0.md.png](https://s1.ax1x.com/2022/08/02/vEbAx0.md.png)](https://imgtu.com/i/vEbAx0)
+    
 === "认证因素配置"
-
-经由左侧菜单栏依次进入【认证管理】-> 【认证因素】,点击创建按钮，类型选择"authcode"， 无须配置相关参数，至此配置完成
-
-[![vEbpVg.md.png](https://s1.ax1x.com/2022/08/02/vEbpVg.md.png)](https://imgtu.com/i/vEbpVg)
+    经由左侧菜单栏依次进入【认证管理】-> 【认证因素】,点击创建按钮，类型选择"authcode"， 无须配置相关参数，至此配置完成
+    [![vEbpVg.md.png](https://s1.ax1x.com/2022/08/02/vEbpVg.md.png)](https://imgtu.com/i/vEbpVg)
 
 ## 实现思路
 
