@@ -39,7 +39,7 @@ def unload_extension(request, extension_id: str):
     extension = ExtensionModel.objects.filter(id=extension_id).first()
     if extension:
         ext = import_extension(extension.ext_dir)
-        ext.unload()
+        ext.stop()
         return {'extension_id': ext.model.id.hex}
     else:
         return {}
@@ -237,7 +237,7 @@ def toggle_extension_status(request, id: str):
     extension= ExtensionModel.objects.get(id=id)
     ext = import_extension(extension.ext_dir)
     if extension.is_active:
-        ext.unload()
+        ext.stop()
         extension.is_active = False
     else:
         ext.start()

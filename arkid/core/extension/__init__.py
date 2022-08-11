@@ -924,9 +924,13 @@ class Extension(ABC):
         self.__class__.refresh_all_created_composite_schema()
         
         # self.install_requirements() sys.modeles
-
+    
     def unload(self):
+        pass
+
+    def stop(self):
         """插件卸载"""
+        self.unload()
         core_urls.unregister(self.urls)
         for path, method in self.apis:
             path_view = core_api.api.default_router.path_operations[path]
