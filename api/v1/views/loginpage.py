@@ -46,6 +46,7 @@ class ButtonSchema(Schema):
 class LOGIN_FORM_ITEM_TYPES(str, Enum):
     text = _('text', '普通文本框')
     password = _('password', '密码')
+    checkbox = _('checkbox', '复选框')
     hidden = _('hidden', '隐藏')
 
 
@@ -56,6 +57,7 @@ class LoginFormItemSchema(Schema):
     name: str = Field(title=_('name', '名字'))
     append: Optional[ButtonSchema] = Field(title=_('append', '扩展按钮'))
     http: Optional[ButtonHttpSchema] = Field(title=_('http', 'http请求'))
+    content: Optional[str] = Field(title=_('content', '内容'))
 
 
 class LoginFormSchema(Schema):
