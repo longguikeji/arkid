@@ -15,7 +15,7 @@ click-plugins==1.1.1
 click-repl==0.2.0
 cryptography==37.0.4
 deprecated==1.2.13
-django==4.0.6
+django==4.0.7
 django-celery-beat==2.3.0
 django-cors-headers==3.13.0
 django-ninja==0.19.1
