@@ -1,7 +1,7 @@
 from typing import List
 from django.shortcuts import render
 from arkid.core.api import api, operation
-from arkid.core.error import ErrorCode, ErrorDict
+from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import App, Tenant, ApproveRequest, User
@@ -24,7 +24,7 @@ def get_mine_apps(request, tenant_id: str):
 @api.get(
     "/mine/tenant/{tenant_id}/profile/",
     tags=["我的"],
-    response=ProfileSchemaOut,
+    response=ProfileSchemaFinalOut,
 )
 @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_profile(request, tenant_id: str):
@@ -32,7 +32,9 @@ def get_mine_profile(request, tenant_id: str):
     real_user = request.user
     user = User.expand_objects.filter(id=real_user.id).first()
     user["tenant"] = real_user.tenant
-    return user
+    return SuccessDict(
+        data=user
+    )
 
 
 @api.post(

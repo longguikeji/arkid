@@ -154,7 +154,7 @@ def unload_extension(ext_dir: str) -> any:
     ext_name = f'{Path(ext_dir).parent}.{Path(ext_dir).name}'
     ext = importlib.import_module(ext_name)
     if ext:
-        ext.extension.unload()
+        ext.extension.stop()
     sys.modules.pop(ext_name, None)
 
 
