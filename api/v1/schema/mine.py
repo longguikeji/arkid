@@ -33,7 +33,8 @@ class ProfileSchemaOut(Schema):
     avatar:Optional[str] = Field(title=_('头像'))
     tenant:ProfileTenantOut = Field(title=_("租户"),hidden=True)
 
-
+class ProfileSchemaFinalOut(ResponseSchema):
+    data:Optional[ProfileSchemaOut]
 class ProfileSchemaIn(ModelSchema):
     class Config:
         model = User
