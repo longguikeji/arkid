@@ -31,6 +31,20 @@ class PermissionsListSchemaOut(ModelSchema):
         model = Permission
         model_fields = ['id', 'name', 'is_system']
 
+class UserAppLastPermissionsItemSchemaOut(Schema):
+
+    id: UUID = Field(default=None)
+    name: str = Field(title=_("名称"))
+    is_system: bool = Field(title=_("是否是系统权限"))
+    app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
+    sort_id: int = Field(hidden=True)
+    # is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value}, title=_("是否授权给其它租户"))
+    category: str = Field(title=_("分类名称"))
+    in_current: bool = Field(title=_("是否已拥有"))
+
+class UserAppLastPermissionsSchemaOut(ResponseSchema):
+    data: List[UserAppLastPermissionsItemSchemaOut]
+
 
 class PermissionSchemaOut(Schema):
     permission_id: str
