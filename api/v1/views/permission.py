@@ -56,8 +56,8 @@ def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_i
     permissiondata = PermissionData()
     return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category)
 
-@api.get("/tenant/{tenant_id}/user_app_last_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/user_app_last_permissions", response=List[UserAppLastPermissionsItemSchemaOut], tags=['权限'])
+@operation(UserAppLastPermissionsSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def user_app_last_permissions(request, tenant_id: str,  user_id: str = None, app_id: str = None):
     '''
@@ -248,8 +248,8 @@ def list_group_permissions(request, tenant_id: str, select_usergroup_id: str = N
     permissiondata = PermissionData()
     return permissiondata.get_group_permissions_by_search(tenant_id, select_usergroup_id, app_name, category)
 
-@api.get("/tenant/{tenant_id}/user_group_last_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/tenant/{tenant_id}/user_group_last_permissions", response=List[UserAppLastPermissionsItemSchemaOut], tags=['权限'])
+@operation(UserAppLastPermissionsSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_user_group_last_permissions(request, tenant_id: str, usergroup_id: str = None):
     '''
