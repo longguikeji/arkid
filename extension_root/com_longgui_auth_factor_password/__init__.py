@@ -182,6 +182,9 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         config = TenantExtensionConfig.active_objects.get(id=config_id).config
         login_enabled_field_names = [item["key"] if isinstance(item,dict) else item for item in config.get('login_enabled_field_names')]
         filter_params = None
+        
+        login_enabled_field_names = login_enabled_field_names or ["username"]
+        
         for lefn in login_enabled_field_names:
             temp = {lefn:username}
             if filter_params:
