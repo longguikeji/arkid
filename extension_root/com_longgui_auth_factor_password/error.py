@@ -10,4 +10,4 @@ class ErrorCode(Enum):
     FIELD_USER_EXISTS = ('10001-8', _('{field}字段和已经有的用户重复'))
     PASSWORD_STRENGTH_LACK = ('10001-9', _('密码强度不够'))
     TWO_TIME_PASSWORD_MISMATCH = ('10001-10', _('两次输入的密码不同'))
-    OLD_PASSWORD_ERROR = ('10001-10', _('旧密码不匹配'))
+    OLD_PASSWORD_ERROR = ('10001-11', _('旧密码不匹配'))
