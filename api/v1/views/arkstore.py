@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from collections import OrderedDict
+from enum import Enum
 from arkid.core.constants import *
 from arkid.core.models import Platform, Tenant, App
 from arkid.core.error import ErrorCode, ErrorDict
@@ -61,7 +62,24 @@ def get_arkstore_list(request, purchased, type, rented=False, all=False, extra_p
         offset = 0
     saas_extensions_data = get_arkstore_extensions(access_token, purchased, rented, type, offset, limit, extra_params)
     saas_extensions_data = saas_extensions_data['items']
+    for ext in saas_extensions_data:
+        if 'type' in ext:
+            ext['type'] = 'arkstore_' + ext['type']
     return saas_extensions_data
+
+
+class ITEM_TYPE(str, Enum):
+    arkstore_extension =  _("arkstore_extension", "ArkID插件")
+    arkstore_oidc =  _("arkstore_oidc", "OIDC应用")
+    arkstore_auto_form_fill =  _("arkstore_auto_form_fill", "表单代填应用")
+    arkstore_url =  _("arkstore_url", "推广链接")
+    arkstore_custom =  _("arkstore_custom", "自定义")
+
+
+class PAYMENT_TYPE(str, Enum):
+    in_app =  _("in_app", "应用内付费"),
+    in_store =  _("in_store", "商店内付费"),
+    custom =  _("custom", "自定义"),
 
 
 class ArkstoreItemSchemaOut(Schema):
@@ -72,8 +90,10 @@ class ArkstoreItemSchemaOut(Schema):
     author: str = Field(readonly=True, title=_('Author', '作者'))
     logo: str = Field(readonly=True, default="")
     description: str = Field(readonly=True)
-    categories: Optional[str] = Field(readonly=True)
-    labels: Optional[str] = Field(readonly=True)
+    category: Optional[str] = Field(title=_('Category', '分类'), readonly=True)
+    labels: Optional[str] = Field(title=_('Labels', '标签'), readonly=True)
+    payment_mode: Optional[PAYMENT_TYPE] = Field(title=_('Payment Mode', '支付方式'), readonly=True)
+    type: Optional[ITEM_TYPE] = Field(title=_('Access Type', '接入方式'), readonly=True)
     homepage: str = Field(readonly=True, title=_('Homepage', '官方网站'))
     # "status",
     # "created",
