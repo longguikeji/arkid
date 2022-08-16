@@ -53,10 +53,10 @@ class StorageExtension(Extension):
     
     @abstractmethod
     def read(self,file_url: str,**kwargs):
-        """_summary_
+        """通过文件链接读取文件数据
 
         Args:
-            file_url (str): _description_
+            file_url (str): 文件链接
         """
         pass
         

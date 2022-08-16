@@ -62,6 +62,15 @@ class LocalStorageExtension(StorageExtension):
         )
         
     def read(self,tenant_id,file_url,**kwargs):
+        """读取文件数据
+
+        Args:
+            tenant_id (str): 租户ID
+            file_url (str): 文件链接
+
+        Returns:
+            bytes: 文件数据
+        """
         host = get_app_config().get_frontend_host()
         useless_part = f'{host}/api/v1/tenant/{tenant_id}/com_longgui_storage_local/localstorage/'
         file_name = file_url.replace(useless_part, "")
