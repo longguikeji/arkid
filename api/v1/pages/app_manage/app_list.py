@@ -70,16 +70,18 @@ installed_page.create_actions(
             icon = "icon-edit",
             page=config_page,
         ),
-        "edit": actions.EditAction(
-            page=edit_page,
-        ),
-        "delete":actions.DeleteAction(
-            path="/api/v1/tenant/{tenant_id}/apps/{id}/",
-        ),
         "openapi_version": actions.OpenAction(
             name = _("开放API配置"),
             page=openapi_page,
         ),
+        "group": [
+            actions.EditAction(
+                page=edit_page,
+            ),
+            actions.DeleteAction(
+                path="/api/v1/tenant/{tenant_id}/apps/{id}/",
+            ),
+        ]
     },
 )
 
