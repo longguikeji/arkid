@@ -1,5 +1,5 @@
 from arkid.core.constants import *
-from arkid.core.event import dispatch_event, Event
+from arkid.core.event import READ_FILE, dispatch_event, Event
 from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
@@ -27,6 +27,8 @@ def upload(request, tenant_id:str, file: UploadedFile = File(...)):
     
     if not data:
         return ErrorDict(ErrorCode.STORAGE_FAILED)
+    
+    # t_responses = dispatch_event(Event(tag=READ_FILE, tenant=tenant, packages=extension.package, data={"url":data}))
     
     return SuccessDict(
         {
