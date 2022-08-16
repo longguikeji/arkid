@@ -11,7 +11,7 @@ from arkid.core.translation import gettext_default as _
 class MineAppItem(ModelSchema):
     class Config:
         model = App
-        model_fields = ['logo', 'name','url','description','type']
+        model_fields = ['id', 'logo', 'name','url','description','type']
 class MineAppsOut(ResponseSchema):
     data:Optional[List[MineAppItem]]
 

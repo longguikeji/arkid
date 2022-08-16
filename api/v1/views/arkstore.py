@@ -28,6 +28,7 @@ from arkid.common.arkstore import (
     # unbind_arkstore_agent,
     get_arkstore_extension_markdown,
     get_arkstore_extension_history_by_package,
+    click_arkstore_app,
 )
 from arkid.common.bind_saas import get_bind_info
 from arkid.core.api import api, operation
@@ -42,7 +43,7 @@ from arkid.extension.models import Extension, TenantExtension
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
 from arkid.core.schema import ResponseSchema
-
+from django.conf import settings
 
 
 def get_arkstore_list(request, purchased, type, rented=False, all=False, extra_params={}):
@@ -71,8 +72,8 @@ class ArkstoreItemSchemaOut(Schema):
     author: str = Field(readonly=True, title=_('Author', '作者'))
     logo: str = Field(readonly=True, default="")
     description: str = Field(readonly=True)
-    categories: str = Field(readonly=True)
-    labels: str = Field(readonly=True)
+    categories: Optional[str] = Field(readonly=True)
+    labels: Optional[str] = Field(readonly=True)
     homepage: str = Field(readonly=True, title=_('Homepage', '官方网站'))
     # "status",
     # "created",
@@ -549,3 +550,20 @@ def get_arkstore_extension_history(request, tenant_id: str, package: str):
     access_token = get_arkstore_access_token(tenant, token)
     resp = get_arkstore_extension_history_by_package(access_token, package)
     return resp['items']
+
+
+@api.get("/tenant/{tenant_id}/arkstore/apps/{id}/click/", tags=['方舟商店'])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def arkstore_app_click(request, tenant_id: str, id: str):
+    resp = {'error': ErrorCode.OK.value, 'data': {}}
+    if settings.IS_CENTRAL_ARKID:
+        return resp
+
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    app = App.active_objects.get(id=id)
+    if not app or not app.arkstore_app_id:
+        return resp
+    result = click_arkstore_app(access_token, app.arkstore_app_id)
+    return resp
