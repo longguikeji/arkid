@@ -18,5 +18,11 @@ page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/mine/tenant/{tenant_id}/apps/',
         method=actions.FrontActionMethod.GET,
-    )
+    ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/arkstore/apps/{id}/click/',
+            method=actions.FrontActionMethod.GET,
+        )
+    ]
 )

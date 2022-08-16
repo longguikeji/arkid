@@ -632,3 +632,14 @@ def get_arkstore_extension_history_by_package(access_token, package):
         raise Exception(f'Error get_arkstore_extension_history_by_package: {resp.status_code}')
     resp = resp.json()
     return resp
+
+
+def click_arkstore_app(access_token, arkstore_app_id):
+    arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/apps/{arkstore_app_id}/click'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {}
+    resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
+    if resp.status_code != 200:
+        raise Exception(f'Error click_arkstore_app: {resp.status_code}')
+    resp = resp.json()
+    return resp
