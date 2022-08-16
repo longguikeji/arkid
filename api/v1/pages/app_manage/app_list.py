@@ -58,6 +58,12 @@ installed_page.create_actions(
             path='/api/v1/tenant/{tenant_id}/apps/'
         ),
     },
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/arkstore/apps/{id}/click/',
+            method=actions.FrontActionMethod.GET,
+        )
+    ],
     local_actions={
         "config":actions.OpenAction(
             name = _("协议配置"),
