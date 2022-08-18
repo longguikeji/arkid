@@ -43,7 +43,7 @@ OAuth2是一个授权的开放协议
 2.  ### 获取Authorization Code
 
     - 请求地址: `authorize url`
-    - 请求方式: GET
+    - 请求方式: GET(**重定向**)
     - 请求参数:
 
     | 参数名称        | 参数说明           | 示例           |
