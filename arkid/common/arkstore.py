@@ -501,6 +501,13 @@ def get_arkid_saas_app_detail(tenant, token, extension_id):
     headers = {'Authorization': f'Token {saas_token}'}
     params = {}
     resp = requests.get(arkid_saas_app_url, params=params, headers=headers)
+
+    # saas token 失效
+    if resp.status_code == 401:
+        saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token, use_cache=False)
+        headers = {'Authorization': f'Token {saas_token}'}
+        resp = requests.get(arkid_saas_app_url, params=params, headers=headers)
+
     if resp.status_code != 200:
         raise Exception(f'Error get_arkid_saas_app_detail: {resp.status_code}')
     resp = resp.json()
