@@ -2666,7 +2666,7 @@ class PermissionData(object):
     def create_usergroup_permission(self, user_group):
         '''
         创建用户分组时，初始化一些权限字符串，因为分组权限只参与计算，
-        不参与显示，所以只用在添加的时候初始化就可以，此处留下口子先不识闲
+        不参与显示，所以只用在添加的时候初始化就可以，此处留下口子先不实现
         '''
         tenant = user_group.tenant
         # 需要给当前分组初始化系统权限字符串

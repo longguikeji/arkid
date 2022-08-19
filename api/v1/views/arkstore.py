@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from collections import OrderedDict
+from enum import Enum
 from arkid.core.constants import *
 from arkid.core.models import Platform, Tenant, App
 from arkid.core.error import ErrorCode, ErrorDict
@@ -28,6 +29,7 @@ from arkid.common.arkstore import (
     # unbind_arkstore_agent,
     get_arkstore_extension_markdown,
     get_arkstore_extension_history_by_package,
+    click_arkstore_app,
 )
 from arkid.common.bind_saas import get_bind_info
 from arkid.core.api import api, operation
@@ -42,7 +44,7 @@ from arkid.extension.models import Extension, TenantExtension
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
 from arkid.core.schema import ResponseSchema
-
+from django.conf import settings
 
 
 def get_arkstore_list(request, purchased, type, rented=False, all=False, extra_params={}):
@@ -60,7 +62,24 @@ def get_arkstore_list(request, purchased, type, rented=False, all=False, extra_p
         offset = 0
     saas_extensions_data = get_arkstore_extensions(access_token, purchased, rented, type, offset, limit, extra_params)
     saas_extensions_data = saas_extensions_data['items']
+    for ext in saas_extensions_data:
+        if 'type' in ext:
+            ext['type'] = 'arkstore_' + ext['type']
     return saas_extensions_data
+
+
+class ITEM_TYPE(str, Enum):
+    arkstore_extension =  _("arkstore_extension", "ArkID插件")
+    arkstore_oidc =  _("arkstore_oidc", "OIDC应用")
+    arkstore_auto_form_fill =  _("arkstore_auto_form_fill", "表单代填应用")
+    arkstore_url =  _("arkstore_url", "推广链接")
+    arkstore_custom =  _("arkstore_custom", "自定义")
+
+
+class PAYMENT_TYPE(str, Enum):
+    in_app =  _("in_app", "应用内付费"),
+    in_store =  _("in_store", "商店内付费"),
+    custom =  _("custom", "自定义"),
 
 
 class ArkstoreItemSchemaOut(Schema):
@@ -71,8 +90,10 @@ class ArkstoreItemSchemaOut(Schema):
     author: str = Field(readonly=True, title=_('Author', '作者'))
     logo: str = Field(readonly=True, default="")
     description: str = Field(readonly=True)
-    categories: str = Field(readonly=True)
-    labels: str = Field(readonly=True)
+    category: Optional[str] = Field(title=_('Category', '分类'), readonly=True)
+    labels: Optional[str] = Field(title=_('Labels', '标签'), readonly=True)
+    payment_mode: Optional[PAYMENT_TYPE] = Field(title=_('Payment Mode', '支付方式'), readonly=True)
+    type: Optional[ITEM_TYPE] = Field(title=_('Access Type', '接入方式'), readonly=True)
     homepage: str = Field(readonly=True, title=_('Homepage', '官方网站'))
     # "status",
     # "created",
@@ -157,7 +178,7 @@ class OrderPaymentOut(ResponseSchema):
 
 
 class TrialDays(Schema):
-    trial_period: int = Field(title=_('Trial Days',"试用期(天)"))
+    trial_period: int = Field(readonly=True, title=_('Trial Days',"试用期(天)"))
 
 
 class TrialDaysOut(ResponseSchema):
@@ -549,3 +570,20 @@ def get_arkstore_extension_history(request, tenant_id: str, package: str):
     access_token = get_arkstore_access_token(tenant, token)
     resp = get_arkstore_extension_history_by_package(access_token, package)
     return resp['items']
+
+
+@api.get("/tenant/{tenant_id}/arkstore/apps/{id}/click/", tags=['方舟商店'])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def arkstore_app_click(request, tenant_id: str, id: str):
+    resp = {'error': ErrorCode.OK.value, 'data': {}}
+    if settings.IS_CENTRAL_ARKID:
+        return resp
+
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    access_token = get_arkstore_access_token(tenant, token)
+    app = App.active_objects.get(id=id)
+    if not app or not app.arkstore_app_id:
+        return resp
+    result = click_arkstore_app(access_token, app.arkstore_app_id)
+    return resp
