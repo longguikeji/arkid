@@ -26,6 +26,7 @@
 * [load](#extension_root.com_longgui_storage_local.LocalStorageExtension.load)
 * [save_file](#extension_root.com_longgui_storage_local.LocalStorageExtension.save_file)
 * [resolve](#extension_root.com_longgui_storage_local.LocalStorageExtension.resolve)
+* [read](#extension_root.com_longgui_storage_local.LocalStorageExtension.read)
 
 ## 代码
 

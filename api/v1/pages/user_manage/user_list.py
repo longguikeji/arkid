@@ -28,7 +28,7 @@ page.create_actions(
     global_actions={
         'create': actions.CreateAction(
             path='/api/v1/tenant/{tenant_id}/users/',
-        )
+        ),
     },
     local_actions={
         "edit": actions.EditAction(

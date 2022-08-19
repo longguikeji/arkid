@@ -94,7 +94,7 @@ class ErrorDict(dict):
     if len(enum.value) > 1:
       message = enum.value[1]
       for key, value in kwargs.items():
-        message.replace('{'+key+'}', value)
+        message = message.replace('{'+key+'}', value)
       self['message'] = message
     self['package'] = package
     

@@ -1,7 +1,7 @@
 import json
 from django.urls import reverse
 from arkid.core.constants import *
-from arkid.core.api import operation
+from arkid.core.api import GlobalAuth, operation
 from arkid.core.event import SEND_SMS, Event, dispatch_event
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.common.logger import logger
@@ -346,6 +346,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             "GET",
             self.mine_mobile,
             tenant_path=True,
+            auth=GlobalAuth(),
             response=MineMobileOut
         )
         
@@ -354,6 +355,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             'POST',
             self.update_mine_mobile,
             tenant_path=True,
+            auth=GlobalAuth(),
             response=UpdateMineMobileOut
         )
         

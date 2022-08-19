@@ -22,7 +22,7 @@ def update_platform_config(request,data:PlatformConfigIn):
         setattr(config,key,value)
     config.save()
     
-    return {"error": ErrorCode.OK.value}
+    return {"error": ErrorCode.OK.value,"message":_("配置成功")}
 
 @api.get("/frontend_url/",response=FrontendUrlOut, tags=["平台配置"],auth=None)
 def get_frontend_url(request):

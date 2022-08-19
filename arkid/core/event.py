@@ -351,6 +351,7 @@ AUTO_LOGIN = 'AUTO_LOGIN'
 GET_AUTH_RESULT = 'GET_AUTH_RESULT'
 
 SAVE_FILE = 'SAVE_FILE'
+READ_FILE = 'READ_FILE'
 
 ACCOUNT_LIFE_PERIODIC_TASK = 'ACCOUNT_LIFE_PERIODIC_TASK'
 CREATE_APPROVE_REQUEST = 'CREATE_APPROVE_REQUEST'
@@ -432,6 +433,7 @@ register_event(CREATE_TENANT, _('create tenant', '创建租户'))
 register_event(GET_AUTH_RESULT, _('get auth result', '获得权限鉴定结果'))
 
 register_event(SAVE_FILE, _('SAVE FILE', '保存文件'))
+register_event(READ_FILE, _('READ_FILE', '读取文件'))
 register_event(ACCOUNT_LIFE_PERIODIC_TASK, _('ACCOUNT_LIFE_PERIODIC_TASK', '生命周期定时任务'))
 register_event(CREATE_APPROVE_REQUEST, _('CREATE_APPROVE_REQUEST', '创建审批请求'))
 

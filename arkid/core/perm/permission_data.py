@@ -1331,15 +1331,21 @@ class PermissionData(object):
             if len(index_list) == 0:
                 index_list.append(-1)
             # 筛选出需要的显示的权限
+            # sort_id__in=index_list
             if app_id:
-                return Permission.valid_objects.filter(
+                permissions =  Permission.valid_objects.filter(
                     app_id=app_id,
-                    sort_id__in=index_list
                 ).order_by('sort_id')
             else:
-                return SystemPermission.valid_objects.filter(
-                    sort_id__in=index_list
-                ).order_by('sort_id')
+                permissions = SystemPermission.valid_objects.order_by('sort_id')
+            
+            for permission in permissions:
+                sort_id = permission.sort_id
+                if sort_id in index_list:
+                    permission.in_current = True
+                else:
+                    permission.in_current = False
+            return permissions
         else:
             return []
 
@@ -1375,10 +1381,16 @@ class PermissionData(object):
             for index, item in enumerate(permission_result_arr):
                 if int(item) == 1 and index not in permission_sort_ids:
                     permission_sort_ids.append(index)
-        if len(permission_sort_ids) == 0:
-            systempermissions = systempermissions.filter(id__isnull=True)
-        else:
-            systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+        # if len(permission_sort_ids) == 0:
+        #     systempermissions = systempermissions.filter(id__isnull=True)
+        # else:
+        #     systempermissions = systempermissions.filter(sort_id__in=permission_sort_ids)
+        for systempermission in systempermissions:
+            sort_id = systempermission.sort_id
+            if sort_id in permission_sort_ids:
+                systempermission.in_current = True
+            else:
+                systempermission.in_current = False
         # 取得所有分组拥有的应用权限
         usergroup_permissionresults = GroupPermissionResult.valid_objects.filter(
             user_group__in=all_groups,
@@ -1399,10 +1411,16 @@ class PermissionData(object):
                 for item in permissions.filter(app=usergroup_permissionresult.app, sort_id__in=permission_sort_ids):
                     if item.id not in permission_results:
                         permission_results.append(item.id)
-        if permission_results:
-            permissions = permissions.filter(id__in=permission_results)
-        else:
-            permissions = permissions.filter(id__isnull=True)
+        for permission in permissions:
+            id = permission.id
+            if id in permission_results:
+                permission.in_current = True
+            else:
+                permission.in_current = False
+        # if permission_results:
+        #     permissions = permissions.filter(id__in=permission_results)
+        # else:
+        #     permissions = permissions.filter(id__isnull=True)
         return list(systempermissions)+list(permissions)
         
 
@@ -2648,7 +2666,7 @@ class PermissionData(object):
     def create_usergroup_permission(self, user_group):
         '''
         创建用户分组时，初始化一些权限字符串，因为分组权限只参与计算，
-        不参与显示，所以只用在添加的时候初始化就可以，此处留下口子先不识闲
+        不参与显示，所以只用在添加的时候初始化就可以，此处留下口子先不实现
         '''
         tenant = user_group.tenant
         # 需要给当前分组初始化系统权限字符串
