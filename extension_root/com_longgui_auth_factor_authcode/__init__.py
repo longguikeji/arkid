@@ -78,7 +78,8 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
                         "url": self.generate_code_path,
                         "method": "get",
                     },
-                }
+                },
+                "placeholder":_("图形验证码")
             },
             {
                 "type": "hidden",
