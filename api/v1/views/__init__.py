@@ -37,5 +37,6 @@ from . import (
     bind_saas,
     path_list,
     upload,
-    docs
+    docs,
+    message
 )
