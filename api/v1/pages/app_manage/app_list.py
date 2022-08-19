@@ -143,11 +143,13 @@ app_purchased_page.create_actions(
     local_actions={
         "order": actions.OpenAction(
             name='购买',
-            page=order_page
+            page=order_page,
+            show="can_buy"
         ),
         "trial": actions.OpenAction(
             name='试用',
-            page=trial_page
+            page=trial_page,
+            show="can_try"
         )
     },
 )

@@ -85,20 +85,25 @@ class PAYMENT_TYPE(str, Enum):
 class ArkstoreItemSchemaOut(Schema):
     uuid: str = Field(hidden=True)
     name: str = Field(readonly=True)
-    package: Optional[str] = Field(readonly=True)
     version: str = Field(readonly=True, title=_('Version', '版本'))
     author: str = Field(readonly=True, title=_('Author', '作者'))
     logo: str = Field(readonly=True, default="")
     description: str = Field(readonly=True)
     category: Optional[str] = Field(title=_('Category', '分类'), readonly=True)
     labels: Optional[str] = Field(title=_('Labels', '标签'), readonly=True)
-    payment_mode: Optional[PAYMENT_TYPE] = Field(title=_('Payment Mode', '支付方式'), readonly=True)
-    type: Optional[ITEM_TYPE] = Field(title=_('Access Type', '接入方式'), readonly=True)
     homepage: str = Field(readonly=True, title=_('Homepage', '官方网站'))
-    # "status",
-    # "created",
-    # "type",
-    # button: str
+
+
+
+class ArkstoreAppItemSchemaOut(ArkstoreItemSchemaOut):
+    type: Optional[ITEM_TYPE] = Field(title=_('Access Type', '接入方式'), readonly=True)
+    payment_mode: Optional[PAYMENT_TYPE] = Field(title=_('Payment Mode', '支付方式'), readonly=True)
+    can_buy: Optional[bool] = Field(title=_("Can Buy", "允许购买"), default=False, hidden=True)
+    can_try: Optional[bool] = Field(title=_("Can Try", "允许试用"), default=False, hidden=True)
+
+
+class ArkstoreExtensionItemSchemaOut(ArkstoreItemSchemaOut):
+    package: Optional[str] = Field(readonly=True)
 
 
 class UserExtensionOut(Schema):
@@ -109,7 +114,7 @@ class UserExtensionOut(Schema):
     max_users: int
 
 
-class OnShelveExtensionPurchaseOut(ArkstoreItemSchemaOut):
+class OnShelveExtensionPurchaseOut(ArkstoreExtensionItemSchemaOut):
     # purchased: bool = False
     # purchase_records: List[UserExtensionOut] = Field(
     #     default=[], title=_("Purchase Records", "购买记录")
@@ -255,7 +260,7 @@ def list_arkstore_extensions(request, tenant_id: str, query_data: ArkstoreExtens
     return get_arkstore_list(request, None, 'extension', extra_params=query_data)
 
 
-@api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
+@api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
@@ -270,7 +275,7 @@ def list_arkstore_purchased_extensions(request, tenant_id: str):
     return get_arkstore_list(request, True, 'extension')
 
 
-@api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreItemSchemaOut])
+@api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_purchased_apps(request, tenant_id: str):
