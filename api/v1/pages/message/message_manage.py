@@ -19,9 +19,9 @@ page.create_actions(
         path="/api/v1/tenant/{tenant_id}/message/",
         method=actions.FrontActionMethod.GET,
     ),
-    global_actions={
-        'create': actions.CreateAction(
-            path='/api/v1/tenant/{tenant_id}/message/',
+    local_actions={
+        "delete": actions.DeleteAction(
+            path="/api/v1/tenant/{tenant_id}/message/{id}/",
         )
-    }
+    },
 )

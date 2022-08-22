@@ -669,13 +669,6 @@ class Message(BaseModel,ExpandModel):
         max_length=256,
     )
     
-    tenant = models.ForeignKey(
-        Tenant,
-        default=None,
-        on_delete=models.CASCADE,
-        verbose_name=_('Tenant', '租户'),
-    )
-    
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -690,17 +683,15 @@ class Message(BaseModel,ExpandModel):
         max_length=256,
     )
     
-    source = models.ForeignKey(
-        TenantExtensionConfig,
-        on_delete=models.CASCADE,
-        verbose_name=_("Source","来源"),
-        blank=True,
-        null=True
-    )
-    
     readed_status = models.BooleanField(
         default=False,
         verbose_name=_("readed_status","是否已读")
+    )
+    
+    url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("url","链接")
     )
 
 class TenantExpandAbstract(BaseModel):

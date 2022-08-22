@@ -10,31 +10,46 @@ from arkid.core.extension.message import MessageExtension
 from arkid.core.schema import ResponseSchema
 
 class MessageListItemOut(ModelSchema):
+    class Config:
+        model = Message
+        model_fields = ['id', 'title','content','url','created']
+        
+    title:str = Field(
+        title=_("标题")
+    )
+    
+    user_name:str = Field(
+        title=_("用户")
+    )
+    
+    content:str = Field(
+        title=_("内容")
+    )
+    
+    readed_status_str:str = Field(
+        title=_("阅读状态")
+    )
     
     @staticmethod
-    def resolve_user(obj):
+    def resolve_user_name(obj):
         if obj.user:
-            return obj.user.get("nickname",obj.user.username)
+            return obj.user.username
         else:
             return ''
         
     @staticmethod
-    def resolve_source(obj):
-        if obj.source:
-            return obj.source.name
-        else:
-            return '系统'
-        
-    @staticmethod
-    def resolve_readed_status(obj):
+    def resolve_readed_status_str(obj):
         if obj.readed_status:
             return _("已读")
         else:
             return _("未读")
-    
-    class Config:
-        model = Message
-        model_fields = ['id', 'title','content','user','source','created','readed_status']
+        
+    @staticmethod
+    def resolve_conetent(obj):
+        if len(obj.content)>20:
+            return f'{obj.content[:17]}...'
+        else:
+            return obj.content
         
 class MessageListOut(ResponseSchema):
 
@@ -77,37 +92,45 @@ class MessageCreateOut(ResponseSchema):
 class MessageDeleteOut(ResponseSchema):
     pass
 
-class MessageExtesionConfigListItemOut(Schema):
-    
-    id: str
-    name: str = Field(title=_("配置名称"))
-    type: str = Field(title=_("中间件类型"))
-    extension_name: str = Field(title=_("所属插件"))
-    extension_package: str = Field(title=_("所属插件标识"))
+class MineMessageItemOut(ModelSchema):
+    class Config:
+        model = Message
+        model_fields = ['id', 'title','content','url','created']
+
+class MineMessageOut(ResponseSchema):
+    data = MineMessageItemOut
+
+class MineMessageListItemOut(ModelSchema):
+    class Config:
+        model = Message
+        model_fields = ['id', 'title','content','url','created']
         
-class MessageExtesionConfigListOut(ResponseSchema):
-    data:List[MessageExtesionConfigListItemOut]
-    
-class MessageExtesionConfigOut(ResponseSchema):
-    data: MessageExtension.create_composite_config_schema(
-        'MessageExtesionConfigOut'
+    title:str = Field(
+        title=_("标题")
     )
     
-MessageExtesionConfigCreateIn = MessageExtension.create_composite_config_schema(
-    'MessageExtesionConfigCreateIn',
-    exclude=['id']
-)
+    content:str = Field(
+        title=_("内容")
+    )
+    
+    readed_status_str:str = Field(
+        title=_("阅读状态")
+    )
+        
+    @staticmethod
+    def resolve_readed_status_str(obj):
+        if obj.readed_status:
+            return _("已读")
+        else:
+            return _("未读")
+    
+    @staticmethod
+    def resolve_conetent(obj):
+        if len(obj.content)>20:
+            return f'{obj.content[:17]}...'
+        else:
+            return obj.content
 
-class MessageExtesionConfigCreateOut(ResponseSchema):
-    pass
+class MineMessageListOut(ResponseSchema):
 
-
-MessageExtesionConfigUpdateIn = MessageExtension.create_composite_config_schema(
-    'MessageExtesionConfigUpdateIn'
-)
-
-class MessageExtesionConfigUpdateOut(ResponseSchema):
-    pass
-
-class MessageExtesionConfigDeleteOut(ResponseSchema):
-    pass
+    data: List[MineMessageListItemOut]
