@@ -11,7 +11,8 @@ from . import (
     mine,
     permission_manage,
     platform_admin,
-    tenant_manage
+    tenant_manage,
+    message
 )
 from arkid.core import routers
 
@@ -27,6 +28,7 @@ routers.register_front_routers(
         approve_manage.router,
         data_source_manage.router,
         developer_manage.router,
+        message.router,
         log_manage.router,
         charts_manage.router,
         tenant_manage.router,

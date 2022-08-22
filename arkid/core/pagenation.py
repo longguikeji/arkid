@@ -39,3 +39,23 @@ class CustomPagination(PaginationBase):
             "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
             "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
         }
+
+
+class ArstorePagination(CustomPagination):
+    def paginate_queryset(self, queryset, pagination: CustomPagination.Input, request, **params):
+        
+        if isinstance(queryset,dict) and "error" in queryset.keys() and queryset.get("error") not in ["0",0]:
+            queryset["items"] = []
+            return queryset
+        
+        page = pagination.page
+        page_size = pagination.page_size
+        items = queryset["items"]
+        count = queryset["count"]
+
+        return {
+            'items': items,
+            'count': count,
+            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
+            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
+        }

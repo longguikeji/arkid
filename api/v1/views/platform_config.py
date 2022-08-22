@@ -19,6 +19,16 @@ def update_platform_config(request,data:PlatformConfigIn):
     """
     config = Platform.get_config()
     for key,value in data.dict().items():
+        
+        # 添加对前端url的合法性校验
+        if key == "frontend_url":
+            from urllib.parse import urlparse
+            ret = urlparse(value)
+            if ret.scheme in ["http","https"] and ret.netloc:
+                pass
+            else:
+                continue
+        
         setattr(config,key,value)
     config.save()
     
@@ -41,7 +51,16 @@ def set_frontend_url(request,data:FrontendUrlSchema):
     """ 获取ArkId访问地址
     """
     config = Platform.get_config()
-    config.frontend_url = data.dict().get("url")
+    url = data.dict().get("url")
+    from urllib.parse import urlparse
+    ret = urlparse(url)
+    if ret.scheme in ["http","https"] and ret.netloc:
+        pass
+    else:
+        return ErrorDict(
+            ErrorCode.INVALID_FRONTEND_URL
+        )
+    config.frontend_url = url
     config.save()
     
     return SuccessDict(

@@ -11,7 +11,8 @@ title: 首页
 [中心ArkID](https://central.arkid.cc){ .md-button }
 [官方文档](https://longguikeji.github.io/arkid/){ .md-button }
 
-------
+[![vsp3e1.png](https://s1.ax1x.com/2022/08/19/vsp3e1.png)](https://imgse.com/i/vsp3e1)
+
 ## 功能特点
 
 ### 插件化
@@ -68,3 +69,13 @@ title: 首页
 ### 云原生
 * 支持Docker开发
 * 支持Docker，K8S容器化部署
+
+### 低代码开发框架
+* 对OpenAPI进行扩展，使前端页面由后端配置驱动
+* 快速构建页面原型
+* 支持自定义CSS主题
+
+### 插件与应用商店
+* 支持开发者共享出售插件
+* 支持SaaS应用伪本地化
+* 支持代理商代理与分成
