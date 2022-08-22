@@ -153,7 +153,7 @@ def list_extensions(request, status: str = None):
     token = request.user.auth_token
     access_token = get_arkstore_access_token(tenant, token)
     # resp = get_arkstore_extensions_purchased(access_token)
-    resp = get_arkstore_list(request, True, 'extension', all=True)
+    resp = get_arkstore_list(request, True, 'extension', all=True)['items']
     extensions_purchased = {ext['package']: ext for ext in resp}
     for ext in qs:
         if ext.package in extensions_purchased:
