@@ -123,7 +123,7 @@ def get_app_openapi_version(request, tenant_id: str, app_id: str):
     result = {
         'version': app_config.get('version', ''),
         'openapi_uris': app_config.get('openapi_uris', ''),
-        'sync_permission_uri': host+'/api/v1/tenant/'+tenant_id+'/apps/'+app_id+'/sync_permission/'
+        'sync_permission_uri': host+'/api/v1/apps/'+app_id+'/sync_permission/'
     }
     # from arkid.core.models import Tenant, User
     # from arkid.core.perm.permission_data import PermissionData
@@ -270,13 +270,15 @@ def get_app_config(request, tenant_id: str, id: str):
     return {"data":result}
 
 
-@api.get("/tenant/{tenant_id}/apps/{id}/sync_permission/", tags=['应用'], auth=None)
+@api.get("/apps/{id}/sync_permission/", tags=['应用'], auth=None)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
-def sync_app_permission(request, tenant_id: str, id: str):
+def sync_app_permission(request, id: str):
     '''
     同步应用权限
     '''
-    dispatch_event(Event(tag=APP_SYNC_PERMISSION, tenant=request.tenant, request=request, data=id))
+    app = App.valid_objects.filter(id=id).first()
+    if app:
+        dispatch_event(Event(tag=APP_SYNC_PERMISSION, tenant=app.tenant, request=request, data=id))
     return ErrorDict(ErrorCode.OK)
 
 @api.post("/tenant/{tenant_id}/apps/", tags=['应用'],response=CreateAppOut)
