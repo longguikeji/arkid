@@ -83,6 +83,10 @@ class ErrorCode(Enum):
     STORAGE_NOT_EXISTS = ('18002', _('storage not exists', '存储插件未启用'))
     STORAGE_FAILED = ('18003', _('storage failed', '存储失败'))
     
+    MESSAGE_SAVE_FAILED = ('18004', _('message save failed', '消息存储失败'))
+    
+    INVALID_FRONTEND_URL = ('18005', _('invalid frontend url', '不合法的链接'))
+    
 class ErrorDict(dict):
 
   def __init__(self, enum, package='core', **kwargs):
