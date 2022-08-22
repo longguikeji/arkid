@@ -29,8 +29,6 @@ def get_saas_token(tenant, token, use_cache=True):
     if use_cache and key in arkid_saas_token_cache:
         return arkid_saas_token_cache[key]
     app = Application.objects.filter(name='arkid_saas', uuid = tenant.id).first()
-    host = get_app_config().get_backend_host()
-    url = f"{host}/api/v1/tenant/{tenant.id.hex}/app/{tenant.id.hex}/oauth/authorize/"
     nonce = uuid.uuid4().hex
     params = {
         "client_id": app.client_id,
@@ -43,7 +41,19 @@ def get_saas_token(tenant, token, use_cache=True):
         "nonce": nonce,
         "response_mode": "query",
     }
-    resp = requests.get(url, params=params)
+
+    from django.test import RequestFactory
+    factory = RequestFactory()
+    request = factory.get('somepage.html', data=params)
+    request.tenant = tenant
+    from arkid.core.models import ExpiringToken
+    token = ExpiringToken.objects.get(token=token)
+    request.user = token.user
+    from oauth2_provider.views.base import AuthorizationView
+    resp = AuthorizationView.as_view()(request)
+    assert resp.status_code == 302
+
+    resp = requests.get(resp.url)
     if resp.status_code != 200:
         arkid_saas_token_cache.pop(key, None)
         raise Exception(f'Error get_saas_token: {resp.status_code}')
