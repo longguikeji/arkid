@@ -4,7 +4,7 @@ from arkid.core.api import api, operation
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
-from arkid.core.models import App, Tenant, ApproveRequest, User
+from arkid.core.models import App, AppGroup, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from ninja.pagination import paginate
 from django.db.models import Q
@@ -181,3 +181,44 @@ def get_mine_tenants(request):
     """获取我的租户"""
     tenants = Tenant.active_objects.filter(users=request.user).all()
     return list(tenants)
+
+
+@api.get("/mine/tenant/{tenant_id}/mine_app_groups/", response=MineAppGroupListOut, tags=["我的"])
+@operation(MineAppGroupListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_mine_app_groups(request, tenant_id: str, parent_id=None):
+    """获取我的应用分组
+    """
+    tenant = request.tenant
+    appgroups = AppGroup.active_objects.filter(
+        tenant=tenant
+    )
+    
+    if parent_id in [0,"0",None,""]:
+        # 传递虚拟节点则获取所有一级分组
+        appgroups = appgroups.filter(parent=None).all()
+    else:
+        appgroups = appgroups.filter(parent__id=parent_id).all()
+    
+    return {"data": appgroups if appgroups else []}
+    
+
+@api.get("/mine/tenant/{tenant_id}/mine_group_apps/", response=List[MineAppListItemOut], tags=["我的"])
+@operation(MineAppListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
+    """获取我的分组应用
+    """
+    apps = []
+    if app_group_id in [None,"","0",0]:
+        apps = App.active_objects.filter(
+            Q(tenant=request.tenant) | Q(entry_permission__is_open=True)
+        )
+    else:
+        app_group = AppGroup.active_objects.get(
+            tenant=request.tenant,
+            id=app_group_id
+        )
+        
+        apps = app_group.apps.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True)).all()
+        
+    return list(apps) if apps else []

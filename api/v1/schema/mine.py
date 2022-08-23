@@ -90,3 +90,22 @@ class MineSwitchTenantOut(ResponseSchema):
     switch_tenant: MineSwitchTenantItem = Field(
         title=_("切换租户")
     )
+    
+class MineAppGroupListItemOut(Schema):
+    id:str = Field(
+        title=_("唯一标识")
+    )
+    name:str = Field(
+        title=_("名称")
+    )
+    
+class MineAppGroupListOut(ResponseSchema):
+    data:List[MineAppGroupListItemOut]
+    
+class MineAppListItemOut(ModelSchema):
+    class Config:
+        model = App
+        model_fields = ['id', 'logo', 'name','url','description','type']
+        
+class MineAppListOut(ResponseSchema):
+    data:List[MineAppListItemOut]
