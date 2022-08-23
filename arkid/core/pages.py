@@ -198,7 +198,14 @@ class TablePage(SelectPage):
 class TreePage(SelectPage):
     """树形页面
     """
-    def __init__(self, *args, **kwargs):
+    
+    show_vnode = False
+    
+    show_page_if_no_nodes = True
+    
+    def __init__(self, show_vnode=False, show_page_if_no_node=True, *args, **kwargs):
+        self.show_vnode = show_vnode
+        self.show_page_if_no_nodes = show_page_if_no_node
         super().__init__(type=FrontPageType.TREE_PAGE, *args, **kwargs)
 
 
