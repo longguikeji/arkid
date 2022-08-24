@@ -288,6 +288,6 @@ def bind_mine_account(request, tenant_id: str, account_id: str):
             f'api:{select_package}:{select_package}_login',
             args=[config_created.id],
         )
-        login_url = login_url + '?next={}/third_part_callback'.format(front_host)
+        login_url = login_url + '?next={}/mine_auth_manage'.format(front_host)
         return HttpResponseRedirect(login_url)
     return ErrorCode(ErrorCode.OK)
