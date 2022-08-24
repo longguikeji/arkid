@@ -177,8 +177,12 @@ class ExternalIdpExtension(Extension):
             .replace('http://', '')
             .replace('https://', '')
         )
+        # if next_url and (
+        #     "third_part_callback" not in next_url or frontend_host not in next_url
+        # ):
+        #     return JsonResponse({'error_msg': '错误的跳转页面'})
         if next_url and (
-            "third_part_callback" not in next_url or frontend_host not in next_url
+            frontend_host not in next_url
         ):
             return JsonResponse({'error_msg': '错误的跳转页面'})
         if code:

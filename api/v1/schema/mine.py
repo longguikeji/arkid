@@ -90,3 +90,13 @@ class MineSwitchTenantOut(ResponseSchema):
     switch_tenant: MineSwitchTenantItem = Field(
         title=_("切换租户")
     )
+
+
+class MineBindAccountItem(Schema):
+
+    id: UUID
+    name: str = Field(default='', title=_('名称'))
+
+
+class MineBindAccountOut(ResponseSchema):
+    data:List[MineBindAccountItem]
