@@ -6,7 +6,7 @@ from typing import Optional
 
 class Name(BaseModel):
     formatted: Optional[str] = None
-    familiyName: Optional[str] = None
+    familyName: Optional[str] = None
     givenName: Optional[str] = None
     honorificPrefix: Optional[str] = None
     honorificSuffix: Optional[str] = None
