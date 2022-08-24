@@ -87,7 +87,7 @@ class ErrorCode(Enum):
     
     INVALID_FRONTEND_URL = ('18005', _('invalid frontend url', '不合法的链接'))
 
-    PLUG_IN_NOT_START = ('18005', _('plug-in not start', '这个插件没有启用'))
+    PLUG_IN_NOT_START = ('18005', _('plug-in not start', '这个插件没有配置'))
     
 class ErrorDict(dict):
 

@@ -274,6 +274,31 @@ class ExternalIdpExtension(Extension):
         config_created.save()
         return config_created
 
+    def update_tenant_config(self, id, config, name, type):
+        super().update_tenant_config(id, config, name, type)
+        config_created = TenantExtensionConfig.valid_objects.filter(id=id).first()
+        server_host = get_app_config().get_host()
+        login_url = server_host + reverse(
+            f'api:{self.pname}:{self.pname}_login',
+            args=[config_created.id],
+        )
+        callback_url = server_host + reverse(
+            f'api:{self.pname}:{self.pname}_callback',
+            args=[config_created.id],
+        )
+        bind_url = server_host + reverse(
+            f'api:{self.pname}:{self.pname}_bind',
+            args=[config_created.id],
+        )
+        img_url = self.get_img_url()
+        config["login_url"] = login_url
+        config["callback_url"] = callback_url
+        config["bind_url"] = bind_url
+        config["img_url"] = img_url
+        config_created.config = config
+        config_created.save()
+        return config_created
+
     def add_idp_login_buttons(self, event, **kwargs):
         logger.info(f'{self.package} add idp login buttons start')
         data = {}
