@@ -135,15 +135,24 @@ class ExternalIdpExtension(Extension):
         """
         pass
 
-    def get_arkid_token(self, ext_id, config):
+    def get_arkid_token(self, ext_id, ext_name, ext_icon, config):
         arkid_user = self.get_arkid_user(ext_id)
         if arkid_user:
-            token = refresh_token(arkid_user)
+            from arkid.core.models import ExpiringToken
+            et = ExpiringToken.objects.filter(
+                user=arkid_user
+            ).first()
+            if et and et.expired(config.tenant) is False:
+                token = et.token
+            else:
+                token = refresh_token(arkid_user)
             context = {"token": token}
         else:
             context = {
                 "token": "",
                 "ext_id": ext_id,
+                "ext_name": ext_name,
+                "ext_icon": ext_icon,
                 "tenant_id": config.tenant.id.hex,
                 "bind": config.config.get('bind_url'),
             }
@@ -197,7 +206,7 @@ class ExternalIdpExtension(Extension):
         else:
             return JsonResponse({"error_msg": "授权码丢失", "code": ["required"]})
 
-        context = self.get_arkid_token(ext_id, config)
+        context = self.get_arkid_token(ext_id, ext_name, ext_icon, config)
         query_string = urlencode(context)
         if next_url:
             url = f"{next_url}?{query_string}"
@@ -211,11 +220,12 @@ class ExternalIdpExtension(Extension):
             return HttpResponseRedirect(url)
 
     @abstractmethod
-    def bind_arkid_user(self, ext_id, user):
+    def bind_arkid_user(self, ext_id, user, data):
         """
         Args:
             ext_id (str): 第三方登录返回的用户标识
             user (arkid.core.models.User): ArkID的用户
+            data (dict) request数据
         Returns:
             {"token":xxx}: 返回token
         """
@@ -230,7 +240,10 @@ class ExternalIdpExtension(Extension):
         user = verify_token(request)
         if not user:
             return JsonResponse({"error_msg": "Token验证失败", "code": ["token invalid"]})
-        self.bind_arkid_user(ext_id, user)
+        ext_icon = request.POST.get('ext_icon', '')
+        if ext_icon:
+            pass
+        self.bind_arkid_user(ext_id, user, request.POST)
         # token = refresh_token(user)
         # data = {"token": token}
         data = {}

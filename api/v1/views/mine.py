@@ -9,6 +9,7 @@ from arkid.core.pagenation import CustomPagination
 from arkid.core.models import App, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from ninja.pagination import paginate
 from django.db.models import Q
 from ..schema.mine import *
@@ -288,7 +289,9 @@ def bind_mine_account(request, tenant_id: str, account_id: str):
             f'api:{select_package}:{select_package}_login',
             args=[config_created.id],
         )
-        login_url = login_url + '?next={}/mine_auth_manage'.format(front_host)
-        return HttpResponseRedirect(login_url)
+        login_url = login_url + '?next={}/mine/mine_auth_manage'.format(front_host)
+        return {
+            "redirect":login_url
+        }
     else:
         return ErrorDict(ErrorCode.PLUG_IN_NOT_START)

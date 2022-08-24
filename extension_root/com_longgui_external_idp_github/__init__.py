@@ -99,13 +99,16 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
         else:
             return None
 
-    def bind_arkid_user(self, ext_id, user):
+    def bind_arkid_user(self, ext_id, user, data):
         """
         Args:
             ext_id (str): 从Github用户信息接口获取的用户标识
             user (arkid.core.models.User): 用于绑定的ArkID用户
+            data (dict) request数据
         """
         user.github_user_id = ext_id
+        user.nickname = data.get('ext_name', '')
+        user.avatar = data.get('ext_icon', '')
         user.save()
 
     def get_img_and_redirect_url(self, config):
