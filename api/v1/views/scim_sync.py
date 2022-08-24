@@ -26,6 +26,7 @@ from api.v1.schema.scim_sync import (
     ScimSyncUpdateIn,
     ScimSyncUpdateOut,
 )
+import importlib
 
 
 def update_or_create_periodic_task(extension_config):
@@ -177,3 +178,30 @@ def list_scim_servers(request, tenant_id: str):
         extension__type='scim_sync', config__mode='server'
     ).all()
     return qs
+
+
+@api.get(
+    "/tenant/{tenant_id}/scim_syncs/{id}/sync_start/",
+    tags=[_("用户数据同步配置")],
+    response=ScimSyncUpdateOut,
+)
+@operation(ScimSyncUpdateOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def start_scim_sync(request, tenant_id: str, id: str):
+    """编辑用户数据同步配置"""
+
+    config = TenantExtensionConfig.active_objects.get(tenant__id=tenant_id, id=id)
+    if config.config.get("mode") == "client":
+        try:
+            logger.info("=== Trigger Syncing Start...===")
+            extension = config.extension
+            ext_dir = extension.ext_dir
+            logger.info(f"Importing  {ext_dir}")
+            ext_name = str(ext_dir).replace('/', '.')
+            ext = importlib.import_module(ext_name)
+            if ext and hasattr(ext, 'extension'):
+                ext.extension.sync(config)
+                logger.info("=== Trigger Syncing End...===")
+        except Exception as e:
+            logger.exception(e)
+
+    return ErrorDict(ErrorCode.OK)
