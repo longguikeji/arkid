@@ -3,6 +3,7 @@ from pydantic import Field
 from ninja import ModelSchema
 from django.db.models import Q
 from arkid.core.models import App
+
 from arkid.core.api import api, operation
 from django.db import transaction
 from ninja.pagination import paginate
@@ -13,7 +14,9 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.event import APP_CONFIG_DONE, Event, register_event, dispatch_event
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import(
-    CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP, CREATE_APP, UPDATE_APP,SET_APP_OPENAPI_VERSION,
+    CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP,
+    CREATE_APP, UPDATE_APP, SET_APP_OPENAPI_VERSION,
+    APP_SYNC_PERMISSION,
 )
 
 import uuid
@@ -106,16 +109,21 @@ def get_app(request, tenant_id: str, id: str):
     return {"data":app}
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionDataSchemaOut, tags=['应用'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
 def get_app_openapi_version(request, tenant_id: str, app_id: str):
     '''
     获取app的openapi地址和版本
     '''
     app = get_object_or_404(App, id=app_id, is_del=False)
     app_config = app.config.config
+
+    from arkid.config import get_app_config as ac
+    host = ac().get_frontend_host()
+
     result = {
         'version': app_config.get('version', ''),
-        'openapi_uris': app_config.get('openapi_uris', '')
+        'openapi_uris': app_config.get('openapi_uris', ''),
+        'sync_permission_uri': host+'/api/v1/apps/'+app_id+'/sync_permission/'
     }
     # from arkid.core.models import Tenant, User
     # from arkid.core.perm.permission_data import PermissionData
@@ -260,6 +268,18 @@ def get_app_config(request, tenant_id: str, id: str):
         }
     }
     return {"data":result}
+
+
+@api.get("/apps/{id}/sync_permission/", tags=['应用'], auth=None)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
+def sync_app_permission(request, id: str):
+    '''
+    同步应用权限
+    '''
+    app = App.valid_objects.filter(id=id).first()
+    if app:
+        dispatch_event(Event(tag=APP_SYNC_PERMISSION, tenant=app.tenant, request=request, data=id))
+    return ErrorDict(ErrorCode.OK)
 
 @api.post("/tenant/{tenant_id}/apps/", tags=['应用'],response=CreateAppOut)
 @operation(CreateAppOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])

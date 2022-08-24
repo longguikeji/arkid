@@ -16,8 +16,8 @@ celery启动完毕后再启动 Django server
 
 建议通过 **[私有化部署](#_3)** 来体验产品。
 
-## 中心ArkID
-如果希望快速的了解系统的基本使用，可以访问 [https://central.akid.cc](https://central.arkid.cc)
+## 官方IDaaS
+如果希望快速的了解系统的基本使用，可以访问 [https://idaas.akid.cc](https://idaas.arkid.cc)
 
 注册后，创建自己的租户，即可使用系统的大部分功能。
 
