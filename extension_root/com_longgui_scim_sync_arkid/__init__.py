@@ -61,9 +61,13 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         super().load()
 
     def _get_arkid_user_attrs(self, user):
+        active = user.get("active")
+        if active is None:
+            active = True
+
         return {
             "username": user.get("userName", ""),
-            "is_active": user.get("active", True),
+            "is_active": active,
         }
 
     def _get_arkid_user(self, scim_user, tenant):
@@ -75,7 +79,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
             "tenant": tenant,
             "username": username,
         }
-        arkid_user, _ = User.objects.update_or_create(
+        arkid_user, _ = User.valid_objects.update_or_create(
             defaults=arkid_user_attrs, **user_lookup
         )
         # 更新arkid_user所属的group
@@ -92,7 +96,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         scim_external_id = group["id"] if "id" in group else group["value"]
         if scim_external_id not in scim_arkid_map:
             group_lookup = {"scim_external_id": scim_external_id, "tenant": tenant}
-            arkid_group, _ = UserGroup.objects.update_or_create(**group_lookup)
+            arkid_group, _ = UserGroup.valid_objects.update_or_create(**group_lookup)
             scim_arkid_map[scim_external_id] = arkid_group
             return arkid_group
         else:
