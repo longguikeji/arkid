@@ -290,4 +290,5 @@ def bind_mine_account(request, tenant_id: str, account_id: str):
         )
         login_url = login_url + '?next={}/mine_auth_manage'.format(front_host)
         return HttpResponseRedirect(login_url)
-    return ErrorCode(ErrorCode.OK)
+    else:
+        return ErrorDict(ErrorCode.PLUG_IN_NOT_START)

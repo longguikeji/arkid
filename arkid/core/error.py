@@ -86,6 +86,8 @@ class ErrorCode(Enum):
     MESSAGE_SAVE_FAILED = ('18004', _('message save failed', '消息存储失败'))
     
     INVALID_FRONTEND_URL = ('18005', _('invalid frontend url', '不合法的链接'))
+
+    PLUG_IN_NOT_START = ('18005', _('plug-in not start', '这个插件没有启用'))
     
 class ErrorDict(dict):
 
