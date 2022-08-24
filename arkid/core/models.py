@@ -655,7 +655,44 @@ class AccountLifeCrontab(BaseModel):
     config = models.JSONField(
         null=True, blank=True, default=dict, verbose_name=_('Config', '定时任务配置')
     )
+    
+class Message(BaseModel,ExpandModel):
+    class Meta(object):
+        verbose_name = _("message", "消息")
+        verbose_name_plural = _("message", "消息")
 
+    title = models.CharField(
+        blank=True,
+        null=True,
+        default='',
+        verbose_name=_('title','标题'),
+        max_length=256,
+    )
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_('User', '用户'),
+    )
+    
+    content = models.TextField(
+        blank=True,
+        null=True,
+        default='',
+        verbose_name=_('content','内容'),
+        max_length=256,
+    )
+    
+    readed_status = models.BooleanField(
+        default=False,
+        verbose_name=_("readed_status","是否已读")
+    )
+    
+    url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name=_("url","链接")
+    )
 
 class TenantExpandAbstract(BaseModel):
     class Meta:
@@ -684,7 +721,7 @@ class UserExpandAbstract(BaseModel):
         on_delete=models.PROTECT,
         related_name="%(app_label)s_%(class)s",
     )
-
+    
 
 class UserGroupExpandAbstract(BaseModel):
     class Meta:
@@ -722,6 +759,19 @@ class AppGroupExpandAbstract(BaseModel):
     foreign_key = AppGroup
     target = models.OneToOneField(
         AppGroup,
+        blank=True,
+        default=None,
+        on_delete=models.PROTECT,
+        related_name="%(app_label)s_%(class)s",
+    )
+
+class MessageExpandAbstract(BaseModel):
+    class Meta:
+        abstract = True
+        
+    foreign_key = Message
+    target = models.OneToOneField(
+        Message,
         blank=True,
         default=None,
         on_delete=models.PROTECT,

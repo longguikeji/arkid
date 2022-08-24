@@ -13,7 +13,7 @@ from arkid.core.event import (
 from arkid.core.perm.permission_data import PermissionData
 from arkid.config import get_app_config
 from arkid.common.logger import logger
-from arkid.core.models import Tenant, User, AccountLifeCrontab
+from arkid.core.models import Tenant, User, AccountLifeCrontab, App
 from types import SimpleNamespace
 from arkid.core.api import api
 from celery import shared_task
@@ -57,6 +57,36 @@ def sync(self, config_id, *args, **kwargs):
     except Exception as exc:
         max_retries = kwargs.get('max_retries', 3)
         countdown = kwargs.get('retry_delay', 5 * 60)
+        raise self.retry(exc=exc, max_retries=max_retries, countdown=countdown)
+
+
+@app.task(bind=True)
+def app_sync_permission(self, tenant_id, app_id):
+    import requests
+    try:
+        permissiondata = PermissionData()
+        # 需要先检查接口是否联通
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        app = App.valid_objects.filter(id=app_id).first()
+        if tenant and app:
+            app_config = app.config.config
+            openapi_uris = app_config.get('openapi_uris', None)
+            if openapi_uris:
+                response = requests.get(openapi_uris)
+                response = response.json()
+                permission_jsons = response.get('permissions', [])
+                if permission_jsons:
+                    permissiondata.update_app_permission(tenant_id, app_id)
+                    permissiondata.update_open_app_permission_admin()
+                    print('成功更新')
+                else:
+                    print('没有权限内容,无法更新 tenant_id:{}app_id:{}'.format(tenant_id, app_id))
+            else:
+                print('没有api地址,无法更新 tenant_id:{}app_id:{}'.format(tenant_id, app_id))
+    except Exception as exc:
+        print('触发了更新重复机制,tenant_id:{}app_id:{}'.format(tenant_id, app_id))
+        max_retries = 6
+        countdown = 1 * 60
         raise self.retry(exc=exc, max_retries=max_retries, countdown=countdown)
 
 

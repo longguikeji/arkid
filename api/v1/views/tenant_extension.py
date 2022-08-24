@@ -222,7 +222,7 @@ def get_platform_extensions(request, tenant_id: str):
 
     access_token = get_arkstore_access_token(tenant, token)
     # resp = get_arkstore_extensions_rented(access_token)
-    resp = get_arkstore_list(request, None, 'extension', rented=True, all=True)
+    resp = get_arkstore_list(request, None, 'extension', rented=True, all=True)['items']
     extensions_rented = {ext['package']: ext for ext in resp}
     for ext in extensions:
         if ext.package in extensions_rented:
@@ -261,7 +261,7 @@ def get_tenant_extensions(request, tenant_id: str):
 
     access_token = get_arkstore_access_token(tenant, token)
     # resp = get_arkstore_extensions_rented(access_token)
-    resp = get_arkstore_list(request, None, 'extension', rented=True, all=True)
+    resp = get_arkstore_list(request, None, 'extension', rented=True, all=True)['items']
     extensions_rented = {ext['package']: ext for ext in resp}
     for ext in extensions:
         if ext.package in extensions_rented:

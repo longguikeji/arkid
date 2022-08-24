@@ -39,7 +39,7 @@ from ninja import Schema, Query
 import enum
 from pydantic import Field
 from ninja.pagination import paginate
-from arkid.core.pagenation import CustomPagination
+from arkid.core.pagenation import CustomPagination, ArstorePagination
 from arkid.extension.models import Extension, TenantExtension
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
@@ -61,8 +61,7 @@ def get_arkstore_list(request, purchased, type, rented=False, all=False, extra_p
         limit = 1000000
         offset = 0
     saas_extensions_data = get_arkstore_extensions(access_token, purchased, rented, type, offset, limit, extra_params)
-    saas_extensions_data = saas_extensions_data['items']
-    for ext in saas_extensions_data:
+    for ext in saas_extensions_data['items']:
         if 'type' in ext:
             ext['type'] = 'arkstore_' + ext['type']
     return saas_extensions_data
@@ -254,7 +253,7 @@ class ArkstoreAppQueryIn(Schema):
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate(CustomPagination)
+@paginate(ArstorePagination)
 def list_arkstore_extensions(request, tenant_id: str, query_data: ArkstoreExtensionQueryIn=Query(...)):
     query_data = query_data.dict()
     return get_arkstore_list(request, None, 'extension', extra_params=query_data)
@@ -262,7 +261,7 @@ def list_arkstore_extensions(request, tenant_id: str, query_data: ArkstoreExtens
 
 @api.get("/tenant/{tenant_id}/arkstore/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate(CustomPagination)
+@paginate(ArstorePagination)
 def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
     query_data = query_data.dict()
     return get_arkstore_list(request, None, 'app', extra_params=query_data)
@@ -270,7 +269,7 @@ def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Q
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate(CustomPagination)
+@paginate(ArstorePagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str):
     return get_arkstore_list(request, True, 'extension')
 
@@ -279,7 +278,7 @@ def list_arkstore_purchased_extensions(request, tenant_id: str):
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_purchased_apps(request, tenant_id: str):
-    arkstore_apps = get_arkstore_list(request, None, 'app', all=True)
+    arkstore_apps = get_arkstore_list(request, None, 'app', all=True)['items']
     installed_apps = App.active_objects.filter(tenant_id=tenant_id, arkstore_app_id__isnull=False)
     installed_app_ids = set(str(app.arkstore_app_id) for app in installed_apps)
     return [app for app in arkstore_apps if app['uuid'] in installed_app_ids]
