@@ -2,10 +2,10 @@ from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
 tag = 'mine_app_group_list'
-name = '应用'
+name = ''
 
 page = pages.TreePage(tag = tag, name = name,show_vnode=True,show_page_if_no_node=False)
-mine_group_apps_page = pages.CardsPage(name=_("应用"))
+mine_group_apps_page = pages.CardsPage(name=name)
 
 pages.register_front_pages(page)
 pages.register_front_pages(mine_group_apps_page)

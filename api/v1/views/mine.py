@@ -195,9 +195,9 @@ def get_mine_app_groups(request, tenant_id: str, parent_id=None):
     
     if parent_id in [0,"0",None,""]:
         # 传递虚拟节点则获取所有一级分组
-        appgroups = appgroups.filter(parent=None).all()
+        appgroups = list(appgroups.filter(parent=None).all())
     else:
-        appgroups = appgroups.filter(parent__id=parent_id).all()
+        appgroups = list(appgroups.filter(parent__id=parent_id).all())
     
     return {"data": appgroups if appgroups else []}
     

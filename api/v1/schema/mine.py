@@ -2,7 +2,7 @@ from uuid import UUID
 from arkid.core.schema import ResponseSchema
 from ninja import ModelSchema, Schema
 from typing import List, Optional
-from arkid.core.models import App, Tenant, User, Permission
+from arkid.core.models import App, AppGroup, Tenant, User, Permission
 from pydantic import Field
 from arkid.core import pages,actions
 from arkid.core.translation import gettext_default as _
@@ -91,14 +91,11 @@ class MineSwitchTenantOut(ResponseSchema):
         title=_("切换租户")
     )
     
-class MineAppGroupListItemOut(Schema):
-    id:str = Field(
-        title=_("唯一标识")
-    )
-    name:str = Field(
-        title=_("名称")
-    )
-    
+class MineAppGroupListItemOut(ModelSchema):
+    class Config:
+        model = AppGroup
+        model_fields = ['id', 'name']
+        
 class MineAppGroupListOut(ResponseSchema):
     data:List[MineAppGroupListItemOut]
     
