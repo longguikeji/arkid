@@ -1,3 +1,4 @@
+import os
 import requests
 from arkid.config import get_app_config
 from arkid.core.models import Tenant
@@ -8,6 +9,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from oauth2_provider.models import Application
 from arkid.common.arkstore import create_tenant_oidc_app
+from arkid.core.models import Platform
+from arkid.core.event import listen_event, SET_FRONTEND_URL
 
 
 def get_bind_info(tenant_id):
@@ -110,6 +113,10 @@ def create_arkid_saas_login_app(tenant, saas_tenant_id, saas_login_url=None):
 
 
 def bind_saas(tenant_id, data=None):
+    # 正式环境等待frontend_url设置完成后才开始绑定中心arkid
+    config = Platform.get_config()
+    if os.environ.get('K8SORDC') and config.frontend_url is None:
+        return {}
     from django.conf import settings
     if settings.IS_CENTRAL_ARKID:
         return {}
@@ -149,3 +156,12 @@ def bind_saas(tenant_id, data=None):
     create_arkidstore_login_app(tenant, resp['saas_tenant_id'])
     create_arkid_saas_login_app(tenant, resp['saas_tenant_id'], resp.get('saas_login_url'))
     return data
+
+
+def trigger_bind_saas(event, **kwargs):
+    from arkid.core.tasks.tasks import bind_arkid_saas_all_tenants
+    from django.conf import settings
+    if not settings.IS_CENTRAL_ARKID:
+        bind_arkid_saas_all_tenants.delay()
+
+listen_event(SET_FRONTEND_URL, trigger_bind_saas)

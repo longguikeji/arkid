@@ -26,4 +26,4 @@ class FrontendUrlSchema(Schema):
     
 
 class FrontendUrlOut(ResponseSchema):
-    data: FrontendUrlSchema
+    data: Optional[FrontendUrlSchema]

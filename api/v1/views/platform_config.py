@@ -6,6 +6,8 @@ from arkid.core.translation import gettext_default as _
 from api.v1.schema.platform_config import *
 from arkid.core.models import Platform
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
+from arkid.core.event import Event, dispatch_event, SET_FRONTEND_URL
+
 
 @api.get("/platform_config/",response=PlatformConfigOut, tags=["平台配置"])
 @operation(roles=[PLATFORM_ADMIN])
@@ -51,7 +53,7 @@ def get_frontend_url(request):
 
 
 @api.post("/frontend_url/",response=FrontendUrlOut, tags=["平台配置"],auth=None)
-def set_frontend_url(request,data:FrontendUrlSchemaIn):
+def set_frontend_url(request, data:FrontendUrlSchemaIn):
     """ 获取ArkId访问地址
     """
     config = Platform.get_config()
@@ -59,7 +61,7 @@ def set_frontend_url(request,data:FrontendUrlSchemaIn):
         return ErrorDict(
             ErrorCode.CAN_NOT_SET_FRONTEND_URL
         )
-    url = data.dict().get("url")
+    url = data.dict().get("url", "")
     from urllib.parse import urlparse
     ret = urlparse(url)
     if ret.scheme in ["http","https"] and ret.netloc:
@@ -70,6 +72,14 @@ def set_frontend_url(request,data:FrontendUrlSchemaIn):
         )
     config.frontend_url = url
     config.save()
+
+    dispatch_event(
+        Event(
+            tag=SET_FRONTEND_URL,
+            tenant=request.tenant,
+            data={},
+        )
+    )
     
     return SuccessDict(
         data={
