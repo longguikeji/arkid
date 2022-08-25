@@ -55,7 +55,7 @@ def set_frontend_url(request,data:FrontendUrlSchemaIn):
     """ 获取ArkId访问地址
     """
     config = Platform.get_config()
-    if not os.environ.get('K8SORDC') or not config.frontend_url:
+    if not os.environ.get('K8SORDC') or config.frontend_url is not None:
         return ErrorDict(
             ErrorCode.CAN_NOT_SET_FRONTEND_URL
         )
