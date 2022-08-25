@@ -8,7 +8,8 @@ WORKDIR /var/arkid
 ENV PYTHONUSERBASE=/var/arkid/arkid_extensions PATH=$PATH:/var/arkid/arkid_extensions/bin
 
 ADD . .
-RUN sed -i "s@https://mirrors.aliyun.com/pypi/simple@$PIP@g" requirements.txt; \
+RUN sed -i 's/MinProtocol = TLSv1.2/MinProtocol = TLSv1.0/g' /etc/ssl/openssl.cnf; \
+    sed -i "s@https://mirrors.aliyun.com/pypi/simple@$PIP@g" requirements.txt; \
     cat requirements.txt; \
     pip install --disable-pip-version-check -r requirements.txt; \
     chmod +x docker-entrypoint.sh; \

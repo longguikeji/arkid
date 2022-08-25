@@ -325,6 +325,7 @@ OPEN_SYSTEM_PERMISSION = 'OPEN_SYSTEM_PERMISSION'
 CLOSE_SYSTEM_PERMISSION = 'CLOSE_SYSTEM_PERMISSION'
 CLOSE_APP_PERMISSION = 'CLOSE_APP_PERMISSION'
 UPDATE_ADMIN_ALL_PERMISSION = 'UPDATE_ADMIN_ALL_PERMISSION'
+APP_SYNC_PERMISSION = 'APP_SYNC_PERMISSION'
 
 CREATE_FRONT_THEME_CONFIG = 'CREATE_FRONT_THEME_CONFIG'
 UPDATE_FRONT_THEME_CONFIG = 'UPDATE_FRONT_THEME_CONFIG'
@@ -361,6 +362,8 @@ AUTHFACTOR_CREATE_LOGIN_PAGE = 'AUTHFACTOR_CREATE_LOGIN_PAGE'
 AUTHRULE_FIX_LOGIN_PAGE = 'AUTHRULE_FIX_LOGIN_PAGE'
 AUTHRULE_CHECK_AUTH_DATA = 'AUTHRULE_CHECK_AUTH_DATA'
 
+SET_FRONTEND_URL = 'SET_FRONTEND_URL'
+
 # register events
 register_event(
     CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
@@ -375,6 +378,7 @@ register_event(UPDATE_APP, _('update app', '更新应用'))
 register_event(CREATE_GROUP, _('create group', '创建分组'))
 register_event(UPDATE_GROUP, _('update group', '修改分组'))
 register_event(DELETE_GROUP, _('delete group', '删除分组'))
+register_event(APP_SYNC_PERMISSION, _('app sync permission', '异步更新应用权限'))
 register_event(GROUP_ADD_USER, _('add user group', '添加分组用户'))
 register_event(GROUP_REMOVE_USER, _('remove user group', '移除分组用户'))
 register_event(APP_START, _('app start', '应用启动'))
@@ -441,3 +445,5 @@ register_event(AUTHFACTOR_CREATE_LOGIN_PAGE, _('AUTHFACTOR_CREATE_LOGIN_PAGE', '
 
 register_event(AUTHRULE_FIX_LOGIN_PAGE, _('AUTHRULE_FIX_LOGIN_PAGE', '认证规则:填充登录页面'))
 register_event(AUTHRULE_CHECK_AUTH_DATA, _('AUTHRULE_CHECK_AUTH_DATA', '认证规则:检查认证凭证'))
+
+register_event(SET_FRONTEND_URL, _('SET_FRONTEND_URL', '设置前端链接'))

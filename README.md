@@ -11,9 +11,9 @@ title: 首页
 
 [https://arkid.cc](https://arkid.cc)
 
-## [中心ArkID](https://central.arkid.cc)
+## [官方IDaaS](https://idaas.arkid.cc)
 
-[https://central.arkid.cc](https://central.arkid.cc)
+[https://idaas.arkid.cc](https://idaas.arkid.cc)
 
 ## [官方文档](https://longguikeji.github.io/arkid/)
 

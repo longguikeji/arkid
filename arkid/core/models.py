@@ -16,7 +16,7 @@ class Platform(BaseModel, ExpandModel):
     is_saas = models.BooleanField(default=False, verbose_name=_('SaaS Switch', '多租户开关'))
     is_need_rent = models.BooleanField(default=False, verbose_name=_('Is Tenant Need Rent Extension', '租户是否需要租赁插件'))
     frontend_url = models.URLField(
-        verbose_name='ArkId访问地址', max_length=128, blank=True, null=True, default=''
+        verbose_name='ArkId访问地址', max_length=128, blank=True, null=True, default=None
     )
     
     @classmethod
