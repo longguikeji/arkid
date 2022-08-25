@@ -223,7 +223,7 @@ def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
         
     return list(apps) if apps else []
 
-@api.get("/mine/unread_messages/",response=List(MineUnreadMessageListItemOut),tags=["我的"],auth=GlobalAuth())
+@api.get("/mine/unread_messages/",response=List[MineUnreadMessageListItemOut],tags=["我的"],auth=GlobalAuth())
 @operation(MineUnreadMessageListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_mine_unread_message(request):
@@ -238,7 +238,7 @@ def get_mine_unread_message(request):
 
 @api.get("/mine/unread_messages/{id}/",response=MineUnreadMessageOut,tags=["我的"],auth=GlobalAuth())
 @operation(MineUnreadMessageOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def get_mine_message(request):
+def get_mine_message(request, id:str):
     """ 获取我的消息
     """
     message= Message.active_objects.get(
