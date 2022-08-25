@@ -1,10 +1,10 @@
 from typing import List
 from django.shortcuts import render
-from arkid.core.api import api, operation
+from arkid.core.api import GlobalAuth, api, operation
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
-from arkid.core.models import App, AppGroup, Tenant, ApproveRequest, User
+from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from ninja.pagination import paginate
 from django.db.models import Q
@@ -222,3 +222,29 @@ def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
         apps = app_group.apps.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True)).all()
         
     return list(apps) if apps else []
+
+@api.get("/mine/unread_messages/",response=List(MineUnreadMessageListItemOut),tags=["我的"],auth=GlobalAuth())
+@operation(MineUnreadMessageListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def get_mine_unread_message(request):
+    """我的未读消息列表
+    """
+    messages = Message.active_objects.filter(
+        user = request.user,
+        readed_status=False
+    ).all()
+    
+    return list(messages)
+
+@api.get("/mine/unread_messages/{id}/",response=MineUnreadMessageOut,tags=["我的"],auth=GlobalAuth())
+@operation(MineUnreadMessageOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_mine_message(request):
+    """ 获取我的消息
+    """
+    message= Message.active_objects.get(
+        user=request.user,
+        id=id
+    )
+    message.readed_status=True
+    message.save()
+    return message

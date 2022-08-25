@@ -2,7 +2,7 @@ from uuid import UUID
 from arkid.core.schema import ResponseSchema
 from ninja import ModelSchema, Schema
 from typing import List, Optional
-from arkid.core.models import App, AppGroup, Tenant, User, Permission
+from arkid.core.models import App, AppGroup, Message, Tenant, User, Permission
 from pydantic import Field
 from arkid.core import pages,actions
 from arkid.core.translation import gettext_default as _
@@ -106,3 +106,17 @@ class MineAppListItemOut(ModelSchema):
         
 class MineAppListOut(ResponseSchema):
     data:List[MineAppListItemOut]
+    
+
+class MineUnreadMessageListItemOut(ModelSchema):
+    class Config:
+        model = Message
+        model_fields = ["id","title","content"]
+        
+class MineUnreadMessageListOut(ResponseSchema):
+    data:List[MineAppGroupListItemOut]
+    
+class MineUnreadMessageOut(ModelSchema):
+    class Config:
+        model=Message
+        model_fields = ["id","title","content","created","url"]
