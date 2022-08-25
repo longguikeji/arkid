@@ -2,11 +2,11 @@ from typing import List
 from django.urls import reverse
 from django.shortcuts import render
 from arkid.config import get_app_config
-from arkid.core.api import api, operation
+from arkid.core.api import GlobalAuth, api, operation
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
-from arkid.core.models import App, Tenant, ApproveRequest, User
+from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from django.http import HttpResponseRedirect
 from ninja.pagination import paginate
@@ -292,3 +292,69 @@ def bind_mine_account(request, tenant_id: str, account_id: str):
         return HttpResponseRedirect(login_url)
     else:
         return ErrorDict(ErrorCode.PLUG_IN_NOT_START)
+
+@api.get("/mine/tenant/{tenant_id}/mine_app_groups/", response=MineAppGroupListOut, tags=["我的"])
+@operation(MineAppGroupListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_mine_app_groups(request, tenant_id: str, parent_id=None):
+    """获取我的应用分组
+    """
+    tenant = request.tenant
+    appgroups = AppGroup.active_objects.filter(
+        tenant=tenant
+    )
+    
+    if parent_id in [0,"0",None,""]:
+        # 传递虚拟节点则获取所有一级分组
+        appgroups = list(appgroups.filter(parent=None).all())
+    else:
+        appgroups = list(appgroups.filter(parent__id=parent_id).all())
+    
+    return {"data": appgroups if appgroups else []}
+    
+
+@api.get("/mine/tenant/{tenant_id}/mine_group_apps/", response=List[MineAppListItemOut], tags=["我的"])
+@operation(MineAppListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
+    """获取我的分组应用
+    """
+    apps = []
+    if app_group_id in [None,"","0",0]:
+        apps = App.active_objects.filter(
+            Q(tenant=request.tenant) | Q(entry_permission__is_open=True)
+        )
+    else:
+        app_group = AppGroup.active_objects.get(
+            tenant=request.tenant,
+            id=app_group_id
+        )
+        
+        apps = app_group.apps.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True)).all()
+        
+    return list(apps) if apps else []
+
+@api.get("/mine/unread_messages/",response=List[MineUnreadMessageListItemOut],tags=["我的"],auth=GlobalAuth())
+@operation(MineUnreadMessageListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def get_mine_unread_message(request):
+    """我的未读消息列表
+    """
+    messages = Message.active_objects.filter(
+        user = request.user,
+        readed_status=False
+    ).all()
+    
+    return list(messages)
+
+@api.get("/mine/unread_messages/{id}/",response=MineUnreadMessageOut,tags=["我的"],auth=GlobalAuth())
+@operation(MineUnreadMessageOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_mine_message(request, id:str):
+    """ 获取我的消息
+    """
+    message= Message.active_objects.get(
+        user=request.user,
+        id=id
+    )
+    message.readed_status=True
+    message.save()
+    return message
