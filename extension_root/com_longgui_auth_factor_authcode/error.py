@@ -3,4 +3,4 @@ from arkid.core.translation import gettext_default as _
 
 class ErrorCode(Enum):
 
-    AUTHCODE_NOT_MATCH = ('10040', _('code is not match', '验证码不匹配'))
+    AUTHCODE_NOT_MATCH = ('10040', _('验证码不匹配'))
