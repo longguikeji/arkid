@@ -17,7 +17,7 @@ from arkid.core.event import (
     OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
     UPDATE_ADMIN_ALL_PERMISSION, ADD_USER_MANY_PERMISSION, ADD_USERGROUP_MANY_PERMISSION,
     REMOVE_USERGROUP_SYSTEM_PERMISSION, REMOVE_USERGROUP_APP_PERMISSION,
-    UPDATE_GROUP_PERMISSION, CREATE_TENANT,
+    UPDATE_GROUP_PERMISSION, CREATE_TENANT, APP_SYNC_PERMISSION,
 )
 import uuid
 
@@ -83,6 +83,7 @@ class EventListener(object):
         core_event.listen_event(GROUP_REMOVE_USER, self.group_remove_user)
         core_event.listen_event(CREATE_APP, self.create_app)
         core_event.listen_event(DELETE_APP, self.delete_app)
+        core_event.listen_event(APP_SYNC_PERMISSION, self.app_sync_permission)
         core_event.listen_event(SET_APP_OPENAPI_VERSION, self.set_app_openapi_version)
         core_event.listen_event(UPDATE_APP_USER_API_PERMISSION, self.update_app_user_api_permission)
         core_event.listen_event(CREATE_GROUP_PERMISSION, self.create_group_permission)
@@ -124,6 +125,12 @@ class EventListener(object):
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission
         update_system_permission.delay()
+    
+    def app_sync_permission(self, event, **kwargs):
+        app_id = event.data
+        tenant = event.tenant
+        from arkid.core.tasks.tasks import app_sync_permission
+        app_sync_permission.delay(str(tenant.id), app_id)
 
     def set_app_openapi_version(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_app_permission

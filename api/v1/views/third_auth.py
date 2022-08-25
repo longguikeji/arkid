@@ -80,6 +80,12 @@ def update_third_auth(request, tenant_id: str, id: str, data: ThirdAuthUpdateIn)
     config = TenantExtensionConfig.valid_objects.get(id=id)
     config.config = data.config.dict()
     config.save()
+
+    extension = config.extension
+    extension = import_extension(extension.ext_dir)
+    extension_config = extension.update_tenant_config(
+        id, data.config.dict(), data.dict()["name"], data.type
+    )
     return ErrorDict(ErrorCode.OK)
 
 

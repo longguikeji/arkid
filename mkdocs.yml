@@ -56,8 +56,8 @@ extra:
       link: mailto:support@longguikeji.com
       name: 技术支持
     - icon: fontawesome/solid/link
-      link: https://central.arkid.cc
-      name: 中心ArkID
+      link: https://idaas.arkid.cc
+      name: 官方IDaaS
 
 
 copyright: Copyright &copy; 2018 - 2022 龙归科技

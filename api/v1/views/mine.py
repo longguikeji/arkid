@@ -1,11 +1,14 @@
 from typing import List
+from django.urls import reverse
 from django.shortcuts import render
+from arkid.config import get_app_config
 from arkid.core.api import GlobalAuth, api, operation
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
+from django.http import HttpResponseRedirect
 from ninja.pagination import paginate
 from django.db.models import Q
 from ..schema.mine import *
@@ -182,6 +185,113 @@ def get_mine_tenants(request):
     tenants = Tenant.active_objects.filter(users=request.user).all()
     return list(tenants)
 
+
+@api.get("/mine/tenant/{tenant_id}/accounts/", tags=["我的"], response=List[MineBindAccountItem])
+@operation(MineBindAccountOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def get_mine_accounts(request, tenant_id: str, show_type:str = 'bind'):
+    """我的绑定账号"""
+    from arkid.core.expand import field_expand_map
+    from arkid.extension.models import Extension as ExtensionModel
+    user_expand = request.user_expand
+    # 梳理出登录类型的插件
+    qs = ExtensionModel.valid_objects.all()
+    qs_dict = {}
+    for item in qs:
+        if item.type == 'external_idp':
+            qs_dict[str(item.package).replace('.','_')] = item
+    # 筛选出用户所拥有的插件
+    table_name = User._meta.db_table
+    items = []
+    if table_name in field_expand_map:
+        field_expands = field_expand_map.get(table_name,{})
+        for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
+            for field_item in extension_model_cls._meta.fields:
+                verbose_name = field_item.verbose_name
+                field_name = field_item.name
+                if field_name == field:
+                    if extension_name in qs_dict and field_name in user_expand:
+                        user_filter_value = user_expand.get(field_name, None)
+                        if user_filter_value and show_type == 'bind':
+                            qs_item = qs_dict.get(extension_name)
+                            items.append({
+                                'id': qs_item.id,
+                                'name': qs_item.name
+                            })
+                        elif (user_filter_value is None or user_filter_value == '') and show_type == 'unbind':
+                            qs_item = qs_dict.get(extension_name)
+                            items.append({
+                                'id': qs_item.id,
+                                'name': qs_item.name
+                            })
+                        break
+    return items
+
+
+@api.get("/mine/tenant/{tenant_id}/accounts/{account_id}/unbind", tags=["我的"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def unbind_mine_account(request, tenant_id: str, account_id: str):
+    '''
+    解绑我的账号
+    '''
+    from arkid.core.expand import field_expand_map
+    from arkid.extension.models import Extension as ExtensionModel
+    user_expand = request.user_expand
+    user = request.user
+    # 梳理出登录类型的插件
+    qs = ExtensionModel.valid_objects.all()
+    qs_dict = {}
+    select_package = None
+    for item in qs:
+        if item.type == 'external_idp' and str(item.id) == account_id:
+            select_package = str(item.package).replace('.','_')
+            break
+
+    if select_package:
+        table_name = User._meta.db_table
+        items = []
+        if table_name in field_expand_map:
+            field_expands = field_expand_map.get(table_name,{})
+            for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
+                for field_item in extension_model_cls._meta.fields:
+                    verbose_name = field_item.verbose_name
+                    field_name = field_item.name
+                    if field_name == field and extension_name == select_package:
+                        extension_model_cls.valid_objects.filter(
+                            target=user
+                        ).delete()
+                        break
+    return ErrorDict(ErrorCode.OK) 
+
+
+
+@api.get("/mine/tenant/{tenant_id}/accounts/{account_id}/bind", tags=["我的"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def bind_mine_account(request, tenant_id: str, account_id: str):
+    '''
+    绑定我的账户
+    '''
+    from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
+    server_host = get_app_config().get_host()
+    front_host = get_app_config().get_frontend_host()
+    # 梳理出登录类型的插件
+    qs = ExtensionModel.valid_objects.all()
+    select_package = None
+    for item in qs:
+        if item.type == 'external_idp' and str(item.id) == account_id:
+            select_package = str(item.package).replace('.','_')
+            break
+    # 取得租户的插件配置
+    config_created = TenantExtensionConfig.valid_objects.filter(tenant_id=tenant_id, extension_id=account_id).order_by('-created').first()
+    if config_created and select_package:
+        login_url = server_host + reverse(
+            f'api:{select_package}:{select_package}_login',
+            args=[config_created.id],
+        )
+        login_url = login_url + '?next={}/mine_auth_manage'.format(front_host)
+        return HttpResponseRedirect(login_url)
+    else:
+        return ErrorDict(ErrorCode.PLUG_IN_NOT_START)
 
 @api.get("/mine/tenant/{tenant_id}/mine_app_groups/", response=MineAppGroupListOut, tags=["我的"])
 @operation(MineAppGroupListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])

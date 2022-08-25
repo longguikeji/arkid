@@ -120,3 +120,13 @@ class MineUnreadMessageOut(ModelSchema):
     class Config:
         model=Message
         model_fields = ["id","title","content","created","url"]
+
+
+class MineBindAccountItem(Schema):
+
+    id: UUID
+    name: str = Field(default='', title=_('名称'))
+
+
+class MineBindAccountOut(ResponseSchema):
+    data:List[MineBindAccountItem]

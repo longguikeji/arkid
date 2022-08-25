@@ -177,8 +177,12 @@ class ExternalIdpExtension(Extension):
             .replace('http://', '')
             .replace('https://', '')
         )
+        # if next_url and (
+        #     "third_part_callback" not in next_url or frontend_host not in next_url
+        # ):
+        #     return JsonResponse({'error_msg': '错误的跳转页面'})
         if next_url and (
-            "third_part_callback" not in next_url or frontend_host not in next_url
+            frontend_host not in next_url
         ):
             return JsonResponse({'error_msg': '错误的跳转页面'})
         if code:
@@ -248,6 +252,31 @@ class ExternalIdpExtension(Extension):
 
     def create_tenant_config(self, tenant, config, name, type):
         config_created = super().create_tenant_config(tenant, config, name, type)
+        server_host = get_app_config().get_host()
+        login_url = server_host + reverse(
+            f'api:{self.pname}:{self.pname}_login',
+            args=[config_created.id],
+        )
+        callback_url = server_host + reverse(
+            f'api:{self.pname}:{self.pname}_callback',
+            args=[config_created.id],
+        )
+        bind_url = server_host + reverse(
+            f'api:{self.pname}:{self.pname}_bind',
+            args=[config_created.id],
+        )
+        img_url = self.get_img_url()
+        config["login_url"] = login_url
+        config["callback_url"] = callback_url
+        config["bind_url"] = bind_url
+        config["img_url"] = img_url
+        config_created.config = config
+        config_created.save()
+        return config_created
+
+    def update_tenant_config(self, id, config, name, type):
+        super().update_tenant_config(id, config, name, type)
+        config_created = TenantExtensionConfig.valid_objects.filter(id=id).first()
         server_host = get_app_config().get_host()
         login_url = server_host + reverse(
             f'api:{self.pname}:{self.pname}_login',
