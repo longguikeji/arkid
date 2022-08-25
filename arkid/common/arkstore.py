@@ -93,10 +93,9 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
             return arkstore_access_token_saas_cache[key]
         else:
             arkstore_access_token_saas_cache.pop(key, None)
-    
-    # id_token 过期后，重新获取saas_token和id_token
-    if local_tenant and local_token:
-        saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(local_tenant, local_token, use_cache=False)
+            # id_token 过期后，重新获取saas_token和id_token
+            if local_tenant and local_token:
+                saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(local_tenant, local_token, use_cache=False)
     
     params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_id': str(saas_tenant_id), 'token': saas_token}
     app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
