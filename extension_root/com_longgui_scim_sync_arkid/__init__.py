@@ -181,7 +181,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
                 compose_core2_user(scim_user, scim_path, value)
 
         # 生成用户所在的组
-        parent_groups = arkid_user.user_set.all()
+        parent_groups = arkid_user.user_set.filter(is_del=0)
         for grp in parent_groups:
             scim_group = ScimUserGroup()
             scim_group.value = grp.id
