@@ -18,3 +18,9 @@ class GithubUser(UserExpandAbstract):
     github_user_id = models.CharField(
         max_length=255, blank=True, verbose_name='Github ID'
     )
+    github_nickname = models.CharField(
+        max_length=255, blank=True, default='', verbose_name='昵称',
+    )
+    github_avatar = models.CharField(
+        max_length=255, blank=True, default='', verbose_name='头像',
+    )

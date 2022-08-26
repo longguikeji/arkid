@@ -1,6 +1,6 @@
 package = 'com.longgui.storage.local'
 name='本地文件存储'
-version='1.0'
+version='1.1'
 labels='storage'
 homepage='https://www.longguikeji.com'
 logo=''

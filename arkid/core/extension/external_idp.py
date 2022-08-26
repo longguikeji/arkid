@@ -64,6 +64,9 @@ class ExternalIdpExtension(Extension):
         self.listen_event(
             core_event.CREATE_LOGIN_PAGE_AUTH_FACTOR, self.add_idp_login_buttons
         )
+        self.listen_event(
+            core_event.ACCOUNT_UNBIND, self.account_unbind
+        )
         super().load()
 
     @abstractmethod
@@ -236,13 +239,30 @@ class ExternalIdpExtension(Extension):
         """
         处理第三方身份源返回的user_id和ArkID的user之间的绑定
         """
+        from urllib.parse import unquote
+        from arkid.core.event import SAVE_FILE, dispatch_event, Event
+        from arkid.extension.models import Extension
+
         ext_id = request.POST.get("ext_id")
         user = verify_token(request)
         if not user:
             return JsonResponse({"error_msg": "Token验证失败", "code": ["token invalid"]})
         ext_icon = request.POST.get('ext_icon', '')
+        ext_name = request.POST.get('ext_name', '')
+        config = self.get_config_by_id(config_id)
+        extension = Extension.active_objects.filter(
+            type="storage"
+        ).first()
+        if ext_name:
+            ext_name = unquote(ext_name)
+            request.POST['ext_name'] = ext_name
         if ext_icon:
-            pass
+            data = {
+                'fileurl': ext_icon
+            }
+            responses = dispatch_event(Event(tag=SAVE_FILE, tenant=config.tenant, request=request, packages=extension.package, data=data))
+            useless, (fileinfo, extension) = responses[0]
+            request.POST['ext_icon'] = fileinfo
         self.bind_arkid_user(ext_id, user, request.POST)
         # token = refresh_token(user)
         # data = {"token": token}
@@ -324,6 +344,17 @@ class ExternalIdpExtension(Extension):
 
         logger.info(f'{self.package} add idp login buttions end')
         return data
+    
+    def account_unbind(self, event, **kwargs):
+        '''
+        在账户解绑的时候会调用此方法，开发者可以根据需要重写此方法
+        Params:
+            event: 事件参数
+                data: 数据
+                    user_id: 用户id
+        '''
+        data = event.data
+        pass
 
     @abstractmethod
     def get_img_and_redirect_url(self, config):

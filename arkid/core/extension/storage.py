@@ -22,17 +22,25 @@ class StorageExtension(Extension):
 
     def event_save_file(self, event, **kwargs):
         tenant = event.tenant
-        file = event.data["file"]
-        f_key = self.generate_key(file.name)
-        self.save_file(file, f_key, event)
-        return self.resolve(f_key, tenant, event)
+        file = event.data.get('file', None)
+        fileurl = event.data.get('fileurl', None)
+        if fileurl:
+            import requests
+            response = requests.get(fileurl, stream=True)
+            f_key = self.generate_key('temp.jpg')
+            self.save_file(None, f_key, response, event)
+        else:
+            f_key = self.generate_key(file.name)
+            self.save_file(file, f_key, event)
+
+        return self.resolve(f_key, tenant, None, event)
     
     def event_read_file(self,event,**kwargs):
         file_url = event.data["url"]
         return self.read(tenant_id=event.tenant.id,file_url=file_url,**kwargs)
 
     @abstractmethod
-    def save_file(self, file, f_key: str, **kwargs):
+    def save_file(self, file, f_key: str, response=None, **kwargs):
         """保存文件
 
         Args:

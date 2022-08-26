@@ -6,6 +6,7 @@ from arkid.core.api import api, operation
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
+from arkid.core.event import ACCOUNT_UNBIND, dispatch_event, Event
 from arkid.core.models import App, Tenant, ApproveRequest, User
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from django.http import HttpResponseRedirect
@@ -190,7 +191,7 @@ def get_mine_tenants(request):
 @api.get("/mine/tenant/{tenant_id}/accounts/", tags=["我的"], response=List[MineBindAccountItem])
 @operation(MineBindAccountOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_mine_accounts(request, tenant_id: str, show_type:str = 'bind'):
+def get_mine_accounts(request, tenant_id: str):
     """我的绑定账号"""
     from arkid.core.expand import field_expand_map
     from arkid.extension.models import Extension as ExtensionModel
@@ -203,6 +204,7 @@ def get_mine_accounts(request, tenant_id: str, show_type:str = 'bind'):
             qs_dict[str(item.package).replace('.','_')] = item
     # 筛选出用户所拥有的插件
     table_name = User._meta.db_table
+    add_package_record = []
     items = []
     if table_name in field_expand_map:
         field_expands = field_expand_map.get(table_name,{})
@@ -211,20 +213,62 @@ def get_mine_accounts(request, tenant_id: str, show_type:str = 'bind'):
                 verbose_name = field_item.verbose_name
                 field_name = field_item.name
                 if field_name == field:
-                    if extension_name in qs_dict and field_name in user_expand:
+                    if extension_name in qs_dict and field_name in user_expand and extension_name not in add_package_record:
                         user_filter_value = user_expand.get(field_name, None)
-                        if user_filter_value and show_type == 'bind':
+                        if user_filter_value:
+                            qs_item = qs_dict.get(extension_name)
+                            first_field_name = field_name.replace("user_id", "")
+                            nickname_field_name = first_field_name+'nickname'
+                            avatar_field_name = first_field_name+'avatar'
+                            items.append({
+                                'id': qs_item.id,
+                                'name': qs_item.name,
+                                'nickname': user_expand.get(nickname_field_name, ''),
+                                'avatar': user_expand.get(avatar_field_name, '')
+                                # 'nickname': qs_item.nickname,
+                                # 'avatar': qs_item.avatar
+                            })
+                            add_package_record.append(extension_name)
+                        break
+    return items
+
+
+@api.get("/mine/tenant/{tenant_id}/unbind_accounts/", tags=["我的"], response=List[MineUnBindAccountItem])
+@operation(MineUnBindAccountOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def get_mine_unbind_accounts(request, tenant_id: str):
+    """我的没绑定账户"""
+    from arkid.core.expand import field_expand_map
+    from arkid.extension.models import Extension as ExtensionModel
+    user_expand = request.user_expand
+    # 梳理出登录类型的插件
+    qs = ExtensionModel.valid_objects.all()
+    qs_dict = {}
+    exclude_packages = ['com.longgui.external.idp.miniprogram']
+    for item in qs:
+        if item.type == 'external_idp' and item.package not in exclude_packages:
+            qs_dict[str(item.package).replace('.','_')] = item
+    # 筛选出用户所拥有的插件
+    table_name = User._meta.db_table
+    items = []
+    add_package_record = []
+    if table_name in field_expand_map:
+        field_expands = field_expand_map.get(table_name,{})
+        for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
+            for field_item in extension_model_cls._meta.fields:
+                verbose_name = field_item.verbose_name
+                field_name = field_item.name
+                if field_name == field:
+                    if extension_name in qs_dict and field_name in user_expand and extension_name not in add_package_record:
+
+                        user_filter_value = user_expand.get(field_name, None)
+                        if user_filter_value is None or user_filter_value == '':
                             qs_item = qs_dict.get(extension_name)
                             items.append({
                                 'id': qs_item.id,
                                 'name': qs_item.name
                             })
-                        elif (user_filter_value is None or user_filter_value == '') and show_type == 'unbind':
-                            qs_item = qs_dict.get(extension_name)
-                            items.append({
-                                'id': qs_item.id,
-                                'name': qs_item.name
-                            })
+                            add_package_record.append(extension_name)
                         break
     return items
 
@@ -261,6 +305,12 @@ def unbind_mine_account(request, tenant_id: str, account_id: str):
                         extension_model_cls.valid_objects.filter(
                             target=user
                         ).delete()
+                        # 发送取消绑定事件
+                        select_package = select_package.replace('_','.')
+                        data = {
+                            'user_id': str(request.user.id)
+                        }
+                        dispatch_event(Event(tag=ACCOUNT_UNBIND, tenant=request.tenant, request=request, data=data, packages=[select_package]))
                         break
     return ErrorDict(ErrorCode.OK) 
 

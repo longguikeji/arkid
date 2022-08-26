@@ -31,7 +31,7 @@ class LocalStorageExtension(StorageExtension):
         
         super().load()
 
-    def save_file(self, file, f_key, *args, **kwargs):
+    def save_file(self, file, f_key, response=None, *args, **kwargs):
         print(f_key)
         extension = self.model
         storage_path = extension.profile.get('storage_path','/data')
@@ -42,7 +42,7 @@ class LocalStorageExtension(StorageExtension):
             p.parent.mkdir(parents=True)
 
         with open(p, 'wb') as fp:
-            for chunk in file.chunks():
+            for chunk in file.chunks() if file else response:
                 fp.write(chunk)
                 
     def resolve(self, f_key, tenant, *args, **kwargs):

@@ -18,6 +18,8 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
     def load(self):
         super().load()
         self.register_extend_field(GithubUser, "github_user_id")
+        self.register_extend_field(GithubUser, "github_nickname")
+        self.register_extend_field(GithubUser, "github_avatar")
         self.register_external_idp_schema("github", GithubConfigSchema)
 
     def get_img_url(self):
@@ -107,8 +109,8 @@ class ExternalIdpGithubExtension(ExternalIdpExtension):
             data (dict) request数据
         """
         user.github_user_id = ext_id
-        user.nickname = data.get('ext_name', '')
-        user.avatar = data.get('ext_icon', '')
+        user.github_nickname = data.get('ext_name', '')
+        user.github_avatar = data.get('ext_icon', '')
         user.save()
 
     def get_img_and_redirect_url(self, config):

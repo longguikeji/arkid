@@ -1,6 +1,6 @@
 package = 'com.longgui.external.idp.github'
 name='Github第三方登录服务'
-version='1.0'
+version='1.1'
 labels='github'
 homepage='http://longguikeji.gitee.io/arkid/'
 logo=''

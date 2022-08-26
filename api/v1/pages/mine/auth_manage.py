@@ -10,7 +10,7 @@ mine_accounts_unbind_page = pages.TablePage(name='三方账号解绑')
 
 mine_accounts_bind_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/mine/tenant/{tenant_id}/accounts/?show_type=unbind',
+        path='/api/v1/mine/tenant/{tenant_id}/unbind_accounts/',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
@@ -24,7 +24,7 @@ mine_accounts_bind_page.create_actions(
 
 mine_accounts_unbind_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/mine/tenant/{tenant_id}/accounts/?show_type=bind',
+        path='/api/v1/mine/tenant/{tenant_id}/accounts/',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
