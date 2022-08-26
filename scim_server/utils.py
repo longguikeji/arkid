@@ -13,6 +13,7 @@ from scim_server.schemas.extension_attribute_enterprise_user import (
     ExtensionAttributeEnterpriseUser,
 )
 from scim_server.schemas.manager import Manager
+from scim_server.schemas.comparison_operator import ComparisonOperator
 
 
 def try_get_request_identifier():
@@ -142,10 +143,10 @@ def compose_emails(user, scim_path, value):
     email = ElectroicMailAddress()
     email.type = sub_attribute.comparison_value
     email.value = value
-    if user.electronic_mail_addresses:
-        user.electronic_mail_addresses.append(email)
+    if user.emails:
+        user.emails.append(email)
     else:
-        user.electronic_mail_addresses = [email]
+        user.emails = [email]
 
 
 def compose_addresses(user, scim_path, value):
@@ -190,3 +191,41 @@ def compose_core2_group_member(member, scim_path, value):
         member.type = value
     elif scim_path.attribute_path == 'ref':
         member.ref = value
+
+
+def scim_obj_to_client_obj(scim_obj, attr_map):
+    """
+    Params:
+        attr_map: List[(scim_attr, app_attr)]
+    """
+    result = {}
+    for scim_attr, app_attr in attr_map:
+        value = scim_obj
+        scim_path = Path.create(scim_attr)
+        while scim_path:
+            if scim_path.schema_identifier:
+                key = ":".join(scim_path.schema_identifier, scim_path.attribute_path)
+            else:
+                key = scim_path.attribute_path
+            value = value.get(key)
+            if value is None:
+                break
+
+            if scim_path.sub_attributes:
+                scim_filter = scim_path.sub_attributes[0]
+                if scim_filter.filter_operator != ComparisonOperator.Equals:
+                    continue
+                value = filter(
+                    lambda c: c[scim_filter.attribute_path]
+                    == scim_filter.comparison_value,
+                    value,
+                )
+                value = list(value)
+                if value:
+                    value = value[0]
+                else:
+                    value = None
+                    break
+            scim_path = scim_path.value_path
+        result[app_attr] = value
+    return result
