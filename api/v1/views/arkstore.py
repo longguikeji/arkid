@@ -52,7 +52,7 @@ def get_arkstore_list(request, purchased, type, rented=False, all=False, extra_p
     page_size = request.GET.get('page_size', 10)
     token = request.user.auth_token
     tenant = request.tenant
-    access_token = get_arkstore_access_token(tenant, token.token)
+    access_token = get_arkstore_access_token(tenant, token)
     # arkstore use offset and limit
     if page and page_size:
         limit = int(page_size)
