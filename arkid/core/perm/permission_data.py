@@ -9,6 +9,7 @@ from arkid.core.api import api
 from django.db.models import Q
 
 import collections
+import logging
 import requests
 import uuid
 import jwt
@@ -2099,8 +2100,14 @@ class PermissionData(object):
         permission = app.entry_permission
         if not permission:
             return False, '没有找到入口权限'
-
+        logging.error('入口权限判断开始')
+        logging.error(str(permission.id))
+        logging.error(str(user.id))
+        logging.error(str(app.id))
+        logging.error(str(tenant_id))
         result = self.permission_check_by_sortid(permission, user, app, tenant_id)
+        logging.error(result)
+        logging.error('入口权限判断结束')
         if not result:
             return False, '没有获得授权使用'
 
