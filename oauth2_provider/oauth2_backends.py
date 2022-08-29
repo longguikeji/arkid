@@ -118,6 +118,7 @@ class OAuthLibCore:
                 raise oauth2.AccessDeniedError(state=credentials.get("state", None))
 
             # add current user to credentials. this will be used by OAUTH2_VALIDATOR_CLASS
+            request.user.current_tenant = request.tenant
             credentials["user"] = request.user
 
             headers, body, status = self.server.create_authorization_response(

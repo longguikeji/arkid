@@ -38,4 +38,10 @@ mine_group_apps_page.create_actions(
         path='/api/v1/mine/tenant/{tenant_id}/mine_group_apps/?app_group_id={app_group_id}',
         method=actions.FrontActionMethod.GET
     ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/arkstore/apps/{id}/click/',
+            method=actions.FrontActionMethod.GET,
+        )
+    ],
 )
