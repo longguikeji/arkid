@@ -44,6 +44,8 @@
 ## 实现思路
 需要覆盖插件基类的抽象方法，插件基类见[arkid.core.extension.extrnal_idp.ExternalIdpExtension](/%20%20开发者指南/%20插件分类/第三方登录/)
 
+# 统一绑定和解绑说明
+请参见[三方账号绑定](/%20%20%20用户指南/用户手册/%20普通用户/认证管理/三方账号绑定/)
 ## 抽象方法实现:
 * [get_img_url](#extension_root.com_longgui_external_idp_github.ExternalIdpGithubExtension.get_img_url)
 * [get_authorize_url](#extension_root.com_longgui_external_idp_github.ExternalIdpGithubExtension.get_authorize_url)

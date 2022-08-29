@@ -26,7 +26,7 @@ from api.v1.schema.app import *
 
 
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'])
-@operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_apps(request, tenant_id: str):
     '''
@@ -109,7 +109,7 @@ def get_app(request, tenant_id: str, id: str):
     return {"data":app}
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionDataSchemaOut, tags=['应用'])
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
+@operation(roles=[PLATFORM_ADMIN, NORMAL_USER])
 def get_app_openapi_version(request, tenant_id: str, app_id: str):
     '''
     获取app的openapi地址和版本

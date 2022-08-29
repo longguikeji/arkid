@@ -25,7 +25,7 @@ def get_saas_token(tenant, token, use_cache=True):
     获取saas平台token
     """
     # 缓存 saas_token
-    key = (str(tenant.id), token)
+    key = (str(tenant.id) + '_' + str(token)).replace('-', '')
     if use_cache and key in arkid_saas_token_cache:
         return arkid_saas_token_cache[key]
     app = Application.objects.filter(name='arkid_saas', uuid = tenant.id).first()
@@ -66,18 +66,26 @@ def get_arkstore_access_token(tenant, token, use_cache=True):
     """
     获取插件商店access_token
     """
-    saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token, use_cache=use_cache)
-    return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token, use_cache=use_cache)
+    try:
+        saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token, use_cache=use_cache)
+        return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token, 
+            use_cache=use_cache, local_tenant=tenant, local_token=token)
+    except Exception as e:
+        logger.error(f'get_arkstore_access_token failed: {str(e)}, give it a retry')
+        saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token, use_cache=False)
+        return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token, 
+            use_cache=False, local_tenant=tenant, local_token=token)
 
 
 arkstore_access_token_saas_cache = {}
 
-def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, token, use_cache=True):
+def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token, 
+        use_cache=True, local_tenant=None, local_token=None):
     """
     获取插件商店access_token
     """
     # 缓存 idtoken
-    key = (str(saas_tenant_id), token)
+    key = (str(saas_tenant_id) + '_' + str(saas_token)).replace('-', '')
     if use_cache and key in arkstore_access_token_saas_cache:
         try:
             payload = jwt.decode(arkstore_access_token_saas_cache[key], options={"verify_signature": False})
@@ -91,13 +99,21 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
             return arkstore_access_token_saas_cache[key]
         else:
             arkstore_access_token_saas_cache.pop(key, None)
-    params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_id': str(saas_tenant_id), 'token': token}
+            # id_token 过期后，重新获取saas_token和id_token
+            if local_tenant and local_token:
+                saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(local_tenant, local_token, use_cache=False)
+    
+    params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_id': str(saas_tenant_id), 'token': saas_token}
     app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
     resp = requests.get(app_login_url, params=params)
     if resp.status_code != 200:
         arkstore_access_token_saas_cache.pop(key, None)
-        raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}')
-    resp = resp.json()
+        raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}, url: {resp.url}')
+    try:
+        resp = resp.json()
+    except:
+        from urllib.parse import urlencode, unquote
+        raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}, url: {unquote(resp.url)}')
     arkstore_access_token_saas_cache[key] = resp['access_token']
     return arkstore_access_token_saas_cache[key] 
 
