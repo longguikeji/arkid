@@ -29,7 +29,7 @@
 === "再次点击协议配置"
     即可查看该协议所有相关的参数。
     
-    相关参数的含义，请参考[OIDC插件的文档](/%20系统插件/com_longgui_app_protocol_oidc/)
+    相关参数的含义，请参考[OIDC插件的文档](/%20%20系统插件/com_longgui_app_protocol_oidc/OIDC/)
 
     [![Xhx5TA.jpg](https://s1.ax1x.com/2022/06/14/Xhx5TA.jpg)](https://imgtu.com/i/Xhx5TA)
 
