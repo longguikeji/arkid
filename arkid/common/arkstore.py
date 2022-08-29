@@ -25,7 +25,7 @@ def get_saas_token(tenant, token, use_cache=True):
     获取saas平台token
     """
     # 缓存 saas_token
-    key = (str(tenant.id), token)
+    key = (str(tenant.id) + '_' + str(token)).replace('-', '')
     if use_cache and key in arkid_saas_token_cache:
         return arkid_saas_token_cache[key]
     app = Application.objects.filter(name='arkid_saas', uuid = tenant.id).first()
@@ -79,7 +79,7 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     获取插件商店access_token
     """
     # 缓存 idtoken
-    key = (str(saas_tenant_id), saas_token)
+    key = (str(saas_tenant_id) + '_' + str(saas_token)).replace('-', '')
     if use_cache and key in arkstore_access_token_saas_cache:
         try:
             payload = jwt.decode(arkstore_access_token_saas_cache[key], options={"verify_signature": False})
