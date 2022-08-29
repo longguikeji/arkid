@@ -66,9 +66,15 @@ def get_arkstore_access_token(tenant, token, use_cache=True):
     """
     获取插件商店access_token
     """
-    saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token, use_cache=use_cache)
-    return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token, 
-        use_cache=use_cache, local_tenant=tenant, local_token=token)
+    try:
+        saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token, use_cache=use_cache)
+        return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token, 
+            use_cache=use_cache, local_tenant=tenant, local_token=token)
+    except Exception as e:
+        logger.error(f'get_arkstore_access_token failed: {str(e)}, give it a retry')
+        saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token, use_cache=False)
+        return get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token, 
+            use_cache=False, local_tenant=tenant, local_token=token)
 
 
 arkstore_access_token_saas_cache = {}
@@ -102,8 +108,12 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     resp = requests.get(app_login_url, params=params)
     if resp.status_code != 200:
         arkstore_access_token_saas_cache.pop(key, None)
-        raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}')
-    resp = resp.json()
+        raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}, url: {resp.url}')
+    try:
+        resp = resp.json()
+    except:
+        from urllib.parse import urlencode, unquote
+        raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}, url: {unquote(resp.url)}')
     arkstore_access_token_saas_cache[key] = resp['access_token']
     return arkstore_access_token_saas_cache[key] 
 
