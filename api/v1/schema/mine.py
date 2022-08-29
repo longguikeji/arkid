@@ -108,19 +108,51 @@ class MineAppListOut(ResponseSchema):
     data:List[MineAppListItemOut]
     
 
-class MineUnreadMessageListItemOut(ModelSchema):
+class MessageSenderItemOut(Schema):
+    
+    avatar:str=Field(
+        title=_("头像")
+    )
+        
+    name:str = Field(
+        title=_("发送者")
+    )
+    
+    id:str = Field(
+        hidden=True
+    )
+    
+class MessageSenderOut(ResponseSchema):
+    data:List[MessageSenderItemOut]
+
+class MineMessageListItemOut(ModelSchema):
     class Config:
         model = Message
         model_fields = ["id","title","content"]
         
-class MineUnreadMessageListOut(ResponseSchema):
-    data:List[MineAppGroupListItemOut]
+    content:str = Field(
+        _("内容"),
+    )
     
-class MineUnreadMessageOut(ModelSchema):
+    @staticmethod
+    def resolve_content(obj):
+        return obj.content[:255]
+        
+class MineMessageListOut(ResponseSchema):
+    data:List[MineMessageListItemOut]
+    
+class MineMessageItemOut(ModelSchema):
     class Config:
         model=Message
         model_fields = ["id","title","content","created","url"]
+        
+    content:str = Field(
+        _("内容"),
+        max_length=65336
+    )
 
+class MineMessageOut(ResponseSchema):
+    data:Optional[MineMessageItemOut]
 
 class MineBindAccountItem(Schema):
 
