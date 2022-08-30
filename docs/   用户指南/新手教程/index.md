@@ -29,7 +29,7 @@
 === "再次点击协议配置"
     即可查看该协议所有相关的参数。
     
-    相关参数的含义，请参考[OIDC插件的文档](/%20%20系统插件/com_longgui_app_protocol_oidc/OIDC/)
+    相关参数的含义，请参考[OIDC插件的文档](../../%20%20系统插件/com_longgui_app_protocol_oidc/OIDC/)
 
     [![Xhx5TA.jpg](https://s1.ax1x.com/2022/06/14/Xhx5TA.jpg)](https://imgtu.com/i/Xhx5TA)
 
@@ -51,7 +51,7 @@
 ## 添加组织结构或角色
 
 === "打开用户分组"
-    关于分组的详细介绍可以看 [用户管理-用户分组](/%20%20%20用户指南/用户手册/%20租户管理员/%20%20%20%20%20用户管理/#_3)
+    关于分组的详细介绍可以看 [用户管理-用户分组](../用户手册/%20租户管理员/用户管理/#_3)
 
     [![X4TpdK.jpg](https://s1.ax1x.com/2022/06/14/X4TpdK.jpg)](https://imgtu.com/i/X4TpdK)
 
