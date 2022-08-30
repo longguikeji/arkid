@@ -395,7 +395,7 @@ class OAuth2Validator(RequestValidator):
         if access_token and access_token.is_valid(scopes):
             request.client = access_token.application
             request.user = access_token.user
-            request.user.tenant = access_token.tenant
+            request.user.current_tenant = access_token.tenant
             request.scopes = scopes
 
             # this is needed by django rest framework
@@ -411,7 +411,7 @@ class OAuth2Validator(RequestValidator):
             if not grant.is_expired():
                 request.scopes = grant.scope.split(" ")
                 request.user = grant.user
-                request.user.tenant = grant.tenant
+                request.user.current_tenant = grant.tenant
                 if grant.nonce:
                     request.nonce = grant.nonce
                 if grant.claims:
@@ -612,7 +612,7 @@ class OAuth2Validator(RequestValidator):
             id_token = IDToken.objects.get(token=id_token)
         return AccessToken.objects.create(
             user=request.user,
-            tenant=request.user.tenant,
+            tenant=request.user.current_tenant,
             scope=token["scope"],
             expires=expires,
             token=token["access_token"],
@@ -627,7 +627,7 @@ class OAuth2Validator(RequestValidator):
         return Grant.objects.create(
             application=request.client,
             user=request.user,
-            tenant=request.user.tenant,
+            tenant=request.user.current_tenant,
             code=code["code"],
             expires=expires,
             redirect_uri=request.redirect_uri,
@@ -724,7 +724,7 @@ class OAuth2Validator(RequestValidator):
 
         id_token = IDToken.objects.create(
             user=request.user,
-            tenant=request.user.tenant,
+            tenant=request.user.current_tenant,
             scope=scopes,
             expires=expires,
             token=token,
@@ -910,7 +910,7 @@ class OAuth2Validator(RequestValidator):
     def get_additional_claims(self, request):
         groups = []
         user = request.user
-        tenant = user.tenant
+        tenant = user.current_tenant
         # for group in user.groups.all():
         #     groups.append(group.name)
         if tenant.has_admin_perm(user) and 'tenant_admin' not in groups:
@@ -924,6 +924,6 @@ class OAuth2Validator(RequestValidator):
             # 'family_name': request.user.last_name,
             # 'email': request.user.email,
             'groups': groups,
-            'tenant_id': str(request.user.tenant.id),
-            "tenant_slug": request.user.tenant.slug,
+            'tenant_id': str(request.user.current_tenant.id),
+            "tenant_slug": request.user.current_tenant.slug,
         }

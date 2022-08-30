@@ -29,7 +29,7 @@
 === "再次点击协议配置"
     即可查看该协议所有相关的参数。
     
-    相关参数的含义，请参考[OIDC插件的文档](/%20系统插件/com_longgui_app_protocol_oidc/)
+    相关参数的含义，请参考[OIDC插件的文档](/%20%20系统插件/com_longgui_app_protocol_oidc/OIDC/)
 
     [![Xhx5TA.jpg](https://s1.ax1x.com/2022/06/14/Xhx5TA.jpg)](https://imgtu.com/i/Xhx5TA)
 
@@ -87,4 +87,34 @@
 
 
 ## AD与ArkID的数据同步
+
+配置同步AD中的用户和组织到ArkID
+
+=== "打开SCIM数据同步，点击创建"
+
+    [![vgGHo9.png](https://s1.ax1x.com/2022/08/24/vgGHo9.png)](https://imgse.com/i/vgGHo9)
+
+=== "配置AD同步Server"
+
+    [![vgYMnO.png](https://s1.ax1x.com/2022/08/24/vgYMnO.png)](https://imgse.com/i/vgYMnO)
+
+=== "配置ArkID同步Client"
+
+    !!! 提示
+        SCIM同步服务器: 选择上个步骤创建的 AD同步Server</br>
+        定时运行时间: 格式参照linux crontab, 下图中表示每天11：51运行定时同步任务
+        定时任务需要启动celery work和beat:</br>
+        celery -A arkid.core.tasks.celery beat -l debug</br>
+        celery -A arkid.core.tasks.celery worker -l debug
+
+    [![vgY3AH.png](https://s1.ax1x.com/2022/08/24/vgY3AH.png)](https://imgse.com/i/vgY3AH)
+
+=== "查看AD中源数据"
+    
+    [![vgYfDU.png](https://s1.ax1x.com/2022/08/24/vgYfDU.png)](https://imgse.com/i/vgYfDU)
+
+=== "查看ArkID中已同步数据"
+    
+    [![vgYIUJ.png](https://s1.ax1x.com/2022/08/24/vgYIUJ.png)](https://imgse.com/i/vgYIUJ)
+
 ## 启用多租户，成为IDaaS

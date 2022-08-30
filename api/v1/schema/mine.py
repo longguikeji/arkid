@@ -253,10 +253,22 @@ class MineBindAccountItem(Schema):
 
     id: UUID
     name: str = Field(default='', title=_('名称'))
+    nickname: str = Field(default='', title=_('昵称'))
+    avatar: str = Field(default='', title=_('头像'))
 
 
 class MineBindAccountOut(ResponseSchema):
     data:List[MineBindAccountItem]
+
+
+class MineUnBindAccountItem(Schema):
+
+    id: UUID
+    name: str = Field(default='', title=_('名称'))
+
+
+class MineUnBindAccountOut(ResponseSchema):
+    data:List[MineUnBindAccountItem]
     
 class MineUnreadedMessageCountItemOut(Schema):
     count:int =Field(

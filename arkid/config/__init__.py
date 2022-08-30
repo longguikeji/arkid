@@ -5,6 +5,7 @@ import toml
 from .email_config import EmailConfig
 from .extension_config import ExtensionConfig
 from arkid.common.utils import deep_merge
+from arkid.core.models import Platform
 
 
 class Config(object):
@@ -55,6 +56,10 @@ class Config(object):
                     self.extension.config[name] = vv
 
     def get_host(self, schema=True):
+        config = Platform.get_config()
+        if config.frontend_url:
+            return config.frontend_url
+        
         if schema:
             return '{}://{}'.format(
                 'https' if self.https_enabled else 'http', self.host
@@ -63,6 +68,10 @@ class Config(object):
         return self.host
 
     def get_frontend_host(self, schema=True):
+        config = Platform.get_config()
+        if config.frontend_url:
+            return config.frontend_url
+        
         if schema:
             return '{}://{}'.format(
                 'https' if self.https_enabled else 'http', self.frontend_host
@@ -71,6 +80,11 @@ class Config(object):
         return self.frontend_host
 
     def get_slug_frontend_host(self, slug, schema=True):
+        config = Platform.get_config()
+        if config.frontend_url:
+            protocol, frontend_host = config.frontend_url.split('://', 1)
+            return '{}://{}.{}'.format(protocol, slug, frontend_host)
+
         if schema:
             return '{}://{}.{}'.format(
                 'https' if self.https_enabled else 'http', slug, self.frontend_host

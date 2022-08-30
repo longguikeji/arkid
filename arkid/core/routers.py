@@ -158,7 +158,7 @@ def unregister_front_routers(routers, primary: FrontRouter = None):
         primary (str, optional): 主路由. Defaults to ''.
     """
     if not isinstance(routers, tuple) or not isinstance(routers, list):
-        routers = list(routers)
+        routers = [routers]
 
     if primary:
         for router in routers:
