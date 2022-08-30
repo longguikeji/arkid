@@ -176,6 +176,8 @@ def delete_app(request, tenant_id: str, id: str):
     app = App.valid_objects.get(id=id)
     if app.config:
         dispatch_event(Event(tag=DELETE_APP, tenant=request.tenant, packages=app.config.extension.package,request=request, data=app))
+    else:
+        dispatch_event(Event(tag=DELETE_APP, tenant=request.tenant, request=request, data=app))
     app.delete()
     return ErrorDict(ErrorCode.OK)
 
