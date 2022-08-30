@@ -137,6 +137,41 @@ docker run --rm --mount type=bind,source="$(pwd)"/hosts,target=/etc/ansible/host
 
 ```
 
+## 访问初始化arkid
+
+浏览器打开网址：`http://{arkos-master01-ip}:32580`
+
+首次打开arkid，需要输入访问url，此url只能输入这一次，需要慎重！！！
+
+如果生产环境需要域名访问，那请配置好一切之后再填这个url！！！
+
+初始化用户名：admin/admin
+
+## 访问kuboard
+
+浏览器打开网址：`http://{arkos-master01-ip}:32567`
+
+token获取：
+
+```
+## 在 arkos-master01机器上执行
+## 复制到 kuboard 登录页面上即可访问
+echo $(kubectl -n kube-system get secret $(kubectl -n kube-system get secret | grep ^kuboard-user | awk '{print $1}') -o go-template='{{.data.token}}' | base64 -d)
+
+```
+
+## 访问kubeapps
+
+浏览器打开网址：`http://{arkos-master01-ip}:32581`
+
+token获取：
+
+```
+## 在 arkos-master01机器上执行
+## 复制到 kubeapps 登录页面上即可访问
+echo $(kubectl -n kube-system get secret $(kubectl -n kube-system get secret | grep ^kuboard-user | awk '{print $1}') -o go-template='{{.data.token}}' | base64 -d)
+
+```
 
 ## 更新组件版本
 

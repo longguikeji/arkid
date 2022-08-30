@@ -35,16 +35,20 @@ helm --namespace arkid install arkid lgkj/arkid \
 --set persistence.init=true
 ```
 
-## 暴露端口访问
+## nodeport 端口访问 arkid
+
 ```shell
-kubectl --namespace arkid port-forward svc/arkid-portal  8989:80
 
-Forwarding from 127.0.0.1:8989 -> 80
-Forwarding from [::1]:8989 -> 80
+打开浏览器访问: `http://{任意节点ip}:32580/`
 
-打开浏览器访问: `http://localhost:8989/`
+首次打开arkid，需要输入访问url，此url只能输入这一次，需要慎重！！！
+
+如果生产环境需要域名访问，那请配置好一切之后再填这个url！！！
+
 初始密码：`admin/admin`
 ```
+
+
 
 ## 升级 arkid chart版本
 ```shell

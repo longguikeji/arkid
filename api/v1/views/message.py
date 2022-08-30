@@ -36,33 +36,3 @@ def delete_message(request, tenant_id: str, id: str):
     item = get_object_or_404(Message.active_objects,id=id)
     item.delete()
     return ErrorDict(ErrorCode.OK)
-
-@api.get("/mine/messages/", response=List[MineMessageListItemOut],tags=["消息管理"],auth=GlobalAuth())
-@operation(MineMessageListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN,NORMAL_USER])
-@paginate(CustomPagination)
-def get_mine_messages(request):
-    """消息列表
-    """
-    items = Message.active_objects.filter(user=request.user)
-    return list(items.all())
-
-@api.get("/mine/messages/{id}/", response=MineMessageOut, tags=["消息管理"],auth=GlobalAuth())
-@operation(MineMessageOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN,NORMAL_USER])
-def read_mine_message(request, id: str):
-    """ 消息详情
-    """
-    item = get_object_or_404(Message.active_objects,id=id,user=request.user)
-    item.readed_status=True
-    item.save()
-    return SuccessDict(
-        data=item
-    )
-
-@api.delete("/mine/messages/{id}/", response=MessageDeleteOut, tags=["消息管理"],auth=GlobalAuth())
-@operation(MessageDeleteOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN,NORMAL_USER])
-def delete_mine_message(request, id: str):
-    """ 删除消息
-    """
-    item = get_object_or_404(Message.active_objects,id=id,user=request.user)
-    item.delete()
-    return ErrorDict(ErrorCode.OK)
