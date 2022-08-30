@@ -389,7 +389,18 @@ def get_mine_sender_messages(request,id:str):
         user = request.user,
     )
     if not id in [0,"0",None]:
-        messages = messages.filter(sender__id=id)
+        messages = messages.filter(Q(sender__id=id,user=request.user)|Q(user__id=id,sender=request.user))
+    else:
+        messages = messages.filter(Q(sender=None,user=request.user))
     messages = messages.order_by('-created').all()
     
     return list(messages)
+
+@api.get("/mine/unreaded_message_count/",response=MineUnreadedMessageCountOut,tags=["我的"],auth=GlobalAuth())
+@operation(MineUnreadedMessageCountOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_unreaded_message_count(request):
+    return SuccessDict(
+        data={
+            "count":Message.active_objects.filter(user=request.user,readed_status=False).count()
+        }
+    )

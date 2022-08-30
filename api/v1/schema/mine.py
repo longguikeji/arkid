@@ -128,15 +128,87 @@ class MessageSenderOut(ResponseSchema):
 class MineMessageListItemOut(ModelSchema):
     class Config:
         model = Message
-        model_fields = ["id","title","content"]
-        
+        model_fields = ["id","title","content","created"]
+    
+    title:str=Field(
+        title=_("标题")
+    )
+    
     content:str = Field(
-        _("内容"),
+        title=_("内容"),
+    )
+    
+    created:str = Field(
+        title=_("送达时间")
+    )
+    
+    sender_id:str = Field(
+        hidden=True
+    )
+    
+    user_id:str =Field(
+        hidden=True
+    )
+    
+    sender_name:str = Field(
+        hidden=True
+    )
+    
+    user_name:str =Field(
+        hidden=True
+    )
+    
+    sender_avatar:str = Field(
+        hidden=True
+    )
+    
+    user_avatar:str =Field(
+        hidden=True
+    )
+    
+    readed_status_str:str = Field(
+        title=_("阅读状态")
     )
     
     @staticmethod
+    def resolve_readed_status_str(obj):
+        if obj.readed_status:
+            return _("已读")
+        else:
+            return _("未读")
+        
+    
+    @staticmethod
+    def resolve_sender_id(obj):
+        return obj.sender.id.hex if obj.sender else "0"
+    
+    @staticmethod
+    def resolve_user_id(obj):
+        return obj.user.id.hex
+    
+    @staticmethod
+    def resolve_sender_name(obj):
+        return obj.sender.username if obj.sender else _("系统")
+    
+    @staticmethod
+    def resolve_user_name(obj):
+        return obj.user.username
+    
+    @staticmethod
+    def resolve_sender_avatar(obj):
+        return obj.sender.avatar if obj.sender else ""
+    
+    @staticmethod
+    def resolve_user_avatar(obj):
+        return obj.user.avatar
+    
+    @staticmethod
+    def resolve_created(obj):
+        return obj.created.strftime('%Y-%m-%d %H:%M:%S')
+    
+    @staticmethod
     def resolve_content(obj):
-        return obj.content[:255]
+        return obj.content[:200]
         
 class MineMessageListOut(ResponseSchema):
     data:List[MineMessageListItemOut]
@@ -145,14 +217,37 @@ class MineMessageItemOut(ModelSchema):
     class Config:
         model=Message
         model_fields = ["id","title","content","created","url"]
-        
+    id:UUID = Field(
+        hidden=True
+    )
+    title:str = Field(
+        title=_("标题"),
+        readonly=True
+    )
     content:str = Field(
-        _("内容"),
-        max_length=65336
+        format="textarea",
+        title=_("内容"),
+        max_length=65336,
+        readonly=True
+    )
+    
+    url:str = Field(
+        format="redirect",
+        title=_("详情链接"),
+        readonly=True
+    )
+    
+    created:str = Field(
+        title=_("送达时间"),
+        readonly=True
     )
 
+    @staticmethod
+    def resolve_created(obj):
+        return obj.created.strftime('%Y-%m-%d %H:%M:%S')
+    
 class MineMessageOut(ResponseSchema):
-    data:Optional[MineMessageItemOut]
+    data:MineMessageItemOut
 
 class MineBindAccountItem(Schema):
 
@@ -162,3 +257,12 @@ class MineBindAccountItem(Schema):
 
 class MineBindAccountOut(ResponseSchema):
     data:List[MineBindAccountItem]
+    
+class MineUnreadedMessageCountItemOut(Schema):
+    count:int =Field(
+        title=_("未读消息数量"),
+        default=0
+    )
+    
+class MineUnreadedMessageCountOut(ResponseSchema):
+    data:MineUnreadedMessageCountItemOut
