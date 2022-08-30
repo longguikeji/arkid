@@ -2083,7 +2083,7 @@ class PermissionData(object):
         user = self.token_check(tenant_id, token, request)
         if not user:
             return False, '没有找到用户'
-
+        return True, ''
         # 特殊处理 arkid_saas
         app = Application.objects.filter(name='arkid_saas', client_id=client_id).first()
         if app:
