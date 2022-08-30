@@ -2099,7 +2099,6 @@ class PermissionData(object):
         permission = app.entry_permission
         if not permission:
             return False, '没有找到入口权限'
-
         result = self.permission_check_by_sortid(permission, user, app, tenant_id)
         if not result:
             return False, '没有获得授权使用'
