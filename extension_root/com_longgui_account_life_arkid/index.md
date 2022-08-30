@@ -31,7 +31,7 @@
 
 ## 实现思路
 定时任务将用户的过期时间和当前时间作比较，如果用户已经过期，则设置用户属性is_active为False，将禁止该用户登录ArkID</br>
-需要覆盖插件基类的抽象方法，插件基类见[arkid.core.extension.account_life.AccountLifeExtension](/%20%20开发者指南/%20插件分类/账户生命周期/)
+需要覆盖插件基类的抽象方法，插件基类见[arkid.core.extension.account_life.AccountLifeExtension](../../%20%20开发者指南/%20插件分类/账户生命周期/)
 
 ## 抽象方法实现:
 * [periodic_task](#extension_root.com_longgui_account_life_arkid.AccountLifeArkIDExtension.periodic_task)
