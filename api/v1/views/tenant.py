@@ -134,7 +134,7 @@ def logout_tenant(request, tenant_id: str, data:TenantLogoutIn):
         "refresh": True
     }
     
-@api.get("/tenants/tenant_by_slug/{slug}/", response=TenantBySlugOut,tags=["租户管理"], auth=None)
+@api.get("/tenants/tenant_by_slug/{slug}/", response=TenantOut,tags=["租户管理"], auth=None)
 def get_tenant_by_slug(request, slug: str):
     tenant = get_object_or_404(
         Tenant.expand_objects,
@@ -142,6 +142,9 @@ def get_tenant_by_slug(request, slug: str):
         is_active=True,
         is_del=False
     )
+    # TODO 此处临时处理expandobject不能获取property只读属性问题
+    tenant_obj=Tenant.active_objects.get(id=tenant["id"])
+    tenant["is_platform_tenant"] = tenant_obj.is_platform_tenant
     
     return {
         "data": tenant
