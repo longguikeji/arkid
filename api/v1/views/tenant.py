@@ -52,7 +52,7 @@ def get_tenant(request, id: str):
     }
 
 @api.post("/tenants/",response=TenantCreateOut,tags=["租户管理"])
-@operation(TenantOut,roles=[PLATFORM_USER, PLATFORM_ADMIN])
+@operation(TenantCreateOut,roles=[PLATFORM_USER, PLATFORM_ADMIN])
 def create_tenant(request, data:TenantCreateIn):
     """ 创建租户
     """
@@ -134,7 +134,7 @@ def logout_tenant(request, tenant_id: str, data:TenantLogoutIn):
         "refresh": True
     }
     
-@api.get("/tenants/tenant_by_slug/{slug}/", response=TenantOut,tags=["租户管理"], auth=None)
+@api.get("/tenants/tenant_by_slug/{slug}/", response=TenantBySlugOut,tags=["租户管理"], auth=None)
 def get_tenant_by_slug(request, slug: str):
     tenant = get_object_or_404(
         Tenant.expand_objects,
@@ -142,6 +142,7 @@ def get_tenant_by_slug(request, slug: str):
         is_active=True,
         is_del=False
     )
+    
     return {
         "data": tenant
     }
