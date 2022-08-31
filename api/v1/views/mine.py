@@ -180,7 +180,7 @@ def get_mine_logout(request, tenant_id: str):
 
 
 @api.get("/mine/tenants/", response=List[MineTenantListItemOut], tags=["我的"])
-@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_USER, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_mine_tenants(request):
     """获取我的租户"""
