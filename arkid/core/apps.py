@@ -14,10 +14,14 @@ class CoreConfig(AppConfig):
 
         try:
             from arkid.core.models import Tenant, User
-            tenant, _ = Tenant.objects.get_or_create(
-                slug='',
-                name="平台租户",
-            )
+            tenant = Tenant.objects.filter(
+                slug=''
+            ).first()
+            if tenant is None:
+                tenant = Tenant()
+                tenant.slug = ''
+                tenant.name = '平台租户'
+                tenant.save()
             user, _ = User.objects.get_or_create(
                 username="admin",
                 tenant=tenant,
