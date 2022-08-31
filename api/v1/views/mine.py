@@ -8,7 +8,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from arkid.core.event import ACCOUNT_UNBIND, dispatch_event, Event
 from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User
-from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
+from arkid.core.constants import *
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from ninja.pagination import paginate
@@ -180,7 +180,7 @@ def get_mine_logout(request, tenant_id: str):
 
 
 @api.get("/mine/tenants/", response=List[MineTenantListItemOut], tags=["我的"])
-@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_USER, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_mine_tenants(request):
     """获取我的租户"""
