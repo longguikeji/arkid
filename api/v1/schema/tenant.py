@@ -38,14 +38,6 @@ class TenantOut(ResponseSchema):
     
     data: TenantItemOut
     
-class TenantBySlugItemOut(ModelSchema):
-    class Config:
-        model = Tenant
-        model_fields = ["id","name","slug","icon"]
-
-class TenantBySlugOut(ResponseSchema):
-    data:TenantBySlugItemOut
-    
 class TenantCreateIn(ModelSchema):
     class Config:
         model = Tenant
