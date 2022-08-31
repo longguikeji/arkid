@@ -41,7 +41,7 @@
     [![X7XSeS.png](https://s1.ax1x.com/2022/06/16/X7XSeS.png)](https://imgtu.com/i/X7XSeS)
 
 ## 实现思路
-需要覆盖插件基类的抽象方法，插件基类见[arkid.core.extension.scim_sync.ScimSyncExtension](/%20%20开发者指南/%20插件分类/数据同步/)
+需要覆盖插件基类的抽象方法，插件基类见[arkid.core.extension.scim_sync.ScimSyncExtension](../../%20%20开发者指南/%20插件分类/数据同步/)
 
 ## 抽象方法实现:
 #### Server模式的抽象方法

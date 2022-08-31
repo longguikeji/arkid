@@ -53,7 +53,7 @@
 - 实现 [pass_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.pass_approve_request) 抽象方法 同意审批请求
 - 实现 [deny_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.deny_approve_request) 抽象方法 拒绝审批请求
 - 由于此插件只不需要将审批请求发送到第三方所以没有覆盖抽象方法[create_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.create_approve_request)
-- 插件基类见[arkid.core.extension.approve_system.ApproveSystemExtension](/%20%20开发者指南/%20插件开发/%20插件分类/审批系统/)
+- 插件基类见[arkid.core.extension.approve_system.ApproveSystemExtension](../../%20%20开发者指南/%20插件开发/%20插件分类/审批系统/)
 
 ## 抽象方法实现:
 * [pass_approve_request](#extension_root.com_longgui_approve_system_arkid.ApproveSystemArkIDExtension.pass_approve_request)

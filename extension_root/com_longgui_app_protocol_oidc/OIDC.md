@@ -20,7 +20,7 @@ OIDC是基于OAuth2和OpenID整合的新认证授权协议
 
 === "再次点击协议配置"
     即可查看该协议所有相关的参数。
-    ![XoMPQf.md.jpg](https://s1.ax1x.com/2022/06/15/XoMPQf.md.jpg)](https://imgtu.com/i/XoMPQf)
+    [![XoMPQf.md.jpg](https://s1.ax1x.com/2022/06/15/XoMPQf.md.jpg)](https://imgtu.com/i/XoMPQf)
 
 
 ## 使用OIDC应用

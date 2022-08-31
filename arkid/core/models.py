@@ -693,6 +693,16 @@ class Message(BaseModel,ExpandModel):
         null=True,
         verbose_name=_("url","链接")
     )
+    
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_('Sender', '发送者'),
+        related_name="sent_messages",
+        default=None,
+        null=True,
+        blank=True
+    )
 
 class TenantExpandAbstract(BaseModel):
     class Meta:

@@ -356,9 +356,12 @@ def get_mine_app_groups(request, tenant_id: str, parent_id=None):
         tenant=tenant
     )
     
-    if parent_id in [0,"0",None,""]:
-        # 传递虚拟节点则获取所有一级分组
+    if parent_id in [None,""]:
+        # 未传则获取所有一级分组
         appgroups = list(appgroups.filter(parent=None).all())
+    elif parent_id in [0,"0"]:
+        # 虚拟节点返回空
+        appgroups = []
     else:
         appgroups = list(appgroups.filter(parent__id=parent_id).all())
     
@@ -378,7 +381,7 @@ def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
         )
     else:
         app_group = AppGroup.active_objects.get(
-            tenant=request.tenant,
+            tenant =request.tenant,
             id=app_group_id
         )
         
@@ -386,8 +389,8 @@ def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
         
     return list(apps) if apps else []
 
-@api.get("/mine/unread_messages/",response=List[MineUnreadMessageListItemOut],tags=["我的"],auth=GlobalAuth())
-@operation(MineUnreadMessageListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/mine/unread_messages/",response=List[MineMessageListItemOut],tags=["我的"],auth=GlobalAuth())
+@operation(MineMessageListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_mine_unread_message(request):
     """我的未读消息列表
@@ -399,8 +402,8 @@ def get_mine_unread_message(request):
     
     return list(messages)
 
-@api.get("/mine/unread_messages/{id}/",response=MineUnreadMessageOut,tags=["我的"],auth=GlobalAuth())
-@operation(MineUnreadMessageOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@api.get("/mine/unread_messages/{id}/",response=MineMessageOut,tags=["我的"],auth=GlobalAuth())
+@operation(MineMessageOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def get_mine_message(request, id:str):
     """ 获取我的消息
     """
@@ -410,4 +413,47 @@ def get_mine_message(request, id:str):
     )
     message.readed_status=True
     message.save()
-    return message
+    return SuccessDict(data=message)
+
+@api.get("/mine/message_senders/",response=MessageSenderOut,tags=["我的"],auth=GlobalAuth())
+@operation(MessageSenderOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_mine_message_senders(request):
+    messages = Message.active_objects.filter(
+        user = request.user,
+    ).all()
+    senders = list(set([ item.sender for item in messages ]))
+    return SuccessDict(data=[
+        {
+            "id": sender.id.hex if sender else 0,
+            "name": sender.username if sender else _("系统消息"),
+            "avatar": sender.avatar if sender else ""
+        }
+        for sender in senders
+    ])
+
+
+@api.get("/mine/sender_messages/{id}/",response=List[MineMessageListItemOut],tags=["我的"],auth=GlobalAuth())
+@operation(MineMessageListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def get_mine_sender_messages(request,id:str):
+    """我的消息
+    """
+    messages = Message.active_objects.filter(
+        user = request.user,
+    )
+    if not id in [0,"0",None]:
+        messages = messages.filter(Q(sender__id=id,user=request.user)|Q(user__id=id,sender=request.user))
+    else:
+        messages = messages.filter(Q(sender=None,user=request.user))
+    messages = messages.order_by('-created').all()
+    
+    return list(messages)
+
+@api.get("/mine/unreaded_message_count/",response=MineUnreadedMessageCountOut,tags=["我的"],auth=GlobalAuth())
+@operation(MineUnreadedMessageCountOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_unreaded_message_count(request):
+    return SuccessDict(
+        data={
+            "count":Message.active_objects.filter(user=request.user,readed_status=False).count()
+        }
+    )

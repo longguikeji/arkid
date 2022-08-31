@@ -93,10 +93,18 @@ class PermissionData(object):
         '''
         获取平台租户
         '''
-        tenant, _ = Tenant.objects.get_or_create(
-            slug='',
-            name="平台租户",
-        )
+        # tenant, _ = Tenant.objects.get_or_create(
+        #     slug='',
+        #     name="平台租户",
+        # )
+        tenant = Tenant.objects.filter(
+            slug=''
+        ).first()
+        if tenant is None:
+            tenant = Tenant()
+            tenant.slug = ''
+            tenant.name = '平台租户'
+            tenant.save()
         return tenant
     
     def api_system_permission_check(self, tenant, user, operation_id):
