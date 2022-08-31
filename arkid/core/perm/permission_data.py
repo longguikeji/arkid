@@ -431,7 +431,9 @@ class PermissionData(object):
                             data_dict.get(item).is_pass = 0
                     elif data_item.name == 'platform-admin':
                         data_item.is_pass = 0
-                    elif hasattr(data_item, 'is_pass') == False:
+                    elif data_item.name == 'platform-user' and auth_user.user_of_platform is True:
+                        data_item.is_pass = 1
+                    elif hasattr(data_item, 'is_pass') is False:
                         data_item.is_pass = 0
                     else:
                         data_item.is_pass = 0
@@ -590,7 +592,9 @@ class PermissionData(object):
                         data_dict.get(item).is_pass = 0
                 elif data_item.name == 'platform-admin':
                     data_item.is_pass = 0
-                elif hasattr(data_item, 'is_pass') == False:
+                elif data_item.name == 'platform-user' and auth_user.user_of_platform is True:
+                    data_item.is_pass = 1
+                elif hasattr(data_item, 'is_pass') is False:
                     data_item.is_pass = 0
                 else:
                     data_item.is_pass = 0
@@ -901,7 +905,9 @@ class PermissionData(object):
                         elif data_item.name == 'platform-admin':
                             # 平台管理员默认有所有权限所有这里没必要做处理
                             data_item.is_pass = 0
-                        elif hasattr(data_item, 'is_pass') == False:
+                        elif data_item.name == 'platform-user' and auth_user.user_of_platform is True:
+                            data_item.is_pass = 1
+                        elif hasattr(data_item, 'is_pass') is False:
                             data_item.is_pass = 0
                         else:
                             data_item.is_pass = 0
@@ -1074,7 +1080,9 @@ class PermissionData(object):
                     elif data_item.name == 'platform-admin':
                         # 平台管理员默认有所有权限所有这里没必要做处理
                         data_item.is_pass = 0
-                    elif hasattr(data_item, 'is_pass') == False:
+                    elif data_item.name == 'platform-user' and auth_user.user_of_platform is True:
+                        data_item.is_pass = 1
+                    elif hasattr(data_item, 'is_pass') is False:
                         data_item.is_pass = 0
                     else:
                         data_item.is_pass = 0
