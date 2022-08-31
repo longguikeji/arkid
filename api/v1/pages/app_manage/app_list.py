@@ -57,6 +57,11 @@ installed_page.create_actions(
         'create':actions.CreateAction(
             path='/api/v1/tenant/{tenant_id}/apps/'
         ),
+        "order_name":actions.OrderSetAction(
+            path='/api/v1/tenant/{tenant_id}/apps/',
+            method=actions.FrontActionMethod.GET,
+            order_parms=["name"]
+        )
     },
     node_actions=[
         actions.DirectAction(

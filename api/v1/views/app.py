@@ -28,7 +28,7 @@ from api.v1.schema.app import *
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'])
 @operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_apps(request, tenant_id: str):
+def list_apps(request, tenant_id: str,order:str=None):
     '''
     app列表
     '''
@@ -37,6 +37,11 @@ def list_apps(request, tenant_id: str):
         is_active=True,
         is_del=False
     )
+    
+    if order:
+        apps = apps.order_by(order)
+    else:
+        apps = apps.order_by('-created')
     # # 取得请求地址和方式
     # method = request.method
     # url = request.resolver_match.route
@@ -45,7 +50,7 @@ def list_apps(request, tenant_id: str):
     # from arkid.core.perm.permission_data import PermissionData
     # pd = PermissionData()
     # pd.update_arkid_system_permission()
-    return apps.order_by('created')
+    return apps
 
 
 @api.get("/tenant/{tenant_id}/open_apps/", response=List[AppListItemOut], tags=['应用'])
