@@ -15,13 +15,19 @@ from arkid.core.pagenation import CustomPagination
 @api.get("/tenant/{tenant_id}/auth_factors/", response=List[AuthFactorListItemOut], tags=[_("认证因素")])
 @operation(List[AuthFactorListItemOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_auth_factors(request, tenant_id: str):
+def get_auth_factors(request, tenant_id: str,order:str=None):
     """ 认证因素列表
     """
     extensions = Extension.active_objects.filter(
-        type=AuthFactorExtension.TYPE).all()
+        type=AuthFactorExtension.TYPE)
     configs = TenantExtensionConfig.active_objects.filter(
-        tenant__id=tenant_id, extension__in=extensions).all()
+        tenant__id=tenant_id, extension__in=extensions)
+    
+    if order:
+        configs = configs.order_by(order)
+    
+    configs = configs.all()
+    
     return [
         {
             "id": config.id.hex,

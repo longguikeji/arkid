@@ -31,7 +31,7 @@ page.create_actions(
         ),
         "order_username":actions.OrderAction(
             up="/api/v1/tenant/{tenant_id}/users/?order=username",
-            down="/api/v1/tenant/{tenant_id}/users/?order=username",
+            down="/api/v1/tenant/{tenant_id}/users/?order=-username",
             method=actions.FrontActionMethod.GET,
             order_parm="username"
         )

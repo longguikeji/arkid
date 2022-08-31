@@ -28,6 +28,11 @@ page.create_actions(
     global_actions={
         'create': actions.CreateAction(
             path='/api/v1/tenant/{tenant_id}/auth_factors/',
+        ),
+        "order_name":actions.OrderSetAction(
+            path='/api/v1/tenant/{tenant_id}/auth_factors/',
+            method=actions.FrontActionMethod.GET,
+            order_parms=["name"]
         )
     },
     local_actions={
