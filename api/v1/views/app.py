@@ -26,7 +26,7 @@ from api.v1.schema.app import *
 
 
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'])
-@operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_apps(request, tenant_id: str):
     '''
@@ -49,7 +49,7 @@ def list_apps(request, tenant_id: str):
 
 
 @api.get("/tenant/{tenant_id}/open_apps/", response=List[AppListItemOut], tags=['应用'])
-@operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_open_apps(request, tenant_id: str):
     '''
@@ -62,7 +62,7 @@ def list_open_apps(request, tenant_id: str):
 
 
 @api.get("/tenant/{tenant_id}/all_apps/", response=List[AppListItemOut], tags=['应用'])
-@operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_all_apps(request, tenant_id: str):
     '''
@@ -75,7 +75,7 @@ def list_all_apps(request, tenant_id: str):
 
 
 @api.get("/tenant/{tenant_id}/all_apps_in_arkid/", response=AppListsOut, tags=['应用'])
-@operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
     '''
     所有app列表(含arkid)
@@ -109,7 +109,7 @@ def get_app(request, tenant_id: str, id: str):
     return {"data":app}
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionDataSchemaOut, tags=['应用'])
-@operation(roles=[PLATFORM_ADMIN, NORMAL_USER])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app_openapi_version(request, tenant_id: str, app_id: str):
     '''
     获取app的openapi地址和版本
@@ -273,7 +273,7 @@ def get_app_config(request, tenant_id: str, id: str):
 
 
 @api.get("/apps/{id}/sync_permission/", tags=['应用'], auth=None)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def sync_app_permission(request, id: str):
     '''
     同步应用权限
