@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union, Tuple
+from typing import Union, Tuple,List
 from arkid.common import DeepSN
 from arkid.common.utils import gen_tag
 from arkid.core.translation import gettext_default as _
@@ -194,6 +194,23 @@ class EditAction(OpenAction):
         self.name = _("编辑")
         self.icon = "icon-edit"
         super().__init__(page=page, *args, **kwargs)
+        
+class OrderAction(DirectAction):
+    def __init__(self, up: str, down:str, order_parm:str, *args, **kwargs):
+        self.name = _("排序")
+        self.method = FrontActionMethod.GET.value
+        self.up = up
+        self.down = down
+        self.order_parm = order_parm
+        super().__init__(*args, **kwargs)
+        
+class OrderSetAction(DirectAction):
+    def __init__(self, path: str, order_parms:List[str], *args, **kwargs):
+        self.name = _("排序")
+        self.method = FrontActionMethod.GET.value
+        self.path = path
+        self.order_parms = order_parms
+        super().__init__(*args, **kwargs)
 
 
 
