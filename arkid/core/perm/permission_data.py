@@ -418,8 +418,6 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
-                        else:
-                            data_dict.get(item).is_pass = 0
                     elif data_item.name == 'tenant-admin' and auth_user.is_tenant_admin:
                         data_item.is_pass = 1
                         describe = data_item.describe
@@ -427,12 +425,15 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
-                        else:
-                            data_dict.get(item).is_pass = 0
                     elif data_item.name == 'platform-admin':
                         data_item.is_pass = 0
-                    elif data_item.name == 'platform-user' and auth_user.user_of_platform is True:
+                    elif data_item.name == 'platform-user' and auth_user.user_of_platform:
                         data_item.is_pass = 1
+                        describe = data_item.describe
+                        container = describe.get('sort_ids')
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
                     elif hasattr(data_item, 'is_pass') is False:
                         data_item.is_pass = 0
                     else:
@@ -579,8 +580,6 @@ class PermissionData(object):
                     if container:
                         for item in container:
                             data_dict.get(item).is_pass = 1
-                    else:
-                        data_dict.get(item).is_pass = 0
                 elif data_item.name == 'tenant-admin' and is_tenant_admin:
                     data_item.is_pass = 1
                     describe = data_item.describe
@@ -588,12 +587,15 @@ class PermissionData(object):
                     if container:
                         for item in container:
                             data_dict.get(item).is_pass = 1
-                    else:
-                        data_dict.get(item).is_pass = 0
                 elif data_item.name == 'platform-admin':
                     data_item.is_pass = 0
-                elif data_item.name == 'platform-user' and auth_user.user_of_platform is True:
+                elif data_item.name == 'platform-user' and auth_user.user_of_platform:
                     data_item.is_pass = 1
+                    describe = data_item.describe
+                    container = describe.get('sort_ids')
+                    if container:
+                        for item in container:
+                            data_dict.get(item).is_pass = 1
                 elif hasattr(data_item, 'is_pass') is False:
                     data_item.is_pass = 0
                 else:
@@ -891,8 +893,6 @@ class PermissionData(object):
                             if container:
                                 for item in container:
                                     data_dict.get(item).is_pass = 1
-                            else:
-                                data_item.is_pass = 0
                         elif data_item.name == 'tenant-admin' and auth_user.is_tenant_admin:
                             data_item.is_pass = 1
                             describe = data_item.describe
@@ -900,13 +900,16 @@ class PermissionData(object):
                             if container:
                                 for item in container:
                                     data_dict.get(item).is_pass = 1
-                            else:
-                                data_item.is_pass = 0
                         elif data_item.name == 'platform-admin':
                             # 平台管理员默认有所有权限所有这里没必要做处理
                             data_item.is_pass = 0
-                        elif data_item.name == 'platform-user' and auth_user.user_of_platform is True:
+                        elif data_item.name == 'platform-user' and auth_user.user_of_platform:
                             data_item.is_pass = 1
+                            describe = data_item.describe
+                            container = describe.get('sort_ids')
+                            if container:
+                                for item in container:
+                                    data_dict.get(item).is_pass = 1
                         elif hasattr(data_item, 'is_pass') is False:
                             data_item.is_pass = 0
                         else:
@@ -1066,8 +1069,6 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
-                        else:
-                            data_item.is_pass = 0
                     elif data_item.name == 'tenant-admin' and is_tenant_admin:
                         data_item.is_pass = 1
                         describe = data_item.describe
@@ -1075,13 +1076,16 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
-                        else:
-                            data_item.is_pass = 0
                     elif data_item.name == 'platform-admin':
                         # 平台管理员默认有所有权限所有这里没必要做处理
                         data_item.is_pass = 0
-                    elif data_item.name == 'platform-user' and auth_user.user_of_platform is True:
+                    elif data_item.name == 'platform-user' and auth_user.user_of_platform:
                         data_item.is_pass = 1
+                        describe = data_item.describe
+                        container = describe.get('sort_ids')
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
                     elif hasattr(data_item, 'is_pass') is False:
                         data_item.is_pass = 0
                     else:
