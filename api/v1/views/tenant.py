@@ -42,6 +42,11 @@ def get_tenant(request, id: str):
     """ 获取租户
     """
     tenant = Tenant.expand_objects.get(id=id)
+    # TODO 此处临时处理expandobject不能获取property只读属性问题
+    tenant_obj = Tenant.active_objects.get(id=id)
+    
+    tenant["is_platform_tenant"] = tenant_obj.is_platform_tenant
+    
     return {
         "data": tenant
     }
