@@ -45,10 +45,11 @@ mine_group_apps_page.create_actions(
         ),
     ],
     global_actions={
-        "order_name":actions.OrderSetAction(
-            path='/api/v1/mine/tenant/{tenant_id}/mine_group_apps/?app_group_id={app_group_id}',
+        "order_name":actions.OrderAction(
+            up="/api/v1/mine/tenant/{tenant_id}/mine_group_apps/?app_group_id={app_group_id}&order=name",
+            down="/api/v1/mine/tenant/{tenant_id}/mine_group_apps/?app_group_id={app_group_id}&order=-name",
             method=actions.FrontActionMethod.GET,
-            order_parms=["name"]
+            order_parm="name"
         )
     }
 )
