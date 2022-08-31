@@ -34,6 +34,7 @@ class AppListsOut(ResponseSchema):
 class AppItemOut(ModelSchema):
 
     id: UUID = Field(readonly=True)
+    secret: str = Field(readonly=True, title=_('secret', '接口访问密钥'))
     
     class Config:
         model = App
