@@ -29,6 +29,12 @@ page.create_actions(
         'create': actions.CreateAction(
             path='/api/v1/tenant/{tenant_id}/users/',
         ),
+        "order_username":actions.OrderAction(
+            up="/api/v1/tenant/{tenant_id}/users/?order=username",
+            down="/api/v1/tenant/{tenant_id}/users/?order=-username",
+            method=actions.FrontActionMethod.GET,
+            order_parm="username"
+        )
     },
     local_actions={
         "edit": actions.EditAction(

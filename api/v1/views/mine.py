@@ -8,7 +8,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from arkid.core.event import ACCOUNT_UNBIND, dispatch_event, Event
 from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User
-from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
+from arkid.core.constants import *
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from ninja.pagination import paginate
@@ -180,7 +180,7 @@ def get_mine_logout(request, tenant_id: str):
 
 
 @api.get("/mine/tenants/", response=List[MineTenantListItemOut], tags=["我的"])
-@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_USER, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_mine_tenants(request):
     """获取我的租户"""
@@ -371,7 +371,7 @@ def get_mine_app_groups(request, tenant_id: str, parent_id=None):
 @api.get("/mine/tenant/{tenant_id}/mine_group_apps/", response=List[MineAppListItemOut], tags=["我的"])
 @operation(MineAppListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
+def get_mine_apps_with_group(request, tenant_id: str, app_group_id:str=None,order:str=None):
     """获取我的分组应用
     """
     apps = []
@@ -385,7 +385,12 @@ def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
             id=app_group_id
         )
         
-        apps = app_group.apps.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True)).all()
+        apps = app_group.apps.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True))
+    
+    if order:
+        apps = apps.order_by(order)
+    
+    apps = apps.all()
         
     return list(apps) if apps else []
 

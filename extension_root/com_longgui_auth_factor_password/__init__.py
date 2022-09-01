@@ -6,7 +6,7 @@ from unicodedata import name
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.schema import ResponseSchema
 from arkid.core.constants import *
-from arkid.core.api import operation
+from arkid.core.api import GlobalAuth, operation
 from .error import ErrorCode
 from arkid.core.models import Tenant, User
 from arkid.core import pages,actions
@@ -119,6 +119,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             self.reset_user_password,
             tenant_path=True,
             response=ResponseSchema,
+            auth=GlobalAuth()
         )
         
         user_list_page.add_local_actions(
@@ -353,8 +354,10 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def update_mine_password(self,request, tenant_id: str,data:UpdateMinePasswordIn):
         """更改密码"""
         user = request.user
-        user = UserPassword.objects.filter(target=user).first()
-        user_password = user.password
+        
+        user_expand = User.expand_objects.get(id=user.id)
+        
+        user_password = user_expand["password"]
         if not user_password or check_password(data.old_password, user_password):
             if data.password == data.confirm_password:
                 user.password = make_password(data.password)
