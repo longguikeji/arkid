@@ -9,8 +9,8 @@ from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.core.event import Event, dispatch_event, SET_FRONTEND_URL
 
 
-@api.get("/platform_config/",response=PlatformConfigOut, tags=["平台配置"])
-@operation(roles=[PLATFORM_ADMIN])
+@api.get("/platform_config/",response=PlatformConfigOut, tags=["平台配置"],auth=None)
+@operation()
 def get_platform_config(request):
     """ 获取平台配置
     """

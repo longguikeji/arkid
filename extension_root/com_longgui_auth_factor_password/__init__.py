@@ -3,6 +3,7 @@ from distutils import core
 import json
 import re
 from unicodedata import name
+from arkid.core.event import CREATE_TENANT
 from arkid.core.extension.auth_factor import AuthFactorExtension, BaseAuthFactorSchema
 from arkid.core.schema import ResponseSchema
 from arkid.core.constants import *
@@ -150,6 +151,22 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                     admin_user.save()
         except Exception as e:
             print(e)
+            
+        self.listen_event(
+            CREATE_TENANT,
+            self.create_tenant_event
+        )
+        
+    def create_tenant_event(self,event,**kwargs):
+        tenant = event.tenant
+        config = {
+            'login_enabled_field_names': [{'key':'username'}],
+            'register_enabled_field_names': [{'key':'username'}],
+            'is_apply': False,
+            'regular': '',
+            'title': '',
+        }
+        self.create_tenant_config(tenant, config, "default", "password")
 
     def check_auth_data(self, event, **kwargs):
         pass
