@@ -129,7 +129,7 @@ def get_group_users(request, tenant_id: str, user_group_id: str):
     '''
     获取分组用户
     '''
-    group = get_object_or_404(UserGroup, id=user_group_id, is_del=False)
+    group = get_object_or_404(UserGroup.valid_objects, id=user_group_id)
     users = User.expand_objects.filter(id__in=group.users.all()).all()
     return users
 

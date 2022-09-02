@@ -26,7 +26,7 @@ from ninja.pagination import paginate
 @paginate(CustomPagination)
 def user_list(request, tenant_id: str,order:str = None, query_data: UserListQueryIn=Query(...)):
     from arkid.core.perm.permission_data import PermissionData
-    users = User.expand_objects.filter(tenant_id=tenant_id, is_del=False,is_active=True)
+    users = User.expand_objects.filter(tenant_id=tenant_id, is_del=False)
     
     if order:
         users = users.order_by(order)

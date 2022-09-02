@@ -411,12 +411,6 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     @operation(SendSMSCodeOut)
     def send_sms_code(self,request,tenant_id,config_id:str,data:SendSMSCodeIn):
         """发送短信验证码
-
-        Args:
-            request : 请求对象
-            tenant_id (str): 租户ID
-            config_id (str): 配置ID
-            data (SendSMSCodeIn): 参数体
         """
         tenant = request.tenant
         code = create_sms_code(data.mobile)
@@ -457,11 +451,6 @@ class MobileAuthFactorExtension(AuthFactorExtension):
     @operation(UpdateMineMobileOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def update_mine_mobile(self, request, tenant_id: str,data:UpdateMineMobileIn):
         """ 普通用户：更新手机号码
-
-        Args:
-            request: 请求体
-            tenant_id (str): 租户ID
-            data (UpdateMineMobileIn): 参数
         """
         mobile = data.mobile
         ret, message = self.check_mobile_exists(mobile, request.tenant)

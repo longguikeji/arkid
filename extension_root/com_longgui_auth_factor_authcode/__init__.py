@@ -283,14 +283,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
 
     @operation(GenrateAuthCodeOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def get_authcode(self, request, tenant_id: str):
-        """视图：获取图形验证码
-
-        Args:
-            request (HttpRequest): 请求
-            tenant_id (str): 租户ID
-
-        Returns:
-            HttpResponse: 图片与key
+        """ 获取图形验证码
         """
         tenant = Tenant.active_objects.get(id=tenant_id)
         settings = self.get_settings(tenant)
@@ -310,15 +303,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
     
     @operation(CheckAuthCodeOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def check_auth_code(self,request,tenant_id:str,data:CheckAuthCodeIn):
-        """视图：校验图形验证码
-
-        Args:
-            request (HttpRequest): 请求
-            tenant_id (str): 租户ID
-            data (CheckAuthCodeIn): 待校验数据
-
-        Returns:
-            HttpResponse: 校验结果
+        """ 校验图形验证码
         """
         if self.check_authcode(data.authcode, data.authcode_key):
             return self.success()
@@ -329,13 +314,6 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
             
     def check_authcode(self,authcode,authcode_key):
         """校验图形验证码
-
-        Args:
-            authcode (str): 图形验证码
-            authcode_key (str): 图形验证码缓存KEY
-
-        Returns:
-            bool: 验证结果
         """
         return cache.get(authcode_key).lower() == authcode.lower()
     
