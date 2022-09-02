@@ -83,7 +83,10 @@ class LoginPageTenantSchema(ModelSchema):
         model = Tenant
         model_fields = ['id', 'name', 'slug', 'icon']
         # validate = False
-
+        
+    is_platform_tenant:bool = Field(
+        title=_("是否是平台租户")
+    )
 
 class LoginPageOut(Schema):
     data: Dict[str, Optional[LoginPageSchema]]
