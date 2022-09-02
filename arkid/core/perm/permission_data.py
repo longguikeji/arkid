@@ -3,7 +3,7 @@ from arkid.core.openapi import get_permissions
 from arkid.core.models import (
     UserPermissionResult, SystemPermission, User,
     Tenant, App, Permission, UserGroup,
-    ExpiringToken, GroupPermissionResult,
+    ExpiringToken, GroupPermissionResult, AppPermissionResult,
 )
 from arkid.core.api import api
 from django.db.models import Q
@@ -118,7 +118,39 @@ class PermissionData(object):
             if permission_result_arr and len(permission_result_arr) > sort_id and int(permission_result_arr[sort_id]) == 0:
                 return False
         return True
+
+    def api_system_permission_check_app(self, tenant, app, operation_id):
+        '''
+        根据应用检查api接口权限
+        '''
+        systempermission = SystemPermission.valid_objects.filter(tenant=None, is_system=True, operation_id=operation_id, category='api').first()
+        if systempermission:
+            sort_id = systempermission.sort_id
+            permission_result_arr = self.get_app_system_permission_result(tenant, app, None)
+            if permission_result_arr is None:
+                return False
+            if len(permission_result_arr) <= sort_id:
+                return False
+            if permission_result_arr and len(permission_result_arr) > sort_id and int(permission_result_arr[sort_id]) == 0:
+                return False
+        return True
     
+    def get_app_system_permission_result(self, tenant, app, select_app):
+        '''
+        取得应用解码后的权限数组
+        '''
+        apppermissionresult = AppPermissionResult.valid_objects.filter(
+            tenant=tenant,
+            self_app=app,
+            app=select_app,
+        ).first()
+        compress = Compress()
+        permission_result_arr = []
+        if apppermissionresult:
+            permission_result = compress.decrypt(apppermissionresult.result)
+            permission_result_arr = list(permission_result)
+            return permission_result_arr
+
     def get_permission_result(self, tenant, user, app):
         '''
         取得用户解码后的权限数组
@@ -180,6 +212,49 @@ class PermissionData(object):
             self.update_arkid_single_user_permission(tenant, user, permission, 0)
         else:
             print('不存在租户或者用户无法更新')
+
+    def remove_permission_to_app(self, tenant_id, app_id, permission):
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        app = App.valid_objects.filter(id=app_id).first()
+        sort_id = permission.sort_id
+        compress = Compress()
+        if isinstance(permission, SystemPermission):
+            # 系统权限
+            apppermissionresult = AppPermissionResult.valid_objects.filter(
+                tenant_id=tenant_id,
+                app__isnull=True,
+                self_app=app
+            ).first()
+            if apppermissionresult:
+                permission_result = compress.decrypt(apppermissionresult.result)
+                permission_result_arr = list(permission_result)
+                for index, value in enumerate(permission_result_arr):
+                    if index == sort_id:
+                        permission_result_arr[index] = 0
+                permission_result = "".join(map(str, permission_result_arr))
+                compress_str_result = compress.encrypt(permission_result)
+                if compress_str_result:
+                    apppermissionresult.result = compress_str_result
+                    apppermissionresult.save()
+        else:
+            # 应用权限
+            apppermissionresult = AppPermissionResult.valid_objects.filter(
+                tenant_id=tenant_id,
+                app=permission.app,
+                self_app=app
+            ).first()
+            if apppermissionresult:
+                permission_result = compress.decrypt(apppermissionresult.result)
+                permission_result_arr = list(permission_result)
+                for index, value in enumerate(permission_result_arr):
+                    if index == sort_id:
+                        permission_result_arr[index] = 0
+                permission_result = "".join(map(str, permission_result_arr))
+                compress_str_result = compress.encrypt(permission_result)
+                if compress_str_result:
+                    apppermissionresult.result = compress_str_result
+                    apppermissionresult.save()
+
 
     def update_single_user_system_permission(self, tenant_id, user_id):
         '''
@@ -1125,6 +1200,88 @@ class PermissionData(object):
             userpermissionresult.result = compress_str_result
             userpermissionresult.save()
 
+    def add_permission_to_app(self, tenant_id, select_app_id, data_arr):
+        '''
+        添加权限给应用
+        '''
+        tenant = Tenant.valid_objects.filter(id=tenant_id).first()
+        app = App.valid_objects.filter(id=select_app_id).first()
+        if tenant and app and data_arr:
+            compress = Compress()
+            for permission_id in data_arr:
+                permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+                if permission is None:
+                    permission = Permission.valid_objects.filter(id=permission_id).first()
+                sort_id = permission.sort_id
+                if isinstance(permission, SystemPermission):
+                    apppermissionresult = AppPermissionResult.valid_objects.filter(
+                        tenant_id=tenant_id,
+                        app__isnull=True,
+                        self_app=app
+                    ).first()
+                    permission_result_arr = []
+                    if apppermissionresult is None:
+                        apppermissionresult = AppPermissionResult()
+                        apppermissionresult.app = None
+                        apppermissionresult.tenant = tenant
+                        apppermissionresult.self_app = app
+                        for i in range(sort_id+1):
+                            if i == sort_id:
+                                permission_result_arr.append(1)
+                            else:
+                                permission_result_arr.append(0)
+                    else:
+                        permission_result = compress.decrypt(apppermissionresult.result)
+                        permission_result_arr = list(permission_result)
+                        # 补位
+                        diff = (sort_id + 1) - len(permission_result_arr)
+                        for i in range(diff):
+                            permission_result_arr.append(0)
+                        for index, value in enumerate(permission_result_arr):
+                            if index == sort_id:
+                                permission_result_arr[index] = 1
+                    # 保存数据
+                    permission_result = "".join(map(str, permission_result_arr))
+                    compress_str_result = compress.encrypt(permission_result)
+                    if compress_str_result:
+                        apppermissionresult.result = compress_str_result
+                        apppermissionresult.save()
+                else:
+                    apppermissionresult = AppPermissionResult.valid_objects.filter(
+                        tenant_id=tenant_id,
+                        app=permission.app,
+                        self_app=app
+                    ).first()
+                    permission_result_arr = []
+                    if apppermissionresult is None:
+                        apppermissionresult = AppPermissionResult()
+                        apppermissionresult.app = permission.app
+                        apppermissionresult.tenant = tenant
+                        apppermissionresult.self_app = app
+                        for i in range(sort_id+1):
+                            if i == sort_id:
+                                permission_result_arr.append(1)
+                            else:
+                                permission_result_arr.append(0)
+                    else:
+                        permission_result = compress.decrypt(apppermissionresult.result)
+                        permission_result_arr = list(permission_result)
+                        # 补位
+                        diff = (sort_id + 1) - len(permission_result_arr)
+                        for i in range(diff):
+                            permission_result_arr.append(0)
+                        for index, value in enumerate(permission_result_arr):
+                            if index == sort_id:
+                                permission_result_arr[index] = 1
+                    # 保存数据
+                    permission_result = "".join(map(str, permission_result_arr))
+                    compress_str_result = compress.encrypt(permission_result)
+                    if compress_str_result:
+                        apppermissionresult.result = compress_str_result
+                        apppermissionresult.save()
+        else:
+            print('不存在租户或应用或权限')
+
     def add_app_permission_to_user(self, tenant_id, app_id, user_id, permission_id):
         '''
         给某个用户增加应用权限
@@ -1181,6 +1338,37 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
     
+    def get_app_permissions_by_search(self, tenant_id, app_id):
+        '''
+        根据应用查权限(根据应用权限字符串)
+        '''
+        result = []
+        if app_id != 'arkid':
+            apppermissionresults = AppPermissionResult.valid_objects.filter(
+                tenant_id=tenant_id,
+                self_app_id=app_id
+            )
+            compress = Compress()
+            for apppermissionresult in apppermissionresults:
+                permission_sort_ids = []
+                permission_result = compress.decrypt(apppermissionresult.result)
+                permission_result_arr = list(permission_result)
+                for index, item in enumerate(permission_result_arr):
+                    if int(item) == 1:
+                        permission_sort_ids.append(index)
+                if apppermissionresult.app:
+                    result.extend(list(Permission.valid_objects.filter(
+                        tenant_id=tenant_id,
+                        app_id=app_id,
+                        sort_id__in=permission_sort_ids
+                    ).order_by('sort_id')))
+                else:
+                    result.extend(list(SystemPermission.valid_objects.filter(
+                        sort_id__in=permission_sort_ids
+                    ).order_by('sort_id')))
+
+        return result
+
     def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False, app_name=None, category=None):
         '''
         根据应用，用户，分组查权限(要根据用户身份显示正确的列表)

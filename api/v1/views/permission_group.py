@@ -154,6 +154,8 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                     category='group',
                     code__startswith='group_role'
                 )
+                if group_permissions:
+                    items.extend(group_permissions)
                 for group_permission in group_permissions:
                     for item in group_permission.container.all():
                         if item.id not in app_permission_ids:
@@ -185,9 +187,6 @@ def remove_permission_from_group(request, tenant_id: str, permission_group_id: s
     #     permission_group = get_object_or_404(SystemPermission, id=permission_group_id, is_del=False, category='group')
     #     permission = get_object_or_404(SystemPermission, id=id, is_del=False)
     # else:
-
-
-
     permission_group = SystemPermission.valid_objects.filter(id=permission_group_id, category='group', is_system=False).first()
     if permission_group is None:
         permission_group = Permission.valid_objects.filter(id=permission_group_id, category='group', is_system=False).first()
