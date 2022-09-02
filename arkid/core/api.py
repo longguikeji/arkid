@@ -1,17 +1,23 @@
 import uuid
 import functools
+from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, List
 from pydantic.fields import ModelField
 from arkid.core.translation import gettext_default as _
 from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
+from django.http import HttpRequest
 from ninja.security import HttpBearer
+from ninja.compatibility import get_headers
+from ninja.security.http import HttpAuthBase
 from ninja.openapi.schema import OpenAPISchema
 from arkid.common.logger import logger
 from arkid.core.openapi import get_openapi_schema
 from arkid.core.event import register_event, dispatch_event, Event, EventDisruptionData
-from arkid.core.models import ExpiringToken, Tenant
+from arkid.core.models import ExpiringToken, Tenant, App
 from arkid.core.token import refresh_token, generate_token
+
+import uuid
 
 def add_fields(cls, **field_definitions: Any):
     new_fields: Dict[str, ModelField] = {}
@@ -66,11 +72,34 @@ def remove_fields(cls, fields: Any):
 # remove_fields(Model, 'bar')
 # print(Model.schema())
 
+class HttpBaseBearer(HttpAuthBase, ABC):
+    openapi_scheme: str = "bearer"
+    header: str = "Authorization"
+    app_id: str = "APP_ID"
+    app_secret: str = "APP_SECRET"
 
-class GlobalAuth(HttpBearer):
+    def __call__(self, request: HttpRequest) -> Optional[Any]:
+        headers = get_headers(request)
+        auth_value = headers.get(self.header, None)
+        token = None
+        if auth_value:
+            parts = auth_value.split(" ")
+            if parts[0].lower() == self.openapi_scheme:
+                token = " ".join(parts[1:])
+
+        app_id = headers.get(self.app_id, None)
+        app_secret = headers.get(self.app_secret, None)
+
+        return self.authenticate(request, token, app_id, app_secret)
+
+    @abstractmethod
+    def authenticate(self, request: HttpRequest, token: str, app_id:str, app_secret:str) -> Optional[Any]:
+        pass  # pragma: no cover
+
+class GlobalAuth(HttpBaseBearer):
     openapi_scheme = "token"
 
-    def authenticate(self, request, token):
+    def authenticate(self, request, token, app_id, app_secret):
         from arkid.core.models import User  
         try:
             if request.user and isinstance(request.user, User):  # restore 审批请求时，user已经存在，不需要再校验token
@@ -79,34 +108,58 @@ class GlobalAuth(HttpBearer):
                     token = ExpiringToken.objects.create(user=request.user, token=generate_token())
                 tenant = request.tenant
             else:
-                token = ExpiringToken.objects.get(token=token)
-                
-                if not token.user.is_active:
-                    raise HttpError(401, _('User inactive or deleted','用户无效或被删除'))
-
-                tenant = request.tenant or Tenant.platform_tenant()
-                if token.expired(tenant):
-                    raise HttpError(401, _('Token has expired','秘钥已经过期'))
-
-            operation_id = request.operation_id
-            if operation_id:
-                from arkid.core.perm.permission_data import PermissionData
-                permissiondata = PermissionData()
-                if token.user and tenant:
-                    result =permissiondata.api_system_permission_check(request.tenant, token.user, operation_id)
-                    if result == False:
-                        raise HttpError(403, _('You do not have api permission','你没有这个接口的权限'))
+                if token:
+                    # 使用传统的token访问
+                    token = ExpiringToken.objects.get(token=token)
+                    if not token.user.is_active:
+                        raise HttpError(401, _('User inactive or deleted','用户无效或被删除'))
+                    tenant = request.tenant or Tenant.platform_tenant()
+                    if token.expired(tenant):
+                        raise HttpError(401, _('Token has expired','秘钥已经过期'))
+                    # 获取操作id查询用户权限
+                    operation_id = request.operation_id
+                    if operation_id:
+                        from arkid.core.perm.permission_data import PermissionData
+                        permissiondata = PermissionData()
+                        if token.user and tenant:
+                            result = permissiondata.api_system_permission_check(request.tenant, token.user, operation_id)
+                            if result is False:
+                                raise HttpError(403, _('You do not have api permission','你没有这个接口的权限'))
+                    # 将用户信息附加到request中
+                    expand_user_dict = User.expand_objects.filter(id=token.user.id).first()
+                    request.user = token.user
+                    request.user_expand = expand_user_dict
+                    return token
+                elif app_id and app_secret:
+                    try:
+                        if uuid.UUID(app_id).version == 4:
+                            pass
+                    except ValueError:
+                        logger.error(_("invalid app_id", "无效的应用id"))
+                        return
+                    app = App.valid_objects.get(id=app_id, secret=app_secret)
+                    tenant = request.tenant or Tenant.platform_tenant()
+                    # 获取操作id查询用户权限
+                    operation_id = request.operation_id
+                    if operation_id and app and tenant:
+                        from arkid.core.perm.permission_data import PermissionData
+                        permissiondata = PermissionData()
+                        result = permissiondata.api_system_permission_check_app(tenant, app, operation_id)
+                        if result is False:
+                            raise HttpError(403, _('You do not have api permission','你没有这个接口的权限'))
+                    request.app = app
+                    return app_secret
+                else:
+                    raise ExpiringToken.DoesNotExist
         except ExpiringToken.DoesNotExist:
             logger.error(_("Invalid token","无效的秘钥"))
+            return
+        except App.DoesNotExist:
+            logger.error(_("invalid app_id app_secret", "无效的应用"))
             return
         # except Exception as err:
         #     logger.error(err)
         #     return
-        expand_user_dict = User.expand_objects.filter(id=token.user.id).first()
-
-        request.user = token.user
-        request.user_expand = expand_user_dict
-        return token
 
 
 class ArkidApi(NinjaAPI):
