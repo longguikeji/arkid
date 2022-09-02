@@ -19,7 +19,7 @@ from ninja.pagination import paginate
 def get_app_groups(request, tenant_id: str, query_data: AppGroupListQueryIn=Query(...)):
     """ 应用分组列表
     """
-    groups = AppGroup.expand_objects.filter(tenant__id=tenant_id)
+    groups = AppGroup.expand_objects.filter(tenant__id=tenant_id, is_del=False, is_active=True)
     
     parent_id = query_data.dict().get("parent_id",None)
     groups = groups.filter(parent__id=parent_id)
@@ -72,7 +72,7 @@ def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
 def delete_app_group(request, tenant_id: str, id: str):
     """ 删除应用分组
     """
-    group = get_object_or_404(AppGroup.expand_objects,id=id, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup,id=id, is_del=False, is_active=True)
     group.delete()
     return ErrorDict(ErrorCode.OK)
 
