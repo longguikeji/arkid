@@ -79,7 +79,7 @@ def update_tenant(request, id: str, data:TenantUpdateIn):
 def delete_tenant(request, id: str):
     """ 删除租户
     """
-    tenant = Tenant.active_objects.get(id=id)
+    tenant = Tenant.valid_objects.get(id=id)
     tenant.delete()
     return ErrorDict(ErrorCode.OK)
 

@@ -35,7 +35,7 @@ def create_app_group(request, tenant_id: str, data: AppGroupCreateIn):
     """
     data = data.dict()
     if "parent" in data and data["parent"]:
-        data["parent"] = get_object_or_404(AppGroup.active_objects,id=data["parent"].get("id"), is_del=False, is_active=True)
+        data["parent"] = get_object_or_404(AppGroup.active_objects,id=data["parent"].get("id"))
     group = AppGroup.expand_objects.create(tenant=request.tenant,**data)
 
     return ErrorDict(ErrorCode.OK)
@@ -72,7 +72,7 @@ def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
 def delete_app_group(request, tenant_id: str, id: str):
     """ 删除应用分组
     """
-    group = get_object_or_404(AppGroup.active_objects,id=id)
+    group = get_object_or_404(AppGroup.valid_objects,id=id)
     group.delete()
     return ErrorDict(ErrorCode.OK)
 
@@ -82,7 +82,7 @@ def delete_app_group(request, tenant_id: str, id: str):
 def get_apps_from_group(request, tenant_id: str, app_group_id: str):
     """ 获取当前分组的应用列表
     """
-    group = get_object_or_404(AppGroup,tenant_id=tenant_id,id=app_group_id, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup.active_objects,tenant_id=tenant_id,id=app_group_id)
     return group.apps.all()
 
 
@@ -92,8 +92,8 @@ def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str):
     """ 将应用移除出应用分组
     """
     
-    app = get_object_or_404(App,tenant__id=tenant_id, id=id, is_del=False, is_active=True)
-    group = get_object_or_404(AppGroup,tenant__id=tenant_id, id=app_group_id, is_del=False, is_active=True)
+    app = get_object_or_404(App.active_objects,tenant__id=tenant_id, id=id)
+    group = get_object_or_404(AppGroup.active_objects,tenant__id=tenant_id, id=app_group_id)
     group.apps.remove(app)
     group.save()
     return ErrorDict(ErrorCode.OK)
@@ -103,9 +103,9 @@ def remove_app_from_group(request, tenant_id: str, app_group_id: str,id:str):
 def update_apps_from_group(request, tenant_id: str, app_group_id: str,data: AppGroupAppUpdateIn):
     """ 更新当前分组的应用列表
     """
-    group = get_object_or_404(AppGroup,tenant__id=tenant_id, id=app_group_id, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup.active_objects,tenant__id=tenant_id, id=app_group_id)
     app_ids = data.dict()["apps"]
-    apps = App.active_objects.filter(tenant__id=tenant_id,id__in=app_ids, is_del=False, is_active=True).all()
+    apps = App.active_objects.filter(tenant__id=tenant_id,id__in=app_ids).all()
     
     for app in apps:
         group.apps.add(app)
@@ -122,7 +122,7 @@ def get_exclude_apps(request, tenant_id: str, app_group_id: str):
     """ 获取所有未添加到分组的应用
     """
     
-    group = get_object_or_404(AppGroup,id=app_group_id,tenant=request.tenant, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup.active_objects,id=app_group_id,tenant=request.tenant)
     selected_apps = group.apps.filter(is_del=False, is_active=True).all()
     apps = App.expand_objects.filter(tenant__id=tenant_id).exclude(id__in=selected_apps).all()
     

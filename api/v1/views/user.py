@@ -76,7 +76,7 @@ def user_create(request, tenant_id: str,data:UserCreateIn):
 @api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'])
 @operation(UserDeleteOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def user_delete(request, tenant_id: str,id:str):
-    user = get_object_or_404(User,tenant=request.tenant, id=id)
+    user = get_object_or_404(User.valid_objects,tenant=request.tenant, id=id)
     user.delete()
     return {"error":ErrorCode.OK.value}
         

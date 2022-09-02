@@ -95,7 +95,7 @@ def update_auth_factor(request, tenant_id: str, id: str, data: AuthFactorUpdateI
 def delete_auth_factor(request, tenant_id: str, id: str):
     """ 删除认证因素
     """
-    config = TenantExtensionConfig.active_objects.get(
+    config = TenantExtensionConfig.valid_objects.get(
         tenant__id=tenant_id, id=id
     )
     config.delete()

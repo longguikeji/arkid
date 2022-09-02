@@ -89,7 +89,7 @@ def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
 def delete_auth_rule(request, tenant_id: str, id: str):
     """ 删除认证规则
     """
-    config = TenantExtensionConfig.active_objects.get(
+    config = TenantExtensionConfig.valid_objects.get(
         tenant__id=tenant_id, id=id
     )
     config.delete()
