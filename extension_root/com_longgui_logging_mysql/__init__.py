@@ -70,13 +70,29 @@ class LogItemOut(Schema):
         else:
             return ""
 
+class LogDetailItemOut(LogItemOut):
+    request_body: str = Field(title=_("Request Body", "请求内容"))
+    response_body: str = Field(title=_("Response Body", "返回内容"))
+
+    @staticmethod
+    def resolve_request_body(obj):
+        if obj.data:
+            return obj.data.get("body_request", "")
+        else:
+            return ""
+
+    @staticmethod
+    def resolve_response_body(obj):
+        if obj.data:
+            return obj.data.get("body_response", "")
+        else:
+            return ""
 
 class LogItemResponseOut(ResponseSchema):
-    data: LogItemOut
+    data: LogDetailItemOut
 
 class LogListOut(ResponseSchema):
     data: List[LogItemOut]
-
 
 class LogConfigSchema(Schema):
     log_retention_period: int = Field(title=_("Log Retention Days", "日志保存天数"))
@@ -186,19 +202,19 @@ class MysqlLoggingExtension(LoggingExtension):
     @operation(LogListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     @paginate(CustomPagination)
     def list_user_logs(self, request, tenant_id:str):
-        logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=False).all()
+        logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=False).order_by("-created")
         return logs
 
     @operation(LogListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     @paginate(CustomPagination)
     def list_manager_logs(self, request, tenant_id:str):
-        logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=True).all()
+        logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=True).order_by("-created")
         return logs
 
     @operation(LogListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     @paginate(CustomPagination)
     def list_logs(self, request, tenant_id:str):
-        logs = Log.active_objects.filter(tenant=request.tenant).all()
+        logs = Log.active_objects.filter(tenant=request.tenant).order_by("-created")
         return logs
 
     @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
