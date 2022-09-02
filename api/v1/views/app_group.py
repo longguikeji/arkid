@@ -72,7 +72,7 @@ def update_app_group(request, tenant_id: str, id: str,data: AppGroupUpdateIn):
 def delete_app_group(request, tenant_id: str, id: str):
     """ 删除应用分组
     """
-    group = get_object_or_404(AppGroup.expand_objects,id=id, is_del=False, is_active=True)
+    group = get_object_or_404(AppGroup.active_objects,id=id)
     group.delete()
     return ErrorDict(ErrorCode.OK)
 
