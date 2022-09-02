@@ -45,8 +45,8 @@ class LoggingMiddleware:
             method=request.method,
             remote_address=self.get_client_ip(request),
             exec_time=exec_time,
-            body_request=str(request.body),
-            body_response=str(response.content),
+            body_request=str(request.body.decode()),
+            body_response=str(response.content.decode()),
         )
 
         # Assign user to log if it's not an anonymous user
