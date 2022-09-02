@@ -107,9 +107,22 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
         authcode_key = data.get('authcode_key')
         
         if not self.check_authcode(authcode,authcode_key):
-            return False,self.error(
-                ErrorCode.AUTHCODE_NOT_MATCH
+            
+            settings = self.get_settings(tenant)
+            key, code, image = self.get_authcode_picture(
+                settings.settings.get("auth_code_length",4),
+                settings.settings.get("width",180),
+                settings.settings.get("height",60)
             )
+            
+            cache.set(key,code)
+            rs = self.error(ErrorCode.AUTHCODE_NOT_MATCH)
+            rs["data"] = {
+                "image": str(image, 'utf8'),
+                "authcode_key": key
+            }
+            
+            return False,rs
         return True,None
             
     def create_register_page(self, event, config, config_data):

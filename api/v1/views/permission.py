@@ -56,6 +56,18 @@ def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_i
     permissiondata = PermissionData()
     return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category)
 
+
+@api.get("/tenant/{tenant_id}/apps/{id}/permissions", response=List[AppPermissionsItemSchemaOut], tags=['权限'])
+@operation(AppPermissionsListSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def app_list_permissions(request, tenant_id: str,  id: str):
+    '''
+    应用权限列表
+    '''
+    from arkid.core.perm.permission_data import PermissionData
+    permissiondata = PermissionData()
+    return permissiondata.get_app_permissions_by_search(tenant_id, id)
+
 @api.get("/tenant/{tenant_id}/user_app_last_permissions", response=List[UserAppLastPermissionsItemSchemaOut], tags=['权限'])
 @operation(UserAppLastPermissionsSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
@@ -177,6 +189,25 @@ def user_add_permission(request, tenant_id: str, select_user_id: str, data: Perm
     return {'error': ErrorCode.OK.value}
 
 
+@api.post("/tenant/{tenant_id}/permission/app/{select_app_id}/add_permission", tags=['权限'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def user_add_permission(request, tenant_id: str, select_app_id: str, data: PermissionBatchSchemaIn):
+    '''
+    添加应用权限
+    '''
+    from arkid.core.perm.permission_data import PermissionData
+    data_arr = data.data
+    if data_arr:
+        permissiondata = PermissionData()
+        permissiondata.add_permission_to_app(tenant_id, select_app_id, data_arr)
+        # dispatch_event(Event(tag=ADD_USER_MANY_PERMISSION, tenant=request.tenant, request=request, data={
+        #     'user_ids': [select_user_id],
+        #     'tenant_id': tenant_id,
+        #     'data_arr': data_arr
+        # }))
+    return {'error': ErrorCode.OK.value}
+
+
 @api.delete("/tenant/{tenant_id}/permission/user/{select_user_id}/{permission_id}/remove_permission", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def user_remove_permission(request, tenant_id: str, select_user_id: str, permission_id: str):
@@ -191,6 +222,22 @@ def user_remove_permission(request, tenant_id: str, select_user_id: str, permiss
         dispatch_event(Event(tag=REMOVE_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
         dispatch_event(Event(tag=REMOVE_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=permission))
+    return ErrorDict(ErrorCode.OK)
+
+
+@api.delete("/tenant/{tenant_id}/permission/app/{select_app_id}/{permission_id}/remove_permission", tags=['权限'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def app_remove_permission(request, tenant_id: str, select_app_id: str, permission_id: str):
+    '''
+    移除应用权限
+    '''
+    permission = SystemPermission.valid_objects.filter(id=permission_id).first()
+    if permission is None:
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+    if permission:
+        from arkid.core.perm.permission_data import PermissionData
+        permissiondata = PermissionData()
+        permissiondata.remove_permission_to_app(tenant_id, select_app_id, permission)
     return ErrorDict(ErrorCode.OK)
 
 
