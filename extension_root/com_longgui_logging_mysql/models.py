@@ -18,6 +18,16 @@ class Log(BaseModel):
     class Meta:
         app_label = app_label
 
-    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
-    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='用户')
-    data = models.JSONField(blank=True, default=dict)
+    tenant = models.ForeignKey(Tenant, blank=True, null=True, on_delete=models.CASCADE, verbose_name='租户')
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, verbose_name='用户')
+    is_tenant_admin = models.BooleanField(blank=True, default=False, verbose_name='是否管理员日志')
+    data = models.JSONField(blank=True, default=dict, verbose_name='日志数据')
+
+
+class TenantLogConfig(BaseModel):
+
+    class Meta:
+        app_label = app_label
+
+    tenant = models.OneToOneField(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    log_retention_period = models.IntegerField(blank=True, default=30, verbose_name='日志保存天数')
