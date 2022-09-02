@@ -365,6 +365,9 @@ ACCOUNT_UNBIND = 'ACCOUNT_UNBIND'
 
 SET_FRONTEND_URL = 'SET_FRONTEND_URL'
 
+REQUEST_RESPONSE_LOGGGING = 'REQUEST_RESPONSE_LOGGGING'
+
+
 # register events
 register_event(
     CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
@@ -448,3 +451,5 @@ register_event(AUTHRULE_FIX_LOGIN_PAGE, _('AUTHRULE_FIX_LOGIN_PAGE', '认证规�
 register_event(AUTHRULE_CHECK_AUTH_DATA, _('AUTHRULE_CHECK_AUTH_DATA', '认证规则:检查认证凭证'))
 
 register_event(SET_FRONTEND_URL, _('SET_FRONTEND_URL', '设置前端链接'))
+
+register_event(REQUEST_RESPONSE_LOGGGING, _('REQUEST_RESPONSE_LOGGGING', 'Django请求日志'))

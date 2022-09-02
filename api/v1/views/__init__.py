@@ -28,7 +28,7 @@ from . import (
     permission_group,
     platform_config,
     languape,
-    log,
+    # log,
     front_theme,
     approve_request,
     approve_system,
