@@ -25,6 +25,7 @@ page.create_actions(
     ),
     global_actions={
         'create': actions.CreateAction(
+            name=_("新建租户"),
             path='/api/v1/tenants/',
         )
     },

@@ -42,12 +42,17 @@ def get_tenant(request, id: str):
     """ 获取租户
     """
     tenant = Tenant.expand_objects.get(id=id)
+    # TODO 此处临时处理expandobject不能获取property只读属性问题
+    tenant_obj = Tenant.active_objects.get(id=id)
+    
+    tenant["is_platform_tenant"] = tenant_obj.is_platform_tenant
+    
     return {
         "data": tenant
     }
 
 @api.post("/tenants/",response=TenantCreateOut,tags=["租户管理"])
-@operation(TenantOut,roles=[PLATFORM_USER, PLATFORM_ADMIN])
+@operation(TenantCreateOut,roles=[PLATFORM_USER, PLATFORM_ADMIN])
 def create_tenant(request, data:TenantCreateIn):
     """ 创建租户
     """
@@ -137,6 +142,10 @@ def get_tenant_by_slug(request, slug: str):
         is_active=True,
         is_del=False
     )
+    # TODO 此处临时处理expandobject不能获取property只读属性问题
+    tenant_obj=Tenant.active_objects.get(id=tenant["id"])
+    tenant["is_platform_tenant"] = tenant_obj.is_platform_tenant
+    
     return {
         "data": tenant
     }

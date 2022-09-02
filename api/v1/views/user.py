@@ -24,9 +24,13 @@ from ninja.pagination import paginate
 @api.get("/tenant/{tenant_id}/users/",response=List[UserListItemOut], tags=['用户'])
 @operation(UserListOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
+def user_list(request, tenant_id: str,order:str = None, query_data: UserListQueryIn=Query(...)):
     from arkid.core.perm.permission_data import PermissionData
     users = User.expand_objects.filter(tenant_id=tenant_id, is_del=False,is_active=True)
+    
+    if order:
+        users = users.order_by(order)
+    
     login_user = request.user
     tenant = request.tenant
     pd = PermissionData()

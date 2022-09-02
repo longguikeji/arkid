@@ -42,6 +42,14 @@ mine_group_apps_page.create_actions(
         actions.DirectAction(
             path='/api/v1/tenant/{tenant_id}/arkstore/apps/{id}/click/',
             method=actions.FrontActionMethod.GET,
-        )
+        ),
     ],
+    global_actions={
+        "order_name":actions.OrderAction(
+            up="/api/v1/mine/tenant/{tenant_id}/mine_group_apps/?app_group_id={app_group_id}&order=name",
+            down="/api/v1/mine/tenant/{tenant_id}/mine_group_apps/?app_group_id={app_group_id}&order=-name",
+            method=actions.FrontActionMethod.GET,
+            order_parm="name"
+        )
+    }
 )

@@ -283,7 +283,14 @@ def install_arkstore_extension(tenant, token, extension_id):
     saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
     access_token = get_arkstore_access_token(tenant, token)
     res = get_arkstore_extension_detail(access_token, extension_id)
-    if res['type'] in ('url', 'oidc'):
+    if res['type'] == 'auto_form_fill':
+        app = get_arkid_saas_app_detail(tenant, token, extension_id)
+        app['data'] = {}
+        create_tenant_app(tenant, app)
+    elif res['type'] == 'extension':
+        download_arkstore_extension(tenant, token, extension_id, res)
+    else:
+        # res['type'] in ('url', 'oidc') or else
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
         url = app['url']
         if '?' in url:
@@ -293,14 +300,6 @@ def install_arkstore_extension(tenant, token, extension_id):
         local_app = create_tenant_oidc_app(tenant, url, app['name'], app['description'], app['logo'])
         local_app.arkstore_app_id = res['uuid']
         local_app.save()
-    elif res['type'] == 'auto_form_fill':
-        app = get_arkid_saas_app_detail(tenant, token, extension_id)
-        app['data'] = {}
-        create_tenant_app(tenant, app)
-    elif res['type'] == 'extension':
-        download_arkstore_extension(tenant, token, extension_id, res)
-    else:
-        raise Exception(f"unkown arkstore app and extension type: res['type']")
 
 
 def download_arkstore_extension(tenant, token, extension_id, extension_detail):
