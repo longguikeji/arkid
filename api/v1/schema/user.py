@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 from uuid import UUID
 from ninja import ModelSchema, Schema
 from arkid.core.models import User
@@ -15,8 +15,12 @@ class UserListItemOut(ModelSchema):
 
     class Config:
         model = User
-        model_fields = ['id', 'username', 'avatar']
-
+        model_fields = ['id', 'username', 'avatar','created']
+        
+    created:Any = Field(
+        title=_("注册时间")
+    )
+    
 class UserListOut(ResponseSchema):
     data: List[UserListItemOut]
 
