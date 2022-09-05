@@ -42,6 +42,9 @@ class ProfileSchemaIn(ModelSchema):
 
 
 class MineTenantListItemOut(ModelSchema):
+    
+    role:str = Field(title='角色')
+    
     class Config:
         model = Tenant
         model_fields = ["id", "name", "slug", "icon"]
