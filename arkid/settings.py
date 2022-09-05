@@ -58,6 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'arkid.core.tenant_middleware.TenantMiddleware',
     'arkid.core.request_json_data_middleware.JSONMiddleware',
+    'arkid.core.request_response_logging_middleware.LoggingMiddleware',
     'arkid.core.approve_request_middleware.ApproveRequestMiddleware',
 ]
 

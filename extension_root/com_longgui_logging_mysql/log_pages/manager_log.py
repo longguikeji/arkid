@@ -7,8 +7,8 @@ name = '管理员行为日志'
 page = pages.TablePage(tag = tag, name = name)
 detail_page = pages.DescriptionPage(name=_("日志详情"))
 
-pages.register_front_pages(page)
-pages.register_front_pages(detail_page)
+# pages.register_front_pages(page)
+# pages.register_front_pages(detail_page)
 
 router = routers.FrontRouter(
     path=tag,
@@ -19,7 +19,7 @@ router = routers.FrontRouter(
 
 page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/manager_log/',
+        path='/api/v1/tenant/{tenant_id}/com_longgui_logging_mysql/manager_log/',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
@@ -32,7 +32,7 @@ page.create_actions(
 
 detail_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/log/{id}/',
+        path='/api/v1/tenant/{tenant_id}/com_longgui_logging_mysql/log/{id}/',
         method=actions.FrontActionMethod.GET,
     )
 )
