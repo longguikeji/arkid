@@ -18,7 +18,6 @@ class LoggingMiddleware:
 
         # Filter to log all request to url's that start with any of the strings below.
         self.prefixs = [
-            '/example'
         ]
 
     def __call__(self, request):
@@ -38,6 +37,16 @@ class LoggingMiddleware:
         # if not list(filter(request.get_full_path().startswith, self.prefixs)): 
             # return response
 
+        try:
+            body_request = str(request.body.decode())
+        except:
+            body_request = ""
+
+        try:
+            body_response = str(response.content.decode())
+        except:
+            body_response = ""
+
         # Create instance and assign values
         request_log = dict(
             endpoint=request.get_full_path(),
@@ -45,8 +54,8 @@ class LoggingMiddleware:
             method=request.method,
             remote_address=self.get_client_ip(request),
             exec_time=exec_time,
-            body_request=str(request.body.decode()),
-            body_response=str(response.content.decode()),
+            body_request=body_request,
+            body_response=body_response,
         )
 
         # Assign user to log if it's not an anonymous user

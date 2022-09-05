@@ -70,6 +70,7 @@ def get_mine_permissions(
     app_id: str = None,
     app_name: str = None,
     category: str = None,
+    operation_id: str = None,
 ):
     """我的权限列表"""
     login_user = request.user
@@ -77,7 +78,7 @@ def get_mine_permissions(
 
     permissiondata = PermissionData()
     items = permissiondata.get_permissions_by_mine_search(
-        tenant_id, app_id, None, None, login_user, app_name=app_name, category=category
+        tenant_id, app_id, None, None, login_user, app_name=app_name, category=category, operation_id=operation_id,
     )
     return items
 
