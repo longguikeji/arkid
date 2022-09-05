@@ -113,6 +113,19 @@ def get_app(request, tenant_id: str, id: str):
     app = App.expand_objects.get(id=id)
     return {"data":app}
 
+
+@api.get("/tenant/{tenant_id}/apps/{id}/read_secret/", response=AppReadSecretOut, tags=['应用'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_app_read_secret(request, tenant_id: str, id: str):
+    '''
+    获取应用秘钥
+    '''
+    from arkid.common.utils import generate_secret
+    app = App.valid_objects.get(id=id)
+    app.secret = generate_secret()
+    app.save()
+    return {"data": {"read_secret": app.secret}}
+
 @api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionDataSchemaOut, tags=['应用'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_app_openapi_version(request, tenant_id: str, app_id: str):
