@@ -354,6 +354,9 @@ GET_AUTH_RESULT = 'GET_AUTH_RESULT'
 SAVE_FILE = 'SAVE_FILE'
 READ_FILE = 'READ_FILE'
 
+CACHE_SET = 'CACHE_SET'
+CACHE_GET = 'CACHE_GET'
+
 ACCOUNT_LIFE_PERIODIC_TASK = 'ACCOUNT_LIFE_PERIODIC_TASK'
 CREATE_APPROVE_REQUEST = 'CREATE_APPROVE_REQUEST'
 
@@ -442,6 +445,10 @@ register_event(GET_AUTH_RESULT, _('get auth result', '获得权限鉴定结果')
 
 register_event(SAVE_FILE, _('SAVE FILE', '保存文件'))
 register_event(READ_FILE, _('READ_FILE', '读取文件'))
+
+register_event(CACHE_GET, _('CACHE_GET', '读取缓存'))
+register_event(CACHE_SET, _('CACHE_SET', '设置缓存'))
+
 register_event(ACCOUNT_LIFE_PERIODIC_TASK, _('ACCOUNT_LIFE_PERIODIC_TASK', '生命周期定时任务'))
 register_event(CREATE_APPROVE_REQUEST, _('CREATE_APPROVE_REQUEST', '创建审批请求'))
 register_event(ACCOUNT_UNBIND, _('ACCOUNT UNBIND'), '账户解绑')
