@@ -93,6 +93,7 @@ class PermissionGroupEditSchemaIn(Schema):
 
 class PermissionListSchemaOut(Schema):
     category: str = Field(title=_("分类名称"))
+    operation_id: str = Field(default='', title=_("操作ID"))
     id: UUID = Field(title=_("id"))
     name: str = Field(title=_("名称"))
     is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value}, title=_("是否授权给其它租户"))

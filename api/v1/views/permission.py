@@ -47,14 +47,14 @@ def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
 @api.get("/tenant/{tenant_id}/permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_id: str = None, group_id: str = None, app_name: str = None, category: str = None):
+def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_id: str = None, group_id: str = None, app_name: str = None, category: str = None, operation_id: str = None):
     '''
     权限列表
     '''
     login_user = request.user
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category)
+    return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category, operation_id=operation_id)
 
 
 @api.get("/tenant/{tenant_id}/apps/{id}/permissions", response=List[AppPermissionsItemSchemaOut], tags=['权限'])
