@@ -1369,7 +1369,7 @@ class PermissionData(object):
 
         return result
 
-    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False, app_name=None, category=None):
+    def get_permissions_by_search(self, tenant_id, app_id, user_id, group_id, login_user, parent_id=None, is_only_show_group=False, app_name=None, category=None, operation_id=None):
         '''
         根据应用，用户，分组查权限(要根据用户身份显示正确的列表)
         '''
@@ -1405,6 +1405,9 @@ class PermissionData(object):
         if category:
             permissions = permissions.filter(category=category)
             systempermissions = systempermissions.filter(category=category)
+        if operation_id:
+            permissions = permissions.filter(operation_id=operation_id)
+            systempermissions = systempermissions.filter(operation_id=operation_id)
         if app_id or user_id or group_id:
             if app_id:
                 app = App.valid_objects.filter(
