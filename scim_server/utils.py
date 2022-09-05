@@ -54,7 +54,7 @@ def compose_manager(user, scim_path, value):
 
 def compose_core2_user(user, scim_path, value):
     if scim_path.attribute_path == 'id':
-        user.id = value
+        user.id = str(value) if value else ''
     elif scim_path.attribute_path == 'active':
         user.active = bool(value)
     elif scim_path.attribute_path == 'addresses':
@@ -179,7 +179,7 @@ def compose_addresses(user, scim_path, value):
 
 def compose_core2_group(group, scim_path, value):
     if scim_path.attribute_path == 'id':
-        group.id = value
+        group.id = str(value) if value else ''
     elif scim_path.attribute_path == 'displayName':
         group.displayName = value
 
